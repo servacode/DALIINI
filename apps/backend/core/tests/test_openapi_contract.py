@@ -1,0 +1,224 @@
+"""Contract tests that stop the schema regressing to its previous state.
+
+Before P10 the generated document carried 84 operations with zero component schemas,
+zero request bodies, zero response schemas and no security scheme, so every generated
+client would have been DTO-less. These tests fail if any of that returns.
+"""
+
+import collections
+import hashlib
+import io
+import pathlib
+
+import pytest
+import yaml
+from django.core.management import call_command
+
+
+def _repo_root():
+    """Locate the directory that holds the canonical contract.
+
+    Walking up rather than counting parents keeps the tests working both in the
+    repository and inside the backend container, where the tree is mounted differently.
+    """
+    here = pathlib.Path(__file__).resolve()
+    for parent in here.parents:
+        if (parent / "openapi" / "schema.yaml").exists():
+            return parent
+    return here.parents[min(4, len(here.parents) - 1)]
+
+
+REPO_ROOT = _repo_root()
+CANONICAL_SCHEMA = REPO_ROOT / "openapi" / "schema.yaml"
+CANONICAL_HASH = REPO_ROOT / "openapi" / "schema.sha256"
+
+HTTP_METHODS = {"get", "post", "put", "patch", "delete", "head", "options", "trace"}
+MUTATING = {"post", "put", "patch"}
+
+# Endpoints that legitimately take no request body.
+BODYLESS_MUTATIONS = {
+    ("/api/v1/admin/users/{user_id}/block/", "post"),
+    ("/api/v1/admin/users/{user_id}/unblock/", "post"),
+    ("/api/v1/auth/logout-all/", "post"),
+    ("/api/v1/owner/facilities/{facility_id}/submit/", "post"),
+}
+
+# Endpoints that legitimately answer 204 with no body.
+NO_CONTENT_OPERATIONS = {
+    ("/api/v1/admin/ads/{advertisement_id}/", "delete"),
+    ("/api/v1/admin/users/{user_id}/roles/", "put"),
+    ("/api/v1/auth/logout-all/", "post"),
+    ("/api/v1/auth/logout/", "post"),
+    ("/api/v1/auth/recovery/reset/", "post"),
+    ("/api/v1/auth/sessions/{session_id}/", "delete"),
+    ("/api/v1/facilities/{facility_id}/rating/", "delete"),
+    ("/api/v1/owner/facilities/{facility_id}/duty/{shift_id}/", "delete"),
+    ("/api/v1/owner/facilities/{facility_id}/evidence/{evidence_id}/", "delete"),
+    ("/api/v1/owner/facilities/{facility_id}/images/{image_id}/", "delete"),
+    ("/api/v1/owner/facilities/{facility_id}/members/{user_id}/", "delete"),
+    ("/api/v1/owner/facilities/{facility_id}/temporary-closures/{closure_id}/", "delete"),
+}
+
+PUBLIC_PREFIXES = ("/api/v1/public/",)
+PUBLIC_EXTRA = {
+    ("/api/v1/auth/login/", "post"),
+    ("/api/v1/auth/refresh/", "post"),
+    ("/api/v1/auth/register/start/", "post"),
+    ("/api/v1/auth/register/verify/", "post"),
+    ("/api/v1/auth/register/complete/", "post"),
+    ("/api/v1/auth/recovery/start/", "post"),
+    ("/api/v1/auth/recovery/verify/", "post"),
+    ("/api/v1/auth/recovery/reset/", "post"),
+    ("/api/v1/analytics/events/", "post"),
+}
+
+# Names that must never surface in the public contract.
+FORBIDDEN_SCHEMA_TOKENS = [
+    "otp_digest",
+    "otpDigest",
+    "refresh_digest",
+    "refreshDigest",
+    "previous_refresh_digest",
+    "previousRefreshDigest",
+    "password_hash",
+    "passwordHash",
+    "storage_key",
+    "storageKey",
+    "token_ciphertext",
+    "tokenCiphertext",
+    "identity_digest",
+    "identityDigest",
+    "SECRET_KEY",
+    "S3_SECRET_ACCESS_KEY",
+]
+
+
+def generate_schema():
+    buffer = io.StringIO()
+    call_command("spectacular", "--format", "openapi", stdout=buffer)
+    return buffer.getvalue()
+
+
+@pytest.fixture(scope="module")
+def schema():
+    return yaml.safe_load(generate_schema())
+
+
+def operations(schema):
+    for path, item in schema["paths"].items():
+        for method, operation in item.items():
+            if method in HTTP_METHODS:
+                yield path, method, operation
+
+
+def test_schema_generates_and_has_paths(schema):
+    assert schema["paths"], "the schema carries no paths"
+    assert len(list(operations(schema))) >= 80
+
+
+def test_component_schemas_exist(schema):
+    schemas = schema.get("components", {}).get("schemas", {})
+    assert len(schemas) >= 100, (
+        "the contract must carry real component schemas; a generated client built from a "
+        f"document with {len(schemas)} of them would have no DTOs"
+    )
+
+
+def test_operation_ids_are_unique_and_named(schema):
+    ids = [operation.get("operationId") for _, _, operation in operations(schema)]
+    assert all(ids), "every operation needs an explicit operationId"
+    duplicates = {name: count for name, count in collections.Counter(ids).items() if count > 1}
+    assert not duplicates, f"duplicate operationIds: {duplicates}"
+    suffixed = [name for name in ids if name[-1].isdigit() and name[-2] == "_"]
+    assert not suffixed, (
+        f"numeral-suffixed operationIds indicate an unresolved collision: {suffixed}"
+    )
+
+
+def test_mutations_carry_a_request_schema(schema):
+    missing = [
+        (path, method)
+        for path, method, operation in operations(schema)
+        if method in MUTATING
+        and not operation.get("requestBody")
+        and (path, method) not in BODYLESS_MUTATIONS
+    ]
+    assert not missing, f"mutations without a request schema: {missing}"
+
+
+def test_successful_responses_carry_a_schema(schema):
+    missing = []
+    for path, method, operation in operations(schema):
+        if (path, method) in NO_CONTENT_OPERATIONS:
+            continue
+        described = False
+        for code, response in (operation.get("responses") or {}).items():
+            if str(code).startswith("2") and any(
+                media.get("schema") for media in (response.get("content") or {}).values()
+            ):
+                described = True
+        if not described:
+            missing.append((path, method))
+    assert not missing, f"successful responses without a schema: {missing}"
+
+
+def test_bearer_security_scheme_is_declared(schema):
+    schemes = schema.get("components", {}).get("securitySchemes", {})
+    assert "bearerAccessToken" in schemes, "the access-token scheme is missing"
+    scheme = schemes["bearerAccessToken"]
+    assert scheme["type"] == "http"
+    assert scheme["scheme"] == "bearer"
+
+
+def test_public_operations_do_not_require_authentication(schema):
+    offenders = []
+    for path, method, operation in operations(schema):
+        public = path.startswith(PUBLIC_PREFIXES) or (path, method) in PUBLIC_EXTRA
+        if not public:
+            continue
+        security = operation.get("security")
+        if security and all(requirement for requirement in security):
+            offenders.append((path, method, security))
+    assert not offenders, f"public operations must stay reachable without a token: {offenders}"
+
+
+def test_protected_operations_require_authentication(schema):
+    offenders = []
+    for path, method, operation in operations(schema):
+        protected = path.startswith(("/api/v1/admin/", "/api/v1/owner/", "/api/v1/account/"))
+        if not protected:
+            continue
+        security = operation.get("security") or []
+        if not any("bearerAccessToken" in requirement for requirement in security):
+            offenders.append((path, method))
+        if any(requirement == {} for requirement in security):
+            offenders.append((path, method, "authentication is optional"))
+    assert not offenders, f"protected operations must require the access token: {offenders}"
+
+
+def test_schema_does_not_leak_internal_fields():
+    document = generate_schema()
+    leaked = [token for token in FORBIDDEN_SCHEMA_TOKENS if token in document]
+    assert not leaked, f"the contract exposes internal or secret field names: {leaked}"
+
+
+def test_committed_schema_matches_the_source():
+    assert CANONICAL_SCHEMA.exists(), "openapi/schema.yaml is not committed"
+    generated = generate_schema()
+    committed = CANONICAL_SCHEMA.read_text(encoding="utf-8")
+    assert generated == committed, (
+        "openapi/schema.yaml is stale; run ./scripts/generate-openapi.sh and commit the result"
+    )
+
+
+def test_committed_hash_matches_the_committed_schema():
+    assert CANONICAL_HASH.exists(), "openapi/schema.sha256 is not committed"
+    recorded = CANONICAL_HASH.read_text(encoding="utf-8").split()[0]
+    actual = hashlib.sha256(CANONICAL_SCHEMA.read_bytes()).hexdigest()
+    assert recorded == actual, "openapi/schema.sha256 does not describe openapi/schema.yaml"
+
+
+def test_generation_is_deterministic():
+    assert generate_schema() == generate_schema(), (
+        "two generations differ, so the drift gate would fail at random"
+    )
