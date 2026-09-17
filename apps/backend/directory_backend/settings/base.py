@@ -102,10 +102,39 @@ REST_FRAMEWORK = {
         "recovery": "5/hour",
     },
 }
+# Interactive schema exposure. Safe default; development widens it and production
+# disables it. CI never needs the route: it uses the spectacular management command.
+OPENAPI_SCHEMA_EXPOSURE = "privileged"
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "Directory Platform API",
     "VERSION": "1.0.0",
+    "DESCRIPTION": (
+        "Canonical contract for the Serva Code Directory Platform. Generated from Django "
+        "and DRF; it is never hand-authored. Generated TypeScript, Kotlin and Swift "
+        "clients are produced from this document, so no client hand-writes transport DTOs."
+    ),
     "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": "/api/v1",
+    "SORT_OPERATIONS": True,
+    # Several domains legitimately declare a field called "status" or "type", and a few
+    # choice sets are reused under different field names. Without explicit names
+    # drf-spectacular invents hash-suffixed component names such as "Status652Enum",
+    # which are unstable across runs and leak into every generated client.
+    "ENUM_NAME_OVERRIDES": {
+        "FacilityStatusEnum": "core.enums.FACILITY_STATUS",
+        "FacilityApplicationStatusEnum": "core.enums.FACILITY_APPLICATION_STATUS",
+        "FacilityApplicationKindEnum": "core.enums.FACILITY_APPLICATION_KIND",
+        "FacilityMemberRoleEnum": "core.enums.FACILITY_MEMBER_ROLE",
+        "AccountDeletionStatusEnum": "core.enums.ACCOUNT_DELETION_STATUS",
+        "CategorySpecializationEnum": "core.enums.CATEGORY_SPECIALIZATION",
+        "AdvertisementActionTypeEnum": "core.enums.ADVERTISEMENT_ACTION_TYPE",
+        "AdvertisementTargetScopeEnum": "core.enums.ADVERTISEMENT_TARGET_SCOPE",
+        "AvailabilityStateEnum": "core.enums.AVAILABILITY_STATE",
+        "DependencyConfiguredEnum": "core.enums.DEPENDENCY_CONFIGURED",
+        "DatabaseHealthEnum": "core.enums.DATABASE_HEALTH",
+        "OwnerRequiredActionEnum": "core.enums.OWNER_REQUIRED_ACTION",
+    },
 }
 
 CORS_ALLOWED_ORIGINS = env_csv("CORS_ALLOWED_ORIGINS")

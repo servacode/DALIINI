@@ -2,18 +2,26 @@ from datetime import UTC
 
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from business_hours.query import filter_for_availability_state
 from business_hours.services import AvailabilityState, get_facility_availability
-from directory.models import CategoryProvince
-from locations.models import Province
 from content_services.selectors import active_ads
 from content_services.serializers import public_ad
+from core.openapi import NOT_FOUND_404, VALIDATION_400
+from directory.models import CategoryProvince
+from locations.models import Province
 
 from .pagination import FacilityCursorPagination
+from .schemas import (
+    FacilityCursorPageSerializer,
+    MapMarkerListSerializer,
+    PublicFacilityDetailSerializer,
+    PublicHomeSerializer,
+)
 from .selectors import (
     apply_text_search,
     public_facilities,
@@ -22,6 +30,32 @@ from .selectors import (
     within_bbox,
 )
 from .serializers import compact_facility, facility_detail
+
+
+def _q(name, description, required=False):
+    return OpenApiParameter(name, str, OpenApiParameter.QUERY, required=required,
+                            description=description)
+
+
+SCOPE_PARAMS = [
+    _q("provinceId", "Province to scope the query to.", required=True),
+    _q("cityId", "Optional city filter."),
+    _q("neighborhoodId", "Optional neighbourhood filter."),
+    _q("specialtyId", "Optional specialty filter; only meaningful when the category "
+       "declares specialtyFilter."),
+    _q("serviceId", "Optional service-tag filter; only meaningful when the category "
+       "declares serviceFilter."),
+    _q("search", "Free-text term matched against facility text."),
+    _q("bbox", "Viewport as west,south,east,north in WGS84 decimal degrees."),
+    _q("latitude", "Caller latitude in WGS84 decimal degrees. Must be sent with longitude."),
+    _q("longitude", "Caller longitude in WGS84 decimal degrees. Must be sent with latitude."),
+]
+
+PAGE_PARAMS = [
+    _q("cursor", "Opaque cursor returned in the previous page's next link."),
+    OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False,
+                     description="Page size, maximum 100, default 30."),
+]
 
 
 def _parse_float(value, name):
@@ -70,6 +104,24 @@ def _base_from_params(params):
 
 
 class PublicFacilityListView(APIView):
+    @extend_schema(
+        operation_id="publicFacilitiesList",
+        tags=["Public Discovery"],
+        summary="List publicly visible facilities in a province and category",
+        description=(
+            "Ordered nearest-first when coordinates are supplied, otherwise by Arabic "
+            "name. Availability is computed by the backend; openNow and dutyNow filter "
+            "on that computed state rather than on a stored flag."
+        ),
+        parameters=[
+            *SCOPE_PARAMS,
+            _q("categoryId", "Category to list. Required.", required=True),
+            _q("openNow", "Pass true to keep only facilities currently open."),
+            _q("dutyNow", "Pass true to keep only facilities currently on duty."),
+            *PAGE_PARAMS,
+        ],
+        responses={200: FacilityCursorPageSerializer, 400: VALIDATION_400},
+    )
     def get(self, request):
         if not request.query_params.get("categoryId"):
             raise ValidationError({"categoryId": "Required."})
@@ -86,6 +138,16 @@ class PublicFacilityListView(APIView):
 
 
 class PublicFacilityDetailView(APIView):
+    @extend_schema(
+        operation_id="publicFacilityRetrieve",
+        tags=["Public Discovery"],
+        summary="Retrieve one publicly visible facility",
+        description=(
+            "Returns the public projection only. Verification evidence, reviewer notes, "
+            "memberships, internal policy fields and raw storage keys are never included."
+        ),
+        responses={200: PublicFacilityDetailSerializer, 404: NOT_FOUND_404},
+    )
     def get(self, request, facility_id):
         queryset = with_rating_summary(public_facilities())
         facility = get_object_or_404(queryset, pk=facility_id)
@@ -93,6 +155,14 @@ class PublicFacilityDetailView(APIView):
 
 
 class PublicMapFacilitiesView(APIView):
+    @extend_schema(
+        operation_id="publicMapFacilitiesList",
+        tags=["Public Discovery"],
+        summary="List compact map markers inside a viewport",
+        description="Capped at 500 markers. Facilities without coordinates are omitted.",
+        parameters=[*SCOPE_PARAMS, _q("categoryId", "Optional category filter.")],
+        responses={200: MapMarkerListSerializer, 400: VALIDATION_400},
+    )
     def get(self, request):
         queryset = _base_from_params(request.query_params)
         if not request.query_params.get("bbox"):
@@ -114,6 +184,18 @@ class PublicMapFacilitiesView(APIView):
 
 
 class PublicSearchView(APIView):
+    @extend_schema(
+        operation_id="publicSearchList",
+        tags=["Public Discovery"],
+        summary="Search facilities within a province",
+        parameters=[
+            *SCOPE_PARAMS,
+            _q("categoryId", "Optional category filter."),
+            _q("q", "Search term, at least two characters.", required=True),
+            *PAGE_PARAMS,
+        ],
+        responses={200: FacilityCursorPageSerializer, 400: VALIDATION_400},
+    )
     def get(self, request):
         term = (request.query_params.get("q") or "").strip()
         if len(term) < 2:
@@ -126,6 +208,17 @@ class PublicSearchView(APIView):
 
 
 class PublicHomeView(APIView):
+    @extend_schema(
+        operation_id="publicHomeRetrieve",
+        tags=["Public Discovery"],
+        summary="Retrieve the home composition for a province",
+        description=(
+            "Bundles advertisements, the active category grid and three facility strips "
+            "so the first screen needs one round trip. serverTime is authoritative."
+        ),
+        parameters=[*SCOPE_PARAMS, _q("categoryId", "Optional category filter.")],
+        responses={200: PublicHomeSerializer, 400: VALIDATION_400, 404: NOT_FOUND_404},
+    )
     def get(self, request):
         province_id = request.query_params.get("provinceId")
         if not province_id:

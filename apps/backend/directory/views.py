@@ -1,10 +1,13 @@
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.openapi import NOT_FOUND_404
 from locations.models import Province
 
 from .models import CategoryProvince
+from .schemas import PublicCategoryListSerializer
 
 
 def _capabilities(category):
@@ -25,6 +28,17 @@ class PublicProvinceCategoriesView(APIView):
     authentication_classes = []
     permission_classes = []
 
+    @extend_schema(
+        operation_id="publicProvinceCategoriesList",
+        tags=["Public Taxonomy"],
+        summary="List categories publicly enabled for a province",
+        description=(
+            "A category is listed only when the province is active, the group and the "
+            "category are active, and the per-province public switch is on. Clients drive "
+            "their UI from the returned capability flags, never from the category name."
+        ),
+        responses={200: PublicCategoryListSerializer, 404: NOT_FOUND_404},
+    )
     def get(self, request, province_id):
         get_object_or_404(Province.objects.filter(active=True), pk=province_id)
         switches = CategoryProvince.objects.filter(

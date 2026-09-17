@@ -1,14 +1,28 @@
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.openapi import NOT_FOUND_404
+
 from .models import Province
+from .schemas import PublicCityListSerializer, PublicProvinceListSerializer
 
 
 class PublicProvinceListView(APIView):
     authentication_classes = []
     permission_classes = []
 
+    @extend_schema(
+        operation_id="publicProvincesList",
+        tags=["Public Taxonomy"],
+        summary="List active provinces",
+        description=(
+            "Every province is seeded, but only active ones are publicly visible. "
+            "Ordered by sort order then Arabic name."
+        ),
+        responses={200: PublicProvinceListSerializer},
+    )
     def get(self, request):
         items = [
             {
@@ -29,6 +43,12 @@ class PublicProvinceCitiesView(APIView):
     authentication_classes = []
     permission_classes = []
 
+    @extend_schema(
+        operation_id="publicProvinceCitiesList",
+        tags=["Public Taxonomy"],
+        summary="List active cities in a province",
+        responses={200: PublicCityListSerializer, 404: NOT_FOUND_404},
+    )
     def get(self, request, province_id):
         province = get_object_or_404(Province.objects.filter(active=True), pk=province_id)
         items = [

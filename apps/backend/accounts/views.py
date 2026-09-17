@@ -1,12 +1,23 @@
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.openapi import THROTTLED_429, VALIDATION_400, protected
 from locations.models import Province
 
 from .models import OTPChallenge
+from .schemas import (
+    AccountDeletionRequestedSerializer,
+    ChallengeAcceptedSerializer,
+    ChallengeVerifiedSerializer,
+    LogoutRequestSerializer,
+    ProfileSerializer,
+    SessionCredentialsSerializer,
+    UserSessionListSerializer,
+)
 from .serializers import (
     ChallengeVerifySerializer,
     DeletionRequestSerializer,
@@ -18,7 +29,6 @@ from .serializers import (
     RegisterCompleteSerializer,
     RegisterStartSerializer,
 )
-from .throttles import LoginThrottle, OtpStartThrottle, OtpVerifyThrottle, RecoveryThrottle
 from .services import (
     complete_registration,
     login,
@@ -30,6 +40,7 @@ from .services import (
     start_challenge,
     verify_challenge,
 )
+from .throttles import LoginThrottle, OtpStartThrottle, OtpVerifyThrottle, RecoveryThrottle
 
 
 def _challenge_response(challenge):
@@ -47,11 +58,23 @@ class RegisterStartView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @extend_schema(
+        operation_id="authRegisterStart",
+        tags=["Auth"],
+        summary="Start registration by requesting an OTP challenge",
+        description=(
+            "Accepts 09XXXXXXXX, +9639XXXXXXXX or 009639XXXXXXXX and normalises to the "
+            "canonical form. The OTP code is delivered by the configured provider and is "
+            "never returned in the response."
+        ),
+        request=RegisterStartSerializer,
+        responses={202: ChallengeAcceptedSerializer, 400: VALIDATION_400, 429: THROTTLED_429},
+    )
     def post(self, request):
         serializer = RegisterStartSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        if not Province.objects.filter(pk=data["provinceId"], is_active=True).exists():
+        if not Province.objects.filter(pk=data["provinceId"], active=True).exists():
             return Response({"provinceId": "Province is unavailable."}, status=400)
         challenge = start_challenge(
             phone=data["phone"],
@@ -69,6 +92,13 @@ class RegisterVerifyView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @extend_schema(
+        operation_id="authRegisterVerify",
+        tags=["Auth"],
+        summary="Verify the registration OTP code",
+        request=ChallengeVerifySerializer,
+        responses={200: ChallengeVerifiedSerializer, 400: VALIDATION_400, 429: THROTTLED_429},
+    )
     def post(self, request):
         serializer = ChallengeVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -84,6 +114,13 @@ class RegisterCompleteView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @extend_schema(
+        operation_id="authRegisterComplete",
+        tags=["Auth"],
+        summary="Set the password and open the first session",
+        request=RegisterCompleteSerializer,
+        responses={201: SessionCredentialsSerializer, 400: VALIDATION_400},
+    )
     def post(self, request):
         serializer = RegisterCompleteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -95,6 +132,13 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @extend_schema(
+        operation_id="authLogin",
+        tags=["Auth"],
+        summary="Exchange phone and password for session credentials",
+        request=LoginSerializer,
+        responses={200: SessionCredentialsSerializer, 400: VALIDATION_400, 429: THROTTLED_429},
+    )
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -105,6 +149,18 @@ class RefreshView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @extend_schema(
+        operation_id="authRefresh",
+        tags=["Auth"],
+        summary="Rotate the refresh secret and issue a new access token",
+        description=(
+            "The supplied secret is rotated on every successful call. Replaying a secret "
+            "outside the short concurrency grace window is treated as compromise and "
+            "revokes every session belonging to the user."
+        ),
+        request=RefreshSerializer,
+        responses={200: SessionCredentialsSerializer, 400: VALIDATION_400},
+    )
     def post(self, request):
         serializer = RefreshSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -114,6 +170,13 @@ class RefreshView(APIView):
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        operation_id="authLogout",
+        tags=["Auth"],
+        summary="Revoke one session",
+        request=LogoutRequestSerializer,
+        responses={204: None, 400: VALIDATION_400, **protected()},
+    )
     def post(self, request):
         session_id = request.data.get("sessionId")
         if not session_id:
@@ -125,6 +188,13 @@ class LogoutView(APIView):
 class LogoutAllView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        operation_id="authLogoutAll",
+        tags=["Auth"],
+        summary="Revoke every session belonging to the caller",
+        request=None,
+        responses={204: None, **protected()},
+    )
     def post(self, request):
         revoke_all_sessions(user=request.user)
         return Response(status=204)
@@ -133,6 +203,13 @@ class LogoutAllView(APIView):
 class SessionsView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        operation_id="authSessionsList",
+        tags=["Auth"],
+        summary="List the sessions and devices of the caller",
+        description="Session secrets are never returned, only metadata and revocation state.",
+        responses={200: UserSessionListSerializer, **protected()},
+    )
     def get(self, request):
         rows = request.user.sessions.order_by("-created_at")
         return Response(
@@ -155,6 +232,12 @@ class SessionsView(APIView):
 class SessionDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        operation_id="authSessionRevoke",
+        tags=["Auth"],
+        summary="Revoke a specific session of the caller",
+        responses={204: None, 400: VALIDATION_400, **protected()},
+    )
     def delete(self, request, session_id):
         revoke_session(user=request.user, session_id=session_id)
         return Response(status=204)
@@ -165,6 +248,13 @@ class RecoveryStartView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @extend_schema(
+        operation_id="authRecoveryStart",
+        tags=["Auth"],
+        summary="Start password recovery by requesting an OTP challenge",
+        request=RecoveryStartSerializer,
+        responses={202: ChallengeAcceptedSerializer, 400: VALIDATION_400, 429: THROTTLED_429},
+    )
     def post(self, request):
         serializer = RecoveryStartSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -180,6 +270,13 @@ class RecoveryVerifyView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @extend_schema(
+        operation_id="authRecoveryVerify",
+        tags=["Auth"],
+        summary="Verify the recovery OTP code",
+        request=ChallengeVerifySerializer,
+        responses={200: ChallengeVerifiedSerializer, 400: VALIDATION_400, 429: THROTTLED_429},
+    )
     def post(self, request):
         serializer = ChallengeVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -195,6 +292,14 @@ class RecoveryResetView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @extend_schema(
+        operation_id="authRecoveryReset",
+        tags=["Auth"],
+        summary="Set a new password using a verified recovery challenge",
+        description="A successful reset revokes every existing session for that user.",
+        request=RecoveryResetSerializer,
+        responses={204: None, 400: VALIDATION_400},
+    )
     def post(self, request):
         serializer = RecoveryResetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -205,6 +310,12 @@ class RecoveryResetView(APIView):
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        operation_id="accountProfileRetrieve",
+        tags=["Account"],
+        summary="Retrieve the profile of the caller",
+        responses={200: ProfileSerializer, **protected()},
+    )
     def get(self, request):
         user = request.user
         return Response(
@@ -219,6 +330,13 @@ class ProfileView(APIView):
             }
         )
 
+    @extend_schema(
+        operation_id="accountProfileUpdate",
+        tags=["Account"],
+        summary="Update the display name or profile province of the caller",
+        request=ProfilePatchSerializer,
+        responses={200: ProfileSerializer, 400: VALIDATION_400, **protected()},
+    )
     def patch(self, request):
         serializer = ProfilePatchSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -231,7 +349,7 @@ class ProfileView(APIView):
             if province_id is None:
                 user.province = None
             else:
-                province = Province.objects.filter(pk=province_id, is_active=True).first()
+                province = Province.objects.filter(pk=province_id, active=True).first()
                 if province is None:
                     return Response({"provinceId": "Province is unavailable."}, status=400)
                 user.province = province
@@ -243,6 +361,17 @@ class ProfileView(APIView):
 class AccountDeletionRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        operation_id="accountDeletionRequestCreate",
+        tags=["Account"],
+        summary="Request deletion of the account of the caller",
+        description=(
+            "Required by Play policy for any app that creates accounts. Ownership "
+            "obligations and legally retained records are handled by the deletion policy."
+        ),
+        request=DeletionRequestSerializer,
+        responses={202: AccountDeletionRequestedSerializer, 400: VALIDATION_400, **protected()},
+    )
     def post(self, request):
         serializer = DeletionRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

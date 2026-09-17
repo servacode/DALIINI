@@ -1,15 +1,24 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import User
 from audit.services import record_audit
+from core.openapi import (
+    CONFLICT_409,
+    DOMAIN_400,
+    NOT_FOUND_404,
+    VALIDATION_400,
+    protected,
+)
 from directory.models import CategoryProvince, VerificationRequirement
 from locations.models import Province
-from storage.backends import PublicS3Storage, PrivateS3Storage
+from storage.backends import PrivateS3Storage, PublicS3Storage
 
 from .media import save_private_evidence, save_public_image
 from .models import (
@@ -21,6 +30,17 @@ from .models import (
 )
 from .permissions import require_facility_member, require_facility_owner
 from .presenters import facility_detail, facility_summary
+from .schemas import (
+    OwnerConfigSerializer,
+    OwnerEvidenceCreatedSerializer,
+    OwnerFacilityDetailSerializer,
+    OwnerFacilityImageListSerializer,
+    OwnerFacilityImageSerializer,
+    OwnerFacilitySummaryListSerializer,
+    OwnerMemberListSerializer,
+    OwnerMemberUpsertedSerializer,
+    OwnerSubmitResultSerializer,
+)
 from .serializers import (
     EvidenceUploadSerializer,
     FacilityCreateSerializer,
@@ -103,6 +123,33 @@ def _owner_config_item(switch):
 
 
 class OwnerConfigView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="ownerConfigRetrieve",
+        tags=["Owner"],
+        summary="List categories open for owner onboarding in a province",
+        description=(
+            "Returns only categories whose per-province owner switch is on and whose "
+            "capability set allows onboarding, together with the safe descriptors of the "
+            "verification requirements the owner will have to satisfy."
+        ),
+        parameters=[
+            OpenApiParameter(
+                "provinceId",
+                str,
+                OpenApiParameter.QUERY,
+                required=True,
+                description="Province to inspect.",
+            )
+        ],
+        responses={
+            200: OwnerConfigSerializer,
+            400: DOMAIN_400,
+            **protected(),
+            404: NOT_FOUND_404,
+        },
+    )
     def get(self, request):
         province_id = request.query_params.get("provinceId")
         if not province_id:
@@ -129,10 +176,29 @@ class OwnerConfigView(APIView):
 
 
 class OwnerFacilityListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="ownerFacilitiesList",
+        tags=["Owner"],
+        summary="List the facilities the caller belongs to",
+        responses={200: OwnerFacilitySummaryListSerializer, **protected()},
+    )
     def get(self, request):
         items = _owned_facilities(request.user).order_by("-updated_at")
         return Response({"items": [facility_summary(item) for item in items]})
 
+    @extend_schema(
+        operation_id="ownerFacilityCreate",
+        tags=["Owner"],
+        summary="Create a facility draft",
+        description=(
+            "The caller becomes the owner of the new draft. Creation re-checks the current "
+            "province and category onboarding policy rather than any cached value."
+        ),
+        request=FacilityCreateSerializer,
+        responses={201: OwnerFacilityDetailSerializer, 400: DOMAIN_400, **protected()},
+    )
     def post(self, request):
         serializer = FacilityCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -149,14 +215,42 @@ class OwnerFacilityListCreateView(APIView):
 
 
 class OwnerFacilityDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def _facility(self, request, facility_id):
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
         return facility
 
+    @extend_schema(
+        operation_id="ownerFacilityRetrieve",
+        tags=["Owner"],
+        summary="Retrieve one facility the caller belongs to",
+        responses={
+            200: OwnerFacilityDetailSerializer,
+            **protected(),
+            404: NOT_FOUND_404,
+        },
+    )
     def get(self, request, facility_id):
         return Response(facility_detail(self._facility(request, facility_id)))
 
+    @extend_schema(
+        operation_id="ownerFacilityUpdate",
+        tags=["Owner"],
+        summary="Update the core fields of a facility",
+        description=(
+            "Editing a sensitive field on an active facility moves it into "
+            "REVERIFICATION_REQUIRED, so the change is reviewed before it becomes public."
+        ),
+        request=FacilityPatchSerializer,
+        responses={
+            200: OwnerFacilityDetailSerializer,
+            400: DOMAIN_400,
+            **protected(),
+            404: NOT_FOUND_404,
+        },
+    )
     def patch(self, request, facility_id):
         facility = self._facility(request, facility_id)
         serializer = FacilityPatchSerializer(data=request.data, partial=True)
@@ -174,6 +268,25 @@ class OwnerFacilityDetailView(APIView):
 
 
 class OwnerFacilitySubmitView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="ownerFacilitySubmit",
+        tags=["Owner"],
+        summary="Submit a facility for review",
+        description=(
+            "Submission re-validates the current onboarding policy and the completeness of "
+            "the current evidence requirements. Only one submitted application of a given "
+            "kind can exist per facility at a time."
+        ),
+        request=None,
+        responses={
+            200: OwnerSubmitResultSerializer,
+            400: DOMAIN_400,
+            **protected(),
+            404: NOT_FOUND_404,
+        },
+    )
     def post(self, request, facility_id):
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
@@ -195,6 +308,21 @@ class OwnerFacilitySubmitView(APIView):
 
 
 class OwnerFacilityLocationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="ownerFacilityLocationReplace",
+        tags=["Owner"],
+        summary="Set the map point of a facility",
+        description="WGS84 decimal degrees. PostGIS remains the source of truth for geo.",
+        request=FacilityLocationSerializer,
+        responses={
+            200: OwnerFacilityDetailSerializer,
+            400: VALIDATION_400,
+            **protected(),
+            404: NOT_FOUND_404,
+        },
+    )
     def put(self, request, facility_id):
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
@@ -212,12 +340,23 @@ class OwnerFacilityLocationView(APIView):
 
 class OwnerFacilityImagesView(APIView):
     parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [IsAuthenticated]
 
     def _facility(self, request, facility_id):
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
         return facility
 
+    @extend_schema(
+        operation_id="ownerFacilityImagesList",
+        tags=["Media"],
+        summary="List the public images of a facility",
+        responses={
+            200: OwnerFacilityImageListSerializer,
+            **protected(),
+            404: NOT_FOUND_404,
+        },
+    )
     def get(self, request, facility_id):
         facility = self._facility(request, facility_id)
         storage = PublicS3Storage()
@@ -233,6 +372,24 @@ class OwnerFacilityImagesView(APIView):
         ]
         return Response({"items": items})
 
+    @extend_schema(
+        operation_id="ownerFacilityImageCreate",
+        tags=["Media"],
+        summary="Upload a public facility image",
+        description=(
+            "Sent as multipart/form-data. The server decodes the file, enforces byte and "
+            "pixel limits, re-encodes to JPEG, strips metadata and stores it under a "
+            "random key. The declared extension and MIME type are not trusted."
+        ),
+        request={"multipart/form-data": PublicImageUploadSerializer},
+        responses={
+            201: OwnerFacilityImageSerializer,
+            400: DOMAIN_400,
+            **protected(),
+            404: NOT_FOUND_404,
+            409: CONFLICT_409,
+        },
+    )
     def post(self, request, facility_id):
         facility = self._facility(request, facility_id)
         if not facility.category.capabilities.supports_photos:
@@ -277,6 +434,14 @@ class OwnerFacilityImagesView(APIView):
 
 
 class OwnerFacilityImageDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="ownerFacilityImageDelete",
+        tags=["Media"],
+        summary="Delete a public facility image",
+        responses={204: None, **protected(), 404: NOT_FOUND_404},
+    )
     def delete(self, request, facility_id, image_id):
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
@@ -296,7 +461,26 @@ class OwnerFacilityImageDeleteView(APIView):
 
 class OwnerFacilityEvidenceView(APIView):
     parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        operation_id="ownerFacilityEvidenceCreate",
+        tags=["Media"],
+        summary="Upload private verification evidence",
+        description=(
+            "Sent as multipart/form-data and stored in the private namespace. The response "
+            "carries identifiers only: evidence is never served through a public URL and "
+            "its storage key is never returned."
+        ),
+        request={"multipart/form-data": EvidenceUploadSerializer},
+        responses={
+            201: OwnerEvidenceCreatedSerializer,
+            400: DOMAIN_400,
+            **protected(),
+            404: NOT_FOUND_404,
+            409: CONFLICT_409,
+        },
+    )
     def post(self, request, facility_id):
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
@@ -346,6 +530,15 @@ class OwnerFacilityEvidenceView(APIView):
 
 
 class OwnerFacilityEvidenceDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="ownerFacilityEvidenceDelete",
+        tags=["Media"],
+        summary="Delete a piece of verification evidence",
+        description="Evidence is locked while an application is under review.",
+        responses={204: None, **protected(), 404: NOT_FOUND_404, 409: CONFLICT_409},
+    )
     def delete(self, request, facility_id, evidence_id):
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
@@ -368,6 +561,14 @@ class OwnerFacilityEvidenceDeleteView(APIView):
 
 
 class OwnerFacilityMembersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="ownerFacilityMembersList",
+        tags=["Owner"],
+        summary="List the members of a facility",
+        responses={200: OwnerMemberListSerializer, **protected(), 404: NOT_FOUND_404},
+    )
     def get(self, request, facility_id):
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
@@ -386,6 +587,20 @@ class OwnerFacilityMembersView(APIView):
             }
         )
 
+    @extend_schema(
+        operation_id="ownerFacilityMemberUpsert",
+        tags=["Owner"],
+        summary="Add a member or change a member role",
+        description="Only an owner may call this, and the last owner cannot be demoted.",
+        request=FacilityMemberSerializer,
+        responses={
+            201: OwnerMemberUpsertedSerializer,
+            400: VALIDATION_400,
+            **protected(),
+            404: NOT_FOUND_404,
+            409: CONFLICT_409,
+        },
+    )
     @transaction.atomic
     def post(self, request, facility_id):
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
@@ -445,6 +660,15 @@ class OwnerFacilityMembersView(APIView):
 
 
 class OwnerFacilityMemberDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="ownerFacilityMemberDelete",
+        tags=["Owner"],
+        summary="Remove a member from a facility",
+        description="Only an owner may call this, and the last owner cannot be removed.",
+        responses={204: None, **protected(), 404: NOT_FOUND_404, 409: CONFLICT_409},
+    )
     @transaction.atomic
     def delete(self, request, facility_id, user_id):
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)

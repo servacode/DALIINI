@@ -1,11 +1,15 @@
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import NotAuthenticated, ValidationError
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.openapi import NOT_FOUND_404, VALIDATION_400, protected
 from facilities.models import Facility
 
 from .models import Rating
+from .schemas import AccountRatingListSerializer, FacilityRatingSerializer
 from .serializers import RatingWriteSerializer
 
 
@@ -35,6 +39,24 @@ def models_f(name):
 
 
 class FacilityRatingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="facilityRatingUpsert",
+        tags=["Ratings"],
+        summary="Create or replace the caller's rating for a facility",
+        description=(
+            "One rating per user per facility, so repeating the call replaces the previous "
+            "value. Only categories that declare the ratings capability accept this."
+        ),
+        request=RatingWriteSerializer,
+        responses={
+            200: FacilityRatingSerializer,
+            400: VALIDATION_400,
+            **protected(),
+            404: NOT_FOUND_404,
+        },
+    )
     def put(self, request, facility_id):
         user = _require_user(request)
         facility = _public_facility(facility_id)
@@ -54,6 +76,12 @@ class FacilityRatingView(APIView):
             }
         )
 
+    @extend_schema(
+        operation_id="facilityRatingDelete",
+        tags=["Ratings"],
+        summary="Remove the caller's rating for a facility",
+        responses={204: None, **protected()},
+    )
     def delete(self, request, facility_id):
         user = _require_user(request)
         Rating.objects.filter(user=user, facility_id=facility_id).delete()
@@ -61,6 +89,14 @@ class FacilityRatingView(APIView):
 
 
 class AccountRatingsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="accountRatingsList",
+        tags=["Account"],
+        summary="List the ratings written by the caller",
+        responses={200: AccountRatingListSerializer, **protected()},
+    )
     def get(self, request):
         user = _require_user(request)
         ratings = Rating.objects.filter(user=user).select_related("facility").order_by(

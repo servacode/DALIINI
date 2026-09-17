@@ -1,9 +1,10 @@
 from django.urls import include, path
-from drf_spectacular.views import SpectacularAPIView
+
+from core.schema_view import schema_urlpatterns
 
 urlpatterns = [
     path("health/", include("health.urls")),
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    *schema_urlpatterns(),
     path("api/v1/", include("accounts.urls")),
     path("api/v1/", include("facilities.urls")),
     path("api/v1/", include("business_hours.urls")),
