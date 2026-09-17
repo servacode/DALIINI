@@ -845,3 +845,93 @@ Implementation commit: `9196f4d`.
 Evidence: `artifacts/evidence/p21-play-rc-source-20260917.txt`.
 
 Qualification: P21 is `SOURCE_IMPLEMENTED`; `P21 PLAY RC PASS` is NOT claimed because no signed AAB, device/staging gate, Play track upload or policy submission occurred. P22 is externally blocked; next independently executable roadmap phase is P23 iOS Foundation.
+
+
+## 2026-09-17T22:15:00+03:00 — FIX-P0: restore backend and Android foundation runtime
+
+Goal: close the four P0 defects found by the receipt audit (`RECEIPT-AUDIT-2026-09-17.md`) so that the backend actually boots and the Android build gets past `build-logic`. Scope was deliberately limited to those defects; no other known issue was touched.
+
+### Why this batch exists
+
+Every phase up to P21 had been qualified with *textual* source checks. Textual checks cannot observe that a server does not start, that a migration graph does not load, or that Kotlin does not compile. The first real execution of the toolchain surfaced four P0 defects that all prior gates had passed over.
+
+### FIX-001 — ASGI initialization order
+
+File: `apps/backend/directory_backend/asgi.py`
+
+Root cause: line 8 imported `directory_backend.routing`, which reaches `realtime.routing` then `realtime.consumers` then `locations.models`, while `get_asgi_application()` was only called on line 10. Importing a model before the app registry is populated raises `django.core.exceptions.AppRegistryNotReady` and daphne exits immediately. This is the command used by the Dockerfile CMD, `compose.yml` and `render.yaml`, so no environment could ever have started the service.
+
+Fix: call `get_asgi_application()` before importing Channels routing, which is the documented Channels ordering. `# noqa: E402` marks the intentional post-setup imports. No workaround and no lazy-import shim.
+
+### FIX-002 — Django messages without session middleware
+
+File: `apps/backend/directory_backend/settings/base.py`
+
+Root cause: `django.contrib.messages` and `MessageMiddleware` were installed while `django.contrib.sessions` and `SessionMiddleware` were not. The default `FallbackStorage` constructs `SessionStorage`, which raises `ImproperlyConfigured` in `process_request` on every single request. All endpoints returned HTTP 500.
+
+Evidence gathered before removing anything:
+
+- `django.contrib.messages` appeared in exactly two places, both of them in `settings/base.py`.
+- Zero occurrences of `messages.*`, `add_message`, `get_messages`, `request._messages`, `MESSAGE_STORAGE` or `MESSAGE_TAGS` anywhere in the backend.
+- No `django.contrib.admin`, no `TEMPLATES` setting, no `render()` call — nothing server-rendered exists.
+- No `django.contrib.sessions`, no `SessionMiddleware`, no `request.session` usage.
+- `00-START-HERE.md`, `07-BACKEND-DJANGO.md`, `09-ADMIN-NEXTJS.md` and `23-AUTONOMOUS-CLAUDE-EXECUTION.md` all forbid Django Admin as the operating UI.
+
+Fix: removed both entries. Adding Django cookie sessions was rejected because the architecture is API-first with Bearer access tokens and opaque rotating refresh material; cookie sessions are not required by any specification.
+
+### FIX-003 — Sessions migration dependency app label
+
+File: `apps/backend/sessions/migrations/0002_rotation_security_fields.py`
+
+Root cause: `sessions/apps.py` declares `label = "directory_sessions"`, but the migration depended on `("sessions", "0001_initial")`. Django resolves migration dependencies by app label, so the graph contained a dangling node and every migration command failed with `NodeNotFoundError`. No database could ever be created.
+
+Fix: `dependencies = [("directory_sessions", "0001_initial")]`. A repository-wide scan confirmed this was the only wrong label reference; other migrations already use `directory_sessions` correctly.
+
+### FIX-004 — Android AGP 9 convention plugin
+
+File: `apps/android/build-logic/src/main/kotlin/serva.android.compose.gradle.kts`
+
+Root cause: the plugin used the AGP 8 signature with six star projections on `CommonExtension`. Verified directly against the resolved AGP 9.4.0 jar with `javap`: `public interface CommonExtension extends ExtensionAware` carries no type parameters. The unresolved generic cascaded into `buildFeatures` and `compose` being unresolved.
+
+Fix: configure the non-generic `com.android.build.api.dsl.CommonExtension` and set `buildFeatures.compose`. `javap` confirmed that `CommonExtension.getBuildFeatures()` returns `BuildFeatures`, that `BuildFeatures` exposes a `compose` property, and that AGP 9.4 offers no `buildFeatures(Action)` overload — so the property form is the correct API rather than a workaround. AGP was not downgraded, and Kotlin, Compose and SDK policy were left unchanged.
+
+### FIX-004b — Android source sets under AGP 9 (same defect class, surfaced by FIX-004)
+
+File: `apps/android/core/designsystem/build.gradle.kts`
+
+With FIX-004 in place the build advanced and then failed at project configuration with `DefaultAndroidLibrarySourceSet_Decorated cannot be cast to AndroidLibrarySourceSet`. The generated `android { }` accessor still resolves to the removed AGP 8 source-set type. `javap` confirmed that AGP 9.4 exposes `LibraryExtension.getSourceSets()` typed to the new DSL `AndroidLibrarySourceSet`, and that `AndroidSourceSet` has both `getJava()` and `getKotlin()`.
+
+Fix: configure `com.android.build.api.dsl.LibraryExtension` directly and register the generated token directory on `kotlin` rather than `java`, because the generated artefact is `DirectoryTokens.kt`.
+
+### Commands actually run
+
+Backend, against PostgreSQL 17.5 with PostGIS in Docker, from an image built out of the fixed source using the unmodified `apps/backend/Dockerfile`:
+
+- `manage.py check` gave exit 0.
+- `manage.py showmigrations` gave exit 0 with a valid graph and `directory_sessions` listed correctly.
+- `manage.py migrate` gave exit 0 and applied all 30 migrations.
+- `manage.py makemigrations --check --dry-run` gave exit 1 (INT-009 drift, deliberately out of scope).
+- `uv run pytest` gave exit 2 (INT-028 collection failure, deliberately out of scope).
+- daphne started with the unmodified Dockerfile CMD and logged `Listening on TCP address 0.0.0.0:8000`.
+- `GET /health/live/` returned 200 with `{"status": "ok"}`.
+- `GET /health/ready/` returned 200 with `{"status": "ready", "checks": {"database": "ok", "redis": "ok"}}`.
+- `GET /api/v1/public/provinces/` returned 200 with an empty item list, empty because of INT-006.
+- `GET /api/v1/public/facilities/` returned 400 with a required-field error, which is correct.
+- `GET /api/v1/admin/dashboard/` returned 403, RBAC fail-closed, which is correct.
+- `GET /api/v1/owner/facilities/` returned 500 through INT-010, recorded for the next batch and not fixed here.
+
+Android, Gradle 9.6.0 with JDK 25 and Android SDK 36:
+
+- `gradle :app:assembleDebug` before FIX-004 failed at `:build-logic:compileKotlin`.
+- After FIX-004 the tasks `:build-logic:compileKotlin` and `:build-logic:jar` passed and the build failed at project configuration.
+- After FIX-004b all 27 modules configured and the build failed at dependency resolution.
+
+Regressions after the fixes: governance, design-token validation, design-token drift, the P19 staging qualifier and all five Android source qualifiers exit 0. `ruff check .` still reports exactly 106 errors, the pre-existing baseline, so no lint regression was introduced.
+
+### Result
+
+P2 backend runtime is restored end to end. `P2 BACKEND FOUNDATION CONNECTED PASS` is still NOT claimed, because `makemigrations --check` fails on INT-009 and `pytest` cannot collect through INT-028.
+
+Android moved past the P0 compile blocker. `:app:assembleDebug` remains `NOT_VERIFIED` because Google Maven is unreachable from this machine, which is an environment limitation and not a project defect: artifacts that certainly exist, including `androidx.annotation:annotation:1.0.0` and `com.android.tools.build:gradle:9.4.0`, return 404 while Maven Central answers 200. Android status stays below `BUILD_VERIFIED` and `DEVICE_VERIFIED` is not claimed.
+
+Evidence: `artifacts/evidence/fixp0-runtime-20260917.txt`. Audit baseline: `RECEIPT-AUDIT-2026-09-17.md`.

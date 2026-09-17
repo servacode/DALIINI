@@ -1,0 +1,68 @@
+FIX-P0 RUNTIME EVIDENCE
+Generated: 2026-09-17T22:10:56+03:00
+Commit under test: working tree on top of bc12f4df93c8893b2cae47bcd92624809d3e5c4b
+Environment: Docker 29.5.2 / image built from apps/backend/Dockerfile (unmodified)
+Database: postgis/postgis:17-3.5 -> PostgreSQL 17.5 + PostGIS   Cache: redis:7-alpine
+Server command: the unmodified Dockerfile CMD (daphne -b 0.0.0.0 -p 8000 directory_backend.asgi:application)
+
+== Django management commands (real PostGIS) ==
+manage.py check .......................... exit=0  PASS
+manage.py showmigrations ................. exit=0  PASS (graph valid)
+manage.py migrate ........................ exit=0  PASS
+manage.py makemigrations --check ......... exit=1  FAIL (INT-009 drift, out of FIX-P0 scope)
+uv run pytest ............................ exit=2  FAIL (INT-028 collection, out of FIX-P0 scope)
+
+== Live HTTP against the running ASGI server ==
+/health/live/                      HTTP 200  {"status": "ok"}
+/health/ready/                     HTTP 200  {"status": "ready", "checks": {"database": "ok", "redis": "ok"}}
+/api/v1/public/provinces/          HTTP 200  {"items":[]}
+/api/v1/public/facilities/         HTTP 400  {"categoryId":"Required."}
+/api/v1/admin/dashboard/           HTTP 403  {"detail":"لم يتم تزويد بيانات الدخول."}
+/api/v1/owner/facilities/          HTTP 500  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/ht
+
+Only remaining 500 is /api/v1/owner/facilities/, caused by INT-010 at the application layer:
+  AttributeError: 'AnonymousUser' object has no attribute 'replace'
+  django.core.exceptions.ValidationError: ["AnonymousUser" is not a valid UUID]
+No infrastructure-level 500 remains; every other endpoint returns a semantically correct status.
+
+== Android (Gradle 9.6.0, JDK 25, Android SDK 36) ==
+Before FIX-004:
+  gradle :app:assembleDebug -> FAILED at ':build-logic:compileKotlin'
+  e: serva.android.compose.gradle.kts:5 No type arguments expected for 'interface CommonExtension'
+After FIX-004:
+  ':build-logic:compileKotlin' PASS, ':build-logic:jar' PASS
+  FAILED at project configuration:
+  core/designsystem/build.gradle.kts:7
+  DefaultAndroidLibrarySourceSet_Decorated cannot be cast to AndroidLibrarySourceSet
+After FIX-004b:
+  project configuration of all 27 modules PASS
+  FAILED at dependency resolution: 8 transitive AndroidX artifacts could not be downloaded
+
+Dependency-resolution classification: ENVIRONMENT LIMITATION, not a project defect.
+Proof: Google Maven does not serve this machine. Artifacts that certainly exist return 404,
+including androidx.annotation:annotation:1.0.0 and com.android.tools.build:gradle:9.4.0,
+whose jar is present in the local Gradle cache and was inspected during this work.
+Maven Central responds 200; only dl.google.com / maven.google.com fail.
+
+gradle :app:assembleDebug -> NOT_VERIFIED (environment limitation: Google Maven unreachable)
+Android status therefore stays below BUILD_VERIFIED. DEVICE_VERIFIED is not claimed.
+
+Note: a `--refresh-dependencies` diagnostic run during this work invalidated cached AGP
+plugin metadata. While Google Maven stays unreachable the build now stops earlier, at
+plugin resolution. This is local Gradle cache state, not a change in project source.
+It resolves itself once dl.google.com is reachable again.
+
+== Regression checks after FIX-P0 ==
+node scripts/check-governance.mjs .................. exit=0 PASS
+node packages/design-tokens/scripts/validate.mjs .... exit=0 PASS
+node packages/design-tokens/scripts/generate.mjs --check  exit=0 PASS
+python infrastructure/scripts/qualify-staging-source.py   exit=0 PASS
+apps/android/scripts/qualify-source.py ............. exit=0 PASS
+apps/android/scripts/qualify-owner-source.py ....... exit=0 PASS
+apps/android/scripts/qualify-navigation-source.py .. exit=0 PASS
+apps/android/scripts/qualify-live-data-source.py ... exit=0 PASS
+apps/android/scripts/qualify-play-rc-source.py ..... exit=0 PASS
+uv run ruff check . ................................ 106 errors (unchanged baseline, no regression)

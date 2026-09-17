@@ -1,0 +1,429 @@
+# Receipt and Verification Audit — Serva Code Directory Platform V3
+
+**Audit date:** 2026-09-17
+**Audited HEAD:** `bc12f4df93c8893b2cae47bcd92624809d3e5c4b`
+**Branch:** `main`
+**Package:** `SERVA-CODE-DIRECTORY-V3-CLAUDE-HANDOFF-2026-09-17.zip`
+(SHA-256 `1f9385705d3d5d09da98c5f9ec27b1b8d065a331b213b6a9b1802733f6e2fc8a`)
+
+**Status of this document:** ACCEPTED by the project owner on 2026-09-17 as the new
+verification baseline. Phase status in `PROJECT-STATUS.md` is corrected against the
+evidence recorded here, not against earlier text-only source qualification.
+
+**Method:** every claim below is backed by an executed command. No gate is marked PASS
+from source inspection. Findings that could not be executed are recorded as
+`NOT_VERIFIED` with the reason.
+
+---
+
+## 0. Why this audit exists
+
+Prior phase qualification relied on *textual* source checks (for example
+`assert "hmac.compare_digest" in services`). Textual checks cannot detect that a server
+does not boot, that a migration graph does not load, or that Kotlin does not compile.
+This audit executed the real toolchain for the first time and found four P0 defects that
+every previous "source qualification" had passed over.
+
+From this point on, a gate is PASS only with a real command exit code.
+
+---
+
+## A. Repository Integrity
+
+| Item | Result |
+|---|---|
+| Package files vs extracted tree | **582/582 identical byte-for-byte** (`diff -rq`, zero differences) |
+| `PACKAGE-SHA256SUMS.txt` | **5/5 OK** |
+| Git restore | `git init` + fetch from `directory-platform-v3.git.bundle` + `git reset` (mixed) |
+| HEAD | `bc12f4df93c8893b2cae47bcd92624809d3e5c4b` — **matches the expected handoff HEAD** |
+| Commits | 26 |
+| Tracked files | 578 |
+| Uncommitted tracked changes at audit start | **0** |
+
+### History gap
+
+The oldest commit is `ce9bc5c chore: recover latest source snapshot before P9`.
+**No commits exist for P0–P8.** `HANDOFF.md § WORKSPACE RECOVERY` acknowledges this.
+`origin/main` is recorded at `287accb` (P12); local `main` is 17 commits ahead.
+
+### Dead SHA references in status documents
+
+`871d4c7` · `9c4031c` · `f9408d8` · `0048719` · `11aa673` · `64b6fda` · `4c8f535` ·
+`1b7212a` · `ff60f96` — nine cited commits do not exist in the delivered repository.
+
+---
+
+## B. Documentation Integrity
+
+| Item | Result |
+|---|---|
+| `docs/spec/SHA256SUMS.txt` | **35/35 OK** — specification corpus is intact |
+| Specification set | Complete 00→29 plus ALL-IN-ONE, MANIFEST, BASELINE-DECISIONS.json |
+| Internal contradictions between specs | **None found** |
+
+### Missing referenced artefacts
+
+| Reference | State |
+|---|---|
+| `artifacts/evidence/p3-auth-rbac-source-20260917.txt` | missing |
+| `artifacts/evidence/p4-taxonomy-source-20260917.txt` | missing |
+| `artifacts/evidence/p5-owner-domain-source-20260917.txt` | missing |
+| `artifacts/evidence/p13-admin-operations-source-20260917.txt` | missing (recovery file exists) |
+| `artifacts/evidence/quality/p20-local.json`, `p20-connected-required.json` | missing — and structurally uncommittable: `.gitignore` excludes `artifacts/evidence/**/*.json` |
+| `docs/adr/ADR-001-P3-IDENTITY-SESSION-RBAC.md` | missing, although DECISION-002 cites it |
+
+---
+
+## C. Phase Verification Matrix (as audited, before FIX-P0)
+
+| Phase | Recorded | Audited actual | Evidence |
+|---|---|---|---|
+| P0 Governance | CLOSED | CLOSED | `node scripts/check-governance.mjs` → PASS |
+| P1 Design Tokens | CLOSED | CLOSED | `validate.mjs` → 4 WCAG contrast checks PASS; `generate.mjs --check` → no drift |
+| P2 Backend Foundation | IN_PROGRESS | **BLOCKED** | `manage.py check` PASS, but daphne aborts (INT-001) and every HTTP request is 500 (INT-002) |
+| P3 Auth/RBAC | SOURCE_IMPLEMENTED | SOURCE_IMPLEMENTED | rotation logic correct on review; zero DB tests executable |
+| P4 Taxonomy | SOURCE_IMPLEMENTED | SOURCE_IMPLEMENTED (incomplete) | no province/taxonomy seed exists (INT-006) |
+| P5 Owner Domain | SOURCE_IMPLEMENTED | SOURCE_IMPLEMENTED | IDOR covered on 11/11 owner views |
+| P6 Availability/Duty | SOURCE_IMPLEMENTED | SOURCE_IMPLEMENTED (incomplete) | exclusion constraint created on real PostGIS; model missing 3 spec fields (INT-008) |
+| P7 Public Discovery | SOURCE_IMPLEMENTED | SOURCE_IMPLEMENTED | `/public/facilities/` returns correct 400 |
+| P8 Realtime | SOURCE_IMPLEMENTED | SOURCE_IMPLEMENTED | 8/8 spec events defined and emitted; `transaction.on_commit` used |
+| P9 Content Services | SOURCE_IMPLEMENTED | SOURCE_IMPLEMENTED | analytics forbidden-field registry; push tokens encrypted + digested |
+| P10 Contracts | IN_PROGRESS | **BLOCKED (structural)** | `spectacular` → 72 paths, **0 schemas, 0 requestBodies**, 328 errors (INT-005) |
+| P11 Public Web | SOURCE_IMPLEMENTED | **BUILD VERIFIED** | typecheck + lint + build PASS; 6 routes, all 5 required legal routes prerendered |
+| P12 Admin Foundation | SOURCE_IMPLEMENTED | **SCAFFOLD ONLY** | build PASS (18 routes) but `backendRequest` is never called |
+| P13 Admin Operations | SOURCE_IMPLEMENTED | Backend yes / UI no | 34 admin views with correct RBAC; every Admin page renders static descriptive text |
+| P14–P18 Android | SOURCE_IMPLEMENTED | **BLOCKED — does not compile** | `gradle :app:assembleDebug` → `build-logic:compileKotlin FAILED` (INT-004) |
+| P19 Staging | SOURCE_IMPLEMENTED | BLOCKED | `qualify-staging-source.py` PASS, but deploy would fail on INT-001/INT-003 |
+| P20 Release Quality | SOURCE_IMPLEMENTED | FAIL | `release_quality.py` → `{"overall":"FAIL",...}` (false positives, INT-014) |
+| P21 Play RC | SOURCE_IMPLEMENTED | SOURCE_IMPLEMENTED | qualifier 7/7 PASS; `validatePlayRelease` is correctly fail-closed |
+| P22 Android Production | BLOCKED | BLOCKED | correct |
+| P23–P26 | NOT_STARTED | NOT_STARTED | `apps/ios/` contains only `.env.example` and `.gitkeep` |
+
+---
+
+## D. Backend Audit
+
+### Audit environment
+
+Python 3.13.14 · Django 5.2.17 · uv 0.11.26 · Node 24.17.0 · pnpm 10.17.1 ·
+Docker 29.5.2 · PostgreSQL 17.5 + PostGIS · Android SDK + JDK 25 + Gradle 9.6.0.
+
+This is materially stronger than the environment described in `HANDOFF.md`, which is why
+gates previously recorded as "environment limitation" became executable — and failed.
+
+### Verified correct
+
+- `uv sync --dev` succeeded and produced `uv.lock` (resolves a documented blocker).
+- `manage.py check` → `System check identified no issues (0 silenced)`.
+- **`migrate` against real PostGIS 17.5 applies all 20 migrations**, including
+  `CreateExtension('postgis')`, `BtreeGistExtension`, and the duty `ExclusionConstraint`
+  using `TSTZRANGE ... OVERLAPS` — after the single-line INT-003 fix.
+- Refresh rotation: `transaction.atomic` + `select_for_update()` +
+  `hmac.compare_digest` + previous-digest grace window + revocation of **all** user
+  sessions on post-grace reuse.
+- Admin RBAC is fail-closed: `HasAdminPermission` denies when a view declares no
+  permission code; `is_superuser` grants nothing; all 34 views covered; every mutating
+  handler re-checks a `.manage` permission.
+- Owner IDOR: 11/11 facility-scoped views call `require_facility_member` /
+  `require_facility_owner`; `business_hours` and `pharmacy_duty` call
+  `require_facility_manager`.
+- Upload security: PIL decode, dimension and pixel limits enforced **before**
+  `image.load()`, JPEG re-encode, metadata stripped, random `uuid4` storage key.
+- Evidence privacy: permission-gated, audited, `Cache-Control: private, no-store`,
+  `X-Content-Type-Options: nosniff`.
+- Realtime: envelope matches the specification exactly; authentication happens after
+  connect (no token in URL); all 8 catalogued events have emission sites.
+- Production settings fail closed with 12 explicit validations.
+- Analytics privacy: `FORBIDDEN_FIELD_NAMES` blocks latitude/longitude/phone/token.
+- Push tokens stored as ciphertext plus digest, never raw.
+
+### Code quality
+
+| Tool | Result |
+|---|---|
+| `ruff check .` | **106 errors** (50 of them in `directory/models.py`, longest line 249 chars against a 100 limit) |
+| `mypy .` (strict) | **556 errors in 82 files** |
+
+---
+
+## E. Admin Audit
+
+`typecheck`, `lint` and `build` all PASS; 18 routes, covering all 17 routes required by
+`09-ADMIN-NEXTJS.md`. Security headers present (CSP, nosniff, Referrer-Policy,
+X-Frame-Options); HSTS absent. `server-only` boundaries and a central `can(permission)`
+exist, and no independent DTOs are hand-authored.
+
+However `backendRequest`, `setRefreshCookie` and `getRefreshCookie` are **never called**.
+Every page renders `<OperationPage>`, which displays the route title, description,
+permission code and endpoint path as static text. None of the operational components
+required by `10-DESIGN-SYSTEM-UX.md` (DataTable, FilterBar, DiffViewer, AuditTimeline,
+ConfirmDialog, FormSection, Pagination) exist. Playwright and Vitest are neither
+installed nor declared.
+
+---
+
+## F. Android Audit
+
+27 modules, exactly matching the list in `11-ANDROID-KOTLIN.md`. No React Native or
+Flutter traces anywhere in 578 tracked files. MapLibre native, no WebView map, no
+`ACCESS_BACKGROUND_LOCATION`. `validatePlayRelease` is a well-designed fail-closed task.
+
+**The build fails.** `gradle :app:assembleDebug` stops at `build-logic:compileKotlin`.
+Root cause verified against the locally resolved AGP jar: AGP 9.4.0 declares
+`public interface CommonExtension extends ExtensionAware` with **no type parameters**,
+while the convention plugin uses the AGP 8.x form `CommonExtension<*, *, *, *, *, *>`.
+
+Consequence: 27 modules and 127 Kotlin files have never been compiled. Additionally every
+API boundary is bound to `UnboundGeneratedPublicApi` / `UnboundGeneratedOwnerApi` /
+`UnboundPushRegistrationBoundary`, each of which throws
+`GeneratedClientRequiredException`.
+
+---
+
+## G. iOS Audit
+
+`apps/ios/` contains `.env.example` and `.gitkeep` only. `NOT_STARTED` is accurate.
+
+---
+
+## H. Security Audit
+
+578 tracked files scanned against 17 credential patterns.
+**Zero production secrets, zero private keys, zero real credentials.**
+All 18 pattern matches are legitimate: placeholder `.env.example` files, explicit local
+development values in `compose.yml`, 15 `sync: false` entries in `render.yaml`, and the
+scanner scripts themselves. No secret value is reproduced in this report.
+
+Threat-model coverage from `15-SECURITY-PRIVACY.md` is strong on passwords, OTP,
+sessions, IDOR, admin escalation, evidence leakage, upload attacks, location privacy and
+log hygiene. Gaps found: no `DEFAULT_PERMISSION_CLASSES` (INT-010), publicly reachable
+`/api/schema/` (INT-016), Admin origin check bypassable when the `Origin` header is
+absent, dual authorization surface from `PermissionsMixin`, missing HSTS, and no
+dependency or secret scanning in CI.
+
+---
+
+## I. Test Audit
+
+| Invocation | Result |
+|---|---|
+| `uv run pytest` (as CI runs it) | **collection fails entirely — 0 tests run**; `import file mismatch` on duplicate `test_source_contract` module names |
+| `pytest --import-mode=importlib` on SQLite | 30 passed / 14 errors (all `NodeNotFoundError`) |
+| `pytest` on real PostGIS 17.5, INT-003 patched | **38 passed / 6 failed** (the 6 are caused by INT-002) |
+
+44 test functions exist in total; 18 of them (41%) assert on source text rather than
+behaviour. Of the 17 critical backend cases required by
+`infrastructure/quality/manifest.json`, 7 have any coverage and several of those are
+textual or partial. Missing entirely: phone-normalization, otp, sessions,
+refresh-concurrency, lifecycle, postgis-nearest, admin-concurrency, account-deletion.
+
+### Not verifiable in this environment
+
+| Gate | Reason |
+|---|---|
+| Admin Playwright E2E, Admin/Web Vitest | `NOT_VERIFIED — tooling absent from the project` |
+| Android unit / Compose / instrumentation | `NOT_VERIFIED — build fails at build-logic (INT-004)` |
+| Physical device QA | `NOT_VERIFIED — no APK can be produced` |
+| Connected Celery / FCM / S3 | `NOT_VERIFIED — provider credentials absent (EXT-002)` |
+| Staging runtime, load baseline, restore drill | `NOT_VERIFIED — EXT-004/EXT-005 plus INT-001/INT-003` |
+| Native GeoDjango on Windows | `NOT_VERIFIED — GDAL absent; worked around with Docker` |
+
+---
+
+## J. Infrastructure Audit
+
+`render.yaml` defines a correct isolated staging topology (Key Value with `noeviction`
+and `journal-snapshot`, API, worker, www, admin, PostgreSQL 17, Frankfurt, 15 secrets as
+`sync: false`). `compose.yml` provides PostGIS 17-3.5, Redis, MinIO with health checks.
+Six runbooks exist.
+
+Defects: the backend `Dockerfile` copies only `pyproject.toml` and runs `uv sync` with no
+lockfile, so image builds are not reproducible; `preDeployCommand` runs `migrate`, which
+fails on INT-003; `healthCheckPath: /health/ready/` can never answer while INT-001 and
+INT-002 stand. CI would fail four of six steps in `backend-source`, the `contract-drift`
+job is a no-op (it diffs an untracked file), and there are no Android or Admin/Web jobs.
+
+---
+
+## K. Google Play Audit
+
+`targetSdk = 36` matches the policy baseline. Policy materials, Data Safety inventory,
+app-content checklist, closed-testing runbook and store-listing scaffolding are present,
+and `validatePlayRelease` is bound to `bundleRelease`/`assembleRelease` and fails closed
+on placeholders, non-HTTPS endpoints, localhost and missing signing material. A signed
+AAB is impossible while INT-004 stands. `P21 PLAY RC PASS` is not achieved.
+
+---
+
+## L. Legacy / Dead / Duplicate Files
+
+The tree is exceptionally clean: zero React Native or Flutter remnants, zero
+TODO/FIXME/XXX/HACK markers in source, zero duplicate migrations, no stale prototypes.
+All empty tracked files are legitimate `__init__.py` and `.gitkeep` markers.
+
+Cleanup candidates, none removed: Gradle build output under `apps/android`
+(`.kotlin/` is not covered by `.gitignore`), the handoff bundle and package metadata files
+once no longer needed, and three small dead imports flagged by ruff.
+
+---
+
+## M. Blockers
+
+### External (unchanged, correctly recorded in `BLOCKERS.md`)
+
+EXT-001 root domain · EXT-002 provider credentials · EXT-003 store and signing access ·
+EXT-004 missing V3 GitHub remote · EXT-005 paid staging approval.
+
+None of these block FIX-P0, P2 connected qualification, P10, the P4 seed, or local
+Android builds.
+
+### Internal bugs
+
+| ID | Sev | Introduced in | Defect |
+|---|---|---|---|
+| INT-001 | P0 | P2 | ASGI does not start — routing imported before `get_asgi_application()` |
+| INT-002 | P0 | P2 | every HTTP request returns 500 — `MessageMiddleware` without session middleware |
+| INT-003 | P0 | P3 | migration graph invalid — dependency uses module name `sessions` instead of app label `directory_sessions` |
+| INT-004 | P0 | P14 | Android does not compile — AGP 8.x `CommonExtension` signature under AGP 9.4 |
+| INT-005 | P1 | P10 | generated OpenAPI carries 0 schemas and 0 request bodies |
+| INT-006 | P1 | P4 | no province or taxonomy seed exists |
+| INT-007 | P1 | P2 | `settings/test.py` uses SQLite while models are spatial |
+| INT-008 | P1 | P6 | `DutyShift` missing `created_by`, `cancelled_at`, `ended_early_at`; hard delete; constraint has no cancelled condition |
+| INT-009 | P1 | P3/P6/P9 | migration drift in `accounts`, `notifications`, `pharmacy_duty` |
+| INT-010 | P2 | P5 | `/owner/facilities/` unauthenticated returns 500 (no `DEFAULT_PERMISSION_CLASSES`) |
+| INT-011 | P2 | P12/P13 | Admin UI is a descriptive scaffold with no data binding |
+| INT-013 | P2 | P14 | all Android API boundaries throw `GeneratedClientRequiredException` |
+| INT-014 | P3 | P14–P20 | qualifier scripts use `read_text()` without encoding and scan `node_modules`/`build` |
+| INT-015 | P2 | P13 | 8 unguarded `objects.get` in `admin_console/views.py` return 500 instead of 404 |
+| INT-016 | P2 | P2 | `/api/schema/` publicly reachable in all environments |
+| INT-017 | P2 | P3/P5 | `PUT/DELETE /account/profile-image/` not implemented |
+| INT-018 | P2 | P13 | Admin taxonomy is read-only; `Cycle J` cannot be executed |
+| INT-019 | P2 | P14 | no Gradle wrapper, contrary to `26-REPOSITORY-STRUCTURE.md` |
+| INT-020 | P3 | P0 | CI contract-drift gate is a no-op; no Android or Admin/Web jobs |
+| INT-021 | P3 | P0 | no lockfiles committed; Dockerfile does not copy a lockfile |
+| INT-022 | P3 | P11/P12 | Tailwind, Radix, Vitest and Playwright absent despite `02-BASELINE-DECISIONS.md` |
+| INT-023 | P3 | P11 | `apps/web/tsconfig.json` uses `jsx: "preserve"`, rewritten on every Next 16 build |
+| INT-024 | P3 | P11/P12 | HSTS header missing |
+| INT-025 | P3 | P4 | `directory/models.py` written in a compressed style violating `.editorconfig` and ruff |
+| INT-026 | P3 | P3 | missing indexes on `User.status`, `UserSession(user, revoked)`, `last_seen_at` |
+| INT-027 | P3 | P3 | non-UUID refresh token yields 500 instead of 401 |
+
+### Environment limitations (not project defects)
+
+GDAL absent natively on Windows (worked around with Docker); DNS unavailable inside
+Docker BuildKit (worked around with `--network=host`); no emulator or attached device.
+
+---
+
+## N. Documentation Mismatches
+
+1. Nine commit SHAs cited as evidence do not exist.
+2. P3 claims "12 tests authored"; `accounts/tests/` contains 3 textual assertions.
+3. P5 claims "12 P5 tests authored"; `facilities/tests/` contains 4.
+4. P13 claims "11 executable source-contract tests passed"; `uv run pytest` does not collect.
+5. P4 claims a 14-province seed and the Raqqa/Pharmacy/Duty launch baseline; **no seed exists**.
+6. P4/P5 claim "line length passed"; 14 real E501 violations exist, up to 249 characters.
+7. P2/P3 claim static checks passed; `ruff` and `mypy` were never included.
+8. P20 evidence JSON files are missing and cannot be committed under current `.gitignore`.
+9. Four phase evidence files are missing.
+10. DECISION-002 cites `ADR-001`, which does not exist.
+11. DECISION-003 refers to `User.profile_province`; the field is `province`.
+12. DECISION-004 defines permission codes that do not match the implemented `admin.*` codes.
+13. DECISION-002 requires nullable refresh material on concurrency grace; the implementation always issues a new token.
+14. P13 claims taxonomy mutations; categories and groups are read-only.
+15. P12/P13 status conflates the implemented Admin backend API with a non-existent Admin UI.
+16. `HANDOFF.md` describes an environment without pnpm, Gradle, Android SDK, Docker or PostgreSQL; all are present.
+17. `HANDOFF.md` states `uv.lock` cannot be generated; it was generated successfully.
+18. `HANDOFF.md` states Node is 22.16.0; Node 24.17.0 is available.
+19. P19 attributes the open gate to external blockers only; deployment would also fail on INT-001 and INT-003.
+20. P8 status understates the implementation — duty and province hooks also exist.
+
+**Assessment of documentation honesty:** the separation between `SOURCE_IMPLEMENTED` and
+connected verification is methodical and was consistently respected. The defect is not
+integrity but method: source qualification never invoked a compiler, a migration loader
+or a server, so four P0 defects passed every gate.
+
+---
+
+## O. Recommended Corrections
+
+### Batch 1 — unblock (P0)
+
+1. Move `get_asgi_application()` before any routing import — `directory_backend/asgi.py`.
+2. Remove `django.contrib.messages` and `MessageMiddleware` — `settings/base.py`.
+3. Correct the migration dependency app label — `sessions/migrations/0002_rotation_security_fields.py`.
+4. Correct the `CommonExtension` usage for AGP 9 — `build-logic/src/main/kotlin/serva.android.compose.gradle.kts`.
+
+Fixes 1–3 were verified experimentally to restore: full `migrate` on PostGIS 17.5,
+`/health/live/` → 200, `/api/v1/public/provinces/` → 200,
+`/api/v1/public/facilities/` → 400 (correct), `/api/v1/admin/dashboard/` → 403
+(correct), and 38 of 44 tests passing.
+
+### Batch 2 — make the project verifiable (P1)
+
+5. Point test settings at PostGIS instead of SQLite.
+6. Add the three missing `tests/__init__.py` files and give test modules unique names.
+7. Generate the missing migrations so `makemigrations --check` succeeds.
+8. Add a Gradle wrapper to `apps/android`.
+9. Commit `uv.lock` and `pnpm-lock.yaml`; make the Dockerfile copy the lockfile and use `--frozen`.
+10. Fix qualifier script exclusions and use `read_text(encoding="utf-8")`.
+
+### Batch 3 — complete P10 (P1, the heaviest and most consequential)
+
+11. Add serializers or `@extend_schema` to all 72 endpoints.
+12. Register an `OpenApiAuthenticationExtension` for `BearerAccessTokenAuthentication`.
+13. Resolve the five operationId collisions.
+14. Commit `openapi/schema.yaml` and `schema.sha256`; make the CI drift gate able to fail.
+15. Generate the TS, Kotlin and Swift clients with the pinned generator.
+
+### Batch 4 — functional gaps (P1/P2)
+
+16. Seed the 14 provinces, Health/Pharmacy taxonomy, Raqqa activation and duty.
+17. Restore the three `DutyShift` fields, add a constraint condition, replace hard delete with soft cancel, add audit.
+18. Set `DEFAULT_PERMISSION_CLASSES` and mark public endpoints `AllowAny` explicitly.
+19. Restrict `/api/schema/` by environment or permission.
+20. Implement `PUT/DELETE /account/profile-image/`.
+21. Add category and group create/update operations to the Admin API.
+22. Replace the eight unguarded `objects.get` calls with `get_object_or_404`.
+23. Always set `secure` on the `__Host-` cookie.
+
+### Batch 5 — quality and governance (P2/P3)
+
+24. Clean `directory/models.py` and drive ruff to zero.
+25. Plan mypy remediation or relax `strict` through a recorded ADR.
+26. Add Android and Admin/Web CI jobs, Playwright, and secret/dependency scanning.
+27. Install Tailwind, Radix, Vitest and Playwright, or record an ADR departing from the baseline.
+28. Write the missing ADR-001 and reconcile DECISION-003 and DECISION-004 with the code.
+29. Correct `PROJECT-STATUS.md`: remove dead SHAs, correct test counts, correct the seed claim.
+30. Allow quality evidence JSON in `.gitignore` and add `.kotlin/`.
+
+---
+
+## P. Resume Point at the time of this audit
+
+**Last genuinely closed phase:** P1 — Design System Foundations, the only phase whose
+closure was proven by execution.
+
+**Real current state:** P2 is reopened as `BLOCKED` on internal defects; everything above
+it is suspended behind it.
+
+**First task:** `FIX-P0` — the four unblocking fixes. No external input, architectural
+decision or budget approval is required for any of them.
+
+**Gate to target:** `P2 BACKEND FOUNDATION CONNECTED PASS`, with execution-based
+acceptance criteria only.
+
+### Correction to the recorded resume point
+
+`plan.md` and `HANDOFF.md` nominate **P23 iOS Foundation** as the next independent phase
+while simultaneously requiring that API integration stay behind the P10 generated-client
+boundary. These two instructions are incompatible in the current state: the generated
+schema carries no models, and the Android client boundaries throw on every call.
+
+Starting P23 now would add a third client built against a contract that does not exist.
+**P10 must precede P23.**
+
+---
+
+*Audit performed with execution evidence only. No project file was modified during the
+audit; `git status` reported zero tracked changes and HEAD was unchanged at completion.*

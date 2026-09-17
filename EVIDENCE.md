@@ -29,3 +29,29 @@ Future machine-readable evidence is stored under `artifacts/evidence/` with secr
 - Result: SOURCE_IMPLEMENTED / local-source-qualified; connected gate not passed.
 
 | 2026-09-17T20:27:00+03:00 | P21 Play RC source qualification (not Play gate closure) | 9196f4d | local container | P21 qualifier + P14 Android source regression + governance + design validation/drift + whitespace | SOURCE PASS / AAB+DEVICE+STAGING+PLAY NOT VERIFIED | `artifacts/evidence/p21-play-rc-source-20260917.txt` |
+
+
+## 2026-09-17 — Receipt audit accepted as the verification baseline
+
+The full receipt and verification audit is recorded in `RECEIPT-AUDIT-2026-09-17.md` and was accepted by the project owner as the new verification baseline. From this point a gate is PASS only with a real command exit code; textual source assertions no longer qualify a gate on their own.
+
+| Timestamp | Gate | Commit | Environment | Command/Check | Result | Artifact |
+|---|---|---|---|---|---|---|
+| 2026-09-17T21:00:00+03:00 | Receipt audit — package integrity | bc12f4d | Windows 11 host | `diff -rq` zip vs tree, `sha256sum -c PACKAGE-SHA256SUMS.txt`, `sha256sum -c docs/spec/SHA256SUMS.txt` | PASS — 582/582 files identical, 5/5 and 35/35 checksums OK | `RECEIPT-AUDIT-2026-09-17.md` |
+| 2026-09-17T21:00:00+03:00 | Receipt audit — executed toolchain | bc12f4d | Docker + PostGIS 17.5, Node 24.17.0, Gradle 9.6.0 | ruff, mypy, pytest, Django check/migrate, Next build, Gradle assembleDebug, spectacular | FAIL — four P0 defects found that all prior textual gates had passed | `RECEIPT-AUDIT-2026-09-17.md` |
+
+## 2026-09-17 — FIX-P0 runtime restoration
+
+| Timestamp | Gate | Commit | Environment | Command/Check | Result | Artifact |
+|---|---|---|---|---|---|---|
+| 2026-09-17T22:15:00+03:00 | FIX-001 ASGI boot | FIX-P0 working tree | Docker image from unmodified `apps/backend/Dockerfile` | `daphne -b 0.0.0.0 -p 8000 directory_backend.asgi:application` | PASS — `Listening on TCP address 0.0.0.0:8000` | `artifacts/evidence/fixp0-runtime-20260917.txt` |
+| 2026-09-17T22:15:00+03:00 | FIX-002 request path | FIX-P0 working tree | same | `GET /health/live/`, `/health/ready/`, `/api/v1/public/provinces/`, `/api/v1/public/facilities/`, `/api/v1/admin/dashboard/` | PASS — 200 / 200 / 200 / 400 / 403, no infrastructure 500 remains | `artifacts/evidence/fixp0-runtime-20260917.txt` |
+| 2026-09-17T22:15:00+03:00 | FIX-003 migration graph | FIX-P0 working tree | PostgreSQL 17.5 + PostGIS | `manage.py check`, `manage.py showmigrations`, `manage.py migrate` | PASS — exit 0, all 30 migrations applied, graph valid | `artifacts/evidence/fixp0-runtime-20260917.txt` |
+| 2026-09-17T22:15:00+03:00 | Migration drift | FIX-P0 working tree | PostgreSQL 17.5 + PostGIS | `manage.py makemigrations --check --dry-run` | FAIL — exit 1, drift in accounts, business_hours, content_services, facilities, notifications, pharmacy_duty (INT-009, out of scope) | `artifacts/evidence/fixp0-runtime-20260917.txt` |
+| 2026-09-17T22:15:00+03:00 | Backend test suite | FIX-P0 working tree | PostgreSQL 17.5 + PostGIS | `uv run pytest` | FAIL — exit 2, collection aborts on duplicate test module basenames (INT-028, out of scope) | `artifacts/evidence/fixp0-runtime-20260917.txt` |
+| 2026-09-17T22:15:00+03:00 | FIX-004 / FIX-004b Android build-logic | FIX-P0 working tree | Gradle 9.6.0, JDK 25, Android SDK 36 | `gradle :app:assembleDebug` | PARTIAL — `:build-logic:compileKotlin` and `:build-logic:jar` PASS, all 27 modules configured, then dependency resolution fails | `artifacts/evidence/fixp0-runtime-20260917.txt` |
+| 2026-09-17T22:15:00+03:00 | `gradle :app:assembleDebug` | FIX-P0 working tree | Gradle 9.6.0, JDK 25, Android SDK 36 | `gradle :app:assembleDebug` | NOT_VERIFIED — environment limitation: Google Maven does not serve this machine; `androidx.annotation:annotation:1.0.0` and `com.android.tools.build:gradle:9.4.0` return 404 while Maven Central returns 200 | `artifacts/evidence/fixp0-runtime-20260917.txt` |
+| 2026-09-17T22:15:00+03:00 | Post-fix regression set | FIX-P0 working tree | local host | governance, design-token validate, design-token drift, P19 staging qualifier, five Android source qualifiers | PASS — all exit 0 | `artifacts/evidence/fixp0-runtime-20260917.txt` |
+| 2026-09-17T22:15:00+03:00 | Lint baseline | FIX-P0 working tree | local host | `uv run ruff check .` | 106 errors, identical to the pre-fix baseline — no regression introduced | `artifacts/evidence/fixp0-runtime-20260917.txt` |
+
+`P2 BACKEND FOUNDATION CONNECTED PASS` is NOT claimed: migration drift and test collection remain open. Android remains below `BUILD_VERIFIED`; `DEVICE_VERIFIED` is not claimed.

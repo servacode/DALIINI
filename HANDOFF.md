@@ -1,6 +1,6 @@
 # HANDOFF
 
-Last updated: 2026-09-17T20:27:00+03:00
+Last updated: 2026-09-17T22:15:00+03:00
 
 ## PROJECT SUMMARY
 
@@ -239,3 +239,87 @@ P21 NEXT:
 - P22 state: `BLOCKED` on external/connected release inputs.
 - Next independently executable phase: P23 iOS Foundation.
 - Final distribution archive includes a Git bundle for complete transferable history; no secrets/signing keys are intentionally included.
+
+
+## RECEIPT AUDIT AND FIX-P0 — 2026-09-17T22:15:00+03:00
+
+### Verification baseline changed
+
+`RECEIPT-AUDIT-2026-09-17.md` is the accepted verification baseline for this project. A gate is PASS only
+with a real command exit code. Textual source assertions of the form `assert "x" in source` no longer
+qualify a gate on their own. That method is what allowed four P0 defects to pass every gate from P2 to P21.
+
+Package integrity was confirmed: 582/582 files identical to the handoff zip, 5/5 package checksums and
+35/35 specification checksums OK, and HEAD matches the expected `bc12f4df93c8893b2cae47bcd92624809d3e5c4b`.
+
+### Resume point corrected
+
+The previous handoff nominated P23 iOS Foundation as the next independently executable phase while also
+requiring that API integration stay behind the P10 generated-client boundary. Those two instructions were
+incompatible: the generated schema carries no models and the Android client boundaries throw on every call.
+The owner accepted the correction on 2026-09-17. **iOS is deferred. P10 precedes P23.**
+
+### FIX-P0 completed
+
+Four P0 defects closed, plus one of the same class that surfaced behind FIX-004:
+
+- FIX-001 `directory_backend/asgi.py` — `get_asgi_application()` now runs before Channels routing is
+  imported. Previously daphne aborted with `AppRegistryNotReady`, so the service had never started in any
+  environment, including the Dockerfile CMD, `compose.yml` and `render.yaml`.
+- FIX-002 `directory_backend/settings/base.py` — removed `django.contrib.messages` and `MessageMiddleware`.
+  They were installed without session middleware, so `FallbackStorage` raised `ImproperlyConfigured` on
+  every request and all endpoints returned 500. A repository-wide scan first confirmed zero usage of Django
+  messages, no `django.contrib.admin`, no `TEMPLATES`, no `render()` and no session usage anywhere.
+- FIX-003 `sessions/migrations/0002_rotation_security_fields.py` — dependency now uses the real app label
+  `directory_sessions`. Previously the whole migration graph failed to load and no database could be created.
+- FIX-004 `build-logic/src/main/kotlin/serva.android.compose.gradle.kts` and FIX-004b
+  `core/designsystem/build.gradle.kts` — migrated to the real AGP 9.4 API, verified against the resolved
+  AGP jar with `javap`. AGP was not downgraded and Kotlin, Compose and SDK policy were not changed.
+
+### Backend runtime status
+
+Executed against PostgreSQL 17.5 with PostGIS, from an image built out of the fixed source with the
+unmodified `apps/backend/Dockerfile` and its unmodified CMD:
+
+- `manage.py check`, `showmigrations` and `migrate` all exit 0; all 30 migrations apply.
+- daphne starts and logs `Listening on TCP address 0.0.0.0:8000`.
+- `/health/live/` 200, `/health/ready/` 200 with database and redis both reporting ok.
+- `/api/v1/public/provinces/` 200, `/api/v1/public/facilities/` 400, `/api/v1/admin/dashboard/` 403.
+- No infrastructure 500 remains. The single remaining 500 is `/api/v1/owner/facilities/` for an
+  unauthenticated caller, which is INT-010 at the application layer and is scheduled for the next batch.
+
+`P2 BACKEND FOUNDATION CONNECTED PASS` is **NOT** claimed. `makemigrations --check --dry-run` still exits 1
+on INT-009 drift, and `uv run pytest` still exits 2 on the INT-028 collection failure.
+
+### Android status
+
+`gradle :app:assembleDebug` previously stopped at `:build-logic:compileKotlin`. It now compiles and jars
+`build-logic` and configures all 27 modules, then fails at dependency resolution.
+
+That failure is an **environment limitation, not a project defect**: Google Maven does not serve this
+machine. Artifacts that certainly exist return 404, including `androidx.annotation:annotation:1.0.0` and
+`com.android.tools.build:gradle:9.4.0` whose jar is present in the local Gradle cache, while Maven Central
+returns 200. `:app:assembleDebug` is therefore `NOT_VERIFIED`. Android stays below `BUILD_VERIFIED` and
+`DEVICE_VERIFIED` is not claimed.
+
+A `--refresh-dependencies` diagnostic run invalidated cached AGP plugin metadata, so while Google Maven
+stays unreachable the build now stops earlier, at plugin resolution. That is local Gradle cache state, not
+a change in project source, and it clears once `dl.google.com` is reachable again.
+
+### Environment correction
+
+The environment described in the earlier handoff no longer applies. This workstation has Python 3.13, uv,
+Node 24.17.0, pnpm 10.17.1, Docker 29.5.2, PostgreSQL 17.5 with PostGIS, Android SDK 36, JDK 25 and Gradle
+9.6.0. `uv.lock` and `pnpm-lock.yaml` were generated successfully, which closes the lockfile item recorded
+earlier under known issues. GDAL is absent natively on Windows, so GeoDjango runs through Docker.
+
+### Open internal defects
+
+The full register with severities, introducing phase and reproduction is in `RECEIPT-AUDIT-2026-09-17.md`.
+The ones that gate the next steps are INT-009 and INT-028 for P2, then INT-005 for P10, and INT-010,
+INT-006, INT-007 and INT-008 behind those.
+
+### How to continue
+
+Read `RECEIPT-AUDIT-2026-09-17.md` in full, then `plan.md`. Close P2 before anything else, then P10.
+Do not start iOS. Do not claim any gate without a command exit code.
