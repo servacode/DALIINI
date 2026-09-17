@@ -51,9 +51,63 @@ def check_submission_policy() -> None:
     require("select_for_update()" in services, "facility submission/update lock missing")
     require("_required_evidence_complete" in services, "current evidence policy check missing")
     require("FacilityApplication.Status.SUBMITTED" in services, "submitted application guard missing")
+    check_submitted_uniqueness_invariant()
+
+
+SUBMITTED_UNIQUENESS = "uniq_submitted_application_per_facility_kind"
+
+
+def _model_constraint_names(source: str, model: str) -> list[str]:
+    """Names of constraints declared in <model>.Meta.constraints, from model state.
+
+    Text search over a migration file is not evidence: a migration keeps the historic
+    AddConstraint forever, so it still matches long after the model stopped declaring
+    the constraint and the autodetector started proposing RemoveConstraint.
+    """
+    tree = ast.parse(source)
+    for node in ast.walk(tree):
+        if not (isinstance(node, ast.ClassDef) and node.name == model):
+            continue
+        for meta in node.body:
+            if not (isinstance(meta, ast.ClassDef) and meta.name == "Meta"):
+                continue
+            for stmt in meta.body:
+                if not isinstance(stmt, ast.Assign):
+                    continue
+                targets = [t.id for t in stmt.targets if isinstance(t, ast.Name)]
+                if "constraints" not in targets:
+                    continue
+                names = []
+                for call in ast.walk(stmt.value):
+                    if not isinstance(call, ast.Call):
+                        continue
+                    for kw in call.keywords:
+                        if kw.arg == "name" and isinstance(kw.value, ast.Constant):
+                            names.append(kw.value.value)
+                return names
+    return []
+
+
+def check_submitted_uniqueness_invariant() -> None:
+    """06-DATA-MODEL: one active submitted application of the applicable kind."""
+    models_source = read("facilities/models.py")
+    names = _model_constraint_names(models_source, "FacilityApplication")
+    require(
+        SUBMITTED_UNIQUENESS in names,
+        f"{SUBMITTED_UNIQUENESS} is not declared in FacilityApplication.Meta.constraints; "
+        "model state must match the migration or the autodetector will drop it",
+    )
+    require(
+        'condition=models.Q(status="SUBMITTED")' in models_source,
+        "submitted-uniqueness constraint must stay partial on status=SUBMITTED",
+    )
+    require(
+        'fields=("facility", "kind")' in models_source,
+        "submitted-uniqueness constraint must scope to (facility, kind)",
+    )
     migration = read("facilities/migrations/0003_owner_media_integrity.py")
-    require("uniq_submitted_application_per_facility_kind" in migration, "submitted uniqueness missing")
-    require("condition=" in migration and "SUBMITTED" in migration, "partial submitted constraint missing")
+    require(SUBMITTED_UNIQUENESS in migration, "submitted uniqueness missing from migration")
+    require("condition=" in migration and "SUBMITTED" in migration, "partial constraint missing")
 
 
 def check_media_security() -> None:
@@ -98,6 +152,7 @@ def main() -> int:
         check_idor_and_membership,
         check_submission_policy,
         check_media_security,
+        check_submitted_uniqueness_invariant,
         check_location_integrity,
         check_python_integrity,
     )
