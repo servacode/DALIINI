@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-09-17T18:31:00+03:00
+Last updated: 2026-09-17T18:44:51+03:00
 
 ## Baseline
 
@@ -30,8 +30,8 @@ Last updated: 2026-09-17T18:31:00+03:00
 | P13 Admin Operations | SOURCE_IMPLEMENTED | Recovered from official V3 spec + recorded handoff after missing Git objects; Admin API, permission catalog, review/evidence, facility/user/RBAC, taxonomy/province/verification, ads/audit/analytics/settings/system and RTL route surfaces restored | Recovery static gate: 184 backend AST files, 7 direct source-contract checks, canonical CSS tokens/imports, governance/design drift and whitespace passed | Run Django migrations/pytest/ruff/mypy; generate P10 client; bind Admin data/actions; Node 24 pnpm lint/typecheck/build; Playwright golden paths | `artifacts/evidence/p13-admin-operations-recovery-20260917.txt` | 507814d | 2026-09-17 |
 | P14 Android Foundation | SOURCE_IMPLEMENTED | Native Kotlin/Compose 27-module graph, convention plugins/version catalog, Hilt boundaries, network/auth foundation, Keystore refresh vault, refresh mutex, Room/DataStore, location, MapLibre abstraction, analytics/observability, RTL design system, type-safe routes and bootstrap layering | Source qualification passed: module/SDK/security/architecture/hygiene/governance/design drift/line length/whitespace. Gradle/SDK/device unavailable locally. | Run Gradle 9.6 + Android SDK build/lint/unit/Compose/instrumentation and physical-device gate; bind generated P10 Kotlin client | `artifacts/evidence/p14-android-foundation-source-20260917.txt` | 4c0a693 | 2026-09-17 |
 | P15 Android Public | SOURCE_IMPLEMENTED | Home/province/location/search/directory/detail/map/account/ratings; cache-first public data; Coil images; native MapLibre; generated-client boundary | P14/P15 source qualifiers, governance/design regression, token drift, whitespace; Android runtime unavailable | Bind P10 generated Kotlin client; Gradle build/lint/unit/Compose/instrumentation and physical-device QA | `artifacts/evidence/p15-android-public-source-20260917.txt` | 7178ba5 | 2026-09-17 |
-| P16 Android Owner | IN_PROGRESS | Owner dependency/API restoration + Android onboarding/manage/duty source active | Not yet | Complete owner source + qualification; device gate when tooling exists | — | — | 2026-09-17 |
-| P17 Navigation | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P16 Android Owner | SOURCE_IMPLEMENTED | Restored owner backend contract dependency; native My Facilities/manage/onboarding/uploads/evidence/status/hours/closures/managers/duty; Photo Picker; MapLibre picker; generated-client boundary | Backend owner + P14/P15/P16 source qualifiers, governance/design/token drift/whitespace PASS; executable DutyValidator smoke PASS; Django/Gradle/device runtime unavailable | Bind P10 generated Kotlin client; run Django/PostGIS/S3 owner tests; Gradle build/lint/unit/Compose/instrumentation and physical-device owner flow | `artifacts/evidence/p16-android-owner-source-20260917.txt` | 682218a | 2026-09-17 |
+| P17 Navigation | IN_PROGRESS | Routing/geocoding/navigation source phase started | Not yet | Implement provider boundaries, OSRM/Nominatim-compatible adapters, navigation state engine, Arabic TTS and source tests; road/device gate later | — | — | 2026-09-17 |
 | P18 Mobile Live Data | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
 | P19 Staging | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
 | P20 Release Quality | NOT_STARTED | — | — | All | — | — | 2026-09-17 |

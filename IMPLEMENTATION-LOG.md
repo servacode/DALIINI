@@ -660,3 +660,32 @@ Result: P15 `SOURCE_IMPLEMENTED`. Implementation commit: `7178ba5`.
 Problem discovered before P16: recovered backend lineage is missing documented owner config/facility/images/evidence/members endpoint source even though facility models and hours/duty endpoints exist. Root cause is prior workspace/source loss. P16 will restore this dependency from the immutable API/product specs before implementing the owner mobile surface.
 
 Next: P16 Android Owner.
+
+## 2026-09-17T18:44:51+03:00 — P16 Android Owner source qualification
+
+Goal: complete the native Android owner phase while repairing the owner API dependency lost during prior workspace recovery.
+
+Created/modified: owner backend API/media/permission/service/presenter/migration/test source; Android owner/onboarding/duty modules; owner API boundary; map picker extensions; account/navigation wiring; P16 source qualifiers.
+
+Implemented: membership-scoped owner config/facility CRUD/submit; public image/private evidence upload; manager membership controls; current-policy submit recheck; last-owner protection; safe media re-encode; My Facilities; draft autosave; map/location; per-day hours; Photo Picker uploads; evidence/review/status; temporary closures; duty scheduling/start-now/end-early/cancel.
+
+Problems found and root causes:
+- Recovered lineage lacked the owner API source documented by the immutable contract. Reconstructed it from V3 specs before Android binding.
+- Last owner could have been downgraded through member upsert because model `clean()` is not called by `update_or_create`. Replaced with row-locked explicit mutation and last-owner check.
+- Clearing a city while retaining an existing neighborhood caused an invalid dependent selection. Core update now clears the neighborhood automatically when city is explicitly cleared unless a replacement neighborhood is supplied.
+- Initial duty UI invented a four-hour duration. Removed the invented business rule; start-now uses an owner-specified end time.
+- Initial hours editor would have saved the same schedule for all seven days. Replaced with explicit per-day enable/time controls seeded from the current draft.
+
+Commands/tests:
+- `python -m compileall -q apps/backend` PASS.
+- `python apps/backend/scripts/qualify-owner-source.py` PASS.
+- `python apps/android/scripts/qualify-source.py` PASS.
+- `python apps/android/scripts/qualify-public-source.py` PASS.
+- `python apps/android/scripts/qualify-owner-source.py` PASS.
+- Governance/design-token validation/regeneration drift/`git diff --check` PASS.
+- Pure `DutyValidator` executable smoke compiled/run through local `kotlinc` PASS.
+- Four Django owner tests authored but not executed because Django/PostgreSQL are unavailable.
+
+Result: P16 `SOURCE_IMPLEMENTED`, implementation commit `682218a`. `P16 ANDROID OWNER DEVICE PASS` is not claimed.
+
+Next: P17 Maps/Navigation.

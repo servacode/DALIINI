@@ -1,79 +1,74 @@
 # Implementation Plan
 
-Updated: 2026-09-17T18:31:00+03:00
+Updated: 2026-09-17T18:44:51+03:00
 
 ## Current phase
 
-P16 — Android Owner
+P17 — Maps / Navigation
 
 ## Goal
 
-Implement the native Android owner experience for onboarding, evidence/uploads, facility status/management and pharmacy duty without bypassing the canonical P10 generated-client boundary or backend owner-policy validation.
-
-## Dependency repair
-
-The recovered backend lineage contains facility persistence plus hours/duty endpoints but is missing the owner config/facility/images/evidence/members API source required by the immutable API contract. Restore that source before binding Android owner flows.
+Implement production-configurable MapLibre routing/geocoding/navigation foundations for Android with OSRM as the initial `RoutingProvider`, a Nominatim-compatible `GeocodingProvider`, an explicit turn-by-turn state machine and Arabic platform TTS, without shipping public demo endpoints or moving geo truth out of PostGIS.
 
 ## Tasks
 
-1. Restore `/owner/config/` and owner facility CRUD/submit API from the V3 contract.
-2. Restore owner image/evidence/member subresources with private evidence and membership/IDOR checks.
-3. Preserve existing hours/temporary-closure/duty endpoints and current-policy submit validation.
-4. Add Android owner domain models + generated-client-facing `OwnerApiBoundary`.
-5. Implement My Facilities state/actions.
-6. Implement onboarding steps: province/category → info → map → hours → images → specialized fields → evidence → review → submit → status.
-7. Autosave draft changes; if onboarding is later disabled, existing drafts remain editable while submit rechecks current policy.
-8. Implement active facility management: info/contact/location/images/hours/temporary closures/managers.
-9. Implement pharmacy duty list/create/edit/cancel/end-early flows.
-10. Use Android Photo Picker for uploads where supported; server remains final validator.
-11. Wire type-safe MyFacilities/Onboarding/ManageFacility/Duty navigation.
-12. Add source/unit-contract qualification, update evidence/status/handoff, and commit.
+1. Preserve PostGIS as truth for facility coordinates, nearest, distance and bbox.
+2. Centralize production map style/tile provider configuration; never ship MapLibre demo tiles.
+3. Define `RoutingProvider.route(origin, destination, profile)` domain boundary.
+4. Implement an OSRM-compatible adapter using environment-configured base URL only.
+5. Define `GeocodingProvider.forward/reverse` and implement a Nominatim-compatible adapter behind configured provider URL/user-agent policy.
+6. Add route/maneuver domain models independent of transport DTOs.
+7. Implement navigation states: Idle, Routing, Navigating, Rerouting, Arrived, Error.
+8. Track maneuver index, remaining distance, ETA, off-route distance, reroute cooldown and arrival threshold.
+9. Add Arabic maneuver phrase builder plus Android native TTS adapter behind a voice interface.
+10. Integrate facility Directions into built-in navigation without inventing route data.
+11. Handle lifecycle/network-loss/reroute source paths and keep foreground-only location policy.
+12. Add pure unit/source tests for geometry/off-route/state/TTS phrases/provider URL policy.
+13. Update evidence/status/handoff and commit.
 
 ## Acceptance criteria
 
-- Arabic RTL from the shared Design System.
-- Composable → ViewModel → UseCase → Repository layering for owner features.
-- Owner APIs enforce authenticated facility membership and prevent IDOR.
-- Private verification evidence never receives a public URL or enters public cache.
-- Draft autosave is explicit and does not invent production data.
-- Submit revalidates current owner-registration switch and current verification requirements on the server.
-- Sensitive facility edits defer lifecycle/reverification truth to backend.
-- Duty UI only appears when capability permits it; backend remains final authority.
-- No hand-authored OpenAPI wire DTOs; P10 adapter remains the transport owner.
-- No background location permission.
+- MapLibre Native remains the renderer; no WebView map.
+- No `demotiles.maplibre.org` or public OSRM demo endpoint in production source.
+- Routing/geocoding provider URLs come from environment/build configuration and fail closed when placeholders remain.
+- OSRM is an adapter, not embedded business logic.
+- Navigation engine does not fabricate distance/ETA/maneuvers.
+- Route geometry and coordinates validate latitude/longitude ranges.
+- Arabic TTS phrases are deterministic and platform speech is behind an interface.
+- No background-location permission is introduced.
+- P10 transport ownership remains respected; provider-specific DTOs stay inside provider adapters.
 
 ## Required tests
 
-- Backend owner membership/IDOR source + runtime tests when Django is available.
-- Owner config current-switch qualification.
-- Submit/current-evidence policy tests.
-- Evidence privacy/storage-key leak checks.
-- Onboarding reducer/step validation tests.
-- Duty input/range validation tests.
-- Android owner source architecture/navigation/upload/security checks.
-- P14/P15 regression gates.
-- Gradle/Compose/instrumentation/physical-device tests when tooling exists.
+- Routing provider URL/config policy source tests.
+- OSRM response mapping unit tests.
+- Nominatim mapping/unit tests.
+- Coordinate validation tests.
+- Off-route and arrival-threshold tests.
+- Reroute cooldown tests.
+- Navigation state transition tests.
+- Arabic maneuver phrase tests.
+- P14/P15/P16 regression gates.
+- Gradle build/unit/Compose/instrumentation when Android tooling exists.
+- Real road test for GPS drift, maneuver timing, reroute, lifecycle/screen lock, voice and network loss before P17 can close.
 
 ## Expected files
 
-- `apps/backend/facilities/**`
-- `apps/backend/directory_backend/urls.py`
-- `apps/android/core/model/**`
-- `apps/android/core/network/**`
-- `apps/android/feature/owner/**`
-- `apps/android/feature/onboarding/**`
-- `apps/android/feature/duty/**`
+- `apps/android/core/maps/**`
+- `apps/android/core/location/**`
+- `apps/android/feature/navigation/**`
 - `apps/android/app/**`
+- Android source qualification/tests.
 - project management/evidence files.
 
 ## Risks
 
-- P10 generated Kotlin client is not materialized; owner transport adapter must remain fail-closed until generation.
-- Django/PostGIS/S3 runtime is unavailable locally, so restored owner backend can only receive source qualification here.
-- Gradle/Android SDK/ADB are unavailable locally, so P16 cannot reach device verification in this environment.
+- Final licensed map/style/routing/geocoding provider endpoints are external deployment inputs and must not be guessed.
+- Android SDK/Gradle/ADB are unavailable locally, so road/device qualification cannot run here.
+- Provider usage/rate/caching rules must be finalized for the actual production provider before release.
 
 ## Gate
 
-Target gate: `P16 ANDROID OWNER DEVICE PASS`.
+Target gate: `P17 NAVIGATION ROAD PASS`.
 
-Current environment can only establish `SOURCE_IMPLEMENTED`; connected backend and Android device closure require their respective toolchains.
+Current environment can establish source/unit qualification only. Road/device verification remains mandatory before closure.

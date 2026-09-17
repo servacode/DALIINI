@@ -12,7 +12,7 @@ Django/DRF/GeoDjango modular monolith; PostgreSQL/PostGIS; Redis cache/Channels/
 
 ## CURRENT PHASE
 
-P16 — Android Owner (`IN_PROGRESS`). P10 remains independently `IN_PROGRESS` until Django can generate the real OpenAPI schema and clients.
+P17 — Maps / Navigation (`IN_PROGRESS`). P10 remains independently `IN_PROGRESS` until Django can generate the real OpenAPI schema and clients.
 
 ## LAST COMPLETED PHASE
 
@@ -20,7 +20,7 @@ P1 — Design System Foundations (`CLOSED`). P2/P3 are intentionally not called 
 
 ## CURRENT WORKING STATE
 
-P0/P1 gates are closed. P2 remains source-level pending connected backend qualification. P3-P9 are `SOURCE_IMPLEMENTED`. P10 contract tooling exists but real Django-generated schema/TS-Kotlin-Swift clients are still pending. P11 Public Web, P12 Admin Foundation and P13 Admin Operations are `SOURCE_IMPLEMENTED`. P13 implementation commit is `ff60f96`; its static gate passed, but Node 24/pnpm, Django/PostgreSQL runtime and Playwright golden paths were not available, so `P13 ADMIN GOLDEN PATH PASS` is not claimed. P14 and P15 Android source are `SOURCE_IMPLEMENTED`; P16 Android Owner is active.
+P0/P1 gates are closed. P2 remains source-level pending connected backend qualification. P3-P9 are `SOURCE_IMPLEMENTED`. P10 contract tooling exists but real Django-generated schema/TS-Kotlin-Swift clients are still pending. P11 Public Web, P12 Admin Foundation and P13 Admin Operations are `SOURCE_IMPLEMENTED`. P13 implementation commit is `ff60f96`; its static gate passed, but Node 24/pnpm, Django/PostgreSQL runtime and Playwright golden paths were not available, so `P13 ADMIN GOLDEN PATH PASS` is not claimed. P14, P15 and P16 Android source are `SOURCE_IMPLEMENTED`; P17 Maps/Navigation is active.
 
 ## WHAT IS IMPLEMENTED
 
@@ -63,7 +63,7 @@ P0/P1 gates are closed. P2 remains source-level pending connected backend qualif
 
 ## WHAT IS LEFT
 
-P16 through P26, plus P10 real schema/client generation and connected/runtime qualification of source-implemented backend/web/admin/mobile phases as soon as capable toolchains are available.
+P17 through P26, plus P10 real schema/client generation and connected/runtime qualification of source-implemented backend/web/admin/mobile phases as soon as capable toolchains are available.
 
 ## KNOWN ISSUES
 
@@ -100,7 +100,7 @@ P12 and P13 are `SOURCE_IMPLEMENTED`. Routes exist for login/dashboard/reviews/f
 
 ## ANDROID STATUS
 
-P14/P15 `SOURCE_IMPLEMENTED`. Native Kotlin/Compose; applicationId `com.servacode.directory`; minSdk 24; compile/target 36. Foundation plus public Home/province/search/directory/detail/native-MapLibre/account/ratings source exists. P10 client binding and all Gradle/device gates remain pending. P16 owner source is active.
+P14/P15/P16 `SOURCE_IMPLEMENTED`. Native Kotlin/Compose; applicationId `com.servacode.directory`; minSdk 24; compile/target 36. Foundation, public discovery/account/ratings, and owner onboarding/manage/duty source exist. Owner backend dependency restoration, Photo Picker/private evidence boundaries, per-day hours, closures/managers and native MapLibre owner picker are source-qualified. P10 client binding and all Gradle/device gates remain pending. P17 navigation source is active.
 
 ## IOS STATUS
 
@@ -165,11 +165,11 @@ Static/source checks work in the current container. Full backend qualification r
 
 ## HOW TO CONTINUE
 
-Continue P16 from `plan.md`: first restore the missing owner API dependency from the immutable contract, then implement native owner onboarding/manage/duty while preserving generated-client boundaries. Do not promote Android beyond source status without actual Gradle plus emulator/physical-device verification.
+Continue P17 from `plan.md`: implement production-configurable RoutingProvider/GeocodingProvider, OSRM/Nominatim-compatible adapters, turn-by-turn state engine and Arabic TTS while preserving PostGIS geo truth and foreground-only location. Do not promote navigation beyond source status without Gradle/device plus real road verification.
 
 ## LATEST COMMIT SHA
 
-`7178ba5` — P15 Android Public implementation commit. Management-document commit follows this handoff update.
+`682218a` — P16 Android Owner implementation commit. Management-document commit follows this handoff update.
 
 
 ## WORKSPACE RECOVERY

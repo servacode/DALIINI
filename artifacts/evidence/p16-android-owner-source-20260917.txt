@@ -1,0 +1,63 @@
+P16 Android Owner — source qualification evidence
+Date: 2026-09-17T18:44:51+03:00
+Implementation commit: 682218a
+Status claimed: SOURCE_IMPLEMENTED only
+
+Implemented source
+- Restored owner backend API dependency from immutable V3 API/Product/Security specs:
+  owner config, facility list/create/detail/patch/submit/location, public images,
+  private evidence, members, current-policy validation and membership/IDOR guards.
+- Added safe image decode/dimension/pixel/byte checks, JPEG re-encode, metadata stripping by
+  re-encode, random storage keys, public/private S3 separation and cleanup on DB failure.
+- Added DB source for public image dimensions, evidence uploader and partial submitted
+  application uniqueness constraint.
+- Android OwnerApiBoundary remains generated-client-facing and fail-closed until P10 exists.
+- Implemented My Facilities, manage, draft onboarding, autosave, map picker, per-day hours,
+  Photo Picker image/evidence uploads, review/submit/status, temporary closures, managers,
+  duty schedule/start-now/end-early/cancel and type-safe navigation.
+- No background location permission and no broad media-library permission.
+- No owner/account/evidence data is placed in public Room cache.
+
+Executed source/static gates
+PASS python -m compileall -q apps/backend
+PASS python apps/backend/scripts/qualify-owner-source.py
+  - owner route coverage
+  - membership/IDOR source invariants
+  - create/submit current-policy checks
+  - submitted application uniqueness source
+  - evidence/image storage privacy and safe media source
+  - city/neighborhood integrity
+  - backend AST + <=100-character non-migration P16 files
+PASS python apps/android/scripts/qualify-source.py
+PASS python apps/android/scripts/qualify-public-source.py
+PASS python apps/android/scripts/qualify-owner-source.py
+PASS node scripts/check-governance.mjs
+PASS node packages/design-tokens/scripts/validate.mjs
+PASS design-token regenerate + zero diff
+PASS git diff --check
+PASS executable DutyValidator smoke via kotlinc/java:
+  valid range accepted; equal/reversed/zero-start ranges rejected.
+
+Runtime tests authored but NOT executed
+- facilities/tests/test_owner_api.py:
+  membership-scoped detail/IDOR,
+  last-owner downgrade protection,
+  clearing city clears neighborhood,
+  submit rechecks current owner-registration switch.
+- DutyValidatorTest.kt exists but Gradle test runner is unavailable.
+
+Local toolchain facts
+- Java: OpenJDK 21.0.11
+- kotlinc: 1.9.0 standalone compiler (used only for pure DutyValidator smoke)
+- Gradle executable: unavailable
+- Android SDK/sdkmanager: unavailable
+- adb: unavailable
+- Django import: unavailable (ModuleNotFoundError)
+- Docker: unavailable
+
+Not claimed
+- No Django/PostgreSQL/PostGIS/S3 connected test pass.
+- No Gradle assemble/lint/unit/Compose/instrumentation pass.
+- No emulator or physical-device pass.
+- No P16 ANDROID OWNER DEVICE PASS.
+- P10 generated Kotlin client is still not materialized, so network adapter remains fail-closed.
