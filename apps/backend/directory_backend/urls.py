@@ -4,6 +4,7 @@ from drf_spectacular.views import SpectacularAPIView
 urlpatterns = [
     path("health/", include("health.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/v1/", include("accounts.urls")),
     path("api/v1/", include("facilities.urls")),
     path("api/v1/", include("business_hours.urls")),
     path("api/v1/", include("pharmacy_duty.urls")),

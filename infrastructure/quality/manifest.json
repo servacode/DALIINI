@@ -1,0 +1,33 @@
+{
+  "phase": "P20",
+  "gate": "P20 RELEASE QUALITY PASS",
+  "requiredSuites": [
+    "backend-source-security",
+    "backend-runtime",
+    "admin-runtime",
+    "android-runtime",
+    "staging-golden-path",
+    "staging-load-baseline",
+    "restore-drill",
+    "release-blockers"
+  ],
+  "criticalBackendCases": [
+    "phone-normalization",
+    "otp",
+    "sessions",
+    "refresh-concurrency",
+    "rbac",
+    "owner-idor",
+    "lifecycle",
+    "evidence-privacy",
+    "hours",
+    "duty-overlap",
+    "temporary-closure",
+    "postgis-nearest",
+    "search",
+    "ratings",
+    "admin-concurrency",
+    "realtime-after-commit",
+    "account-deletion"
+  ]
+}

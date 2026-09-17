@@ -8,6 +8,9 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 
 SECRET_KEY = env("SECRET_KEY", "development-only-not-for-production")
 ACCESS_TOKEN_SIGNING_KEY = env("ACCESS_TOKEN_SIGNING_KEY", "development-access-token-key")
+REFRESH_HMAC_SECRET = env("REFRESH_HMAC_SECRET", "development-refresh-hmac-key")
+RECOVERY_HMAC_SECRET = env("RECOVERY_HMAC_SECRET", "development-recovery-hmac-key")
+OTP_PROVIDER = env("OTP_PROVIDER", "development")
 DEBUG = False
 ALLOWED_HOSTS = env_csv("ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
 
@@ -94,6 +97,12 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "accounts.authentication.BearerAccessTokenAuthentication",
     ],
+    "DEFAULT_THROTTLE_RATES": {
+        "otp_start": "5/hour",
+        "otp_verify": "10/hour",
+        "login": "10/minute",
+        "recovery": "5/hour",
+    },
 }
 SPECTACULAR_SETTINGS = {
     "TITLE": "Directory Platform API",
