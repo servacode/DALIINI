@@ -44,7 +44,12 @@ class DutyShift(models.Model):
                 ],
             ),
         ]
-        indexes = [models.Index(fields=["facility", "starts_at", "ends_at"])]
+        indexes = [
+            models.Index(
+                fields=["facility", "starts_at", "ends_at"],
+                name="pharmacy_du_facilit_idx",
+            )
+        ]
 
     def clean(self):
         if self.ends_at <= self.starts_at:

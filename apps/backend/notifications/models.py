@@ -15,7 +15,12 @@ class Notification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        indexes = [models.Index(fields=["user", "read_at", "-created_at"])]
+        indexes = [
+            models.Index(
+                fields=["user", "read_at", "-created_at"],
+                name="notificatio_user_id_9c4029_idx",
+            )
+        ]
 
 
 class DevicePushToken(models.Model):
@@ -42,4 +47,9 @@ class DevicePushToken(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        indexes = [models.Index(fields=["user", "active", "platform"])]
+        indexes = [
+            models.Index(
+                fields=["user", "active", "platform"],
+                name="notificatio_user_id_67bc12_idx",
+            )
+        ]

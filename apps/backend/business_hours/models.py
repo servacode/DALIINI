@@ -47,7 +47,12 @@ class TemporaryClosure(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        indexes = [models.Index(fields=["facility", "starts_at", "ends_at"])]
+        indexes = [
+            models.Index(
+                fields=["facility", "starts_at", "ends_at"],
+                name="business_ho_facilit_idx",
+            )
+        ]
 
     def clean(self):
         if self.ends_at <= self.starts_at:

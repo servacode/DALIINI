@@ -1,14 +1,19 @@
 import uuid
 from django.contrib.postgres.constraints import ExclusionConstraint
-from django.contrib.postgres.fields import DateTimeRangeField, RangeOperators
+from django.contrib.postgres.fields import RangeOperators
 from django.contrib.postgres.operations import BtreeGistExtension
 from django.db import migrations, models
 import django.db.models.deletion
-from django.db.models import F, Func
+from django.db.models import F
 
-class TstzRange(Func):
-    function='TSTZRANGE'; output_field=DateTimeRangeField()
-    def __init__(self,start,end): super().__init__(start,end,models.Value('[)'))
+# Import the shared expression helper instead of redefining it. A duplicate class
+# declared here would be a different Python class from pharmacy_duty.models.TstzRange,
+# and Django's expression identity starts with self.__class__, so the autodetector
+# would report the exclusion constraint as changed on every run and propose an
+# endless RemoveConstraint/AddConstraint pair. The definition is identical either
+# way, so this changes no SQL and no constraint semantics.
+from pharmacy_duty.models import TstzRange
+
 
 class Migration(migrations.Migration):
     initial=True

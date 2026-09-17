@@ -47,8 +47,14 @@ class Advertisement(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=["enabled", "starts_at", "ends_at"]),
-            models.Index(fields=["target_scope", "province", "category"]),
+            models.Index(
+                fields=["enabled", "starts_at", "ends_at"],
+                name="content_ser_enabled_57493d_idx",
+            ),
+            models.Index(
+                fields=["target_scope", "province", "category"],
+                name="content_ser_target__67e917_idx",
+            ),
         ]
 
     def clean(self):

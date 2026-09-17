@@ -21,6 +21,6 @@ class ProductAnalyticsEvent(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=["name", "-occurred_at"]),
-            models.Index(fields=["-received_at"]),
+            models.Index(fields=["name", "-occurred_at"], name="analytics_p_name_30ed27_idx"),
+            models.Index(fields=["-received_at"], name="analytics_p_receive_7d02b7_idx"),
         ]

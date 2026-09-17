@@ -51,7 +51,12 @@ class Facility(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        indexes = [models.Index(fields=["province", "category", "status"])]
+        indexes = [
+            models.Index(
+                fields=["province", "category", "status"],
+                name="facility_prov_cat_status_idx",
+            )
+        ]
 
 
 class FacilityMembership(models.Model):
@@ -125,6 +130,18 @@ class FacilityApplication(models.Model):
     rejection_reason = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            # 06-DATA-MODEL: only one active submitted application of the applicable
+            # kind per facility. Created by facilities/0003_owner_media_integrity;
+            # declared here so model state matches the migration and the database.
+            models.UniqueConstraint(
+                fields=("facility", "kind"),
+                condition=models.Q(status="SUBMITTED"),
+                name="uniq_submitted_application_per_facility_kind",
+            )
+        ]
 
 
 class FacilityImage(models.Model):
