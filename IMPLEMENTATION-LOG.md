@@ -935,3 +935,99 @@ P2 backend runtime is restored end to end. `P2 BACKEND FOUNDATION CONNECTED PASS
 Android moved past the P0 compile blocker. `:app:assembleDebug` remains `NOT_VERIFIED` because Google Maven is unreachable from this machine, which is an environment limitation and not a project defect: artifacts that certainly exist, including `androidx.annotation:annotation:1.0.0` and `com.android.tools.build:gradle:9.4.0`, return 404 while Maven Central answers 200. Android status stays below `BUILD_VERIFIED` and `DEVICE_VERIFIED` is not claimed.
 
 Evidence: `artifacts/evidence/fixp0-runtime-20260917.txt`. Audit baseline: `RECEIPT-AUDIT-2026-09-17.md`.
+
+
+## 2026-09-17T23:55:00+03:00 — P2 connected qualification: migration convergence, invariants, test suite
+
+Goal: close INT-009, INT-028 and INT-007 so the P2 gate can be judged on real command exit codes. Scope was held to those items plus the two defects that directly blocked them.
+
+### TASK-P2-01 — INT-009 migration drift
+
+Analysis first, with `makemigrations --dry-run --verbosity 3` and no migration written. The drift was larger than previously reported: **seven apps, thirteen operations**, not six apps. `analytics` had been cut off by output truncation in the earlier report.
+
+The thirteen operations fell into three very different classes:
+
+**Class 1 — nine `RenameIndex`, cosmetic.** The migrations hardcoded index names that Django no longer derives from `models.Index(fields=[...])` with no explicit `name`. Resolution per DECISION-006: pin the existing database name in model state. Eight indexes keep their exact name. One could not: `facilities__prov_cat_status_idx` is 31 characters and `Index.max_name_length` is 30, verified directly against Django, so Django rejects it in model state with `models.E034`. It was renamed to `facility_prov_cat_status_idx`, 28 characters, the single unavoidable rename in this batch.
+
+**Class 2 — one `RemoveConstraint`, destructive.** `uniq_submitted_application_per_facility_kind` was created by `facilities/0003_owner_media_integrity` and enforces a `06-DATA-MODEL` invariant, but `FacilityApplication` had no `Meta` at all, so the autodetector proposed dropping it. Resolution per DECISION-007: declare the constraint in model state with the identical name, fields and condition. The database and migration are untouched.
+
+In PostgreSQL the constraint is materialised as a partial unique index:
+`CREATE UNIQUE INDEX uniq_submitted_application_per_facility_kind ON public.facilities_facilityapplication USING btree (facility_id, kind) WHERE ((status)::text = 'SUBMITTED'::text)`
+
+**Class 3 — one `RemoveConstraint` plus `AddConstraint` on the duty GiST constraint, perpetual churn.** Investigated with a probe rather than assumed. `TstzRange.deconstruct()` round-trips perfectly, so the helper was never at fault; the earlier hypothesis about unstable deconstruction was wrong. The real cause: `pharmacy_duty/migrations/0001_initial` declared its own local `TstzRange` class instead of importing the one in `pharmacy_duty/models.py`. `BaseExpression.identity` begins with `self.__class__`, so the two structurally identical expressions could never compare equal:
+
+```
+model type : TstzRange | module: pharmacy_duty.models
+migr  type : TstzRange | module: pharmacy_duty.migrations.0001_initial
+same class : False
+```
+
+Resolution per DECISION-008: the migration imports the shared helper. The constraint operation line is byte-identical.
+
+**And the three `AlterField` on `accounts`**, which were accepted only after proving they are metadata-only. `sqlmigrate accounts 0005` renders `-- (no-op)` for all three; the difference is `verbose_name` and `help_text` on `PermissionsMixin` fields. See DECISION-009.
+
+Correction to an earlier claim: the audit said the `PermissionsMixin` fields "were never migrated". That was wrong. They are present in `accounts/0001_initial`; only their field definition drifted.
+
+Result: **13 operations across 7 apps reduced to 4 operations across 2 apps**, both justified and both accepted:
+- `accounts/0005_alter_user_groups_alter_user_is_superuser_and_more` — three no-op `AlterField`.
+- `facilities/0004_rename_facilities__prov_cat_status_idx_facility_prov_cat_status_idx` — one `ALTER INDEX ... RENAME TO ...`.
+
+### TASK-P2-02 — hardened the invariant qualifier
+
+`scripts/qualify-owner-source.py` proved the submitted-uniqueness invariant by searching for its name inside a migration file. That can never fail: a migration keeps its historic `AddConstraint` forever, so the check would still have reported PASS after the constraint was dropped from the database.
+
+Replaced with `check_submitted_uniqueness_invariant`, which parses `facilities/models.py` with `ast`, walks into `FacilityApplication.Meta.constraints` and asserts the constraint is declared there with the right name, the `(facility, kind)` scope and the partial `status=SUBMITTED` condition, then still checks the migration as a second leg.
+
+Negative-tested: with the constraint removed from model state the qualifier exits 1 with a precise message; restored, it exits 0.
+
+The remaining two requirements — that the autodetector does not propose removal, and that the database actually refuses the violating row — are covered by connected tests, since a source qualifier has no database.
+
+### TASK-P2-03 — INT-028 pytest collection
+
+`accounts/tests`, `admin_console/tests` and `search/tests` had no `__init__.py` while `test_source_contract.py` and `test_source_security.py` basenames repeated, so pytest aborted collection before running anything. Added the three missing package markers; all twelve test packages now have one.
+
+### TASK-P2-04 — INT-007 test database engine
+
+`settings/test.py` pinned SQLite while the domain owns spatial fields, a PostGIS extension migration, `btree_gist` and an exclusion constraint. No database-backed test could ever pass; the suite failed on `geo_db_type`. The SQLite override was removed so the test settings inherit the PostgreSQL + PostGIS configuration from `base.py` through `DATABASE_URL`.
+
+### INT-030 — defect found by running the suite on PostgreSQL for the first time
+
+`submit_facility` locked with `select_for_update()` over `select_related("category__group", "category__capabilities", "province")`. `category__capabilities` is a reverse one-to-one, so `select_related` emits a LEFT OUTER JOIN, and PostgreSQL refuses `FOR UPDATE` on the nullable side of an outer join:
+
+`django.db.utils.NotSupportedError: FOR UPDATE cannot be applied to the nullable side of an outer join`
+
+`POST /api/v1/owner/facilities/{id}/submit/` would have failed at runtime in every environment. SQLite never enforced the rule, so the defect stayed invisible. Fixed with `select_for_update(of=("self",))`, which keeps the intended lock on `facilities_facility` and leaves the joined reference rows unlocked. No semantic change. The other three `select_for_update` sites were checked and are unaffected.
+
+### INT-029 — recorded, not fixed
+
+With Redis unreachable, any write to a model with a realtime hook raises after the transaction has already committed: `publish_after_commit` guards `channel_layer is None` but not a connection error. `05-SYSTEM-ARCHITECTURE §13` asks for safe degradation. Out of scope here.
+
+### Commands actually run
+
+Against PostgreSQL 17.5 with PostGIS, from an image built out of the fixed source with the unmodified `apps/backend/Dockerfile`:
+
+Fresh database, full sequence — `check` 0, `migrate` 0, `makemigrations --check --dry-run` 0, `migrate` 0, `makemigrations --check --dry-run` 0. Convergence holds on a second pass.
+
+Existing database upgrade path — a database was built with the pre-batch code at `189a500`, seeded with a province, category, capabilities, facility, a SUBMITTED application and a duty shift, then upgraded. Exactly two migrations applied. Row counts identical before and after. `pg_class.oid` compared across the upgrade:
+
+| object | before | after | verdict |
+|---|---|---|---|
+| `prevent_overlapping_duty_for_facility` | 27009 | 27009 | untouched, no GiST rebuild |
+| `uniq_submitted_application_per_facility_kind` | 26314 | 26314 | preserved, not dropped |
+| `facilities__prov_cat_status_idx` → `facility_prov_cat_status_idx` | 26124 | 26124 | renamed in place, not rebuilt |
+| `pharmacy_du_facilit_idx` | 27011 | 27011 | untouched |
+| `business_ho_facilit_idx` | 26209 | 26209 | untouched |
+
+Invariant behaviour against the real database — five checks, all passing: a second SUBMITTED application of the same kind is rejected by `uniq_submitted_application_per_facility_kind`; a DRAFT alongside it is accepted; a SUBMITTED application of a different kind is accepted; an overlapping duty shift is rejected by `prevent_overlapping_duty_for_facility`; a shift starting exactly when the previous one ends is accepted, confirming the half-open range.
+
+`uv run pytest`, the official command with no import-mode workaround — **49 passed, 0 failed**, against a run that previously collected nothing at all.
+
+Regressions — governance, design-token validation, design-token drift, the P19 staging qualifier and the hardened owner qualifier all exit 0.
+
+Lint — `ruff check .` reports 104 errors against a 106 baseline. Debt reduced, none added. `mypy` stays at its 556 baseline and is untouched. Both are now tracked as DEBT-001 and DEBT-002.
+
+### Result
+
+`makemigrations --check --dry-run` exits 0. `uv run pytest` exits 0. The migration graph is valid, migrations converge on both a fresh and an upgraded database, and both business invariants are proven enforced by PostgreSQL itself.
+
+Evidence: `artifacts/evidence/p2-connected-20260917.txt`.

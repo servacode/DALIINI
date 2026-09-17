@@ -55,3 +55,24 @@ The full receipt and verification audit is recorded in `RECEIPT-AUDIT-2026-09-17
 | 2026-09-17T22:15:00+03:00 | Lint baseline | FIX-P0 working tree | local host | `uv run ruff check .` | 106 errors, identical to the pre-fix baseline — no regression introduced | `artifacts/evidence/fixp0-runtime-20260917.txt` |
 
 `P2 BACKEND FOUNDATION CONNECTED PASS` is NOT claimed: migration drift and test collection remain open. Android remains below `BUILD_VERIFIED`; `DEVICE_VERIFIED` is not claimed.
+
+
+## 2026-09-17 — P2 connected qualification
+
+| Timestamp | Gate | Commit | Environment | Command/Check | Result | Artifact |
+|---|---|---|---|---|---|---|
+| 2026-09-17T23:55:00+03:00 | Migration drift analysis | 189a500 | PostgreSQL 17.5 + PostGIS | `makemigrations --dry-run --verbosity 3`, nothing written | 13 operations across 7 apps, one of them a destructive `RemoveConstraint` on a specification invariant | `artifacts/evidence/p2-connected-20260917.txt` |
+| 2026-09-17T23:55:00+03:00 | Expression identity probe | P2 tree | Docker | deconstruct round-trip and model-vs-migration-state comparison | `TstzRange` round-trip STABLE; the drift came from a duplicate class declared in the migration, not from deconstruction | `artifacts/evidence/p2-connected-20260917.txt` |
+| 2026-09-17T23:55:00+03:00 | Expected SQL review | P2 tree | PostgreSQL 17.5 + PostGIS | `sqlmigrate accounts 0005`, `sqlmigrate facilities 0004` | accounts renders `-- (no-op)` three times; facilities renders one `ALTER INDEX ... RENAME TO` | `artifacts/evidence/p2-connected-20260917.txt` |
+| 2026-09-17T23:55:00+03:00 | INT-009 migration drift | P2 tree | PostgreSQL 17.5 + PostGIS | `makemigrations --check --dry-run` | PASS — exit 0, and exit 0 again on a second pass; drift reduced from 13 operations to 4 justified ones | `artifacts/evidence/p2-connected-20260917.txt` |
+| 2026-09-17T23:55:00+03:00 | Fresh database sequence | P2 tree | PostgreSQL 17.5 + PostGIS | `check`, `migrate`, `makemigrations --check`, `migrate`, `makemigrations --check` | PASS — all five exit 0 | `artifacts/evidence/p2-connected-20260917.txt` |
+| 2026-09-17T23:55:00+03:00 | Existing database upgrade path | 189a500 → P2 tree | PostgreSQL 17.5 + PostGIS | seed with pre-batch code, upgrade, compare `pg_class.oid` and row counts | PASS — two migrations applied, row counts identical, every oid preserved, GiST constraint and the invariant index untouched | `artifacts/evidence/p2-connected-20260917.txt` |
+| 2026-09-17T23:55:00+03:00 | Business invariants, connected | P2 tree | PostgreSQL 17.5 + PostGIS | five write attempts against the real database | PASS — duplicate SUBMITTED rejected, DRAFT accepted, different kind accepted, overlapping duty rejected, adjacent duty accepted | `artifacts/evidence/p2-connected-20260917.txt` |
+| 2026-09-17T23:55:00+03:00 | Hardened invariant qualifier | P2 tree | local host | `scripts/qualify-owner-source.py`, plus a negative test | PASS — exit 0 declared, exit 1 when the constraint is removed from model state; the previous text-only check passed in both cases | `artifacts/evidence/p2-connected-20260917.txt` |
+| 2026-09-17T23:55:00+03:00 | INT-028 / INT-007 test suite | P2 tree | PostgreSQL 17.5 + PostGIS | `uv run pytest`, official command, no import-mode workaround | PASS — 49 passed, exit 0, from a run that previously collected nothing | `artifacts/evidence/p2-connected-20260917.txt` |
+| 2026-09-17T23:55:00+03:00 | INT-030 owner submit lock | P2 tree | PostgreSQL 17.5 + PostGIS | `pytest facilities/tests/test_owner_api.py` | FIXED — `FOR UPDATE cannot be applied to the nullable side of an outer join`; resolved with `select_for_update(of=("self",))` | `artifacts/evidence/p2-connected-20260917.txt` |
+| 2026-09-17T23:55:00+03:00 | `P2 BACKEND FOUNDATION CONNECTED PASS` | P2 tree | final image, unmodified Dockerfile CMD, no mounts | daphne boot plus six live endpoints | **PASS** — `/health/live/` 200, `/health/ready/` 200 with database and redis ok, `/public/provinces/` 200, `/public/facilities/` 400, `/admin/dashboard/` 403; the only 500 is INT-010 | `artifacts/evidence/p2-connected-20260917.txt` |
+| 2026-09-17T23:55:00+03:00 | Post-batch regressions | P2 tree | local host | governance, design-token validate, design-token drift, P19 staging qualifier, hardened owner qualifier | PASS — all exit 0 | `artifacts/evidence/p2-connected-20260917.txt` |
+| 2026-09-17T23:55:00+03:00 | Lint and type debt | P2 tree | local host | `uv run ruff check .` | 104 errors against a 106 baseline — debt reduced, none added; mypy untouched at 556 | DEBT-001, DEBT-002 in `DECISIONS.md` |
+
+`P2 BACKEND FOUNDATION CONNECTED PASS` is achieved and P2 is recorded as `CONNECTED_VERIFIED`. That is not phase closure: connected Celery, S3 and Channels qualification remain, and security, load and restore belong to P20. INT-010 and INT-029 stay open by decision.

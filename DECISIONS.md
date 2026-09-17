@@ -76,3 +76,97 @@ For a material architecture decision, create an ADR under `docs/adr/` using `ADR
 **Alternatives:** Upgrade immediately to Kotlin 2.4.20; downgrade AGP. Both were rejected without build evidence because the former exceeds the documented KGP AGP range and the latter discards the current stable AGP baseline.
 
 **Impact:** Android dependency versions stay deterministic until Gradle/device qualification is available.
+
+
+## DECISION-006 — Index names are pinned in model state, not re-derived
+
+**Date:** 2026-09-17
+
+**Subject:** Nine `models.Index` declarations carried no explicit `name`, so Django derived new hash-based names that did not match the names already created by the migrations and present in the database. The autodetector proposed nine `RenameIndex` operations.
+
+**Decision:** Pin the existing database index name explicitly in `models.Index(name=...)` for every index, so model state, migration state and the database agree. Eight of the nine keep their exact existing name.
+
+The ninth is a deliberate exception: `facilities__prov_cat_status_idx` is 31 characters and `django.db.models.Index.max_name_length` is 30, so Django rejects it in model state with `models.E034`. It is the only index that had to be renamed, to `facility_prov_cat_status_idx` (28 characters). An explicit name was chosen over Django's derived `facilities__provinc_c99cb5_idx` because a pinned name never shifts again when the field list changes, whereas a derived hash does.
+
+**Reason:** Renaming indexes that already work is pure churn on a production database. The correct direction is to make model state describe reality.
+
+**Alternatives:** Accept the nine `RenameIndex` operations. Rejected: nine `ALTER INDEX` statements against a live database, with no functional gain, and the derived names would drift again on any field change.
+
+**Impact:** `makemigrations` proposes zero index operations. Verified on an upgraded database: every pinned index kept its original `pg_class.oid`, and the one renamed index kept oid 26124 — a rename in place, not a rebuild.
+
+## DECISION-007 — Model state is repaired to match the database, never the reverse, for business invariants
+
+**Date:** 2026-09-17
+
+**Subject:** `facilities/migrations/0003_owner_media_integrity` created `uniq_submitted_application_per_facility_kind`, a partial unique constraint enforcing `06-DATA-MODEL`: only one active submitted application of the applicable kind per facility. `FacilityApplication` had no `Meta` at all, so the autodetector proposed `RemoveConstraint`.
+
+**Decision:** Declare the constraint in `FacilityApplication.Meta.constraints` with the identical name, fields and condition taken from the migration. The database and the migration stay untouched.
+
+**Reason:** The constraint is a business invariant fixed by the specification. A drift between model and database is a defect in the model, not permission to drop a guarantee. Accepting the generated migration would have deleted the invariant while every existing gate still reported PASS.
+
+**Alternatives:** Accept the generated `RemoveConstraint`, or re-invent an equivalent constraint under a new name. Both rejected: the first destroys the invariant, the second causes an unnecessary index rebuild.
+
+**Impact:** `makemigrations` no longer proposes removal. The invariant is now covered by four connected tests that prove PostgreSQL itself rejects a second `SUBMITTED` application of the same kind while still allowing a `DRAFT` and a different kind.
+
+## DECISION-008 — Expression helpers used by constraints live in one module only
+
+**Date:** 2026-09-17
+
+**Subject:** `pharmacy_duty/migrations/0001_initial` declared its own local copy of the `TstzRange` expression helper instead of importing the one in `pharmacy_duty/models.py`. The autodetector therefore proposed an endless `RemoveConstraint` plus `AddConstraint` pair on the duty exclusion constraint.
+
+**Decision:** The migration imports `TstzRange` from `pharmacy_duty.models`. The constraint operation itself is byte-identical.
+
+**Reason:** Proven by probe, not assumed. `TstzRange.deconstruct()` round-trips perfectly, so the helper was never the problem. `BaseExpression.identity` begins with `self.__class__`, so two structurally identical expressions built from two different Python classes can never compare equal, and the autodetector reports a change on every run. The two classes were `pharmacy_duty.models.TstzRange` and `pharmacy_duty.migrations.0001_initial.TstzRange`.
+
+**Alternatives:** Add a custom `deconstruct()`. Rejected because the deconstruction was already stable and the real cause was class duplication. Accept the drop/recreate. Rejected because rebuilding a GiST exclusion constraint on a production table is not cosmetic.
+
+**Impact:** Zero SQL. Verified on an upgraded database: `prevent_overlapping_duty_for_facility` kept `pg_class.oid` 27009 across the upgrade. No other migration in the repository declares a class, so this pattern does not repeat.
+
+## DECISION-009 — Django `PermissionsMixin` stays, but is not authoritative (deferred removal)
+
+**Date:** 2026-09-17
+
+**Subject:** `accounts.User` inherits `PermissionsMixin`, which adds `is_superuser`, `groups` and `user_permissions`, while the platform's real authorization is the explicit `AdminRole` / `AdminPermission` / `HasAdminPermission` triple.
+
+**Decision:** Keep `PermissionsMixin` for now. Accept the three `AlterField` operations on `groups`, `is_superuser` and `user_permissions`, having proven they are metadata only: `sqlmigrate accounts 0005` renders `-- (no-op)` for all three, with no type, default, nullability, relation or permission-behaviour change.
+
+The authoritative source for admin authorization remains the project RBAC. `user_has_admin_permission` requires an active `UserAdminRole`; `is_superuser` grants nothing.
+
+**Reason:** Removing the mixin means dropping fields and M2M tables, editing migration history, changing the `User` contract and touching Django auth internals. That needs an ADR and a security regression suite, which is far beyond a migration-convergence batch.
+
+**Alternatives:** Remove it inside P2. Rejected as an unscoped architectural and security change.
+
+**Impact:** One parallel authorization surface remains present but unused. See the technical debt register below.
+
+---
+
+# Technical Debt Register
+
+Mandatory before staging or production closure. None of these blocks P2 or P10.
+
+## DEBT-001 — Ruff baseline
+
+**Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch.
+
+Concentrated in `directory/models.py`, which is written in a compressed style with semicolons and lines up to 249 characters against a 100 limit. Rule: **no new lint debt** — any file touched must not increase the count. Forbidden remedies: disabling rules broadly, blanket ignores, or weakening CI to make the result green.
+
+## DEBT-002 — Mypy baseline
+
+**Recorded:** 2026-09-17 · **Baseline:** 556 errors in 82 files.
+
+`[tool.mypy] strict = true` is declared while the codebase is largely unannotated. Rule: **no new type debt**. Removing `strict` requires a recorded ADR; a blanket ignore is forbidden.
+
+## DEBT-003 — Evaluate removal of Django `PermissionsMixin` after contract and runtime recovery
+
+**Recorded:** 2026-09-17 · See DECISION-009.
+
+The project must not keep two parallel authorization surfaces without need. Before the dedicated phase, prove all of the following:
+
+- no use of `user.has_perm`,
+- no use of `user.has_perms`,
+- no reliance on Django `ModelBackend` permissions,
+- no use of `groups` or `user_permissions`,
+- `is_superuser` grants no bypass on any authorization path,
+- no Django Admin depends on them.
+
+Requires an ADR and a security regression suite. Until then the mixin stays present but non-authoritative.

@@ -1,0 +1,236 @@
+P2 CONNECTED QUALIFICATION EVIDENCE
+Generated: 2026-09-17T23:55:00+03:00
+Baseline commit: 189a500 (post FIX-P0)
+Environment: Docker 29.5.2; image built from apps/backend/Dockerfile, unmodified
+Database:    postgis/postgis:17-3.5 -> PostgreSQL 17.5 + PostGIS
+Cache:       redis:7-alpine
+Server:      the unmodified Dockerfile CMD
+             (daphne -b 0.0.0.0 -p 8000 directory_backend.asgi:application)
+
+================================================================================
+1. MIGRATION DRIFT: BEFORE
+================================================================================
+Captured with `makemigrations --dry-run --verbosity 3`; no migration was written.
+13 operations across 7 apps.
+
+  analytics        RenameIndex analytics_p_name_30ed27_idx    -> analytics_p_name_fafa1f_idx
+  analytics        RenameIndex analytics_p_receive_7d02b7_idx -> analytics_p_receive_db607a_idx
+  business_hours   RenameIndex business_ho_facilit_idx        -> business_ho_facilit_a103a6_idx
+  content_services RenameIndex content_ser_enabled_57493d_idx -> content_ser_enabled_788aa2_idx
+  content_services RenameIndex content_ser_target__67e917_idx -> content_ser_target__db863f_idx
+  facilities       RemoveConstraint uniq_submitted_application_per_facility_kind   <-- DESTRUCTIVE
+  facilities       RenameIndex facilities__prov_cat_status_idx -> facilities__provinc_c99cb5_idx
+  notifications    RenameIndex notificatio_user_id_67bc12_idx -> notificatio_user_id_2685ae_idx
+  notifications    RenameIndex notificatio_user_id_9c4029_idx -> notificatio_user_id_554261_idx
+  pharmacy_duty    RemoveConstraint prevent_overlapping_duty_for_facility          <-- GiST CHURN
+  pharmacy_duty    RenameIndex pharmacy_du_facilit_idx        -> pharmacy_du_facilit_46c259_idx
+  pharmacy_duty    AddConstraint    prevent_overlapping_duty_for_facility          <-- GiST CHURN
+  accounts         AlterField groups / is_superuser / user_permissions
+
+================================================================================
+2. ROOT CAUSES
+================================================================================
+Nine RenameIndex  : migrations hardcoded index names; models declared no explicit
+                    name, so Django derived different hash-based names.
+
+facilities        : uniq_submitted_application_per_facility_kind was created by
+                    facilities/0003_owner_media_integrity and enforces 06-DATA-MODEL,
+                    but FacilityApplication had no Meta at all, so the autodetector
+                    proposed dropping it. The project qualifier could not detect this:
+                    it searched for the name inside the migration text, which keeps its
+                    historic AddConstraint forever and therefore always matched.
+
+pharmacy_duty     : pharmacy_duty/migrations/0001_initial declared its own local copy of
+                    the TstzRange helper instead of importing pharmacy_duty.models.TstzRange.
+                    Probe result:
+                      TstzRange.deconstruct() round-trip : STABLE (d1 == d2, rebuilt == original)
+                      model    class : pharmacy_duty.models.TstzRange
+                      migration class: pharmacy_duty.migrations.0001_initial.TstzRange
+                      same class     : False
+                    BaseExpression.identity begins with self.__class__, so the two
+                    expressions could never compare equal and the drift was perpetual.
+                    Deconstruction was never the problem.
+
+accounts          : PermissionsMixin field definitions in the hand-written migration
+                    omitted verbose_name and help_text. Fields were present since
+                    accounts/0001_initial; only their definition drifted.
+
+================================================================================
+3. MIGRATION DRIFT: AFTER
+================================================================================
+4 operations across 2 apps, both justified and both accepted.
+
+  accounts/0005_alter_user_groups_alter_user_is_superuser_and_more
+  facilities/0004_rename_facilities__prov_cat_status_idx_facility_prov_cat_status_idx
+
+Everything else reached zero.
+
+Index names are now pinned in model state. Eight keep their exact existing database
+name. One could not: facilities__prov_cat_status_idx is 31 characters and
+django.db.models.Index.max_name_length is 30 (verified directly), so Django rejects it
+with models.E034. Renamed to facility_prov_cat_status_idx (28 characters).
+
+================================================================================
+4. EXPECTED SQL
+================================================================================
+$ manage.py sqlmigrate accounts 0005
+BEGIN;
+-- Alter field groups on user
+-- (no-op)
+-- Alter field is_superuser on user
+-- (no-op)
+-- Alter field user_permissions on user
+-- (no-op)
+COMMIT;
+
+$ manage.py sqlmigrate facilities 0004
+BEGIN;
+ALTER INDEX "facilities__prov_cat_status_idx" RENAME TO "facility_prov_cat_status_idx";
+COMMIT;
+
+No data is touched. No constraint is created or dropped. No index is rebuilt.
+
+================================================================================
+5. FRESH DATABASE
+================================================================================
+manage.py check ........................ exit=0
+manage.py migrate (fresh) .............. exit=0
+manage.py makemigrations --check ....... exit=0
+manage.py migrate (again) .............. exit=0
+manage.py makemigrations --check (2nd) . exit=0   <- convergence holds on a second pass
+
+================================================================================
+6. EXISTING DATABASE UPGRADE PATH
+================================================================================
+A database was built with the pre-batch code at 189a500 and seeded, then upgraded.
+
+Applied: accounts.0005, facilities.0004. Nothing else.
+makemigrations --check on the upgraded database: exit=0
+
+Row counts   before: provinces=1 categories=1 facilities=1 applications=1 duty=1
+             after : provinces=1 categories=1 facilities=1 applications=1 duty=1
+
+pg_class.oid across the upgrade:
+  prevent_overlapping_duty_for_facility         27009 -> 27009   untouched, no GiST rebuild
+  uniq_submitted_application_per_facility_kind  26314 -> 26314   preserved, not dropped
+  facilities__prov_cat_status_idx
+    -> facility_prov_cat_status_idx             26124 -> 26124   renamed in place, not rebuilt
+  pharmacy_du_facilit_idx                       27011 -> 27011   untouched
+  business_ho_facilit_idx                       26209 -> 26209   untouched
+
+The invariant index definition is unchanged after the upgrade:
+  CREATE UNIQUE INDEX uniq_submitted_application_per_facility_kind
+  ON public.facilities_facilityapplication USING btree (facility_id, kind)
+  WHERE ((status)::text = 'SUBMITTED'::text)
+
+facilities/0004 is a RenameIndex, which Django generates with both old_name and
+new_name, so the migration is reversible.
+
+================================================================================
+7. CONSTRAINT BEHAVIOUR AGAINST THE REAL DATABASE
+================================================================================
+PASS  second SUBMITTED INITIAL application for the same facility
+        expected=rejection  actual=REJECTED BY DATABASE
+        db said: duplicate key value violates unique constraint
+                 "uniq_submitted_application_per_facility_kind"
+PASS  second DRAFT INITIAL application for the same facility
+        expected=acceptance actual=ACCEPTED
+PASS  SUBMITTED REVERIFICATION application for the same facility
+        expected=acceptance actual=ACCEPTED
+PASS  duty shift overlapping an existing one
+        expected=rejection  actual=REJECTED BY DATABASE
+        db said: conflicting key value violates exclusion constraint
+                 "prevent_overlapping_duty_for_facility"
+PASS  duty shift starting exactly when the previous one ends
+        expected=acceptance actual=ACCEPTED   (half-open range confirmed)
+
+RESULT: ALL INVARIANTS ENFORCED
+
+================================================================================
+8. HARDENED QUALIFIER
+================================================================================
+scripts/qualify-owner-source.py now parses facilities/models.py with ast, walks into
+FacilityApplication.Meta.constraints and asserts the constraint is declared in model
+state with the right name, the (facility, kind) scope and the partial SUBMITTED
+condition. The migration text check remains as a second leg only.
+
+Negative test:
+  constraint removed from model state -> exit=1
+    FAIL uniq_submitted_application_per_facility_kind is not declared in
+         FacilityApplication.Meta.constraints
+  constraint restored                -> exit=0
+
+The previous text-only check passed in both cases.
+
+================================================================================
+9. TEST SUITE
+================================================================================
+$ uv run pytest          (official command, no import-mode workaround)
+49 passed in 12.26s      exit=0
+
+Previously this command collected nothing at all and aborted with
+"import file mismatch" on duplicate test module basenames.
+
+facilities/tests/test_application_invariants.py -v : 5 collected, 5 passed
+  test_constraint_is_declared_in_model_state                        PASSED
+  test_autodetector_does_not_propose_dropping_the_constraint        PASSED
+  test_database_rejects_a_second_submitted_application_of_the_same_kind PASSED
+  test_database_allows_a_draft_alongside_a_submitted_application    PASSED
+  test_database_allows_a_submitted_application_of_a_different_kind  PASSED
+
+================================================================================
+10. INT-030 FOUND BY RUNNING ON POSTGRESQL FOR THE FIRST TIME
+================================================================================
+facilities/tests/test_owner_api.py::test_submit_rechecks_current_owner_registration_switch
+  django.db.utils.NotSupportedError:
+  FOR UPDATE cannot be applied to the nullable side of an outer join
+
+submit_facility locked with select_for_update() over
+select_related("category__group", "category__capabilities", "province").
+category__capabilities is a reverse one-to-one, so select_related emits a LEFT OUTER
+JOIN and PostgreSQL refuses FOR UPDATE on its nullable side.
+POST /api/v1/owner/facilities/{id}/submit/ would have failed at runtime in every
+environment. SQLite never enforced the rule, so the defect stayed invisible.
+
+Fixed with select_for_update(of=("self",)): the intended lock on facilities_facility
+is kept, the joined reference rows are not locked, semantics unchanged. The other
+three select_for_update sites were checked and are unaffected.
+
+================================================================================
+11. LIVE HTTP, FINAL IMAGE, NO MOUNTS
+================================================================================
+/health/live/                        -> HTTP 200
+/health/ready/                       -> HTTP 200
+   {"status": "ready", "checks": {"database": "ok", "redis": "ok"}}
+/api/v1/public/provinces/            -> HTTP 200
+/api/v1/public/facilities/           -> HTTP 400   correct required-field validation
+/api/v1/admin/dashboard/             -> HTTP 403   RBAC fail-closed
+/api/v1/owner/facilities/            -> HTTP 500   INT-010, open, deferred by decision
+
+No infrastructure 500 remains. The single 500 is an application-layer authorization
+defect on one owner endpoint, scheduled for a later batch.
+
+================================================================================
+12. REGRESSIONS AND DEBT
+================================================================================
+node scripts/check-governance.mjs .................. exit=0
+node packages/design-tokens/scripts/validate.mjs .... exit=0
+node packages/design-tokens/scripts/generate.mjs --check  exit=0
+python infrastructure/scripts/qualify-staging-source.py   exit=0
+python apps/backend/scripts/qualify-owner-source.py ....  exit=0  (hardened, 7 checks)
+
+uv run ruff check .   104 errors, against a 106 baseline. Debt reduced, none added.
+uv run mypy .         untouched at its 556 baseline.
+Both are tracked as DEBT-001 and DEBT-002 in DECISIONS.md.
+
+================================================================================
+13. STILL OPEN
+================================================================================
+INT-010  /api/v1/owner/facilities/ returns 500 for an unauthenticated caller
+INT-029  a Redis connection error propagates after commit from the realtime publisher
+INT-005  the generated OpenAPI schema carries no component schemas (P10)
+INT-006  no province or taxonomy seed exists
+INT-008  DutyShift is missing created_by, cancelled_at and ended_early_at
+
+`P2 BACKEND FOUNDATION CONNECTED PASS` is achieved. It is not phase closure: security,
+load and restore gates belong to P20 and have not run.

@@ -27,3 +27,15 @@ only for genuine external blockers and not for bugs or local toolchain issues:
 Note on EXT-004: the audit confirmed that no V3 remote exists for the connected GitHub account. Any repo
 chosen for V3 must be a dedicated one; `servacode/directory` previously held an unrelated V1 NestJS
 codebase and is not part of this project's lineage.
+
+## Register review — 2026-09-17 (P2 connected qualification batch)
+
+Reviewed again. **No external blocker added, removed or changed.** EXT-001 to EXT-005 stand as written.
+
+Two conditions from this batch are deliberately kept out of the register, which is for genuine external
+blockers only:
+
+- INT-009, INT-028, INT-007 and INT-030 were internal bugs and are now closed. INT-010, INT-029,
+  INT-005, INT-006 and INT-008 remain open internal bugs, tracked in `RECEIPT-AUDIT-2026-09-17.md`.
+- Google Maven not serving this workstation is classified `ENVIRONMENT_LIMITATION`, recorded under
+  "Local execution limitation" in `PROJECT-STATUS.md`. It does not block the backend or P10.

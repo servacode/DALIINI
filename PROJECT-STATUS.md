@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-09-17T22:15:00+03:00
+Last updated: 2026-09-17T23:55:00+03:00
 
 ## Baseline
 
@@ -14,7 +14,15 @@ Last updated: 2026-09-17T22:15:00+03:00
 ## Qualification rule
 
 A gate is PASS only with a real command exit code. Textual source assertions do not qualify a
-gate on their own — that method let four P0 defects through every gate up to P21.
+gate on their own — that method let four P0 defects through every gate up to P21, and a text match
+inside a migration file kept reporting PASS on an invariant the model had already stopped declaring.
+
+## Quality debt
+
+`DECISIONS.md` carries the register. DEBT-001 ruff (104 issues, from a 106 baseline), DEBT-002 mypy
+(556), DEBT-003 the deferred `PermissionsMixin` evaluation. All are mandatory before staging or
+production closure and none of them blocks P10. Standing rule: no new lint or type debt in a touched
+file.
 
 ## Phase table
 
@@ -22,7 +30,7 @@ gate on their own — that method let four P0 defects through every gate up to P
 |---|---|---|---|---|---|---|---|
 | P0 Governance | CLOSED | Repository initialized; verified spec preserved; governance/tooling/CI skeleton created | Source checksums, governance validator, JSON parse, whitespace, framework and secret-file hygiene passed | None | `artifacts/evidence/p0-governance-20260917.txt` | 871d4c7 | 2026-09-17 |
 | P1 Design Tokens | CLOSED | Canonical tokens, generator outputs for TS/CSS/Kotlin/Swift, font policy, component specs | Token validation, WCAG contrast checks, deterministic drift check, governance regression | None | `artifacts/evidence/p1-design-tokens-20260917.txt` | 9c4031c | 2026-09-17 |
-| P2 Backend Foundation | IN_PROGRESS | Django/GeoDjango settings, Channels ASGI, Celery, Redis cache/channel/broker, S3 boundary, request IDs/structured request logs, health, Docker dependencies, MinIO bucket init, connected PostGIS/Redis/S3/Celery smoke and CI definition. FIX-P0 corrected ASGI initialization order and removed the Django messages/session mismatch that made every HTTP request fail. | Executed on PostgreSQL 17.5 + PostGIS from an image built with the unmodified Dockerfile: `manage.py check` exit 0, `showmigrations` exit 0, `migrate` exit 0 (30 migrations), daphne started, `/health/live/` 200, `/health/ready/` 200 with database and redis both ok, `/api/v1/public/provinces/` 200, `/api/v1/public/facilities/` 400, `/api/v1/admin/dashboard/` 403. No infrastructure 500 remains. | Close INT-009 migration drift (`makemigrations --check` still exits 1) and INT-028 pytest collection; then run ruff/mypy/pytest green and the connected Celery/S3 qualification | `artifacts/evidence/fixp0-runtime-20260917.txt`, `RECEIPT-AUDIT-2026-09-17.md` | FIX-P0 | 2026-09-17 |
+| P2 Backend Foundation | CONNECTED_VERIFIED | Django/GeoDjango settings, Channels ASGI, Celery, Redis cache/channel/broker, S3 boundary, request IDs/structured logs, health, Docker, MinIO init and CI definition. FIX-P0 restored ASGI boot and the request path. This batch closed INT-009 migration drift, INT-028 test collection, INT-007 test database engine and INT-030 (FOR UPDATE across a LEFT OUTER JOIN in submit_facility), and hardened the submitted-uniqueness qualifier from a migration text match to a model-state check. | Executed on PostgreSQL 17.5 + PostGIS from an image built with the unmodified Dockerfile: check/migrate/makemigrations --check all exit 0 with convergence on a second pass; fresh database and existing-database upgrade both clean with every pg_class.oid preserved; `uv run pytest` 49 passed exit 0; both business invariants proven rejected by the database; /health/live/ 200, /health/ready/ 200 with database and redis ok, /public/provinces/ 200, /public/facilities/ 400, /admin/dashboard/ 403. | Connected Celery, S3 and Channels qualification; INT-010 unauthenticated 500 on /owner/facilities/; INT-029 Redis error propagating after commit. Security, load and restore belong to P20. | `artifacts/evidence/p2-connected-20260917.txt`, `artifacts/evidence/fixp0-runtime-20260917.txt` | P2-connected | 2026-09-17 |
 | P3 Auth/RBAC | SOURCE_IMPLEMENTED | Custom UUID user/canonical Syrian phone, OTP digest/challenge flow, registration/login, JWT access, opaque rotating refresh with grace/reuse compromise handling, session list/revoke/logout-all, recovery reset, profile GET/PATCH, account deletion request/anonymization with last-owner protection, Admin RBAC and redacted audit; Auth surface restored during P20 integrity review | 12 tests authored; governance/design regression, compileall, AST, line-length, persisted-secret invariants, phone executable smoke, YAML and whitespace passed. Django tests not executable in current environment. | `uv` dependency resolution; ruff/mypy/pytest; migration drift/system checks; PostgreSQL/Redis connected qualification | `artifacts/evidence/p3-auth-rbac-source-20260917.txt` | f9408d8 | 2026-09-17 |
 | P4 Taxonomy | SOURCE_IMPLEMENTED | Cities/neighborhoods, dynamic groups/categories, capabilities, independent province switches, verification policies, specialties/service tags, public selectors/DTOs, audited mutation services, 14-province seed and Raqqa/Pharmacy/Duty launch baseline | Static qualification passed: governance/design regression, compileall/AST, line length, seed/invariant/privacy source checks; Django/PostGIS runtime tests unavailable | Generate lock; run ruff/mypy/pytest/Django migration checks and connected PostGIS qualification before gate closure | `artifacts/evidence/p4-taxonomy-source-20260917.txt` | 0048719 | 2026-09-17 |
 | P5 Owner Domain | SOURCE_IMPLEMENTED | Facility lifecycle, OWNER/MANAGER membership, draft/reverification applications, owner config/facility APIs, current-policy submission validation, admin review/suspend/reactivate/close services, public image boundary, private verification evidence, safe image re-encode/limits, audit hooks | 12 P5 tests authored; governance/design drift, full backend AST/compileall, P5 line-length, DTO storage-key privacy, preload image-dimension gate and whitespace passed. Django/PostGIS/S3 runtime tests unavailable locally | Run ruff/mypy/pytest, migration drift, PostgreSQL row-lock/concurrency, S3 media tests and admin lifecycle qualification before gate closure | `artifacts/evidence/p5-owner-domain-source-20260917.txt` | 11aa673 | 2026-09-17 |

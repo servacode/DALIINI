@@ -1,6 +1,6 @@
 # HANDOFF
 
-Last updated: 2026-09-17T22:15:00+03:00
+Last updated: 2026-09-17T23:55:00+03:00
 
 ## PROJECT SUMMARY
 
@@ -323,3 +323,105 @@ INT-006, INT-007 and INT-008 behind those.
 
 Read `RECEIPT-AUDIT-2026-09-17.md` in full, then `plan.md`. Close P2 before anything else, then P10.
 Do not start iOS. Do not claim any gate without a command exit code.
+
+
+## P2 CONNECTED QUALIFICATION — 2026-09-17T23:55:00+03:00
+
+### Gate achieved
+
+`P2 BACKEND FOUNDATION CONNECTED PASS` is achieved and P2 is recorded as `CONNECTED_VERIFIED`.
+Every criterion was met with a real command exit code, on PostgreSQL 17.5 with PostGIS, from an image
+built out of the source with the unmodified `apps/backend/Dockerfile` and its unmodified CMD:
+
+`check`, `showmigrations`, `migrate` and `makemigrations --check --dry-run` all exit 0, with
+convergence holding on a second pass; `uv run pytest` reports 49 passed and exits 0; `/health/live/`
+returns 200; `/health/ready/` returns 200 with database and redis both ok; `/public/provinces/` 200,
+`/public/facilities/` 400, `/admin/dashboard/` 403. No infrastructure 500 remains.
+
+`CONNECTED_VERIFIED` is not phase closure. Connected Celery, S3 and Channels qualification have not
+run, and security, load and restore belong to P20.
+
+### What was closed
+
+**INT-009 migration drift.** The drift was larger than first reported: seven apps and thirteen
+operations, not six. It collapsed to four justified operations across two apps.
+
+- Nine cosmetic `RenameIndex` were removed by pinning the existing database index names in model state
+  (DECISION-006). Eight indexes keep their exact name. One could not: `facilities__prov_cat_status_idx`
+  is 31 characters and `Index.max_name_length` is 30, so Django rejects it with `models.E034`; it was
+  renamed to `facility_prov_cat_status_idx`, the only unavoidable rename.
+- One destructive `RemoveConstraint` was refused. `uniq_submitted_application_per_facility_kind`
+  enforces a `06-DATA-MODEL` invariant; `FacilityApplication` simply had no `Meta`. The constraint is
+  now declared in model state with the identical name, fields and condition (DECISION-007). The
+  database and the migration were not touched.
+- The perpetual GiST drop-and-recreate was traced to a duplicate `TstzRange` class declared inside
+  `pharmacy_duty/migrations/0001_initial` (DECISION-008). `TstzRange.deconstruct()` round-trips
+  perfectly; the earlier hypothesis about unstable deconstruction was wrong. `BaseExpression.identity`
+  begins with `self.__class__`, so two identical expressions from two different classes never compare
+  equal. The migration now imports the shared helper. Zero SQL.
+- The three `accounts` `AlterField` were accepted only after `sqlmigrate` rendered `-- (no-op)` for all
+  three (DECISION-009).
+
+**INT-028 pytest collection.** Three missing `tests/__init__.py` markers were added; all twelve test
+packages now have one. The official command collects and runs.
+
+**INT-007 test database engine.** `settings/test.py` no longer pins SQLite; it inherits PostgreSQL +
+PostGIS from `base.py`. The suite could never have passed on SQLite, which fails on `geo_db_type`.
+
+**INT-030, found by running the suite on PostgreSQL for the first time.** `submit_facility` locked with
+`select_for_update()` across a LEFT OUTER JOIN produced by `select_related("category__capabilities")`,
+a reverse one-to-one. PostgreSQL refuses `FOR UPDATE` on the nullable side of an outer join, so
+`POST /api/v1/owner/facilities/{id}/submit/` would have failed at runtime in every environment. Fixed
+with `select_for_update(of=("self",))`; no semantic change.
+
+**The invariant qualifier was hardened.** It used to search for the constraint name inside a migration
+file, which can never fail, because a migration keeps its historic `AddConstraint` forever. It now
+parses the model with `ast` and asserts the constraint is declared in `FacilityApplication.Meta`.
+Negative-tested: removing the constraint from model state makes it exit 1. Four connected tests cover
+the rest, including that the autodetector does not propose removal and that the database itself refuses
+the violating row.
+
+### Upgrade safety
+
+An existing database was built with the pre-batch code, seeded, then upgraded. Exactly two migrations
+applied. Row counts identical. Every `pg_class.oid` preserved, including the GiST exclusion constraint
+at 27009 and the invariant partial unique index at 26314; the renamed index kept oid 26124, so it was
+renamed in place and not rebuilt.
+
+### Corrections to earlier records
+
+The audit stated that the `PermissionsMixin` fields "were never migrated". That was wrong: they are
+present in `accounts/0001_initial`, and only their field definition had drifted. The audit also
+reported six drifting apps; the correct number is seven, `analytics` having been lost to output
+truncation.
+
+### Still open
+
+- INT-010 `/api/v1/owner/facilities/` returns 500 for an unauthenticated caller. Deferred by decision.
+- INT-029, new: a Redis connection error propagates after the transaction has committed, because
+  `publish_after_commit` guards `channel_layer is None` but not a connection failure.
+  `05-SYSTEM-ARCHITECTURE §13` asks for safe degradation.
+- INT-005 the generated OpenAPI schema carries no component schemas. This is the P10 blocker.
+- INT-006 no province or taxonomy seed exists.
+- INT-008 `DutyShift` is missing `created_by`, `cancelled_at` and `ended_early_at`.
+
+### Quality debt
+
+`DECISIONS.md` now carries a register. DEBT-001 ruff at 104 issues, reduced from a 106 baseline.
+DEBT-002 mypy at 556, untouched. DEBT-003 the deferred `PermissionsMixin` removal evaluation, with its
+six preconditions. All three are mandatory before staging or production closure and none blocks P10.
+The standing rule is no new lint or type debt in any file that is touched.
+
+### Android
+
+Unchanged and still `SOURCE_IMPLEMENTED`. Google Maven does not serve this machine, which is an
+`ENVIRONMENT_LIMITATION`, not an internal defect. Do not downgrade AGP, change Compose or AndroidX
+versions, change SDK policy, or use an untrusted mirror. `BUILD_VERIFIED` requires
+`gradle :app:assembleDebug` to exit 0 from a network that reaches the official Google Maven or a
+trusted artifact proxy the project owns.
+
+### Next
+
+**P10 Contracts.** It must precede all further client work: the schema carries 72 paths with zero
+component schemas and zero request bodies, so Admin, Android and iOS are all blocked behind it. iOS
+stays deferred.
