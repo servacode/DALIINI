@@ -1,0 +1,17 @@
+P12 admin foundation source qualification 2026-09-17T13:18:39+00:00
+--- package/config JSON ---
+PASS
+--- RTL/shared tokens ---
+PASS
+--- refresh token browser-storage boundary ---
+PASS
+--- central permission primitive ---
+PASS
+--- same-origin BFF boundary ---
+PASS
+--- security headers ---
+PASS
+--- no invented production domain ---
+PASS
+--- git diff check ---
+PASS

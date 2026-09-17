@@ -192,3 +192,8 @@ Tooling foundation exists for canonical Django-generated OpenAPI, schema hashing
 ## P11 PUBLIC WEB STATUS
 
 Source implemented under `apps/web`: Next.js RTL landing/privacy/terms/support/delete-account pages consuming shared Serva design tokens with security headers and env-only domain/contact values. Evidence: `artifacts/evidence/p11-public-web-source-20260917.txt`. Runtime build/E2E are pending because this container has Node 22 and no pnpm while baseline requires Node 24.
+
+
+## P12 ADMIN FOUNDATION STATUS
+
+Source implemented under `apps/admin`: RTL staff shell, shared tokens, permission-aware UI primitive, server-only backend boundary, HttpOnly/SameSite refresh-cookie helpers, same-origin mutation guard and security headers. Evidence: `artifacts/evidence/p12-admin-foundation-source-20260917.txt`. Actual login/refresh and typed API binding wait on P10 generated contracts and backend runtime.

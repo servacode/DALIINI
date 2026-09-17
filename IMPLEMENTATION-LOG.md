@@ -539,3 +539,18 @@ Tests: JSON/config parse, required pages, RTL/token assertions, no hardcoded hex
 Remaining: Node 24/pnpm install, lint/typecheck/build/Playwright/accessibility; legal/company wording requires owner/legal review before production.
 
 Next: P12 Admin foundation can proceed at source level.
+
+
+## 2026-09-17T16:34:00+03:00 — P12 Admin Foundation source implementation
+
+Goal: establish secure RTL custom Admin foundations without exposing refresh tokens to browser JavaScript.
+
+Created: `apps/admin` Next.js TypeScript source, shared layout/styles, permission helper, server-only backend adapter, refresh-cookie helpers and same-origin logout route.
+
+Implemented: right-side desktop navigation, responsive foundation, `can(permission)`, HttpOnly/SameSite cookie policy, no local/session storage token code, CSP/referrer/frame/content-type headers, env-backed backend/root-domain configuration.
+
+Tests: package/config parse, RTL/shared token assertions, browser-storage token absence, permission primitive, same-origin/BFF assertions, security headers, domain placeholders and whitespace passed.
+
+Remaining: P10 generated client and backend auth contract binding; Node 24/pnpm lint/typecheck/build/unit/Playwright.
+
+Next: P13 Admin Operations source work.
