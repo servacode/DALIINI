@@ -1,27 +1,27 @@
 # Autonomous Build Plan
 
-Last updated: 2026-09-17T16:22:00+03:00
+Last updated: 2026-09-17T16:28:00+03:00
 
 ## Current phase
 
-**P11 — Public Web**
+**P12 — Admin Foundation**
 
-P10 tooling is implemented but its gate remains open pending real Django schema and generated clients. P11 is independent and may proceed.
+P10 remains IN_PROGRESS pending real generated contracts. P11 is SOURCE_IMPLEMENTED; its runtime web gate is pending Node 24/pnpm. P12 source work may proceed independently.
 
 ## Goal
 
-Build the public Next.js web surface required for landing, privacy, terms, support and account deletion with RTL-first shared design tokens and domain-neutral production configuration.
+Bootstrap the custom Next.js Admin with RTL design system, secure browser-session/BFF boundary, generated API client boundary, navigation/layout and permission-aware UI foundations.
 
 ## Tasks
 
-- [ ] Re-read public-web/legal/security/release requirements.
-- [ ] Bootstrap Next.js + TypeScript app under `apps/web`.
-- [ ] Consume shared design tokens; RTL Arabic baseline.
-- [ ] Implement landing, privacy, terms, support and delete-account pages.
-- [ ] Add security headers/metadata and ROOT_DOMAIN/API env boundaries.
-- [ ] Add lint/type/build/test configuration.
-- [ ] Run available source checks; runtime build when Node 24/pnpm is available.
+- [ ] Re-read Admin architecture/security/design requirements.
+- [ ] Bootstrap `apps/admin` Next.js + strict TypeScript.
+- [ ] Consume shared design tokens/components.
+- [ ] Implement secure same-origin BFF/session boundary; no refresh token in browser storage.
+- [ ] Add auth shell/layout/navigation and permission primitives.
+- [ ] Add lint/type/build/test/Playwright configuration.
+- [ ] Source qualify; runtime verify when Node 24/pnpm/backend contract is available.
 
 ## Gate
 
-`P11 PUBLIC WEB PASS` — **NOT YET ACHIEVED**.
+`P12 ADMIN FOUNDATION PASS` — **NOT YET ACHIEVED**.

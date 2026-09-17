@@ -5,5 +5,9 @@
   "scripts": {
     "generate": "node scripts/generate.mjs",
     "check": "node scripts/validate.mjs && node scripts/generate.mjs --check"
+  },
+  "exports": {
+    "./tokens.css": "./generated/tokens.css",
+    "./tokens": "./generated/tokens.ts"
   }
 }

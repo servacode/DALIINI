@@ -1,0 +1,13 @@
+P11 public web source qualification 2026-09-17T13:17:25+00:00
+--- package/config JSON ---
+PASS
+--- required pages ---
+PASS
+--- RTL and design tokens ---
+PASS
+--- security headers ---
+PASS
+--- no invented production domain/email ---
+PASS
+--- git diff check ---
+PASS

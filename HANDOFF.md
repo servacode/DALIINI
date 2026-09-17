@@ -187,3 +187,8 @@ Source implemented: first-party advertisements with scoped scheduling and valida
 ## P10 CONTRACT STATUS
 
 Tooling foundation exists for canonical Django-generated OpenAPI, schema hashing, drift CI and generated TS/Kotlin/Swift packages. No manual `schema.yaml` was created. Real schema/client generation remains pending because the current environment cannot install/import Django dependencies and OpenAPI Generator is not installed. Evidence: `artifacts/evidence/p10-contract-tooling-source-20260917.txt`.
+
+
+## P11 PUBLIC WEB STATUS
+
+Source implemented under `apps/web`: Next.js RTL landing/privacy/terms/support/delete-account pages consuming shared Serva design tokens with security headers and env-only domain/contact values. Evidence: `artifacts/evidence/p11-public-web-source-20260917.txt`. Runtime build/E2E are pending because this container has Node 22 and no pnpm while baseline requires Node 24.

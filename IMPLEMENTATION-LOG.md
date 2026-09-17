@@ -520,3 +520,22 @@ Tests: bash syntax, Python helper compile, JSON config parsing, generated-only p
 Remaining: actual schema/client generation cannot execute until Django dependencies/toolchain are available. P10 stays IN_PROGRESS.
 
 Next: continue independent P11 Public Web source implementation.
+
+
+## 2026-09-17T16:28:00+03:00 — P11 Public Web source implementation
+
+Goal: build release-required public/legal web surfaces without inventing production domain or legal identity details.
+
+Created: Next.js TypeScript app under `apps/web` with landing, privacy, terms, support and delete-account pages plus shared shell/config/styles.
+
+Modified: design-token package exports so web consumes the same generated CSS tokens.
+
+Implemented: Arabic RTL root, responsive layouts, environment-backed ROOT_DOMAIN/support/privacy contacts, CSP/content-type/referrer/frame headers, no Admin behavior.
+
+Version verification: current official sources showed Next.js 16.3.3 Active LTS security release and React 19.3 stable; source pins were updated accordingly.
+
+Tests: JSON/config parse, required pages, RTL/token assertions, no hardcoded hex in app CSS, security-header assertions, no invented production URL/email, `git diff --check`.
+
+Remaining: Node 24/pnpm install, lint/typecheck/build/Playwright/accessibility; legal/company wording requires owner/legal review before production.
+
+Next: P12 Admin foundation can proceed at source level.
