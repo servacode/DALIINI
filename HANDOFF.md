@@ -169,7 +169,7 @@ Continue P18 from `plan.md`: harden Android offline/realtime/push behavior, even
 
 ## LATEST COMMIT SHA
 
-`682218a` — P16 Android Owner implementation commit. Management-document commit follows this handoff update.
+`c353595` — P17 Maps / Navigation source implementation and qualification.
 
 
 ## WORKSPACE RECOVERY
