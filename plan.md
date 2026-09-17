@@ -1,59 +1,63 @@
 # Implementation Plan
 
-Updated: 2026-09-17T19:10:00+03:00
+Updated: 2026-09-17T19:35:00+03:00
 
 ## Current phase
 
-P19 — Staging Production-Like Deploy
+P20 — Full E2E / Security / Load / Restore Quality
 
 ## Goal
 
-Prepare a production-like staging environment and deployment/runbook source for Django/PostGIS/Redis/Channels/Celery/S3-compatible storage plus public/admin web, without inventing real domains or credentials.
+Create and execute every release-quality test that can run in the current environment, and prepare deterministic connected harnesses for staging. Do not mark the gate passed until the complete staging golden path, security suite, load baseline and restore drill have actually run.
 
 ## Tasks
 
-1. Read infrastructure/environment/domain/operations specifications.
-2. Audit existing Docker/runtime smoke and production settings.
-3. Add staging environment contract using `ROOT_DOMAIN` placeholders only.
-4. Define services: API/ASGI, worker, PostgreSQL/PostGIS, Redis, object storage and web/admin.
-5. Add readiness/liveness and deployment smoke sequence.
-6. Add secret inventory with placeholders only.
-7. Add migration/deploy/rollback runbooks.
-8. Add backup/restore staging rehearsal commands.
-9. Add monitoring/logging expectations and failure signals.
-10. Run all static/source checks possible and document external staging blockers.
+1. Inventory existing backend/admin/Android tests against the critical suites in `17-TESTING-QA-EVIDENCE.md`.
+2. Add a release-quality orchestrator that fails closed on missing required connected inputs.
+3. Add backend security regression coverage for auth, RBAC, IDOR, evidence privacy, sessions/concurrency and account deletion where source/runtime permits.
+4. Add golden-path staging test specification/harness: owner registration → draft → evidence → submit → admin approval → public discovery → duty → map/directions → rating → sensitive edit → reverification.
+5. Add load-baseline scenarios for public discovery/search/map and authenticated owner/admin reads without destructive production behavior.
+6. Add restore-drill validation/consistency checklist and evidence output format.
+7. Add release blocker report enforcing no P0/P1 at RC.
+8. Run all local/static/pure tests possible and record exact unavailable connected gates.
+9. Keep P10 generated-contract gap and dependency lockfile gap visible; do not hand-author generated clients/lockfiles.
+10. Update evidence, status, blockers and handoff.
 
 ## Acceptance criteria
 
-- No production/staging secret is committed.
-- No real domain is invented; `ROOT_DOMAIN` remains configurable.
-- API/worker/realtime/database/cache/storage responsibilities are explicit.
-- Staging uses production-like settings, not Django dev server assumptions.
-- Migration, rollback, backup and restore steps are documented and scriptable.
-- Runtime smoke fails closed when dependencies or secrets are absent.
+- One command/harness can enumerate required P20 suites and fail closed when staging is absent.
+- Security cases cover documented high-risk boundaries, not only happy paths.
+- Golden path is executable against a supplied staging origin and test identities without embedded credentials.
+- Load test is bounded and staging-only by default.
+- Restore evidence captures backup identifier, disposable target, timestamps, consistency/smoke results and achieved RPO/RTO.
+- No P20 PASS is claimed from source inspection.
 
 ## Required tests
 
-- YAML/config parse and source validation.
-- Secret-marker scan.
-- production/staging settings fail-closed source checks.
-- deployment script syntax checks.
-- connected staging runtime smoke when hosting credentials/services exist.
+- Backend unit/integration/security suites when Django dependencies become available.
+- Admin lint/typecheck/build/Playwright when Node 24/pnpm dependencies are available.
+- Android unit/build/instrumentation/device suites when Gradle/SDK/device are available.
+- Connected staging golden path.
+- Bounded staging load baseline.
+- Timed staging restore drill.
 
 ## Expected files
 
-- `infrastructure/**`
-- `.github/workflows/**` if staging CI is appropriate.
-- environment/runbook docs and evidence.
-- project management files.
+- `infrastructure/quality/**`
+- `apps/backend/tests/**` or domain test additions as required.
+- `apps/admin/**` Playwright/config additions as required.
+- `artifacts/evidence/**`
+- root project-management files.
 
 ## Risks
 
-- Real staging hosting/domain/object-storage credentials may be external blockers.
-- Current container has no Docker/PostgreSQL/Redis and cannot prove runtime deployment.
+- EXT-004: no V3 GitHub remote for Render deployment.
+- EXT-005: production-like staging provisioning has external cost.
+- P10 real OpenAPI generation is still blocked by backend runtime.
+- `uv.lock` and `pnpm-lock.yaml` are not yet generated; release reproducibility cannot pass until real dependency resolution is available.
 
 ## Gate
 
-Target gate: `P19 STAGING RUNTIME PASS`.
+Target gate: `P20 RELEASE QUALITY PASS`.
 
-Source/runbook qualification can be completed locally; connected staging runtime cannot pass without hosting/services.
+Current phase may reach source/harness qualification only; full gate requires connected staging and actual restore/load/security execution.

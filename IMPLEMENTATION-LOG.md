@@ -757,3 +757,37 @@ P18 is SOURCE_IMPLEMENTED only. Connected Channels/Redis, FCM and physical-devic
 
 Next:
 P19 — staging production-like deploy.
+
+## 2026-09-17T19:35:00+03:00 — P19 staging source qualification
+
+Goal: prepare a production-like, isolated staging topology without touching V2 resources or inventing a domain/credential.
+
+Implemented:
+- Corrected staging settings to inherit production exactly once; added fail-closed `DATABASE_URL`, refresh/recovery HMAC requirements and trusted HTTPS proxy handling.
+- Removed swallowed backend Docker dependency failure (`|| true`) and retained two-stage dependency install behavior.
+- Added PostGIS extension enablement to the initial location migration.
+- Added `render.yaml` for isolated V3 staging API, Celery worker, PostgreSQL 17, persistent/no-eviction Key Value, public web and admin.
+- Added web/admin monorepo Dockerfiles, staging env placeholder contract, health smoke script and source qualifier.
+- Added deploy, rollback, backup/restore, incident, DNS/TLS and monitoring runbooks.
+
+External verification/actions:
+- Connected Render inventory was inspected. Existing API/admin/Postgres/Key Value resources are V2 and were deliberately not modified.
+- Connected GitHub search found no V3 repository. Available connector actions cannot create a repository, so connected deployment cannot start safely.
+- The Blueprint uses production-like paid staging plans; provisioning is financial and was not performed implicitly.
+
+Commands/tests actually run:
+- `python infrastructure/scripts/qualify-staging-source.py` PASS.
+- `bash -n infrastructure/scripts/staging-smoke.sh` PASS.
+- `python -m compileall -q apps/backend` PASS.
+- P19 Python line-length check PASS.
+- P19 secret-marker scan PASS.
+- `node scripts/check-governance.mjs` PASS.
+- `node packages/design-tokens/scripts/validate.mjs` PASS.
+- `git diff HEAD^ --check` PASS.
+
+Evidence: `artifacts/evidence/p19-staging-source-20260917.txt`.
+Implementation commit: `1cc6cf1`.
+
+Qualification: P19 is `SOURCE_IMPLEMENTED`; `P19 STAGING RUNTIME PASS` is NOT claimed.
+
+Next: P20 full E2E/security/load/restore quality harnesses; run connected suites once EXT-004/EXT-005 and provider credentials are resolved.

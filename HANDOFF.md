@@ -1,6 +1,6 @@
 # HANDOFF
 
-Last updated: 2026-09-17T18:31:00+03:00
+Last updated: 2026-09-17T19:35:00+03:00
 
 ## PROJECT SUMMARY
 
@@ -12,7 +12,7 @@ Django/DRF/GeoDjango modular monolith; PostgreSQL/PostGIS; Redis cache/Channels/
 
 ## CURRENT PHASE
 
-P17 — Maps / Navigation (`IN_PROGRESS`). P10 remains independently `IN_PROGRESS` until Django can generate the real OpenAPI schema and clients.
+P20 — Full E2E / Security / Load / Restore Quality (`IN_PROGRESS`). P19 staging source is implemented but connected staging is blocked by the missing V3 GitHub remote and unapproved paid staging provisioning. P10 remains independently `IN_PROGRESS` until Django generates the real OpenAPI schema/clients.
 
 ## LAST COMPLETED PHASE
 
@@ -20,7 +20,7 @@ P1 — Design System Foundations (`CLOSED`). P2/P3 are intentionally not called 
 
 ## CURRENT WORKING STATE
 
-P0/P1 gates are closed. P2 remains source-level pending connected backend qualification. P3-P9 are `SOURCE_IMPLEMENTED`. P10 contract tooling exists but real Django-generated schema/TS-Kotlin-Swift clients are still pending. P11 Public Web, P12 Admin Foundation and P13 Admin Operations are `SOURCE_IMPLEMENTED`. P13 implementation commit is `ff60f96`; its static gate passed, but Node 24/pnpm, Django/PostgreSQL runtime and Playwright golden paths were not available, so `P13 ADMIN GOLDEN PATH PASS` is not claimed. P14, P15 and P16 Android source are `SOURCE_IMPLEMENTED`; P17 Maps/Navigation is active.
+P0/P1 gates are closed. P2 remains source-level pending connected backend qualification. P3-P9 are `SOURCE_IMPLEMENTED`. P10 contract tooling exists but real Django-generated schema/TS-Kotlin-Swift clients are still pending. P11 Public Web, P12 Admin Foundation and P13 Admin Operations are `SOURCE_IMPLEMENTED`. P13 implementation commit is `ff60f96`; its static gate passed, but Node 24/pnpm, Django/PostgreSQL runtime and Playwright golden paths were not available, so `P13 ADMIN GOLDEN PATH PASS` is not claimed. P14-P18 Android/mobile source phases are `SOURCE_IMPLEMENTED`. P19 staging deployment source is also `SOURCE_IMPLEMENTED`; P20 release quality is active.
 
 ## WHAT IS IMPLEMENTED
 
@@ -59,11 +59,11 @@ P0/P1 gates are closed. P2 remains source-level pending connected backend qualif
 - No live PostgreSQL/PostGIS, Redis, Celery or S3-compatible runtime qualification.
 - P4/P5 Django migration/model/API/PostGIS/S3 runtime tests are not executed.
 - No Admin runtime/typecheck/build/Playwright verification; Node 24/pnpm are unavailable here.
-- No Android, iOS, staging or production runtime/device verification.
+- No Android/iOS device verification, no V3 staging runtime verification, and no production verification.
 
 ## WHAT IS LEFT
 
-P19 through P26, plus P10 real schema/client generation and connected/runtime qualification of source-implemented backend/web/admin/mobile phases as soon as capable toolchains are available.
+P20 through P26, plus P10 real schema/client generation and connected/runtime qualification of source-implemented backend/web/admin/mobile/staging phases as soon as the V3 remote, toolchains and external services are available.
 
 ## KNOWN ISSUES
 
@@ -73,7 +73,7 @@ P19 through P26, plus P10 real schema/client generation and connected/runtime qu
 
 ## EXTERNAL BLOCKERS
 
-See `BLOCKERS.md`: final domain, production provider credentials, and store/signing credentials. Local missing runtime/network is documented as an execution limitation, not mixed into the external blocker register.
+See `BLOCKERS.md`: final domain, owned external provider credentials, store/signing credentials, missing V3 GitHub remote, and paid staging provisioning approval. Local missing runtime/network is documented as an execution limitation, not mixed into the external blocker register.
 
 ## IMPORTANT DECISIONS
 
@@ -120,7 +120,7 @@ Security source includes Argon2 configuration, OTP/refresh digest protections, s
 
 ## STAGING STATUS
 
-NOT_STARTED.
+P19 is `SOURCE_IMPLEMENTED` at commit `1cc6cf1`. `render.yaml` defines isolated V3 staging API/worker/PostgreSQL 17+PostGIS/persistent Key Value/public web/admin; staging inherits production fail-closed settings; Docker sources, smoke and deploy/rollback/backup/restore/DNS/TLS/monitoring runbooks exist. Connected Render inventory was inspected and contains only V2 resources, which were left untouched. No V3 GitHub repository exists in the connected account, and paid staging provisioning was not performed without financial approval; therefore `P19 STAGING RUNTIME PASS` is not claimed.
 
 ## PRODUCTION STATUS
 
@@ -132,10 +132,12 @@ NOT_STARTED. Target SDK/policy release work remains roadmap P21/P22 and must be 
 
 ## CURRENT ENVIRONMENT
 
-Python 3.13.5; uv 0.10.0; Node 22.16.0; no pnpm; OpenJDK 21; no Docker/PostgreSQL/Redis/MinIO; PyPI DNS unavailable.
+Python 3.13.5; uv 0.10.0; Node 22.16.0; no locally installed pnpm/Gradle/Android SDK/Docker/PostgreSQL/Redis/MinIO; package-registry DNS unavailable. Render and GitHub connectors are available, but the accessible remote infrastructure currently contains V2 resources only and no V3 GitHub repository.
 
 ## IMPORTANT COMMANDS
 
+- `python infrastructure/scripts/qualify-staging-source.py`
+- `STAGING_API_ORIGIN=https://... infrastructure/scripts/staging-smoke.sh`
 - `node scripts/check-governance.mjs`
 - `node packages/design-tokens/scripts/validate.mjs`
 - `node packages/design-tokens/scripts/generate.mjs --check`
