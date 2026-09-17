@@ -2,7 +2,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [("sessions", "0001_initial")]
+    dependencies = [("directory_sessions", "0001_initial")]
 
     operations = [
         migrations.RemoveField(model_name="usersession", name="rotated_to_digest"),

@@ -3,8 +3,11 @@ plugins {
     id("serva.android.compose")
 }
 
-android {
-    sourceSets.getByName("main").java.srcDir(
+// AGP 9 serves source sets through com.android.build.api.dsl only; the generated
+// `android { }` accessor still resolves to the removed AGP 8 source-set type and
+// fails with a ClassCastException, so configure the new DSL extension directly.
+extensions.configure<com.android.build.api.dsl.LibraryExtension> {
+    sourceSets.getByName("main").kotlin.srcDir(
         rootProject.file("../../packages/design-tokens/generated")
     )
 }

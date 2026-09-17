@@ -18,7 +18,6 @@ INSTALLED_APPS = [
     "daphne",
     "django.contrib.auth",
     "django.contrib.contenttypes",
-    "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "corsheaders",
@@ -54,7 +53,6 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
 ]
 
 ROOT_URLCONF = "directory_backend.urls"
