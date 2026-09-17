@@ -212,3 +212,20 @@ Source implemented under `apps/admin`: RTL staff shell, shared tokens, permissio
 ## P13 ADMIN OPERATIONS STATUS
 
 Source implemented at `ff60f96`: explicit permission catalog, Admin DRF endpoints for all required operational domains, transactional review decisions with evidence recheck, private evidence streaming/audit, facility/user/RBAC/taxonomy/province/verification/ad/settings mutations, analytics/audit/system reads, and matching RTL Next.js route surfaces. Evidence: `artifacts/evidence/p13-admin-operations-source-20260917.txt`. Golden-path PASS remains pending generated client binding, Django/PostgreSQL runtime and Playwright.
+
+
+## Latest continuation — 2026-09-17 19:55 +03:00
+
+CURRENT PHASE: P21 — Android Play Release Candidate.
+LAST COMPLETED SOURCE PHASE: P20 — release-quality harness/source qualification.
+LATEST IMPLEMENTATION COMMIT: `5e58355`.
+
+P20 IMPORTANT:
+- Auth/account endpoints missing from the recovered tree were restored from the official V3 specification.
+- Local source/security qualification passes.
+- `P20 RELEASE QUALITY PASS` is still open because connected backend/admin/Android/staging/load/restore gates have not run.
+- Use `python infrastructure/quality/release_quality.py --require-connected` at RC; it must return zero before claiming P20 PASS.
+
+P21 NEXT:
+- Prepare Play RC artifacts/policy data and source validation.
+- Do not claim signed AAB, Play Internal/Closed testing or production submission without actual account/signing/staging/device evidence.

@@ -19,3 +19,11 @@ Future machine-readable evidence is stored under `artifacts/evidence/` with secr
 | 2026-09-17T18:31:00+03:00 | P15 Android Public source qualification | 7178ba5 | local container | P14/P15 qualifiers + governance/design regression + token drift + whitespace | SOURCE PASS / GRADLE+DEVICE NOT VERIFIED | `artifacts/evidence/p15-android-public-source-20260917.txt` |
 | 2026-09-17T18:44:51+03:00 | P16 Android Owner source qualification | 682218a | local container | backend owner qualifier + P14/P15/P16 qualifiers + governance/design/token drift + whitespace + executable DutyValidator smoke | SOURCE PASS / DJANGO+GRADLE+DEVICE NOT VERIFIED | `artifacts/evidence/p16-android-owner-source-20260917.txt` |
 | 2026-09-17T19:35:00+03:00 | P19 staging source qualification (not runtime gate closure) | 1cc6cf1 | local container + connected Render/GitHub inventory | P19 source qualifier + shell syntax + backend compileall + secret-marker scan + governance/design regression + whitespace; external inventory verified V2-only Render resources and no V3 GitHub repo | SOURCE PASS / STAGING RUNTIME NOT RUN | `artifacts/evidence/p19-staging-source-20260917.txt` |
+
+
+## P20 — Release quality source qualification
+- Evidence: `artifacts/evidence/p20-release-quality-source-20260917.txt`
+- Machine report: `artifacts/evidence/quality/p20-local.json`
+- Strict fail-closed report: `artifacts/evidence/quality/p20-connected-required.json`
+- Commit: `5e58355`
+- Result: SOURCE_IMPLEMENTED / local-source-qualified; connected gate not passed.

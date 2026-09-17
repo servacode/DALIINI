@@ -791,3 +791,32 @@ Implementation commit: `1cc6cf1`.
 Qualification: P19 is `SOURCE_IMPLEMENTED`; `P19 STAGING RUNTIME PASS` is NOT claimed.
 
 Next: P20 full E2E/security/load/restore quality harnesses; run connected suites once EXT-004/EXT-005 and provider credentials are resolved.
+
+
+## 2026-09-17T19:55:00+03:00 — P20 local release-quality qualification
+
+Goal: build an executable P20 quality gate and repair source-integrity gaps discovered by that gate.
+
+Implemented:
+- `infrastructure/quality/` manifest, orchestrator, source-security, staging golden path, bounded load, restore evidence validator and release blocker report.
+- Restored missing Auth/Account API source: OTP registration/recovery, login, rotating refresh, sessions, profile and account deletion.
+- Added OTP/login/recovery throttling and session compromise/reuse handling.
+- Account deletion revokes sessions, anonymizes PII and refuses deletion while the user is sole owner of a non-closed facility.
+
+Tests/results:
+- Auth source-contract: 3 passed.
+- Backend compileall: PASS.
+- P20 local orchestrator: SOURCE_QUALIFIED.
+- P14-P19 source regressions through orchestrator: PASS.
+- Strict `--require-connected`: FAIL as designed because backend/admin/Android runtime, staging golden path and restore evidence are unavailable.
+- `git diff --check`: PASS.
+
+Evidence:
+- `artifacts/evidence/p20-release-quality-source-20260917.txt`
+- `artifacts/evidence/quality/p20-local.json`
+- `artifacts/evidence/quality/p20-connected-required.json`
+
+Commit: `5e58355`.
+
+Gate status: P20 source implemented only; `P20 RELEASE QUALITY PASS` not achieved.
+Next: P21 Android Play RC source preparation while connected P20 remains pending.
