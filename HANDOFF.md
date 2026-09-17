@@ -63,7 +63,7 @@ P0/P1 gates are closed. P2 remains source-level pending connected backend qualif
 
 ## WHAT IS LEFT
 
-P17 through P26, plus P10 real schema/client generation and connected/runtime qualification of source-implemented backend/web/admin/mobile phases as soon as capable toolchains are available.
+P18 through P26, plus P10 real schema/client generation and connected/runtime qualification of source-implemented backend/web/admin/mobile phases as soon as capable toolchains are available.
 
 ## KNOWN ISSUES
 
@@ -100,7 +100,7 @@ P12 and P13 are `SOURCE_IMPLEMENTED`. Routes exist for login/dashboard/reviews/f
 
 ## ANDROID STATUS
 
-P14/P15/P16 `SOURCE_IMPLEMENTED`. Native Kotlin/Compose; applicationId `com.servacode.directory`; minSdk 24; compile/target 36. Foundation, public discovery/account/ratings, and owner onboarding/manage/duty source exist. Owner backend dependency restoration, Photo Picker/private evidence boundaries, per-day hours, closures/managers and native MapLibre owner picker are source-qualified. P10 client binding and all Gradle/device gates remain pending. P17 navigation source is active.
+P14/P15/P16 `SOURCE_IMPLEMENTED`. Native Kotlin/Compose; applicationId `com.servacode.directory`; minSdk 24; compile/target 36. Foundation, public discovery/account/ratings, and owner onboarding/manage/duty source exist. Owner backend dependency restoration, Photo Picker/private evidence boundaries, per-day hours, closures/managers and native MapLibre owner picker are source-qualified. P10 client binding and all Gradle/device gates remain pending. P17 navigation is SOURCE_IMPLEMENTED; road/device qualification remains pending. P18 mobile live-data hardening is next.
 
 ## IOS STATUS
 
@@ -108,7 +108,7 @@ NOT_STARTED. Native Swift/SwiftUI; bundle ID baseline `com.servacode.directory`.
 
 ## MAPS STATUS
 
-NOT_STARTED beyond Geo/PostGIS foundation. MapLibre provider/client work remains later roadmap phases.
+P17 `SOURCE_IMPLEMENTED`: MapLibre native route rendering, configurable OSRM/Nominatim-compatible provider boundaries, foreground location stream, navigation state engine, reroute/arrival handling and Arabic TTS exist. Production provider connectivity and real road/device qualification remain pending.
 
 ## REALTIME STATUS
 
@@ -165,7 +165,7 @@ Static/source checks work in the current container. Full backend qualification r
 
 ## HOW TO CONTINUE
 
-Continue P17 from `plan.md`: implement production-configurable RoutingProvider/GeocodingProvider, OSRM/Nominatim-compatible adapters, turn-by-turn state engine and Arabic TTS while preserving PostGIS geo truth and foreground-only location. Do not promote navigation beyond source status without Gradle/device plus real road verification.
+Continue P18 from `plan.md`: harden Android offline/realtime/push behavior, event invalidation, reconnect/backoff and cache refresh while preserving REST as source of truth. Do not promote P17 beyond SOURCE_IMPLEMENTED without Gradle/device plus real road verification.
 
 ## LATEST COMMIT SHA
 

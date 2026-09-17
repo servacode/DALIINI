@@ -1,0 +1,34 @@
+P17 — Maps / Navigation source qualification
+Date: 2026-09-17
+Status: SOURCE_IMPLEMENTED
+
+Implemented:
+- Environment-configurable routing/geocoding endpoints and geocoding user-agent.
+- RoutingProvider with OSRM-compatible adapter.
+- GeocodingProvider with Nominatim-compatible adapter.
+- Provider HTTPS/demo-endpoint policy.
+- Validated route/geocoding domain models.
+- GeoMath distance/polyline off-route calculation.
+- Foreground LocationProvider update Flow with cleanup.
+- Navigation state engine: Idle/Routing/Navigating/Rerouting/Arrived/Error.
+- Remaining distance/ETA, maneuver advance, off-route threshold, reroute cooldown, arrival threshold.
+- Arabic maneuver phrase builder and Android native TextToSpeech adapter.
+- Native MapLibre route/current-location rendering.
+- Facility Details -> built-in Directions route integration.
+- Pure Kotlin and JUnit-source tests for geo/navigation/Arabic phrases/provider policy.
+
+Executed evidence:
+- python apps/android/scripts/qualify-navigation-source.py => PASS
+- python apps/android/scripts/qualify-source.py => PASS
+- python apps/android/scripts/qualify-public-source.py => PASS
+- python apps/android/scripts/qualify-owner-source.py => PASS
+- git diff --check => PASS
+- kotlinc/java pure navigation smoke => PASS
+
+Not executed / not claimed:
+- Gradle build/lint/unit/Compose/instrumentation (Gradle + Android SDK unavailable).
+- Physical-device navigation.
+- Real road test for GPS drift, maneuver timing, reroute, screen lock/lifecycle, voice and network loss.
+- Production routing/geocoding/map provider connected verification.
+
+Gate P17 NAVIGATION ROAD PASS: NOT PASSED.

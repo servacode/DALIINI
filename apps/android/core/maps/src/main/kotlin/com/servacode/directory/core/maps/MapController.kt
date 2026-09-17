@@ -15,4 +15,6 @@ interface MapController {
     fun clearFacilities()
     fun showSelectionPoint(point: MapPoint)
     fun setOnPointSelected(listener: (MapPoint) -> Unit)
+    fun showRoute(points: List<MapPoint>, colorArgb: Int)
+    fun showNavigationLocation(point: MapPoint)
 }

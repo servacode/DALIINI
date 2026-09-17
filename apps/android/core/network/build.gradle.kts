@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:auth"))
     implementation(project(":core:observability"))
+    implementation(project(":core:maps"))
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.retrofit.core)

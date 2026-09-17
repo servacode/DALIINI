@@ -689,3 +689,40 @@ Commands/tests:
 Result: P16 `SOURCE_IMPLEMENTED`, implementation commit `682218a`. `P16 ANDROID OWNER DEVICE PASS` is not claimed.
 
 Next: P17 Maps/Navigation.
+
+
+## 2026-09-17T18:56:00+03:00 — P17 Maps / Navigation source qualification
+
+Goal:
+Implement Phase 17 routing/geocoding/navigation foundations without public demo dependencies or fake route data.
+
+Created/modified:
+- Android map/location/network/navigation source, tests and qualification script.
+- Facility Details and app navigation wiring for built-in directions.
+- `artifacts/evidence/p17-navigation-source-20260917.txt`.
+
+Implemented:
+- `RoutingProvider` + OSRM-compatible adapter.
+- `GeocodingProvider` + Nominatim-compatible adapter.
+- HTTPS/provider policy and environment-only provider URLs.
+- Foreground location updates with callbackFlow cleanup.
+- Navigation state machine, off-route/reroute cooldown/arrival thresholds, remaining distance/ETA.
+- Arabic maneuver phrases + native Android TTS.
+- MapLibre route and current-location rendering.
+
+Problems found and root cause:
+- MapLibre async callback was stored outside observable Compose state; route draw could be skipped when map initialization completed after route state. Fixed by storing `MapLibreMap?` in Compose mutable state.
+- P15 regression qualifier treated explicit denylist literals/tests as shipped demo dependencies. Tightened the qualifier to exclude the central denylist and test-only source while preserving runtime checks.
+- Facility Details had no product path into the already-defined `BuiltInNavigation` route. Added explicit Directions action and NavHost destination.
+
+Commands/tests:
+- `python apps/android/scripts/qualify-navigation-source.py` => PASS.
+- P14/P15/P16 source qualifiers => PASS.
+- `git diff --check` => PASS.
+- Pure Kotlin navigation smoke compiled with local `kotlinc` and executed with `java` => PASS.
+
+Qualification:
+P17 is SOURCE_IMPLEMENTED only. `P17 NAVIGATION ROAD PASS` remains unpassed because Gradle/Android SDK/ADB and a real road/device environment are unavailable.
+
+Next:
+P18 — offline/realtime/push hardening.

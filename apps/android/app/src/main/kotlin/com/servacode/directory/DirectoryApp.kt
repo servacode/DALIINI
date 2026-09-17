@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.servacode.directory.core.model.DirectoryRoute
 import com.servacode.directory.feature.account.AccountScreen
 import com.servacode.directory.feature.bootstrap.BootstrapScreen
@@ -15,6 +16,7 @@ import com.servacode.directory.feature.duty.DutyScreen
 import com.servacode.directory.feature.facility.FacilityScreen
 import com.servacode.directory.feature.home.HomeScreen
 import com.servacode.directory.feature.map.MapScreen
+import com.servacode.directory.feature.navigation.BuiltInNavigationScreen
 import com.servacode.directory.feature.province.ProvinceScreen
 import com.servacode.directory.feature.ratings.RatingsScreen
 import com.servacode.directory.feature.search.SearchScreen
@@ -65,6 +67,9 @@ fun DirectoryApp() {
         composable<DirectoryRoute.FacilityDetailRoute> {
             FacilityScreen(
                 onMap = { navController.navigate(DirectoryRoute.Map) },
+                onDirections = { latitude, longitude ->
+                    navController.navigate(DirectoryRoute.BuiltInNavigation(latitude, longitude))
+                },
                 onRatings = { navController.navigate(DirectoryRoute.MyRatings) },
             )
         }
@@ -72,6 +77,17 @@ fun DirectoryApp() {
             MapScreen(
                 styleUrl = BuildConfig.MAP_STYLE_URL,
                 onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
+            )
+        }
+        composable<DirectoryRoute.BuiltInNavigation> { backStackEntry ->
+            val route = backStackEntry.toRoute<DirectoryRoute.BuiltInNavigation>()
+            BuiltInNavigationScreen(
+                styleUrl = BuildConfig.MAP_STYLE_URL,
+                destination = com.servacode.directory.core.maps.MapPoint(
+                    route.latitude,
+                    route.longitude,
+                ),
+                onClose = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Account> {

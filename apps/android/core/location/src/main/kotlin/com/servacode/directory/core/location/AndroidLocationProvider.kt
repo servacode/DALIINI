@@ -10,6 +10,9 @@ import android.os.Bundle
 import android.os.Looper
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
@@ -58,6 +61,43 @@ class AndroidLocationProvider @Inject constructor(
             .mapNotNull { provider -> runCatching { manager.getLastKnownLocation(provider) }.getOrNull() }
             .maxByOrNull { it.time }
             ?.toFix()
+    }
+
+    override fun updates(minTimeMillis: Long): Flow<LocationResult> = callbackFlow {
+        if (!hasLocationPermission()) {
+            trySend(LocationResult.PermissionDenied)
+            close()
+            return@callbackFlow
+        }
+        val provider = bestProvider()
+        if (provider == null) {
+            lastKnown()?.let { trySend(LocationResult.Available(it)) }
+                ?: trySend(LocationResult.Unavailable)
+            close()
+            return@callbackFlow
+        }
+        val listener = object : LocationListener {
+            override fun onLocationChanged(location: Location) {
+                trySend(LocationResult.Available(location.toFix()))
+            }
+            override fun onProviderEnabled(provider: String) = Unit
+            override fun onProviderDisabled(provider: String) = Unit
+            @Deprecated("Legacy callback")
+            override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) = Unit
+        }
+        runCatching {
+            manager.requestLocationUpdates(
+                provider,
+                minTimeMillis.coerceAtLeast(500L),
+                0f,
+                listener,
+                Looper.getMainLooper(),
+            )
+        }.onFailure {
+            trySend(LocationResult.Unavailable)
+            close(it)
+        }
+        awaitClose { manager.removeUpdates(listener) }
     }
 
     private fun hasLocationPermission(): Boolean {

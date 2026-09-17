@@ -26,6 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun FacilityScreen(
     onMap: () -> Unit,
+    onDirections: (Double, Double) -> Unit,
     onRatings: () -> Unit,
     viewModel: FacilityViewModel = hiltViewModel(),
 ) {
@@ -61,6 +62,14 @@ fun FacilityScreen(
                     onClick = onMap,
                     enabled = value.value.latitude != null && value.value.longitude != null,
                 ) { Text("عرض على الخريطة") }
+                OutlinedButton(
+                    onClick = {
+                        val latitude = value.value.latitude ?: return@OutlinedButton
+                        val longitude = value.value.longitude ?: return@OutlinedButton
+                        onDirections(latitude, longitude)
+                    },
+                    enabled = value.value.latitude != null && value.value.longitude != null,
+                ) { Text("الاتجاهات") }
                 OutlinedButton(onClick = onRatings) { Text("تقييماتي") }
             }
         }

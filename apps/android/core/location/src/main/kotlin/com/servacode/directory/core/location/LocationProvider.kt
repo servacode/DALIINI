@@ -1,5 +1,7 @@
 package com.servacode.directory.core.location
 
+import kotlinx.coroutines.flow.Flow
+
 data class LocationFix(
     val latitude: Double,
     val longitude: Double,
@@ -17,4 +19,5 @@ sealed interface LocationResult {
 interface LocationProvider {
     suspend fun current(timeoutMillis: Long = 8_000L): LocationResult
     fun lastKnown(): LocationFix?
+    fun updates(minTimeMillis: Long = 1_000L): Flow<LocationResult>
 }

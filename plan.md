@@ -1,74 +1,64 @@
 # Implementation Plan
 
-Updated: 2026-09-17T18:44:51+03:00
+Updated: 2026-09-17T18:56:00+03:00
 
 ## Current phase
 
-P17 — Maps / Navigation
+P18 — Offline / Realtime / Push Hardening
 
 ## Goal
 
-Implement production-configurable MapLibre routing/geocoding/navigation foundations for Android with OSRM as the initial `RoutingProvider`, a Nominatim-compatible `GeocodingProvider`, an explicit turn-by-turn state machine and Arabic platform TTS, without shipping public demo endpoints or moving geo truth out of PostGIS.
+Harden Android live-data behavior around the existing REST truth, Room public cache, Channels invalidation events and push notification boundary so reconnects, stale cache refresh, token rotation and lifecycle transitions do not duplicate domain truth or leak sensitive data.
 
 ## Tasks
 
-1. Preserve PostGIS as truth for facility coordinates, nearest, distance and bbox.
-2. Centralize production map style/tile provider configuration; never ship MapLibre demo tiles.
-3. Define `RoutingProvider.route(origin, destination, profile)` domain boundary.
-4. Implement an OSRM-compatible adapter using environment-configured base URL only.
-5. Define `GeocodingProvider.forward/reverse` and implement a Nominatim-compatible adapter behind configured provider URL/user-agent policy.
-6. Add route/maneuver domain models independent of transport DTOs.
-7. Implement navigation states: Idle, Routing, Navigating, Rerouting, Arrived, Error.
-8. Track maneuver index, remaining distance, ETA, off-route distance, reroute cooldown and arrival threshold.
-9. Add Arabic maneuver phrase builder plus Android native TTS adapter behind a voice interface.
-10. Integrate facility Directions into built-in navigation without inventing route data.
-11. Handle lifecycle/network-loss/reroute source paths and keep foreground-only location policy.
-12. Add pure unit/source tests for geometry/off-route/state/TTS phrases/provider URL policy.
-13. Update evidence/status/handoff and commit.
+1. Read P18 requirements from realtime/offline/security/Android specs.
+2. Define typed realtime invalidation envelope matching the P8 event catalog.
+3. Add authenticated WebSocket lifecycle boundary with post-connect auth; never query-string tokens.
+4. Implement reconnect/backoff and network/lifecycle-safe resubscription.
+5. Route invalidation events to repositories/cache refresh; REST remains source of truth.
+6. Add stale/fresh cache policy and explicit offline UI state where required.
+7. Add device push registration boundary with safe token rotation/unregister behavior.
+8. Ensure notification payloads contain identifiers/invalidation intent only, not evidence/storage keys/secrets.
+9. Add source/pure tests for envelope validation, backoff, dedupe, reconnect and invalidation routing.
+10. Run P14-P17 regression gates, document evidence and commit.
 
 ## Acceptance criteria
 
-- MapLibre Native remains the renderer; no WebView map.
-- No `demotiles.maplibre.org` or public OSRM demo endpoint in production source.
-- Routing/geocoding provider URLs come from environment/build configuration and fail closed when placeholders remain.
-- OSRM is an adapter, not embedded business logic.
-- Navigation engine does not fabricate distance/ETA/maneuvers.
-- Route geometry and coordinates validate latitude/longitude ranges.
-- Arabic TTS phrases are deterministic and platform speech is behind an interface.
-- No background-location permission is introduced.
-- P10 transport ownership remains respected; provider-specific DTOs stay inside provider adapters.
+- REST remains the authoritative content path.
+- WebSocket/push events cause invalidation/refetch, not direct domain mutation from event payloads.
+- Access tokens are never placed in WebSocket URL/query parameters.
+- Reconnect uses bounded backoff/jitter and does not create duplicate subscriptions.
+- Public Room cache remains usable offline; account/owner/private evidence are not added to public cache.
+- Push token registration is safe for rotation/logout and no provider secret is embedded in app source.
+- Background location is still absent.
 
 ## Required tests
 
-- Routing provider URL/config policy source tests.
-- OSRM response mapping unit tests.
-- Nominatim mapping/unit tests.
-- Coordinate validation tests.
-- Off-route and arrival-threshold tests.
-- Reroute cooldown tests.
-- Navigation state transition tests.
-- Arabic maneuver phrase tests.
-- P14/P15/P16 regression gates.
-- Gradle build/unit/Compose/instrumentation when Android tooling exists.
-- Real road test for GPS drift, maneuver timing, reroute, lifecycle/screen lock, voice and network loss before P17 can close.
+- Realtime envelope validation/source tests.
+- Reconnect/backoff/dedup tests.
+- Invalidation routing tests.
+- Push registration lifecycle tests.
+- P14/P15/P16/P17 regression gates.
+- Gradle/unit/Compose/instrumentation/device tests when Android tooling exists.
 
 ## Expected files
 
-- `apps/android/core/maps/**`
-- `apps/android/core/location/**`
-- `apps/android/feature/navigation/**`
+- `apps/android/core/network/**`
+- `apps/android/core/database/**`
+- `apps/android/core/observability/**`
 - `apps/android/app/**`
-- Android source qualification/tests.
+- relevant public/owner repositories and Android tests/scripts.
 - project management/evidence files.
 
 ## Risks
 
-- Final licensed map/style/routing/geocoding provider endpoints are external deployment inputs and must not be guessed.
-- Android SDK/Gradle/ADB are unavailable locally, so road/device qualification cannot run here.
-- Provider usage/rate/caching rules must be finalized for the actual production provider before release.
+- P10 generated client remains unbound, so REST adapter integration cannot be claimed connected.
+- Redis/Channels/FCM connected services are unavailable locally.
+- Android SDK/Gradle/ADB are unavailable locally.
 
 ## Gate
 
-Target gate: `P17 NAVIGATION ROAD PASS`.
+Target gate: `P18 MOBILE LIVE DATA PASS`.
 
-Current environment can establish source/unit qualification only. Road/device verification remains mandatory before closure.
+Current environment can establish source/pure qualification only; connected Channels/FCM and device lifecycle verification remain mandatory before closure.

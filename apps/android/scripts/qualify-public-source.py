@@ -113,10 +113,14 @@ def check_hygiene() -> None:
         *ROOT.rglob("*.kts"),
         *ROOT.rglob("*.xml"),
     ]
+    provider_policy = ROOT / (
+        "core/maps/src/main/kotlin/com/servacode/directory/core/maps/NavigationModels.kt"
+    )
     for path in sources:
         text = path.read_text()
         require("ACCESS_BACKGROUND_LOCATION" not in text, f"background location found: {path}")
-        require("demotiles.maplibre.org" not in text, f"demo tiles found: {path}")
+        if path != provider_policy and "/src/test/" not in path.as_posix():
+            require("demotiles.maplibre.org" not in text, f"demo tiles found: {path}")
         if path.name != "DirectoryTokens.kt":
             require(not re.search(r"#[0-9A-Fa-f]{6,8}", text), f"hardcoded UI color: {path}")
         for line_no, line in enumerate(text.splitlines(), 1):
