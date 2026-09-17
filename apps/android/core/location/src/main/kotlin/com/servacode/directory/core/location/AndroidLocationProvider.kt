@@ -56,7 +56,7 @@ class AndroidLocationProvider @Inject constructor(
         if (!hasLocationPermission()) return null
         return listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
             .mapNotNull { provider -> runCatching { manager.getLastKnownLocation(provider) }.getOrNull() }
-            .maxByOrNull(Location::getTime)
+            .maxByOrNull { it.time }
             ?.toFix()
     }
 

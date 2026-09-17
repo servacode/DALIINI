@@ -50,3 +50,30 @@ data class HomeSnapshot(
     val nearby: List<FacilitySummary>,
     val refreshedAtEpochMillis: Long,
 )
+
+@Serializable
+data class AccountProfile(
+    val id: String,
+    val name: String,
+    val phone: String,
+    val provinceId: String? = null,
+)
+
+@Serializable
+data class UserRating(
+    val id: String,
+    val facilityId: String,
+    val facilityNameAr: String,
+    val stars: Int,
+    val updatedAtEpochMillis: Long,
+)
+
+@Serializable
+data class PublicMapFacility(
+    val id: String,
+    val label: String,
+    val latitude: Double,
+    val longitude: Double,
+    val categoryIconKey: String? = null,
+    val availability: AvailabilityState = AvailabilityState.CLOSED,
+)

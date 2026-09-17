@@ -7,10 +7,13 @@ plugins {
 
 val apiBaseUrl = providers.gradleProperty("DIRECTORY_API_BASE_URL")
     .orElse("https://api.<ROOT_DOMAIN>/")
+val mapStyleUrl = providers.gradleProperty("DIRECTORY_MAP_STYLE_URL")
+    .orElse("https://maps.<ROOT_DOMAIN>/style.json")
 
 android {
     defaultConfig {
         buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.get()}\"")
+        buildConfigField("String", "MAP_STYLE_URL", "\"${mapStyleUrl.get()}\"")
     }
 }
 

@@ -16,6 +16,9 @@ object NetworkModule {
     fun provideObservability(): Observability = NoOpObservability
 
     @Provides @Singleton
+    fun providePublicApiBoundary(): PublicApiBoundary = UnboundGeneratedPublicApi
+
+    @Provides @Singleton
     fun provideBaseHttpClient(
         accessTokenInterceptor: AccessTokenInterceptor,
     ): OkHttpClient = OkHttpClient.Builder()

@@ -2,6 +2,7 @@ package com.servacode.directory.core.maps
 
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.camera.CameraUpdateFactory
+import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
 
@@ -18,8 +19,17 @@ class MapLibreController(
     }
 
     override fun showFacilities(pins: List<FacilityMapPin>) {
-        // P15 owns visual marker rendering. Foundation keeps MapLibre behind this boundary.
+        pins.forEach { pin ->
+            map.addMarker(
+                MarkerOptions()
+                    .position(LatLng(pin.point.latitude, pin.point.longitude))
+                    .title(pin.label)
+                    .snippet(pin.facilityId),
+            )
+        }
     }
 
-    override fun clearFacilities() = Unit
+    override fun clearFacilities() {
+        map.clear()
+    }
 }
