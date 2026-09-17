@@ -1,6 +1,6 @@
 # HANDOFF
 
-Last updated: 2026-09-17T19:35:00+03:00
+Last updated: 2026-09-17T20:27:00+03:00
 
 ## PROJECT SUMMARY
 
@@ -12,7 +12,7 @@ Django/DRF/GeoDjango modular monolith; PostgreSQL/PostGIS; Redis cache/Channels/
 
 ## CURRENT PHASE
 
-P20 — Full E2E / Security / Load / Restore Quality (`IN_PROGRESS`). P19 staging source is implemented but connected staging is blocked by the missing V3 GitHub remote and unapproved paid staging provisioning. P10 remains independently `IN_PROGRESS` until Django generates the real OpenAPI schema/clients.
+P22 — Android Production is `BLOCKED` on connected release gates and external store/signing credentials. The next independently executable roadmap phase is P23 — iOS Foundation. P10 and P20 also remain open connected gates.
 
 ## LAST COMPLETED PHASE
 
@@ -20,7 +20,7 @@ P1 — Design System Foundations (`CLOSED`). P2/P3 are intentionally not called 
 
 ## CURRENT WORKING STATE
 
-P0/P1 gates are closed. P2 remains source-level pending connected backend qualification. P3-P9 are `SOURCE_IMPLEMENTED`. P10 contract tooling exists but real Django-generated schema/TS-Kotlin-Swift clients are still pending. P11 Public Web, P12 Admin Foundation and P13 Admin Operations are `SOURCE_IMPLEMENTED`. P13 implementation commit is `ff60f96`; its static gate passed, but Node 24/pnpm, Django/PostgreSQL runtime and Playwright golden paths were not available, so `P13 ADMIN GOLDEN PATH PASS` is not claimed. P14-P18 Android/mobile source phases are `SOURCE_IMPLEMENTED`. P19 staging deployment source is also `SOURCE_IMPLEMENTED`; P20 release quality is active.
+P0/P1 gates are closed. P2 remains source-level pending connected backend qualification. P3-P9 are `SOURCE_IMPLEMENTED`. P10 contract tooling exists but real Django-generated schema/TS-Kotlin-Swift clients are still pending. P11 Public Web, P12 Admin Foundation and P13 Admin Operations are `SOURCE_IMPLEMENTED`. P14-P18 Android/mobile source phases are `SOURCE_IMPLEMENTED`. P19 staging source and P20 release-quality source are implemented but their connected gates remain open. P21 Android Play RC source is `SOURCE_IMPLEMENTED` at `9196f4d`; no signed AAB, physical-device, staging, Play-track or production evidence is claimed. P22 is blocked by external release inputs, so P23 iOS Foundation is the next independent implementation phase.
 
 ## WHAT IS IMPLEMENTED
 
@@ -128,7 +128,7 @@ NOT_STARTED. Production settings fail closed for DB, Redis, storage, auth secret
 
 ## GOOGLE PLAY STATUS
 
-NOT_STARTED. Target SDK/policy release work remains roadmap P21/P22 and must be rechecked at submission time.
+P21 is `SOURCE_IMPLEMENTED` at `9196f4d`. Target SDK 36 policy baseline, fail-closed release/signing validation, Data Safety inventory, app-content checklist, Arabic listing baseline, account-deletion surfaces, Internal/Closed testing runbook and evidence template are present. `P21 PLAY RC PASS` is NOT claimed: no signed AAB, Play upload, device/staging verification, submitted Data Safety/app-content forms or production rollout has occurred. P22 remains blocked by EXT-002/EXT-003 and the open connected quality/staging gates. Re-check current Play policy again at actual submission time.
 
 ## CURRENT ENVIRONMENT
 
@@ -167,11 +167,11 @@ Static/source checks work in the current container. Full backend qualification r
 
 ## HOW TO CONTINUE
 
-Continue P19 from `plan.md`: prepare production-like staging infrastructure, runtime health/smoke, secrets contract, backup/restore/rollback and deployment runbooks. Do not promote P17/P18 beyond SOURCE_IMPLEMENTED without their required device/connected gates.
+Start by reading `plan.md`, `PROJECT-STATUS.md`, `BLOCKERS.md` and the immutable `docs/spec/` source. P22 Android Production must not advance without P20 connected quality, signing credentials, owned Play access, staging/device evidence and actual store actions. Continue independent engineering with P23 iOS Foundation. Preserve the P10 generated-client boundary and do not hand-author transport DTOs. Re-run governance/design/source regressions after shared changes.
 
 ## LATEST COMMIT SHA
 
-`fdf206d` — P18 Mobile Live Data source implementation and qualification.
+`9196f4d` — P21 Android Play Release Candidate source implementation. A documentation/handoff commit follows this implementation commit in the final package.
 
 
 ## WORKSPACE RECOVERY
@@ -229,3 +229,13 @@ P20 IMPORTANT:
 P21 NEXT:
 - Prepare Play RC artifacts/policy data and source validation.
 - Do not claim signed AAB, Play Internal/Closed testing or production submission without actual account/signing/staging/device evidence.
+
+
+## FINAL CLAUDE HANDOFF SNAPSHOT — 2026-09-17
+
+- P21 implementation commit: `9196f4d860ff88880f785233d31ac6d275576f58`.
+- P21 source evidence: `artifacts/evidence/p21-play-rc-source-20260917.txt`.
+- P21 state: `SOURCE_IMPLEMENTED`; Play RC gate remains open.
+- P22 state: `BLOCKED` on external/connected release inputs.
+- Next independently executable phase: P23 iOS Foundation.
+- Final distribution archive includes a Git bundle for complete transferable history; no secrets/signing keys are intentionally included.

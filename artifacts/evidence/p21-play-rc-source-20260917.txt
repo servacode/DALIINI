@@ -1,0 +1,26 @@
+P21 — Android Play Release Candidate source qualification
+
+Date: 2026-09-17
+Environment: local execution container
+Commit under qualification: 9196f4d860ff88880f785233d31ac6d275576f58
+
+Executed checks:
+- python3 apps/android/scripts/qualify-play-rc-source.py -> PASS (7 checks)
+- python3 apps/android/scripts/qualify-source.py -> PASS (27 modules)
+- node scripts/check-governance.mjs -> PASS
+- node packages/design-tokens/scripts/validate.mjs -> PASS
+- node packages/design-tokens/scripts/generate.mjs --check -> PASS
+- git diff --check -> PASS
+
+Verified source properties:
+- targetSdk 36 baseline retained.
+- Fail-closed Play release validation rejects placeholders/local/insecure endpoints.
+- Upload signing material is environment-only; no keystore/private key is committed.
+- In-app account deletion request UI and API boundary are represented.
+- Data Safety inventory, app-content checklist, testing runbook, Arabic listing baseline, release env template and evidence template exist.
+- No fabricated phone screenshots are committed.
+- No background location/SMS/contacts permission was introduced.
+
+Result: SOURCE PASS ONLY.
+Not verified: signed AAB, Gradle release build, physical device, staging connectivity, Play Internal/Closed testing, Data Safety submission, store listing publication, production rollout.
+P21 PLAY RC PASS is NOT claimed.

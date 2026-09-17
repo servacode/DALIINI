@@ -820,3 +820,28 @@ Commit: `5e58355`.
 
 Gate status: P20 source implemented only; `P20 RELEASE QUALITY PASS` not achieved.
 Next: P21 Android Play RC source preparation while connected P20 remains pending.
+
+
+## 2026-09-17T20:27:00+03:00 — P21 Play RC source qualification and handoff freeze
+
+Goal: finish the source-only Android Play RC preparation and freeze a precise handoff for continuation in Claude.
+
+Implemented:
+- Fail-closed Android release validation for production endpoints and upload-signing environment inputs.
+- Environment-variable support for Android production endpoint configuration.
+- In-app account deletion request flow and session cleanup boundary.
+- Play policy baseline dated 2026-09-17, Data Safety inventory, app-content checklist, Arabic store-listing baseline, testing runbook, release environment template and evidence template.
+- Dedicated P21 source qualifier.
+
+Commands/tests actually run:
+- `python3 apps/android/scripts/qualify-play-rc-source.py` -> PASS (7 checks).
+- `python3 apps/android/scripts/qualify-source.py` -> PASS (27 modules).
+- `node scripts/check-governance.mjs` -> PASS.
+- `node packages/design-tokens/scripts/validate.mjs` -> PASS.
+- `node packages/design-tokens/scripts/generate.mjs --check` -> PASS.
+- `git diff --check` -> PASS.
+
+Implementation commit: `9196f4d`.
+Evidence: `artifacts/evidence/p21-play-rc-source-20260917.txt`.
+
+Qualification: P21 is `SOURCE_IMPLEMENTED`; `P21 PLAY RC PASS` is NOT claimed because no signed AAB, device/staging gate, Play track upload or policy submission occurred. P22 is externally blocked; next independently executable roadmap phase is P23 iOS Foundation.

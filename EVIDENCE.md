@@ -27,3 +27,5 @@ Future machine-readable evidence is stored under `artifacts/evidence/` with secr
 - Strict fail-closed report: `artifacts/evidence/quality/p20-connected-required.json`
 - Commit: `5e58355`
 - Result: SOURCE_IMPLEMENTED / local-source-qualified; connected gate not passed.
+
+| 2026-09-17T20:27:00+03:00 | P21 Play RC source qualification (not Play gate closure) | 9196f4d | local container | P21 qualifier + P14 Android source regression + governance + design validation/drift + whitespace | SOURCE PASS / AAB+DEVICE+STAGING+PLAY NOT VERIFIED | `artifacts/evidence/p21-play-rc-source-20260917.txt` |
