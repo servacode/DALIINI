@@ -94,6 +94,11 @@ fun DirectoryApp() {
             AccountScreen(
                 onRatings = { navController.navigate(DirectoryRoute.MyRatings) },
                 onFacilities = { navController.navigate(DirectoryRoute.MyFacilities) },
+                onAccountDeleted = {
+                    navController.navigate(DirectoryRoute.Home) {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                    }
+                },
             )
         }
         composable<DirectoryRoute.MyRatings> {

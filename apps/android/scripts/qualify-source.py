@@ -160,7 +160,19 @@ def check_hygiene() -> None:
     combined = "\n".join(path.read_text() for path in source_files)
     require("React Native" not in combined, "React Native reference found in Android source")
     require("Flutter" not in combined, "Flutter reference found in Android source")
-    require("signingConfig" not in combined, "signing configuration must not be committed in foundation")
+    # P21 may add an env-only release signing configuration. The foundation gate
+    # forbids embedded signing material rather than forbidding the configuration itself.
+    app_gradle = text("app/build.gradle.kts")
+    if "signingConfig" in app_gradle:
+        for env_name in (
+            "ANDROID_UPLOAD_KEYSTORE_PATH",
+            "ANDROID_UPLOAD_KEY_ALIAS",
+            "ANDROID_UPLOAD_STORE_PASSWORD",
+            "ANDROID_UPLOAD_KEY_PASSWORD",
+        ):
+            require(env_name in app_gradle, f"env-only signing contract missing: {env_name}")
+        require('storePassword = "' not in app_gradle, "hardcoded store password forbidden")
+        require('keyPassword = "' not in app_gradle, "hardcoded key password forbidden")
     forbidden = ("AIza", "BEGIN PRIVATE KEY", "DATABASE_URL=", "api_secret")
     for marker in forbidden:
         require(marker not in combined, f"possible secret marker found: {marker}")

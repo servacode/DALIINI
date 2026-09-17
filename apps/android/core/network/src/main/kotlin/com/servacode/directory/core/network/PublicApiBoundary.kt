@@ -41,6 +41,7 @@ interface PublicApiBoundary {
 
     suspend fun facility(id: String): FacilityDetail
     suspend fun profile(): AccountProfile
+    suspend fun requestAccountDeletion()
     suspend fun ratings(): List<UserRating>
     suspend fun upsertRating(facilityId: String, stars: Int): UserRating
     suspend fun deleteRating(facilityId: String)
@@ -82,6 +83,7 @@ object UnboundGeneratedPublicApi : PublicApiBoundary {
 
     override suspend fun facility(id: String): FacilityDetail = unavailable()
     override suspend fun profile(): AccountProfile = unavailable()
+    override suspend fun requestAccountDeletion(): Unit = unavailable()
     override suspend fun ratings(): List<UserRating> = unavailable()
     override suspend fun upsertRating(facilityId: String, stars: Int): UserRating = unavailable()
     override suspend fun deleteRating(facilityId: String): Unit = unavailable()

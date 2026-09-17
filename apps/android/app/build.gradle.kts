@@ -6,19 +6,42 @@ plugins {
 }
 
 val apiBaseUrl = providers.gradleProperty("DIRECTORY_API_BASE_URL")
+    .orElse(providers.environmentVariable("DIRECTORY_API_BASE_URL"))
     .orElse("https://api.<ROOT_DOMAIN>/")
 val mapStyleUrl = providers.gradleProperty("DIRECTORY_MAP_STYLE_URL")
+    .orElse(providers.environmentVariable("DIRECTORY_MAP_STYLE_URL"))
     .orElse("https://maps.<ROOT_DOMAIN>/style.json")
 val routingBaseUrl = providers.gradleProperty("DIRECTORY_ROUTING_BASE_URL")
+    .orElse(providers.environmentVariable("DIRECTORY_ROUTING_BASE_URL"))
     .orElse("https://<ROUTING_PROVIDER_HOST>/")
 val geocodingBaseUrl = providers.gradleProperty("DIRECTORY_GEOCODING_BASE_URL")
+    .orElse(providers.environmentVariable("DIRECTORY_GEOCODING_BASE_URL"))
     .orElse("https://<GEOCODING_PROVIDER_HOST>/")
 val geocodingUserAgent = providers.gradleProperty("DIRECTORY_GEOCODING_USER_AGENT")
+    .orElse(providers.environmentVariable("DIRECTORY_GEOCODING_USER_AGENT"))
     .orElse("DirectoryPlatformAndroid/1")
 val realtimeWebSocketUrl = providers.gradleProperty("DIRECTORY_REALTIME_WS_URL")
+    .orElse(providers.environmentVariable("DIRECTORY_REALTIME_WS_URL"))
     .orElse("wss://api.<ROOT_DOMAIN>/ws/events/")
 
+val uploadKeystorePath = providers.environmentVariable("ANDROID_UPLOAD_KEYSTORE_PATH")
+val uploadKeyAlias = providers.environmentVariable("ANDROID_UPLOAD_KEY_ALIAS")
+val uploadStorePassword = providers.environmentVariable("ANDROID_UPLOAD_STORE_PASSWORD")
+val uploadKeyPassword = providers.environmentVariable("ANDROID_UPLOAD_KEY_PASSWORD")
+
+
 android {
+    signingConfigs {
+        create("release") {
+            if (uploadKeystorePath.isPresent) {
+                storeFile = file(uploadKeystorePath.get())
+                storePassword = uploadStorePassword.orNull
+                keyAlias = uploadKeyAlias.orNull
+                keyPassword = uploadKeyPassword.orNull
+            }
+        }
+    }
+
     defaultConfig {
         buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.get()}\"")
         buildConfigField("String", "MAP_STYLE_URL", "\"${mapStyleUrl.get()}\"")
@@ -26,6 +49,12 @@ android {
         buildConfigField("String", "GEOCODING_BASE_URL", "\"${geocodingBaseUrl.get()}\"")
         buildConfigField("String", "GEOCODING_USER_AGENT", "\"${geocodingUserAgent.get()}\"")
         buildConfigField("String", "REALTIME_WS_URL", "\"${realtimeWebSocketUrl.get()}\"")
+    }
+
+    buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
+        }
     }
 }
 
@@ -67,4 +96,45 @@ dependencies {
     implementation(libs.androidx.material3)
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(libs.junit)
+}
+
+
+val validatePlayRelease by tasks.registering {
+    group = "verification"
+    description = "Fails closed when Play release configuration is incomplete or unsafe."
+    doLast {
+        val endpoints = mapOf(
+            "DIRECTORY_API_BASE_URL" to apiBaseUrl.get(),
+            "DIRECTORY_MAP_STYLE_URL" to mapStyleUrl.get(),
+            "DIRECTORY_ROUTING_BASE_URL" to routingBaseUrl.get(),
+            "DIRECTORY_GEOCODING_BASE_URL" to geocodingBaseUrl.get(),
+            "DIRECTORY_REALTIME_WS_URL" to realtimeWebSocketUrl.get(),
+        )
+        endpoints.forEach { (name, value) ->
+            require(!value.contains("<") && !value.contains(">")) {
+                "$name still contains a placeholder"
+            }
+            val secure = value.startsWith("https://") || value.startsWith("wss://")
+            require(secure) { "$name must use HTTPS/WSS" }
+            require("localhost" !in value && "127.0.0.1" !in value) {
+                "$name must not use a local endpoint"
+            }
+        }
+        val requiredSigning = mapOf(
+            "ANDROID_UPLOAD_KEYSTORE_PATH" to uploadKeystorePath.orNull,
+            "ANDROID_UPLOAD_KEY_ALIAS" to uploadKeyAlias.orNull,
+            "ANDROID_UPLOAD_STORE_PASSWORD" to uploadStorePassword.orNull,
+            "ANDROID_UPLOAD_KEY_PASSWORD" to uploadKeyPassword.orNull,
+        )
+        requiredSigning.forEach { (name, value) ->
+            require(!value.isNullOrBlank()) { "$name is required for a Play release" }
+        }
+        require(file(uploadKeystorePath.get()).isFile) {
+            "ANDROID_UPLOAD_KEYSTORE_PATH must point to an existing file outside the repository"
+        }
+    }
+}
+
+tasks.matching { it.name == "bundleRelease" || it.name == "assembleRelease" }.configureEach {
+    dependsOn(validatePlayRelease)
 }

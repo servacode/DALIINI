@@ -8,3 +8,9 @@ class AccountUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(): Result<AccountProfile> = repository.profile()
 }
+
+class DeleteAccountUseCase @Inject constructor(
+    private val repository: AccountRepository,
+) {
+    suspend operator fun invoke(): Result<Unit> = repository.deleteAccount()
+}

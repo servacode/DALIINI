@@ -1,0 +1,64 @@
+{
+  "status": "REVIEW_BEFORE_SUBMISSION",
+  "notes": "Inventory from V3 source. Final Play answers must be reconciled with the built AAB and every shipped SDK.",
+  "data": [
+    {
+      "category": "Personal info",
+      "types": ["Name", "Phone number", "User IDs"],
+      "collected": true,
+      "shared": false,
+      "purposes": ["Account management", "App functionality", "Security/fraud prevention"],
+      "required": true
+    },
+    {
+      "category": "Location",
+      "types": ["Approximate location", "Precise location"],
+      "collected": true,
+      "shared": false,
+      "purposes": ["App functionality"],
+      "required": false,
+      "retention": "Current-query use; no location-history product feature"
+    },
+    {
+      "category": "Photos and videos",
+      "types": ["Photos"],
+      "collected": true,
+      "shared": false,
+      "purposes": ["App functionality", "Account/facility management"],
+      "required": false,
+      "notes": "Includes profile/public facility images and private owner verification evidence. Evidence is not public."
+    },
+    {
+      "category": "App activity",
+      "types": ["App interactions"],
+      "collected": true,
+      "shared": false,
+      "purposes": ["Analytics", "App functionality"],
+      "required": false,
+      "notes": "Analytics registry explicitly rejects precise coordinates, tokens, full phone numbers and evidence IDs."
+    },
+    {
+      "category": "Device or other IDs",
+      "types": ["Session/device identifiers", "Push token"],
+      "collected": true,
+      "shared": false,
+      "purposes": ["Security", "Notifications", "App functionality"],
+      "required": false,
+      "notes": "Push tokens are encrypted at rest with a digest for lookup."
+    },
+    {
+      "category": "Diagnostics",
+      "types": ["Crash logs", "Diagnostics"],
+      "collected": "CONDITIONAL",
+      "shared": "CONDITIONAL",
+      "purposes": ["Analytics"],
+      "required": false,
+      "notes": "Do not mark collected until the final release confirms a connected diagnostics SDK/provider."
+    }
+  ],
+  "security": {
+    "encryptedInTransit": true,
+    "accountDeletionAvailable": true,
+    "externalDeletionUrl": "https://www.<ROOT_DOMAIN>/delete-account"
+  }
+}
