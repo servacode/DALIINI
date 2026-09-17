@@ -8,6 +8,10 @@ import com.servacode.directory.core.model.DirectoryRoute
 import com.servacode.directory.feature.account.AccountScreen
 import com.servacode.directory.feature.bootstrap.BootstrapScreen
 import com.servacode.directory.feature.directory.DirectoryScreen
+import com.servacode.directory.feature.owner.MyFacilitiesScreen
+import com.servacode.directory.feature.owner.ManageFacilityScreen
+import com.servacode.directory.feature.onboarding.OnboardingScreen
+import com.servacode.directory.feature.duty.DutyScreen
 import com.servacode.directory.feature.facility.FacilityScreen
 import com.servacode.directory.feature.home.HomeScreen
 import com.servacode.directory.feature.map.MapScreen
@@ -73,10 +77,39 @@ fun DirectoryApp() {
         composable<DirectoryRoute.Account> {
             AccountScreen(
                 onRatings = { navController.navigate(DirectoryRoute.MyRatings) },
+                onFacilities = { navController.navigate(DirectoryRoute.MyFacilities) },
             )
         }
         composable<DirectoryRoute.MyRatings> {
             RatingsScreen()
+        }
+
+        composable<DirectoryRoute.MyFacilities> {
+            MyFacilitiesScreen(
+                onAdd = { navController.navigate(DirectoryRoute.Onboarding()) },
+                onManage = { navController.navigate(DirectoryRoute.ManageFacility(it)) },
+                onDuty = { navController.navigate(DirectoryRoute.Duty(it)) },
+            )
+        }
+        composable<DirectoryRoute.Onboarding> {
+            OnboardingScreen(
+                styleUrl = BuildConfig.MAP_STYLE_URL,
+                onChooseProvince = { navController.navigate(DirectoryRoute.ProvincePicker) },
+                onDone = {
+                    navController.navigate(DirectoryRoute.MyFacilities) {
+                        popUpTo<DirectoryRoute.MyFacilities> { inclusive = true }
+                    }
+                },
+            )
+        }
+        composable<DirectoryRoute.ManageFacility> {
+            ManageFacilityScreen(
+                onEdit = { navController.navigate(DirectoryRoute.Onboarding(it)) },
+                onDuty = { navController.navigate(DirectoryRoute.Duty(it)) },
+            )
+        }
+        composable<DirectoryRoute.Duty> {
+            DutyScreen()
         }
     }
 }

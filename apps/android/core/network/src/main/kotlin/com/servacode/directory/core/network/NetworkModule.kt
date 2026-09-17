@@ -19,6 +19,9 @@ object NetworkModule {
     fun providePublicApiBoundary(): PublicApiBoundary = UnboundGeneratedPublicApi
 
     @Provides @Singleton
+    fun provideOwnerApiBoundary(): OwnerApiBoundary = UnboundGeneratedOwnerApi
+
+    @Provides @Singleton
     fun provideBaseHttpClient(
         accessTokenInterceptor: AccessTokenInterceptor,
     ): OkHttpClient = OkHttpClient.Builder()

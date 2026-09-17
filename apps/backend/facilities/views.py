@@ -1,0 +1,471 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction
+from django.shortcuts import get_object_or_404
+from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from accounts.models import User
+from audit.services import record_audit
+from directory.models import CategoryProvince, VerificationRequirement
+from locations.models import Province
+from storage.backends import PublicS3Storage, PrivateS3Storage
+
+from .media import save_private_evidence, save_public_image
+from .models import (
+    Facility,
+    FacilityApplication,
+    FacilityImage,
+    FacilityMembership,
+    VerificationEvidence,
+)
+from .permissions import require_facility_member, require_facility_owner
+from .presenters import facility_detail, facility_summary
+from .serializers import (
+    EvidenceUploadSerializer,
+    FacilityCreateSerializer,
+    FacilityLocationSerializer,
+    FacilityMemberSerializer,
+    FacilityPatchSerializer,
+    PublicImageUploadSerializer,
+)
+from .services import (
+    create_facility_draft,
+    submit_facility,
+    update_facility_core,
+    update_facility_location,
+)
+
+
+def _request_id(request):
+    return getattr(request, "request_id", "")
+
+
+def _validation_response(exc):
+    if hasattr(exc, "message_dict"):
+        details = exc.message_dict
+    elif hasattr(exc, "messages"):
+        details = exc.messages
+    else:
+        details = [str(exc)]
+    return Response({"error": {"code": "VALIDATION_ERROR", "details": details}}, status=400)
+
+
+def _owned_facilities(user):
+    return (
+        Facility.objects.filter(memberships__user=user)
+        .select_related("category", "province", "city", "neighborhood")
+        .prefetch_related(
+            "applications",
+            "business_hours",
+            "specialty_links",
+            "service_links",
+            "evidence",
+        )
+        .distinct()
+    )
+
+
+def _owner_config_item(switch):
+    category = switch.category
+    caps = category.capabilities
+    requirements = category.verification_requirements.filter(active=True).order_by("sort_order")
+    return {
+        "category": {
+            "id": str(category.pk),
+            "nameAr": category.name_ar,
+            "nameEn": category.name_en or None,
+            "iconKey": category.icon_key or None,
+            "specialization": category.specialization,
+        },
+        "capabilities": {
+            "hours": caps.supports_hours,
+            "photos": caps.supports_photos,
+            "duty": caps.supports_duty,
+            "specialtyFilter": caps.supports_specialty_filter,
+            "serviceFilter": caps.supports_service_filter,
+            "temporaryClosure": caps.supports_temporary_closure,
+            "ownerOnboarding": caps.supports_owner_onboarding,
+        },
+        "verificationRequirements": [
+            {
+                "id": str(item.pk),
+                "labelAr": item.label_ar,
+                "labelEn": item.label_en or None,
+                "instructionsAr": item.instructions_ar or None,
+                "required": item.required,
+                "minFiles": item.min_files,
+                "maxFiles": item.max_files,
+            }
+            for item in requirements
+        ],
+    }
+
+
+class OwnerConfigView(APIView):
+    def get(self, request):
+        province_id = request.query_params.get("provinceId")
+        if not province_id:
+            return Response({"error": {"code": "PROVINCE_REQUIRED"}}, status=400)
+        province = get_object_or_404(Province.objects.filter(active=True), pk=province_id)
+        switches = (
+            CategoryProvince.objects.filter(
+                province=province,
+                owner_registration_enabled=True,
+                category__active=True,
+                category__group__active=True,
+                category__capabilities__supports_owner_onboarding=True,
+            )
+            .select_related("category__capabilities", "category__group")
+            .prefetch_related("category__verification_requirements")
+            .order_by("sort_order", "category__sort_order")
+        )
+        return Response(
+            {
+                "province": {"id": str(province.pk), "nameAr": province.name_ar},
+                "categories": [_owner_config_item(item) for item in switches],
+            }
+        )
+
+
+class OwnerFacilityListCreateView(APIView):
+    def get(self, request):
+        items = _owned_facilities(request.user).order_by("-updated_at")
+        return Response({"items": [facility_summary(item) for item in items]})
+
+    def post(self, request):
+        serializer = FacilityCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            facility = create_facility_draft(
+                actor=request.user,
+                data=serializer.validated_data,
+                request_id=_request_id(request),
+            )
+        except DjangoValidationError as exc:
+            return _validation_response(exc)
+        facility = _owned_facilities(request.user).get(pk=facility.pk)
+        return Response(facility_detail(facility), status=201)
+
+
+class OwnerFacilityDetailView(APIView):
+    def _facility(self, request, facility_id):
+        facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
+        require_facility_member(request.user, facility)
+        return facility
+
+    def get(self, request, facility_id):
+        return Response(facility_detail(self._facility(request, facility_id)))
+
+    def patch(self, request, facility_id):
+        facility = self._facility(request, facility_id)
+        serializer = FacilityPatchSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        try:
+            updated = update_facility_core(
+                actor=request.user,
+                facility=facility,
+                data=serializer.validated_data,
+                request_id=_request_id(request),
+            )
+        except DjangoValidationError as exc:
+            return _validation_response(exc)
+        return Response(facility_detail(_owned_facilities(request.user).get(pk=updated.pk)))
+
+
+class OwnerFacilitySubmitView(APIView):
+    def post(self, request, facility_id):
+        facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
+        require_facility_member(request.user, facility)
+        try:
+            application = submit_facility(
+                actor=request.user,
+                facility=facility,
+                request_id=_request_id(request),
+            )
+        except DjangoValidationError as exc:
+            return _validation_response(exc)
+        return Response(
+            {
+                "applicationId": str(application.pk),
+                "status": application.status,
+                "submittedAt": application.submitted_at.isoformat(),
+            }
+        )
+
+
+class OwnerFacilityLocationView(APIView):
+    def put(self, request, facility_id):
+        facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
+        require_facility_member(request.user, facility)
+        serializer = FacilityLocationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        updated = update_facility_location(
+            actor=request.user,
+            facility=facility,
+            latitude=serializer.validated_data["latitude"],
+            longitude=serializer.validated_data["longitude"],
+            request_id=_request_id(request),
+        )
+        return Response(facility_detail(_owned_facilities(request.user).get(pk=updated.pk)))
+
+
+class OwnerFacilityImagesView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+
+    def _facility(self, request, facility_id):
+        facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
+        require_facility_member(request.user, facility)
+        return facility
+
+    def get(self, request, facility_id):
+        facility = self._facility(request, facility_id)
+        storage = PublicS3Storage()
+        items = [
+            {
+                "id": str(item.pk),
+                "url": storage.url(item.storage_key),
+                "sortOrder": item.sort_order,
+                "width": item.width,
+                "height": item.height,
+            }
+            for item in facility.images.order_by("sort_order", "created_at")
+        ]
+        return Response({"items": items})
+
+    def post(self, request, facility_id):
+        facility = self._facility(request, facility_id)
+        if not facility.category.capabilities.supports_photos:
+            return Response({"error": {"code": "PHOTOS_NOT_SUPPORTED"}}, status=409)
+        serializer = PublicImageUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            storage, key, width, height = save_public_image(
+                facility_id=facility.pk,
+                upload=serializer.validated_data["file"],
+            )
+            try:
+                image = FacilityImage.objects.create(
+                    facility=facility,
+                    storage_key=key,
+                    width=width,
+                    height=height,
+                    sort_order=facility.images.count(),
+                )
+            except Exception:
+                storage.delete(key)
+                raise
+        except DjangoValidationError as exc:
+            return _validation_response(exc)
+        record_audit(
+            actor=request.user,
+            action="facility.public_image.created",
+            target=image,
+            metadata={"facilityId": str(facility.pk)},
+            request_id=_request_id(request),
+        )
+        return Response(
+            {
+                "id": str(image.pk),
+                "url": storage.url(key),
+                "sortOrder": image.sort_order,
+                "width": width,
+                "height": height,
+            },
+            status=201,
+        )
+
+
+class OwnerFacilityImageDeleteView(APIView):
+    def delete(self, request, facility_id, image_id):
+        facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
+        require_facility_member(request.user, facility)
+        image = get_object_or_404(FacilityImage, pk=image_id, facility=facility)
+        key = image.storage_key
+        record_audit(
+            actor=request.user,
+            action="facility.public_image.deleted",
+            target=image,
+            metadata={"facilityId": str(facility.pk)},
+            request_id=_request_id(request),
+        )
+        image.delete()
+        transaction.on_commit(lambda: PublicS3Storage().delete(key))
+        return Response(status=204)
+
+
+class OwnerFacilityEvidenceView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request, facility_id):
+        facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
+        require_facility_member(request.user, facility)
+        serializer = EvidenceUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        requirement = get_object_or_404(
+            VerificationRequirement.objects.filter(active=True, category=facility.category),
+            pk=serializer.validated_data["requirementId"],
+        )
+        current = VerificationEvidence.objects.filter(
+            facility=facility, requirement=requirement
+        ).count()
+        if current >= requirement.max_files:
+            return Response({"error": {"code": "EVIDENCE_MAX_FILES"}}, status=409)
+        try:
+            storage, key, _, _ = save_private_evidence(
+                facility_id=facility.pk,
+                requirement_id=requirement.pk,
+                upload=serializer.validated_data["file"],
+            )
+            try:
+                evidence = VerificationEvidence.objects.create(
+                    facility=facility,
+                    requirement=requirement,
+                    storage_key=key,
+                    uploaded_by=request.user,
+                )
+            except Exception:
+                storage.delete(key)
+                raise
+        except DjangoValidationError as exc:
+            return _validation_response(exc)
+        record_audit(
+            actor=request.user,
+            action="facility.evidence.created",
+            target=evidence,
+            metadata={
+                "facilityId": str(facility.pk),
+                "requirementId": str(requirement.pk),
+            },
+            request_id=_request_id(request),
+        )
+        return Response(
+            {"id": str(evidence.pk), "requirementId": str(requirement.pk)},
+            status=201,
+        )
+
+
+class OwnerFacilityEvidenceDeleteView(APIView):
+    def delete(self, request, facility_id, evidence_id):
+        facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
+        require_facility_member(request.user, facility)
+        if facility.applications.filter(status=FacilityApplication.Status.SUBMITTED).exists():
+            return Response({"error": {"code": "EVIDENCE_LOCKED_DURING_REVIEW"}}, status=409)
+        evidence = get_object_or_404(
+            VerificationEvidence, pk=evidence_id, facility=facility
+        )
+        key = evidence.storage_key
+        record_audit(
+            actor=request.user,
+            action="facility.evidence.deleted",
+            target=evidence,
+            metadata={"facilityId": str(facility.pk)},
+            request_id=_request_id(request),
+        )
+        evidence.delete()
+        transaction.on_commit(lambda: PrivateS3Storage().delete(key))
+        return Response(status=204)
+
+
+class OwnerFacilityMembersView(APIView):
+    def get(self, request, facility_id):
+        facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
+        require_facility_member(request.user, facility)
+        items = facility.memberships.select_related("user").order_by("created_at")
+        return Response(
+            {
+                "items": [
+                    {
+                        "userId": str(item.user_id),
+                        "name": item.user.name,
+                        "phone": item.user.phone,
+                        "role": item.role,
+                    }
+                    for item in items
+                ]
+            }
+        )
+
+    @transaction.atomic
+    def post(self, request, facility_id):
+        facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
+        require_facility_owner(request.user, facility)
+        serializer = FacilityMemberSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = get_object_or_404(
+            User,
+            pk=serializer.validated_data["userId"],
+            is_active=True,
+        )
+        requested_role = serializer.validated_data["role"]
+        member = (
+            FacilityMembership.objects.select_for_update()
+            .filter(facility=facility, user=user)
+            .first()
+        )
+        if (
+            member is not None
+            and member.role == FacilityMembership.Role.OWNER
+            and requested_role != FacilityMembership.Role.OWNER
+        ):
+            owner_count = FacilityMembership.objects.select_for_update().filter(
+                facility=facility,
+                role=FacilityMembership.Role.OWNER,
+            ).count()
+            if owner_count <= 1:
+                return Response(
+                    {"error": {"code": "LAST_OWNER_PROTECTED"}},
+                    status=409,
+                )
+        before_role = member.role if member is not None else None
+        if member is None:
+            member = FacilityMembership.objects.create(
+                facility=facility,
+                user=user,
+                role=requested_role,
+            )
+        else:
+            member.role = requested_role
+            member.save(update_fields=["role"])
+        record_audit(
+            actor=request.user,
+            action="facility.member.upserted",
+            target=member,
+            before_snapshot={
+                "role": before_role,
+                "facilityId": str(facility.pk),
+            },
+            after_snapshot={"role": member.role, "facilityId": str(facility.pk)},
+            request_id=_request_id(request),
+        )
+        return Response(
+            {"userId": str(user.pk), "name": user.name, "role": member.role},
+            status=201,
+        )
+
+
+class OwnerFacilityMemberDeleteView(APIView):
+    @transaction.atomic
+    def delete(self, request, facility_id, user_id):
+        facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
+        require_facility_owner(request.user, facility)
+        member = get_object_or_404(
+            FacilityMembership.objects.select_for_update(),
+            facility=facility,
+            user_id=user_id,
+        )
+        if member.role == FacilityMembership.Role.OWNER:
+            owners = FacilityMembership.objects.filter(
+                facility=facility, role=FacilityMembership.Role.OWNER
+            ).count()
+            if owners <= 1:
+                return Response({"error": {"code": "LAST_OWNER_PROTECTED"}}, status=409)
+        record_audit(
+            actor=request.user,
+            action="facility.member.deleted",
+            target=member,
+            before_snapshot={"role": member.role, "facilityId": str(facility.pk)},
+            request_id=_request_id(request),
+        )
+        member.delete()
+        return Response(status=204)

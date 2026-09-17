@@ -13,4 +13,6 @@ interface MapController {
     fun moveCamera(camera: MapCamera, animated: Boolean = true)
     fun showFacilities(pins: List<FacilityMapPin>)
     fun clearFacilities()
+    fun showSelectionPoint(point: MapPoint)
+    fun setOnPointSelected(listener: (MapPoint) -> Unit)
 }

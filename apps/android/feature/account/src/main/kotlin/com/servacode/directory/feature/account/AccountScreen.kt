@@ -18,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun AccountScreen(
     onRatings: () -> Unit,
+    onFacilities: () -> Unit,
     viewModel: AccountViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -35,6 +36,7 @@ fun AccountScreen(
             Text(value.profile.name)
             Text(value.profile.phone)
             Button(onClick = onRatings) { Text("تقييماتي") }
+            Button(onClick = onFacilities) { Text("منشآتي") }
         }
     }
 }

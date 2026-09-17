@@ -32,4 +32,20 @@ class MapLibreController(
     override fun clearFacilities() {
         map.clear()
     }
+
+    override fun showSelectionPoint(point: MapPoint) {
+        map.clear()
+        map.addMarker(
+            MarkerOptions()
+                .position(LatLng(point.latitude, point.longitude))
+                .title("selected"),
+        )
+    }
+
+    override fun setOnPointSelected(listener: (MapPoint) -> Unit) {
+        map.addOnMapClickListener { point ->
+            listener(MapPoint(point.latitude, point.longitude))
+            true
+        }
+    }
 }

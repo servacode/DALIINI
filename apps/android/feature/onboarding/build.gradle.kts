@@ -6,6 +6,11 @@ plugins {
 
 dependencies {
     implementation(project(":core:model"))
+    implementation(project(":core:network"))
+    implementation(project(":core:datastore"))
+    implementation(project(":core:location"))
+    implementation(project(":core:maps"))
+    implementation(libs.androidx.activity.compose)
     implementation(project(":core:designsystem"))
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
@@ -13,5 +18,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.material3)
+    implementation(libs.maplibre.android)
     testImplementation(libs.junit)
 }
