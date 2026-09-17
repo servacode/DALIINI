@@ -1,0 +1,49 @@
+{
+  "project": {
+    "repository_slug": "directory-platform-v3",
+    "internal_code": "DIRECTORY",
+    "dev_display_name_ar": "الدليل",
+    "dev_display_name_en": "Directory",
+    "primary_locale": "ar",
+    "secondary_locale": "en",
+    "timezone": "Asia/Damascus",
+    "launch_governorate": "Raqqa",
+    "launch_category": "Pharmacy"
+  },
+  "backend": {
+    "language": "Python 3.13",
+    "framework": "Django 5.2 LTS",
+    "api": "Django REST Framework",
+    "database": "PostgreSQL 17 + PostGIS",
+    "cache_broker": "Redis",
+    "jobs": "Celery",
+    "realtime": "Django Channels",
+    "schema": "OpenAPI via drf-spectacular"
+  },
+  "admin": {
+    "framework": "Next.js",
+    "language": "TypeScript",
+    "package_manager": "pnpm"
+  },
+  "android": {
+    "language": "Kotlin",
+    "ui": "Jetpack Compose",
+    "application_id": "com.servacode.directory",
+    "min_sdk": 24,
+    "target_sdk": 36,
+    "maps": "MapLibre Native"
+  },
+  "ios": {
+    "language": "Swift",
+    "ui": "SwiftUI",
+    "bundle_id": "com.servacode.directory",
+    "maps": "MapLibre Native"
+  },
+  "infrastructure": {
+    "dns": "Cloudflare baseline",
+    "hosting": "Render paid baseline",
+    "object_storage": "Cloudflare R2 baseline",
+    "monitoring": "Sentry baseline",
+    "root_domain": "EXTERNAL_REQUIRED"
+  }
+}

@@ -1,0 +1,27 @@
+P6 Availability/Duty source qualification
+Date: 2026-09-17
+Environment: local recovery container; Django/PostgreSQL/PostGIS unavailable
+
+Executed:
+- python -m compileall -q apps/backend: PASS
+- AST parse backend: PASS
+- P6 non-migration line length <=100: PASS
+- node scripts/check-governance.mjs: PASS
+- design token validator: PASS
+- git diff --check: PASS
+- availability priority source invariant: PASS
+- no persisted is_open_now source invariant: PASS
+- duty ExclusionConstraint source invariant: PASS
+- btree_gist migration source invariant: PASS
+- Asia/Damascus source invariant: PASS
+- owner membership/IDOR boundary source invariant: PASS
+
+Not executed:
+- Django system checks
+- migrations against PostgreSQL/PostGIS
+- pytest-django
+- duty overlap integration test
+- concurrency test
+- API integration tests
+
+Gate status: SOURCE_IMPLEMENTED, NOT CONNECTED_VERIFIED/CLOSED

@@ -1,0 +1,21 @@
+P0 GOVERNANCE GATE EVIDENCE
+timestamp=2026-09-17T08:28:00+03:00
+branch=main
+head=UNBORN_HEAD
+
+== governance validator ==
+P0 governance checks passed
+
+== baseline JSON parse ==
+BASELINE-DECISIONS.json: valid JSON
+
+== whitespace ==
+git diff --check: pass
+
+== forbidden mobile frameworks in implementation skeleton ==
+No React Native/Flutter implementation references found
+
+== obvious secret file hygiene ==
+No obvious secret files present
+
+RESULT=P0 GOVERNANCE PASS

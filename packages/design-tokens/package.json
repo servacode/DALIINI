@@ -1,0 +1,9 @@
+{
+  "name": "@servacode/design-tokens",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node scripts/generate.mjs",
+    "check": "node scripts/validate.mjs && node scripts/generate.mjs --check"
+  }
+}

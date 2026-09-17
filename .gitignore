@@ -1,0 +1,47 @@
+# Secrets / environment
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+
+# Node
+node_modules/
+.next/
+coverage/
+
+# Android / Gradle
+.gradle/
+**/build/
+local.properties
+*.jks
+*.keystore
+
+# iOS / Xcode
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Runtime artifacts
+artifacts/evidence/**/*.log
+artifacts/evidence/**/*.xml
+artifacts/evidence/**/*.html
+artifacts/evidence/**/*.json
+!artifacts/evidence/.gitkeep
+
+# Local storage / DB
+*.sqlite3
+.minio/

@@ -1,0 +1,21 @@
+P1 DESIGN TOKENS GATE EVIDENCE
+timestamp=2026-09-17T08:28:00+03:00
+commit_base=871d4c7f78213d01bce0f2c81feb4fe5040a1837
+
+== token validation ==
+text primary on surface: 16.29 PASS
+text secondary on surface: 5.60 PASS
+on-primary on primary: 6.55 PASS
+primary text on canvas: 15.28 PASS
+Design token validation passed
+
+== token drift ==
+Generated token outputs are current
+
+== governance regression ==
+P0 governance checks passed
+
+== whitespace ==
+git diff --check: pass
+
+RESULT=P1 DESIGN TOKENS PASS

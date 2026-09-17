@@ -1,0 +1,40 @@
+P7 Public Discovery/Search/Geo/Ratings source qualification
+Date: 2026-09-17
+Environment: local recovery container; Django/PostgreSQL/PostGIS unavailable
+
+Implemented source:
+- active province/city/category public metadata
+- Home API source
+- facility list/detail
+- PostGIS distance annotation and nearest ordering
+- bbox map query
+- public search across facility/category/location/specialty/service scopes
+- capability-driven specialty/service filters
+- SQL availability state filters via Exists subqueries
+- rating average/count and one-rating-per-user/facility model/API
+- compact map marker DTOs
+- public DTO storage-key privacy boundary
+
+Executed:
+- python compileall: PASS
+- AST parse (110 Python files at qualification): PASS
+- P7 new-source line length <=100: PASS
+- governance regression: PASS
+- design-token validation: PASS
+- git diff --check: PASS
+- public eligibility source invariant: PASS
+- PostGIS Distance source invariant: PASS
+- bbox source invariant: PASS
+- SQL availability Exists source invariant: PASS
+- public DTO raw storage-key invariant: PASS
+- rating uniqueness source invariant: PASS
+- specialty/service filter source invariants: PASS
+
+Not executed:
+- Django system check / migration drift
+- PostgreSQL/PostGIS queries
+- EXPLAIN/index proof for search/nearest
+- pytest-django / API integration tests
+- rating permission integration
+
+Gate status: SOURCE_IMPLEMENTED, NOT CONNECTED_VERIFIED/CLOSED

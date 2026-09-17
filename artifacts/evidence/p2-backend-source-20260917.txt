@@ -1,0 +1,13 @@
+P2 BACKEND FOUNDATION SOURCE EVIDENCE
+timestamp=2026-09-17T08:28:00+03:00
+commit_base=9c4031c2ae61f0604f420e1ef9f36ebd2bfb99fa
+source_compile=PASS
+pyproject_toml_parse=PASS
+repository_whitespace=PASS
+dependency_install=NOT_RUN_SUCCESSFULLY (execution environment DNS unavailable)
+connected_postgis=NOT_VERIFIED
+connected_redis=NOT_VERIFIED
+connected_celery=NOT_VERIFIED
+connected_object_storage=NOT_VERIFIED
+gate=P2 BACKEND FOUNDATION CONNECTED PASS NOT ACHIEVED
+status=SOURCE_IMPLEMENTED

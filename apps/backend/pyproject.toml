@@ -1,0 +1,54 @@
+[project]
+name = "directory-backend"
+version = "0.1.0"
+description = "Serva Code Directory Platform V3 backend"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  "Django>=5.2,<5.3",
+  "djangorestframework>=3.16,<4",
+  "django-filter>=25.1,<26",
+  "django-cors-headers>=4.7,<5",
+  "drf-spectacular>=0.28,<0.29",
+  "channels[daphne]>=4.3,<5",
+  "channels-redis>=4.3,<5",
+  "celery>=5.5,<6",
+  "redis>=6,<7",
+  "psycopg[binary]>=3.2,<4",
+  "argon2-cffi>=25,<26",
+  "Pillow>=11,<12",
+  "django-storages[s3]>=1.14,<2",
+  "dj-database-url>=3,<4",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.4,<9",
+  "pytest-django>=4.11,<5",
+  "ruff>=0.12,<0.13",
+  "mypy>=1.17,<2",
+  "django-stubs>=5.2,<6",
+  "djangorestframework-stubs>=3.16,<4",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+exclude = [".venv", "migrations"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "DJ"]
+
+[tool.mypy]
+python_version = "3.13"
+plugins = ["mypy_django_plugin.main"]
+strict = true
+warn_unused_ignores = true
+exclude = ["migrations/"]
+
+[tool.django-stubs]
+django_settings_module = "directory_backend.settings.test"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "directory_backend.settings.test"
+python_files = ["test_*.py", "*_test.py"]
+addopts = "-ra --strict-config --strict-markers"

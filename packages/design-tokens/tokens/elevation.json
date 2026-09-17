@@ -1,0 +1,5 @@
+{
+  "none": {"y": 0, "blur": 0, "spread": 0, "opacity": 0.0},
+  "low": {"y": 1, "blur": 3, "spread": 0, "opacity": 0.08},
+  "medium": {"y": 4, "blur": 12, "spread": 0, "opacity": 0.10}
+}

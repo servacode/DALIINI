@@ -1,0 +1,11 @@
+{
+  "duration": {
+    "feedback": 120,
+    "standard": 220,
+    "emphasized": 250
+  },
+  "easing": {
+    "standard": "cubic-bezier(0.2, 0, 0, 1)",
+    "decelerate": "cubic-bezier(0, 0, 0, 1)"
+  }
+}

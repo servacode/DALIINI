@@ -1,0 +1,18 @@
+{
+  "fontFamily": {
+    "primary": "Tajawal",
+    "fallback": "Arial, sans-serif"
+  },
+  "roles": {
+    "display": {"size": 32, "lineHeight": 40, "weight": 700},
+    "headlineLarge": {"size": 28, "lineHeight": 36, "weight": 700},
+    "headlineMedium": {"size": 24, "lineHeight": 32, "weight": 700},
+    "titleLarge": {"size": 20, "lineHeight": 28, "weight": 700},
+    "titleMedium": {"size": 18, "lineHeight": 26, "weight": 600},
+    "bodyLarge": {"size": 16, "lineHeight": 26, "weight": 400},
+    "bodyMedium": {"size": 14, "lineHeight": 22, "weight": 400},
+    "bodySmall": {"size": 12, "lineHeight": 18, "weight": 400},
+    "labelLarge": {"size": 14, "lineHeight": 20, "weight": 600},
+    "labelMedium": {"size": 12, "lineHeight": 18, "weight": 600}
+  }
+}

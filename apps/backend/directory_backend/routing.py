@@ -1,0 +1,1 @@
+from realtime.routing import websocket_urlpatterns

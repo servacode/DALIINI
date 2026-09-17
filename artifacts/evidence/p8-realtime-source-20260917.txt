@@ -1,0 +1,37 @@
+P8 Realtime source qualification
+Date: 2026-09-17
+Environment: local recovery container; Redis/Channels connected runtime unavailable
+
+Implemented source:
+- canonical event catalog and minimal event envelope
+- hashed province/user/admin group naming
+- WebSocket consumer with post-connect token authentication
+- no access token query-string handling
+- anonymous active-province subscription
+- authenticated user subscription
+- admin subscription gated by explicit domain RBAC permission realtime.admin
+- transaction.on_commit publisher
+- domain hooks for facility, availability, duty, province configuration and application/review queue invalidation
+- access-token HS256 issue/decode service with production signing-key fail-closed configuration
+
+Executed:
+- python compileall: PASS
+- P8 AST parse: PASS
+- P8 line length <=100: PASS
+- governance regression: PASS
+- design-token validation: PASS
+- git diff --check: PASS
+- after-commit source invariant: PASS
+- no query-token source invariant: PASS
+- minimal payload source invariant: PASS
+- public/user/admin scope source invariants: PASS
+- domain hook source invariant: PASS
+
+Not executed:
+- Channels WebsocketCommunicator tests
+- Redis channel layer connected delivery
+- transaction rollback/no-event integration proof
+- reconnect/client behavior
+- authorization integration against database
+
+Gate status: SOURCE_IMPLEMENTED, NOT CONNECTED_VERIFIED/CLOSED

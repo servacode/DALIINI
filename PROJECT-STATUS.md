@@ -1,0 +1,55 @@
+# Project Status
+
+Last updated: 2026-09-17T14:10:00+03:00
+
+## Baseline
+
+- Master Spec: V3
+- Architecture: Django + Next.js + Kotlin + Swift
+- Launch baseline: Raqqa / Pharmacy / Duty
+- Repository mode: Greenfield
+- Source of truth: `docs/spec/`
+
+## Phase table
+
+| Phase | Status | Implemented | Tested | Remaining | Evidence | Commit | Last update |
+|---|---|---|---|---|---|---|---|
+| P0 Governance | CLOSED | Repository initialized; verified spec preserved; governance/tooling/CI skeleton created | Source checksums, governance validator, JSON parse, whitespace, framework and secret-file hygiene passed | None | `artifacts/evidence/p0-governance-20260917.txt` | 871d4c7 | 2026-09-17 |
+| P1 Design Tokens | CLOSED | Canonical tokens, generator outputs for TS/CSS/Kotlin/Swift, font policy, component specs | Token validation, WCAG contrast checks, deterministic drift check, governance regression | None | `artifacts/evidence/p1-design-tokens-20260917.txt` | 9c4031c | 2026-09-17 |
+| P2 Backend Foundation | IN_PROGRESS | Django/GeoDjango settings, Channels ASGI, Celery, Redis cache/channel/broker, S3 boundary, request IDs/structured request logs, health, Docker dependencies, MinIO bucket init, connected PostGIS/Redis/S3/Celery smoke and CI definition. P3 review also corrected staging inheritance, production DB/proxy fail-closed behavior and removed swallowed Docker install failure. | Python compile/AST/YAML/whitespace/static checks only; connected services not available locally | Generate and commit exact `uv.lock`; run ruff/mypy/pytest/Django migration/system checks; connected PostGIS/Redis/Celery/S3 qualification | `artifacts/evidence/p2-backend-source-20260917.txt`, `artifacts/evidence/p3-auth-rbac-source-20260917.txt` | f9408d8 (latest foundation corrections) | 2026-09-17 |
+| P3 Auth/RBAC | SOURCE_IMPLEMENTED | Custom UUID user/canonical Syrian phone, minimal Province FK dependency, OTP abstraction/digest/attempt rules, registration, login, JWT access, opaque rotating refresh, session list/revoke/reuse detection, recovery reset, profile GET/PATCH, blocked-user path, explicit Admin RBAC and redacted audit | 12 tests authored; governance/design regression, compileall, AST, line-length, persisted-secret invariants, phone executable smoke, YAML and whitespace passed. Django tests not executable in current environment. | `uv` dependency resolution; ruff/mypy/pytest; migration drift/system checks; PostgreSQL/Redis connected qualification | `artifacts/evidence/p3-auth-rbac-source-20260917.txt` | f9408d8 | 2026-09-17 |
+| P4 Taxonomy | SOURCE_IMPLEMENTED | Cities/neighborhoods, dynamic groups/categories, capabilities, independent province switches, verification policies, specialties/service tags, public selectors/DTOs, audited mutation services, 14-province seed and Raqqa/Pharmacy/Duty launch baseline | Static qualification passed: governance/design regression, compileall/AST, line length, seed/invariant/privacy source checks; Django/PostGIS runtime tests unavailable | Generate lock; run ruff/mypy/pytest/Django migration checks and connected PostGIS qualification before gate closure | `artifacts/evidence/p4-taxonomy-source-20260917.txt` | 0048719 | 2026-09-17 |
+| P5 Owner Domain | SOURCE_IMPLEMENTED | Facility lifecycle, OWNER/MANAGER membership, draft/reverification applications, owner config/facility APIs, current-policy submission validation, admin review/suspend/reactivate/close services, public image boundary, private verification evidence, safe image re-encode/limits, audit hooks | 12 P5 tests authored; governance/design drift, full backend AST/compileall, P5 line-length, DTO storage-key privacy, preload image-dimension gate and whitespace passed. Django/PostGIS/S3 runtime tests unavailable locally | Run ruff/mypy/pytest, migration drift, PostgreSQL row-lock/concurrency, S3 media tests and admin lifecycle qualification before gate closure | `artifacts/evidence/p5-owner-domain-source-20260917.txt` | 11aa673 | 2026-09-17 |
+| P6 Availability/Duty | SOURCE_IMPLEMENTED | Weekly hours, overnight-safe schedule validation, temporary closures, Damascus availability engine, pharmacy duty CRUD, PostgreSQL exclusion constraint + btree_gist, owner membership boundary, source migrations/tests | Static source qualification passed; runtime tests authored but not executable here | Run Django checks/migrations/pytest against PostgreSQL/PostGIS; prove duty overlap/concurrency and owner API integration before closure | `artifacts/evidence/p6-availability-source-20260917.txt` | 64b6fda | 2026-09-17 |
+| P7 Public Discovery | SOURCE_IMPLEMENTED | Public provinces/cities/categories, home, list/detail, PostGIS nearest, bbox map, search, SQL availability filters, specialties/services, ratings | Static source qualification passed; runtime/API/PostGIS tests authored/partially authored but not executable here | Run Django checks/migrations/pytest; connected PostGIS nearest/bbox; EXPLAIN indexes; API/permission integration before closure | `artifacts/evidence/p7-public-discovery-source-20260917.txt` | 4c8f535 | 2026-09-17 |
+| P8 Realtime | SOURCE_IMPLEMENTED | Event catalog/envelope, hashed groups, post-connect auth, province/user/admin scopes, RBAC admin gate, after-commit publisher, facility/taxonomy/availability/application hooks | Static source qualification passed; connected Channels/Redis tests unavailable | Run WebsocketCommunicator + Redis delivery + rollback/no-event + auth integration before closure | `artifacts/evidence/p8-realtime-source-20260917.txt` | 1b7212a | 2026-09-17 |
+| P9 Content Services | IN_PROGRESS | Source analysis next after P8 source qualification | Not yet | Ads, notification records/providers, push abstractions, analytics registry | — | — | 2026-09-17 |
+| P10 Contracts | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P11 Public Web | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P12 Admin Foundation | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P13 Admin Operations | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P14 Android Foundation | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P15 Android Public | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P16 Android Owner | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P17 Navigation | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P18 Mobile Live Data | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P19 Staging | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P20 Release Quality | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P21 Play RC | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P22 Android Production | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P23 iOS Foundation | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P24 iOS Parity | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P25 iOS Production | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P26 Expansion | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+
+## Current external blockers
+
+See `BLOCKERS.md`.
+
+## Local execution limitation (not an external blocker)
+
+The current container cannot resolve PyPI and has no Docker/PostgreSQL/Redis/MinIO runtime. Therefore P2/P3 connected gates cannot execute here. This does not change the external blocker register.
+
+## Status semantics
+
+Only these states are used: `NOT_STARTED`, `IN_PROGRESS`, `BLOCKED`, `SOURCE_IMPLEMENTED`, `CONNECTED_VERIFIED`, `DEVICE_VERIFIED`, `STAGING_VERIFIED`, `CLOSED`.

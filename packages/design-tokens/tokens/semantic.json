@@ -1,0 +1,30 @@
+{
+  "content": {
+    "primary": "{colors.textPrimary}",
+    "secondary": "{colors.textSecondary}",
+    "muted": "{colors.textMuted}",
+    "onPrimary": "{colors.surface}",
+    "danger": "{colors.danger}"
+  },
+  "surface": {
+    "canvas": "{colors.background}",
+    "default": "{colors.surface}",
+    "subtle": "{colors.surfaceAlt}",
+    "brandSoft": "{colors.primarySoft}"
+  },
+  "action": {
+    "primary": "{colors.primary}",
+    "primaryPressed": "{colors.primaryStrong}",
+    "danger": "{colors.danger}"
+  },
+  "stroke": {
+    "default": "{colors.border}",
+    "strong": "{colors.borderStrong}"
+  },
+  "feedback": {
+    "success": "{colors.success}",
+    "warning": "{colors.warning}",
+    "danger": "{colors.danger}",
+    "info": "{colors.info}"
+  }
+}
