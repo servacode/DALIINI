@@ -1,0 +1,37 @@
+P14 Android Foundation source qualification
+Date: 2026-09-17
+Implementation scope: Native Kotlin + Jetpack Compose foundation only.
+Checks:
+- 27-module graph: PASS
+- compileSdk 36 / targetSdk 36 / minSdk 24 policy: PASS
+- applicationId com.servacode.directory: PASS
+- Android Keystore AES/GCM refresh vault: PASS
+- memory-only access token store: PASS
+- refresh Mutex coordination: PASS
+- no background location permission: PASS
+- cleartext traffic disabled: PASS
+- generated OpenAPI client boundary / no manual transport DTO bypass: PASS
+- shared generated design tokens + RTL: PASS
+- Composable -> ViewModel -> UseCase -> Repository bootstrap layering: PASS
+- React Native / Flutter exclusion: PASS
+- secret/signing-config source hygiene: PASS
+- governance validator: PASS
+- design-token drift: PASS
+- Android source line length: PASS
+- git diff --check: PASS
+Environment:
+gradle=unavailable
+sdkmanager=unavailable
+adb=unavailable
+ANDROID_HOME=unset
+ANDROID_SDK_ROOT=unset
+openjdk version "21.0.11" 2026-04-21
+OpenJDK Runtime Environment (build 21.0.11+10-1-deb13u2-Debian)
+OpenJDK 64-Bit Server VM (build 21.0.11+10-1-deb13u2-Debian, mixed mode, sharing)
+gradle_dns=unavailable
+Runtime status:
+- Gradle build: NOT EXECUTED (tooling unavailable)
+- Android lint/unit/Compose tests: NOT EXECUTED
+- emulator/physical-device tests: NOT EXECUTED
+- P10 generated Kotlin client binding: pending upstream P10 runtime generation
+Status: SOURCE_IMPLEMENTED only; P14 ANDROID FOUNDATION DEVICE PASS is NOT claimed.

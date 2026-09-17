@@ -1,0 +1,191 @@
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+REPO = ROOT.parents[1]
+
+EXPECTED_MODULES = {
+    ":app",
+    ":core:model",
+    ":core:network",
+    ":core:database",
+    ":core:datastore",
+    ":core:auth",
+    ":core:designsystem",
+    ":core:location",
+    ":core:maps",
+    ":core:analytics",
+    ":core:observability",
+    ":core:testing",
+    ":feature:bootstrap",
+    ":feature:home",
+    ":feature:province",
+    ":feature:search",
+    ":feature:directory",
+    ":feature:facility",
+    ":feature:map",
+    ":feature:navigation",
+    ":feature:auth",
+    ":feature:account",
+    ":feature:ratings",
+    ":feature:owner",
+    ":feature:onboarding",
+    ":feature:duty",
+    ":feature:settings",
+}
+
+
+def require(condition: bool, message: str) -> None:
+    if not condition:
+        raise AssertionError(message)
+
+
+def text(relative: str) -> str:
+    return (ROOT / relative).read_text()
+
+
+def module_path(module: str) -> Path:
+    return ROOT / module.removeprefix(":").replace(":", "/")
+
+
+def check_modules() -> None:
+    settings = text("settings.gradle.kts")
+    found = set(re.findall(r'include\("(:[^"\n]+)"\)', settings))
+    require(found == EXPECTED_MODULES, f"module graph mismatch: {sorted(found ^ EXPECTED_MODULES)}")
+    for module in EXPECTED_MODULES:
+        require((module_path(module) / "build.gradle.kts").exists(), f"missing build file: {module}")
+
+
+def check_sdk_policy() -> None:
+    app = text("build-logic/src/main/kotlin/serva.android.application.gradle.kts")
+    library = text("build-logic/src/main/kotlin/serva.android.library.gradle.kts")
+    for source in (app, library):
+        require("compileSdk = 36" in source, "compileSdk must be 36")
+        require("minSdk = 24" in source, "minSdk must be 24")
+    require("targetSdk = 36" in app, "targetSdk must be 36")
+    require('applicationId = "com.servacode.directory"' in app, "applicationId mismatch")
+
+
+def check_security() -> None:
+    manifest = text("app/src/main/AndroidManifest.xml")
+    require("ACCESS_BACKGROUND_LOCATION" not in manifest, "background location is forbidden in Core V3")
+    require('android:usesCleartextTraffic="false"' in manifest, "cleartext traffic must be disabled")
+    vault = text(
+        "core/auth/src/main/kotlin/com/servacode/directory/core/auth/AndroidKeyStoreRefreshTokenVault.kt"
+    )
+    require('KEYSTORE = "AndroidKeyStore"' in vault, "Android Keystore is required")
+    require('TRANSFORMATION = "AES/GCM/NoPadding"' in vault, "AES/GCM is required")
+    lowered = vault.lower().replace(" ", "")
+    require(
+        ".putstring(\"refresh_token\"" not in lowered,
+        "raw refresh token preference storage is forbidden",
+    )
+    coordinator = text("core/auth/src/main/kotlin/com/servacode/directory/core/auth/SessionCoordinator.kt")
+    require("Mutex()" in coordinator and "withLock" in coordinator, "refresh mutex missing")
+    access = text("core/auth/src/main/kotlin/com/servacode/directory/core/auth/AccessTokenStore.kt")
+    require("AtomicReference" in access, "access token must be memory-backed")
+
+
+def check_architecture() -> None:
+    boundary = text(
+        "core/network/src/main/kotlin/com/servacode/directory/core/network/GeneratedApiClientBoundary.kt"
+    )
+    require("Transport DTOs must not be duplicated" in boundary, "generated client boundary missing")
+    routes = text("core/model/src/main/kotlin/com/servacode/directory/core/model/DirectoryRoute.kt")
+    for route in (
+        "Home",
+        "ProvincePicker",
+        "Search",
+        "Directory",
+        "FacilityDetailRoute",
+        "Map",
+        "BuiltInNavigation",
+        "Login",
+        "Register",
+        "Recovery",
+        "Account",
+        "MyRatings",
+        "MyFacilities",
+        "Onboarding",
+        "ManageFacility",
+        "Duty",
+        "Settings",
+    ):
+        require(route in routes, f"missing route: {route}")
+    theme = text(
+        "core/designsystem/src/main/kotlin/"
+        "com/servacode/directory/core/designsystem/DirectoryTheme.kt"
+    )
+    require("LayoutDirection.Rtl" in theme, "RTL must be first-class")
+    design_gradle = text("core/designsystem/build.gradle.kts")
+    require(
+        "packages/design-tokens/generated" in design_gradle,
+        "canonical design tokens not wired",
+    )
+    require(
+        "Composable" in text(
+            "feature/bootstrap/src/main/kotlin/"
+            "com/servacode/directory/feature/bootstrap/BootstrapScreen.kt"
+        ),
+        "bootstrap composable missing",
+    )
+    require(
+        "ViewModel" in text(
+            "feature/bootstrap/src/main/kotlin/"
+            "com/servacode/directory/feature/bootstrap/BootstrapViewModel.kt"
+        ),
+        "bootstrap ViewModel missing",
+    )
+    require(
+        "UseCase" in text(
+            "feature/bootstrap/src/main/kotlin/"
+            "com/servacode/directory/feature/bootstrap/BootstrapUseCase.kt"
+        ),
+        "bootstrap use case missing",
+    )
+    require(
+        "Repository" in text(
+            "feature/bootstrap/src/main/kotlin/"
+            "com/servacode/directory/feature/bootstrap/BootstrapRepository.kt"
+        ),
+        "bootstrap repository missing",
+    )
+
+
+def check_hygiene() -> None:
+    source_files = [*ROOT.rglob("*.kt"), *ROOT.rglob("*.kts"), *ROOT.rglob("*.xml")]
+    combined = "\n".join(path.read_text() for path in source_files)
+    require("React Native" not in combined, "React Native reference found in Android source")
+    require("Flutter" not in combined, "Flutter reference found in Android source")
+    require("signingConfig" not in combined, "signing configuration must not be committed in foundation")
+    forbidden = ("AIza", "BEGIN PRIVATE KEY", "DATABASE_URL=", "api_secret")
+    for marker in forbidden:
+        require(marker not in combined, f"possible secret marker found: {marker}")
+    hardcoded_hex = []
+    for path in source_files:
+        if path.name == "DirectoryTokens.kt":
+            continue
+        for line_no, line in enumerate(path.read_text().splitlines(), 1):
+            if re.search(r'#[0-9A-Fa-f]{6,8}', line):
+                hardcoded_hex.append(f"{path.relative_to(ROOT)}:{line_no}")
+    require(not hardcoded_hex, f"hardcoded Android UI colors: {hardcoded_hex}")
+
+
+def main() -> int:
+    checks = [check_modules, check_sdk_policy, check_security, check_architecture, check_hygiene]
+    for check in checks:
+        check()
+        print(f"PASS {check.__name__}")
+    print(f"PASS Android source qualification ({len(EXPECTED_MODULES)} modules)")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except AssertionError as exc:
+        print(f"FAIL {exc}", file=sys.stderr)
+        raise SystemExit(1)
