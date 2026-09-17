@@ -1,10 +1,53 @@
 from .models import AuditEvent
-SENSITIVE={'password','token','secret','database_url','otp','refresh_token'}
+
+SENSITIVE_PARTS = (
+    "password",
+    "token",
+    "secret",
+    "database_url",
+    "databaseurl",
+    "otp",
+    "refresh",
+    "authorization",
+    "cookie",
+    "storage_key",
+    "ciphertext",
+)
+
+
 def _redact(value):
     if isinstance(value, dict):
-        return {k:('[REDACTED]' if k.lower() in SENSITIVE else _redact(v)) for k,v in value.items()}
-    if isinstance(value, list): return [_redact(v) for v in value]
+        output = {}
+        for key, item in value.items():
+            normalized = str(key).lower().replace("-", "_")
+            output[key] = (
+                "[REDACTED]"
+                if any(part in normalized for part in SENSITIVE_PARTS)
+                else _redact(item)
+            )
+        return output
+    if isinstance(value, list):
+        return [_redact(item) for item in value]
     return value
 
-def record_audit(*, actor, action, target, metadata=None):
-    return AuditEvent.objects.create(actor=actor, action=action, target_type=target.__class__.__name__, target_id=str(target.pk), metadata=_redact(metadata or {}))
+
+def record_audit(
+    *,
+    actor,
+    action,
+    target,
+    metadata=None,
+    before_snapshot=None,
+    after_snapshot=None,
+    request_id="",
+):
+    return AuditEvent.objects.create(
+        actor=actor,
+        action=action,
+        target_type=target.__class__.__name__,
+        target_id=str(target.pk),
+        before_snapshot=_redact(before_snapshot or {}),
+        after_snapshot=_redact(after_snapshot or {}),
+        request_id=request_id or "",
+        metadata=_redact(metadata or {}),
+    )

@@ -2,9 +2,10 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from business_hours.models import BusinessHour, TemporaryClosure
-from directory.models import CategoryProvince
+from directory.models import Category, CategoryGroup, CategoryProvince, VerificationRequirement
 from facilities.models import Facility, FacilityApplication, FacilityMembership
 from pharmacy_duty.models import DutyShift
+from locations.models import Province
 
 from .events import EventName, RealtimeEvent, ScopeType
 from .publisher import publish_after_commit
@@ -85,6 +86,37 @@ def application_changed(sender, instance, **kwargs):
             name=EventName.ADMIN_REVIEW_QUEUE_CHANGED,
             scope_type=ScopeType.ADMIN,
             scope_id="review_queue",
+            resource_id=str(instance.pk),
+        )
+    )
+
+
+@receiver([post_save, post_delete], sender=Category)
+@receiver([post_save, post_delete], sender=CategoryGroup)
+@receiver([post_save, post_delete], sender=VerificationRequirement)
+def admin_configuration_changed(sender, instance, **kwargs):
+    publish_after_commit(
+        RealtimeEvent(
+            name=EventName.ADMIN_SYSTEM_CHANGED,
+            scope_type=ScopeType.ADMIN,
+            scope_id="system",
+            resource_id=str(instance.pk),
+        )
+    )
+
+
+@receiver([post_save, post_delete], sender=Province)
+def province_rollout_changed(sender, instance, **kwargs):
+    _province_event(
+        EventName.PROVINCE_CONFIGURATION_CHANGED,
+        instance.pk,
+        instance.pk,
+    )
+    publish_after_commit(
+        RealtimeEvent(
+            name=EventName.ADMIN_SYSTEM_CHANGED,
+            scope_type=ScopeType.ADMIN,
+            scope_id="system",
             resource_id=str(instance.pk),
         )
     )

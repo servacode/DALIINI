@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     "content_services",
     "notifications",
     "analytics",
+    "platform_settings",
+    "admin_console",
 ]
 
 MIDDLEWARE = [
@@ -89,6 +91,9 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "accounts.authentication.BearerAccessTokenAuthentication",
+    ],
 }
 SPECTACULAR_SETTINGS = {
     "TITLE": "Directory Platform API",

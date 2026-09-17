@@ -12,4 +12,5 @@ urlpatterns = [
     path("api/v1/", include("ratings.urls")),
     path("api/v1/", include("content_services.urls")),
     path("api/v1/", include("analytics.urls")),
+    path("api/v1/", include("admin_console.urls")),
 ]
