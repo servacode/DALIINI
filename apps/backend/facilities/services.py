@@ -228,7 +228,11 @@ def _required_evidence_complete(facility):
 @transaction.atomic
 def submit_facility(*, actor, facility, request_id=""):
     locked = (
-        Facility.objects.select_for_update()
+        # Lock the facility row only. `category__capabilities` is a reverse one-to-one,
+        # so select_related emits a LEFT OUTER JOIN and PostgreSQL refuses FOR UPDATE on
+        # the nullable side of an outer join. `of=("self",)` keeps the intended lock on
+        # facilities_facility while still prefetching the reference rows.
+        Facility.objects.select_for_update(of=("self",))
         .select_related("category__group", "category__capabilities", "province")
         .get(pk=facility.pk)
     )
