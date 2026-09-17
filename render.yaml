@@ -1,0 +1,188 @@
+# Directory Platform V3 staging blueprint.
+# Source only until a V3 GitHub repository and external credentials exist.
+services:
+  - type: keyvalue
+    name: directory-v3-staging-redis
+    plan: 256mb
+    region: frankfurt
+    ipAllowList: []
+    maxmemoryPolicy: noeviction
+    persistenceMode: journal-snapshot
+
+  - type: web
+    name: directory-v3-staging-api
+    runtime: docker
+    plan: 0.5c-512mb
+    region: frankfurt
+    dockerContext: ./apps/backend
+    dockerfilePath: ./apps/backend/Dockerfile
+    dockerCommand: uv run daphne -b 0.0.0.0 -p ${PORT:-10000} directory_backend.asgi:application
+    healthCheckPath: /health/ready/
+    autoDeployTrigger: checksPass
+    preDeployCommand: uv run python manage.py check --deploy && uv run python manage.py migrate --noinput
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: directory_backend.settings.staging
+      - key: ENVIRONMENT
+        value: staging
+      - key: DATABASE_URL
+        fromDatabase:
+          name: directory-v3-staging-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: directory-v3-staging-redis
+          property: connectionString
+      - key: SECRET_KEY
+        sync: false
+      - key: ACCESS_TOKEN_SIGNING_KEY
+        sync: false
+      - key: REFRESH_HMAC_SECRET
+        sync: false
+      - key: RECOVERY_HMAC_SECRET
+        sync: false
+      - key: PUSH_TOKEN_ENCRYPTION_KEY
+        sync: false
+      - key: ANALYTICS_HASH_SALT
+        sync: false
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: S3_ENDPOINT_URL
+        sync: false
+      - key: S3_REGION
+        value: auto
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_PUBLIC_BUCKET
+        sync: false
+      - key: S3_PRIVATE_BUCKET
+        sync: false
+      - key: OTP_PROVIDER
+        sync: false
+      - key: PUSH_PROVIDER
+        sync: false
+      - key: FCM_PROJECT_ID
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: SENTRY_ENVIRONMENT
+        value: staging
+
+  - type: worker
+    name: directory-v3-staging-worker
+    runtime: docker
+    plan: 0.5c-512mb
+    region: frankfurt
+    dockerContext: ./apps/backend
+    dockerfilePath: ./apps/backend/Dockerfile
+    dockerCommand: uv run celery -A directory_backend worker -l INFO
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: directory_backend.settings.staging
+      - key: ENVIRONMENT
+        value: staging
+      - key: DATABASE_URL
+        fromDatabase:
+          name: directory-v3-staging-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: directory-v3-staging-redis
+          property: connectionString
+      - key: SECRET_KEY
+        sync: false
+      - key: ACCESS_TOKEN_SIGNING_KEY
+        sync: false
+      - key: REFRESH_HMAC_SECRET
+        sync: false
+      - key: RECOVERY_HMAC_SECRET
+        sync: false
+      - key: PUSH_TOKEN_ENCRYPTION_KEY
+        sync: false
+      - key: ANALYTICS_HASH_SALT
+        sync: false
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: S3_ENDPOINT_URL
+        sync: false
+      - key: S3_REGION
+        value: auto
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_PUBLIC_BUCKET
+        sync: false
+      - key: S3_PRIVATE_BUCKET
+        sync: false
+      - key: OTP_PROVIDER
+        sync: false
+      - key: PUSH_PROVIDER
+        sync: false
+      - key: FCM_PROJECT_ID
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: SENTRY_ENVIRONMENT
+        value: staging
+
+  - type: web
+    name: directory-v3-staging-www
+    runtime: docker
+    plan: 0.5c-512mb
+    region: frankfurt
+    dockerContext: .
+    dockerfilePath: ./apps/web/Dockerfile
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PUBLIC_API_ORIGIN
+        sync: false
+      - key: NEXT_PUBLIC_ROOT_DOMAIN
+        value: ROOT_DOMAIN
+      - key: SUPPORT_EMAIL
+        sync: false
+      - key: PRIVACY_CONTACT_EMAIL
+        sync: false
+
+  - type: web
+    name: directory-v3-staging-admin
+    runtime: docker
+    plan: 0.5c-512mb
+    region: frankfurt
+    dockerContext: .
+    dockerfilePath: ./apps/admin/Dockerfile
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ADMIN_API_ORIGIN
+        sync: false
+      - key: NEXT_PUBLIC_APP_NAME
+        value: Directory Admin
+      - key: NEXT_PUBLIC_ROOT_DOMAIN
+        value: ROOT_DOMAIN
+
+databases:
+  - name: directory-v3-staging-db
+    plan: 0.5c-1g
+    region: frankfurt
+    postgresMajorVersion: "17"
+    databaseName: directory_v3_staging
+    user: directory_v3_staging
+    ipAllowList: []
+    connectionPool: none

@@ -11,7 +11,7 @@ RUN apt-get update \
 COPY --from=ghcr.io/astral-sh/uv:0.10.0 /uv /uvx /bin/
 WORKDIR /app
 COPY pyproject.toml ./
-RUN uv sync --no-dev || true
+RUN uv sync --no-dev --no-install-project
 COPY . .
 RUN uv sync --no-dev
 

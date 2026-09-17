@@ -1,0 +1,9 @@
+.git
+**/.next
+**/node_modules
+**/__pycache__
+**/*.pyc
+artifacts/evidence
+.env
+.env.*
+!.env.example

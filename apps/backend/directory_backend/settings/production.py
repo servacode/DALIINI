@@ -6,9 +6,12 @@ from .env import env, env_bool, env_csv
 DEBUG = env_bool("DEBUG", False)
 SECRET_KEY = env("SECRET_KEY", required=True)
 ACCESS_TOKEN_SIGNING_KEY = env("ACCESS_TOKEN_SIGNING_KEY", required=True)
+REFRESH_HMAC_SECRET = env("REFRESH_HMAC_SECRET", required=True)
+RECOVERY_HMAC_SECRET = env("RECOVERY_HMAC_SECRET", required=True)
 ALLOWED_HOSTS = env_csv("ALLOWED_HOSTS")
 CORS_ALLOWED_ORIGINS = env_csv("CORS_ALLOWED_ORIGINS")
 CSRF_TRUSTED_ORIGINS = env_csv("CSRF_TRUSTED_ORIGINS")
+DATABASE_URL = env("DATABASE_URL", required=True)
 REDIS_URL = env("REDIS_URL", required=True)
 S3_ENDPOINT_URL = env("S3_ENDPOINT_URL", required=True)
 S3_REGION = env("S3_REGION", required=True)
@@ -28,6 +31,10 @@ if SECRET_KEY.startswith("CHANGE_ME") or SECRET_KEY == "development-only-not-for
     raise ImproperlyConfigured("Production SECRET_KEY is insecure")
 if ACCESS_TOKEN_SIGNING_KEY.startswith("CHANGE_ME") or len(ACCESS_TOKEN_SIGNING_KEY) < 32:
     raise ImproperlyConfigured("Production ACCESS_TOKEN_SIGNING_KEY is insecure")
+if REFRESH_HMAC_SECRET.startswith("CHANGE_ME") or len(REFRESH_HMAC_SECRET) < 32:
+    raise ImproperlyConfigured("Production REFRESH_HMAC_SECRET is insecure")
+if RECOVERY_HMAC_SECRET.startswith("CHANGE_ME") or len(RECOVERY_HMAC_SECRET) < 32:
+    raise ImproperlyConfigured("Production RECOVERY_HMAC_SECRET is insecure")
 if not ALLOWED_HOSTS or "*" in ALLOWED_HOSTS:
     raise ImproperlyConfigured("Production ALLOWED_HOSTS must be explicit")
 if OTP_PROVIDER.lower() in {"development", "test", "console"}:
@@ -45,6 +52,7 @@ CHANNEL_LAYERS["default"]["CONFIG"]["hosts"] = [REDIS_URL]
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
 
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = True
