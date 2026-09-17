@@ -17,6 +17,10 @@ S3_SECRET_ACCESS_KEY = env("S3_SECRET_ACCESS_KEY", required=True)
 S3_PUBLIC_BUCKET = env("S3_PUBLIC_BUCKET", required=True)
 S3_PRIVATE_BUCKET = env("S3_PRIVATE_BUCKET", required=True)
 OTP_PROVIDER = env("OTP_PROVIDER", required=True)
+PUSH_PROVIDER = env("PUSH_PROVIDER", required=True)
+PUSH_TOKEN_ENCRYPTION_KEY = env("PUSH_TOKEN_ENCRYPTION_KEY", required=True)
+ANALYTICS_HASH_SALT = env("ANALYTICS_HASH_SALT", required=True)
+FCM_PROJECT_ID = env("FCM_PROJECT_ID", "")
 
 if DEBUG:
     raise ImproperlyConfigured("Production DEBUG must be false")
@@ -28,6 +32,14 @@ if not ALLOWED_HOSTS or "*" in ALLOWED_HOSTS:
     raise ImproperlyConfigured("Production ALLOWED_HOSTS must be explicit")
 if OTP_PROVIDER.lower() in {"development", "test", "console"}:
     raise ImproperlyConfigured("Production OTP provider cannot be a test provider")
+if PUSH_PROVIDER.lower() in {"development", "test", "console"}:
+    raise ImproperlyConfigured("Production push provider cannot be a test provider")
+if len(PUSH_TOKEN_ENCRYPTION_KEY) < 32:
+    raise ImproperlyConfigured("Production PUSH_TOKEN_ENCRYPTION_KEY is too short")
+if len(ANALYTICS_HASH_SALT) < 32:
+    raise ImproperlyConfigured("Production ANALYTICS_HASH_SALT is too short")
+if PUSH_PROVIDER.lower() == "fcm" and not FCM_PROJECT_ID:
+    raise ImproperlyConfigured("FCM_PROJECT_ID is required when PUSH_PROVIDER=fcm")
 
 CHANNEL_LAYERS["default"]["CONFIG"]["hosts"] = [REDIS_URL]
 CELERY_BROKER_URL = REDIS_URL

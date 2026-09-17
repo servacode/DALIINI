@@ -1,0 +1,93 @@
+import uuid
+from urllib.parse import urlparse
+
+from django.core.exceptions import ValidationError
+from django.db import models
+
+
+class Advertisement(models.Model):
+    class ActionType(models.TextChoices):
+        NONE = "NONE", "None"
+        FACILITY = "FACILITY", "Facility"
+        CATEGORY = "CATEGORY", "Category"
+        EXTERNAL_URL = "EXTERNAL_URL", "External URL"
+        IN_APP_ROUTE = "IN_APP_ROUTE", "In-app route"
+
+    class TargetScope(models.TextChoices):
+        GLOBAL = "GLOBAL", "Global"
+        PROVINCE = "PROVINCE", "Province"
+        CATEGORY = "CATEGORY", "Category"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    image_key = models.CharField(max_length=500)
+    title_ar = models.CharField(max_length=180, blank=True)
+    title_en = models.CharField(max_length=180, blank=True)
+    subtitle_ar = models.CharField(max_length=280, blank=True)
+    subtitle_en = models.CharField(max_length=280, blank=True)
+    action_type = models.CharField(
+        max_length=24, choices=ActionType.choices, default=ActionType.NONE
+    )
+    action_payload = models.JSONField(default=dict, blank=True)
+    target_scope = models.CharField(
+        max_length=16, choices=TargetScope.choices, default=TargetScope.GLOBAL
+    )
+    province = models.ForeignKey(
+        "locations.Province", null=True, blank=True, on_delete=models.CASCADE
+    )
+    category = models.ForeignKey(
+        "directory.Category", null=True, blank=True, on_delete=models.CASCADE
+    )
+    starts_at = models.DateTimeField(null=True, blank=True)
+    ends_at = models.DateTimeField(null=True, blank=True)
+    enabled = models.BooleanField(default=False)
+    sort_order = models.PositiveIntegerField(default=0)
+    slide_duration_ms = models.PositiveIntegerField(default=5000)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["enabled", "starts_at", "ends_at"]),
+            models.Index(fields=["target_scope", "province", "category"]),
+        ]
+
+    def clean(self):
+        errors = {}
+        if self.starts_at and self.ends_at and self.ends_at <= self.starts_at:
+            errors["ends_at"] = "Advertisement end must be after start."
+        if not 2000 <= self.slide_duration_ms <= 30000:
+            errors["slide_duration_ms"] = "Slide duration must be between 2000 and 30000 ms."
+        if self.target_scope == self.TargetScope.GLOBAL and (self.province_id or self.category_id):
+            errors["target_scope"] = "Global advertisements cannot target province/category."
+        if self.target_scope == self.TargetScope.PROVINCE and not self.province_id:
+            errors["province"] = "Province target requires province."
+        if self.target_scope == self.TargetScope.CATEGORY and not self.category_id:
+            errors["category"] = "Category target requires category."
+        errors.update(_validate_action(self.action_type, self.action_payload))
+        if errors:
+            raise ValidationError(errors)
+
+
+def _validate_action(action_type: str, payload: dict) -> dict:
+    if not isinstance(payload, dict):
+        return {"action_payload": "Action payload must be an object."}
+    if action_type == Advertisement.ActionType.NONE:
+        return {} if not payload else {"action_payload": "NONE action must have empty payload."}
+    key_by_type = {
+        Advertisement.ActionType.FACILITY: "facilityId",
+        Advertisement.ActionType.CATEGORY: "categoryId",
+        Advertisement.ActionType.EXTERNAL_URL: "url",
+        Advertisement.ActionType.IN_APP_ROUTE: "route",
+    }
+    expected = key_by_type.get(action_type)
+    if expected is None or set(payload) != {expected} or not isinstance(payload.get(expected), str):
+        return {"action_payload": f"Action requires only {expected}."}
+    if action_type == Advertisement.ActionType.EXTERNAL_URL:
+        parsed = urlparse(payload["url"])
+        if parsed.scheme != "https" or not parsed.netloc or parsed.username or parsed.password:
+            return {"action_payload": "External URL must be a credential-free HTTPS URL."}
+    if action_type == Advertisement.ActionType.IN_APP_ROUTE:
+        route = payload["route"]
+        if not route.startswith("/") or route.startswith("//"):
+            return {"action_payload": "In-app route must be an absolute app route."}
+    return {}

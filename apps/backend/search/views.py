@@ -10,6 +10,8 @@ from business_hours.query import filter_for_availability_state
 from business_hours.services import AvailabilityState, get_facility_availability
 from directory.models import CategoryProvince
 from locations.models import Province
+from content_services.selectors import active_ads
+from content_services.serializers import public_ad
 
 from .pagination import FacilityCursorPagination
 from .selectors import (
@@ -165,7 +167,7 @@ class PublicHomeView(APIView):
             )
         return Response(
             {
-                "ads": [],
+                "ads": [public_ad(row) for row in active_ads(province_id=province_id)[:20]],
                 "categories": category_items,
                 "nearby": [compact_facility(row) for row in nearby],
                 "openNearby": [compact_facility(row) for row in open_nearby],

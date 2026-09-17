@@ -1,6 +1,6 @@
 # HANDOFF
 
-Last updated: 2026-09-17T14:10:00+03:00
+Last updated: 2026-09-17T16:18:00+03:00
 
 ## PROJECT SUMMARY
 
@@ -12,7 +12,7 @@ Django/DRF/GeoDjango modular monolith; PostgreSQL/PostGIS; Redis cache/Channels/
 
 ## CURRENT PHASE
 
-P9 — Content Services / Ads / Push / Analytics (`IN_PROGRESS` source work).
+P10 — OpenAPI generated clients (`IN_PROGRESS`).
 
 ## LAST COMPLETED PHASE
 
@@ -20,7 +20,7 @@ P1 — Design System Foundations (`CLOSED`). P2/P3 are intentionally not called 
 
 ## CURRENT WORKING STATE
 
-P0/P1 gates are closed. P2 foundation source is substantially implemented but exact `uv.lock` and connected/tooling qualification remain unavailable because the container cannot resolve PyPI or run Docker/PostGIS/Redis/MinIO. P3 Accounts/Auth/RBAC and P4 Locations/Taxonomy remain `SOURCE_IMPLEMENTED`. P5 Facility/Owner is also `SOURCE_IMPLEMENTED` at `11aa673`, including lifecycle, membership, applications, media/evidence privacy and reverification source. P6 Availability/Duty, P7 Public Discovery/Search/Geo/Ratings and P8 Realtime are `SOURCE_IMPLEMENTED`; P9 Content Services is now active.
+P0/P1 gates are closed. P2 foundation source is substantially implemented but exact `uv.lock` and connected/tooling qualification remain unavailable because the container cannot resolve PyPI or run Docker/PostGIS/Redis/MinIO. P3 Accounts/Auth/RBAC and P4 Locations/Taxonomy remain `SOURCE_IMPLEMENTED`. P5 Facility/Owner is also `SOURCE_IMPLEMENTED` at `11aa673`, including lifecycle, membership, applications, media/evidence privacy and reverification source. P6 Availability/Duty, P7 Public Discovery/Search/Geo/Ratings, P8 Realtime and P9 Content Services are `SOURCE_IMPLEMENTED`; P10 Contracts is now active.
 
 ## WHAT IS IMPLEMENTED
 
@@ -55,7 +55,7 @@ P0/P1 gates are closed. P2 foundation source is substantially implemented but ex
 
 ## WHAT IS LEFT
 
-P9 through P26, plus connected qualification of P2-P8 as soon as a capable environment is available.
+P10 through P26, plus connected qualification of P2-P9 as soon as a capable environment is available.
 
 ## KNOWN ISSUES
 
@@ -177,3 +177,8 @@ Source implemented: public province/city/category metadata, Home, public facilit
 ## P8 REALTIME STATUS
 
 Source implemented with minimal invalidation events, post-connect token auth, province/user/admin scopes, domain RBAC admin gating and `transaction.on_commit` publishing. Evidence: `artifacts/evidence/p8-realtime-source-20260917.txt`. Redis/Channels connected qualification remains pending.
+
+
+## P9 CONTENT SERVICES STATUS
+
+Source implemented: first-party advertisements with scoped scheduling and validated actions, public ad DTO/Home integration, notification records, encrypted+digested push tokens, Celery retry boundary, FCM interface, APNs placeholder and privacy-minimized analytics registry with retention. Evidence: `artifacts/evidence/p9-content-services-source-20260917.txt`. Connected Django/Celery/FCM qualification remains pending; production provider credentials are external blocker EXT-002.

@@ -18,6 +18,7 @@ dependencies = [
   "Pillow>=11,<12",
   "django-storages[s3]>=1.14,<2",
   "dj-database-url>=3,<4",
+  "cryptography>=46,<47",
 ]
 
 [dependency-groups]

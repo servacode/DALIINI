@@ -1,0 +1,25 @@
+P9 static qualification 2026-09-17T13:14:16+00:00
+commit-before: ce9bc5cb6363d4857dc171415b28e5d107465f03
+--- compileall ---
+PASS
+--- AST parse ---
+PASS 168 python files
+--- P9 line length <= 100 excluding migrations ---
+PASS
+--- analytics registry executable tests ---
+PASS
+--- push token source invariants ---
+PASS
+--- ad privacy/action invariants ---
+PASS
+--- governance ---
+P0 governance checks passed
+--- design token validation ---
+text primary on surface: 16.29 PASS
+text secondary on surface: 5.60 PASS
+on-primary on primary: 6.55 PASS
+primary text on canvas: 15.28 PASS
+Design token validation passed
+Generated token outputs are current
+--- git diff check ---
+PASS

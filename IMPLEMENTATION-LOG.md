@@ -480,3 +480,26 @@ Static qualification passed. Redis/Channels connected delivery and rollback/no-e
 
 ### Next
 P9 Ads/Push/Analytics source.
+
+
+## 2026-09-17T16:18:00+03:00 — P9 Ads / Push / Analytics source implementation
+
+Goal: implement roadmap P9 without coupling provider credentials or third-party SDKs to domain truth.
+
+Created: `content_services/**`, `notifications/**`, `analytics/**` including models, migrations, selectors/services, provider boundaries, Celery task, public ads endpoint and source tests.
+
+Modified: backend settings/env/URLs, Home response, backend dependency declaration.
+
+Implemented: first-party advertisements; HTTPS-only external actions; target/schedule selectors; audit service integration; notification persistence; encrypted/digested push tokens; development/FCM/APNs provider boundaries; retrying push task; analytics event registry, privacy field allowlists, event persistence and retention purge.
+
+Problem: initial static gate found P9 lines over the repository 100-character limit.
+
+Root cause: newly authored model/registry expressions were not wrapped to repository style.
+
+Resolution: formatting only; no behavioral workaround. Gate rerun from the beginning passed.
+
+Commands: compileall; AST parse; P9 line-length check; executable analytics registry privacy smoke; source push/ad invariants; governance validator; design-token validation/drift; `git diff --check`.
+
+Results: static/source qualification PASS. Runtime Django/PostgreSQL/Celery/FCM tests not executed in this environment.
+
+Next: P10 OpenAPI generated-client infrastructure; real schema/client generation must wait for a Django-capable toolchain.

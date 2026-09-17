@@ -38,6 +38,9 @@ INSTALLED_APPS = [
     "ratings",
     "search",
     "realtime",
+    "content_services",
+    "notifications",
+    "analytics",
 ]
 
 MIDDLEWARE = [
@@ -116,6 +119,11 @@ S3_ACCESS_KEY_ID = env("S3_ACCESS_KEY_ID", "development")
 S3_SECRET_ACCESS_KEY = env("S3_SECRET_ACCESS_KEY", "development")
 S3_PUBLIC_BUCKET = env("S3_PUBLIC_BUCKET", "directory-public")
 S3_PRIVATE_BUCKET = env("S3_PRIVATE_BUCKET", "directory-private")
+PUSH_PROVIDER = env("PUSH_PROVIDER", "development")
+PUSH_TOKEN_ENCRYPTION_KEY = env("PUSH_TOKEN_ENCRYPTION_KEY", "development-push-token-key")
+FCM_PROJECT_ID = env("FCM_PROJECT_ID", "")
+ANALYTICS_HASH_SALT = env("ANALYTICS_HASH_SALT", "development-analytics-salt")
+ANALYTICS_RETENTION_DAYS = 180
 
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
