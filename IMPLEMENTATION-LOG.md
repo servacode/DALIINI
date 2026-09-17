@@ -643,3 +643,20 @@ Qualification: Android source qualification, governance/design-token drift, line
 Commit: `4c0a693`.
 
 Next: P15 Android Public source.
+
+
+## 2026-09-17T18:31:00+03:00 — P15 Android Public source qualification
+
+Goal: complete the public native Android experience on top of P14 without duplicating P10 transport contracts.
+
+Implemented: Home/province/location/search/directory/facility detail/map/account/ratings; public cache-first paths; Room API-order preservation; Coil public images; MapLibre native viewport surface; location-denial/approximate-safe behavior; typed navigation; ratings 1..5 validation.
+
+Toolchain decision: AGP 9.4.0 + Kotlin 2.3.21 + KSP 2.3.12; Kotlin 2.4.20 intentionally deferred until supported/build-verified.
+
+Tests: P14 qualifier PASS; P15 qualifier PASS; governance PASS; design-token validation + regenerate/diff PASS; `git diff --check` PASS. Gradle/SDK/ADB unavailable, so build/unit/Compose/instrumentation/device tests were not executed.
+
+Result: P15 `SOURCE_IMPLEMENTED`. Implementation commit: `7178ba5`.
+
+Problem discovered before P16: recovered backend lineage is missing documented owner config/facility/images/evidence/members endpoint source even though facility models and hours/duty endpoints exist. Root cause is prior workspace/source loss. P16 will restore this dependency from the immutable API/product specs before implementing the owner mobile surface.
+
+Next: P16 Android Owner.

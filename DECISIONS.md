@@ -61,3 +61,18 @@ For a material architecture decision, create an ADR under `docs/adr/` using `ADR
 **Alternatives:** Hard-code role names into views; use Django `is_staff`; grant a default super-role automatically. These were rejected because they move authorization truth away from explicit RBAC or invent production policy.
 
 **Impact:** Role definitions can be composed later without changing endpoint permission semantics. Every privileged mutation still rechecks the permission in Django.
+
+
+## DECISION-005 — Android P14/P15 toolchain pin
+
+**Date:** 2026-09-17
+
+**Subject:** Kotlin compiler/plugin version used with AGP 9.4 for the native Android project.
+
+**Decision:** Keep AGP `9.4.0` and pin Kotlin compiler plugins to `2.3.21`; keep KSP `2.3.12`. Do not move this source to Kotlin 2.4.20 until an actual Gradle build proves a supported combination.
+
+**Reason:** Current Android/Compose guidance for AGP 9.4 uses Kotlin 2.3.21, while JetBrains' Kotlin Gradle plugin compatibility table does not list AGP 9.4 in Kotlin 2.4.20's fully-supported range. The project uses AGP 9 built-in Kotlin for Android source and only applies Kotlin compiler plugins where required.
+
+**Alternatives:** Upgrade immediately to Kotlin 2.4.20; downgrade AGP. Both were rejected without build evidence because the former exceeds the documented KGP AGP range and the latter discards the current stable AGP baseline.
+
+**Impact:** Android dependency versions stay deterministic until Gradle/device qualification is available.

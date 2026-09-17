@@ -1,75 +1,79 @@
 # Implementation Plan
 
-Updated: 2026-09-17T17:58:00+03:00
+Updated: 2026-09-17T18:31:00+03:00
 
 ## Current phase
 
-P15 — Android Public
+P16 — Android Owner
 
 ## Goal
 
-Implement the public Android experience on top of the P14 native foundation without bypassing the canonical P10 generated-client boundary.
+Implement the native Android owner experience for onboarding, evidence/uploads, facility status/management and pharmacy duty without bypassing the canonical P10 generated-client boundary or backend owner-policy validation.
+
+## Dependency repair
+
+The recovered backend lineage contains facility persistence plus hours/duty endpoints but is missing the owner config/facility/images/evidence/members API source required by the immutable API contract. Restore that source before binding Android owner flows.
 
 ## Tasks
 
-1. Home cache-first state and repository contract.
-2. Province selection persistence and province picker UI.
-3. Location permission/approximate-aware integration.
-4. Search state, query validation and result surfaces.
-5. Category directory/list with open/duty filters and nearest semantics.
-6. Facility detail with availability, images, hours, actions and directions entry.
-7. MapLibre public map surface behind `MapController`.
-8. Account public profile/session surface boundary.
-9. Ratings list/upsert/delete domain/UI flows.
-10. Navigation graph wiring and typed route arguments.
-11. Unit/source qualification and offline/error state coverage.
-12. Update evidence/status/handoff and commit.
+1. Restore `/owner/config/` and owner facility CRUD/submit API from the V3 contract.
+2. Restore owner image/evidence/member subresources with private evidence and membership/IDOR checks.
+3. Preserve existing hours/temporary-closure/duty endpoints and current-policy submit validation.
+4. Add Android owner domain models + generated-client-facing `OwnerApiBoundary`.
+5. Implement My Facilities state/actions.
+6. Implement onboarding steps: province/category → info → map → hours → images → specialized fields → evidence → review → submit → status.
+7. Autosave draft changes; if onboarding is later disabled, existing drafts remain editable while submit rechecks current policy.
+8. Implement active facility management: info/contact/location/images/hours/temporary closures/managers.
+9. Implement pharmacy duty list/create/edit/cancel/end-early flows.
+10. Use Android Photo Picker for uploads where supported; server remains final validator.
+11. Wire type-safe MyFacilities/Onboarding/ManageFacility/Duty navigation.
+12. Add source/unit-contract qualification, update evidence/status/handoff, and commit.
 
 ## Acceptance criteria
 
 - Arabic RTL from the shared Design System.
-- Immutable UiState for every public ViewModel.
-- Composable → ViewModel → UseCase → Repository layering.
-- Cache is rendered before refresh where applicable.
-- Location denial and approximate location are valid non-crashing states.
-- Search/Directory/Facility do not hand-author OpenAPI transport DTOs.
-- Map uses native MapLibre boundary, never WebView.
-- Ratings enforce 1..5 in client domain and rely on server as final authority.
-- No sensitive auth material in UI/cache/logs.
+- Composable → ViewModel → UseCase → Repository layering for owner features.
+- Owner APIs enforce authenticated facility membership and prevent IDOR.
+- Private verification evidence never receives a public URL or enters public cache.
+- Draft autosave is explicit and does not invent production data.
+- Submit revalidates current owner-registration switch and current verification requirements on the server.
+- Sensitive facility edits defer lifecycle/reverification truth to backend.
+- Duty UI only appears when capability permits it; backend remains final authority.
+- No hand-authored OpenAPI wire DTOs; P10 adapter remains the transport owner.
 - No background location permission.
 
 ## Required tests
 
-- Home cache-first/offline state unit tests.
-- Province persistence unit tests.
-- Search query/result state tests.
-- Directory filter state tests.
-- Facility detail state/error tests.
-- Rating validation tests.
-- Source qualification for routes/layers/RTL/location/map/security.
-- Gradle/Compose/device tests when Android tooling is available.
+- Backend owner membership/IDOR source + runtime tests when Django is available.
+- Owner config current-switch qualification.
+- Submit/current-evidence policy tests.
+- Evidence privacy/storage-key leak checks.
+- Onboarding reducer/step validation tests.
+- Duty input/range validation tests.
+- Android owner source architecture/navigation/upload/security checks.
+- P14/P15 regression gates.
+- Gradle/Compose/instrumentation/physical-device tests when tooling exists.
 
 ## Expected files
 
-- `apps/android/feature/home/**`
-- `apps/android/feature/province/**`
-- `apps/android/feature/search/**`
-- `apps/android/feature/directory/**`
-- `apps/android/feature/facility/**`
-- `apps/android/feature/map/**`
-- `apps/android/feature/account/**`
-- `apps/android/feature/ratings/**`
+- `apps/backend/facilities/**`
+- `apps/backend/directory_backend/urls.py`
+- `apps/android/core/model/**`
+- `apps/android/core/network/**`
+- `apps/android/feature/owner/**`
+- `apps/android/feature/onboarding/**`
+- `apps/android/feature/duty/**`
 - `apps/android/app/**`
 - project management/evidence files.
 
 ## Risks
 
-- P10 generated Kotlin client is not yet materialized because Django schema generation cannot run locally; repositories must remain interfaces/boundaries rather than duplicate wire DTOs.
-- Gradle/Android SDK/ADB are unavailable locally; DEVICE_PASS cannot be claimed here.
-- Map style/provider production configuration is a later external/configuration concern; no production map URL will be invented.
+- P10 generated Kotlin client is not materialized; owner transport adapter must remain fail-closed until generation.
+- Django/PostGIS/S3 runtime is unavailable locally, so restored owner backend can only receive source qualification here.
+- Gradle/Android SDK/ADB are unavailable locally, so P16 cannot reach device verification in this environment.
 
 ## Gate
 
-Target gate: `P15 ANDROID PUBLIC DEVICE PASS`.
+Target gate: `P16 ANDROID OWNER DEVICE PASS`.
 
-Current environment can only establish `SOURCE_IMPLEMENTED`; device closure requires Android SDK/emulator/physical device and P10 client binding.
+Current environment can only establish `SOURCE_IMPLEMENTED`; connected backend and Android device closure require their respective toolchains.

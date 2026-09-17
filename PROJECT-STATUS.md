@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-09-17T17:58:00+03:00
+Last updated: 2026-09-17T18:31:00+03:00
 
 ## Baseline
 
@@ -29,8 +29,8 @@ Last updated: 2026-09-17T17:58:00+03:00
 | P12 Admin Foundation | SOURCE_IMPLEMENTED | Next.js RTL admin shell, shared tokens, server-only backend boundary, HttpOnly/SameSite refresh-cookie primitives, same-origin logout guard, central `can(permission)`, responsive staff navigation and security headers | Static source qualification passed: JSON/config, RTL/tokens, no browser refresh storage, RBAC primitive, BFF/origin guard, security headers, domain placeholders, whitespace | Bind generated TS client/auth contract after P10; implement actual login/refresh BFF; pnpm lint/typecheck/build/test/Playwright | `artifacts/evidence/p12-admin-foundation-source-20260917.txt` | 95c2c62 | 2026-09-17 |
 | P13 Admin Operations | SOURCE_IMPLEMENTED | Recovered from official V3 spec + recorded handoff after missing Git objects; Admin API, permission catalog, review/evidence, facility/user/RBAC, taxonomy/province/verification, ads/audit/analytics/settings/system and RTL route surfaces restored | Recovery static gate: 184 backend AST files, 7 direct source-contract checks, canonical CSS tokens/imports, governance/design drift and whitespace passed | Run Django migrations/pytest/ruff/mypy; generate P10 client; bind Admin data/actions; Node 24 pnpm lint/typecheck/build; Playwright golden paths | `artifacts/evidence/p13-admin-operations-recovery-20260917.txt` | 507814d | 2026-09-17 |
 | P14 Android Foundation | SOURCE_IMPLEMENTED | Native Kotlin/Compose 27-module graph, convention plugins/version catalog, Hilt boundaries, network/auth foundation, Keystore refresh vault, refresh mutex, Room/DataStore, location, MapLibre abstraction, analytics/observability, RTL design system, type-safe routes and bootstrap layering | Source qualification passed: module/SDK/security/architecture/hygiene/governance/design drift/line length/whitespace. Gradle/SDK/device unavailable locally. | Run Gradle 9.6 + Android SDK build/lint/unit/Compose/instrumentation and physical-device gate; bind generated P10 Kotlin client | `artifacts/evidence/p14-android-foundation-source-20260917.txt` | 4c0a693 | 2026-09-17 |
-| P15 Android Public | IN_PROGRESS | Home/province/location/search/directory/detail/map/account/ratings source implementation active | Not yet | Complete source + qualification; device gate when tooling exists | — | — | 2026-09-17 |
-| P16 Android Owner | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
+| P15 Android Public | SOURCE_IMPLEMENTED | Home/province/location/search/directory/detail/map/account/ratings; cache-first public data; Coil images; native MapLibre; generated-client boundary | P14/P15 source qualifiers, governance/design regression, token drift, whitespace; Android runtime unavailable | Bind P10 generated Kotlin client; Gradle build/lint/unit/Compose/instrumentation and physical-device QA | `artifacts/evidence/p15-android-public-source-20260917.txt` | 7178ba5 | 2026-09-17 |
+| P16 Android Owner | IN_PROGRESS | Owner dependency/API restoration + Android onboarding/manage/duty source active | Not yet | Complete owner source + qualification; device gate when tooling exists | — | — | 2026-09-17 |
 | P17 Navigation | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
 | P18 Mobile Live Data | NOT_STARTED | — | — | All | — | — | 2026-09-17 |
 | P19 Staging | NOT_STARTED | — | — | All | — | — | 2026-09-17 |

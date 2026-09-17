@@ -1,6 +1,6 @@
 # HANDOFF
 
-Last updated: 2026-09-17T16:33:17+03:00
+Last updated: 2026-09-17T18:31:00+03:00
 
 ## PROJECT SUMMARY
 
@@ -12,7 +12,7 @@ Django/DRF/GeoDjango modular monolith; PostgreSQL/PostGIS; Redis cache/Channels/
 
 ## CURRENT PHASE
 
-P14 — Android Foundation (`IN_PROGRESS`). P10 remains independently `IN_PROGRESS` until Django can generate the real OpenAPI schema and clients.
+P16 — Android Owner (`IN_PROGRESS`). P10 remains independently `IN_PROGRESS` until Django can generate the real OpenAPI schema and clients.
 
 ## LAST COMPLETED PHASE
 
@@ -20,7 +20,7 @@ P1 — Design System Foundations (`CLOSED`). P2/P3 are intentionally not called 
 
 ## CURRENT WORKING STATE
 
-P0/P1 gates are closed. P2 remains source-level pending connected backend qualification. P3-P9 are `SOURCE_IMPLEMENTED`. P10 contract tooling exists but real Django-generated schema/TS-Kotlin-Swift clients are still pending. P11 Public Web, P12 Admin Foundation and P13 Admin Operations are `SOURCE_IMPLEMENTED`. P13 implementation commit is `ff60f96`; its static gate passed, but Node 24/pnpm, Django/PostgreSQL runtime and Playwright golden paths were not available, so `P13 ADMIN GOLDEN PATH PASS` is not claimed. P14 Android Foundation is now active.
+P0/P1 gates are closed. P2 remains source-level pending connected backend qualification. P3-P9 are `SOURCE_IMPLEMENTED`. P10 contract tooling exists but real Django-generated schema/TS-Kotlin-Swift clients are still pending. P11 Public Web, P12 Admin Foundation and P13 Admin Operations are `SOURCE_IMPLEMENTED`. P13 implementation commit is `ff60f96`; its static gate passed, but Node 24/pnpm, Django/PostgreSQL runtime and Playwright golden paths were not available, so `P13 ADMIN GOLDEN PATH PASS` is not claimed. P14 and P15 Android source are `SOURCE_IMPLEMENTED`; P16 Android Owner is active.
 
 ## WHAT IS IMPLEMENTED
 
@@ -63,7 +63,7 @@ P0/P1 gates are closed. P2 remains source-level pending connected backend qualif
 
 ## WHAT IS LEFT
 
-P14 through P26, plus P10 real schema/client generation and connected/runtime qualification of source-implemented backend/web/admin phases as soon as capable toolchains are available.
+P16 through P26, plus P10 real schema/client generation and connected/runtime qualification of source-implemented backend/web/admin/mobile phases as soon as capable toolchains are available.
 
 ## KNOWN ISSUES
 
@@ -100,7 +100,7 @@ P12 and P13 are `SOURCE_IMPLEMENTED`. Routes exist for login/dashboard/reviews/f
 
 ## ANDROID STATUS
 
-P14 `IN_PROGRESS`. Native Kotlin/Compose; applicationId `com.servacode.directory`; minSdk 24; compile/target 36+ per immutable specification. Module/build/network/auth/cache/navigation/design-system source is next.
+P14/P15 `SOURCE_IMPLEMENTED`. Native Kotlin/Compose; applicationId `com.servacode.directory`; minSdk 24; compile/target 36. Foundation plus public Home/province/search/directory/detail/native-MapLibre/account/ratings source exists. P10 client binding and all Gradle/device gates remain pending. P16 owner source is active.
 
 ## IOS STATUS
 
@@ -157,7 +157,7 @@ When Node 24 and pnpm are available: install the workspace, generate/bind the P1
 
 ## HOW TO RUN ANDROID
 
-Not available; P14 not started.
+With Gradle 9.6+, JDK 17+, Android SDK 36 and ADB available: run the Android workspace build/lint/unit/Compose tests, then instrumentation/device qualification. Current container lacks Gradle/SDK/ADB.
 
 ## HOW TO RUN TESTS
 
@@ -165,11 +165,11 @@ Static/source checks work in the current container. Full backend qualification r
 
 ## HOW TO CONTINUE
 
-Continue P14 from `plan.md`: create the greenfield Kotlin/Compose Gradle/module foundation, preserve generated-client boundaries while P10 is open, and do not mark the Android gate passed without an actual build plus emulator/physical-device verification. In parallel, when backend/web toolchains become available, run the outstanding connected gates and promote statuses only with evidence.
+Continue P16 from `plan.md`: first restore the missing owner API dependency from the immutable contract, then implement native owner onboarding/manage/duty while preserving generated-client boundaries. Do not promote Android beyond source status without actual Gradle plus emulator/physical-device verification.
 
 ## LATEST COMMIT SHA
 
-`ff60f96714212b98db00009009762de9ce40f3ae` — latest implementation commit at this handoff update. Management-document commit may follow.
+`7178ba5` — P15 Android Public implementation commit. Management-document commit follows this handoff update.
 
 
 ## WORKSPACE RECOVERY
