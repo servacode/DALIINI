@@ -1,6 +1,6 @@
 # HANDOFF
 
-Last updated: 2026-09-17T16:18:00+03:00
+Last updated: 2026-09-17T16:33:17+03:00
 
 ## PROJECT SUMMARY
 
@@ -12,7 +12,7 @@ Django/DRF/GeoDjango modular monolith; PostgreSQL/PostGIS; Redis cache/Channels/
 
 ## CURRENT PHASE
 
-P10 — OpenAPI generated clients (`IN_PROGRESS`).
+P14 — Android Foundation (`IN_PROGRESS`). P10 remains independently `IN_PROGRESS` until Django can generate the real OpenAPI schema and clients.
 
 ## LAST COMPLETED PHASE
 
@@ -20,7 +20,7 @@ P1 — Design System Foundations (`CLOSED`). P2/P3 are intentionally not called 
 
 ## CURRENT WORKING STATE
 
-P0/P1 gates are closed. P2 foundation source is substantially implemented but exact `uv.lock` and connected/tooling qualification remain unavailable because the container cannot resolve PyPI or run Docker/PostGIS/Redis/MinIO. P3 Accounts/Auth/RBAC and P4 Locations/Taxonomy remain `SOURCE_IMPLEMENTED`. P5 Facility/Owner is also `SOURCE_IMPLEMENTED` at `11aa673`, including lifecycle, membership, applications, media/evidence privacy and reverification source. P6 Availability/Duty, P7 Public Discovery/Search/Geo/Ratings, P8 Realtime and P9 Content Services are `SOURCE_IMPLEMENTED`; P10 Contracts is now active.
+P0/P1 gates are closed. P2 remains source-level pending connected backend qualification. P3-P9 are `SOURCE_IMPLEMENTED`. P10 contract tooling exists but real Django-generated schema/TS-Kotlin-Swift clients are still pending. P11 Public Web, P12 Admin Foundation and P13 Admin Operations are `SOURCE_IMPLEMENTED`. P13 implementation commit is `ff60f96`; its static gate passed, but Node 24/pnpm, Django/PostgreSQL runtime and Playwright golden paths were not available, so `P13 ADMIN GOLDEN PATH PASS` is not claimed. P14 Android Foundation is now active.
 
 ## WHAT IS IMPLEMENTED
 
@@ -36,6 +36,12 @@ P0/P1 gates are closed. P2 foundation source is substantially implemented but ex
 - Authoritative 14-province seed; Raqqa is the sole active launch province. Health/Pharmacy is the launch taxonomy with Pharmacy public/owner onboarding and Duty enabled only in Raqqa.
 - P5 Facility/Owner source: Facility lifecycle, OWNER/MANAGER membership, INITIAL/REVERIFICATION applications, owner/admin APIs, current-policy evidence gating, public-image/private-evidence storage boundaries and safe image processing.
 
+- P11 Public Web source with RTL legal/support/delete-account surfaces and web security headers.
+- P12 Admin foundation with RTL staff shell, server-only BFF boundary, HttpOnly refresh-cookie policy and central `can(permission)`.
+- P13 Admin Operations backend/API + route surfaces: review/evidence decisions, facilities, users/Admin roles, taxonomy, provinces, verification, ads, audit, analytics, typed settings and system status.
+- DRF Bearer access-token authentication bound to explicit Admin RBAC permission codes; user blocking revokes active refresh sessions.
+- Audit records now carry redacted before/after snapshots and request IDs; evidence streaming is permission-gated, audited and private/no-store.
+
 ## WHAT IS VERIFIED
 
 - P0/P1 executed gates.
@@ -44,6 +50,7 @@ P0/P1 gates are closed. P2 foundation source is substantially implemented but ex
 - Static persisted-secret invariants for OTP/refresh source.
 - P4 governance/design regression, compileall/AST, line-length, launch-seed and taxonomy privacy/invariant source checks.
 - P5 governance/design regression, full backend compileall/AST, P5 line-length, storage-key DTO privacy and image preload-limit source checks.
+- P13 source qualification: 189 backend Python AST files, line-length, 11 executable source-contract tests, governance, design-token drift, Admin route/import/CSS-token checks and whitespace all passed.
 
 ## WHAT IS NOT VERIFIED
 
@@ -51,11 +58,12 @@ P0/P1 gates are closed. P2 foundation source is substantially implemented but ex
 - No ruff/mypy/pytest/Django migration drift run.
 - No live PostgreSQL/PostGIS, Redis, Celery or S3-compatible runtime qualification.
 - P4/P5 Django migration/model/API/PostGIS/S3 runtime tests are not executed.
-- No Admin, Android, iOS, staging or production runtime/device verification.
+- No Admin runtime/typecheck/build/Playwright verification; Node 24/pnpm are unavailable here.
+- No Android, iOS, staging or production runtime/device verification.
 
 ## WHAT IS LEFT
 
-P10 through P26, plus connected qualification of P2-P9 as soon as a capable environment is available.
+P14 through P26, plus P10 real schema/client generation and connected/runtime qualification of source-implemented backend/web/admin phases as soon as capable toolchains are available.
 
 ## KNOWN ISSUES
 
@@ -80,19 +88,19 @@ Greenfield monorepo matching `docs/spec/26-REPOSITORY-STRUCTURE.md`: `apps/`, `p
 
 ## BACKEND STATUS
 
-P2 `IN_PROGRESS`; P3 `SOURCE_IMPLEMENTED`; P4 `SOURCE_IMPLEMENTED`; P5 `SOURCE_IMPLEMENTED`; P6 `IN_PROGRESS`.
+P2 connected qualification pending. P3-P9 and the P13 Admin backend operations are `SOURCE_IMPLEMENTED`. P10 generated contract remains `IN_PROGRESS`. No backend phase is promoted to connected/staging status from source inspection alone.
 
 ## DATABASE STATUS
 
-PostGIS configuration/migrations source exists; no live DB in current environment. P3 introduces User/OTP/RBAC/session/audit tables. P4 adds City/Neighborhood and taxonomy tables plus deterministic province/taxonomy seed. P5 adds Facility, FacilityMembership, FacilityApplication, FacilityPublicImage and VerificationEvidence.
+PostGIS configuration/migration source exists; no live DB in the current environment. Current source includes User/Admin RBAC/session/audit, locations/taxonomy, facility/application/evidence, availability/duty, ratings, content/notifications/analytics and typed `PlatformSetting` persistence. P13 adds Admin permission seed data and Audit before/after/requestId fields. All migrations still require Django `makemigrations --check` and live PostgreSQL/PostGIS execution.
 
 ## ADMIN STATUS
 
-NOT_STARTED. Backend RBAC primitives exist; custom Next.js Admin remains P12/P13.
+P12 and P13 are `SOURCE_IMPLEMENTED`. Routes exist for login/dashboard/reviews/facilities/users/taxonomy/provinces/verification/ads/audit/analytics/settings/system. Backend Admin APIs and permission catalog exist. Data/action binding intentionally waits on the P10 generated TypeScript client; Node 24/pnpm typecheck/build and Playwright golden paths remain pending.
 
 ## ANDROID STATUS
 
-NOT_STARTED. Native Kotlin/Compose; applicationId baseline `com.servacode.directory`.
+P14 `IN_PROGRESS`. Native Kotlin/Compose; applicationId `com.servacode.directory`; minSdk 24; compile/target 36+ per immutable specification. Module/build/network/auth/cache/navigation/design-system source is next.
 
 ## IOS STATUS
 
@@ -104,11 +112,11 @@ NOT_STARTED beyond Geo/PostGIS foundation. MapLibre provider/client work remains
 
 ## REALTIME STATUS
 
-Channels/Redis foundation source exists; domain realtime events are P8.
+P8 `SOURCE_IMPLEMENTED`: Channels invalidation envelope, after-commit publishing and province/user/admin scopes. P13 extended invalidation to category/group/verification/province configuration changes. Redis/Channels delivery is not connected-verified.
 
 ## SECURITY STATUS
 
-P3 security source implements Argon2 configuration, OTP digest-only storage, JWT access, opaque refresh HMAC digests, reuse detection, blocked-user denial, throttling and audit redaction. Runtime security suites are pending.
+Security source includes Argon2 configuration, OTP/refresh digest protections, short access tokens, Bearer DRF authentication, explicit Admin RBAC, blocked-user session revocation, audit redaction, private evidence no-store streaming, and secret-safe system status. Runtime IDOR/auth/session/concurrency suites remain pending.
 
 ## STAGING STATUS
 
@@ -145,7 +153,7 @@ With Docker/network available, follow `infrastructure/docker/README.md`, run mig
 
 ## HOW TO RUN ADMIN
 
-Not available; P12 not started.
+When Node 24 and pnpm are available: install the workspace, generate/bind the P10 TypeScript API client, configure `ADMIN_API_ORIGIN`, then run `pnpm --filter @servacode/admin dev`. Before qualification run Admin lint/typecheck/build and Playwright golden paths.
 
 ## HOW TO RUN ANDROID
 
@@ -157,11 +165,11 @@ Static/source checks work in the current container. Full backend qualification r
 
 ## HOW TO CONTINUE
 
-Continue P6 at source level from `plan.md`, keeping availability/duty logic centralized. Do not mark P2/P3/P4/P5/P6 CLOSED from source inspection. When a capable environment becomes available: generate/commit `uv.lock`, run ruff/mypy/pytest/Django migration checks, run connected smoke, fix root causes, then update evidence/status before advancing gate state.
+Continue P14 from `plan.md`: create the greenfield Kotlin/Compose Gradle/module foundation, preserve generated-client boundaries while P10 is open, and do not mark the Android gate passed without an actual build plus emulator/physical-device verification. In parallel, when backend/web toolchains become available, run the outstanding connected gates and promote statuses only with evidence.
 
 ## LATEST COMMIT SHA
 
-b63ce69
+`ff60f96714212b98db00009009762de9ce40f3ae` — latest implementation commit at this handoff update. Management-document commit may follow.
 
 
 ## WORKSPACE RECOVERY
@@ -197,3 +205,8 @@ Source implemented under `apps/web`: Next.js RTL landing/privacy/terms/support/d
 ## P12 ADMIN FOUNDATION STATUS
 
 Source implemented under `apps/admin`: RTL staff shell, shared tokens, permission-aware UI primitive, server-only backend boundary, HttpOnly/SameSite refresh-cookie helpers, same-origin mutation guard and security headers. Evidence: `artifacts/evidence/p12-admin-foundation-source-20260917.txt`. Actual login/refresh and typed API binding wait on P10 generated contracts and backend runtime.
+
+
+## P13 ADMIN OPERATIONS STATUS
+
+Source implemented at `ff60f96`: explicit permission catalog, Admin DRF endpoints for all required operational domains, transactional review decisions with evidence recheck, private evidence streaming/audit, facility/user/RBAC/taxonomy/province/verification/ad/settings mutations, analytics/audit/system reads, and matching RTL Next.js route surfaces. Evidence: `artifacts/evidence/p13-admin-operations-source-20260917.txt`. Golden-path PASS remains pending generated client binding, Django/PostgreSQL runtime and Playwright.

@@ -554,3 +554,92 @@ Tests: package/config parse, RTL/shared token assertions, browser-storage token 
 Remaining: P10 generated client and backend auth contract binding; Node 24/pnpm lint/typecheck/build/unit/Playwright.
 
 Next: P13 Admin Operations source work.
+
+## 2026-09-17T16:33:17+03:00 — P13 Admin Operations source implementation
+
+### Goal
+Implement the custom staff operating surface and backend operations required by the P13 specification without bypassing Django authorization or hand-authoring transport DTOs that belong to P10.
+
+### Files created
+- `apps/backend/admin_console/**`
+- `apps/backend/platform_settings/**`
+- `apps/backend/accounts/authentication.py`
+- `apps/backend/accounts/migrations/0003_admin_permission_catalog.py`
+- `apps/backend/audit/migrations/0002_operational_fields.py`
+- Admin operation/detail route surfaces under `apps/admin/app/**`
+- `apps/admin/lib/operations/catalog.ts`
+- `apps/admin/components/operations/**`
+
+### Files modified
+- Audit model/service, content-services audit request IDs, realtime hooks.
+- Backend settings/URLs/env examples.
+- Admin shell/dashboard/styles.
+
+### Implemented
+- Review queue/detail with kind/province/category/status/date/evidence-completeness filters.
+- Review detail includes facility/map coordinates, public image IDs, private evidence checklist IDs, duplicate warnings and audit timeline without storage keys.
+- Transactional approve/reject using row locks; approval rechecks current required evidence; rejection requires reason.
+- Private evidence stream permission + audit + `Cache-Control: private, no-store`.
+- Facility suspend/reactivate/close transitions.
+- User search/block/unblock and Admin role replacement; blocking revokes active refresh sessions.
+- Taxonomy groups/categories/capabilities/per-province switches and immutable code/slug enforcement.
+- Province and verification requirement operations.
+- First-party ad CRUD through the P9 validation/audit service.
+- Audit filtering, analytics summary, typed platform settings and privileged system status.
+- Audit `before_snapshot`, `after_snapshot`, `request_id` plus stronger secret-key redaction.
+- Stable Admin permission catalog with no default role grants.
+- DRF Bearer authentication restored from the existing access-token implementation.
+- Realtime invalidation for category/group/verification/province configuration changes.
+- RTL staff route surfaces for every route required by the P13 Admin specification.
+
+### Problems found and root causes
+1. The recovered source had token issue/decode logic but no DRF Bearer authentication class, so permission checks could not reliably bind `request.user`.
+   - Fix: added `BearerAccessTokenAuthentication` and made it the default DRF authentication while public views keep explicit anonymous overrides.
+2. Initial Admin CSS referenced four semantic token names that do not exist in the canonical design-token output.
+   - Fix: replaced them with existing canonical token names and added a zero-missing-token qualification check.
+3. The extracted Git snapshot did not preserve local author configuration.
+   - Fix: restored the same repository-local identity used by prior commits (`Serva Code <serva-code@local.invalid>`); no global config or personal identity was used.
+
+### Commands and tests
+- Python AST parse across 189 backend Python files.
+- P13 Python line-length check.
+- 11 executable source-contract tests.
+- `git diff --check`.
+- `node scripts/check-governance.mjs`.
+- `node packages/design-tokens/scripts/generate.mjs --check`.
+- Admin route presence, relative import target and CSS token-reference checks.
+
+### Results
+Static/source qualification PASS. Implementation commit: `ff60f96714212b98db00009009762de9ce40f3ae`.
+
+P13 is `SOURCE_IMPLEMENTED`, **not** `P13 ADMIN GOLDEN PATH PASS`: Django/PostgreSQL runtime, generated P10 client binding, Node 24/pnpm typecheck/build and Playwright golden paths remain unexecuted in this environment.
+
+### Next
+P14 Android Foundation.
+
+
+## 2026-09-17T17:45:00+03:00 — P13 source recovery
+
+Goal: restore P13 source after the persisted Git bundle was found to end at P12 despite management documents recording P13 completion.
+
+Root cause: the prior snapshot included a repository bundle created before P13; the later P13 working Git objects were not persisted.
+
+Resolution: restored P13 from the official V3 specification plus the recorded P13 implementation/status handoff. No business rules were invented.
+
+Qualification: backend AST 184 files, 7 source-contract checks, Admin canonical CSS tokens/relative imports, governance, design-token drift and whitespace passed. Runtime/Playwright remain unverified.
+
+Commit: `507814d`.
+
+## 2026-09-17T17:58:00+03:00 — P14 Android Foundation source implementation
+
+Goal: create the native Android foundation from scratch according to the Android specification.
+
+Implemented: 27-module Kotlin/Compose graph; Gradle Kotlin DSL/version catalog/convention plugins; Hilt boundaries; memory-only access token; Android Keystore AES/GCM refresh vault; refresh Mutex; Room cache; DataStore preferences; while-in-use LocationProvider; MapLibre MapController abstraction; typed analytics; observability boundary; shared generated design tokens with RTL; type-safe navigation; Bootstrap Composable → ViewModel → UseCase → Repository.
+
+Security: no background location, no raw refresh storage, no signing keys/secrets, cleartext traffic disabled, no React Native/Flutter.
+
+Qualification: Android source qualification, governance/design-token drift, line length and whitespace passed. Gradle/Android SDK/ADB and DNS to Gradle distribution were unavailable, so build/lint/tests/device were not executed.
+
+Commit: `4c0a693`.
+
+Next: P15 Android Public source.

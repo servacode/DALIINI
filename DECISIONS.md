@@ -47,3 +47,17 @@ For a material architecture decision, create an ADR under `docs/adr/` using `ADR
 **Alternatives:** Unvalidated `profile_province_id`; implementing all of P4 during P3. Both were rejected.
 
 **Impact:** P3 can preserve the required FK without claiming P4 implementation or closure.
+
+## DECISION-004 — Explicit P13 Admin permission-code catalog
+
+**Date:** 2026-09-17
+
+**Subject:** The specification requires a Permission Matrix and backend rechecks but does not assign concrete permission-code strings.
+
+**Decision:** Use operation-scoped stable codes such as `review.read`, `review.decide`, `evidence.read`, `facility.manage`, `user.roles.manage`, `taxonomy.manage`, `province.manage`, `ads.manage`, `audit.read`, `analytics.read`, `settings.manage`, and `system.read`. Seed permissions only; do not invent default role grants.
+
+**Reason:** Backend and Admin UI require deterministic permission identifiers while role composition remains an operational policy that the source specification intentionally leaves configurable.
+
+**Alternatives:** Hard-code role names into views; use Django `is_staff`; grant a default super-role automatically. These were rejected because they move authorization truth away from explicit RBAC or invent production policy.
+
+**Impact:** Role definitions can be composed later without changing endpoint permission semantics. Every privileged mutation still rechecks the permission in Django.
