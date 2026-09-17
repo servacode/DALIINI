@@ -182,3 +182,8 @@ Source implemented with minimal invalidation events, post-connect token auth, pr
 ## P9 CONTENT SERVICES STATUS
 
 Source implemented: first-party advertisements with scoped scheduling and validated actions, public ad DTO/Home integration, notification records, encrypted+digested push tokens, Celery retry boundary, FCM interface, APNs placeholder and privacy-minimized analytics registry with retention. Evidence: `artifacts/evidence/p9-content-services-source-20260917.txt`. Connected Django/Celery/FCM qualification remains pending; production provider credentials are external blocker EXT-002.
+
+
+## P10 CONTRACT STATUS
+
+Tooling foundation exists for canonical Django-generated OpenAPI, schema hashing, drift CI and generated TS/Kotlin/Swift packages. No manual `schema.yaml` was created. Real schema/client generation remains pending because the current environment cannot install/import Django dependencies and OpenAPI Generator is not installed. Evidence: `artifacts/evidence/p10-contract-tooling-source-20260917.txt`.

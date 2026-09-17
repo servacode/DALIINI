@@ -1,0 +1,7 @@
+{
+  "npmName": "@servacode/api-typescript",
+  "supportsES6": true,
+  "typescriptThreePlus": true,
+  "useSingleRequestParameter": true,
+  "withoutRuntimeChecks": false
+}

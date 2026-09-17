@@ -37,3 +37,22 @@ jobs:
       - run: uv run pytest
       - run: uv run python manage.py check --settings=directory_backend.settings.test
       - run: uv run python manage.py makemigrations --check --dry-run --settings=directory_backend.settings.test
+
+  contract-drift:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.10.0"
+          python-version: "3.13"
+      - run: uv sync --dev
+      - name: Generate canonical OpenAPI schema
+        working-directory: .
+        run: ./scripts/generate-openapi.sh
+      - name: Fail on schema drift
+        working-directory: .
+        run: git diff --exit-code -- openapi/schema.yaml openapi/schema.sha256

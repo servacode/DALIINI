@@ -1,0 +1,15 @@
+P10 source tooling qualification 2026-09-17T13:15:50+00:00
+--- bash syntax ---
+PASS
+--- hash helper compile ---
+PASS
+--- generator JSON configs ---
+PASS
+--- no hand-authored schema ---
+PASS
+--- generated-only docs ---
+PASS
+--- workflow source contract ---
+PASS
+--- git diff check ---
+PASS

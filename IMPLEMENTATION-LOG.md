@@ -503,3 +503,20 @@ Commands: compileall; AST parse; P9 line-length check; executable analytics regi
 Results: static/source qualification PASS. Runtime Django/PostgreSQL/Celery/FCM tests not executed in this environment.
 
 Next: P10 OpenAPI generated-client infrastructure; real schema/client generation must wait for a Django-capable toolchain.
+
+
+## 2026-09-17T16:22:00+03:00 — P10 contract tooling foundation
+
+Goal: establish canonical OpenAPI generation and deterministic drift controls without hand-authoring a schema.
+
+Created: `scripts/generate-openapi.sh`, `scripts/check-openapi-drift.sh`, `scripts/generate-api-clients.sh`, hash writer, generator configs, generated-only package READMEs.
+
+Modified: CI workflow with contract-drift job.
+
+Implemented: Django/drf-spectacular schema command, SHA-256 artifact, pinned OpenAPI Generator 7.15.0 expectation and TS/Kotlin/Swift output boundaries.
+
+Tests: bash syntax, Python helper compile, JSON config parsing, generated-only policy, no manual schema, CI source assertions and whitespace passed.
+
+Remaining: actual schema/client generation cannot execute until Django dependencies/toolchain are available. P10 stays IN_PROGRESS.
+
+Next: continue independent P11 Public Web source implementation.

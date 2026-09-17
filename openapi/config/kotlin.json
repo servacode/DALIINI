@@ -1,0 +1,7 @@
+{
+  "packageName": "com.servacode.directory.api",
+  "library": "jvm-retrofit2",
+  "serializationLibrary": "kotlinx_serialization",
+  "dateLibrary": "java8",
+  "useCoroutines": true
+}
