@@ -63,7 +63,7 @@ P0/P1 gates are closed. P2 remains source-level pending connected backend qualif
 
 ## WHAT IS LEFT
 
-P18 through P26, plus P10 real schema/client generation and connected/runtime qualification of source-implemented backend/web/admin/mobile phases as soon as capable toolchains are available.
+P19 through P26, plus P10 real schema/client generation and connected/runtime qualification of source-implemented backend/web/admin/mobile phases as soon as capable toolchains are available.
 
 ## KNOWN ISSUES
 
@@ -100,7 +100,7 @@ P12 and P13 are `SOURCE_IMPLEMENTED`. Routes exist for login/dashboard/reviews/f
 
 ## ANDROID STATUS
 
-P14/P15/P16 `SOURCE_IMPLEMENTED`. Native Kotlin/Compose; applicationId `com.servacode.directory`; minSdk 24; compile/target 36. Foundation, public discovery/account/ratings, and owner onboarding/manage/duty source exist. Owner backend dependency restoration, Photo Picker/private evidence boundaries, per-day hours, closures/managers and native MapLibre owner picker are source-qualified. P10 client binding and all Gradle/device gates remain pending. P17 navigation is SOURCE_IMPLEMENTED; road/device qualification remains pending. P18 mobile live-data hardening is next.
+P14/P15/P16 `SOURCE_IMPLEMENTED`. Native Kotlin/Compose; applicationId `com.servacode.directory`; minSdk 24; compile/target 36. Foundation, public discovery/account/ratings, and owner onboarding/manage/duty source exist. Owner backend dependency restoration, Photo Picker/private evidence boundaries, per-day hours, closures/managers and native MapLibre owner picker are source-qualified. P10 client binding and all Gradle/device gates remain pending. P17 navigation and P18 mobile live-data hardening are SOURCE_IMPLEMENTED; road/device and connected Channels/FCM qualification remain pending. P19 staging is next.
 
 ## IOS STATUS
 
@@ -112,7 +112,7 @@ P17 `SOURCE_IMPLEMENTED`: MapLibre native route rendering, configurable OSRM/Nom
 
 ## REALTIME STATUS
 
-P8 `SOURCE_IMPLEMENTED`: Channels invalidation envelope, after-commit publishing and province/user/admin scopes. P13 extended invalidation to category/group/verification/province configuration changes. Redis/Channels delivery is not connected-verified.
+P8 backend and P18 Android are `SOURCE_IMPLEMENTED`: Channels invalidation envelope, after-commit publishing, province/user/admin scopes, WSS post-connect auth, foreground/network-aware reconnect, event dedupe and REST-refetch invalidation paths exist. Redis/Channels/FCM delivery is not connected-verified.
 
 ## SECURITY STATUS
 
@@ -165,7 +165,7 @@ Static/source checks work in the current container. Full backend qualification r
 
 ## HOW TO CONTINUE
 
-Continue P18 from `plan.md`: harden Android offline/realtime/push behavior, event invalidation, reconnect/backoff and cache refresh while preserving REST as source of truth. Do not promote P17 beyond SOURCE_IMPLEMENTED without Gradle/device plus real road verification.
+Continue P19 from `plan.md`: prepare production-like staging infrastructure, runtime health/smoke, secrets contract, backup/restore/rollback and deployment runbooks. Do not promote P17/P18 beyond SOURCE_IMPLEMENTED without their required device/connected gates.
 
 ## LATEST COMMIT SHA
 

@@ -49,7 +49,7 @@ fun DirectoryScreen(
                         label = { Text("مناوب الآن") },
                     )
                 }
-                if (value.stale) Text("يعرض آخر بيانات محفوظة")
+                if (value.stale) Text("غير متصل — بعض البيانات وحالة مفتوح/مناوب قد تكون قديمة")
                 LazyColumn(Modifier.fillMaxSize()) {
                     items(value.values, key = { it.id }) { facility ->
                         Column(

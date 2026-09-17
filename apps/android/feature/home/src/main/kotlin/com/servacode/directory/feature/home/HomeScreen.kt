@@ -80,7 +80,12 @@ fun HomeScreen(
                     }
                     OutlinedButton(onClick = onProvince) { Text("تغيير") }
                 }
-                if (value.stale) Text("يعرض آخر بيانات محفوظة", style = MaterialTheme.typography.bodySmall)
+                if (value.stale) {
+                    Text(
+                        "غير متصل — بعض البيانات وحالة مفتوح/مناوب قد تكون قديمة",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = onSearch) { Text("بحث") }
                     OutlinedButton(onClick = onMap) { Text("الخريطة") }

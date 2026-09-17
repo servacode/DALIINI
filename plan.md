@@ -1,64 +1,59 @@
 # Implementation Plan
 
-Updated: 2026-09-17T18:56:00+03:00
+Updated: 2026-09-17T19:10:00+03:00
 
 ## Current phase
 
-P18 — Offline / Realtime / Push Hardening
+P19 — Staging Production-Like Deploy
 
 ## Goal
 
-Harden Android live-data behavior around the existing REST truth, Room public cache, Channels invalidation events and push notification boundary so reconnects, stale cache refresh, token rotation and lifecycle transitions do not duplicate domain truth or leak sensitive data.
+Prepare a production-like staging environment and deployment/runbook source for Django/PostGIS/Redis/Channels/Celery/S3-compatible storage plus public/admin web, without inventing real domains or credentials.
 
 ## Tasks
 
-1. Read P18 requirements from realtime/offline/security/Android specs.
-2. Define typed realtime invalidation envelope matching the P8 event catalog.
-3. Add authenticated WebSocket lifecycle boundary with post-connect auth; never query-string tokens.
-4. Implement reconnect/backoff and network/lifecycle-safe resubscription.
-5. Route invalidation events to repositories/cache refresh; REST remains source of truth.
-6. Add stale/fresh cache policy and explicit offline UI state where required.
-7. Add device push registration boundary with safe token rotation/unregister behavior.
-8. Ensure notification payloads contain identifiers/invalidation intent only, not evidence/storage keys/secrets.
-9. Add source/pure tests for envelope validation, backoff, dedupe, reconnect and invalidation routing.
-10. Run P14-P17 regression gates, document evidence and commit.
+1. Read infrastructure/environment/domain/operations specifications.
+2. Audit existing Docker/runtime smoke and production settings.
+3. Add staging environment contract using `ROOT_DOMAIN` placeholders only.
+4. Define services: API/ASGI, worker, PostgreSQL/PostGIS, Redis, object storage and web/admin.
+5. Add readiness/liveness and deployment smoke sequence.
+6. Add secret inventory with placeholders only.
+7. Add migration/deploy/rollback runbooks.
+8. Add backup/restore staging rehearsal commands.
+9. Add monitoring/logging expectations and failure signals.
+10. Run all static/source checks possible and document external staging blockers.
 
 ## Acceptance criteria
 
-- REST remains the authoritative content path.
-- WebSocket/push events cause invalidation/refetch, not direct domain mutation from event payloads.
-- Access tokens are never placed in WebSocket URL/query parameters.
-- Reconnect uses bounded backoff/jitter and does not create duplicate subscriptions.
-- Public Room cache remains usable offline; account/owner/private evidence are not added to public cache.
-- Push token registration is safe for rotation/logout and no provider secret is embedded in app source.
-- Background location is still absent.
+- No production/staging secret is committed.
+- No real domain is invented; `ROOT_DOMAIN` remains configurable.
+- API/worker/realtime/database/cache/storage responsibilities are explicit.
+- Staging uses production-like settings, not Django dev server assumptions.
+- Migration, rollback, backup and restore steps are documented and scriptable.
+- Runtime smoke fails closed when dependencies or secrets are absent.
 
 ## Required tests
 
-- Realtime envelope validation/source tests.
-- Reconnect/backoff/dedup tests.
-- Invalidation routing tests.
-- Push registration lifecycle tests.
-- P14/P15/P16/P17 regression gates.
-- Gradle/unit/Compose/instrumentation/device tests when Android tooling exists.
+- YAML/config parse and source validation.
+- Secret-marker scan.
+- production/staging settings fail-closed source checks.
+- deployment script syntax checks.
+- connected staging runtime smoke when hosting credentials/services exist.
 
 ## Expected files
 
-- `apps/android/core/network/**`
-- `apps/android/core/database/**`
-- `apps/android/core/observability/**`
-- `apps/android/app/**`
-- relevant public/owner repositories and Android tests/scripts.
-- project management/evidence files.
+- `infrastructure/**`
+- `.github/workflows/**` if staging CI is appropriate.
+- environment/runbook docs and evidence.
+- project management files.
 
 ## Risks
 
-- P10 generated client remains unbound, so REST adapter integration cannot be claimed connected.
-- Redis/Channels/FCM connected services are unavailable locally.
-- Android SDK/Gradle/ADB are unavailable locally.
+- Real staging hosting/domain/object-storage credentials may be external blockers.
+- Current container has no Docker/PostgreSQL/Redis and cannot prove runtime deployment.
 
 ## Gate
 
-Target gate: `P18 MOBILE LIVE DATA PASS`.
+Target gate: `P19 STAGING RUNTIME PASS`.
 
-Current environment can establish source/pure qualification only; connected Channels/FCM and device lifecycle verification remain mandatory before closure.
+Source/runbook qualification can be completed locally; connected staging runtime cannot pass without hosting/services.

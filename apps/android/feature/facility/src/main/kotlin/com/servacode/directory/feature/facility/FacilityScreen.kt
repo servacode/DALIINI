@@ -56,7 +56,7 @@ fun FacilityScreen(
             value.value.phone?.let { Text(it) }
             value.value.descriptionAr?.let { Text(it) }
             Text("التقييم ${value.value.summary.ratingAverage ?: "—"} (${value.value.summary.ratingCount})")
-            if (value.stale) Text("يعرض آخر بيانات محفوظة")
+            if (value.stale) Text("غير متصل — بعض البيانات وحالة مفتوح/مناوب قد تكون قديمة")
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = onMap,

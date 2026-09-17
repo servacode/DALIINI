@@ -3,6 +3,7 @@ package com.servacode.directory.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.servacode.directory.core.model.HomeSnapshot
+import com.servacode.directory.core.network.RealtimeInvalidationBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,11 +21,19 @@ sealed interface HomeUiState {
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val loadHome: HomeUseCase,
+    private val invalidations: RealtimeInvalidationBus,
 ) : ViewModel() {
     private val _state = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val state: StateFlow<HomeUiState> = _state.asStateFlow()
 
-    init { refresh() }
+    init {
+        refresh()
+        viewModelScope.launch {
+            invalidations.events.collect { event ->
+                if (event.scope.type == "province" && event.name.startsWith("public.")) refresh()
+            }
+        }
+    }
 
     fun refresh() {
         viewModelScope.launch {

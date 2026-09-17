@@ -726,3 +726,34 @@ P17 is SOURCE_IMPLEMENTED only. `P17 NAVIGATION ROAD PASS` remains unpassed beca
 
 Next:
 P18 — offline/realtime/push hardening.
+
+
+## 2026-09-17T19:10:00+03:00 — P18 mobile live-data source qualification
+
+Goal:
+Harden Android offline/realtime/push behavior while preserving REST as source of truth.
+
+Implemented:
+- Typed P8-compatible realtime event envelope/catalog.
+- WSS-only WebSocket config, province subscription and post-connect access-token authentication/user subscription.
+- Process-lifecycle foreground connection coordinator with validated-network awareness.
+- Exponential reconnect from 1s capped at 30s, jitter and reset after stable connection.
+- Event dedupe and active-screen invalidation -> REST refetch for public and owner surfaces.
+- Explicit stale UI warning that cached open/duty state may be outdated.
+- Push token registration/deactivation boundary and identifier-only push payload parser.
+- Notification permission declaration and P18 source tests/qualifier.
+
+Problems found and root cause:
+- Cached UI previously said only “last saved data”, which did not make time-sensitive open/duty uncertainty explicit. Updated stale copy to warn that availability may be old.
+- Realtime did not yet exist on Android despite P8 backend source. Added lifecycle/network-aware client instead of allowing events to mutate domain state directly.
+
+Commands/tests:
+- P14-P18 source qualifiers => PASS.
+- `git diff --check` => PASS.
+- Pure Kotlin reconnect policy smoke => PASS.
+
+Qualification:
+P18 is SOURCE_IMPLEMENTED only. Connected Channels/Redis, FCM and physical-device lifecycle/push gates remain pending.
+
+Next:
+P19 — staging production-like deploy.

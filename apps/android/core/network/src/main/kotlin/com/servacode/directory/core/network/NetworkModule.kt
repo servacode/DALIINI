@@ -22,6 +22,9 @@ object NetworkModule {
     fun provideOwnerApiBoundary(): OwnerApiBoundary = UnboundGeneratedOwnerApi
 
     @Provides @Singleton
+    fun providePushRegistrationBoundary(): PushRegistrationBoundary = UnboundPushRegistrationBoundary
+
+    @Provides @Singleton
     fun provideBaseHttpClient(
         accessTokenInterceptor: AccessTokenInterceptor,
     ): OkHttpClient = OkHttpClient.Builder()

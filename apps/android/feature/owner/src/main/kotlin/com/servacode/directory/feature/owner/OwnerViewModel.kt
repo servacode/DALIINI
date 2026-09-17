@@ -10,6 +10,7 @@ import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.model.OwnerFacilityDetail
 import com.servacode.directory.core.model.OwnerFacilitySummary
 import com.servacode.directory.core.model.TemporaryClosure
+import com.servacode.directory.core.network.RealtimeInvalidationBus
 import com.servacode.directory.core.network.TemporaryClosureInput
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,11 +28,19 @@ sealed interface MyFacilitiesUiState {
 @HiltViewModel
 class MyFacilitiesViewModel @Inject constructor(
     private val load: LoadOwnerFacilitiesUseCase,
+    private val invalidations: RealtimeInvalidationBus,
 ) : ViewModel() {
     private val _state = MutableStateFlow<MyFacilitiesUiState>(MyFacilitiesUiState.Loading)
     val state: StateFlow<MyFacilitiesUiState> = _state.asStateFlow()
 
-    init { refresh() }
+    init {
+        refresh()
+        viewModelScope.launch {
+            invalidations.events.collect { event ->
+                if (event.scope.type == "user" && event.name.startsWith("user.")) refresh()
+            }
+        }
+    }
 
     fun refresh() {
         viewModelScope.launch {
@@ -59,12 +68,20 @@ class ManageFacilityViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val load: LoadManageFacilityUseCase,
     private val manage: ManageFacilityUseCase,
+    private val invalidations: RealtimeInvalidationBus,
 ) : ViewModel() {
     private val id = savedStateHandle.toRoute<DirectoryRoute.ManageFacility>().id
     private val _state = MutableStateFlow<ManageFacilityUiState>(ManageFacilityUiState.Loading)
     val state: StateFlow<ManageFacilityUiState> = _state.asStateFlow()
 
-    init { refresh() }
+    init {
+        refresh()
+        viewModelScope.launch {
+            invalidations.events.collect { event ->
+                if (event.scope.type == "user" && event.name.startsWith("user.")) refresh()
+            }
+        }
+    }
 
     fun refresh() {
         viewModelScope.launch {

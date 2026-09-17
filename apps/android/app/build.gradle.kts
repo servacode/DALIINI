@@ -15,6 +15,8 @@ val geocodingBaseUrl = providers.gradleProperty("DIRECTORY_GEOCODING_BASE_URL")
     .orElse("https://<GEOCODING_PROVIDER_HOST>/")
 val geocodingUserAgent = providers.gradleProperty("DIRECTORY_GEOCODING_USER_AGENT")
     .orElse("DirectoryPlatformAndroid/1")
+val realtimeWebSocketUrl = providers.gradleProperty("DIRECTORY_REALTIME_WS_URL")
+    .orElse("wss://api.<ROOT_DOMAIN>/ws/events/")
 
 android {
     defaultConfig {
@@ -23,6 +25,7 @@ android {
         buildConfigField("String", "ROUTING_BASE_URL", "\"${routingBaseUrl.get()}\"")
         buildConfigField("String", "GEOCODING_BASE_URL", "\"${geocodingBaseUrl.get()}\"")
         buildConfigField("String", "GEOCODING_USER_AGENT", "\"${geocodingUserAgent.get()}\"")
+        buildConfigField("String", "REALTIME_WS_URL", "\"${realtimeWebSocketUrl.get()}\"")
     }
 }
 
@@ -57,6 +60,7 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.ui)

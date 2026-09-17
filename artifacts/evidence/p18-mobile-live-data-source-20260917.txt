@@ -1,0 +1,33 @@
+P18 — Offline / Realtime / Push hardening source qualification
+Date: 2026-09-17
+Status: SOURCE_IMPLEMENTED
+
+Implemented:
+- Typed Android realtime event catalog/envelope matching backend P8.
+- WSS-only realtime configuration; no query-string access tokens.
+- OkHttp WebSocket stream with post-connect authentication and province/user subscriptions.
+- Foreground ProcessLifecycleOwner connection policy.
+- Validated-network awareness.
+- Bounded exponential reconnect: base 1s, cap 30s, jitter, stable-connection reset.
+- Event deduplication.
+- Public Home/Directory/Facility active-screen REST refetch on invalidation.
+- Owner user-scope active-screen refetch on invalidation.
+- Offline stale warning explicitly states open/duty state may be outdated.
+- Push token register/deactivate generated-client boundary.
+- Identifier-only push data parser; unexpected text fields rejected.
+- POST_NOTIFICATIONS manifest declaration.
+- Tests for reconnect policy, WSS config, event dedupe and push payload minimization.
+
+Executed evidence:
+- python apps/android/scripts/qualify-live-data-source.py => PASS
+- P14/P15/P16/P17 regression qualifiers => PASS
+- git diff --check => PASS
+- kotlinc/java reconnect policy smoke => PASS
+
+Not executed / not claimed:
+- Gradle/JUnit/Compose/instrumentation (Gradle + Android SDK unavailable).
+- Connected Django Channels/Redis WebSocket delivery.
+- FCM Android SDK/provider registration with owned Firebase project.
+- Physical device background/foreground/process-death/offline/push verification.
+
+Gate P18 MOBILE LIVE DATA PASS: NOT PASSED.
