@@ -25,10 +25,18 @@ class ChallengeVerifySerializer(serializers.Serializer):
 
 
 class RegisterCompleteSerializer(serializers.Serializer):
-    challengeId = serializers.UUIDField()
+    # The wire names stay camelCase; `source` maps them to the snake_case keyword
+    # arguments of complete_registration, which receives **validated_data.
+    challengeId = serializers.UUIDField(source="challenge_id")
     password = serializers.CharField(write_only=True, trim_whitespace=False)
     platform = serializers.CharField(max_length=32, required=False, default="UNKNOWN")
-    deviceName = serializers.CharField(max_length=120, required=False, allow_blank=True, default="")
+    deviceName = serializers.CharField(
+        source="device_name",
+        max_length=120,
+        required=False,
+        allow_blank=True,
+        default="",
+    )
 
     def validate_password(self, value):
         validate_password(value)
@@ -39,7 +47,13 @@ class LoginSerializer(serializers.Serializer):
     phone = PhoneField()
     password = serializers.CharField(write_only=True, trim_whitespace=False)
     platform = serializers.CharField(max_length=32, required=False, default="UNKNOWN")
-    deviceName = serializers.CharField(max_length=120, required=False, allow_blank=True, default="")
+    deviceName = serializers.CharField(
+        source="device_name",
+        max_length=120,
+        required=False,
+        allow_blank=True,
+        default="",
+    )
 
 
 class RefreshSerializer(serializers.Serializer):
@@ -51,7 +65,7 @@ class RecoveryStartSerializer(serializers.Serializer):
 
 
 class RecoveryResetSerializer(serializers.Serializer):
-    challengeId = serializers.UUIDField()
+    challengeId = serializers.UUIDField(source="challenge_id")
     password = serializers.CharField(write_only=True, trim_whitespace=False)
 
     def validate_password(self, value):

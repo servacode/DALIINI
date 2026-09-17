@@ -119,7 +119,7 @@ def complete_registration(*, challenge_id, password: str, platform: str, device_
         raise ValidationError({"challengeId": "Registration cannot be completed."})
     province = Province.objects.filter(
         pk=challenge.metadata.get("provinceId"),
-        is_active=True,
+        active=True,
     ).first()
     if province is None:
         raise ValidationError({"provinceId": "Province is unavailable."})

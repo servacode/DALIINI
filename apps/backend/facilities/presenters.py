@@ -66,7 +66,7 @@ def facility_detail(facility):
             }
             for item in facility.evidence.all()
         ],
-        "hours": serialize_hours(facility.business_hours.order_by("weekday", "sequence")),
+        "hours": serialize_hours(facility.business_hours.order_by("weekday", "sort_order")),
         "application": (
             {
                 "id": str(latest.pk),
