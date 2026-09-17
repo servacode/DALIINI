@@ -161,7 +161,7 @@ Continue P6 at source level from `plan.md`, keeping availability/duty logic cent
 
 ## LATEST COMMIT SHA
 
-260444f17c6af5ffe8a9daa9a0ae95dd17c98799
+b63ce69
 
 
 ## WORKSPACE RECOVERY
