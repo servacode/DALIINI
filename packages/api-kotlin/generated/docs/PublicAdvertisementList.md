@@ -1,0 +1,10 @@
+
+# PublicAdvertisementList
+
+## Properties
+| Name | Type | Description | Notes |
+| ------------ | ------------- | ------------- | ------------- |
+| **items** | [**kotlin.collections.List&lt;PublicAdvertisement&gt;**](PublicAdvertisement.md) |  |  |
+
+
+

@@ -1,0 +1,29 @@
+
+# PublicFacilityDetail
+
+## Properties
+| Name | Type | Description | Notes |
+| ------------ | ------------- | ------------- | ------------- |
+| **id** | [**java.util.UUID**](java.util.UUID.md) |  |  |
+| **nameAr** | **kotlin.String** |  |  |
+| **nameEn** | **kotlin.String** |  |  |
+| **category** | [**BilingualRef**](BilingualRef.md) |  |  |
+| **city** | [**NamedRef**](NamedRef.md) |  |  |
+| **distanceMeters** | **kotlin.Double** | Great-circle distance in metres from the supplied coordinates. Null when no coordinates were supplied; clients never compute it locally. |  |
+| **ratingAverage** | **kotlin.Double** |  |  |
+| **ratingCount** | **kotlin.Int** |  |  |
+| **availability** | [**Availability**](Availability.md) |  |  |
+| **descriptionAr** | **kotlin.String** |  |  |
+| **descriptionEn** | **kotlin.String** |  |  |
+| **phone** | **kotlin.String** |  |  |
+| **addressAr** | **kotlin.String** |  |  |
+| **addressEn** | **kotlin.String** |  |  |
+| **neighborhood** | [**NamedRef**](NamedRef.md) |  |  |
+| **location** | [**Coordinates**](Coordinates.md) |  |  |
+| **images** | [**kotlin.collections.List&lt;FacilityImage&gt;**](FacilityImage.md) |  |  |
+| **specialties** | [**kotlin.collections.List&lt;NamedRef&gt;**](NamedRef.md) |  |  |
+| **services** | [**kotlin.collections.List&lt;NamedRef&gt;**](NamedRef.md) |  |  |
+| **hours** | [**kotlin.collections.List&lt;PublicHoursEntry&gt;**](PublicHoursEntry.md) |  |  |
+
+
+

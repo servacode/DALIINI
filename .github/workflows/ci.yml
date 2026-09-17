@@ -22,16 +22,34 @@ jobs:
 
   backend-source:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_DB: directory
+          POSTGRES_USER: directory
+          POSTGRES_PASSWORD: directory
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U directory -d directory"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://directory:directory@localhost:5432/directory
     defaults:
       run:
         working-directory: apps/backend
     steps:
       - uses: actions/checkout@v4
+      - name: Install GeoDjango native libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gdal-bin libgdal-dev libgeos-dev
       - uses: astral-sh/setup-uv@v6
         with:
           version: "0.10.0"
           python-version: "3.13"
-      - run: uv sync --dev
+      - run: uv sync --dev --frozen
       - run: uv run ruff check .
       - run: uv run mypy .
       - run: uv run pytest
@@ -40,19 +58,28 @@ jobs:
 
   contract-drift:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/backend
     steps:
       - uses: actions/checkout@v4
+      - name: Install GeoDjango native libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gdal-bin libgdal-dev libgeos-dev
       - uses: astral-sh/setup-uv@v6
         with:
           version: "0.10.0"
           python-version: "3.13"
-      - run: uv sync --dev
-      - name: Generate canonical OpenAPI schema
-        working-directory: .
-        run: ./scripts/generate-openapi.sh
-      - name: Fail on schema drift
-        working-directory: .
-        run: git diff --exit-code -- openapi/schema.yaml openapi/schema.sha256
+      - name: Install locked dependencies
+        working-directory: apps/backend
+        run: uv sync --dev --frozen
+      - name: Fail on OpenAPI drift
+        run: ./scripts/check-openapi-drift.sh
+      - name: Generate the API clients
+        run: ./scripts/generate-api-clients.sh
+      - name: Fail on generated client drift
+        run: |
+          if [[ -n "$(git status --porcelain -- packages/api-typescript packages/api-kotlin packages/api-swift)" ]]; then
+            echo "FAIL: generated clients differ from the committed artefacts." >&2
+            git --no-pager status --porcelain -- packages/api-typescript packages/api-kotlin packages/api-swift >&2
+            exit 1
+          fi
+          echo "PASS: generated clients match the committed artefacts."

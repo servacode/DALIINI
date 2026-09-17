@@ -1,0 +1,16 @@
+
+# OwnerVerificationRequirement
+
+## Properties
+| Name | Type | Description | Notes |
+| ------------ | ------------- | ------------- | ------------- |
+| **id** | [**java.util.UUID**](java.util.UUID.md) |  |  |
+| **labelAr** | **kotlin.String** |  |  |
+| **labelEn** | **kotlin.String** |  |  |
+| **instructionsAr** | **kotlin.String** |  |  |
+| **required** | **kotlin.Boolean** |  |  |
+| **minFiles** | **kotlin.Int** |  |  |
+| **maxFiles** | **kotlin.Int** |  |  |
+
+
+
