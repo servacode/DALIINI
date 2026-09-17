@@ -169,7 +169,7 @@ Continue P19 from `plan.md`: prepare production-like staging infrastructure, run
 
 ## LATEST COMMIT SHA
 
-`c353595` — P17 Maps / Navigation source implementation and qualification.
+`fdf206d` — P18 Mobile Live Data source implementation and qualification.
 
 
 ## WORKSPACE RECOVERY
