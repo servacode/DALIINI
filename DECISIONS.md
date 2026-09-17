@@ -138,6 +138,49 @@ The authoritative source for admin authorization remains the project RBAC. `user
 
 **Impact:** One parallel authorization surface remains present but unused. See the technical debt register below.
 
+
+## DECISION-010 — Generated API clients are committed, not built on demand
+
+**Date:** 2026-09-18
+
+**Subject:** `08-API-CONTRACT.md` requires generated clients and a committed schema hash, but does not say whether the client code itself is committed or produced during each consumer build.
+
+**Decision:** Commit the generated TypeScript, Kotlin and Swift clients under `packages/api-*/generated/`, alongside the canonical `openapi/schema.yaml` and `openapi/schema.sha256`.
+
+**Reason:** CI can then prove the committed clients still match the schema, which is the only way the drift gate means anything. A contract change becomes visible in the diff of the pull request that causes it, rather than appearing silently in someone's build output. Admin, Android and iOS can build without installing a code generator.
+
+**Alternatives:** Generate during each consumer build. Rejected: three toolchains would each need the generator, the drift gate would have nothing to compare against, and a contract change would be invisible in review.
+
+**Impact:** About 1000 generated files are tracked. Every one is a build artefact: hand-editing any of them is a defect, because the next regeneration discards the change and CI fails. `openapi/README.md` records the policy and the official regeneration commands.
+
+## DECISION-011 — Operation ids are explicit and independent of Python class names
+
+**Date:** 2026-09-18
+
+**Subject:** drf-spectacular derived operation ids from the path and view, which produced five collisions that Django resolved with numeral suffixes such as `v1_admin_applications_retrieve_2`.
+
+**Decision:** Declare an explicit `operation_id` on every operation, following `<area><Resource><Action>` in lowerCamelCase: `publicFacilitiesList`, `ownerFacilitySubmit`, `adminReviewApprove`.
+
+**Reason:** Operation ids are part of the public contract and become method names in every generated client. Deriving them from Python class names means an internal rename silently breaks three clients, and numeral suffixes are both meaningless and unstable.
+
+**Alternatives:** Keep the derived ids and accept the suffixes. Rejected: unstable identifiers in a published contract.
+
+**Impact:** 84 unique, descriptive ids. A contract test rejects duplicates and numeral-suffixed names, so the collision cannot return.
+
+## DECISION-012 — The contract documents the runtime, not the specification, where they disagree
+
+**Date:** 2026-09-18
+
+**Subject:** Three places where `08-API-CONTRACT.md` and the running service differ: the error envelope, the pagination envelope, and camelCase at the boundary.
+
+**Decision:** Describe what the runtime emits, and record each divergence as a defect. Do not write a schema that describes behaviour nobody implements.
+
+**Reason:** A generated client is built from the document. A schema that describes the specification rather than the service produces clients that break at the first response. Changing the runtime to match the specification is real product work with its own review; it is not something to slip into a schema batch.
+
+**Alternatives:** Document the specified shapes. Rejected, it would ship a contract that lies. Change the runtime now. Rejected as out of scope and unreviewed.
+
+**Impact:** The contract is honest today, and INT-035, INT-036 and INT-037 carry the reconciliation work.
+
 ---
 
 # Technical Debt Register

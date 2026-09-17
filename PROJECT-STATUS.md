@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-09-17T23:55:00+03:00
+Last updated: 2026-09-18T02:40:00+03:00
 
 ## Baseline
 
@@ -19,10 +19,17 @@ inside a migration file kept reporting PASS on an invariant the model had alread
 
 ## Quality debt
 
-`DECISIONS.md` carries the register. DEBT-001 ruff (104 issues, from a 106 baseline), DEBT-002 mypy
-(556), DEBT-003 the deferred `PermissionsMixin` evaluation. All are mandatory before staging or
-production closure and none of them blocks P10. Standing rule: no new lint or type debt in a touched
-file.
+`DECISIONS.md` carries the register. DEBT-001 ruff (101 issues, from a 106 baseline at intake),
+DEBT-002 mypy (556), DEBT-003 the deferred `PermissionsMixin` evaluation. All are mandatory before
+staging or production closure and none of them blocks the Admin binding work. Standing rule: no new
+lint or type debt in a touched file.
+
+## Contract discipline
+
+Django and DRF are the source of truth, `openapi/schema.yaml` is generated from them, and the three
+client packages are generated from it. No consumer hand-writes a transport DTO. After any change that
+touches a request or response, regenerate both and commit the artefacts with the source change; the
+CI `contract-drift` job fails otherwise. See `openapi/README.md` and DECISION-010 to DECISION-012.
 
 ## Phase table
 
@@ -38,7 +45,7 @@ file.
 | P7 Public Discovery | SOURCE_IMPLEMENTED | Public provinces/cities/categories, home, list/detail, PostGIS nearest, bbox map, search, SQL availability filters, specialties/services, ratings | Static source qualification passed; runtime/API/PostGIS tests authored/partially authored but not executable here | Run Django checks/migrations/pytest; connected PostGIS nearest/bbox; EXPLAIN indexes; API/permission integration before closure | `artifacts/evidence/p7-public-discovery-source-20260917.txt` | 4c8f535 | 2026-09-17 |
 | P8 Realtime | SOURCE_IMPLEMENTED | Event catalog/envelope, hashed groups, post-connect auth, province/user/admin scopes, RBAC admin gate, after-commit publisher, facility/taxonomy/availability/application hooks | Static source qualification passed; connected Channels/Redis tests unavailable | Run WebsocketCommunicator + Redis delivery + rollback/no-event + auth integration before closure | `artifacts/evidence/p8-realtime-source-20260917.txt` | 1b7212a | 2026-09-17 |
 | P9 Content Services | SOURCE_IMPLEMENTED | First-party ads targeting/scheduling/action validation, public ads + Home integration, encrypted/digested device push tokens, notification persistence, Celery push delivery boundary, FCM interface/APNs placeholder, centralized privacy-minimized analytics registry/events/retention | Static qualification passed: compile/AST, P9 line length, analytics forbidden-field tests, push-token-at-rest invariants, ad HTTPS/storage privacy, governance/design regression and whitespace | Run Django migrations/pytest; Celery delivery; connected FCM with owned credentials; notification/device API integration during contract/mobile phases | `artifacts/evidence/p9-content-services-source-20260917.txt` | b63ce69 | 2026-09-17 |
-| P10 Contracts | IN_PROGRESS | Canonical Django schema generation command, SHA-256 writer, schema drift check, pinned OpenAPI Generator contract, TS/Kotlin/Swift generated-only package boundaries and CI drift job | Static tooling qualification passed: bash syntax, Python helper compile, generator JSON parse, generated-only policy, no hand-authored schema, CI source contract, whitespace | Run Django `spectacular`; commit real `schema.yaml` + hash; run pinned generator 7.15.0 for TS/Kotlin/Swift; CI zero-drift | `artifacts/evidence/p10-contract-tooling-source-20260917.txt` | ad15521 | 2026-09-17 |
+| P10 Contracts | CONNECTED_VERIFIED | Canonical Django-generated OpenAPI with a real contract: 140 component schemas, 35 request bodies, 72 response schemas, an explicit bearerAccessToken security scheme and 84 hand-declared operation ids. Shared error, enum and value-object components. `openapi/schema.yaml` and `openapi/schema.sha256` are tracked. TypeScript, Kotlin and Swift clients generated with pinned openapi-generator 7.15.0 and committed. Drift gate rewritten; the previous one could not fail. Schema endpoint exposure gated by environment. | `manage.py spectacular` exits 0 with 0 errors and 0 warnings, down from 328 errors and 76 warnings. Generation is byte-identical across two independent runs. 12 contract tests pass. 17/17 runtime responses validated against the document on PostGIS and Redis, covering auth, public list and detail, owner mutation, admin mutation, validation failure and permission failure. TypeScript client compiles, `tsc --noEmit` exits 0. | Kotlin client compilation is NOT_VERIFIED on this network; Swift is a contract artefact only. Reconcile INT-035 pagination envelope, INT-036 Admin snake_case keys and INT-037 the BusinessHour field name with 08-API-CONTRACT and 06-DATA-MODEL. | `artifacts/evidence/p10-contracts-20260918.txt` | P10-contracts | 2026-09-18 |
 | P11 Public Web | SOURCE_IMPLEMENTED | Next.js RTL public site with landing, privacy, terms, support, delete-account resource, shared design tokens, env-only domain/contact config and security headers | Static source qualification passed: package/config parse, required routes, RTL/token usage, no hardcoded hex in app CSS, security headers, no invented production domain/email, whitespace | Install Node 24 + pnpm dependencies; lint/typecheck/build; Playwright/accessibility; finalize legal/company/contact text before release | `artifacts/evidence/p11-public-web-source-20260917.txt` | 4dc28eb | 2026-09-17 |
 | P12 Admin Foundation | SOURCE_IMPLEMENTED | Next.js RTL admin shell, shared tokens, server-only backend boundary, HttpOnly/SameSite refresh-cookie primitives, same-origin logout guard, central `can(permission)`, responsive staff navigation and security headers | Static source qualification passed: JSON/config, RTL/tokens, no browser refresh storage, RBAC primitive, BFF/origin guard, security headers, domain placeholders, whitespace | Bind generated TS client/auth contract after P10; implement actual login/refresh BFF; pnpm lint/typecheck/build/test/Playwright | `artifacts/evidence/p12-admin-foundation-source-20260917.txt` | 95c2c62 | 2026-09-17 |
 | P13 Admin Operations | SOURCE_IMPLEMENTED | Recovered from official V3 spec + recorded handoff after missing Git objects; Admin API, permission catalog, review/evidence, facility/user/RBAC, taxonomy/province/verification, ads/audit/analytics/settings/system and RTL route surfaces restored | Recovery static gate: 184 backend AST files, 7 direct source-contract checks, canonical CSS tokens/imports, governance/design drift and whitespace passed | Run Django migrations/pytest/ruff/mypy; generate P10 client; bind Admin data/actions; Node 24 pnpm lint/typecheck/build; Playwright golden paths | `artifacts/evidence/p13-admin-operations-recovery-20260917.txt` | 507814d | 2026-09-17 |
@@ -67,7 +74,10 @@ runtime. The current workstation has Python 3.13, uv, Node 24.17.0, pnpm 10.17.1
 PostgreSQL 17.5 + PostGIS, Android SDK 36, JDK 25 and Gradle 9.6.0, so backend connected execution is now
 possible and was used to qualify FIX-P0.
 
-One limitation remains: **Google Maven (`dl.google.com` / `maven.google.com`) does not serve this machine.**
+Two limitations remain, both the same network condition. **Google Maven (`dl.google.com` /
+`maven.google.com`) does not serve this machine**, and the Gradle distribution download from
+`services.gradle.org` resets mid-transfer, which is why the generated Kotlin client could not be
+compiled either even though it needs only Maven Central.
 Artifacts that certainly exist, including `androidx.annotation:annotation:1.0.0` and
 `com.android.tools.build:gradle:9.4.0`, return HTTP 404 while Maven Central returns 200. Android
 dependency resolution therefore cannot complete here and `gradle :app:assembleDebug` stays `NOT_VERIFIED`.

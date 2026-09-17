@@ -76,3 +76,33 @@ The full receipt and verification audit is recorded in `RECEIPT-AUDIT-2026-09-17
 | 2026-09-17T23:55:00+03:00 | Lint and type debt | P2 tree | local host | `uv run ruff check .` | 104 errors against a 106 baseline — debt reduced, none added; mypy untouched at 556 | DEBT-001, DEBT-002 in `DECISIONS.md` |
 
 `P2 BACKEND FOUNDATION CONNECTED PASS` is achieved and P2 is recorded as `CONNECTED_VERIFIED`. That is not phase closure: connected Celery, S3 and Channels qualification remain, and security, load and restore belong to P20. INT-010 and INT-029 stay open by decision.
+
+
+## 2026-09-18 — P10 OpenAPI contracts recovery
+
+| Timestamp | Gate | Commit | Environment | Command/Check | Result | Artifact |
+|---|---|---|---|---|---|---|
+| 2026-09-18T02:40:00+03:00 | Schema baseline | 06fac0a | backend container | `manage.py spectacular` plus metrics | Recorded — 72 paths, 84 operations, **0** component schemas, **0** request bodies, **0** response schemas, no security scheme, 328 errors, 76 warnings | `artifacts/evidence/p10-contracts-20260918.txt` |
+| 2026-09-18T02:40:00+03:00 | API inventory | 06fac0a | backend container | URL-conf introspection of every routed operation | 87 operations classified by domain, auth requirement and parameters | `artifacts/evidence/p10-contracts-20260918.txt` |
+| 2026-09-18T02:40:00+03:00 | Schema generation | P10 tree | backend container | `manage.py spectacular` | **PASS** — exit 0 with **0 errors and 0 warnings**; 140 component schemas, 35 request bodies, 72 response schemas, 84 unique operation ids | `openapi/schema.yaml` |
+| 2026-09-18T02:40:00+03:00 | Determinism | P10 tree | backend container | two independent generations, byte comparison | **PASS** — identical; sha256 `c739f4e7cc18655a2b6b3e4ab213527764a928bc4f5008f1d60661de7c08a4f4` | `openapi/schema.sha256` |
+| 2026-09-18T02:40:00+03:00 | Authentication contract | P10 tree | backend container | schema inspection | **PASS** — `bearerAccessToken` http/bearer declared; 71 operations require it, 8 explicitly open, 5 declare no authentication classes | `artifacts/evidence/p10-contracts-20260918.txt` |
+| 2026-09-18T02:40:00+03:00 | Contract tests | P10 tree | PostgreSQL 17.5 + PostGIS | `pytest core/tests/test_openapi_contract.py` | **PASS** — 12/12 | `artifacts/evidence/p10-contracts-20260918.txt` |
+| 2026-09-18T02:40:00+03:00 | Runtime contract smoke | P10 tree | PostgreSQL 17.5 + PostGIS, Redis | 17 real requests, each body validated against the declared response schema | **PASS** — 17/17, covering auth, public list and detail, owner mutation, admin mutation, validation failure and permission failure | `artifacts/evidence/p10-contracts-20260918.txt` |
+| 2026-09-18T02:40:00+03:00 | TypeScript client | P10 tree | Node 24, TypeScript 5.9 | `openapi-generator 7.15.0` then `tsc --noEmit` | **PASS** — 138 models, 23 API classes, compiles with exit 0 | `packages/api-typescript/generated` |
+| 2026-09-18T02:40:00+03:00 | Kotlin client | P10 tree | Gradle wrapper 8.7 | `openapi-generator 7.15.0`, then `gradlew compileKotlin` | GENERATED — 335 sources. Compilation **NOT_VERIFIED**, `ENVIRONMENT_LIMITATION`: the Gradle distribution download from services.gradle.org resets, the same condition that blocks Google Maven | `packages/api-kotlin/generated` |
+| 2026-09-18T02:40:00+03:00 | Swift client | P10 tree | — | `openapi-generator 7.15.0` | GENERATED — 172 sources, contract artefact only. No Swift toolchain on this host and iOS is not started | `packages/api-swift/generated` |
+| 2026-09-18T02:40:00+03:00 | Drift gate | P10 tree | local host | `check-openapi-drift.sh` rewritten | **PASS** by construction — the previous gate diffed an untracked file and could never fail; the new one requires tracked files, compares blob hashes across regeneration and verifies the digest independently | `scripts/check-openapi-drift.sh` |
+| 2026-09-18T02:40:00+03:00 | Backend suite | P10 tree | PostgreSQL 17.5 + PostGIS | `uv run pytest` | **PASS** — 61 passed, from 49 | `artifacts/evidence/p10-contracts-20260918.txt` |
+| 2026-09-18T02:40:00+03:00 | Regressions | P10 tree | local host | governance, design-token validate and drift, P19 staging qualifier, hardened owner qualifier | **PASS** — all exit 0 | `artifacts/evidence/p10-contracts-20260918.txt` |
+| 2026-09-18T02:40:00+03:00 | Lint debt | P10 tree | local host | `uv run ruff check .` | 101 errors against a 104 baseline — reduced, none added; every P10 file passes cleanly | DEBT-001 |
+| 2026-09-18T02:40:00+03:00 | INT-033 authentication surface | P10 tree | PostgreSQL 17.5 + PostGIS | runtime smoke | **FIXED** — registration completion, login and password reset returned 500 through a camelCase/snake_case keyword mismatch | `artifacts/evidence/p10-contracts-20260918.txt` |
+| 2026-09-18T02:40:00+03:00 | INT-031 province lookup | P10 tree | PostgreSQL 17.5 + PostGIS | runtime smoke | **FIXED** — three sites filtered `Province` on `is_active`; the field is `active` | `artifacts/evidence/p10-contracts-20260918.txt` |
+| 2026-09-18T02:40:00+03:00 | INT-034 owner facility detail | P10 tree | PostgreSQL 17.5 + PostGIS | runtime smoke | **FIXED** — business hours ordered by a field that does not exist | `artifacts/evidence/p10-contracts-20260918.txt` |
+| 2026-09-18T02:40:00+03:00 | INT-010 owner authentication | P10 tree | PostgreSQL 17.5 + PostGIS | contract test plus runtime smoke | **FIXED** — 403 instead of 500 for an anonymous caller | `artifacts/evidence/p10-contracts-20260918.txt` |
+| 2026-09-18T02:40:00+03:00 | INT-016 schema exposure | P10 tree | local host | settings review | **FIXED** — public in development, admin-only in staging, not routed in production | `artifacts/evidence/p10-contracts-20260918.txt` |
+
+`P10 CONTRACT PASS` is achieved for schema generation, contract description, committed
+canonical artefacts, the drift gate, contract tests and runtime conformance. Kotlin client
+compilation and any Swift build remain unverified for environment reasons and are recorded
+as such rather than claimed.

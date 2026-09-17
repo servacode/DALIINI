@@ -1031,3 +1031,120 @@ Lint — `ruff check .` reports 104 errors against a 106 baseline. Debt reduced,
 `makemigrations --check --dry-run` exits 0. `uv run pytest` exits 0. The migration graph is valid, migrations converge on both a fresh and an upgraded database, and both business invariants are proven enforced by PostgreSQL itself.
 
 Evidence: `artifacts/evidence/p2-connected-20260917.txt`.
+
+
+## 2026-09-18T02:40:00+03:00 — P10 OpenAPI contracts recovery
+
+Goal: turn a document that described nothing into a contract three client generators can
+consume, so Admin, Android and iOS stop being blocked behind a DTO-less boundary.
+
+### Where it started
+
+`manage.py spectacular` exited 0 and produced 72 paths, which is why the phase had been
+recorded as tooling that merely needed running. The document itself was empty of contract:
+84 operations, **zero** component schemas, **zero** request bodies, **zero** response
+schemas, no security scheme, five operation-id collisions resolved with numeral suffixes,
+328 errors and 76 warnings. Every error was the same one, "unable to guess serializer",
+because every view is a plain `APIView` returning a hand-built dict.
+
+A client generated from that would have had no models at all.
+
+### Approach
+
+Django and DRF stay the executable source of truth. Nothing here changes behaviour to make
+the schema easier. Every serializer added describes what a view already returns; none of
+them builds a response. `@extend_schema` supplies only what introspection cannot know:
+query parameters, multipart bodies, alternative status codes, response envelopes, tags and
+the explicit operation id.
+
+Work was driven from a full inventory of all 87 routed operations grouped by domain, not
+endpoint by endpoint at random.
+
+### Shared infrastructure
+
+`core/openapi.py` carries the authentication extension, the error components and the
+reusable value objects. Registering `BearerAccessTokenScheme` alone removed 71 of the 76
+warnings, because until then drf-spectacular could not resolve the authenticator and
+emitted no security scheme at all.
+
+`core/enums.py` binds reused choice sets to stable component names. Without it
+drf-spectacular invented hash-suffixed names such as `Status652Enum` for the three
+different `status` fields, and those names are not stable across runs, so they would have
+leaked into every generated client and churned the drift gate.
+
+`core/schema_view.py` gates the interactive schema route by environment.
+
+### Error contract
+
+Documented as the runtime actually behaves, not as the specification describes. There is no
+custom DRF `EXCEPTION_HANDLER`, so exactly two shapes reach clients: `DetailError` for
+authentication, permission, not-found and throttling, and `DomainError` for domain rule
+rejections, plus DRF's field-scoped validation map. `08-API-CONTRACT.md` specifies a single
+richer envelope with `code`, `message`, `details` and `requestId` which nothing emits.
+Describing that instead would have produced clients that break on the first error. See
+DECISION-012; the divergence is recorded as INT-035 and INT-036 rather than hidden.
+
+### Defects found while writing the contract
+
+Five, three of which meant the authentication surface had never worked. None of them could
+have been caught by the existing tests, which assert on source text.
+
+**INT-033.** `RegisterCompleteView`, `LoginView` and `RecoveryResetView` pass
+`**serializer.validated_data` into their services, but the serializers declare camelCase
+fields with no `source`, so the keys arrived as `challengeId` and `deviceName` while the
+services take `challenge_id` and `device_name`. Registration completion, login and password
+reset all returned 500. Fixed with `source`, the pattern the project already uses
+elsewhere; the wire names are unchanged.
+
+**INT-031.** `Province` was filtered on `is_active` at three sites; the model field is
+`active`. Registration start, registration completion and the profile province change all
+returned 500.
+
+**INT-034.** `facility_detail` ordered business hours by `sequence`, which does not exist;
+the field is `sort_order`. Every owner facility detail, create, update and relocate response
+returned 500. `06-DATA-MODEL.md` does name the field `sequence`, so the presenter followed
+the document while the model followed another name. The runtime name was kept and the
+divergence recorded as INT-037.
+
+**INT-010.** Eleven owner views, both rating views and the media views declared no
+`permission_classes`, so DRF defaulted to `AllowAny`. Fixed here because the contract must
+state the security requirement, and the contract test for protected operations enforces it.
+`GET /api/v1/owner/facilities/` now returns 403 rather than 500.
+
+**INT-016.** The interactive schema route was public in every environment. Now governed by
+`OPENAPI_SCHEMA_EXPOSURE`: public in development, admin-only in staging, not routed in
+production.
+
+### Commands actually run
+
+- `manage.py spectacular` — 0 errors, 0 warnings, from 328 and 76.
+- Two independent generations from a clean container — byte-identical.
+- `./scripts/generate-api-clients.sh` — TypeScript, Kotlin and Swift, generator 7.15.0.
+- `tsc --noEmit` on the generated TypeScript client — exit 0.
+- `uv run pytest` — 61 passed, including the 12 new contract tests.
+- Runtime smoke against PostgreSQL 17.5 with PostGIS and Redis — 17/17 responses validated
+  against the declared schema, covering auth, public list and detail, owner mutation, admin
+  mutation, validation failure and permission failure.
+- Regressions: governance, design-token validation and drift, the P19 staging qualifier and
+  the hardened owner qualifier all exit 0.
+- `ruff check .` — 101 errors against the 104 baseline. Debt reduced, none added. Every file
+  created or modified in this batch passes ruff cleanly.
+
+### Drift gate
+
+The previous gate ran `git diff --exit-code` on `openapi/schema.yaml` while that file was
+untracked. `git diff` ignores untracked paths, so it reported success on a contract that did
+not exist. It now refuses to run unless both canonical files are tracked, compares blob
+hashes across a regeneration, and independently verifies the recorded digest. CI also
+regenerates all three clients and fails if they differ from what is committed, and the
+backend job gained a PostGIS service plus the GeoDjango native libraries.
+
+### Verification levels, stated precisely
+
+TypeScript: generated and compiled. Kotlin: generated; compilation `NOT_VERIFIED` because
+the Gradle distribution download from services.gradle.org resets on this network, the same
+`ENVIRONMENT_LIMITATION` that blocks Google Maven. The Kotlin client needs only Maven
+Central, so it should compile from a network that can reach the Gradle services. Swift:
+generated as a contract artefact; no Swift toolchain here, and iOS work is not started.
+
+Evidence: `artifacts/evidence/p10-contracts-20260918.txt`.

@@ -39,3 +39,20 @@ blockers only:
   INT-005, INT-006 and INT-008 remain open internal bugs, tracked in `RECEIPT-AUDIT-2026-09-17.md`.
 - Google Maven not serving this workstation is classified `ENVIRONMENT_LIMITATION`, recorded under
   "Local execution limitation" in `PROJECT-STATUS.md`. It does not block the backend or P10.
+
+## Register review — 2026-09-18 (P10 contracts recovery)
+
+Reviewed again. **No external blocker added, removed or changed.** EXT-001 to EXT-005 stand.
+
+EXT-004 note: the generated clients are now committed, so a consumer can build against the
+contract without the V3 remote. The remote is still required for connected staging.
+
+Kept out of this register, as before, because it is for genuine external blockers only:
+
+- INT-031, INT-033, INT-034, INT-010 and INT-016 were internal bugs and are now closed.
+  INT-005 is closed by this batch. INT-035, INT-036 and INT-037 are new internal
+  divergences between the runtime and the specification, tracked in
+  `RECEIPT-AUDIT-2026-09-17.md`.
+- Kotlin client compilation is blocked by the same local network condition as Google Maven:
+  the Gradle distribution download from services.gradle.org resets. Classified
+  `ENVIRONMENT_LIMITATION` under "Local execution limitation" in `PROJECT-STATUS.md`.

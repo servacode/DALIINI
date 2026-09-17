@@ -1,0 +1,245 @@
+P10 OPENAPI CONTRACTS RECOVERY EVIDENCE
+Generated: 2026-09-18T02:40:00+03:00
+Baseline commit: 06fac0a (post P2 connected qualification)
+Environment: Docker 29.5.2; backend image built from apps/backend/Dockerfile, unmodified
+Database:    postgis/postgis:17-3.5 -> PostgreSQL 17.5 + PostGIS
+Cache:       redis:7-alpine
+Generator:   openapi-generator 7.15.0, official image, version pinned
+
+================================================================================
+1. SCHEMA METRICS, BEFORE AND AFTER
+================================================================================
+                                        BEFORE      AFTER
+  paths                                     72         72
+  operations                                84         84
+  component schemas                          0        140
+  security schemes                        none   bearerAccessToken
+  operations with a request body             0         35
+  mutating operations                       39         39
+  mutations with no request body            39          4   (all genuinely bodyless)
+  operations with a response schema          0         72
+  operations with no response schema        84         12   (all genuinely 204)
+  duplicate operationIds                     0          0
+  operationId collisions resolved by
+    numeral suffix                           5          0
+  generator errors                    328 (72 unique)      0
+  generator warnings                   76 (64 unique)      0
+  document size                     1074 lines      6343 lines
+
+Every one of the 328 errors was "unable to guess serializer": the views are plain
+APIView classes returning hand-built dicts, so introspection had nothing to work with.
+
+================================================================================
+2. ENDPOINT COVERAGE
+================================================================================
+  GROUP                    OPS   CONTRACT
+  Auth                      12   complete
+  Account                    4   complete
+  Public Taxonomy            3   complete
+  Public Discovery           5   complete
+  Ads                        1   complete
+  Analytics                  1   complete
+  Owner                     10   complete
+  Media/Evidence             5   complete (multipart declared)
+  Availability               4   complete
+  Duty                       4   complete
+  Ratings                    2   complete
+  Admin Reviews              5   complete (evidence typed as binary)
+  Admin Facilities           5   complete
+  Admin Users                6   complete
+  Admin Taxonomy             6   complete
+  Admin Provinces            2   complete
+  Admin Verification         -   counted under Admin Taxonomy
+  Admin Ads                  3   complete
+  Admin Audit                1   complete
+  Admin Analytics            1   complete
+  Admin Settings             2   complete
+  Admin System               2   complete
+  Health                     2   function views, outside the DRF schema
+  System (/api/schema/)      1   now environment-gated, see section 7
+
+================================================================================
+3. OPERATION IDS
+================================================================================
+Convention: <area><Resource><Action> in lowerCamelCase, declared explicitly on every
+operation so a Python class rename never changes the public contract.
+
+  publicFacilitiesList   publicFacilityRetrieve   publicHomeRetrieve
+  authRegisterStart      authLogin                authRefresh
+  ownerFacilitySubmit    ownerFacilityImageCreate ownerFacilityDutyCreate
+  adminReviewApprove     adminFacilitySuspend     adminSystemStatusRetrieve
+
+Before: five ids collided and Django resolved them with numeral suffixes, for example
+v1_admin_applications_retrieve and v1_admin_applications_retrieve_2.
+After: 84 unique, descriptive, hand-declared ids. A contract test rejects both
+duplicates and numeral-suffixed names.
+
+================================================================================
+4. AUTHENTICATION CONTRACT
+================================================================================
+securitySchemes:
+  bearerAccessToken: { type: http, scheme: bearer, bearerFormat: JWT }
+
+The scheme describes the short-lived access token only. The opaque rotating refresh
+secret is deliberately not described as a bearer credential; it travels in the refresh
+request body.
+
+  71 operations require the scheme
+   8 are explicitly open
+   5 inherit no requirement, all declaring authentication_classes = []
+
+Registering the authenticator extension alone removed 71 of the 76 generator warnings.
+
+================================================================================
+5. ERROR CONTRACT
+================================================================================
+The project has no custom DRF EXCEPTION_HANDLER, so the runtime produces exactly two
+shapes and both are described as they are:
+
+  DetailError          {"detail": "..."}                     401, 403, 404, 429
+  DomainError          {"error": {"code": ..., "details": ...}}  400, 409
+  FieldValidationError {"<field>": ["<message>", ...]}       400
+
+08-API-CONTRACT specifies one richer envelope with code, message, details and
+requestId. The runtime does not emit it. Documenting the specified envelope would have
+made the contract lie, so the divergence is recorded as a defect instead.
+
+================================================================================
+6. GENERATED CLIENTS
+================================================================================
+  TypeScript  138 models, 23 API classes, 170 files
+              COMPILED: tsc --noEmit exits 0
+  Kotlin      335 Kotlin sources, 503 files
+              NOT_VERIFIED for compilation - ENVIRONMENT_LIMITATION
+              The client needs only Maven Central, but the Gradle distribution
+              download from services.gradle.org resets on this network, the same
+              condition that blocks Google Maven. 19 MB of 130 MB arrived before the
+              connection was reset.
+  Swift       172 Swift sources, 339 files
+              Generated as a contract artefact. No Swift toolchain on this host and
+              iOS work is not started.
+
+No hand-written transport DTO exists in any consumer.
+
+================================================================================
+7. SCHEMA ENDPOINT EXPOSURE (INT-016)
+================================================================================
+OPENAPI_SCHEMA_EXPOSURE:
+  development  public
+  staging      privileged, requires an admin holding admin.system.read
+  production   disabled, the route is not registered at all
+
+CI never needs the route; it generates the document with the management command.
+
+================================================================================
+8. CONTRACT TESTS
+================================================================================
+core/tests/test_openapi_contract.py .......... 12 passed
+
+  schema generates and has paths                             PASS
+  component schemas exist                                    PASS
+  operation ids unique and named                             PASS
+  mutations carry a request schema                           PASS
+  successful responses carry a schema                        PASS
+  bearer security scheme declared                            PASS
+  public operations do not require authentication            PASS
+  protected operations require authentication                PASS
+  schema does not leak internal fields                       PASS
+  committed schema matches the source                        PASS
+  committed hash matches the committed schema                PASS
+  generation is deterministic                                PASS
+
+The protected-operations test failed on its first run and named four owner operations
+still advertising optional authentication. That was INT-010 surfacing in the contract,
+and it was fixed rather than excluded.
+
+Full backend suite: uv run pytest -> 61 passed (49 before, plus these 12).
+
+================================================================================
+9. RUNTIME CONTRACT SMOKE
+================================================================================
+Real requests through the Django stack against PostgreSQL 17.5 with PostGIS and Redis.
+Each body is validated against the response schema the contract declares for that exact
+operation, not merely inspected as text.
+
+  CASE                                          OPERATION ID                HTTP  RESULT
+  auth register start                           authRegisterStart            202  matches
+  auth register verify                          authRegisterVerify           200  matches
+  auth register complete                        authRegisterComplete         201  matches
+  auth login                                    authLogin                    200  matches
+  account profile                               accountProfileRetrieve       200  matches
+  public provinces                              publicProvincesList          200  matches
+  public facility list                          publicFacilitiesList         200  matches
+  public facility detail                        publicFacilityRetrieve       200  matches
+  public home                                   publicHomeRetrieve           200  matches
+  owner facility create                         ownerFacilityCreate          201  matches
+  owner facility list                           ownerFacilitiesList          200  matches
+  admin province update                         adminProvinceUpdate          200  matches
+  admin dashboard                               adminDashboardRetrieve       200  matches
+  validation failure (missing categoryId)       publicFacilitiesList         400  matches
+  permission failure (no token)                 adminDashboardRetrieve       403  matches
+  permission failure (token without permission) adminDashboardRetrieve       403  matches
+  INT-010: owner list without a token           ownerFacilitiesList          403  matches
+
+  17/17 runtime responses match the declared contract
+
+================================================================================
+10. DETERMINISM
+================================================================================
+Two independent generations from a clean container: BYTE-IDENTICAL.
+sha256 c739f4e7cc18655a2b6b3e4ab213527764a928bc4f5008f1d60661de7c08a4f4
+
+================================================================================
+11. DRIFT GATE
+================================================================================
+Before: `git diff --exit-code -- openapi/schema.yaml` on an untracked file. git diff
+ignores untracked paths, so the gate reported success on a contract that did not exist.
+
+After: refuses to run unless both canonical files are tracked, compares blob hashes
+across a regeneration, and independently verifies the recorded digest against the
+document on disk. CI additionally regenerates all three clients and fails if they
+differ from what is committed.
+
+================================================================================
+12. BUGS DISCOVERED DURING P10
+================================================================================
+INT-031  Province filtered on `is_active`; the model field is `active`. Three sites.
+         Registration start, registration completion and profile province change all
+         returned 500. FIXED.
+INT-033  Three views pass **validated_data into services while the serializers declare
+         camelCase fields with no `source`. Registration completion, login and password
+         reset all returned 500 - the entire authentication surface. FIXED.
+INT-034  facility_detail ordered business hours by `sequence`, a field that does not
+         exist; it is `sort_order`. Every owner facility detail, create, update and
+         relocate response returned 500. FIXED.
+INT-010  Owner, media and rating views declared no permission_classes. FIXED here
+         because the contract has to state the security requirement.
+INT-016  The interactive schema route was public in every environment. FIXED.
+
+Recorded, not fixed, out of P10 scope:
+INT-035  DRF CursorPagination emits {next, previous, results}; 08-API-CONTRACT
+         specifies {items, nextCursor, hasMore}.
+INT-036  Several Admin list endpoints answer from QuerySet.values() and therefore
+         return snake_case keys, while the hand-built payloads are camelCase.
+         08-API-CONTRACT requires one convention at the boundary.
+INT-037  06-DATA-MODEL names the BusinessHour ordering field `sequence`; the model
+         calls it `sort_order`. The runtime name was kept, see INT-034.
+INT-005  Closed by this batch.
+
+================================================================================
+13. LINT AND TYPE DEBT
+================================================================================
+ruff   101 errors, against the 104 baseline at the start of this batch. Debt reduced,
+       none added. Every file created or modified in P10 passes ruff cleanly.
+mypy   untouched at its 556 baseline.
+Both remain tracked as DEBT-001 and DEBT-002.
+
+================================================================================
+14. REGRESSIONS
+================================================================================
+node scripts/check-governance.mjs .................. exit=0
+node packages/design-tokens/scripts/validate.mjs .... exit=0
+node packages/design-tokens/scripts/generate.mjs --check  exit=0
+python infrastructure/scripts/qualify-staging-source.py   exit=0
+python apps/backend/scripts/qualify-owner-source.py ....  exit=0
+uv run pytest ...................................... 61 passed

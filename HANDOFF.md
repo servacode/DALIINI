@@ -1,6 +1,6 @@
 # HANDOFF
 
-Last updated: 2026-09-17T23:55:00+03:00
+Last updated: 2026-09-18T02:40:00+03:00
 
 ## PROJECT SUMMARY
 
@@ -425,3 +425,98 @@ trusted artifact proxy the project owns.
 **P10 Contracts.** It must precede all further client work: the schema carries 72 paths with zero
 component schemas and zero request bodies, so Admin, Android and iOS are all blocked behind it. iOS
 stays deferred.
+
+
+## P10 OPENAPI CONTRACTS RECOVERY — 2026-09-18T02:40:00+03:00
+
+### The blocker is cleared
+
+The generated contract went from 84 operations with **zero** component schemas, **zero**
+request bodies, **zero** response schemas and no security scheme, to 140 component schemas,
+35 request bodies, 72 response schemas, an explicit `bearerAccessToken` scheme and 84
+hand-declared operation ids, with **zero generator errors and zero warnings** where there
+had been 328 and 76.
+
+All three clients generate from it: TypeScript 138 models and 23 API classes, Kotlin 335
+sources, Swift 172 sources. Admin, Android and iOS are no longer blocked behind a DTO-less
+boundary, and no consumer needs to hand-write a transport DTO.
+
+### How to keep it honest
+
+Django and DRF are the source of truth. After any change that touches a request or
+response:
+
+```bash
+./scripts/generate-openapi.sh        # regenerate schema.yaml and schema.sha256
+./scripts/generate-api-clients.sh    # regenerate the three clients
+```
+
+Commit the regenerated artefacts with the source change. `./scripts/check-openapi-drift.sh`
+and the CI `contract-drift` job fail otherwise. Everything under `openapi/` and
+`packages/api-*/generated/` is a build artefact; hand-editing any of it is a defect.
+
+Generation needs the GeoDjango native libraries because the models are spatial. CI installs
+them; the backend container already has them.
+
+### Five defects found and fixed while writing the contract
+
+Three of them meant the authentication surface had never worked in any environment. None
+could have been caught by the existing tests, which assert on source text.
+
+- **INT-033** — registration completion, login and password reset all returned 500. The
+  views pass `**validated_data` into services while the serializers declare camelCase
+  fields with no `source`, so the keyword names never matched. Fixed with `source`; the
+  wire contract is unchanged.
+- **INT-031** — `Province` filtered on `is_active` at three sites; the field is `active`.
+  Registration start, registration completion and the profile province change returned 500.
+- **INT-034** — `facility_detail` ordered business hours by `sequence`, which does not
+  exist; it is `sort_order`. Every owner facility detail, create, update and relocate
+  response returned 500.
+- **INT-010** — owner, media and rating views declared no `permission_classes`. Now
+  `IsAuthenticated`, and the anonymous caller gets 403 rather than 500.
+- **INT-016** — the interactive schema route was public everywhere. Now `public` in
+  development, admin-only in staging and not routed in production.
+
+### Three divergences recorded, not silently reconciled
+
+The contract describes the runtime, because a generated client is built from the document
+and a schema that describes the specification instead would produce clients that break on
+the first response. See DECISION-012.
+
+- **INT-035** — DRF cursor pagination emits `{next, previous, results}`;
+  `08-API-CONTRACT.md` specifies `{items, nextCursor, hasMore}`.
+- **INT-036** — several Admin list endpoints answer from `QuerySet.values()` and return
+  snake_case keys while the hand-built payloads are camelCase; the specification requires
+  one convention at the boundary.
+- **INT-037** — `06-DATA-MODEL.md` names the BusinessHour ordering field `sequence`; the
+  model calls it `sort_order`. The runtime name was kept.
+
+Reconciling these is product work with its own review, not something to slip into a schema
+batch.
+
+### Verification levels, stated precisely
+
+- Schema generation, contract description, canonical artefacts, drift gate, 12 contract
+  tests and a 17-case runtime smoke against PostGIS and Redis: all **PASS**.
+- TypeScript client: generated **and compiled**, `tsc --noEmit` exits 0.
+- Kotlin client: generated. Compilation **NOT_VERIFIED** — `ENVIRONMENT_LIMITATION`. The
+  Gradle distribution download from services.gradle.org resets on this network, the same
+  condition that blocks Google Maven. The client needs only Maven Central, so it should
+  compile from a network that can reach the Gradle services.
+- Swift client: generated as a contract artefact. No Swift toolchain here, and **iOS work
+  is not started**. A generated Swift client is not the beginning of P23.
+
+### Next
+
+**Admin data binding, P11 to P13.** The Admin is still a descriptive scaffold:
+`backendRequest`, `setRefreshCookie` and `getRefreshCookie` exist but are never called, and
+every page renders a static `OperationPage` naming the endpoint it would call. None of the
+operational components the design system requires exist yet, and neither Playwright nor
+Vitest is installed, so `P13 ADMIN GOLDEN PATH PASS` currently has no runner.
+
+Start with the login and refresh BFF against `authLogin` and `authRefresh`, and fix INT-012
+while doing it: the `__Host-` refresh cookie sets `secure` only in production, and browsers
+reject a `__Host-` cookie without `Secure`, so the development flow cannot work today.
+
+Android and iOS remain where they were. `/public/provinces/` still returns an empty list
+because the P4 seed does not exist.
