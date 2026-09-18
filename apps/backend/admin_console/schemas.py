@@ -378,6 +378,11 @@ class AdminAdvertisementRequestSerializer(serializers.Serializer):
     targetScope = serializers.ChoiceField(choices=Advertisement.TargetScope.choices, required=False)
     provinceId = serializers.UUIDField(required=False, allow_null=True)
     categoryId = serializers.UUIDField(required=False, allow_null=True)
+    # INT-044: the schedule was missing from the create contract, so a generated client
+    # stripped it and every advertisement was created unscheduled — and the rule that an
+    # end must follow its start could never fire on creation.
+    startsAt = serializers.DateTimeField(required=False, allow_null=True)
+    endsAt = serializers.DateTimeField(required=False, allow_null=True)
     enabled = serializers.BooleanField(required=False, default=False)
     sortOrder = serializers.IntegerField(required=False, default=0)
     slideDurationMs = serializers.IntegerField(required=False, default=5000)

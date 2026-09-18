@@ -1,7 +1,9 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import connection
 from django.db.models import Avg, Count, Q
 from django.http import FileResponse
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
@@ -10,7 +12,7 @@ from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
 )
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -285,6 +287,10 @@ class ApplicationDecisionView(AdminView):
                 approve=self.approve,
                 reason=str(request.data.get("reason", "")),
             )
+        except ObjectDoesNotExist as exc:
+            # The service locks the row itself; an id that does not exist is the
+            # caller's 404, not a server fault.
+            raise NotFound() from exc
         except DjangoValidationError as exc:
             raise _validation_error(exc) from exc
         return Response(application_payload(item))
@@ -342,7 +348,7 @@ class EvidenceContentView(AdminView):
         },
     )
     def get(self, request, evidence_id):
-        evidence = VerificationEvidence.objects.get(pk=evidence_id)
+        evidence = get_object_or_404(VerificationEvidence, pk=evidence_id)
         record_audit(
             actor=request.user,
             action="verification_evidence.viewed",
@@ -396,7 +402,7 @@ class FacilityDetailView(AdminView):
         responses={200: AdminFacilitySerializer, **protected(), 404: NOT_FOUND_404},
     )
     def get(self, request, facility_id):
-        return Response(facility_payload(Facility.objects.get(pk=facility_id)))
+        return Response(facility_payload(get_object_or_404(Facility, pk=facility_id)))
 
 
 class FacilityTransitionView(AdminView):
@@ -423,6 +429,10 @@ class FacilityTransitionView(AdminView):
                 target_status=self.target_status,
                 reason=str(request.data.get("reason", "")),
             )
+        except ObjectDoesNotExist as exc:
+            # The service locks the row itself; an id that does not exist is the
+            # caller's 404, not a server fault.
+            raise NotFound() from exc
         except DjangoValidationError as exc:
             raise _validation_error(exc) from exc
         return Response(facility_payload(facility))
@@ -522,7 +532,7 @@ class UserDetailView(AdminView):
         responses={200: AdminUserDetailSerializer, **protected(), 404: NOT_FOUND_404},
     )
     def get(self, request, user_id):
-        user = User.objects.get(pk=user_id)
+        user = get_object_or_404(User, pk=user_id)
         payload = user_payload(user)
         payload["roleIds"] = [
             str(value)
@@ -544,7 +554,7 @@ class UserBlockView(AdminView):
         responses={200: AdminUserSerializer, **protected(), 404: NOT_FOUND_404},
     )
     def post(self, request, user_id):
-        user = User.objects.get(pk=user_id)
+        user = get_object_or_404(User, pk=user_id)
         updated = set_user_blocked(
             request=request,
             user=user,
@@ -612,7 +622,7 @@ class UserRolesView(AdminView):
             raise ValidationError({"roleIds": "Must be a list."})
         if AdminRole.objects.filter(id__in=role_ids).count() != len(set(role_ids)):
             raise ValidationError({"roleIds": "Unknown role."})
-        user = User.objects.get(pk=user_id)
+        user = get_object_or_404(User, pk=user_id)
         replace_user_roles(request=request, user=user, role_ids=role_ids)
         return Response(status=204)
 
@@ -804,7 +814,7 @@ class CategoryCapabilitiesView(AdminView):
         },
     )
     def put(self, request, category_id):
-        category = Category.objects.get(pk=category_id)
+        category = get_object_or_404(Category, pk=category_id)
         capabilities, _ = CategoryCapabilities.objects.get_or_create(category=category)
         payload = AdminCapabilitiesRequestSerializer(data=request.data, partial=True)
         payload.is_valid(raise_exception=True)
@@ -868,7 +878,7 @@ class ProvinceDetailView(AdminView):
         responses={200: AdminProvinceUpdatedSerializer, **protected(), 404: NOT_FOUND_404},
     )
     def put(self, request, province_id):
-        province = Province.objects.get(pk=province_id)
+        province = get_object_or_404(Province, pk=province_id)
         before = {"active": province.active, "sortOrder": province.sort_order}
         if "active" in request.data:
             province.active = bool(request.data["active"])
@@ -1096,7 +1106,7 @@ class AdvertisementDetailView(AdminView):
     def put(self, request, advertisement_id):
         payload = AdminAdvertisementUpdateRequestSerializer(data=request.data, partial=True)
         payload.is_valid(raise_exception=True)
-        ad = Advertisement.objects.get(pk=advertisement_id)
+        ad = get_object_or_404(Advertisement, pk=advertisement_id)
         try:
             update_advertisement(actor=request.user, advertisement=ad, data=request.data)
         except DjangoValidationError as exc:
@@ -1110,7 +1120,7 @@ class AdvertisementDetailView(AdminView):
         responses={204: None, **protected(), 404: NOT_FOUND_404},
     )
     def delete(self, request, advertisement_id):
-        ad = Advertisement.objects.get(pk=advertisement_id)
+        ad = get_object_or_404(Advertisement, pk=advertisement_id)
         delete_advertisement(actor=request.user, advertisement=ad)
         return Response(status=204)
 

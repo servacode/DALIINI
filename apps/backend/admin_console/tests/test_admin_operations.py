@@ -536,3 +536,103 @@ def test_a_reader_cannot_mutate(
 
     assert response.status_code == 403
     assert response.json()["code"] == "PERMISSION_DENIED"
+
+
+# --------------------------------------------------------------------------------------
+# INT-044 — the schedule travels on create, not only on update
+# --------------------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_a_new_advertisement_keeps_its_schedule(operator: APIClient) -> None:
+    payload = _ad_payload()
+
+    created = operator.post("/api/v1/admin/ads/", payload, format="json")
+
+    assert created.status_code == 201, created.content
+    ad = Advertisement.objects.get(pk=created.json()["id"])
+    assert ad.starts_at is not None and ad.ends_at is not None
+    assert ad.ends_at > ad.starts_at
+
+
+@pytest.mark.django_db
+def test_creating_an_advertisement_that_ends_before_it_starts_is_refused(
+    operator: APIClient,
+) -> None:
+    now = timezone.now()
+
+    response = operator.post(
+        "/api/v1/admin/ads/",
+        _ad_payload(startsAt=now.isoformat(), endsAt=(now - timedelta(days=1)).isoformat()),
+        format="json",
+    )
+
+    assert response.status_code == 400, response.content
+    assert not Advertisement.objects.exists()
+
+
+def test_the_create_contract_declares_the_schedule() -> None:
+    from admin_console.schemas import AdminAdvertisementRequestSerializer
+
+    fields = AdminAdvertisementRequestSerializer().fields
+
+    assert "startsAt" in fields and "endsAt" in fields
+
+
+# --------------------------------------------------------------------------------------
+# INT-015 — a missing resource is a 404, as the contract says, never a 500
+# --------------------------------------------------------------------------------------
+
+MISSING = "00000000-0000-4000-8000-000000000000"
+
+
+@pytest.fixture
+def full_operator(db: Any, user: User) -> APIClient:
+    role = AdminRole.objects.create(code="everything", name="Everything")
+    for permission in AdminPermission.objects.all():
+        role.permissions.add(permission)
+    UserAdminRole.objects.create(user=user, role=role, active=True)
+    client = APIClient()
+    client.force_authenticate(user=user)
+    return client
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("method", "path"),
+    [
+        ("get", f"/api/v1/admin/evidence/{MISSING}/content/"),
+        ("get", f"/api/v1/admin/facilities/{MISSING}/"),
+        ("get", f"/api/v1/admin/users/{MISSING}/"),
+        ("post", f"/api/v1/admin/users/{MISSING}/block/"),
+        ("put", f"/api/v1/admin/users/{MISSING}/roles/"),
+        ("put", f"/api/v1/admin/categories/{MISSING}/capabilities/"),
+        ("put", f"/api/v1/admin/provinces/{MISSING}/"),
+        ("put", f"/api/v1/admin/ads/{MISSING}/"),
+        ("delete", f"/api/v1/admin/ads/{MISSING}/"),
+        ("post", f"/api/v1/admin/applications/{MISSING}/approve/"),
+        ("post", f"/api/v1/admin/facilities/{MISSING}/suspend/"),
+    ],
+)
+def test_a_missing_resource_is_not_found(
+    full_operator: APIClient, method: str, path: str
+) -> None:
+    response = getattr(full_operator, method)(path, {}, format="json")
+
+    assert response.status_code == 404, (path, response.status_code, response.content)
+    assert response.json()["code"] == "NOT_FOUND"
+
+
+@pytest.mark.django_db
+def test_evidence_is_refused_before_it_is_looked_up(user: User) -> None:
+    """An operator without `admin.evidence.read` learns nothing, not even whether it exists."""
+    role = AdminRole.objects.create(code="desk", name="Desk")
+    role.permissions.add(AdminPermission.objects.get_or_create(code="admin.reviews.read")[0])
+    UserAdminRole.objects.create(user=user, role=role, active=True)
+    client = APIClient()
+    client.force_authenticate(user=user)
+
+    response = client.get(f"/api/v1/admin/evidence/{MISSING}/content/")
+
+    assert response.status_code == 403
+    assert response.json()["code"] == "PERMISSION_DENIED"
