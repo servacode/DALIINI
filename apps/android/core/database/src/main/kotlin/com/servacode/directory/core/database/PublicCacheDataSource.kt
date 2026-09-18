@@ -13,15 +13,17 @@ import javax.inject.Singleton
 @Singleton
 class PublicCacheDataSource @Inject constructor(
     private val dao: CacheDao,
-) {
+) : PublicCache {
     private val json = Json { ignoreUnknownKeys = true }
 
-    suspend fun provinces(): List<Province> = dao.provinces().mapNotNull {
+    override suspend fun provinces(): List<Province> = dao.provinces().mapNotNull {
         runCatching { json.decodeFromString<Province>(it.payloadJson) }.getOrNull()
     }
 
-    suspend fun putProvinces(values: List<Province>) {
+    override suspend fun putProvinces(values: List<Province>) {
         val now = System.currentTimeMillis()
+        // Replace, not merge: a province the backend stopped serving must not linger offline.
+        dao.clearProvinces()
         dao.putProvinces(
             values.mapIndexed { index, value ->
                 ProvinceCacheEntity(value.id, index, json.encodeToString(value), now)
@@ -29,11 +31,11 @@ class PublicCacheDataSource @Inject constructor(
         )
     }
 
-    suspend fun home(provinceId: String): HomeSnapshot? = dao.home(provinceId)?.let {
+    override suspend fun home(provinceId: String): HomeSnapshot? = dao.home(provinceId)?.let {
         runCatching { json.decodeFromString<HomeSnapshot>(it.payloadJson) }.getOrNull()
     }
 
-    suspend fun putHome(value: HomeSnapshot) {
+    override suspend fun putHome(value: HomeSnapshot) {
         dao.putHome(
             HomeSnapshotEntity(
                 provinceId = value.province.id,
@@ -43,16 +45,16 @@ class PublicCacheDataSource @Inject constructor(
         )
     }
 
-    suspend fun directory(provinceId: String, categoryId: String): List<FacilitySummary> =
+    override suspend fun directory(provinceId: String, categoryId: String): List<FacilitySummary> =
         dao.facilities(provinceId, categoryId).mapNotNull {
             runCatching { json.decodeFromString<FacilitySummary>(it.summaryPayloadJson) }.getOrNull()
         }
 
-    suspend fun facility(id: String): FacilityDetail? = dao.facility(id)?.detailPayloadJson?.let {
+    override suspend fun facility(id: String): FacilityDetail? = dao.facility(id)?.detailPayloadJson?.let {
         runCatching { json.decodeFromString<FacilityDetail>(it) }.getOrNull()
     }
 
-    suspend fun putFacility(value: FacilityDetail, provinceId: String) {
+    override suspend fun putFacility(value: FacilityDetail, provinceId: String) {
         val existing = dao.facility(value.summary.id)
         dao.putFacilities(
             listOf(
@@ -69,17 +71,24 @@ class PublicCacheDataSource @Inject constructor(
         )
     }
 
-    suspend fun putDirectory(values: List<FacilitySummary>, provinceId: String, categoryId: String) {
+    override suspend fun putDirectoryPage(
+        values: List<FacilitySummary>,
+        provinceId: String,
+        categoryId: String,
+        offset: Int,
+    ) {
+        // Details were fetched separately and stay valid; carry them across the rewrite.
+        val details = dao.facilities(provinceId, categoryId).associate { it.id to it.detailPayloadJson }
+        if (offset == 0) dao.clearDirectory(provinceId, categoryId)
         val now = System.currentTimeMillis()
         dao.putFacilities(
             values.mapIndexed { index, value ->
-                val existing = dao.facility(value.id)
                 FacilityCacheEntity(
                     id = value.id,
                     provinceId = provinceId,
                     categoryId = categoryId,
-                    sortRank = index,
-                    detailPayloadJson = existing?.detailPayloadJson,
+                    sortRank = offset + index,
+                    detailPayloadJson = details[value.id] ?: dao.facility(value.id)?.detailPayloadJson,
                     summaryPayloadJson = json.encodeToString(value),
                     updatedAtEpochMillis = now,
                 )

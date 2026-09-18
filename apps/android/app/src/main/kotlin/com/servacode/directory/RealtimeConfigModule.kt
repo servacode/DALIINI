@@ -14,5 +14,6 @@ object RealtimeConfigModule {
     @Singleton
     fun provideRealtimeConfig(): RealtimeConfig = RealtimeConfig(
         webSocketUrl = BuildConfig.REALTIME_WS_URL,
+        allowCleartext = BuildConfig.ALLOW_CLEARTEXT,
     )
 }

@@ -5,7 +5,11 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -16,8 +20,8 @@ private val Context.directoryDataStore by preferencesDataStore(name = "directory
 @Singleton
 class PreferencesRepository @Inject constructor(
     @ApplicationContext private val context: Context,
-) {
-    val values: Flow<DirectoryPreferences> = context.directoryDataStore.data.map { prefs ->
+) : DirectoryPreferencesStore {
+    override val values: Flow<DirectoryPreferences> = context.directoryDataStore.data.map { prefs ->
         DirectoryPreferences(
             selectedProvinceId = prefs[SELECTED_PROVINCE],
             locationPreference = prefs[LOCATION_PREFERENCE]
@@ -27,11 +31,11 @@ class PreferencesRepository @Inject constructor(
         )
     }
 
-    suspend fun selectProvince(id: String) {
+    override suspend fun selectProvince(id: String) {
         context.directoryDataStore.edit { it[SELECTED_PROVINCE] = id }
     }
 
-    suspend fun setLocationPreference(value: LocationPreference) {
+    override suspend fun setLocationPreference(value: LocationPreference) {
         context.directoryDataStore.edit { it[LOCATION_PREFERENCE] = value.name }
     }
 
@@ -40,4 +44,12 @@ class PreferencesRepository @Inject constructor(
         val LOCATION_PREFERENCE = stringPreferencesKey("location_preference")
         val ONBOARDING_HINTS = booleanPreferencesKey("onboarding_hints_seen")
     }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class PreferencesBindings {
+    @Binds
+    @Singleton
+    abstract fun bindPreferencesStore(impl: PreferencesRepository): DirectoryPreferencesStore
 }

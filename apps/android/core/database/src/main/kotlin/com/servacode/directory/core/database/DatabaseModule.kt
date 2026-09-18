@@ -18,4 +18,7 @@ object DatabaseModule {
 
     @Provides
     fun provideCacheDao(database: DirectoryDatabase): CacheDao = database.cacheDao()
+
+    @Provides @Singleton
+    fun providePublicCache(source: PublicCacheDataSource): PublicCache = source
 }

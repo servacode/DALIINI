@@ -13,6 +13,9 @@ interface CacheDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun putProvinces(values: List<ProvinceCacheEntity>)
 
+    @Query("DELETE FROM province_cache")
+    suspend fun clearProvinces()
+
     @Query("SELECT * FROM home_snapshot_cache WHERE provinceId = :provinceId LIMIT 1")
     suspend fun home(provinceId: String): HomeSnapshotEntity?
 
@@ -37,4 +40,7 @@ interface CacheDao {
 
     @Query("DELETE FROM facility_cache WHERE provinceId = :provinceId")
     suspend fun invalidateFacilities(provinceId: String)
+
+    @Query("DELETE FROM facility_cache WHERE provinceId = :provinceId AND categoryId = :categoryId")
+    suspend fun clearDirectory(provinceId: String, categoryId: String)
 }

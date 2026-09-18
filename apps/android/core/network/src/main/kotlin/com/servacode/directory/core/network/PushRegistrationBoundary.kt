@@ -1,7 +1,11 @@
 package com.servacode.directory.core.network
 
 /**
- * Implemented by the generated P10 Kotlin API client. The mobile app never stores a provider secret.
+ * Registers the device's FCM token with the backend. The mobile app never stores a provider
+ * secret.
+ *
+ * Not bound: the contract has no push-registration operation, so there is nothing in the
+ * generated client to call (see the register entry for push registration).
  */
 interface PushRegistrationBoundary {
     suspend fun registerAndroidToken(token: String)

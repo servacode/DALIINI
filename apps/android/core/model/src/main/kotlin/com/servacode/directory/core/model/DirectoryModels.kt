@@ -15,6 +15,8 @@ data class Category(
     val nameAr: String,
     val nameEn: String? = null,
     val iconKey: String? = null,
+    /** Null where the backend sends only a reference to the category, as in facility rows. */
+    val capabilities: FacilityCapabilities? = null,
 )
 
 @Serializable
@@ -30,6 +32,9 @@ data class FacilitySummary(
     val ratingAverage: Double? = null,
     val ratingCount: Int = 0,
     val availability: AvailabilityState = AvailabilityState.CLOSED,
+    /** When a closed facility next opens, as the backend computed it. */
+    val nextOpenAtEpochMillis: Long? = null,
+    val cityNameAr: String? = null,
 )
 
 @Serializable
@@ -41,6 +46,20 @@ data class FacilityDetail(
     val latitude: Double? = null,
     val longitude: Double? = null,
     val imageUrls: List<String> = emptyList(),
+    val neighborhoodNameAr: String? = null,
+    /** Ordered by weekday, then by the wire's `sequence`. */
+    val hours: List<BusinessHour> = emptyList(),
+    val specialties: List<String> = emptyList(),
+    val services: List<String> = emptyList(),
+)
+
+@Serializable
+data class HomeAd(
+    val id: String,
+    val imageUrl: String,
+    val titleAr: String? = null,
+    val subtitleAr: String? = null,
+    val slideDurationMs: Int = 5000,
 )
 
 @Serializable
@@ -49,6 +68,21 @@ data class HomeSnapshot(
     val categories: List<Category>,
     val nearby: List<FacilitySummary>,
     val refreshedAtEpochMillis: Long,
+    val openNearby: List<FacilitySummary> = emptyList(),
+    val dutyNow: List<FacilitySummary> = emptyList(),
+    val ads: List<HomeAd> = emptyList(),
+)
+
+/**
+ * One page of a cursor-paginated list.
+ *
+ * `nextCursor` is opaque: it is only ever handed back to the backend unchanged, never parsed
+ * or built on the device.
+ */
+data class Page<T>(
+    val items: List<T>,
+    val nextCursor: String?,
+    val hasMore: Boolean,
 )
 
 @Serializable
@@ -100,6 +134,7 @@ data class FacilityCapabilities(
     val supportsServiceFilter: Boolean,
     val supportsTemporaryClosure: Boolean,
     val supportsOwnerOnboarding: Boolean,
+    val supportsRatings: Boolean = false,
 )
 
 @Serializable
@@ -151,7 +186,15 @@ data class OwnerFacilityImage(
 data class OwnerEvidence(
     val id: String,
     val requirementId: String,
-    val createdAtEpochMillis: Long,
+    /** Absent in the upload response; present when read back with the facility. */
+    val createdAtEpochMillis: Long? = null,
+)
+
+/** What the backend answers when a facility is submitted for review. */
+data class OwnerSubmission(
+    val applicationId: String,
+    val status: String,
+    val submittedAtEpochMillis: Long,
 )
 
 @Serializable
@@ -163,12 +206,17 @@ data class OwnerApplication(
     val submittedAtEpochMillis: Long? = null,
 )
 
+/**
+ * One opening span. A day with several spans has one row per span, ordered by `sequence`;
+ * `closesAt` earlier than `opensAt` is a span that runs past midnight. Whether a facility is
+ * open now is never derived from these rows on the device: the backend says so.
+ */
 @Serializable
 data class BusinessHour(
     val weekday: Int,
     val opensAt: String,
     val closesAt: String,
-    val sortOrder: Int = 0,
+    val sequence: Int = 0,
 )
 
 @Serializable
@@ -183,7 +231,8 @@ data class TemporaryClosure(
 data class FacilityMember(
     val userId: String,
     val name: String,
-    val phone: String,
+    /** Absent in the upsert response; present when members are listed. */
+    val phone: String? = null,
     val role: FacilityMemberRole,
 )
 
@@ -212,4 +261,19 @@ data class DutyShift(
     val id: String,
     val startsAtEpochMillis: Long,
     val endsAtEpochMillis: Long,
+)
+
+/** A challenge the backend sent a one-time code for. */
+data class AuthChallenge(
+    val id: String,
+    val expiresAtEpochMillis: Long,
+)
+
+data class AccountSession(
+    val id: String,
+    val platform: String,
+    val deviceName: String,
+    val createdAtEpochMillis: Long,
+    val lastSeenAtEpochMillis: Long?,
+    val revoked: Boolean,
 )

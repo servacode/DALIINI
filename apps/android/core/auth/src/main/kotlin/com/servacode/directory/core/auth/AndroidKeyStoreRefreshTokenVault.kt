@@ -5,6 +5,7 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.security.GeneralSecurityException
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -23,9 +24,19 @@ class AndroidKeyStoreRefreshTokenVault @Inject constructor(
     override fun read(): String? {
         val encoded = preferences.getString(CIPHERTEXT, null) ?: return null
         val iv = preferences.getString(IV, null) ?: return null
-        val cipher = Cipher.getInstance(TRANSFORMATION)
-        cipher.init(Cipher.DECRYPT_MODE, secretKey(), GCMParameterSpec(128, decode(iv)))
-        return cipher.doFinal(decode(encoded)).toString(Charsets.UTF_8)
+        return try {
+            val cipher = Cipher.getInstance(TRANSFORMATION)
+            cipher.init(Cipher.DECRYPT_MODE, secretKey(), GCMParameterSpec(128, decode(iv)))
+            cipher.doFinal(decode(encoded)).toString(Charsets.UTF_8)
+        } catch (_: GeneralSecurityException) {
+            // The key was invalidated (lock screen removed, restore to another device) or the
+            // ciphertext is damaged. The material cannot be recovered, so the session ends.
+            clear()
+            null
+        } catch (_: IllegalArgumentException) {
+            clear()
+            null
+        }
     }
 
     override fun write(value: String) {
