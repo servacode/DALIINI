@@ -136,6 +136,11 @@ SPECTACULAR_SETTINGS = {
         "DatabaseHealthEnum": "core.enums.DATABASE_HEALTH",
         "OwnerRequiredActionEnum": "core.enums.OWNER_REQUIRED_ACTION",
     },
+    # A nullable choice field is otherwise described as `oneOf: [<Enum>, NullEnum]`, where
+    # NullEnum is an enum whose only value is null. The Kotlin generator renders that as an
+    # enum class with no entries, which does not compile (INT-052). Marking the field
+    # nullable says the same thing in a form every generator understands.
+    "ENUM_ADD_EXPLICIT_BLANK_NULL_CHOICE": False,
 }
 
 CORS_ALLOWED_ORIGINS = env_csv("CORS_ALLOWED_ORIGINS")

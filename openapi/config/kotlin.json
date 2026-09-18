@@ -3,5 +3,11 @@
   "library": "jvm-retrofit2",
   "serializationLibrary": "kotlinx_serialization",
   "dateLibrary": "java8",
-  "useCoroutines": true
+  "useCoroutines": true,
+  "typeMappings": {
+    "AnyType": "JsonElement"
+  },
+  "importMappings": {
+    "JsonElement": "kotlinx.serialization.json.JsonElement"
+  }
 }

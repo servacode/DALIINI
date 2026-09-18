@@ -207,6 +207,20 @@ def test_request_bodies_do_not_require_server_assigned_fields(schema):
     assert not wrong, f"request bodies requiring a read-only field: {sorted(set(wrong))}"
 
 
+def test_every_enum_has_a_value(schema):
+    """An enum of nothing but null does not compile in the Kotlin client (INT-052).
+
+    drf-spectacular described nullable choice fields as `oneOf: [<Enum>, NullEnum]`, and
+    the generator rendered NullEnum as an enum class with no entries.
+    """
+    empty = [
+        name
+        for name, component in schema["components"]["schemas"].items()
+        if "enum" in component and not [value for value in component["enum"] if value is not None]
+    ]
+    assert not empty, f"enum components without a non-null value: {empty}"
+
+
 def test_bearer_security_scheme_is_declared(schema):
     schemes = schema.get("components", {}).get("securitySchemes", {})
     assert "bearerAccessToken" in schemes, "the access-token scheme is missing"
