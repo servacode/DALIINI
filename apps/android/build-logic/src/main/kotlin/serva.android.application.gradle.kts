@@ -18,9 +18,18 @@ extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // The generated API client uses java.time, which minSdk 24 predates (API 26).
+        isCoreLibraryDesugaringEnabled = true
     }
 
     buildFeatures {
         buildConfig = true
     }
+}
+
+dependencies {
+    add(
+        "coreLibraryDesugaring",
+        extensions.getByType<VersionCatalogsExtension>().named("libs").findLibrary("desugar-jdk-libs").get(),
+    )
 }

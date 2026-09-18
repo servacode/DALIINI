@@ -20,6 +20,7 @@ coverage/
 # Android / Gradle
 .gradle/
 **/build/
+apps/android/jvm-verification/.kotlin/
 local.properties
 *.jks
 *.keystore

@@ -22,7 +22,24 @@ val geocodingUserAgent = providers.gradleProperty("DIRECTORY_GEOCODING_USER_AGEN
     .orElse("DirectoryPlatformAndroid/1")
 val realtimeWebSocketUrl = providers.gradleProperty("DIRECTORY_REALTIME_WS_URL")
     .orElse(providers.environmentVariable("DIRECTORY_REALTIME_WS_URL"))
-    .orElse("wss://api.<ROOT_DOMAIN>/ws/events/")
+    .orElse("wss://api.<ROOT_DOMAIN>/ws/v1/directory/")
+
+// Staging has its own addresses, never production's.
+val stagingApiBaseUrl = providers.gradleProperty("DIRECTORY_STAGING_API_BASE_URL")
+    .orElse(providers.environmentVariable("DIRECTORY_STAGING_API_BASE_URL"))
+    .orElse("https://api.staging.<ROOT_DOMAIN>/")
+val stagingRealtimeWebSocketUrl = providers.gradleProperty("DIRECTORY_STAGING_REALTIME_WS_URL")
+    .orElse(providers.environmentVariable("DIRECTORY_STAGING_REALTIME_WS_URL"))
+    .orElse("wss://api.staging.<ROOT_DOMAIN>/ws/v1/directory/")
+
+// A development backend. The default is the Android emulator's alias for the host machine's
+// loopback, not any one developer's machine; a phone on a local network overrides it.
+val localApiBaseUrl = providers.gradleProperty("DIRECTORY_LOCAL_API_BASE_URL")
+    .orElse(providers.environmentVariable("DIRECTORY_LOCAL_API_BASE_URL"))
+    .orElse("http://10.0.2.2:8000/")
+val localRealtimeWebSocketUrl = providers.gradleProperty("DIRECTORY_LOCAL_REALTIME_WS_URL")
+    .orElse(providers.environmentVariable("DIRECTORY_LOCAL_REALTIME_WS_URL"))
+    .orElse("ws://10.0.2.2:8000/ws/v1/directory/")
 
 val uploadKeystorePath = providers.environmentVariable("ANDROID_UPLOAD_KEYSTORE_PATH")
 val uploadKeyAlias = providers.environmentVariable("ANDROID_UPLOAD_KEY_ALIAS")
@@ -43,12 +60,39 @@ android {
     }
 
     defaultConfig {
-        buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.get()}\"")
         buildConfigField("String", "MAP_STYLE_URL", "\"${mapStyleUrl.get()}\"")
         buildConfigField("String", "ROUTING_BASE_URL", "\"${routingBaseUrl.get()}\"")
         buildConfigField("String", "GEOCODING_BASE_URL", "\"${geocodingBaseUrl.get()}\"")
         buildConfigField("String", "GEOCODING_USER_AGENT", "\"${geocodingUserAgent.get()}\"")
-        buildConfigField("String", "REALTIME_WS_URL", "\"${realtimeWebSocketUrl.get()}\"")
+    }
+
+    // Where the app finds its backend. Only `local` may use cleartext, and only towards the
+    // hosts its network security config names; the app refuses to start a request to an
+    // address that still carries a placeholder.
+    flavorDimensions += "environment"
+    productFlavors {
+        create("local") {
+            dimension = "environment"
+            applicationIdSuffix = ".local"
+            versionNameSuffix = "-local"
+            buildConfigField("String", "API_BASE_URL", "\"${localApiBaseUrl.get()}\"")
+            buildConfigField("String", "REALTIME_WS_URL", "\"${localRealtimeWebSocketUrl.get()}\"")
+            buildConfigField("boolean", "ALLOW_CLEARTEXT", "true")
+        }
+        create("staging") {
+            dimension = "environment"
+            applicationIdSuffix = ".staging"
+            versionNameSuffix = "-staging"
+            buildConfigField("String", "API_BASE_URL", "\"${stagingApiBaseUrl.get()}\"")
+            buildConfigField("String", "REALTIME_WS_URL", "\"${stagingRealtimeWebSocketUrl.get()}\"")
+            buildConfigField("boolean", "ALLOW_CLEARTEXT", "false")
+        }
+        create("production") {
+            dimension = "environment"
+            buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.get()}\"")
+            buildConfigField("String", "REALTIME_WS_URL", "\"${realtimeWebSocketUrl.get()}\"")
+            buildConfigField("boolean", "ALLOW_CLEARTEXT", "false")
+        }
     }
 
     buildTypes {
@@ -94,6 +138,7 @@ dependencies {
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.material3)
+    implementation(libs.maplibre.android)
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(libs.junit)
 }
@@ -116,7 +161,7 @@ val validatePlayRelease by tasks.registering {
             }
             val secure = value.startsWith("https://") || value.startsWith("wss://")
             require(secure) { "$name must use HTTPS/WSS" }
-            require("localhost" !in value && "127.0.0.1" !in value) {
+            require(listOf("localhost", "127.0.0.1", "10.0.2.2").none { it in value }) {
                 "$name must not use a local endpoint"
             }
         }
@@ -135,6 +180,7 @@ val validatePlayRelease by tasks.registering {
     }
 }
 
-tasks.matching { it.name == "bundleRelease" || it.name == "assembleRelease" }.configureEach {
+// Only the production flavor is uploaded to Play.
+tasks.matching { it.name == "bundleProductionRelease" || it.name == "assembleProductionRelease" }.configureEach {
     dependsOn(validatePlayRelease)
 }
