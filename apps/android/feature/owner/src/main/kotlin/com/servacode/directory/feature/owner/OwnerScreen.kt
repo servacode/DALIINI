@@ -42,14 +42,16 @@ fun MyFacilitiesScreen(
         }
         when (val value = state) {
             MyFacilitiesUiState.Loading -> CircularProgressIndicator()
-            MyFacilitiesUiState.Error -> {
+            is MyFacilitiesUiState.Error -> {
                 Text("تعذر تحميل المنشآت")
+                Text(value.message)
                 OutlinedButton(onClick = viewModel::refresh) { Text("إعادة المحاولة") }
             }
             is MyFacilitiesUiState.Content -> LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                items(value.items, key = { it.id }) { item ->
+                items(value.items, key = { it.summary.id }) { owned ->
+                    val item = owned.summary
                     Column(Modifier.fillMaxWidth()) {
                         Text(item.nameAr, style = MaterialTheme.typography.titleLarge)
                         Text("${item.category.nameAr} • ${item.province.nameAr}")
@@ -57,7 +59,9 @@ fun MyFacilitiesScreen(
                         item.requiredAction?.let { Text("الإجراء المطلوب: $it") }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(onClick = { onManage(item.id) }) { Text("إدارة") }
-                            OutlinedButton(onClick = { onDuty(item.id) }) { Text("المناوبة") }
+                            if (owned.supportsDuty) {
+                                OutlinedButton(onClick = { onDuty(item.id) }) { Text("المناوبة") }
+                            }
                         }
                     }
                 }
@@ -83,8 +87,9 @@ fun ManageFacilityScreen(
     ) {
         when (val value = state) {
             ManageFacilityUiState.Loading -> CircularProgressIndicator()
-            ManageFacilityUiState.Error -> {
+            is ManageFacilityUiState.Error -> {
                 Text("تعذر تحميل إدارة المنشأة")
+                Text(value.message)
                 OutlinedButton(onClick = viewModel::refresh) { Text("إعادة المحاولة") }
             }
             is ManageFacilityUiState.Content -> {
@@ -92,8 +97,11 @@ fun ManageFacilityScreen(
                 Text("الحالة: ${value.facility.summary.status}")
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = { onEdit(value.facility.summary.id) }) { Text("تعديل البيانات") }
-                    OutlinedButton(onClick = { onDuty(value.facility.summary.id) }) { Text("المناوبة") }
+                    if (value.supportsDuty) {
+                        OutlinedButton(onClick = { onDuty(value.facility.summary.id) }) { Text("المناوبة") }
+                    }
                 }
+                value.message?.let { Text(it) }
                 Text("الإغلاقات المؤقتة", style = MaterialTheme.typography.titleMedium)
                 OutlinedTextField(
                     value = closureStart,

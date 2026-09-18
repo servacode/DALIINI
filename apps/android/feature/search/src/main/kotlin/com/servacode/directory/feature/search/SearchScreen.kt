@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.model.AvailabilityLabel
 
 @Composable
 fun SearchScreen(
@@ -37,7 +39,7 @@ fun SearchScreen(
         when (val value = state) {
             SearchUiState.Idle -> Text("اكتب للبحث ضمن المحافظة المختارة", Modifier.padding(top = 16.dp))
             SearchUiState.Loading -> CircularProgressIndicator(Modifier.padding(top = 16.dp))
-            SearchUiState.Error -> Text("تعذر تنفيذ البحث", Modifier.padding(top = 16.dp))
+            is SearchUiState.Error -> Text(value.message, Modifier.padding(top = 16.dp))
             is SearchUiState.Results -> LazyColumn(Modifier.fillMaxSize()) {
                 items(value.values, key = { it.id }) { facility ->
                     Column(
@@ -45,6 +47,19 @@ fun SearchScreen(
                     ) {
                         Text(facility.nameAr, style = MaterialTheme.typography.titleMedium)
                         Text(facility.category.nameAr)
+                        Text(AvailabilityLabel.of(facility))
+                    }
+                }
+                if (value.hasMore || value.moreError != null) {
+                    item(key = "more") {
+                        Column(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
+                            value.moreError?.let { Text(it) }
+                            if (value.loadingMore) {
+                                CircularProgressIndicator()
+                            } else {
+                                OutlinedButton(onClick = viewModel::loadMore) { Text("عرض المزيد") }
+                            }
+                        }
                     }
                 }
             }

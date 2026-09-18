@@ -33,8 +33,9 @@ fun ProvinceScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) { CircularProgressIndicator() }
-        ProvinceUiState.Error -> Column(Modifier.fillMaxSize().padding(24.dp)) {
+        is ProvinceUiState.Error -> Column(Modifier.fillMaxSize().padding(24.dp)) {
             Text("تعذر تحميل المحافظات")
+            Text(value.message)
             Button(onClick = viewModel::refresh) { Text("إعادة المحاولة") }
         }
         is ProvinceUiState.Content -> LazyColumn(

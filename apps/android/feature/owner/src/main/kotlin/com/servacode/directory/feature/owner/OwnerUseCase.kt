@@ -1,6 +1,7 @@
 package com.servacode.directory.feature.owner
 
 import com.servacode.directory.core.model.FacilityMemberRole
+import com.servacode.directory.core.model.OwnerFacilitySummary
 import com.servacode.directory.core.network.OwnerFacilityPatch
 import com.servacode.directory.core.network.TemporaryClosureInput
 import javax.inject.Inject
@@ -8,7 +9,7 @@ import javax.inject.Inject
 class LoadOwnerFacilitiesUseCase @Inject constructor(
     private val repository: OwnerRepository,
 ) {
-    suspend operator fun invoke() = repository.facilities()
+    suspend operator fun invoke() = repository.ownedFacilities()
 }
 
 class LoadManageFacilityUseCase @Inject constructor(
@@ -19,6 +20,8 @@ class LoadManageFacilityUseCase @Inject constructor(
         repository.closures(id),
         repository.members(id),
     )
+
+    suspend fun supportsDuty(facility: OwnerFacilitySummary) = repository.supportsDuty(facility)
 }
 
 class ManageFacilityUseCase @Inject constructor(

@@ -4,7 +4,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.servacode.directory.core.model.AppErrorText
 import com.servacode.directory.core.model.DirectoryRoute
+import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.model.DutyShift
 import com.servacode.directory.core.network.DutyShiftInput
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -49,12 +51,7 @@ class DutyViewModel @Inject constructor(
         viewModelScope.launch {
             manage.create(facilityId, DutyShiftInput(startsAt, endsAt))
                 .onSuccess { refresh() }
-                .onFailure {
-                    _state.value = DutyUiState.Content(
-                        currentShifts(),
-                        "تعذر حفظ المناوبة أو يوجد تداخل",
-                    )
-                }
+                .onFailure { report(it) }
         }
     }
 
@@ -70,12 +67,17 @@ class DutyViewModel @Inject constructor(
                 facilityId,
                 shift.id,
                 DutyShiftInput(shift.startsAtEpochMillis, now),
-            ).onSuccess { refresh() }
+            ).onSuccess { refresh() }.onFailure { report(it) }
         }
     }
 
     fun cancel(shiftId: String) {
-        viewModelScope.launch { manage.delete(facilityId, shiftId).onSuccess { refresh() } }
+        viewModelScope.launch { manage.delete(facilityId, shiftId).onSuccess { refresh() }.onFailure { report(it) } }
+    }
+
+    /** The backend's refusal, in its Arabic wording: overlap, category without duty, and so on. */
+    private fun report(failure: Throwable) {
+        _state.value = DutyUiState.Content(currentShifts(), AppErrorText.of(failure.toAppError()))
     }
 
     private fun currentShifts(): List<DutyShift> =

@@ -29,6 +29,7 @@ fun RatingsScreen(viewModel: RatingsViewModel = hiltViewModel()) {
             RatingsUiState.Loading -> CircularProgressIndicator(Modifier.padding(top = 16.dp))
             RatingsUiState.Error -> Button(onClick = viewModel::refresh) { Text("إعادة المحاولة") }
             is RatingsUiState.Content -> LazyColumn(Modifier.fillMaxSize()) {
+                value.message?.let { message -> item(key = "message") { Text(message) } }
                 items(value.values, key = { it.id }) { rating ->
                     Column(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
                         Text(rating.facilityNameAr, style = MaterialTheme.typography.titleMedium)

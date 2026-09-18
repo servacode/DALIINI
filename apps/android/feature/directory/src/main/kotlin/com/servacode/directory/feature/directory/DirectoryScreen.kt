@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.model.AvailabilityLabel
 
 @Composable
 fun DirectoryScreen(
@@ -35,7 +37,11 @@ fun DirectoryScreen(
                 "اختر المحافظة أولًا",
                 Modifier.clickable(onClick = onProvince).padding(top = 20.dp),
             )
-            DirectoryUiState.Error -> Text("تعذر تحميل المنشآت", Modifier.padding(top = 20.dp))
+            is DirectoryUiState.Error -> Column(Modifier.padding(top = 20.dp)) {
+                Text("تعذر تحميل المنشآت")
+                Text(value.message)
+                OutlinedButton(onClick = viewModel::refresh) { Text("إعادة المحاولة") }
+            }
             is DirectoryUiState.Content -> {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilterChip(
@@ -57,7 +63,20 @@ fun DirectoryScreen(
                         ) {
                             Text(facility.nameAr, style = MaterialTheme.typography.titleMedium)
                             Text(facility.category.nameAr)
+                            Text(AvailabilityLabel.of(facility))
                             facility.distanceMeters?.let { Text("${it.toInt()} م") }
+                        }
+                    }
+                    if (value.hasMore || value.moreError != null) {
+                        item(key = "more") {
+                            Column(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
+                                value.moreError?.let { Text(it) }
+                                if (value.loadingMore) {
+                                    CircularProgressIndicator()
+                                } else {
+                                    OutlinedButton(onClick = viewModel::loadMore) { Text("عرض المزيد") }
+                                }
+                            }
                         }
                     }
                 }

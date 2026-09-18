@@ -27,6 +27,8 @@ fun AccountScreen(
     onRatings: () -> Unit,
     onFacilities: () -> Unit,
     onAccountDeleted: () -> Unit,
+    onSignIn: () -> Unit,
+    onRegister: () -> Unit,
     viewModel: AccountViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -39,8 +41,18 @@ fun AccountScreen(
 
     when (val value = state) {
         AccountUiState.Loading -> CircularProgressIndicator(Modifier.padding(24.dp))
-        AccountUiState.Error -> Column(Modifier.fillMaxSize().padding(24.dp)) {
+        AccountUiState.SignedOut -> Column(
+            Modifier.fillMaxSize().padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text("حسابي", style = MaterialTheme.typography.headlineLarge)
+            Text("سجّل الدخول لإدارة تقييماتك ومنشآتك.")
+            Button(onClick = onSignIn) { Text("تسجيل الدخول") }
+            OutlinedButton(onClick = onRegister) { Text("إنشاء حساب") }
+        }
+        is AccountUiState.Error -> Column(Modifier.fillMaxSize().padding(24.dp)) {
             Text("تعذر تحميل الحساب")
+            Text(value.message)
             Button(onClick = viewModel::refresh) { Text("إعادة المحاولة") }
         }
         is AccountUiState.Content -> Column(
@@ -50,16 +62,31 @@ fun AccountScreen(
             Text("حسابي", style = MaterialTheme.typography.headlineLarge)
             Text(value.profile.name)
             Text(value.profile.phone)
+            // No profile image: the contract has no upload operation for one (INT-017).
+            if (value.provinces.isNotEmpty()) {
+                Text("المحافظة", style = MaterialTheme.typography.titleMedium)
+                value.provinces.forEach { province ->
+                    TextButton(
+                        onClick = { viewModel.changeProvince(province.id) },
+                        enabled = province.id != value.profile.provinceId,
+                    ) {
+                        Text(if (province.id == value.profile.provinceId) "✓ ${province.nameAr}" else province.nameAr)
+                    }
+                }
+            }
+            value.message?.let { Text(it) }
             Button(onClick = onRatings) { Text("تقييماتي") }
             Button(onClick = onFacilities) { Text("منشآتي") }
+            OutlinedButton(onClick = viewModel::logout) { Text("تسجيل الخروج") }
             OutlinedButton(
                 onClick = { showDeleteConfirmation = true },
                 enabled = deletion != DeletionUiState.Deleting,
             ) {
                 Text("حذف الحساب")
             }
-            if (deletion == DeletionUiState.Error) {
+            (deletion as? DeletionUiState.Error)?.let { failure ->
                 Text("تعذر طلب حذف الحساب. تحقق من ملكية المنشآت ثم أعد المحاولة.")
+                Text(failure.message)
                 TextButton(onClick = viewModel::clearDeletionError) { Text("إخفاء") }
             }
         }

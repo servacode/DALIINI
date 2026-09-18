@@ -1,9 +1,10 @@
 package com.servacode.directory.feature.home
 
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class HomeUseCase @Inject constructor(
     private val repository: HomeRepository,
 ) {
-    suspend operator fun invoke(): HomeLoadResult = repository.load()
+    operator fun invoke(): Flow<HomeLoad> = repository.load()
 }

@@ -1,34 +1,43 @@
 package com.servacode.directory.feature.facility
 
-import com.servacode.directory.core.database.PublicCacheDataSource
-import com.servacode.directory.core.datastore.PreferencesRepository
+import com.servacode.directory.core.database.Loaded
+import com.servacode.directory.core.database.PublicCache
+import com.servacode.directory.core.database.cacheFirst
+import com.servacode.directory.core.datastore.DirectoryPreferencesStore
+import com.servacode.directory.core.model.AppError
+import com.servacode.directory.core.model.AppException
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.network.PublicApiBoundary
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
-sealed interface FacilityLoadResult {
-    data class Content(val value: FacilityDetail, val stale: Boolean) : FacilityLoadResult
-    data object Unavailable : FacilityLoadResult
-}
-
+/**
+ * One facility, cache first. Opening hours are shown as served; whether the facility is open
+ * or on duty now is the backend's answer, never recomputed from the hours on the device.
+ */
 class FacilityRepository @Inject constructor(
-    private val cache: PublicCacheDataSource,
+    private val cache: PublicCache,
     private val api: PublicApiBoundary,
-    private val preferences: PreferencesRepository,
+    private val preferences: DirectoryPreferencesStore,
 ) {
-    suspend fun load(id: String): FacilityLoadResult {
-        val cached = cache.facility(id)
-        val provinceId = preferences.values.first().selectedProvinceId
-        return runCatching { api.facility(id) }.fold(
-            onSuccess = { detail ->
-                if (provinceId != null) cache.putFacility(detail, provinceId)
-                FacilityLoadResult.Content(detail, stale = false)
-            },
-            onFailure = {
-                cached?.let { FacilityLoadResult.Content(it, stale = true) }
-                    ?: FacilityLoadResult.Unavailable
-            },
-        )
+    fun load(id: String): Flow<Loaded<FacilityDetail>> = cacheFirst(
+        read = { cache.facility(id) },
+        fetch = { api.facility(id) },
+        write = { detail ->
+            preferences.values.first().selectedProvinceId?.let { cache.putFacility(detail, it) }
+        },
+    )
+
+    /** The signed-in user's stars for this facility, read from their account and not cached. */
+    suspend fun myRating(id: String): Result<Int?> =
+        runCatching { api.ratings().firstOrNull { it.facilityId == id }?.stars }
+
+    /** 1 to 5. The backend validates again and its refusal is what the screen shows. */
+    suspend fun rate(id: String, stars: Int): Result<Int> {
+        if (stars !in 1..5) {
+            return Result.failure(AppException(AppError(AppError.Kind.VALIDATION, code = "VALIDATION_ERROR")))
+        }
+        return runCatching { api.upsertRating(id, stars) }
     }
 }

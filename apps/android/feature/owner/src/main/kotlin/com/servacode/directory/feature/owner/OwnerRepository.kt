@@ -14,7 +14,19 @@ class OwnerRepository @Inject constructor(
     private val api: OwnerApiBoundary,
 ) {
     suspend fun facilities(): Result<List<OwnerFacilitySummary>> = runCatching { api.facilities() }
+
+    /** The owner's facilities, each with whether its category supports duty. */
+    suspend fun ownedFacilities(): Result<List<OwnedFacility>> = runCatching {
+        val facilities = api.facilities()
+        val configs = facilities.map { it.province.id }.distinct().associateWith { provinceId ->
+            runCatching { api.ownerConfig(provinceId) }.getOrNull()
+        }
+        facilities.map { OwnedFacility(it, OwnerCapabilities.supportsDuty(it, configs[it.province.id])) }
+    }
     suspend fun facility(id: String): Result<OwnerFacilityDetail> = runCatching { api.facility(id) }
+
+    suspend fun supportsDuty(facility: OwnerFacilitySummary): Boolean =
+        OwnerCapabilities.supportsDuty(facility, runCatching { api.ownerConfig(facility.province.id) }.getOrNull())
     suspend fun patch(id: String, patch: OwnerFacilityPatch): Result<OwnerFacilityDetail> =
         runCatching { api.patchFacility(id, patch) }
     suspend fun closures(id: String): Result<List<TemporaryClosure>> =

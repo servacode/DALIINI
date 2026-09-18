@@ -5,14 +5,16 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.servacode.directory.core.datastore.PreferencesRepository
+import com.servacode.directory.core.datastore.DirectoryPreferencesStore
 import com.servacode.directory.core.location.LocationProvider
 import com.servacode.directory.core.location.LocationResult
+import com.servacode.directory.core.model.AppErrorText
 import com.servacode.directory.core.model.BusinessHour
 import com.servacode.directory.core.model.DirectoryRoute
 import com.servacode.directory.core.model.OwnerCategoryConfig
 import com.servacode.directory.core.model.OwnerConfig
 import com.servacode.directory.core.model.OwnerFacilityDetail
+import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.network.OwnerFacilityDraftInput
 import com.servacode.directory.core.network.OwnerFacilityPatch
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -67,7 +69,7 @@ class OnboardingViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val load: LoadOnboardingUseCase,
     private val save: SaveOnboardingUseCase,
-    private val preferences: PreferencesRepository,
+    private val preferences: DirectoryPreferencesStore,
     private val locationProvider: LocationProvider,
     private val uploadReader: OwnerUploadReader,
 ) : ViewModel() {
@@ -176,7 +178,9 @@ class OnboardingViewModel @Inject constructor(
                     message = if (advance) null else "تم حفظ المسودة تلقائيًا",
                 )
             }
-        }.onFailure { mutate { it.copy(message = "تعذر حفظ المسودة") } }
+        }.onFailure { failure ->
+                mutate { it.copy(message = "تعذر حفظ المسودة: " + AppErrorText.of(failure.toAppError())) }
+            }
     }
 
     fun selectMapPoint(latitude: Double, longitude: Double) {
@@ -185,7 +189,9 @@ class OnboardingViewModel @Inject constructor(
         viewModelScope.launch {
             save.location(draft.summary.id, latitude, longitude).onSuccess { updated ->
                 mutate { it.copy(draft = updated, step = OnboardingStep.HOURS, message = null) }
-            }.onFailure { mutate { it.copy(message = "تعذر حفظ الموقع") } }
+            }.onFailure { failure ->
+                mutate { it.copy(message = "تعذر حفظ الموقع: " + AppErrorText.of(failure.toAppError())) }
+            }
         }
     }
 
@@ -200,7 +206,9 @@ class OnboardingViewModel @Inject constructor(
                     result.fix.longitude,
                 ).onSuccess { updated ->
                     mutate { it.copy(draft = updated, step = OnboardingStep.HOURS, message = null) }
-                }.onFailure { mutate { it.copy(message = "تعذر حفظ الموقع") } }
+                }.onFailure { failure ->
+                mutate { it.copy(message = "تعذر حفظ الموقع: " + AppErrorText.of(failure.toAppError())) }
+            }
                 LocationResult.PermissionDenied -> mutate { it.copy(message = "يلزم السماح بالموقع") }
                 LocationResult.Unavailable -> mutate { it.copy(message = "تعذر تحديد الموقع") }
             }
@@ -213,7 +221,9 @@ class OnboardingViewModel @Inject constructor(
         viewModelScope.launch {
             save.hours(id, rows).onSuccess {
                 mutate { it.copy(step = OnboardingStep.PUBLIC_IMAGES, message = null) }
-            }.onFailure { mutate { it.copy(message = "تعذر حفظ ساعات العمل") } }
+            }.onFailure { failure ->
+                mutate { it.copy(message = "تعذر حفظ ساعات العمل: " + AppErrorText.of(failure.toAppError())) }
+            }
         }
     }
 
@@ -246,7 +256,9 @@ class OnboardingViewModel @Inject constructor(
                         )
                     }
                 }
-            }.onFailure { mutate { it.copy(message = "تعذر رفع الملف") } }
+            }.onFailure { failure ->
+                mutate { it.copy(message = "تعذر رفع الملف: " + AppErrorText.of(failure.toAppError())) }
+            }
         }
     }
 
@@ -276,12 +288,12 @@ class OnboardingViewModel @Inject constructor(
                         )
                     }
                 }
-            }.onFailure {
+            }.onFailure { failure ->
                 mutate {
                     it.copy(
                         step = OnboardingStep.REVIEW,
                         busy = false,
-                        message = "تعذر الإرسال. راجع المتطلبات الحالية.",
+                        message = "تعذر الإرسال: " + AppErrorText.of(failure.toAppError()),
                     )
                 }
             }

@@ -1,6 +1,6 @@
 package com.servacode.directory.feature.bootstrap
 
-import com.servacode.directory.core.datastore.PreferencesRepository
+import com.servacode.directory.core.datastore.DirectoryPreferencesStore
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
@@ -14,7 +14,7 @@ interface BootstrapRepository {
 }
 
 class DefaultBootstrapRepository @Inject constructor(
-    private val preferences: PreferencesRepository,
+    private val preferences: DirectoryPreferencesStore,
 ) : BootstrapRepository {
     override suspend fun initialize(): BootstrapResult = runCatching {
         BootstrapResult.Ready(preferences.values.first().selectedProvinceId)

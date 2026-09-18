@@ -8,8 +8,10 @@ import com.servacode.directory.core.model.DirectoryRoute
 import com.servacode.directory.core.model.FacilityMember
 import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.model.OwnerFacilityDetail
-import com.servacode.directory.core.model.OwnerFacilitySummary
 import com.servacode.directory.core.model.TemporaryClosure
+import com.servacode.directory.core.model.AppErrorText
+import com.servacode.directory.core.model.toAppError
+import com.servacode.directory.core.network.RealtimeInvalidation
 import com.servacode.directory.core.network.RealtimeInvalidationBus
 import com.servacode.directory.core.network.TemporaryClosureInput
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,8 +23,8 @@ import javax.inject.Inject
 
 sealed interface MyFacilitiesUiState {
     data object Loading : MyFacilitiesUiState
-    data class Content(val items: List<OwnerFacilitySummary>) : MyFacilitiesUiState
-    data object Error : MyFacilitiesUiState
+    data class Content(val items: List<OwnedFacility>) : MyFacilitiesUiState
+    data class Error(val message: String) : MyFacilitiesUiState
 }
 
 @HiltViewModel
@@ -37,7 +39,7 @@ class MyFacilitiesViewModel @Inject constructor(
         refresh()
         viewModelScope.launch {
             invalidations.events.collect { event ->
-                if (event.scope.type == "user" && event.name.startsWith("user.")) refresh()
+                if (RealtimeInvalidation.refreshesOwnerState(event)) refresh()
             }
         }
     }
@@ -47,7 +49,7 @@ class MyFacilitiesViewModel @Inject constructor(
             _state.value = MyFacilitiesUiState.Loading
             _state.value = load().fold(
                 onSuccess = { MyFacilitiesUiState.Content(it) },
-                onFailure = { MyFacilitiesUiState.Error },
+                onFailure = { MyFacilitiesUiState.Error(AppErrorText.of(it.toAppError())) },
             )
         }
     }
@@ -59,8 +61,10 @@ sealed interface ManageFacilityUiState {
         val facility: OwnerFacilityDetail,
         val closures: List<TemporaryClosure>,
         val members: List<FacilityMember>,
+        val supportsDuty: Boolean = false,
+        val message: String? = null,
     ) : ManageFacilityUiState
-    data object Error : ManageFacilityUiState
+    data class Error(val message: String) : ManageFacilityUiState
 }
 
 @HiltViewModel
@@ -78,7 +82,7 @@ class ManageFacilityViewModel @Inject constructor(
         refresh()
         viewModelScope.launch {
             invalidations.events.collect { event ->
-                if (event.scope.type == "user" && event.name.startsWith("user.")) refresh()
+                if (RealtimeInvalidation.refreshesOwnerState(event)) refresh()
             }
         }
     }
@@ -86,12 +90,24 @@ class ManageFacilityViewModel @Inject constructor(
     fun refresh() {
         viewModelScope.launch {
             val (facility, closures, members) = load(id)
-            _state.value = if (facility.isSuccess && closures.isSuccess && members.isSuccess) {
+            val failure = listOf(facility, closures, members).firstNotNullOfOrNull { it.exceptionOrNull() }
+            _state.value = if (failure == null) {
+                val detail = facility.getOrThrow()
                 ManageFacilityUiState.Content(
-                    facility.getOrThrow(), closures.getOrThrow(), members.getOrThrow()
+                    facility = detail,
+                    closures = closures.getOrThrow(),
+                    members = members.getOrThrow(),
+                    supportsDuty = load.supportsDuty(detail.summary),
                 )
-            } else ManageFacilityUiState.Error
+            } else {
+                ManageFacilityUiState.Error(AppErrorText.of(failure.toAppError()))
+            }
         }
+    }
+
+    private fun report(failure: Throwable) {
+        val current = _state.value as? ManageFacilityUiState.Content ?: return
+        _state.value = current.copy(message = AppErrorText.of(failure.toAppError()))
     }
 
     fun addManager(userId: String) {
@@ -99,22 +115,25 @@ class ManageFacilityViewModel @Inject constructor(
         viewModelScope.launch {
             manage.upsertMember(id, userId.trim(), FacilityMemberRole.MANAGER)
                 .onSuccess { refresh() }
+                .onFailure(::report)
         }
     }
 
     fun removeMember(userId: String) {
-        viewModelScope.launch { manage.deleteMember(id, userId).onSuccess { refresh() } }
+        viewModelScope.launch { manage.deleteMember(id, userId).onSuccess { refresh() }.onFailure(::report) }
     }
 
     fun createTemporaryClosure(start: Long, end: Long, reason: String?) {
         if (end <= start) return
         viewModelScope.launch {
             manage.createClosure(id, TemporaryClosureInput(start, end, reason))
+                // The backend validates the window; once it accepts, read the facility again.
                 .onSuccess { refresh() }
+                .onFailure(::report)
         }
     }
 
     fun deleteTemporaryClosure(closureId: String) {
-        viewModelScope.launch { manage.deleteClosure(id, closureId).onSuccess { refresh() } }
+        viewModelScope.launch { manage.deleteClosure(id, closureId).onSuccess { refresh() }.onFailure(::report) }
     }
 }

@@ -27,7 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.servacode.directory.core.model.AvailabilityState
+import com.servacode.directory.core.model.AvailabilityLabel
 import com.servacode.directory.core.model.FacilitySummary
 
 @Composable
@@ -59,8 +59,9 @@ fun HomeScreen(
             Spacer(Modifier.height(16.dp))
             Button(onClick = onProvince) { Text("اختيار المحافظة") }
         }
-        HomeUiState.Error -> Column(Modifier.fillMaxSize().padding(24.dp)) {
+        is HomeUiState.Error -> Column(Modifier.fillMaxSize().padding(24.dp)) {
             Text("تعذر تحميل الدليل حاليًا")
+            Text(value.message)
             Spacer(Modifier.height(12.dp))
             Button(onClick = viewModel::refresh) { Text("إعادة المحاولة") }
         }
@@ -101,6 +102,10 @@ fun HomeScreen(
                         )
                     },
                 ) { Text("استخدام موقعي للترتيب بالأقرب") }
+                value.snapshot.ads.forEach { ad ->
+                    ad.titleAr?.let { Text(it, style = MaterialTheme.typography.titleMedium) }
+                    ad.subtitleAr?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+                }
                 Text("الأقسام", style = MaterialTheme.typography.titleLarge)
             }
             items(value.snapshot.categories, key = { it.id }) { category ->
@@ -111,8 +116,20 @@ fun HomeScreen(
                 }
                 HorizontalDivider()
             }
+            if (value.snapshot.dutyNow.isNotEmpty()) {
+                item { Text("المناوبون الآن", style = MaterialTheme.typography.titleLarge) }
+                items(value.snapshot.dutyNow, key = { "duty-" + it.id }) { facility ->
+                    FacilityRow(facility, onFacility)
+                }
+            }
+            if (value.snapshot.openNearby.isNotEmpty()) {
+                item { Text("مفتوح الآن", style = MaterialTheme.typography.titleLarge) }
+                items(value.snapshot.openNearby, key = { "open-" + it.id }) { facility ->
+                    FacilityRow(facility, onFacility)
+                }
+            }
             item { Text("الأقرب إليك", style = MaterialTheme.typography.titleLarge) }
-            items(value.snapshot.nearby, key = { it.id }) { facility ->
+            items(value.snapshot.nearby, key = { "near-" + it.id }) { facility ->
                 FacilityRow(facility, onFacility)
             }
         }
@@ -125,12 +142,7 @@ private fun FacilityRow(value: FacilitySummary, onFacility: (String) -> Unit) {
         Modifier.fillMaxWidth().clickable { onFacility(value.id) }.padding(vertical = 10.dp),
     ) {
         Text(value.nameAr, style = MaterialTheme.typography.titleMedium)
-        val status = when (value.availability) {
-            AvailabilityState.OPEN -> "مفتوح الآن"
-            AvailabilityState.DUTY -> "مناوب الآن"
-            AvailabilityState.TEMP_CLOSED -> "مغلق مؤقتًا"
-            AvailabilityState.CLOSED -> "مغلق"
-        }
+        val status = AvailabilityLabel.of(value)
         val distance = value.distanceMeters?.let { " • ${it.toInt()} م" }.orEmpty()
         Text(status + distance, style = MaterialTheme.typography.bodyMedium)
     }

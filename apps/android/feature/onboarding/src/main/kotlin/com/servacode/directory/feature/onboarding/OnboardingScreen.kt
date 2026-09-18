@@ -213,73 +213,57 @@ private fun HoursEditor(
         "السبت",
         "الأحد",
     )
-    val rows = remember(initial) {
-        mutableStateListOf<HourDraft>().apply {
-            (0..6).forEach { weekday ->
-                val existing = initial.firstOrNull { it.weekday == weekday }
-                add(
-                    HourDraft(
-                        enabled = existing != null,
-                        opensAt = existing?.opensAt ?: "09:00",
-                        closesAt = existing?.closesAt ?: "17:00",
-                    )
-                )
-            }
-        }
+    val days = remember(initial) {
+        mutableStateListOf<List<HourSpan>>().apply { addAll(HoursForm.fromHours(initial)) }
     }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("ساعات العمل")
-        rows.forEachIndexed { weekday, row ->
+        Text(
+            "يمكن إضافة أكثر من فترة في اليوم. إذا كان وقت الإغلاق قبل وقت الفتح فالفترة تمتد بعد منتصف الليل.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        days.forEachIndexed { weekday, spans ->
             Column(Modifier.fillMaxWidth()) {
                 androidx.compose.foundation.layout.Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Checkbox(
-                        checked = row.enabled,
-                        onCheckedChange = { rows[weekday] = row.copy(enabled = it) },
+                        checked = spans.isNotEmpty(),
+                        onCheckedChange = { open ->
+                            days[weekday] = if (open) listOf(HourSpan("09:00", "17:00")) else emptyList()
+                        },
                     )
                     Text(dayNames[weekday], style = MaterialTheme.typography.titleMedium)
                 }
-                if (row.enabled) {
+                spans.forEachIndexed { index, span ->
                     OutlinedTextField(
-                        value = row.opensAt,
-                        onValueChange = { rows[weekday] = row.copy(opensAt = it) },
+                        value = span.opensAt,
+                        onValueChange = { value ->
+                            days[weekday] = spans.toMutableList().also { it[index] = span.copy(opensAt = value) }
+                        },
                         label = { Text("يفتح HH:mm") },
                     )
                     OutlinedTextField(
-                        value = row.closesAt,
-                        onValueChange = { rows[weekday] = row.copy(closesAt = it) },
+                        value = span.closesAt,
+                        onValueChange = { value ->
+                            days[weekday] = spans.toMutableList().also { it[index] = span.copy(closesAt = value) }
+                        },
                         label = { Text("يغلق HH:mm") },
                     )
+                    if (spans.size > 1) {
+                        OutlinedButton(
+                            onClick = { days[weekday] = spans.toMutableList().also { it.removeAt(index) } },
+                        ) { Text("حذف الفترة") }
+                    }
+                }
+                if (spans.isNotEmpty()) {
+                    OutlinedButton(onClick = { days[weekday] = spans + HourSpan("16:00", "22:00") }) {
+                        Text("إضافة فترة")
+                    }
                 }
             }
         }
-        Button(
-            onClick = {
-                val selected = rows.mapIndexedNotNull { weekday, row ->
-                    if (!row.enabled) null else BusinessHour(weekday, row.opensAt, row.closesAt)
-                }
-                onSave(selected)
-            },
-        ) { Text("حفظ الساعات والمتابعة") }
+        Button(onClick = { onSave(HoursForm.toHours(days)) }) { Text("حفظ الساعات والمتابعة") }
     }
 }
 
-private data class HourDraft(
-    val enabled: Boolean,
-    val opensAt: String,
-    val closesAt: String,
-)
-
-private fun stepLabel(step: OnboardingStep): String = when (step) {
-    OnboardingStep.PROVINCE_CATEGORY -> "المحافظة والتصنيف"
-    OnboardingStep.BASIC_INFO -> "البيانات الأساسية"
-    OnboardingStep.MAP_POINT -> "الموقع"
-    OnboardingStep.HOURS -> "ساعات العمل"
-    OnboardingStep.PUBLIC_IMAGES -> "الصور العامة"
-    OnboardingStep.SPECIALIZED_FIELDS -> "الحقول المتخصصة"
-    OnboardingStep.VERIFICATION_EVIDENCE -> "إثباتات التحقق"
-    OnboardingStep.REVIEW -> "المراجعة"
-    OnboardingStep.SUBMIT -> "الإرسال"
-    OnboardingStep.STATUS -> "الحالة"
-}

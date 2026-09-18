@@ -1,11 +1,20 @@
 package com.servacode.directory
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.servacode.directory.core.auth.SessionState
 import com.servacode.directory.core.model.DirectoryRoute
+import com.servacode.directory.feature.auth.LoginScreen
+import com.servacode.directory.feature.auth.RecoveryScreen
+import com.servacode.directory.feature.auth.RegisterScreen
+import kotlinx.coroutines.flow.StateFlow
 import com.servacode.directory.feature.account.AccountScreen
 import com.servacode.directory.feature.bootstrap.BootstrapScreen
 import com.servacode.directory.feature.directory.DirectoryScreen
@@ -22,8 +31,27 @@ import com.servacode.directory.feature.ratings.RatingsScreen
 import com.servacode.directory.feature.search.SearchScreen
 
 @Composable
-fun DirectoryApp() {
+fun DirectoryApp(sessionState: StateFlow<SessionState>) {
     val navController = rememberNavController()
+    val session by sessionState.collectAsStateWithLifecycle()
+
+    // When the session ends — signed out elsewhere, revoked, or its refresh refused — a screen
+    // that shows the user's own data gives way to sign-in instead of failing on every request.
+    LaunchedEffect(session) {
+        if (session != SessionState.SIGNED_OUT) return@LaunchedEffect
+        val destination = navController.currentBackStackEntry?.destination ?: return@LaunchedEffect
+        val private = destination.hasRoute<DirectoryRoute.MyRatings>() ||
+            destination.hasRoute<DirectoryRoute.MyFacilities>() ||
+            destination.hasRoute<DirectoryRoute.Onboarding>() ||
+            destination.hasRoute<DirectoryRoute.ManageFacility>() ||
+            destination.hasRoute<DirectoryRoute.Duty>()
+        if (private) {
+            navController.navigate(DirectoryRoute.Login) {
+                popUpTo<DirectoryRoute.Home>()
+            }
+        }
+    }
+
     NavHost(navController = navController, startDestination = DirectoryRoute.Bootstrap) {
         composable<DirectoryRoute.Bootstrap> {
             BootstrapScreen(
@@ -71,6 +99,7 @@ fun DirectoryApp() {
                     navController.navigate(DirectoryRoute.BuiltInNavigation(latitude, longitude))
                 },
                 onRatings = { navController.navigate(DirectoryRoute.MyRatings) },
+                onSignIn = { navController.navigate(DirectoryRoute.Login) },
             )
         }
         composable<DirectoryRoute.Map> {
@@ -99,7 +128,28 @@ fun DirectoryApp() {
                         popUpTo(navController.graph.id) { inclusive = true }
                     }
                 },
+                onSignIn = { navController.navigate(DirectoryRoute.Login) },
+                onRegister = { navController.navigate(DirectoryRoute.Register) },
             )
+        }
+        composable<DirectoryRoute.Login> {
+            LoginScreen(
+                onSignedIn = { navController.popBackStack() },
+                onRegister = { navController.navigate(DirectoryRoute.Register) },
+                onRecovery = { navController.navigate(DirectoryRoute.Recovery) },
+            )
+        }
+        composable<DirectoryRoute.Register> {
+            RegisterScreen(
+                onRegistered = {
+                    navController.navigate(DirectoryRoute.Account) {
+                        popUpTo<DirectoryRoute.Home>()
+                    }
+                },
+            )
+        }
+        composable<DirectoryRoute.Recovery> {
+            RecoveryScreen(onDone = { navController.popBackStack() })
         }
         composable<DirectoryRoute.MyRatings> {
             RatingsScreen()
