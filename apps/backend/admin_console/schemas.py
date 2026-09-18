@@ -1,13 +1,14 @@
 """Request and response contract for the Admin operations API.
 
-Two deliberate accuracy notes:
+Every response is camelCase, as `08-API-CONTRACT.md` requires. The list endpoints read
+through `QuerySet.values(...)` so a grid page does not instantiate models, and the
+serializers below translate those snake_case column names to the wire names with `source`.
+No database column is renamed for this; the boundary is the only place the two conventions
+meet. Before this batch the `values()` endpoints returned raw column names, which was
+INT-036.
 
-* Several list endpoints answer straight from `QuerySet.values(...)`, so their keys are
-  snake_case while the hand-built payloads are camelCase. `08-API-CONTRACT.md` asks for a
-  single convention at the boundary. The schema describes what the runtime emits today and
-  the inconsistency is recorded as a defect instead of being hidden here.
-* System status reports only whether a dependency is configured. No secret, connection
-  string or credential is described or returned.
+System status reports only whether a dependency is configured. No secret, connection
+string or credential is described or returned.
 """
 
 from rest_framework import serializers
@@ -78,8 +79,8 @@ class AdminEvidenceRefSerializer(serializers.Serializer):
 
 class AdminAuditTrailEntrySerializer(serializers.Serializer):
     action = serializers.CharField()
-    request_id = serializers.CharField(allow_blank=True)
-    created_at = serializers.DateTimeField()
+    requestId = serializers.CharField(source="request_id", allow_blank=True)
+    createdAt = serializers.DateTimeField(source="created_at")
 
 
 class AdminApplicationDetailSerializer(AdminApplicationSerializer):
@@ -105,9 +106,9 @@ class AdminFacilityStatusCountSerializer(serializers.Serializer):
 
 class AdminRecentActionSerializer(serializers.Serializer):
     action = serializers.CharField()
-    target_type = serializers.CharField(allow_blank=True)
-    target_id = serializers.CharField(allow_blank=True)
-    created_at = serializers.DateTimeField()
+    targetType = serializers.CharField(source="target_type", allow_blank=True)
+    targetId = serializers.CharField(source="target_id", allow_blank=True)
+    createdAt = serializers.DateTimeField(source="created_at")
 
 
 class AdminDashboardSerializer(serializers.Serializer):
@@ -134,14 +135,12 @@ class AdminUserRolesRequestSerializer(serializers.Serializer):
 
 
 class AdminCategoryGroupSerializer(serializers.Serializer):
-    """Emitted from `QuerySet.values()`, therefore snake_case."""
-
     id = serializers.UUIDField()
     code = serializers.CharField()
-    name_ar = serializers.CharField()
-    name_en = serializers.CharField(allow_blank=True)
+    nameAr = serializers.CharField(source="name_ar")
+    nameEn = serializers.CharField(source="name_en", allow_blank=True)
     active = serializers.BooleanField()
-    sort_order = serializers.IntegerField()
+    sortOrder = serializers.IntegerField(source="sort_order")
 
 
 class AdminCategoryGroupListSerializer(serializers.Serializer):
@@ -149,18 +148,16 @@ class AdminCategoryGroupListSerializer(serializers.Serializer):
 
 
 class AdminCategorySerializer(serializers.Serializer):
-    """Emitted from `QuerySet.values()`, therefore snake_case."""
-
     id = serializers.UUIDField()
-    group_id = serializers.UUIDField()
+    groupId = serializers.UUIDField(source="group_id")
     code = serializers.CharField()
     slug = serializers.CharField()
-    name_ar = serializers.CharField()
-    name_en = serializers.CharField(allow_blank=True)
-    icon_key = serializers.CharField(allow_blank=True)
+    nameAr = serializers.CharField(source="name_ar")
+    nameEn = serializers.CharField(source="name_en", allow_blank=True)
+    iconKey = serializers.CharField(source="icon_key", allow_blank=True)
     specialization = serializers.CharField()
     active = serializers.BooleanField()
-    sort_order = serializers.IntegerField()
+    sortOrder = serializers.IntegerField(source="sort_order")
 
 
 class AdminCategoryListSerializer(serializers.Serializer):
@@ -194,14 +191,12 @@ class AdminIdSerializer(serializers.Serializer):
 
 
 class AdminProvinceSerializer(serializers.Serializer):
-    """Emitted from `QuerySet.values()`, therefore snake_case."""
-
     id = serializers.UUIDField()
     code = serializers.CharField()
-    name_ar = serializers.CharField()
-    name_en = serializers.CharField(allow_blank=True)
+    nameAr = serializers.CharField(source="name_ar")
+    nameEn = serializers.CharField(source="name_en", allow_blank=True)
     active = serializers.BooleanField()
-    sort_order = serializers.IntegerField()
+    sortOrder = serializers.IntegerField(source="sort_order")
 
 
 class AdminProvinceListSerializer(serializers.Serializer):
@@ -219,17 +214,15 @@ class AdminProvinceUpdatedSerializer(serializers.Serializer):
 
 
 class AdminVerificationRequirementSerializer(serializers.Serializer):
-    """Emitted from `QuerySet.values()`, therefore snake_case."""
-
     id = serializers.UUIDField()
-    category_id = serializers.UUIDField()
-    label_ar = serializers.CharField()
-    label_en = serializers.CharField(allow_blank=True)
+    categoryId = serializers.UUIDField(source="category_id")
+    labelAr = serializers.CharField(source="label_ar")
+    labelEn = serializers.CharField(source="label_en", allow_blank=True)
     required = serializers.BooleanField()
     active = serializers.BooleanField()
-    min_files = serializers.IntegerField()
-    max_files = serializers.IntegerField()
-    sort_order = serializers.IntegerField()
+    minFiles = serializers.IntegerField(source="min_files")
+    maxFiles = serializers.IntegerField(source="max_files")
+    sortOrder = serializers.IntegerField(source="sort_order")
 
 
 class AdminVerificationRequirementListSerializer(serializers.Serializer):
@@ -250,16 +243,16 @@ class AdminVerificationRequirementRequestSerializer(serializers.Serializer):
 
 
 class AdminAdvertisementSerializer(serializers.Serializer):
-    """Emitted from `QuerySet.values()`, therefore snake_case."""
-
     id = serializers.UUIDField()
-    title_ar = serializers.CharField(allow_blank=True)
-    target_scope = serializers.ChoiceField(choices=Advertisement.TargetScope.choices)
+    titleAr = serializers.CharField(source="title_ar", allow_blank=True)
+    targetScope = serializers.ChoiceField(
+        source="target_scope", choices=Advertisement.TargetScope.choices
+    )
     enabled = serializers.BooleanField()
-    starts_at = serializers.DateTimeField(allow_null=True)
-    ends_at = serializers.DateTimeField(allow_null=True)
-    sort_order = serializers.IntegerField()
-    slide_duration_ms = serializers.IntegerField()
+    startsAt = serializers.DateTimeField(source="starts_at", allow_null=True)
+    endsAt = serializers.DateTimeField(source="ends_at", allow_null=True)
+    sortOrder = serializers.IntegerField(source="sort_order")
+    slideDurationMs = serializers.IntegerField(source="slide_duration_ms")
 
 
 class AdminAdvertisementListSerializer(serializers.Serializer):
@@ -283,16 +276,16 @@ class AdminAdvertisementRequestSerializer(serializers.Serializer):
 
 
 class AdminAuditEntrySerializer(serializers.Serializer):
-    """Emitted from `QuerySet.values()`, therefore snake_case. Snapshots are redacted."""
+    """Snapshots in `metadata` are redacted before they are recorded."""
 
     id = serializers.UUIDField()
-    actor_id = serializers.UUIDField(allow_null=True)
+    actorId = serializers.UUIDField(source="actor_id", allow_null=True)
     action = serializers.CharField()
-    target_type = serializers.CharField(allow_blank=True)
-    target_id = serializers.CharField(allow_blank=True)
-    request_id = serializers.CharField(allow_blank=True)
+    targetType = serializers.CharField(source="target_type", allow_blank=True)
+    targetId = serializers.CharField(source="target_id", allow_blank=True)
+    requestId = serializers.CharField(source="request_id", allow_blank=True)
     metadata = serializers.DictField()
-    created_at = serializers.DateTimeField()
+    createdAt = serializers.DateTimeField(source="created_at")
 
 
 class AdminAuditListSerializer(serializers.Serializer):
@@ -312,12 +305,10 @@ class AdminAnalyticsSerializer(serializers.Serializer):
 
 
 class AdminSettingSerializer(serializers.Serializer):
-    """Emitted from `QuerySet.values()`, therefore snake_case."""
-
     key = serializers.CharField()
-    value_type = serializers.CharField()
+    valueType = serializers.CharField(source="value_type")
     value = serializers.JSONField(allow_null=True)
-    updated_at = serializers.DateTimeField()
+    updatedAt = serializers.DateTimeField(source="updated_at")
 
 
 class AdminSettingListSerializer(serializers.Serializer):

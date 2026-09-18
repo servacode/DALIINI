@@ -1,6 +1,7 @@
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -75,7 +76,7 @@ class RegisterStartView(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         if not Province.objects.filter(pk=data["provinceId"], active=True).exists():
-            return Response({"provinceId": "Province is unavailable."}, status=400)
+            raise ValidationError({"provinceId": ["Province is unavailable."]})
         challenge = start_challenge(
             phone=data["phone"],
             purpose=OTPChallenge.Purpose.REGISTER,
@@ -180,7 +181,7 @@ class LogoutView(APIView):
     def post(self, request):
         session_id = request.data.get("sessionId")
         if not session_id:
-            return Response({"sessionId": "Required."}, status=400)
+            raise ValidationError({"sessionId": ["This field is required."]})
         revoke_session(user=request.user, session_id=session_id)
         return Response(status=204)
 
@@ -351,7 +352,9 @@ class ProfileView(APIView):
             else:
                 province = Province.objects.filter(pk=province_id, active=True).first()
                 if province is None:
-                    return Response({"provinceId": "Province is unavailable."}, status=400)
+                    raise ValidationError(
+                        {"provinceId": ["Province is unavailable."]}
+                    )
                 user.province = province
         user.updated_at = timezone.now()
         user.save()

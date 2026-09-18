@@ -14,7 +14,9 @@ class BusinessHourSerializer(serializers.Serializer):
     closesAt = serializers.TimeField(
         help_text="A value earlier than opensAt denotes an overnight span."
     )
-    sortOrder = serializers.IntegerField()
+    sequence = serializers.IntegerField(
+        help_text="Ordering within a weekday, for categories that open in several spans."
+    )
 
 
 class BusinessHoursListSerializer(serializers.Serializer):

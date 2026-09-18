@@ -87,7 +87,7 @@ class OwnerHoursEntrySerializer(serializers.Serializer):
     weekday = serializers.IntegerField(min_value=0, max_value=6)
     opensAt = serializers.TimeField()
     closesAt = serializers.TimeField()
-    sortOrder = serializers.IntegerField()
+    sequence = serializers.IntegerField()
 
 
 class OwnerApplicationSerializer(serializers.Serializer):

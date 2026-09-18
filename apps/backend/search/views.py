@@ -52,7 +52,7 @@ SCOPE_PARAMS = [
 ]
 
 PAGE_PARAMS = [
-    _q("cursor", "Opaque cursor returned in the previous page's next link."),
+    _q("cursor", "Opaque token returned as `nextCursor` by the previous page."),
     OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False,
                      description="Page size, maximum 100, default 30."),
 ]

@@ -1,13 +1,19 @@
+from collections.abc import Iterable
+from typing import Any
+
 from rest_framework import serializers
 
-from .models import TemporaryClosure
+from .models import BusinessHour, TemporaryClosure
 
 
 class BusinessHourInputSerializer(serializers.Serializer):
     weekday = serializers.IntegerField(min_value=0, max_value=6)
     opensAt = serializers.TimeField(source="opens_at")
     closesAt = serializers.TimeField(source="closes_at")
-    sortOrder = serializers.IntegerField(source="sort_order", min_value=0, default=0)
+    # `06-DATA-MODEL.md` names this field `sequence`; the column stays `sort_order`.
+    # Renaming the column would rewrite a migration for a naming preference, so the
+    # translation lives here, at the boundary, where it belongs.
+    sequence = serializers.IntegerField(source="sort_order", min_value=0, default=0)
 
     def validate(self, attrs):
         if attrs["opens_at"] == attrs["closes_at"]:
@@ -33,14 +39,14 @@ class TemporaryClosureSerializer(serializers.ModelSerializer):
         return attrs
 
 
-def serialize_hours(rows):
+def serialize_hours(rows: Iterable[BusinessHour]) -> list[dict[str, Any]]:
     return [
         {
             "id": str(row.id),
             "weekday": row.weekday,
             "opensAt": row.opens_at.isoformat(),
             "closesAt": row.closes_at.isoformat(),
-            "sortOrder": row.sort_order,
+            "sequence": row.sort_order,
         }
         for row in rows
     ]

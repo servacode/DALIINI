@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 
 from accounts.models import User
 from audit.services import record_audit
+from core.exceptions import ConflictError, DomainError
 from core.openapi import (
     CONFLICT_409,
     DOMAIN_400,
@@ -61,14 +62,19 @@ def _request_id(request):
     return getattr(request, "request_id", "")
 
 
-def _validation_response(exc):
+def _validation_error(exc):
+    """Carry a Django model validation failure into the central error envelope."""
     if hasattr(exc, "message_dict"):
         details = exc.message_dict
     elif hasattr(exc, "messages"):
         details = exc.messages
     else:
         details = [str(exc)]
-    return Response({"error": {"code": "VALIDATION_ERROR", "details": details}}, status=400)
+    return DomainError(
+        "VALIDATION_ERROR",
+        message="تعذر حفظ البيانات.",
+        details=details,
+    )
 
 
 def _owned_facilities(user):
@@ -153,7 +159,10 @@ class OwnerConfigView(APIView):
     def get(self, request):
         province_id = request.query_params.get("provinceId")
         if not province_id:
-            return Response({"error": {"code": "PROVINCE_REQUIRED"}}, status=400)
+            raise DomainError(
+                "PROVINCE_REQUIRED",
+                message="معرّف المحافظة مطلوب.",
+            )
         province = get_object_or_404(Province.objects.filter(active=True), pk=province_id)
         switches = (
             CategoryProvince.objects.filter(
@@ -209,7 +218,7 @@ class OwnerFacilityListCreateView(APIView):
                 request_id=_request_id(request),
             )
         except DjangoValidationError as exc:
-            return _validation_response(exc)
+            raise _validation_error(exc) from exc
         facility = _owned_facilities(request.user).get(pk=facility.pk)
         return Response(facility_detail(facility), status=201)
 
@@ -263,7 +272,7 @@ class OwnerFacilityDetailView(APIView):
                 request_id=_request_id(request),
             )
         except DjangoValidationError as exc:
-            return _validation_response(exc)
+            raise _validation_error(exc) from exc
         return Response(facility_detail(_owned_facilities(request.user).get(pk=updated.pk)))
 
 
@@ -297,7 +306,7 @@ class OwnerFacilitySubmitView(APIView):
                 request_id=_request_id(request),
             )
         except DjangoValidationError as exc:
-            return _validation_response(exc)
+            raise _validation_error(exc) from exc
         return Response(
             {
                 "applicationId": str(application.pk),
@@ -393,7 +402,10 @@ class OwnerFacilityImagesView(APIView):
     def post(self, request, facility_id):
         facility = self._facility(request, facility_id)
         if not facility.category.capabilities.supports_photos:
-            return Response({"error": {"code": "PHOTOS_NOT_SUPPORTED"}}, status=409)
+            raise ConflictError(
+                "PHOTOS_NOT_SUPPORTED",
+                message="هذا التصنيف لا يدعم الصور.",
+            )
         serializer = PublicImageUploadSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -413,7 +425,7 @@ class OwnerFacilityImagesView(APIView):
                 storage.delete(key)
                 raise
         except DjangoValidationError as exc:
-            return _validation_response(exc)
+            raise _validation_error(exc) from exc
         record_audit(
             actor=request.user,
             action="facility.public_image.created",
@@ -494,7 +506,10 @@ class OwnerFacilityEvidenceView(APIView):
             facility=facility, requirement=requirement
         ).count()
         if current >= requirement.max_files:
-            return Response({"error": {"code": "EVIDENCE_MAX_FILES"}}, status=409)
+            raise ConflictError(
+                "EVIDENCE_MAX_FILES",
+                message="تم بلوغ الحد الأقصى لعدد ملفات هذا المتطلب.",
+            )
         try:
             storage, key, _, _ = save_private_evidence(
                 facility_id=facility.pk,
@@ -512,7 +527,7 @@ class OwnerFacilityEvidenceView(APIView):
                 storage.delete(key)
                 raise
         except DjangoValidationError as exc:
-            return _validation_response(exc)
+            raise _validation_error(exc) from exc
         record_audit(
             actor=request.user,
             action="facility.evidence.created",
@@ -543,7 +558,10 @@ class OwnerFacilityEvidenceDeleteView(APIView):
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
         if facility.applications.filter(status=FacilityApplication.Status.SUBMITTED).exists():
-            return Response({"error": {"code": "EVIDENCE_LOCKED_DURING_REVIEW"}}, status=409)
+            raise ConflictError(
+                "EVIDENCE_LOCKED_DURING_REVIEW",
+                message="لا يمكن تعديل الإثباتات أثناء مراجعة الطلب.",
+            )
         evidence = get_object_or_404(
             VerificationEvidence, pk=evidence_id, facility=facility
         )
@@ -628,9 +646,9 @@ class OwnerFacilityMembersView(APIView):
                 role=FacilityMembership.Role.OWNER,
             ).count()
             if owner_count <= 1:
-                return Response(
-                    {"error": {"code": "LAST_OWNER_PROTECTED"}},
-                    status=409,
+                raise ConflictError(
+                    "LAST_OWNER_PROTECTED",
+                    message="لا يمكن ترك المنشأة بلا مالك.",
                 )
         before_role = member.role if member is not None else None
         if member is None:
@@ -683,7 +701,10 @@ class OwnerFacilityMemberDeleteView(APIView):
                 facility=facility, role=FacilityMembership.Role.OWNER
             ).count()
             if owners <= 1:
-                return Response({"error": {"code": "LAST_OWNER_PROTECTED"}}, status=409)
+                raise ConflictError(
+                    "LAST_OWNER_PROTECTED",
+                    message="لا يمكن ترك المنشأة بلا مالك.",
+                )
         record_audit(
             actor=request.user,
             action="facility.member.deleted",

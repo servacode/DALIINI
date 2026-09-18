@@ -1,9 +1,7 @@
 """Response contract for public discovery.
 
-The cursor envelope described here is DRF's `CursorPagination` default,
-`{next, previous, results}`, because that is what the runtime returns.
-`08-API-CONTRACT.md` specifies `{items, nextCursor, hasMore}` instead. The divergence is
-recorded as a defect rather than hidden by documenting an envelope nobody emits.
+Listings use the cursor envelope of `08-API-CONTRACT.md`, `{items, nextCursor, hasMore}`,
+produced centrally by `core.pagination.CursorPage`.
 """
 
 from rest_framework import serializers
@@ -44,9 +42,13 @@ class FacilityImageSerializer(serializers.Serializer):
 
 
 class PublicHoursEntrySerializer(serializers.Serializer):
+    # Public detail shares `serialize_hours` with the owner API, so it carries the
+    # same four keys plus the row id. The schema said otherwise before this batch.
+    id = serializers.UUIDField()
     weekday = serializers.IntegerField(min_value=0, max_value=6)
     opensAt = serializers.TimeField()
     closesAt = serializers.TimeField()
+    sequence = serializers.IntegerField()
 
 
 class PublicFacilityDetailSerializer(CompactFacilitySerializer):
@@ -64,13 +66,17 @@ class PublicFacilityDetailSerializer(CompactFacilitySerializer):
 
 
 class FacilityCursorPageSerializer(serializers.Serializer):
-    """DRF cursor pagination envelope as emitted by `FacilityCursorPagination`."""
+    """The cursor envelope of `08-API-CONTRACT.md`, emitted by `core.pagination.CursorPage`."""
 
-    next = serializers.CharField(
-        allow_null=True, help_text="Absolute URL of the next page, or null on the last page."
+    items = CompactFacilitySerializer(many=True)
+    nextCursor = serializers.CharField(
+        allow_null=True,
+        help_text=(
+            "Opaque token for the next page, or null on the last page. Send it back "
+            "unchanged as the `cursor` query parameter; never parse it."
+        ),
     )
-    previous = serializers.CharField(allow_null=True)
-    results = CompactFacilitySerializer(many=True)
+    hasMore = serializers.BooleanField(help_text="True when `nextCursor` is set.")
 
 
 class MapMarkerSerializer(serializers.Serializer):

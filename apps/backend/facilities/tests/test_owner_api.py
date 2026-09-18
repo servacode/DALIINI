@@ -47,7 +47,7 @@ def test_cannot_downgrade_last_owner(facility, user):
     )
 
     assert response.status_code == 409
-    assert response.json()["error"]["code"] == "LAST_OWNER_PROTECTED"
+    assert response.json()["code"] == "LAST_OWNER_PROTECTED"
     assert FacilityMembership.objects.get(facility=facility, user=user).role == "OWNER"
 
 

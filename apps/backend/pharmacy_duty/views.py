@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from business_hours.permissions import require_facility_manager
+from core.exceptions import ConflictError
 from core.openapi import CONFLICT_409, NOT_FOUND_404, VALIDATION_400, protected
 from facilities.models import Facility
 
@@ -16,9 +17,14 @@ from .serializers import DutyShiftSerializer
 
 
 def _duty_error():
-    return Response(
-        {"error": {"code": "DUTY_OVERLAP_OR_INVALID"}},
-        status=409,
+    """Build the shared duty rejection.
+
+    Overlap and an invalid range report the same code on purpose: telling the caller
+    which of the two it was would disclose that another facility already holds the slot.
+    """
+    return ConflictError(
+        "DUTY_OVERLAP_OR_INVALID",
+        message="الوردية تتعارض مع وردية أخرى أو أن بياناتها غير صالحة.",
     )
 
 
@@ -60,16 +66,18 @@ class DutyListCreateView(APIView):
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
         if not facility.category.capabilities.supports_duty:
-            return Response({"error": {"code": "DUTY_NOT_SUPPORTED"}}, status=409)
+            raise ConflictError(
+                "DUTY_NOT_SUPPORTED",
+                message="هذا التصنيف لا يدعم ورديات المناوبة.",
+            )
         serializer = DutyShiftSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         row = DutyShift(facility=facility, **serializer.validated_data)
         try:
             row.full_clean()
             row.save()
-        except (DjangoValidationError, IntegrityError):
-            transaction.set_rollback(True)
-            return _duty_error()
+        except (DjangoValidationError, IntegrityError) as exc:
+            raise _duty_error() from exc
         return Response(DutyShiftSerializer(row).data, status=201)
 
 
@@ -105,9 +113,8 @@ class DutyDetailView(APIView):
         try:
             row.full_clean()
             row.save()
-        except (DjangoValidationError, IntegrityError):
-            transaction.set_rollback(True)
-            return _duty_error()
+        except (DjangoValidationError, IntegrityError) as exc:
+            raise _duty_error() from exc
         return Response(DutyShiftSerializer(row).data)
 
     @extend_schema(

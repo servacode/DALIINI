@@ -33,23 +33,31 @@ from .permissions import HasAdminPermission
 from .schemas import (
     AdminAdvertisementListSerializer,
     AdminAdvertisementRequestSerializer,
+    AdminAdvertisementSerializer,
     AdminAnalyticsSerializer,
+    AdminAuditEntrySerializer,
     AdminAuditListSerializer,
+    AdminAuditTrailEntrySerializer,
     AdminCapabilitiesRequestSerializer,
     AdminCapabilitiesSerializer,
     AdminCategoryGroupListSerializer,
+    AdminCategoryGroupSerializer,
     AdminCategoryListSerializer,
     AdminCategoryProvinceRequestSerializer,
+    AdminCategorySerializer,
     AdminDashboardSerializer,
     AdminDecisionRequestSerializer,
     AdminFacilityListSerializer,
     AdminFacilitySerializer,
     AdminIdSerializer,
     AdminProvinceListSerializer,
+    AdminProvinceSerializer,
     AdminProvinceUpdatedSerializer,
     AdminProvinceUpdateRequestSerializer,
+    AdminRecentActionSerializer,
     AdminRoleListSerializer,
     AdminSettingListSerializer,
+    AdminSettingSerializer,
     AdminSettingWriteRequestSerializer,
     AdminSettingWrittenSerializer,
     AdminSystemStatusSerializer,
@@ -59,6 +67,7 @@ from .schemas import (
     AdminUserSerializer,
     AdminVerificationRequirementListSerializer,
     AdminVerificationRequirementRequestSerializer,
+    AdminVerificationRequirementSerializer,
 )
 from .schemas import AdminApplicationDetailSerializer as AppDetail
 from .schemas import AdminApplicationListSerializer as AppList
@@ -103,10 +112,12 @@ class DashboardView(AdminView):
                     Facility.objects.values("status").annotate(count=Count("id"))
                 ),
                 "activeUsers": User.objects.filter(is_active=True).count(),
-                "recentActions": list(
-                    AuditEvent.objects.order_by("-created_at")
-                    .values("action", "target_type", "target_id", "created_at")[:10]
-                ),
+                "recentActions": AdminRecentActionSerializer(
+                    AuditEvent.objects.order_by("-created_at").values(
+                        "action", "target_type", "target_id", "created_at"
+                    )[:10],
+                    many=True,
+                ).data,
             }
         )
 
@@ -169,11 +180,12 @@ class ApplicationDetailView(AdminView):
                     }
                     for row in evidence
                 ],
-                "audit": list(
+                "audit": AdminAuditTrailEntrySerializer(
                     AuditEvent.objects.filter(target_id=str(item.id))
                     .order_by("-created_at")
-                    .values("action", "request_id", "created_at")[:50]
-                ),
+                    .values("action", "request_id", "created_at")[:50],
+                    many=True,
+                ).data,
             }
         )
 
@@ -525,11 +537,12 @@ class TaxonomyView(AdminView):
     )
     def get(self, request):
         if self.model is CategoryGroup:
-            items = self.model.objects.order_by("sort_order", "name_ar").values(
+            rows = self.model.objects.order_by("sort_order", "name_ar").values(
                 "id", "code", "name_ar", "name_en", "active", "sort_order"
             )
+            serializer = AdminCategoryGroupSerializer
         else:
-            items = self.model.objects.order_by("sort_order", "name_ar").values(
+            rows = self.model.objects.order_by("sort_order", "name_ar").values(
                 "id",
                 "group_id",
                 "code",
@@ -541,7 +554,8 @@ class TaxonomyView(AdminView):
                 "active",
                 "sort_order",
             )
-        return Response({"items": list(items)})
+            serializer = AdminCategorySerializer
+        return Response({"items": serializer(rows, many=True).data})
 
 
 @extend_schema_view(
@@ -624,11 +638,12 @@ class ProvinceListView(AdminView):
     def get(self, request):
         return Response(
             {
-                "items": list(
+                "items": AdminProvinceSerializer(
                     Province.objects.order_by("sort_order", "name_ar").values(
                         "id", "code", "name_ar", "name_en", "active", "sort_order"
-                    )
-                )
+                    ),
+                    many=True,
+                ).data
             }
         )
 
@@ -718,7 +733,7 @@ class VerificationRequirementListView(AdminView):
         qs = VerificationRequirement.objects.order_by("category_id", "sort_order")
         return Response(
             {
-                "items": list(
+                "items": AdminVerificationRequirementSerializer(
                     qs.values(
                         "id",
                         "category_id",
@@ -729,8 +744,9 @@ class VerificationRequirementListView(AdminView):
                         "min_files",
                         "max_files",
                         "sort_order",
-                    )
-                )
+                    ),
+                    many=True,
+                ).data
             }
         )
 
@@ -785,7 +801,7 @@ class AdvertisementListView(AdminView):
     def get(self, request):
         return Response(
             {
-                "items": list(
+                "items": AdminAdvertisementSerializer(
                     Advertisement.objects.order_by("sort_order", "-updated_at").values(
                         "id",
                         "title_ar",
@@ -795,8 +811,9 @@ class AdvertisementListView(AdminView):
                         "ends_at",
                         "sort_order",
                         "slide_duration_ms",
-                    )
-                )
+                    ),
+                    many=True,
+                ).data
             }
         )
 
@@ -874,7 +891,7 @@ class AuditListView(AdminView):
             qs = qs.filter(request_id=value)
         return Response(
             {
-                "items": list(
+                "items": AdminAuditEntrySerializer(
                     qs.values(
                         "id",
                         "actor_id",
@@ -884,8 +901,9 @@ class AuditListView(AdminView):
                         "request_id",
                         "metadata",
                         "created_at",
-                    )[:250]
-                )
+                    )[:250],
+                    many=True,
+                ).data
             }
         )
 
@@ -929,11 +947,12 @@ class SettingsView(AdminView):
     def get(self, request):
         return Response(
             {
-                "items": list(
+                "items": AdminSettingSerializer(
                     PlatformSetting.objects.order_by("key").values(
                         "key", "value_type", "value", "updated_at"
-                    )
-                )
+                    ),
+                    many=True,
+                ).data
             }
         )
 

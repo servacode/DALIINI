@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.exceptions import ConflictError, DomainError
 from core.openapi import CONFLICT_409, DOMAIN_400, NOT_FOUND_404, VALIDATION_400, protected
 from facilities.models import Facility
 
@@ -44,9 +45,9 @@ class FacilityHoursView(APIView):
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
         if not facility.category.capabilities.supports_hours:
-            return Response(
-                {"error": {"code": "HOURS_NOT_SUPPORTED"}},
-                status=409,
+            raise ConflictError(
+                "HOURS_NOT_SUPPORTED",
+                message="هذا التصنيف لا يدعم أوقات الدوام.",
             )
 
         items = BusinessHourInputSerializer(data=request.data, many=True)
@@ -58,15 +59,11 @@ class FacilityHoursView(APIView):
                 rows=list(items.validated_data),
             )
         except ValidationError as exc:
-            details = (
-                exc.message_dict
-                if hasattr(exc, "message_dict")
-                else exc.messages
-            )
-            return Response(
-                {"error": {"code": "INVALID_HOURS", "details": details}},
-                status=400,
-            )
+            raise DomainError(
+                "INVALID_HOURS",
+                message="أوقات الدوام المرسلة غير صالحة.",
+                details=getattr(exc, "message_dict", None) or exc.messages,
+            ) from exc
         return Response({"items": serialize_hours(created)})
 
 
@@ -109,9 +106,9 @@ class TemporaryClosureListCreateView(APIView):
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
         if not facility.category.capabilities.supports_temporary_closure:
-            return Response(
-                {"error": {"code": "TEMPORARY_CLOSURE_NOT_SUPPORTED"}},
-                status=409,
+            raise ConflictError(
+                "TEMPORARY_CLOSURE_NOT_SUPPORTED",
+                message="هذا التصنيف لا يدعم الإغلاق المؤقت.",
             )
         serializer = TemporaryClosureSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

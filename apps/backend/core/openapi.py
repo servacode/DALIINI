@@ -15,9 +15,7 @@ The area prefix is the API family, not the Python class name, so renaming a view
 changes the public contract.
 """
 
-from drf_spectacular.extensions import OpenApiAuthenticationExtension, OpenApiSerializerExtension
-from drf_spectacular.plumbing import build_array_type, build_basic_type, build_object_type
-from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.extensions import OpenApiAuthenticationExtension
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema_serializer
 from rest_framework import serializers
 
@@ -49,108 +47,107 @@ class BearerAccessTokenScheme(OpenApiAuthenticationExtension):
 # --------------------------------------------------------------------------------------
 # Error contract
 #
-# The project has no custom DRF EXCEPTION_HANDLER, so two shapes reach clients and both
-# are described below exactly as they are produced. `08-API-CONTRACT.md` specifies a
-# richer single envelope with `code`, `message`, `details` and `requestId`; the runtime
-# does not emit that today. Documenting the specified envelope instead of the real one
-# would make the contract lie, so the divergence is recorded as a defect rather than
-# papered over here.
+# `core.exceptions.exception_handler` is installed as the DRF `EXCEPTION_HANDLER`, so every
+# failure leaves the API in the one envelope `08-API-CONTRACT.md` specifies: validation,
+# authentication, permission, not found, domain conflict, throttling and unexpected server
+# errors alike. There is no second shape left to document. The schemas below describe that
+# envelope; the earlier `{"error": {...}}` and `{"detail": ...}` bodies no longer exist.
 # --------------------------------------------------------------------------------------
 
 
-class DomainErrorBodySerializer(serializers.Serializer):
+@extend_schema_serializer(
+    component_name="ApiError",
+    examples=[
+        OpenApiExample(
+            "validation",
+            value={
+                "code": "VALIDATION_ERROR",
+                "message": "تعذر حفظ البيانات.",
+                "details": {"phone": ["Enter a valid Syrian mobile number."]},
+                "requestId": "6f1c2b90-4f1a-4a8e-9a2a-0d5f2f6f9c11",
+            },
+            response_only=True,
+        ),
+        OpenApiExample(
+            "domain conflict",
+            value={
+                "code": "DUTY_OVERLAP_OR_INVALID",
+                "message": "الوردية تتعارض مع وردية أخرى أو بياناتها غير صالحة.",
+                "details": {},
+                "requestId": "6f1c2b90-4f1a-4a8e-9a2a-0d5f2f6f9c11",
+            },
+            response_only=True,
+        ),
+    ],
+)
+class ApiErrorSerializer(serializers.Serializer):
+    """The single error envelope returned by every failing request."""
+
     code = serializers.CharField(
-        help_text="Stable machine-readable domain code, for example DUTY_OVERLAP_OR_INVALID."
+        help_text=(
+            "Stable machine-readable code. Clients branch on this and never on `message`. "
+            "Transport codes are VALIDATION_ERROR, AUTHENTICATION_REQUIRED, "
+            "AUTHENTICATION_FAILED, PERMISSION_DENIED, NOT_FOUND, METHOD_NOT_ALLOWED, "
+            "NOT_ACCEPTABLE, UNSUPPORTED_MEDIA_TYPE, THROTTLED and INTERNAL_ERROR; domain "
+            "codes such as DUTY_OVERLAP_OR_INVALID are documented on the operations that "
+            "raise them."
+        )
+    )
+    message = serializers.CharField(
+        help_text="Human-readable Arabic message, safe to display. Never parsed by clients."
     )
     details = serializers.DictField(
-        required=False,
-        help_text="Optional field-scoped detail, present on validation-style domain errors.",
+        child=serializers.ListField(child=serializers.CharField()),
+        help_text=(
+            "Field-scoped messages keyed by request field path. Nested paths are joined "
+            "with dots and list indices are bracketed, for example `contacts[1].phone`. A "
+            "message with no field of its own appears under `nonFieldErrors`. Empty when "
+            "the error is not field-scoped."
+        ),
     )
-
-
-@extend_schema_serializer(
-    component_name="DomainError",
-    examples=[
-        OpenApiExample(
-            "duty overlap",
-            value={"error": {"code": "DUTY_OVERLAP_OR_INVALID"}},
-            response_only=True,
-        )
-    ],
-)
-class DomainErrorSerializer(serializers.Serializer):
-    """Domain rule rejection: `{"error": {"code": ..., "details": ...}}`."""
-
-    error = DomainErrorBodySerializer()
-
-
-@extend_schema_serializer(
-    component_name="DetailError",
-    examples=[
-        OpenApiExample(
-            "authentication required",
-            value={"detail": "Authentication credentials were not provided."},
-            response_only=True,
-        )
-    ],
-)
-class DetailErrorSerializer(serializers.Serializer):
-    """DRF's default single-message body, used for auth, permission, 404 and throttling."""
-
-    detail = serializers.CharField()
-
-
-@extend_schema_serializer(component_name="FieldValidationError")
-class FieldValidationErrorSerializer(serializers.Serializer):
-    """DRF's default validation body: a map of field name to messages.
-
-    The shape is `{"<field>": ["<message>", ...]}` with arbitrary keys, so it is emitted
-    through `FieldValidationErrorExtension` below rather than as declared fields.
-    """
-
-
-class FieldValidationErrorExtension(OpenApiSerializerExtension):
-    target_class = FieldValidationErrorSerializer
-
-    def map_serializer(self, auto_schema, direction):
-        schema = build_object_type(
-            description=(
-                "Field-scoped validation errors. Keys are request field names; values are "
-                "the messages for that field. A non-field error is reported under "
-                "`non_field_errors`."
-            )
-        )
-        schema["additionalProperties"] = build_array_type(build_basic_type(OpenApiTypes.STR))
-        return schema
+    requestId = serializers.CharField(
+        allow_blank=True,
+        help_text=(
+            "The request correlation id, identical to the `X-Request-ID` response header "
+            "and to the id recorded in the server logs. Quote it in a support report."
+        ),
+    )
 
 
 VALIDATION_400 = OpenApiResponse(
-    response=FieldValidationErrorSerializer,
-    description="Request validation failed.",
+    response=ApiErrorSerializer,
+    description="Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.",
 )
 DOMAIN_400 = OpenApiResponse(
-    response=DomainErrorSerializer,
-    description="The request was rejected by a domain rule.",
+    response=ApiErrorSerializer,
+    description="A domain rule rejected the request; `code` names the rule.",
 )
 UNAUTHENTICATED_401 = OpenApiResponse(
-    response=DetailErrorSerializer,
+    response=ApiErrorSerializer,
     description="No valid access token was supplied.",
 )
 FORBIDDEN_403 = OpenApiResponse(
-    response=DetailErrorSerializer,
+    response=ApiErrorSerializer,
     description="Authenticated, but the caller lacks the required permission or membership.",
 )
 NOT_FOUND_404 = OpenApiResponse(
-    response=DetailErrorSerializer,
+    response=ApiErrorSerializer,
     description="The addressed resource does not exist or is not visible to the caller.",
 )
 CONFLICT_409 = OpenApiResponse(
-    response=DomainErrorSerializer,
+    response=ApiErrorSerializer,
     description="The request conflicts with the current state or with a domain rule.",
 )
 THROTTLED_429 = OpenApiResponse(
-    response=DetailErrorSerializer,
-    description="Rate limit exceeded for this endpoint.",
+    response=ApiErrorSerializer,
+    description="Rate limit exceeded for this endpoint; see the `Retry-After` header.",
+)
+SERVER_ERROR_500 = OpenApiResponse(
+    response=ApiErrorSerializer,
+    description=(
+        "An unexpected failure. `code` is INTERNAL_ERROR and no internal detail is "
+        "disclosed; the incident is identified by `requestId` in the server logs."
+    ),
 )
 
 
