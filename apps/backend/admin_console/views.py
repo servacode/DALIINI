@@ -16,11 +16,19 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import AdminRole, User
+from accounts.rbac import admin_permissions_for
 from analytics.models import ProductAnalyticsEvent
 from audit.models import AuditEvent
 from audit.services import record_audit
 from content_services.models import Advertisement
-from content_services.services import delete_advertisement, save_advertisement
+from content_services.services import (
+    apply_fields as apply_advertisement_fields,
+)
+from content_services.services import (
+    delete_advertisement,
+    save_advertisement,
+    update_advertisement,
+)
 from core.openapi import NOT_FOUND_404, VALIDATION_400, protected
 from directory.models import (
     Category,
@@ -29,32 +37,45 @@ from directory.models import (
     CategoryProvince,
     VerificationRequirement,
 )
+from directory.services import (
+    create_category,
+    create_category_group,
+    create_verification_requirement,
+    update_category,
+    update_category_group,
+    update_verification_requirement,
+)
 from facilities.models import Facility, FacilityApplication, VerificationEvidence
 from locations.models import Province
 from platform_settings.models import PlatformSetting
 from storage.backends import PrivateS3Storage
 
-from .permissions import HasAdminPermission
+from .permissions import HasAdminPermission, IsAdminOperator
 from .schemas import (
     AdminAdvertisementListSerializer,
     AdminAdvertisementRequestSerializer,
     AdminAdvertisementSerializer,
+    AdminAdvertisementUpdateRequestSerializer,
     AdminAnalyticsSerializer,
     AdminAuditEntrySerializer,
     AdminAuditListSerializer,
     AdminAuditTrailEntrySerializer,
     AdminCapabilitiesRequestSerializer,
     AdminCapabilitiesSerializer,
+    AdminCategoryCreateRequestSerializer,
     AdminCategoryGroupListSerializer,
+    AdminCategoryGroupRequestSerializer,
     AdminCategoryGroupSerializer,
     AdminCategoryListSerializer,
     AdminCategoryProvinceRequestSerializer,
     AdminCategorySerializer,
+    AdminCategoryUpdateRequestSerializer,
     AdminDashboardSerializer,
     AdminDecisionRequestSerializer,
     AdminFacilityListSerializer,
     AdminFacilitySerializer,
     AdminIdSerializer,
+    AdminMeSerializer,
     AdminProvinceListSerializer,
     AdminProvinceSerializer,
     AdminProvinceUpdatedSerializer,
@@ -73,6 +94,7 @@ from .schemas import (
     AdminVerificationRequirementListSerializer,
     AdminVerificationRequirementRequestSerializer,
     AdminVerificationRequirementSerializer,
+    AdminVerificationRequirementUpdateRequestSerializer,
 )
 from .schemas import AdminApplicationDetailSerializer as AppDetail
 from .schemas import AdminApplicationListSerializer as AppList
@@ -100,6 +122,42 @@ def _validation_error(exc):
 
 class AdminView(APIView):
     permission_classes = [IsAuthenticated, HasAdminPermission]
+
+
+class AdminMeView(APIView):
+    """Who the caller is and what they may do.
+
+    Guarded by `IsAdminOperator` rather than a permission code, because requiring one here
+    would be circular: the caller is asking which codes they hold. Holding an active Admin
+    role is the gate; an ordinary account is refused, and an operator whose roles carry no
+    permissions gets an empty list, which is a real state and not an error.
+
+    The permission set comes from `accounts.rbac`, the same resolver `HasAdminPermission`
+    uses, so the shell cannot render against a different answer from the one that will be
+    enforced. Django `groups`, `user_permissions` and `is_superuser` grant nothing here.
+    """
+
+    permission_classes = [IsAuthenticated, IsAdminOperator]
+
+    @extend_schema(
+        operation_id="adminMeRetrieve",
+        tags=["Admin System"],
+        summary="The current operator and the permissions they hold",
+        description=(
+            "Drives navigation visibility and action gating in the Admin. A UI gate is not "
+            "authorization: every endpoint re-checks, and a permission revoked mid-session "
+            "surfaces as a 403 on the next call."
+        ),
+        responses={200: AdminMeSerializer, **protected()},
+    )
+    def get(self, request):
+        return Response(
+            {
+                "userId": str(request.user.pk),
+                "displayName": request.user.name,
+                "permissions": admin_permissions_for(request.user),
+            }
+        )
 
 
 class DashboardView(AdminView):
@@ -616,6 +674,119 @@ class CategoryListView(TaxonomyView):
     model = Category
 
 
+class CategoryGroupCreateView(AdminView):
+    """Cycle J begins here: a group has to exist before a category can join it."""
+
+    required_permission = "admin.taxonomy.manage"
+
+    @extend_schema(
+        operation_id="adminCategoryGroupCreate",
+        tags=["Admin Taxonomy"],
+        summary="Create a category group",
+        request=AdminCategoryGroupRequestSerializer,
+        responses={201: AdminIdSerializer, 400: VALIDATION_400, **protected()},
+    )
+    def post(self, request):
+        payload = AdminCategoryGroupRequestSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        if not payload.validated_data.get("code") or not payload.validated_data.get("nameAr"):
+            raise ValidationError({"code": ["Required."], "nameAr": ["Required."]})
+        try:
+            group = create_category_group(request=request, data=payload.validated_data)
+        except DjangoValidationError as exc:
+            raise _validation_error(exc) from exc
+        return Response({"id": str(group.pk)}, status=201)
+
+
+class CategoryGroupDetailView(AdminView):
+    required_permission = "admin.taxonomy.manage"
+
+    @extend_schema(
+        operation_id="adminCategoryGroupUpdate",
+        tags=["Admin Taxonomy"],
+        summary="Rename, reorder or deactivate a category group",
+        description="The group code is immutable; sending a different one is refused.",
+        request=AdminCategoryGroupRequestSerializer,
+        responses={
+            200: AdminCategoryGroupSerializer,
+            400: VALIDATION_400,
+            **protected(),
+            404: NOT_FOUND_404,
+        },
+    )
+    def put(self, request, group_id):
+        payload = AdminCategoryGroupRequestSerializer(data=request.data, partial=True)
+        payload.is_valid(raise_exception=True)
+        try:
+            group = update_category_group(
+                request=request, group_id=group_id, data=payload.validated_data
+            )
+        except DjangoValidationError as exc:
+            raise _validation_error(exc) from exc
+        return Response(AdminCategoryGroupSerializer(group).data)
+
+
+class CategoryCreateView(AdminView):
+    required_permission = "admin.taxonomy.manage"
+
+    @extend_schema(
+        operation_id="adminCategoryCreate",
+        tags=["Admin Taxonomy"],
+        summary="Create a category",
+        description=(
+            "`code` and `slug` are fixed at creation and cannot be changed afterwards. A "
+            "new category is invisible everywhere until its per-province switches are "
+            "turned on, whatever `active` says."
+        ),
+        request=AdminCategoryCreateRequestSerializer,
+        responses={201: AdminIdSerializer, 400: VALIDATION_400, **protected()},
+    )
+    def post(self, request):
+        payload = AdminCategoryCreateRequestSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        try:
+            category = create_category(request=request, data=payload.validated_data)
+        except DjangoValidationError as exc:
+            raise _validation_error(exc) from exc
+        return Response({"id": str(category.pk)}, status=201)
+
+
+class CategoryDetailView(AdminView):
+    required_permission = "admin.taxonomy.manage"
+
+    @extend_schema(
+        operation_id="adminCategoryUpdate",
+        tags=["Admin Taxonomy"],
+        summary="Rename, move, reorder or deactivate a category",
+        description=(
+            "`code` and `slug` are immutable and are not accepted. Changing the "
+            "specialization re-validates the capability set, so a category that carries "
+            "duty cannot be moved off PHARMACY while it does."
+        ),
+        request=AdminCategoryUpdateRequestSerializer,
+        responses={
+            200: AdminCategorySerializer,
+            400: VALIDATION_400,
+            **protected(),
+            404: NOT_FOUND_404,
+        },
+    )
+    def put(self, request, category_id):
+        payload = AdminCategoryUpdateRequestSerializer(data=request.data, partial=True)
+        payload.is_valid(raise_exception=True)
+        data = dict(payload.validated_data)
+        # The serializer drops `code` and `slug`, so an attempt to change them would be
+        # silently ignored. 09-ADMIN-NEXTJS.md asks for the opposite: refuse, visibly.
+        for field in ("code", "slug"):
+            if field in request.data:
+                data[field] = request.data[field]
+        try:
+            category = update_category(request=request, category_id=category_id, data=data)
+        except DjangoValidationError as exc:
+            raise _validation_error(exc) from exc
+        return Response(AdminCategorySerializer(category).data)
+
+
 class CategoryCapabilitiesView(AdminView):
     required_permission = "admin.taxonomy.manage"
 
@@ -635,29 +806,33 @@ class CategoryCapabilitiesView(AdminView):
     def put(self, request, category_id):
         category = Category.objects.get(pk=category_id)
         capabilities, _ = CategoryCapabilities.objects.get_or_create(category=category)
-        before = {
-            field.name: getattr(capabilities, field.name)
+        payload = AdminCapabilitiesRequestSerializer(data=request.data, partial=True)
+        payload.is_valid(raise_exception=True)
+
+        # INT-039: the wire is camelCase and the columns are not. The serializer's `source`
+        # mapping is the translation, so `validated_data` already carries column names.
+        columns = [
+            field.name
             for field in capabilities._meta.fields
             if field.name.startswith("supports_")
-        }
-        for field in before:
-            if field in request.data:
-                setattr(capabilities, field, bool(request.data[field]))
+        ]
+        before = {name: getattr(capabilities, name) for name in columns}
+        for name, value in payload.validated_data.items():
+            setattr(capabilities, name, bool(value))
         try:
             capabilities.full_clean()
             capabilities.save()
         except DjangoValidationError as exc:
             raise _validation_error(exc) from exc
-        after = {field: getattr(capabilities, field) for field in before}
         record_audit(
             actor=request.user,
             action="category.capabilities.updated",
             target=category,
             before_snapshot=before,
-            after_snapshot=after,
+            after_snapshot={name: getattr(capabilities, name) for name in columns},
             request_id=_request_id(request),
         )
-        return Response(after)
+        return Response(AdminCapabilitiesSerializer(capabilities).data)
 
 
 class ProvinceListView(AdminView):
@@ -796,31 +971,52 @@ class VerificationRequirementListView(AdminView):
         self.required_permission = "admin.verification.manage"
         if not HasAdminPermission().has_permission(request, self):
             self.permission_denied(request)
-        row = VerificationRequirement(
-            category_id=request.data.get("categoryId"),
-            label_ar=str(request.data.get("labelAr", "")).strip(),
-            label_en=str(request.data.get("labelEn", "")).strip(),
-            instructions_ar=str(request.data.get("instructionsAr", "")).strip(),
-            instructions_en=str(request.data.get("instructionsEn", "")).strip(),
-            required=bool(request.data.get("required", True)),
-            active=bool(request.data.get("active", True)),
-            min_files=int(request.data.get("minFiles", 1)),
-            max_files=int(request.data.get("maxFiles", 1)),
-            sort_order=int(request.data.get("sortOrder", 0)),
-        )
+        payload = AdminVerificationRequirementRequestSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
         try:
-            row.full_clean()
-            row.save()
+            requirement = create_verification_requirement(
+                request=request, data=payload.validated_data
+            )
         except DjangoValidationError as exc:
             raise _validation_error(exc) from exc
-        record_audit(
-            actor=request.user,
-            action="verification_requirement.created",
-            target=row,
-            after_snapshot={"categoryId": str(row.category_id), "required": row.required},
-            request_id=_request_id(request),
+        return Response({"id": str(requirement.pk)}, status=201)
+
+
+class VerificationRequirementDetailView(AdminView):
+    required_permission = "admin.verification.manage"
+
+    @extend_schema(
+        operation_id="adminVerificationRequirementUpdate",
+        tags=["Admin Verification"],
+        summary="Edit a verification requirement, or retire it",
+        description=(
+            "The owning category cannot change: evidence already submitted points at a "
+            "(facility, requirement) pair. Retirement is `active = false`; there is no "
+            "delete, because evidence references the row."
+        ),
+        request=AdminVerificationRequirementUpdateRequestSerializer,
+        responses={
+            200: AdminVerificationRequirementSerializer,
+            400: VALIDATION_400,
+            **protected(),
+            404: NOT_FOUND_404,
+        },
+    )
+    def put(self, request, requirement_id):
+        payload = AdminVerificationRequirementUpdateRequestSerializer(
+            data=request.data, partial=True
         )
-        return Response({"id": row.pk}, status=201)
+        payload.is_valid(raise_exception=True)
+        data = dict(payload.validated_data)
+        if "categoryId" in request.data:
+            data["categoryId"] = request.data["categoryId"]
+        try:
+            requirement = update_verification_requirement(
+                request=request, requirement_id=requirement_id, data=data
+            )
+        except DjangoValidationError as exc:
+            raise _validation_error(exc) from exc
+        return Response(AdminVerificationRequirementSerializer(requirement).data)
 
 
 class AdvertisementListView(AdminView):
@@ -866,30 +1062,46 @@ class AdvertisementListView(AdminView):
         self.required_permission = "admin.ads.manage"
         if not HasAdminPermission().has_permission(request, self):
             self.permission_denied(request)
-        ad = Advertisement(
-            image_key=str(request.data.get("imageKey", "")),
-            title_ar=str(request.data.get("titleAr", "")),
-            title_en=str(request.data.get("titleEn", "")),
-            subtitle_ar=str(request.data.get("subtitleAr", "")),
-            subtitle_en=str(request.data.get("subtitleEn", "")),
-            action_type=request.data.get("actionType", Advertisement.ActionType.NONE),
-            action_payload=request.data.get("actionPayload", {}),
-            target_scope=request.data.get("targetScope", Advertisement.TargetScope.GLOBAL),
-            province_id=request.data.get("provinceId"),
-            category_id=request.data.get("categoryId"),
-            enabled=bool(request.data.get("enabled", False)),
-            sort_order=int(request.data.get("sortOrder", 0)),
-            slide_duration_ms=int(request.data.get("slideDurationMs", 5000)),
-        )
+        payload = AdminAdvertisementRequestSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        # One field mapping, shared with the update path, so the two cannot drift.
+        ad = apply_advertisement_fields(Advertisement(), request.data)
         try:
             save_advertisement(actor=request.user, advertisement=ad)
         except DjangoValidationError as exc:
             raise _validation_error(exc) from exc
-        return Response({"id": ad.pk}, status=201)
+        return Response({"id": str(ad.pk)}, status=201)
 
 
 class AdvertisementDetailView(AdminView):
     required_permission = "admin.ads.manage"
+
+    @extend_schema(
+        operation_id="adminAdUpdate",
+        tags=["Admin Ads"],
+        summary="Edit an advertisement, its schedule or its activation",
+        description=(
+            "Omitted fields keep their current value. Schedule, targeting and action "
+            "payload are validated together, so an end before its start or a global "
+            "advertisement carrying a target is refused."
+        ),
+        request=AdminAdvertisementUpdateRequestSerializer,
+        responses={
+            200: AdminIdSerializer,
+            400: VALIDATION_400,
+            **protected(),
+            404: NOT_FOUND_404,
+        },
+    )
+    def put(self, request, advertisement_id):
+        payload = AdminAdvertisementUpdateRequestSerializer(data=request.data, partial=True)
+        payload.is_valid(raise_exception=True)
+        ad = Advertisement.objects.get(pk=advertisement_id)
+        try:
+            update_advertisement(actor=request.user, advertisement=ad, data=request.data)
+        except DjangoValidationError as exc:
+            raise _validation_error(exc) from exc
+        return Response({"id": str(ad.pk)})
 
     @extend_schema(
         operation_id="adminAdDelete",

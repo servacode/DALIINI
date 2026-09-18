@@ -15,6 +15,7 @@ from rest_framework import serializers
 
 from content_services.models import Advertisement
 from core.openapi import CoordinatesSerializer
+from directory.models import Category
 from facilities.models import Facility, FacilityApplication
 
 
@@ -165,14 +166,32 @@ class AdminCategoryListSerializer(serializers.Serializer):
 
 
 class AdminCapabilitiesRequestSerializer(serializers.Serializer):
-    supports_hours = serializers.BooleanField(required=False)
-    supports_photos = serializers.BooleanField(required=False)
-    supports_ratings = serializers.BooleanField(required=False)
-    supports_duty = serializers.BooleanField(required=False)
-    supports_specialty_filter = serializers.BooleanField(required=False)
-    supports_service_filter = serializers.BooleanField(required=False)
-    supports_temporary_closure = serializers.BooleanField(required=False)
-    supports_owner_onboarding = serializers.BooleanField(required=False)
+    """Capability flags. Omitting one leaves it as it is.
+
+    INT-039: these were the last `supports_*` names on the wire. The column names are
+    unchanged; `source` does the translation, as everywhere else in this app.
+    """
+
+    supportsHours = serializers.BooleanField(source="supports_hours", required=False)
+    supportsPhotos = serializers.BooleanField(source="supports_photos", required=False)
+    supportsRatings = serializers.BooleanField(source="supports_ratings", required=False)
+    supportsDuty = serializers.BooleanField(
+        source="supports_duty",
+        required=False,
+        help_text="Rejected unless the category's specialization is PHARMACY.",
+    )
+    supportsSpecialtyFilter = serializers.BooleanField(
+        source="supports_specialty_filter", required=False
+    )
+    supportsServiceFilter = serializers.BooleanField(
+        source="supports_service_filter", required=False
+    )
+    supportsTemporaryClosure = serializers.BooleanField(
+        source="supports_temporary_closure", required=False
+    )
+    supportsOwnerOnboarding = serializers.BooleanField(
+        source="supports_owner_onboarding", required=False
+    )
 
 
 class AdminCapabilitiesSerializer(AdminCapabilitiesRequestSerializer):
@@ -188,6 +207,73 @@ class AdminCategoryProvinceRequestSerializer(serializers.Serializer):
 
 class AdminIdSerializer(serializers.Serializer):
     id = serializers.CharField(help_text="Identifier of the affected row.")
+
+
+class AdminMeSerializer(serializers.Serializer):
+    """Who the caller is and what they may do, for the Admin shell to render against.
+
+    Deliberately minimal. No phone, no session material, no Django groups or
+    `user_permissions`, and no `is_superuser`: the UI branches on `permissions`, which come
+    from the project's own `AdminRole`/`AdminPermission` tables and nothing else.
+
+    A UI gate is not authorization. The backend re-checks every call, and a permission
+    revoked mid-session shows up as a 403 the UI has to handle.
+    """
+
+    userId = serializers.UUIDField()
+    displayName = serializers.CharField()
+    permissions = serializers.ListField(
+        child=serializers.CharField(),
+        help_text=(
+            "Every permission code the caller holds, deduplicated and sorted. An operator "
+            "whose roles carry no permissions gets an empty list, which is a valid state."
+        ),
+    )
+
+
+class AdminCategoryGroupRequestSerializer(serializers.Serializer):
+    """Create or update a category group. `code` is set once and never changes."""
+
+    code = serializers.CharField(
+        required=False,
+        help_text="Required on create. Refused on update; the group code is immutable.",
+    )
+    nameAr = serializers.CharField(required=False)
+    nameEn = serializers.CharField(required=False, allow_blank=True)
+    active = serializers.BooleanField(required=False)
+    sortOrder = serializers.IntegerField(required=False)
+
+
+class AdminCategoryCreateRequestSerializer(serializers.Serializer):
+    groupId = serializers.UUIDField()
+    code = serializers.CharField(help_text="Immutable once created.")
+    slug = serializers.SlugField(help_text="Immutable once created.")
+    nameAr = serializers.CharField()
+    nameEn = serializers.CharField(required=False, allow_blank=True)
+    iconKey = serializers.CharField(required=False, allow_blank=True)
+    specialization = serializers.ChoiceField(
+        choices=Category.Specialization.choices, required=False
+    )
+    active = serializers.BooleanField(required=False, default=True)
+    sortOrder = serializers.IntegerField(required=False, default=0)
+
+
+class AdminCategoryUpdateRequestSerializer(serializers.Serializer):
+    """Everything a category may become. `code` and `slug` are absent on purpose.
+
+    `06-DATA-MODEL.md` marks both immutable and `09-ADMIN-NEXTJS.md` requires that changing
+    them silently be prevented, so sending either is refused rather than ignored.
+    """
+
+    groupId = serializers.UUIDField(required=False, help_text="Moves the category.")
+    nameAr = serializers.CharField(required=False)
+    nameEn = serializers.CharField(required=False, allow_blank=True)
+    iconKey = serializers.CharField(required=False, allow_blank=True)
+    specialization = serializers.ChoiceField(
+        choices=Category.Specialization.choices, required=False
+    )
+    active = serializers.BooleanField(required=False)
+    sortOrder = serializers.IntegerField(required=False)
 
 
 class AdminProvinceSerializer(serializers.Serializer):
@@ -214,7 +300,10 @@ class AdminProvinceUpdatedSerializer(serializers.Serializer):
 
 
 class AdminVerificationRequirementSerializer(serializers.Serializer):
-    id = serializers.UUIDField()
+    # INT-043: this was declared as a UUID while the model's primary key is a BigAutoField.
+    # DRF's UUIDField stringifies without validating on output, so the contract claimed
+    # `format: uuid` for a field that actually returns "2" and no test could see it.
+    id = serializers.IntegerField()
     categoryId = serializers.UUIDField(source="category_id")
     labelAr = serializers.CharField(source="label_ar")
     labelEn = serializers.CharField(source="label_en", allow_blank=True)
@@ -227,6 +316,25 @@ class AdminVerificationRequirementSerializer(serializers.Serializer):
 
 class AdminVerificationRequirementListSerializer(serializers.Serializer):
     items = AdminVerificationRequirementSerializer(many=True)
+
+
+class AdminVerificationRequirementUpdateRequestSerializer(serializers.Serializer):
+    """Edit a requirement in place. The category it belongs to cannot change.
+
+    Evidence rows point at a (facility, requirement) pair, so moving a requirement to
+    another category would leave that evidence attached to a rule its facility never had.
+    Retirement is `active = false`; there is no delete, because evidence references it.
+    """
+
+    labelAr = serializers.CharField(required=False)
+    labelEn = serializers.CharField(required=False, allow_blank=True)
+    instructionsAr = serializers.CharField(required=False, allow_blank=True)
+    instructionsEn = serializers.CharField(required=False, allow_blank=True)
+    required = serializers.BooleanField(required=False)
+    active = serializers.BooleanField(required=False)
+    minFiles = serializers.IntegerField(required=False)
+    maxFiles = serializers.IntegerField(required=False)
+    sortOrder = serializers.IntegerField(required=False)
 
 
 class AdminVerificationRequirementRequestSerializer(serializers.Serializer):
@@ -273,6 +381,34 @@ class AdminAdvertisementRequestSerializer(serializers.Serializer):
     enabled = serializers.BooleanField(required=False, default=False)
     sortOrder = serializers.IntegerField(required=False, default=0)
     slideDurationMs = serializers.IntegerField(required=False, default=5000)
+
+
+class AdminAdvertisementUpdateRequestSerializer(serializers.Serializer):
+    """Edit an advertisement in place; omitted fields keep their current value.
+
+    The field set is fixed by `06-DATA-MODEL.md`. Schedule, targeting and action payload are
+    validated by the model, so an end before its start, an out-of-range slide duration, a
+    global advertisement carrying a target, or a payload that does not match its action type
+    are all refused there rather than re-checked here.
+    """
+
+    imageKey = serializers.CharField(required=False)
+    titleAr = serializers.CharField(required=False, allow_blank=True)
+    titleEn = serializers.CharField(required=False, allow_blank=True)
+    subtitleAr = serializers.CharField(required=False, allow_blank=True)
+    subtitleEn = serializers.CharField(required=False, allow_blank=True)
+    actionType = serializers.ChoiceField(choices=Advertisement.ActionType.choices, required=False)
+    actionPayload = serializers.DictField(required=False)
+    targetScope = serializers.ChoiceField(
+        choices=Advertisement.TargetScope.choices, required=False
+    )
+    provinceId = serializers.UUIDField(required=False, allow_null=True)
+    categoryId = serializers.UUIDField(required=False, allow_null=True)
+    startsAt = serializers.DateTimeField(required=False, allow_null=True)
+    endsAt = serializers.DateTimeField(required=False, allow_null=True)
+    enabled = serializers.BooleanField(required=False)
+    sortOrder = serializers.IntegerField(required=False)
+    slideDurationMs = serializers.IntegerField(required=False)
 
 
 class AdminAuditEntrySerializer(serializers.Serializer):

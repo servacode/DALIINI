@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path("admin/me/", views.AdminMeView.as_view()),
     path("admin/dashboard/", views.DashboardView.as_view()),
     path("admin/applications/", views.ApplicationListView.as_view()),
     path("admin/applications/<uuid:application_id>/", views.ApplicationDetailView.as_view()),
@@ -24,7 +25,11 @@ urlpatterns = [
     path("admin/roles/", views.RoleListView.as_view()),
     path("admin/users/<uuid:user_id>/roles/", views.UserRolesView.as_view()),
     path("admin/category-groups/", views.CategoryGroupListView.as_view()),
+    path("admin/category-groups/create/", views.CategoryGroupCreateView.as_view()),
+    path("admin/category-groups/<uuid:group_id>/", views.CategoryGroupDetailView.as_view()),
     path("admin/categories/", views.CategoryListView.as_view()),
+    path("admin/categories/create/", views.CategoryCreateView.as_view()),
+    path("admin/categories/<uuid:category_id>/", views.CategoryDetailView.as_view()),
     path(
         "admin/categories/<uuid:category_id>/capabilities/",
         views.CategoryCapabilitiesView.as_view(),
@@ -33,6 +38,10 @@ urlpatterns = [
     path("admin/provinces/", views.ProvinceListView.as_view()),
     path("admin/provinces/<uuid:province_id>/", views.ProvinceDetailView.as_view()),
     path("admin/verification-requirements/", views.VerificationRequirementListView.as_view()),
+    path(
+        "admin/verification-requirements/<int:requirement_id>/",
+        views.VerificationRequirementDetailView.as_view(),
+    ),
     path("admin/ads/", views.AdvertisementListView.as_view()),
     path("admin/ads/<uuid:advertisement_id>/", views.AdvertisementDetailView.as_view()),
     path("admin/audit/", views.AuditListView.as_view()),
