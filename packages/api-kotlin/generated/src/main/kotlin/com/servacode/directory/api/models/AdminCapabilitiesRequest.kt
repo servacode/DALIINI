@@ -21,12 +21,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * 
+ * Capability flags. Omitting one leaves it as it is.  INT-039: these were the last `supports_*` names on the wire. The column names are unchanged; `source` does the translation, as everywhere else in this app.
  *
  * @param supportsHours 
  * @param supportsPhotos 
  * @param supportsRatings 
- * @param supportsDuty 
+ * @param supportsDuty Rejected unless the category's specialization is PHARMACY.
  * @param supportsSpecialtyFilter 
  * @param supportsServiceFilter 
  * @param supportsTemporaryClosure 
@@ -36,28 +36,29 @@ import kotlinx.serialization.Contextual
 
 data class AdminCapabilitiesRequest (
 
-    @SerialName(value = "supports_hours")
+    @SerialName(value = "supportsHours")
     val supportsHours: kotlin.Boolean? = null,
 
-    @SerialName(value = "supports_photos")
+    @SerialName(value = "supportsPhotos")
     val supportsPhotos: kotlin.Boolean? = null,
 
-    @SerialName(value = "supports_ratings")
+    @SerialName(value = "supportsRatings")
     val supportsRatings: kotlin.Boolean? = null,
 
-    @SerialName(value = "supports_duty")
+    /* Rejected unless the category's specialization is PHARMACY. */
+    @SerialName(value = "supportsDuty")
     val supportsDuty: kotlin.Boolean? = null,
 
-    @SerialName(value = "supports_specialty_filter")
+    @SerialName(value = "supportsSpecialtyFilter")
     val supportsSpecialtyFilter: kotlin.Boolean? = null,
 
-    @SerialName(value = "supports_service_filter")
+    @SerialName(value = "supportsServiceFilter")
     val supportsServiceFilter: kotlin.Boolean? = null,
 
-    @SerialName(value = "supports_temporary_closure")
+    @SerialName(value = "supportsTemporaryClosure")
     val supportsTemporaryClosure: kotlin.Boolean? = null,
 
-    @SerialName(value = "supports_owner_onboarding")
+    @SerialName(value = "supportsOwnerOnboarding")
     val supportsOwnerOnboarding: kotlin.Boolean? = null
 
 ) {

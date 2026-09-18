@@ -16,12 +16,15 @@
 import * as runtime from '../runtime';
 import type {
   AdminDashboard,
+  AdminMe,
   AdminSystemStatus,
   ApiError,
 } from '../models/index';
 import {
     AdminDashboardFromJSON,
     AdminDashboardToJSON,
+    AdminMeFromJSON,
+    AdminMeToJSON,
     AdminSystemStatusFromJSON,
     AdminSystemStatusToJSON,
     ApiErrorFromJSON,
@@ -67,6 +70,45 @@ export class AdminSystemApi extends runtime.BaseAPI {
      */
     async adminDashboardRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminDashboard> {
         const response = await this.adminDashboardRetrieveRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Drives navigation visibility and action gating in the Admin. A UI gate is not authorization: every endpoint re-checks, and a permission revoked mid-session surfaces as a 403 on the next call.
+     * The current operator and the permissions they hold
+     */
+    async adminMeRetrieveRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminMe>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/me/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminMeFromJSON(jsonValue));
+    }
+
+    /**
+     * Drives navigation visibility and action gating in the Admin. A UI gate is not authorization: every endpoint re-checks, and a permission revoked mid-session surfaces as a 403 on the next call.
+     * The current operator and the permissions they hold
+     */
+    async adminMeRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminMe> {
+        const response = await this.adminMeRetrieveRaw(initOverrides);
         return await response.value();
     }
 

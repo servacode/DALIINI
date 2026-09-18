@@ -51,6 +51,7 @@ All URIs are relative to *http://localhost*
 | *AccountApi* | [**accountRatingsList**](docs/AccountApi.md#accountratingslist) | **GET** api/v1/account/ratings/ | List the ratings written by the caller |
 | *AdminAdsApi* | [**adminAdCreate**](docs/AdminAdsApi.md#adminadcreate) | **POST** api/v1/admin/ads/ | Create an advertisement |
 | *AdminAdsApi* | [**adminAdDelete**](docs/AdminAdsApi.md#adminaddelete) | **DELETE** api/v1/admin/ads/{advertisement_id}/ | Delete an advertisement |
+| *AdminAdsApi* | [**adminAdUpdate**](docs/AdminAdsApi.md#adminadupdate) | **PUT** api/v1/admin/ads/{advertisement_id}/ | Edit an advertisement, its schedule or its activation |
 | *AdminAdsApi* | [**adminAdsList**](docs/AdminAdsApi.md#adminadslist) | **GET** api/v1/admin/ads/ | List advertisements |
 | *AdminAnalyticsApi* | [**adminAnalyticsRetrieve**](docs/AdminAnalyticsApi.md#adminanalyticsretrieve) | **GET** api/v1/admin/analytics/ | Operational KPIs |
 | *AdminAuditApi* | [**adminAuditList**](docs/AdminAuditApi.md#adminauditlist) | **GET** api/v1/admin/audit/ | Search the audit trail |
@@ -69,11 +70,16 @@ All URIs are relative to *http://localhost*
 | *AdminSettingsApi* | [**adminSettingWrite**](docs/AdminSettingsApi.md#adminsettingwrite) | **PUT** api/v1/admin/settings/ | Create or update a typed platform setting |
 | *AdminSettingsApi* | [**adminSettingsList**](docs/AdminSettingsApi.md#adminsettingslist) | **GET** api/v1/admin/settings/ | List typed platform settings |
 | *AdminSystemApi* | [**adminDashboardRetrieve**](docs/AdminSystemApi.md#admindashboardretrieve) | **GET** api/v1/admin/dashboard/ | Operational counters for the review desk |
+| *AdminSystemApi* | [**adminMeRetrieve**](docs/AdminSystemApi.md#adminmeretrieve) | **GET** api/v1/admin/me/ | The current operator and the permissions they hold |
 | *AdminSystemApi* | [**adminSystemStatusRetrieve**](docs/AdminSystemApi.md#adminsystemstatusretrieve) | **GET** api/v1/admin/system/status/ | Runtime and configuration status |
 | *AdminTaxonomyApi* | [**adminCategoriesList**](docs/AdminTaxonomyApi.md#admincategorieslist) | **GET** api/v1/admin/categories/ | List categories |
 | *AdminTaxonomyApi* | [**adminCategoryCapabilitiesReplace**](docs/AdminTaxonomyApi.md#admincategorycapabilitiesreplace) | **PUT** api/v1/admin/categories/{category_id}/capabilities/ | Set the capability flags of a category |
+| *AdminTaxonomyApi* | [**adminCategoryCreate**](docs/AdminTaxonomyApi.md#admincategorycreate) | **POST** api/v1/admin/categories/create/ | Create a category |
+| *AdminTaxonomyApi* | [**adminCategoryGroupCreate**](docs/AdminTaxonomyApi.md#admincategorygroupcreate) | **POST** api/v1/admin/category-groups/create/ | Create a category group |
+| *AdminTaxonomyApi* | [**adminCategoryGroupUpdate**](docs/AdminTaxonomyApi.md#admincategorygroupupdate) | **PUT** api/v1/admin/category-groups/{group_id}/ | Rename, reorder or deactivate a category group |
 | *AdminTaxonomyApi* | [**adminCategoryGroupsList**](docs/AdminTaxonomyApi.md#admincategorygroupslist) | **GET** api/v1/admin/category-groups/ | List category groups |
 | *AdminTaxonomyApi* | [**adminCategoryProvinceReplace**](docs/AdminTaxonomyApi.md#admincategoryprovincereplace) | **PUT** api/v1/admin/categories/{category_id}/provinces/ | Set the per-province switches of a category |
+| *AdminTaxonomyApi* | [**adminCategoryUpdate**](docs/AdminTaxonomyApi.md#admincategoryupdate) | **PUT** api/v1/admin/categories/{category_id}/ | Rename, move, reorder or deactivate a category |
 | *AdminUsersApi* | [**adminRolesList**](docs/AdminUsersApi.md#adminroleslist) | **GET** api/v1/admin/roles/ | List admin roles and their permission codes |
 | *AdminUsersApi* | [**adminUserBlock**](docs/AdminUsersApi.md#adminuserblock) | **POST** api/v1/admin/users/{user_id}/block/ | Block a user account |
 | *AdminUsersApi* | [**adminUserRetrieve**](docs/AdminUsersApi.md#adminuserretrieve) | **GET** api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned |
@@ -81,6 +87,7 @@ All URIs are relative to *http://localhost*
 | *AdminUsersApi* | [**adminUserUnblock**](docs/AdminUsersApi.md#adminuserunblock) | **POST** api/v1/admin/users/{user_id}/unblock/ | Unblock a user account |
 | *AdminUsersApi* | [**adminUsersList**](docs/AdminUsersApi.md#adminuserslist) | **GET** api/v1/admin/users/ | Search user accounts |
 | *AdminVerificationApi* | [**adminVerificationRequirementCreate**](docs/AdminVerificationApi.md#adminverificationrequirementcreate) | **POST** api/v1/admin/verification-requirements/ | Create a verification requirement |
+| *AdminVerificationApi* | [**adminVerificationRequirementUpdate**](docs/AdminVerificationApi.md#adminverificationrequirementupdate) | **PUT** api/v1/admin/verification-requirements/{requirement_id}/ | Edit a verification requirement, or retire it |
 | *AdminVerificationApi* | [**adminVerificationRequirementsList**](docs/AdminVerificationApi.md#adminverificationrequirementslist) | **GET** api/v1/admin/verification-requirements/ | List verification requirements |
 | *AdsApi* | [**publicAdsList**](docs/AdsApi.md#publicadslist) | **GET** api/v1/public/ads/ | List advertisements currently in flight |
 | *AnalyticsApi* | [**analyticsEventCreate**](docs/AnalyticsApi.md#analyticseventcreate) | **POST** api/v1/analytics/events/ | Record a product analytics event |
@@ -141,6 +148,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminAdvertisement](docs/AdminAdvertisement.md)
  - [com.servacode.directory.api.models.AdminAdvertisementList](docs/AdminAdvertisementList.md)
  - [com.servacode.directory.api.models.AdminAdvertisementRequest](docs/AdminAdvertisementRequest.md)
+ - [com.servacode.directory.api.models.AdminAdvertisementUpdateRequest](docs/AdminAdvertisementUpdateRequest.md)
  - [com.servacode.directory.api.models.AdminAnalytics](docs/AdminAnalytics.md)
  - [com.servacode.directory.api.models.AdminApplication](docs/AdminApplication.md)
  - [com.servacode.directory.api.models.AdminApplicationDetail](docs/AdminApplicationDetail.md)
@@ -151,10 +159,13 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminCapabilities](docs/AdminCapabilities.md)
  - [com.servacode.directory.api.models.AdminCapabilitiesRequest](docs/AdminCapabilitiesRequest.md)
  - [com.servacode.directory.api.models.AdminCategory](docs/AdminCategory.md)
+ - [com.servacode.directory.api.models.AdminCategoryCreateRequest](docs/AdminCategoryCreateRequest.md)
  - [com.servacode.directory.api.models.AdminCategoryGroup](docs/AdminCategoryGroup.md)
  - [com.servacode.directory.api.models.AdminCategoryGroupList](docs/AdminCategoryGroupList.md)
+ - [com.servacode.directory.api.models.AdminCategoryGroupRequest](docs/AdminCategoryGroupRequest.md)
  - [com.servacode.directory.api.models.AdminCategoryList](docs/AdminCategoryList.md)
  - [com.servacode.directory.api.models.AdminCategoryProvinceRequest](docs/AdminCategoryProvinceRequest.md)
+ - [com.servacode.directory.api.models.AdminCategoryUpdateRequest](docs/AdminCategoryUpdateRequest.md)
  - [com.servacode.directory.api.models.AdminDashboard](docs/AdminDashboard.md)
  - [com.servacode.directory.api.models.AdminDecisionRequest](docs/AdminDecisionRequest.md)
  - [com.servacode.directory.api.models.AdminEventCount](docs/AdminEventCount.md)
@@ -163,6 +174,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminFacilityList](docs/AdminFacilityList.md)
  - [com.servacode.directory.api.models.AdminFacilityStatusCount](docs/AdminFacilityStatusCount.md)
  - [com.servacode.directory.api.models.AdminId](docs/AdminId.md)
+ - [com.servacode.directory.api.models.AdminMe](docs/AdminMe.md)
  - [com.servacode.directory.api.models.AdminProvince](docs/AdminProvince.md)
  - [com.servacode.directory.api.models.AdminProvinceList](docs/AdminProvinceList.md)
  - [com.servacode.directory.api.models.AdminProvinceUpdateRequest](docs/AdminProvinceUpdateRequest.md)
@@ -182,6 +194,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminVerificationRequirement](docs/AdminVerificationRequirement.md)
  - [com.servacode.directory.api.models.AdminVerificationRequirementList](docs/AdminVerificationRequirementList.md)
  - [com.servacode.directory.api.models.AdminVerificationRequirementRequest](docs/AdminVerificationRequirementRequest.md)
+ - [com.servacode.directory.api.models.AdminVerificationRequirementUpdateRequest](docs/AdminVerificationRequirementUpdateRequest.md)
  - [com.servacode.directory.api.models.AdvertisementAction](docs/AdvertisementAction.md)
  - [com.servacode.directory.api.models.AdvertisementActionTypeEnum](docs/AdvertisementActionTypeEnum.md)
  - [com.servacode.directory.api.models.AdvertisementTargetScopeEnum](docs/AdvertisementTargetScopeEnum.md)

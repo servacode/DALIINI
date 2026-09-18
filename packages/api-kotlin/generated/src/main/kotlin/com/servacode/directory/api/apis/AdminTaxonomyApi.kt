@@ -9,9 +9,14 @@ import kotlinx.serialization.Serializable
 
 import com.servacode.directory.api.models.AdminCapabilities
 import com.servacode.directory.api.models.AdminCapabilitiesRequest
+import com.servacode.directory.api.models.AdminCategory
+import com.servacode.directory.api.models.AdminCategoryCreateRequest
+import com.servacode.directory.api.models.AdminCategoryGroup
 import com.servacode.directory.api.models.AdminCategoryGroupList
+import com.servacode.directory.api.models.AdminCategoryGroupRequest
 import com.servacode.directory.api.models.AdminCategoryList
 import com.servacode.directory.api.models.AdminCategoryProvinceRequest
+import com.servacode.directory.api.models.AdminCategoryUpdateRequest
 import com.servacode.directory.api.models.AdminId
 import com.servacode.directory.api.models.ApiError
 
@@ -49,6 +54,56 @@ interface AdminTaxonomyApi {
     suspend fun adminCategoryCapabilitiesReplace(@Path("category_id") categoryId: java.util.UUID, @Body adminCapabilitiesRequest: AdminCapabilitiesRequest? = null): Response<AdminCapabilities>
 
     /**
+     * POST api/v1/admin/categories/create/
+     * Create a category
+     * &#x60;code&#x60; and &#x60;slug&#x60; are fixed at creation and cannot be changed afterwards. A new category is invisible everywhere until its per-province switches are turned on, whatever &#x60;active&#x60; says.
+     * Responses:
+     *  - 201: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param adminCategoryCreateRequest 
+     * @return [AdminId]
+     */
+    @POST("api/v1/admin/categories/create/")
+    suspend fun adminCategoryCreate(@Body adminCategoryCreateRequest: AdminCategoryCreateRequest): Response<AdminId>
+
+    /**
+     * POST api/v1/admin/category-groups/create/
+     * Create a category group
+     * Cycle J begins here: a group has to exist before a category can join it.
+     * Responses:
+     *  - 201: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param adminCategoryGroupRequest  (optional)
+     * @return [AdminId]
+     */
+    @POST("api/v1/admin/category-groups/create/")
+    suspend fun adminCategoryGroupCreate(@Body adminCategoryGroupRequest: AdminCategoryGroupRequest? = null): Response<AdminId>
+
+    /**
+     * PUT api/v1/admin/category-groups/{group_id}/
+     * Rename, reorder or deactivate a category group
+     * The group code is immutable; sending a different one is refused.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param groupId 
+     * @param adminCategoryGroupRequest  (optional)
+     * @return [AdminCategoryGroup]
+     */
+    @PUT("api/v1/admin/category-groups/{group_id}/")
+    suspend fun adminCategoryGroupUpdate(@Path("group_id") groupId: java.util.UUID, @Body adminCategoryGroupRequest: AdminCategoryGroupRequest? = null): Response<AdminCategoryGroup>
+
+    /**
      * GET api/v1/admin/category-groups/
      * List category groups
      * 
@@ -79,5 +134,23 @@ interface AdminTaxonomyApi {
      */
     @PUT("api/v1/admin/categories/{category_id}/provinces/")
     suspend fun adminCategoryProvinceReplace(@Path("category_id") categoryId: java.util.UUID, @Body adminCategoryProvinceRequest: AdminCategoryProvinceRequest): Response<AdminId>
+
+    /**
+     * PUT api/v1/admin/categories/{category_id}/
+     * Rename, move, reorder or deactivate a category
+     * &#x60;code&#x60; and &#x60;slug&#x60; are immutable and are not accepted. Changing the specialization re-validates the capability set, so a category that carries duty cannot be moved off PHARMACY while it does.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param categoryId 
+     * @param adminCategoryUpdateRequest  (optional)
+     * @return [AdminCategory]
+     */
+    @PUT("api/v1/admin/categories/{category_id}/")
+    suspend fun adminCategoryUpdate(@Path("category_id") categoryId: java.util.UUID, @Body adminCategoryUpdateRequest: AdminCategoryUpdateRequest? = null): Response<AdminCategory>
 
 }

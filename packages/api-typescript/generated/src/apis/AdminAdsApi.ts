@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   AdminAdvertisementList,
   AdminAdvertisementRequest,
+  AdminAdvertisementUpdateRequest,
   AdminId,
   ApiError,
 } from '../models/index';
@@ -25,6 +26,8 @@ import {
     AdminAdvertisementListToJSON,
     AdminAdvertisementRequestFromJSON,
     AdminAdvertisementRequestToJSON,
+    AdminAdvertisementUpdateRequestFromJSON,
+    AdminAdvertisementUpdateRequestToJSON,
     AdminIdFromJSON,
     AdminIdToJSON,
     ApiErrorFromJSON,
@@ -37,6 +40,11 @@ export interface AdminAdCreateRequest {
 
 export interface AdminAdDeleteRequest {
     advertisementId: string;
+}
+
+export interface AdminAdUpdateRequest {
+    advertisementId: string;
+    adminAdvertisementUpdateRequest?: AdminAdvertisementUpdateRequest;
 }
 
 /**
@@ -135,6 +143,56 @@ export class AdminAdsApi extends runtime.BaseAPI {
      */
     async adminAdDelete(requestParameters: AdminAdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.adminAdDeleteRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Omitted fields keep their current value. Schedule, targeting and action payload are validated together, so an end before its start or a global advertisement carrying a target is refused.
+     * Edit an advertisement, its schedule or its activation
+     */
+    async adminAdUpdateRaw(requestParameters: AdminAdUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminId>> {
+        if (requestParameters['advertisementId'] == null) {
+            throw new runtime.RequiredError(
+                'advertisementId',
+                'Required parameter "advertisementId" was null or undefined when calling adminAdUpdate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/ads/{advertisement_id}/`;
+        urlPath = urlPath.replace(`{${"advertisement_id"}}`, encodeURIComponent(String(requestParameters['advertisementId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminAdvertisementUpdateRequestToJSON(requestParameters['adminAdvertisementUpdateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminIdFromJSON(jsonValue));
+    }
+
+    /**
+     * Omitted fields keep their current value. Schedule, targeting and action payload are validated together, so an end before its start or a global advertisement carrying a target is refused.
+     * Edit an advertisement, its schedule or its activation
+     */
+    async adminAdUpdate(requestParameters: AdminAdUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminId> {
+        const response = await this.adminAdUpdateRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

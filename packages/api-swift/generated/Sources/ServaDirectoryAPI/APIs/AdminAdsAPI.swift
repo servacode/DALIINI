@@ -93,6 +93,50 @@ open class AdminAdsAPI {
     }
 
     /**
+     Edit an advertisement, its schedule or its activation
+     
+     - parameter advertisementId: (path)  
+     - parameter adminAdvertisementUpdateRequest: (body)  (optional)
+     - returns: AdminId
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminAdUpdate(advertisementId: UUID, adminAdvertisementUpdateRequest: AdminAdvertisementUpdateRequest? = nil) async throws -> AdminId {
+        return try await adminAdUpdateWithRequestBuilder(advertisementId: advertisementId, adminAdvertisementUpdateRequest: adminAdvertisementUpdateRequest).execute().body
+    }
+
+    /**
+     Edit an advertisement, its schedule or its activation
+     - PUT /api/v1/admin/ads/{advertisement_id}/
+     - Omitted fields keep their current value. Schedule, targeting and action payload are validated together, so an end before its start or a global advertisement carrying a target is refused.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter advertisementId: (path)  
+     - parameter adminAdvertisementUpdateRequest: (body)  (optional)
+     - returns: RequestBuilder<AdminId> 
+     */
+    open class func adminAdUpdateWithRequestBuilder(advertisementId: UUID, adminAdvertisementUpdateRequest: AdminAdvertisementUpdateRequest? = nil) -> RequestBuilder<AdminId> {
+        var localVariablePath = "/api/v1/admin/ads/{advertisement_id}/"
+        let advertisementIdPreEscape = "\(APIHelper.mapValueToPathItem(advertisementId))"
+        let advertisementIdPostEscape = advertisementIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{advertisement_id}", with: advertisementIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminAdvertisementUpdateRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminId>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      List advertisements
      
      - returns: AdminAdvertisementList

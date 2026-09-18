@@ -20,6 +20,7 @@ import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.AdminSystemApi
 import com.servacode.directory.api.models.AdminDashboard
+import com.servacode.directory.api.models.AdminMe
 import com.servacode.directory.api.models.AdminSystemStatus
 import com.servacode.directory.api.models.ApiError
 
@@ -32,6 +33,13 @@ class AdminSystemApiTest : ShouldSpec() {
         should("test adminDashboardRetrieve") {
             // uncomment below to test adminDashboardRetrieve
             //val result : AdminDashboard = apiInstance.adminDashboardRetrieve()
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminMeRetrieve
+        should("test adminMeRetrieve") {
+            // uncomment below to test adminMeRetrieve
+            //val result : AdminMe = apiInstance.adminMeRetrieve()
             //result shouldBe ("TODO")
         }
 

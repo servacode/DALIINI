@@ -234,6 +234,68 @@ paths:
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/admin/ads/{advertisement_id}/:
+    put:
+      operationId: adminAdUpdate
+      description: Omitted fields keep their current value. Schedule, targeting and
+        action payload are validated together, so an end before its start or a global
+        advertisement carrying a target is refused.
+      summary: Edit an advertisement, its schedule or its activation
+      parameters:
+      - in: path
+        name: advertisement_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Ads
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminAdvertisementUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminAdvertisementUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminAdvertisementUpdateRequest'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminId'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
     delete:
       operationId: adminAdDelete
       summary: Delete an advertisement
@@ -598,6 +660,69 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+  /api/v1/admin/categories/{category_id}/:
+    put:
+      operationId: adminCategoryUpdate
+      description: '`code` and `slug` are immutable and are not accepted. Changing
+        the specialization re-validates the capability set, so a category that carries
+        duty cannot be moved off PHARMACY while it does.'
+      summary: Rename, move, reorder or deactivate a category
+      parameters:
+      - in: path
+        name: category_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Taxonomy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminCategoryUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminCategoryUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminCategoryUpdateRequest'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCategory'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
   /api/v1/admin/categories/{category_id}/capabilities/:
     put:
       operationId: adminCategoryCapabilitiesReplace
@@ -721,6 +846,56 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/admin/categories/create/:
+    post:
+      operationId: adminCategoryCreate
+      description: '`code` and `slug` are fixed at creation and cannot be changed
+        afterwards. A new category is invisible everywhere until its per-province
+        switches are turned on, whatever `active` says.'
+      summary: Create a category
+      tags:
+      - Admin Taxonomy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminCategoryCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminCategoryCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminCategoryCreateRequest'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminId'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/admin/category-groups/:
     get:
       operationId: adminCategoryGroupsList
@@ -736,6 +911,115 @@ paths:
               schema:
                 $ref: '#/components/schemas/AdminCategoryGroupList'
           description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/admin/category-groups/{group_id}/:
+    put:
+      operationId: adminCategoryGroupUpdate
+      description: The group code is immutable; sending a different one is refused.
+      summary: Rename, reorder or deactivate a category group
+      parameters:
+      - in: path
+        name: group_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Taxonomy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminCategoryGroupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminCategoryGroupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminCategoryGroupRequest'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCategoryGroup'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+  /api/v1/admin/category-groups/create/:
+    post:
+      operationId: adminCategoryGroupCreate
+      description: 'Cycle J begins here: a group has to exist before a category can
+        join it.'
+      summary: Create a category group
+      tags:
+      - Admin Taxonomy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminCategoryGroupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminCategoryGroupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminCategoryGroupRequest'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminId'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
@@ -1095,6 +1379,37 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/admin/me/:
+    get:
+      operationId: adminMeRetrieve
+      description: 'Drives navigation visibility and action gating in the Admin. A
+        UI gate is not authorization: every endpoint re-checks, and a permission revoked
+        mid-session surfaces as a 403 on the next call.'
+      summary: The current operator and the permissions they hold
+      tags:
+      - Admin System
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminMe'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/admin/provinces/:
     get:
       operationId: adminProvincesList
@@ -1615,6 +1930,68 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+  /api/v1/admin/verification-requirements/{requirement_id}/:
+    put:
+      operationId: adminVerificationRequirementUpdate
+      description: 'The owning category cannot change: evidence already submitted
+        points at a (facility, requirement) pair. Retirement is `active = false`;
+        there is no delete, because evidence references the row.'
+      summary: Edit a verification requirement, or retire it
+      parameters:
+      - in: path
+        name: requirement_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Admin Verification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminVerificationRequirementUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminVerificationRequirementUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminVerificationRequirementUpdateRequest'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminVerificationRequirement'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
   /api/v1/analytics/events/:
     post:
       operationId: analyticsEventCreate
@@ -4050,6 +4427,55 @@ components:
           default: 5000
       required:
       - imageKey
+    AdminAdvertisementUpdateRequest:
+      type: object
+      description: |-
+        Edit an advertisement in place; omitted fields keep their current value.
+
+        The field set is fixed by `06-DATA-MODEL.md`. Schedule, targeting and action payload are
+        validated by the model, so an end before its start, an out-of-range slide duration, a
+        global advertisement carrying a target, or a payload that does not match its action type
+        are all refused there rather than re-checked here.
+      properties:
+        imageKey:
+          type: string
+        titleAr:
+          type: string
+        titleEn:
+          type: string
+        subtitleAr:
+          type: string
+        subtitleEn:
+          type: string
+        actionType:
+          $ref: '#/components/schemas/AdvertisementActionTypeEnum'
+        actionPayload:
+          type: object
+          additionalProperties: {}
+        targetScope:
+          $ref: '#/components/schemas/AdvertisementTargetScopeEnum'
+        provinceId:
+          type: string
+          format: uuid
+          nullable: true
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+        startsAt:
+          type: string
+          format: date-time
+          nullable: true
+        endsAt:
+          type: string
+          format: date-time
+          nullable: true
+        enabled:
+          type: boolean
+        sortOrder:
+          type: integer
+        slideDurationMs:
+          type: integer
     AdminAnalytics:
       type: object
       properties:
@@ -4250,40 +4676,47 @@ components:
       type: object
       description: The response echoes every capability flag after the update.
       properties:
-        supports_hours:
+        supportsHours:
           type: boolean
-        supports_photos:
+        supportsPhotos:
           type: boolean
-        supports_ratings:
+        supportsRatings:
           type: boolean
-        supports_duty:
+        supportsDuty:
           type: boolean
-        supports_specialty_filter:
+          description: Rejected unless the category's specialization is PHARMACY.
+        supportsSpecialtyFilter:
           type: boolean
-        supports_service_filter:
+        supportsServiceFilter:
           type: boolean
-        supports_temporary_closure:
+        supportsTemporaryClosure:
           type: boolean
-        supports_owner_onboarding:
+        supportsOwnerOnboarding:
           type: boolean
     AdminCapabilitiesRequest:
       type: object
+      description: |-
+        Capability flags. Omitting one leaves it as it is.
+
+        INT-039: these were the last `supports_*` names on the wire. The column names are
+        unchanged; `source` does the translation, as everywhere else in this app.
       properties:
-        supports_hours:
+        supportsHours:
           type: boolean
-        supports_photos:
+        supportsPhotos:
           type: boolean
-        supports_ratings:
+        supportsRatings:
           type: boolean
-        supports_duty:
+        supportsDuty:
           type: boolean
-        supports_specialty_filter:
+          description: Rejected unless the category's specialization is PHARMACY.
+        supportsSpecialtyFilter:
           type: boolean
-        supports_service_filter:
+        supportsServiceFilter:
           type: boolean
-        supports_temporary_closure:
+        supportsTemporaryClosure:
           type: boolean
-        supports_owner_onboarding:
+        supportsOwnerOnboarding:
           type: boolean
     AdminCategory:
       type: object
@@ -4321,6 +4754,38 @@ components:
       - slug
       - sortOrder
       - specialization
+    AdminCategoryCreateRequest:
+      type: object
+      properties:
+        groupId:
+          type: string
+          format: uuid
+        code:
+          type: string
+          description: Immutable once created.
+        slug:
+          type: string
+          description: Immutable once created.
+          pattern: ^[-a-zA-Z0-9_]+$
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+        iconKey:
+          type: string
+        specialization:
+          $ref: '#/components/schemas/CategorySpecializationEnum'
+        active:
+          type: boolean
+          default: true
+        sortOrder:
+          type: integer
+          default: 0
+      required:
+      - code
+      - groupId
+      - nameAr
+      - slug
     AdminCategoryGroup:
       type: object
       properties:
@@ -4353,6 +4818,22 @@ components:
             $ref: '#/components/schemas/AdminCategoryGroup'
       required:
       - items
+    AdminCategoryGroupRequest:
+      type: object
+      description: Create or update a category group. `code` is set once and never
+        changes.
+      properties:
+        code:
+          type: string
+          description: Required on create. Refused on update; the group code is immutable.
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+        active:
+          type: boolean
+        sortOrder:
+          type: integer
     AdminCategoryList:
       type: object
       properties:
@@ -4376,6 +4857,30 @@ components:
           type: integer
       required:
       - provinceId
+    AdminCategoryUpdateRequest:
+      type: object
+      description: |-
+        Everything a category may become. `code` and `slug` are absent on purpose.
+
+        `06-DATA-MODEL.md` marks both immutable and `09-ADMIN-NEXTJS.md` requires that changing
+        them silently be prevented, so sending either is refused rather than ignored.
+      properties:
+        groupId:
+          type: string
+          format: uuid
+          description: Moves the category.
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+        iconKey:
+          type: string
+        specialization:
+          $ref: '#/components/schemas/CategorySpecializationEnum'
+        active:
+          type: boolean
+        sortOrder:
+          type: integer
     AdminDashboard:
       type: object
       properties:
@@ -4501,6 +5006,34 @@ components:
           description: Identifier of the affected row.
       required:
       - id
+    AdminMe:
+      type: object
+      description: |-
+        Who the caller is and what they may do, for the Admin shell to render against.
+
+        Deliberately minimal. No phone, no session material, no Django groups or
+        `user_permissions`, and no `is_superuser`: the UI branches on `permissions`, which come
+        from the project's own `AdminRole`/`AdminPermission` tables and nothing else.
+
+        A UI gate is not authorization. The backend re-checks every call, and a permission
+        revoked mid-session shows up as a 403 the UI has to handle.
+      properties:
+        userId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+          description: Every permission code the caller holds, deduplicated and sorted.
+            An operator whose roles carry no permissions gets an empty list, which
+            is a valid state.
+      required:
+      - displayName
+      - permissions
+      - userId
     AdminProvince:
       type: object
       properties:
@@ -4768,8 +5301,7 @@ components:
       type: object
       properties:
         id:
-          type: string
-          format: uuid
+          type: integer
         categoryId:
           type: string
           format: uuid
@@ -4838,6 +5370,33 @@ components:
       required:
       - categoryId
       - labelAr
+    AdminVerificationRequirementUpdateRequest:
+      type: object
+      description: |-
+        Edit a requirement in place. The category it belongs to cannot change.
+
+        Evidence rows point at a (facility, requirement) pair, so moving a requirement to
+        another category would leave that evidence attached to a rule its facility never had.
+        Retirement is `active = false`; there is no delete, because evidence references it.
+      properties:
+        labelAr:
+          type: string
+        labelEn:
+          type: string
+        instructionsAr:
+          type: string
+        instructionsEn:
+          type: string
+        required:
+          type: boolean
+        active:
+          type: boolean
+        minFiles:
+          type: integer
+        maxFiles:
+          type: integer
+        sortOrder:
+          type: integer
     AdvertisementAction:
       type: object
       properties:

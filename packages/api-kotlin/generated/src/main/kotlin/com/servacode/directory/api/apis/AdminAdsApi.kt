@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 
 import com.servacode.directory.api.models.AdminAdvertisementList
 import com.servacode.directory.api.models.AdminAdvertisementRequest
+import com.servacode.directory.api.models.AdminAdvertisementUpdateRequest
 import com.servacode.directory.api.models.AdminId
 import com.servacode.directory.api.models.ApiError
 
@@ -44,6 +45,24 @@ interface AdminAdsApi {
      */
     @DELETE("api/v1/admin/ads/{advertisement_id}/")
     suspend fun adminAdDelete(@Path("advertisement_id") advertisementId: java.util.UUID): Response<Unit>
+
+    /**
+     * PUT api/v1/admin/ads/{advertisement_id}/
+     * Edit an advertisement, its schedule or its activation
+     * Omitted fields keep their current value. Schedule, targeting and action payload are validated together, so an end before its start or a global advertisement carrying a target is refused.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param advertisementId 
+     * @param adminAdvertisementUpdateRequest  (optional)
+     * @return [AdminId]
+     */
+    @PUT("api/v1/admin/ads/{advertisement_id}/")
+    suspend fun adminAdUpdate(@Path("advertisement_id") advertisementId: java.util.UUID, @Body adminAdvertisementUpdateRequest: AdminAdvertisementUpdateRequest? = null): Response<AdminId>
 
     /**
      * GET api/v1/admin/ads/

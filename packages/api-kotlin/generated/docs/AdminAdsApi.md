@@ -6,6 +6,7 @@ All URIs are relative to *http://localhost*
 | ------------- | ------------- | ------------- |
 | [**adminAdCreate**](AdminAdsApi.md#adminAdCreate) | **POST** api/v1/admin/ads/ | Create an advertisement |
 | [**adminAdDelete**](AdminAdsApi.md#adminAdDelete) | **DELETE** api/v1/admin/ads/{advertisement_id}/ | Delete an advertisement |
+| [**adminAdUpdate**](AdminAdsApi.md#adminAdUpdate) | **PUT** api/v1/admin/ads/{advertisement_id}/ | Edit an advertisement, its schedule or its activation |
 | [**adminAdsList**](AdminAdsApi.md#adminAdsList) | **GET** api/v1/admin/ads/ | List advertisements |
 
 
@@ -89,6 +90,50 @@ Configure bearerAccessToken:
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Edit an advertisement, its schedule or its activation
+
+Omitted fields keep their current value. Schedule, targeting and action payload are validated together, so an end before its start or a global advertisement carrying a target is refused.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminAdsApi::class.java)
+val advertisementId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+val adminAdvertisementUpdateRequest : AdminAdvertisementUpdateRequest =  // AdminAdvertisementUpdateRequest | 
+
+launch(Dispatchers.IO) {
+    val result : AdminId = webService.adminAdUpdate(advertisementId, adminAdvertisementUpdateRequest)
+}
+```
+
+### Parameters
+| **advertisementId** | **java.util.UUID**|  | |
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **adminAdvertisementUpdateRequest** | [**AdminAdvertisementUpdateRequest**](AdminAdvertisementUpdateRequest.md)|  | [optional] |
+
+### Return type
+
+[**AdminId**](AdminId.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
  - **Accept**: application/json
 
 

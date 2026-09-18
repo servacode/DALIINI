@@ -17,9 +17,14 @@ import * as runtime from '../runtime';
 import type {
   AdminCapabilities,
   AdminCapabilitiesRequest,
+  AdminCategory,
+  AdminCategoryCreateRequest,
+  AdminCategoryGroup,
   AdminCategoryGroupList,
+  AdminCategoryGroupRequest,
   AdminCategoryList,
   AdminCategoryProvinceRequest,
+  AdminCategoryUpdateRequest,
   AdminId,
   ApiError,
 } from '../models/index';
@@ -28,12 +33,22 @@ import {
     AdminCapabilitiesToJSON,
     AdminCapabilitiesRequestFromJSON,
     AdminCapabilitiesRequestToJSON,
+    AdminCategoryFromJSON,
+    AdminCategoryToJSON,
+    AdminCategoryCreateRequestFromJSON,
+    AdminCategoryCreateRequestToJSON,
+    AdminCategoryGroupFromJSON,
+    AdminCategoryGroupToJSON,
     AdminCategoryGroupListFromJSON,
     AdminCategoryGroupListToJSON,
+    AdminCategoryGroupRequestFromJSON,
+    AdminCategoryGroupRequestToJSON,
     AdminCategoryListFromJSON,
     AdminCategoryListToJSON,
     AdminCategoryProvinceRequestFromJSON,
     AdminCategoryProvinceRequestToJSON,
+    AdminCategoryUpdateRequestFromJSON,
+    AdminCategoryUpdateRequestToJSON,
     AdminIdFromJSON,
     AdminIdToJSON,
     ApiErrorFromJSON,
@@ -45,9 +60,27 @@ export interface AdminCategoryCapabilitiesReplaceRequest {
     adminCapabilitiesRequest?: AdminCapabilitiesRequest;
 }
 
+export interface AdminCategoryCreateOperationRequest {
+    adminCategoryCreateRequest: AdminCategoryCreateRequest;
+}
+
+export interface AdminCategoryGroupCreateRequest {
+    adminCategoryGroupRequest?: AdminCategoryGroupRequest;
+}
+
+export interface AdminCategoryGroupUpdateRequest {
+    groupId: string;
+    adminCategoryGroupRequest?: AdminCategoryGroupRequest;
+}
+
 export interface AdminCategoryProvinceReplaceRequest {
     categoryId: string;
     adminCategoryProvinceRequest: AdminCategoryProvinceRequest;
+}
+
+export interface AdminCategoryUpdateOperationRequest {
+    categoryId: string;
+    adminCategoryUpdateRequest?: AdminCategoryUpdateRequest;
 }
 
 /**
@@ -143,6 +176,147 @@ export class AdminTaxonomyApi extends runtime.BaseAPI {
     }
 
     /**
+     * `code` and `slug` are fixed at creation and cannot be changed afterwards. A new category is invisible everywhere until its per-province switches are turned on, whatever `active` says.
+     * Create a category
+     */
+    async adminCategoryCreateRaw(requestParameters: AdminCategoryCreateOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminId>> {
+        if (requestParameters['adminCategoryCreateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'adminCategoryCreateRequest',
+                'Required parameter "adminCategoryCreateRequest" was null or undefined when calling adminCategoryCreate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/categories/create/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminCategoryCreateRequestToJSON(requestParameters['adminCategoryCreateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminIdFromJSON(jsonValue));
+    }
+
+    /**
+     * `code` and `slug` are fixed at creation and cannot be changed afterwards. A new category is invisible everywhere until its per-province switches are turned on, whatever `active` says.
+     * Create a category
+     */
+    async adminCategoryCreate(requestParameters: AdminCategoryCreateOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminId> {
+        const response = await this.adminCategoryCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Cycle J begins here: a group has to exist before a category can join it.
+     * Create a category group
+     */
+    async adminCategoryGroupCreateRaw(requestParameters: AdminCategoryGroupCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminId>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/category-groups/create/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminCategoryGroupRequestToJSON(requestParameters['adminCategoryGroupRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminIdFromJSON(jsonValue));
+    }
+
+    /**
+     * Cycle J begins here: a group has to exist before a category can join it.
+     * Create a category group
+     */
+    async adminCategoryGroupCreate(requestParameters: AdminCategoryGroupCreateRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminId> {
+        const response = await this.adminCategoryGroupCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * The group code is immutable; sending a different one is refused.
+     * Rename, reorder or deactivate a category group
+     */
+    async adminCategoryGroupUpdateRaw(requestParameters: AdminCategoryGroupUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminCategoryGroup>> {
+        if (requestParameters['groupId'] == null) {
+            throw new runtime.RequiredError(
+                'groupId',
+                'Required parameter "groupId" was null or undefined when calling adminCategoryGroupUpdate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/category-groups/{group_id}/`;
+        urlPath = urlPath.replace(`{${"group_id"}}`, encodeURIComponent(String(requestParameters['groupId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminCategoryGroupRequestToJSON(requestParameters['adminCategoryGroupRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminCategoryGroupFromJSON(jsonValue));
+    }
+
+    /**
+     * The group code is immutable; sending a different one is refused.
+     * Rename, reorder or deactivate a category group
+     */
+    async adminCategoryGroupUpdate(requestParameters: AdminCategoryGroupUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminCategoryGroup> {
+        const response = await this.adminCategoryGroupUpdateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * List category groups
      */
     async adminCategoryGroupsListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminCategoryGroupList>> {
@@ -233,6 +407,56 @@ export class AdminTaxonomyApi extends runtime.BaseAPI {
      */
     async adminCategoryProvinceReplace(requestParameters: AdminCategoryProvinceReplaceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminId> {
         const response = await this.adminCategoryProvinceReplaceRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * `code` and `slug` are immutable and are not accepted. Changing the specialization re-validates the capability set, so a category that carries duty cannot be moved off PHARMACY while it does.
+     * Rename, move, reorder or deactivate a category
+     */
+    async adminCategoryUpdateRaw(requestParameters: AdminCategoryUpdateOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminCategory>> {
+        if (requestParameters['categoryId'] == null) {
+            throw new runtime.RequiredError(
+                'categoryId',
+                'Required parameter "categoryId" was null or undefined when calling adminCategoryUpdate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/categories/{category_id}/`;
+        urlPath = urlPath.replace(`{${"category_id"}}`, encodeURIComponent(String(requestParameters['categoryId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminCategoryUpdateRequestToJSON(requestParameters['adminCategoryUpdateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminCategoryFromJSON(jsonValue));
+    }
+
+    /**
+     * `code` and `slug` are immutable and are not accepted. Changing the specialization re-validates the capability set, so a category that carries duty cannot be moved off PHARMACY while it does.
+     * Rename, move, reorder or deactivate a category
+     */
+    async adminCategoryUpdate(requestParameters: AdminCategoryUpdateOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminCategory> {
+        const response = await this.adminCategoryUpdateRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -16,23 +16,34 @@
 import * as runtime from '../runtime';
 import type {
   AdminId,
+  AdminVerificationRequirement,
   AdminVerificationRequirementList,
   AdminVerificationRequirementRequest,
+  AdminVerificationRequirementUpdateRequest,
   ApiError,
 } from '../models/index';
 import {
     AdminIdFromJSON,
     AdminIdToJSON,
+    AdminVerificationRequirementFromJSON,
+    AdminVerificationRequirementToJSON,
     AdminVerificationRequirementListFromJSON,
     AdminVerificationRequirementListToJSON,
     AdminVerificationRequirementRequestFromJSON,
     AdminVerificationRequirementRequestToJSON,
+    AdminVerificationRequirementUpdateRequestFromJSON,
+    AdminVerificationRequirementUpdateRequestToJSON,
     ApiErrorFromJSON,
     ApiErrorToJSON,
 } from '../models/index';
 
 export interface AdminVerificationRequirementCreateRequest {
     adminVerificationRequirementRequest: AdminVerificationRequirementRequest;
+}
+
+export interface AdminVerificationRequirementUpdateOperationRequest {
+    requirementId: number;
+    adminVerificationRequirementUpdateRequest?: AdminVerificationRequirementUpdateRequest;
 }
 
 /**
@@ -86,6 +97,56 @@ export class AdminVerificationApi extends runtime.BaseAPI {
      */
     async adminVerificationRequirementCreate(requestParameters: AdminVerificationRequirementCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminId> {
         const response = await this.adminVerificationRequirementCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * The owning category cannot change: evidence already submitted points at a (facility, requirement) pair. Retirement is `active = false`; there is no delete, because evidence references the row.
+     * Edit a verification requirement, or retire it
+     */
+    async adminVerificationRequirementUpdateRaw(requestParameters: AdminVerificationRequirementUpdateOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminVerificationRequirement>> {
+        if (requestParameters['requirementId'] == null) {
+            throw new runtime.RequiredError(
+                'requirementId',
+                'Required parameter "requirementId" was null or undefined when calling adminVerificationRequirementUpdate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/verification-requirements/{requirement_id}/`;
+        urlPath = urlPath.replace(`{${"requirement_id"}}`, encodeURIComponent(String(requestParameters['requirementId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminVerificationRequirementUpdateRequestToJSON(requestParameters['adminVerificationRequirementUpdateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminVerificationRequirementFromJSON(jsonValue));
+    }
+
+    /**
+     * The owning category cannot change: evidence already submitted points at a (facility, requirement) pair. Retirement is `active = false`; there is no delete, because evidence references the row.
+     * Edit a verification requirement, or retire it
+     */
+    async adminVerificationRequirementUpdate(requestParameters: AdminVerificationRequirementUpdateOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminVerificationRequirement> {
+        const response = await this.adminVerificationRequirementUpdateRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

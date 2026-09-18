@@ -12,7 +12,7 @@ import AnyCodable
 
 public struct AdminVerificationRequirement: Codable, JSONEncodable, Hashable {
 
-    public var id: UUID
+    public var id: Int
     public var categoryId: UUID
     public var labelAr: String
     public var labelEn: String
@@ -22,7 +22,7 @@ public struct AdminVerificationRequirement: Codable, JSONEncodable, Hashable {
     public var maxFiles: Int
     public var sortOrder: Int
 
-    public init(id: UUID, categoryId: UUID, labelAr: String, labelEn: String, _required: Bool, active: Bool, minFiles: Int, maxFiles: Int, sortOrder: Int) {
+    public init(id: Int, categoryId: UUID, labelAr: String, labelEn: String, _required: Bool, active: Bool, minFiles: Int, maxFiles: Int, sortOrder: Int) {
         self.id = id
         self.categoryId = categoryId
         self.labelAr = labelAr

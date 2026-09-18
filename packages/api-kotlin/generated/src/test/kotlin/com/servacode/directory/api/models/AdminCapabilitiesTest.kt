@@ -43,7 +43,7 @@ class AdminCapabilitiesTest : ShouldSpec() {
             //modelInstance.supportsRatings shouldBe ("TODO")
         }
 
-        // to test the property `supportsDuty`
+        // to test the property `supportsDuty` - Rejected unless the category's specialization is PHARMACY.
         should("test supportsDuty") {
             // uncomment below to test the property
             //modelInstance.supportsDuty shouldBe ("TODO")

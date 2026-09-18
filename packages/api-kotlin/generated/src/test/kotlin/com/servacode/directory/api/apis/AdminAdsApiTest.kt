@@ -21,6 +21,7 @@ import io.kotlintest.specs.ShouldSpec
 import com.servacode.directory.api.apis.AdminAdsApi
 import com.servacode.directory.api.models.AdminAdvertisementList
 import com.servacode.directory.api.models.AdminAdvertisementRequest
+import com.servacode.directory.api.models.AdminAdvertisementUpdateRequest
 import com.servacode.directory.api.models.AdminId
 import com.servacode.directory.api.models.ApiError
 
@@ -42,6 +43,15 @@ class AdminAdsApiTest : ShouldSpec() {
             // uncomment below to test adminAdDelete
             //val advertisementId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //apiInstance.adminAdDelete(advertisementId)
+        }
+
+        // to test adminAdUpdate
+        should("test adminAdUpdate") {
+            // uncomment below to test adminAdUpdate
+            //val advertisementId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val adminAdvertisementUpdateRequest : AdminAdvertisementUpdateRequest =  // AdminAdvertisementUpdateRequest | 
+            //val result : AdminId = apiInstance.adminAdUpdate(advertisementId, adminAdvertisementUpdateRequest)
+            //result shouldBe ("TODO")
         }
 
         // to test adminAdsList

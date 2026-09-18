@@ -37,8 +37,8 @@ import kotlinx.serialization.Contextual
 
 data class AdminVerificationRequirement (
 
-    @Contextual @SerialName(value = "id")
-    val id: java.util.UUID,
+    @SerialName(value = "id")
+    val id: kotlin.Int,
 
     @Contextual @SerialName(value = "categoryId")
     val categoryId: java.util.UUID,

@@ -52,6 +52,50 @@ open class AdminVerificationAPI {
     }
 
     /**
+     Edit a verification requirement, or retire it
+     
+     - parameter requirementId: (path)  
+     - parameter adminVerificationRequirementUpdateRequest: (body)  (optional)
+     - returns: AdminVerificationRequirement
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminVerificationRequirementUpdate(requirementId: Int, adminVerificationRequirementUpdateRequest: AdminVerificationRequirementUpdateRequest? = nil) async throws -> AdminVerificationRequirement {
+        return try await adminVerificationRequirementUpdateWithRequestBuilder(requirementId: requirementId, adminVerificationRequirementUpdateRequest: adminVerificationRequirementUpdateRequest).execute().body
+    }
+
+    /**
+     Edit a verification requirement, or retire it
+     - PUT /api/v1/admin/verification-requirements/{requirement_id}/
+     - The owning category cannot change: evidence already submitted points at a (facility, requirement) pair. Retirement is `active = false`; there is no delete, because evidence references the row.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter requirementId: (path)  
+     - parameter adminVerificationRequirementUpdateRequest: (body)  (optional)
+     - returns: RequestBuilder<AdminVerificationRequirement> 
+     */
+    open class func adminVerificationRequirementUpdateWithRequestBuilder(requirementId: Int, adminVerificationRequirementUpdateRequest: AdminVerificationRequirementUpdateRequest? = nil) -> RequestBuilder<AdminVerificationRequirement> {
+        var localVariablePath = "/api/v1/admin/verification-requirements/{requirement_id}/"
+        let requirementIdPreEscape = "\(APIHelper.mapValueToPathItem(requirementId))"
+        let requirementIdPostEscape = requirementIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{requirement_id}", with: requirementIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminVerificationRequirementUpdateRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminVerificationRequirement>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      List verification requirements
      
      - returns: AdminVerificationRequirementList

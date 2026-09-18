@@ -32,6 +32,7 @@ Class | Method | HTTP request | Description
 *AccountAPI* | [**accountRatingsList**](docs/AccountAPI.md#accountratingslist) | **GET** /api/v1/account/ratings/ | List the ratings written by the caller
 *AdminAdsAPI* | [**adminAdCreate**](docs/AdminAdsAPI.md#adminadcreate) | **POST** /api/v1/admin/ads/ | Create an advertisement
 *AdminAdsAPI* | [**adminAdDelete**](docs/AdminAdsAPI.md#adminaddelete) | **DELETE** /api/v1/admin/ads/{advertisement_id}/ | Delete an advertisement
+*AdminAdsAPI* | [**adminAdUpdate**](docs/AdminAdsAPI.md#adminadupdate) | **PUT** /api/v1/admin/ads/{advertisement_id}/ | Edit an advertisement, its schedule or its activation
 *AdminAdsAPI* | [**adminAdsList**](docs/AdminAdsAPI.md#adminadslist) | **GET** /api/v1/admin/ads/ | List advertisements
 *AdminAnalyticsAPI* | [**adminAnalyticsRetrieve**](docs/AdminAnalyticsAPI.md#adminanalyticsretrieve) | **GET** /api/v1/admin/analytics/ | Operational KPIs
 *AdminAuditAPI* | [**adminAuditList**](docs/AdminAuditAPI.md#adminauditlist) | **GET** /api/v1/admin/audit/ | Search the audit trail
@@ -50,11 +51,16 @@ Class | Method | HTTP request | Description
 *AdminSettingsAPI* | [**adminSettingWrite**](docs/AdminSettingsAPI.md#adminsettingwrite) | **PUT** /api/v1/admin/settings/ | Create or update a typed platform setting
 *AdminSettingsAPI* | [**adminSettingsList**](docs/AdminSettingsAPI.md#adminsettingslist) | **GET** /api/v1/admin/settings/ | List typed platform settings
 *AdminSystemAPI* | [**adminDashboardRetrieve**](docs/AdminSystemAPI.md#admindashboardretrieve) | **GET** /api/v1/admin/dashboard/ | Operational counters for the review desk
+*AdminSystemAPI* | [**adminMeRetrieve**](docs/AdminSystemAPI.md#adminmeretrieve) | **GET** /api/v1/admin/me/ | The current operator and the permissions they hold
 *AdminSystemAPI* | [**adminSystemStatusRetrieve**](docs/AdminSystemAPI.md#adminsystemstatusretrieve) | **GET** /api/v1/admin/system/status/ | Runtime and configuration status
 *AdminTaxonomyAPI* | [**adminCategoriesList**](docs/AdminTaxonomyAPI.md#admincategorieslist) | **GET** /api/v1/admin/categories/ | List categories
 *AdminTaxonomyAPI* | [**adminCategoryCapabilitiesReplace**](docs/AdminTaxonomyAPI.md#admincategorycapabilitiesreplace) | **PUT** /api/v1/admin/categories/{category_id}/capabilities/ | Set the capability flags of a category
+*AdminTaxonomyAPI* | [**adminCategoryCreate**](docs/AdminTaxonomyAPI.md#admincategorycreate) | **POST** /api/v1/admin/categories/create/ | Create a category
+*AdminTaxonomyAPI* | [**adminCategoryGroupCreate**](docs/AdminTaxonomyAPI.md#admincategorygroupcreate) | **POST** /api/v1/admin/category-groups/create/ | Create a category group
+*AdminTaxonomyAPI* | [**adminCategoryGroupUpdate**](docs/AdminTaxonomyAPI.md#admincategorygroupupdate) | **PUT** /api/v1/admin/category-groups/{group_id}/ | Rename, reorder or deactivate a category group
 *AdminTaxonomyAPI* | [**adminCategoryGroupsList**](docs/AdminTaxonomyAPI.md#admincategorygroupslist) | **GET** /api/v1/admin/category-groups/ | List category groups
 *AdminTaxonomyAPI* | [**adminCategoryProvinceReplace**](docs/AdminTaxonomyAPI.md#admincategoryprovincereplace) | **PUT** /api/v1/admin/categories/{category_id}/provinces/ | Set the per-province switches of a category
+*AdminTaxonomyAPI* | [**adminCategoryUpdate**](docs/AdminTaxonomyAPI.md#admincategoryupdate) | **PUT** /api/v1/admin/categories/{category_id}/ | Rename, move, reorder or deactivate a category
 *AdminUsersAPI* | [**adminRolesList**](docs/AdminUsersAPI.md#adminroleslist) | **GET** /api/v1/admin/roles/ | List admin roles and their permission codes
 *AdminUsersAPI* | [**adminUserBlock**](docs/AdminUsersAPI.md#adminuserblock) | **POST** /api/v1/admin/users/{user_id}/block/ | Block a user account
 *AdminUsersAPI* | [**adminUserRetrieve**](docs/AdminUsersAPI.md#adminuserretrieve) | **GET** /api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned
@@ -62,6 +68,7 @@ Class | Method | HTTP request | Description
 *AdminUsersAPI* | [**adminUserUnblock**](docs/AdminUsersAPI.md#adminuserunblock) | **POST** /api/v1/admin/users/{user_id}/unblock/ | Unblock a user account
 *AdminUsersAPI* | [**adminUsersList**](docs/AdminUsersAPI.md#adminuserslist) | **GET** /api/v1/admin/users/ | Search user accounts
 *AdminVerificationAPI* | [**adminVerificationRequirementCreate**](docs/AdminVerificationAPI.md#adminverificationrequirementcreate) | **POST** /api/v1/admin/verification-requirements/ | Create a verification requirement
+*AdminVerificationAPI* | [**adminVerificationRequirementUpdate**](docs/AdminVerificationAPI.md#adminverificationrequirementupdate) | **PUT** /api/v1/admin/verification-requirements/{requirement_id}/ | Edit a verification requirement, or retire it
 *AdminVerificationAPI* | [**adminVerificationRequirementsList**](docs/AdminVerificationAPI.md#adminverificationrequirementslist) | **GET** /api/v1/admin/verification-requirements/ | List verification requirements
 *AdsAPI* | [**publicAdsList**](docs/AdsAPI.md#publicadslist) | **GET** /api/v1/public/ads/ | List advertisements currently in flight
 *AnalyticsAPI* | [**analyticsEventCreate**](docs/AnalyticsAPI.md#analyticseventcreate) | **POST** /api/v1/analytics/events/ | Record a product analytics event
@@ -121,6 +128,7 @@ Class | Method | HTTP request | Description
  - [AdminAdvertisement](docs/AdminAdvertisement.md)
  - [AdminAdvertisementList](docs/AdminAdvertisementList.md)
  - [AdminAdvertisementRequest](docs/AdminAdvertisementRequest.md)
+ - [AdminAdvertisementUpdateRequest](docs/AdminAdvertisementUpdateRequest.md)
  - [AdminAnalytics](docs/AdminAnalytics.md)
  - [AdminApplication](docs/AdminApplication.md)
  - [AdminApplicationDetail](docs/AdminApplicationDetail.md)
@@ -131,10 +139,13 @@ Class | Method | HTTP request | Description
  - [AdminCapabilities](docs/AdminCapabilities.md)
  - [AdminCapabilitiesRequest](docs/AdminCapabilitiesRequest.md)
  - [AdminCategory](docs/AdminCategory.md)
+ - [AdminCategoryCreateRequest](docs/AdminCategoryCreateRequest.md)
  - [AdminCategoryGroup](docs/AdminCategoryGroup.md)
  - [AdminCategoryGroupList](docs/AdminCategoryGroupList.md)
+ - [AdminCategoryGroupRequest](docs/AdminCategoryGroupRequest.md)
  - [AdminCategoryList](docs/AdminCategoryList.md)
  - [AdminCategoryProvinceRequest](docs/AdminCategoryProvinceRequest.md)
+ - [AdminCategoryUpdateRequest](docs/AdminCategoryUpdateRequest.md)
  - [AdminDashboard](docs/AdminDashboard.md)
  - [AdminDecisionRequest](docs/AdminDecisionRequest.md)
  - [AdminEventCount](docs/AdminEventCount.md)
@@ -143,6 +154,7 @@ Class | Method | HTTP request | Description
  - [AdminFacilityList](docs/AdminFacilityList.md)
  - [AdminFacilityStatusCount](docs/AdminFacilityStatusCount.md)
  - [AdminId](docs/AdminId.md)
+ - [AdminMe](docs/AdminMe.md)
  - [AdminProvince](docs/AdminProvince.md)
  - [AdminProvinceList](docs/AdminProvinceList.md)
  - [AdminProvinceUpdateRequest](docs/AdminProvinceUpdateRequest.md)
@@ -162,6 +174,7 @@ Class | Method | HTTP request | Description
  - [AdminVerificationRequirement](docs/AdminVerificationRequirement.md)
  - [AdminVerificationRequirementList](docs/AdminVerificationRequirementList.md)
  - [AdminVerificationRequirementRequest](docs/AdminVerificationRequirementRequest.md)
+ - [AdminVerificationRequirementUpdateRequest](docs/AdminVerificationRequirementUpdateRequest.md)
  - [AdvertisementAction](docs/AdvertisementAction.md)
  - [AdvertisementActionTypeEnum](docs/AdvertisementActionTypeEnum.md)
  - [AdvertisementTargetScopeEnum](docs/AdvertisementTargetScopeEnum.md)

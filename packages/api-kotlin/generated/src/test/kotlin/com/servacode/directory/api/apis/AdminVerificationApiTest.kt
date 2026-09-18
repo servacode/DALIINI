@@ -20,8 +20,10 @@ import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.AdminVerificationApi
 import com.servacode.directory.api.models.AdminId
+import com.servacode.directory.api.models.AdminVerificationRequirement
 import com.servacode.directory.api.models.AdminVerificationRequirementList
 import com.servacode.directory.api.models.AdminVerificationRequirementRequest
+import com.servacode.directory.api.models.AdminVerificationRequirementUpdateRequest
 import com.servacode.directory.api.models.ApiError
 
 class AdminVerificationApiTest : ShouldSpec() {
@@ -34,6 +36,15 @@ class AdminVerificationApiTest : ShouldSpec() {
             // uncomment below to test adminVerificationRequirementCreate
             //val adminVerificationRequirementRequest : AdminVerificationRequirementRequest =  // AdminVerificationRequirementRequest | 
             //val result : AdminId = apiInstance.adminVerificationRequirementCreate(adminVerificationRequirementRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminVerificationRequirementUpdate
+        should("test adminVerificationRequirementUpdate") {
+            // uncomment below to test adminVerificationRequirementUpdate
+            //val requirementId : kotlin.Int = 56 // kotlin.Int | 
+            //val adminVerificationRequirementUpdateRequest : AdminVerificationRequirementUpdateRequest =  // AdminVerificationRequirementUpdateRequest | 
+            //val result : AdminVerificationRequirement = apiInstance.adminVerificationRequirementUpdate(requirementId, adminVerificationRequirementUpdateRequest)
             //result shouldBe ("TODO")
         }
 

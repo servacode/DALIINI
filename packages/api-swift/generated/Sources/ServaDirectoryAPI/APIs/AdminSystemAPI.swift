@@ -49,6 +49,43 @@ open class AdminSystemAPI {
     }
 
     /**
+     The current operator and the permissions they hold
+     
+     - returns: AdminMe
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminMeRetrieve() async throws -> AdminMe {
+        return try await adminMeRetrieveWithRequestBuilder().execute().body
+    }
+
+    /**
+     The current operator and the permissions they hold
+     - GET /api/v1/admin/me/
+     - Drives navigation visibility and action gating in the Admin. A UI gate is not authorization: every endpoint re-checks, and a permission revoked mid-session surfaces as a 403 on the next call.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<AdminMe> 
+     */
+    open class func adminMeRetrieveWithRequestBuilder() -> RequestBuilder<AdminMe> {
+        let localVariablePath = "/api/v1/admin/me/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminMe>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Runtime and configuration status
      
      - returns: AdminSystemStatus

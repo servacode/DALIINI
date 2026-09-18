@@ -14,7 +14,10 @@
 
 import { mapValues } from '../runtime';
 /**
+ * Capability flags. Omitting one leaves it as it is.
  * 
+ * INT-039: these were the last `supports_*` names on the wire. The column names are
+ * unchanged; `source` does the translation, as everywhere else in this app.
  * @export
  * @interface AdminCapabilitiesRequest
  */
@@ -38,7 +41,7 @@ export interface AdminCapabilitiesRequest {
      */
     supportsRatings?: boolean;
     /**
-     * 
+     * Rejected unless the category's specialization is PHARMACY.
      * @type {boolean}
      * @memberof AdminCapabilitiesRequest
      */
@@ -86,14 +89,14 @@ export function AdminCapabilitiesRequestFromJSONTyped(json: any, ignoreDiscrimin
     }
     return {
         
-        'supportsHours': json['supports_hours'] == null ? undefined : json['supports_hours'],
-        'supportsPhotos': json['supports_photos'] == null ? undefined : json['supports_photos'],
-        'supportsRatings': json['supports_ratings'] == null ? undefined : json['supports_ratings'],
-        'supportsDuty': json['supports_duty'] == null ? undefined : json['supports_duty'],
-        'supportsSpecialtyFilter': json['supports_specialty_filter'] == null ? undefined : json['supports_specialty_filter'],
-        'supportsServiceFilter': json['supports_service_filter'] == null ? undefined : json['supports_service_filter'],
-        'supportsTemporaryClosure': json['supports_temporary_closure'] == null ? undefined : json['supports_temporary_closure'],
-        'supportsOwnerOnboarding': json['supports_owner_onboarding'] == null ? undefined : json['supports_owner_onboarding'],
+        'supportsHours': json['supportsHours'] == null ? undefined : json['supportsHours'],
+        'supportsPhotos': json['supportsPhotos'] == null ? undefined : json['supportsPhotos'],
+        'supportsRatings': json['supportsRatings'] == null ? undefined : json['supportsRatings'],
+        'supportsDuty': json['supportsDuty'] == null ? undefined : json['supportsDuty'],
+        'supportsSpecialtyFilter': json['supportsSpecialtyFilter'] == null ? undefined : json['supportsSpecialtyFilter'],
+        'supportsServiceFilter': json['supportsServiceFilter'] == null ? undefined : json['supportsServiceFilter'],
+        'supportsTemporaryClosure': json['supportsTemporaryClosure'] == null ? undefined : json['supportsTemporaryClosure'],
+        'supportsOwnerOnboarding': json['supportsOwnerOnboarding'] == null ? undefined : json['supportsOwnerOnboarding'],
     };
 }
 
@@ -108,14 +111,14 @@ export function AdminCapabilitiesRequestToJSONTyped(value?: AdminCapabilitiesReq
 
     return {
         
-        'supports_hours': value['supportsHours'],
-        'supports_photos': value['supportsPhotos'],
-        'supports_ratings': value['supportsRatings'],
-        'supports_duty': value['supportsDuty'],
-        'supports_specialty_filter': value['supportsSpecialtyFilter'],
-        'supports_service_filter': value['supportsServiceFilter'],
-        'supports_temporary_closure': value['supportsTemporaryClosure'],
-        'supports_owner_onboarding': value['supportsOwnerOnboarding'],
+        'supportsHours': value['supportsHours'],
+        'supportsPhotos': value['supportsPhotos'],
+        'supportsRatings': value['supportsRatings'],
+        'supportsDuty': value['supportsDuty'],
+        'supportsSpecialtyFilter': value['supportsSpecialtyFilter'],
+        'supportsServiceFilter': value['supportsServiceFilter'],
+        'supportsTemporaryClosure': value['supportsTemporaryClosure'],
+        'supportsOwnerOnboarding': value['supportsOwnerOnboarding'],
     };
 }
 

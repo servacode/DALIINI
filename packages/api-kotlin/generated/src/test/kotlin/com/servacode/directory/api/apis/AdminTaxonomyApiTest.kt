@@ -21,9 +21,14 @@ import io.kotlintest.specs.ShouldSpec
 import com.servacode.directory.api.apis.AdminTaxonomyApi
 import com.servacode.directory.api.models.AdminCapabilities
 import com.servacode.directory.api.models.AdminCapabilitiesRequest
+import com.servacode.directory.api.models.AdminCategory
+import com.servacode.directory.api.models.AdminCategoryCreateRequest
+import com.servacode.directory.api.models.AdminCategoryGroup
 import com.servacode.directory.api.models.AdminCategoryGroupList
+import com.servacode.directory.api.models.AdminCategoryGroupRequest
 import com.servacode.directory.api.models.AdminCategoryList
 import com.servacode.directory.api.models.AdminCategoryProvinceRequest
+import com.servacode.directory.api.models.AdminCategoryUpdateRequest
 import com.servacode.directory.api.models.AdminId
 import com.servacode.directory.api.models.ApiError
 
@@ -48,6 +53,31 @@ class AdminTaxonomyApiTest : ShouldSpec() {
             //result shouldBe ("TODO")
         }
 
+        // to test adminCategoryCreate
+        should("test adminCategoryCreate") {
+            // uncomment below to test adminCategoryCreate
+            //val adminCategoryCreateRequest : AdminCategoryCreateRequest =  // AdminCategoryCreateRequest | 
+            //val result : AdminId = apiInstance.adminCategoryCreate(adminCategoryCreateRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminCategoryGroupCreate
+        should("test adminCategoryGroupCreate") {
+            // uncomment below to test adminCategoryGroupCreate
+            //val adminCategoryGroupRequest : AdminCategoryGroupRequest =  // AdminCategoryGroupRequest | 
+            //val result : AdminId = apiInstance.adminCategoryGroupCreate(adminCategoryGroupRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminCategoryGroupUpdate
+        should("test adminCategoryGroupUpdate") {
+            // uncomment below to test adminCategoryGroupUpdate
+            //val groupId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val adminCategoryGroupRequest : AdminCategoryGroupRequest =  // AdminCategoryGroupRequest | 
+            //val result : AdminCategoryGroup = apiInstance.adminCategoryGroupUpdate(groupId, adminCategoryGroupRequest)
+            //result shouldBe ("TODO")
+        }
+
         // to test adminCategoryGroupsList
         should("test adminCategoryGroupsList") {
             // uncomment below to test adminCategoryGroupsList
@@ -61,6 +91,15 @@ class AdminTaxonomyApiTest : ShouldSpec() {
             //val categoryId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //val adminCategoryProvinceRequest : AdminCategoryProvinceRequest =  // AdminCategoryProvinceRequest | 
             //val result : AdminId = apiInstance.adminCategoryProvinceReplace(categoryId, adminCategoryProvinceRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminCategoryUpdate
+        should("test adminCategoryUpdate") {
+            // uncomment below to test adminCategoryUpdate
+            //val categoryId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val adminCategoryUpdateRequest : AdminCategoryUpdateRequest =  // AdminCategoryUpdateRequest | 
+            //val result : AdminCategory = apiInstance.adminCategoryUpdate(categoryId, adminCategoryUpdateRequest)
             //result shouldBe ("TODO")
         }
 

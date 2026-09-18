@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 **supportsHours** | **Bool** |  | [optional] 
 **supportsPhotos** | **Bool** |  | [optional] 
 **supportsRatings** | **Bool** |  | [optional] 
-**supportsDuty** | **Bool** |  | [optional] 
+**supportsDuty** | **Bool** | Rejected unless the category&#39;s specialization is PHARMACY. | [optional] 
 **supportsSpecialtyFilter** | **Bool** |  | [optional] 
 **supportsServiceFilter** | **Bool** |  | [optional] 
 **supportsTemporaryClosure** | **Bool** |  | [optional] 

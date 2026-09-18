@@ -21,10 +21,10 @@ import { mapValues } from '../runtime';
 export interface AdminVerificationRequirement {
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof AdminVerificationRequirement
      */
-    id: string;
+    id: number;
     /**
      * 
      * @type {string}

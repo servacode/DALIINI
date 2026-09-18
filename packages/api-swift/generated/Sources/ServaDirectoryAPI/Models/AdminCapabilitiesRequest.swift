@@ -10,11 +10,13 @@ import Foundation
 import AnyCodable
 #endif
 
+/** Capability flags. Omitting one leaves it as it is.  INT-039: these were the last &#x60;supports_*&#x60; names on the wire. The column names are unchanged; &#x60;source&#x60; does the translation, as everywhere else in this app. */
 public struct AdminCapabilitiesRequest: Codable, JSONEncodable, Hashable {
 
     public var supportsHours: Bool?
     public var supportsPhotos: Bool?
     public var supportsRatings: Bool?
+    /** Rejected unless the category's specialization is PHARMACY. */
     public var supportsDuty: Bool?
     public var supportsSpecialtyFilter: Bool?
     public var supportsServiceFilter: Bool?
@@ -33,14 +35,14 @@ public struct AdminCapabilitiesRequest: Codable, JSONEncodable, Hashable {
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
-        case supportsHours = "supports_hours"
-        case supportsPhotos = "supports_photos"
-        case supportsRatings = "supports_ratings"
-        case supportsDuty = "supports_duty"
-        case supportsSpecialtyFilter = "supports_specialty_filter"
-        case supportsServiceFilter = "supports_service_filter"
-        case supportsTemporaryClosure = "supports_temporary_closure"
-        case supportsOwnerOnboarding = "supports_owner_onboarding"
+        case supportsHours
+        case supportsPhotos
+        case supportsRatings
+        case supportsDuty
+        case supportsSpecialtyFilter
+        case supportsServiceFilter
+        case supportsTemporaryClosure
+        case supportsOwnerOnboarding
     }
 
     // Encodable protocol methods

@@ -93,6 +93,128 @@ open class AdminTaxonomyAPI {
     }
 
     /**
+     Create a category
+     
+     - parameter adminCategoryCreateRequest: (body)  
+     - returns: AdminId
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminCategoryCreate(adminCategoryCreateRequest: AdminCategoryCreateRequest) async throws -> AdminId {
+        return try await adminCategoryCreateWithRequestBuilder(adminCategoryCreateRequest: adminCategoryCreateRequest).execute().body
+    }
+
+    /**
+     Create a category
+     - POST /api/v1/admin/categories/create/
+     - `code` and `slug` are fixed at creation and cannot be changed afterwards. A new category is invisible everywhere until its per-province switches are turned on, whatever `active` says.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter adminCategoryCreateRequest: (body)  
+     - returns: RequestBuilder<AdminId> 
+     */
+    open class func adminCategoryCreateWithRequestBuilder(adminCategoryCreateRequest: AdminCategoryCreateRequest) -> RequestBuilder<AdminId> {
+        let localVariablePath = "/api/v1/admin/categories/create/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminCategoryCreateRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminId>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Create a category group
+     
+     - parameter adminCategoryGroupRequest: (body)  (optional)
+     - returns: AdminId
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminCategoryGroupCreate(adminCategoryGroupRequest: AdminCategoryGroupRequest? = nil) async throws -> AdminId {
+        return try await adminCategoryGroupCreateWithRequestBuilder(adminCategoryGroupRequest: adminCategoryGroupRequest).execute().body
+    }
+
+    /**
+     Create a category group
+     - POST /api/v1/admin/category-groups/create/
+     - Cycle J begins here: a group has to exist before a category can join it.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter adminCategoryGroupRequest: (body)  (optional)
+     - returns: RequestBuilder<AdminId> 
+     */
+    open class func adminCategoryGroupCreateWithRequestBuilder(adminCategoryGroupRequest: AdminCategoryGroupRequest? = nil) -> RequestBuilder<AdminId> {
+        let localVariablePath = "/api/v1/admin/category-groups/create/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminCategoryGroupRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminId>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Rename, reorder or deactivate a category group
+     
+     - parameter groupId: (path)  
+     - parameter adminCategoryGroupRequest: (body)  (optional)
+     - returns: AdminCategoryGroup
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminCategoryGroupUpdate(groupId: UUID, adminCategoryGroupRequest: AdminCategoryGroupRequest? = nil) async throws -> AdminCategoryGroup {
+        return try await adminCategoryGroupUpdateWithRequestBuilder(groupId: groupId, adminCategoryGroupRequest: adminCategoryGroupRequest).execute().body
+    }
+
+    /**
+     Rename, reorder or deactivate a category group
+     - PUT /api/v1/admin/category-groups/{group_id}/
+     - The group code is immutable; sending a different one is refused.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter groupId: (path)  
+     - parameter adminCategoryGroupRequest: (body)  (optional)
+     - returns: RequestBuilder<AdminCategoryGroup> 
+     */
+    open class func adminCategoryGroupUpdateWithRequestBuilder(groupId: UUID, adminCategoryGroupRequest: AdminCategoryGroupRequest? = nil) -> RequestBuilder<AdminCategoryGroup> {
+        var localVariablePath = "/api/v1/admin/category-groups/{group_id}/"
+        let groupIdPreEscape = "\(APIHelper.mapValueToPathItem(groupId))"
+        let groupIdPostEscape = groupIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{group_id}", with: groupIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminCategoryGroupRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminCategoryGroup>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      List category groups
      
      - returns: AdminCategoryGroupList
@@ -168,6 +290,50 @@ open class AdminTaxonomyAPI {
         let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
 
         let localVariableRequestBuilder: RequestBuilder<AdminId>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Rename, move, reorder or deactivate a category
+     
+     - parameter categoryId: (path)  
+     - parameter adminCategoryUpdateRequest: (body)  (optional)
+     - returns: AdminCategory
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminCategoryUpdate(categoryId: UUID, adminCategoryUpdateRequest: AdminCategoryUpdateRequest? = nil) async throws -> AdminCategory {
+        return try await adminCategoryUpdateWithRequestBuilder(categoryId: categoryId, adminCategoryUpdateRequest: adminCategoryUpdateRequest).execute().body
+    }
+
+    /**
+     Rename, move, reorder or deactivate a category
+     - PUT /api/v1/admin/categories/{category_id}/
+     - `code` and `slug` are immutable and are not accepted. Changing the specialization re-validates the capability set, so a category that carries duty cannot be moved off PHARMACY while it does.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter categoryId: (path)  
+     - parameter adminCategoryUpdateRequest: (body)  (optional)
+     - returns: RequestBuilder<AdminCategory> 
+     */
+    open class func adminCategoryUpdateWithRequestBuilder(categoryId: UUID, adminCategoryUpdateRequest: AdminCategoryUpdateRequest? = nil) -> RequestBuilder<AdminCategory> {
+        var localVariablePath = "/api/v1/admin/categories/{category_id}/"
+        let categoryIdPreEscape = "\(APIHelper.mapValueToPathItem(categoryId))"
+        let categoryIdPostEscape = categoryIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{category_id}", with: categoryIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminCategoryUpdateRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminCategory>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
 
         return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
     }
