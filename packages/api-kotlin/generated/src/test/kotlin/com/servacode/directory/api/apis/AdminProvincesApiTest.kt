@@ -22,7 +22,7 @@ import com.servacode.directory.api.apis.AdminProvincesApi
 import com.servacode.directory.api.models.AdminProvinceList
 import com.servacode.directory.api.models.AdminProvinceUpdateRequest
 import com.servacode.directory.api.models.AdminProvinceUpdated
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 
 class AdminProvincesApiTest : ShouldSpec() {
     init {

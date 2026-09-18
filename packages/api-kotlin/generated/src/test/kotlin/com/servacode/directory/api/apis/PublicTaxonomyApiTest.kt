@@ -19,7 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.PublicTaxonomyApi
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.PublicCategoryList
 import com.servacode.directory.api.models.PublicCityList
 import com.servacode.directory.api.models.PublicProvinceList

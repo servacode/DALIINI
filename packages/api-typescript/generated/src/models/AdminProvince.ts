@@ -14,7 +14,7 @@
 
 import { mapValues } from '../runtime';
 /**
- * Emitted from `QuerySet.values()`, therefore snake_case.
+ * 
  * @export
  * @interface AdminProvince
  */
@@ -82,10 +82,10 @@ export function AdminProvinceFromJSONTyped(json: any, ignoreDiscriminator: boole
         
         'id': json['id'],
         'code': json['code'],
-        'nameAr': json['name_ar'],
-        'nameEn': json['name_en'],
+        'nameAr': json['nameAr'],
+        'nameEn': json['nameEn'],
         'active': json['active'],
-        'sortOrder': json['sort_order'],
+        'sortOrder': json['sortOrder'],
     };
 }
 
@@ -102,10 +102,10 @@ export function AdminProvinceToJSONTyped(value?: AdminProvince | null, ignoreDis
         
         'id': value['id'],
         'code': value['code'],
-        'name_ar': value['nameAr'],
-        'name_en': value['nameEn'],
+        'nameAr': value['nameAr'],
+        'nameEn': value['nameEn'],
         'active': value['active'],
-        'sort_order': value['sortOrder'],
+        'sortOrder': value['sortOrder'],
     };
 }
 

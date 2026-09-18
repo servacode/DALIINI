@@ -21,6 +21,7 @@ import io.kotlintest.specs.ShouldSpec
 import com.servacode.directory.api.apis.AnalyticsApi
 import com.servacode.directory.api.models.AnalyticsEventAccepted
 import com.servacode.directory.api.models.AnalyticsEventRequest
+import com.servacode.directory.api.models.ApiError
 
 class AnalyticsApiTest : ShouldSpec() {
     init {

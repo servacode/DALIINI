@@ -21,7 +21,7 @@ import type {
   AdminCategoryList,
   AdminCategoryProvinceRequest,
   AdminId,
-  DetailError,
+  ApiError,
 } from '../models/index';
 import {
     AdminCapabilitiesFromJSON,
@@ -36,8 +36,8 @@ import {
     AdminCategoryProvinceRequestToJSON,
     AdminIdFromJSON,
     AdminIdToJSON,
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
 } from '../models/index';
 
 export interface AdminCategoryCapabilitiesReplaceRequest {

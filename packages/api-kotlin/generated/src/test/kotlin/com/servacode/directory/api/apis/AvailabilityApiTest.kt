@@ -19,10 +19,9 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.AvailabilityApi
+import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.BusinessHourInput
 import com.servacode.directory.api.models.BusinessHoursList
-import com.servacode.directory.api.models.DetailError
-import com.servacode.directory.api.models.DomainError
 import com.servacode.directory.api.models.TemporaryClosure
 import com.servacode.directory.api.models.TemporaryClosureList
 

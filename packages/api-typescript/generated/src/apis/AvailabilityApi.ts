@@ -15,22 +15,19 @@
 
 import * as runtime from '../runtime';
 import type {
+  ApiError,
   BusinessHourInput,
   BusinessHoursList,
-  DetailError,
-  DomainError,
   TemporaryClosure,
   TemporaryClosureList,
 } from '../models/index';
 import {
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
     BusinessHourInputFromJSON,
     BusinessHourInputToJSON,
     BusinessHoursListFromJSON,
     BusinessHoursListToJSON,
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
-    DomainErrorFromJSON,
-    DomainErrorToJSON,
     TemporaryClosureFromJSON,
     TemporaryClosureToJSON,
     TemporaryClosureListFromJSON,

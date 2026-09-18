@@ -66,10 +66,24 @@ contract. A contract test rejects duplicates and hash-suffixed names.
 access token. The opaque rotating refresh secret is deliberately not described as a bearer
 credential; it travels in the refresh request body.
 
-**Errors** come in the two shapes the runtime actually produces: `DetailError`
-(`{"detail": ...}`) for authentication, permission, not-found and throttling, and
-`DomainError` (`{"error": {"code": ..., "details": ...}}`) for domain rule rejections.
-`FieldValidationError` describes DRF's field-scoped validation map. `08-API-CONTRACT.md`
-specifies a single richer envelope with `code`, `message`, `details` and `requestId` that
-the runtime does not emit today; the divergence is recorded as a defect rather than
-documented as if it were true.
+**Errors** are one component, `ApiError`, for every failure: validation, authentication,
+permission, not found, method, media type, domain conflict, throttling and unexpected
+server errors alike. It carries `code`, `message`, `details` and `requestId`, exactly as
+`08-API-CONTRACT.md` specifies. Clients branch on `code` and never on `message`. `details`
+is a map of field path to messages, empty when the error is not field-scoped. `requestId`
+is the same value as the `X-Request-ID` response header. Every endpoint can also answer
+`500` with this component; it is not listed per operation to keep the document readable.
+
+`DetailError`, `DomainError` and `DomainErrorBody` no longer exist. They described shapes
+the runtime emitted before `core.exceptions.exception_handler` was installed as the DRF
+`EXCEPTION_HANDLER`.
+
+**Pagination** is one envelope, `{items, nextCursor, hasMore}`, produced by
+`core.pagination.CursorPage`. `nextCursor` is an opaque token, not a URL; it is sent back
+unchanged as the `cursor` query parameter and must not be parsed. A malformed cursor is a
+`400` with `details.cursor`, not a `404`.
+
+**Casing** is camelCase at the boundary without exception, including endpoints that read
+through `QuerySet.values()`. A wire name that differs from its database column is
+translated in the serializer with `source=`; a column is never renamed to change a wire
+name. `AdminCapabilities*` is the one remaining snake_case pair and is tracked as INT-039.

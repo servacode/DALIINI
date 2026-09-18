@@ -7,10 +7,9 @@ import okhttp3.RequestBody
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.BusinessHourInput
 import com.servacode.directory.api.models.BusinessHoursList
-import com.servacode.directory.api.models.DetailError
-import com.servacode.directory.api.models.DomainError
 import com.servacode.directory.api.models.TemporaryClosure
 import com.servacode.directory.api.models.TemporaryClosureList
 
@@ -21,7 +20,7 @@ interface AvailabilityApi {
      * The whole week is replaced in one call. Overnight spans are supported and same-day overlaps are rejected. Only categories that declare the hours capability accept this.
      * Responses:
      *  - 200: 
-     *  - 400: The request was rejected by a domain rule.
+     *  - 400: A domain rule rejected the request; `code` names the rule.
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *  - 404: The addressed resource does not exist or is not visible to the caller.
@@ -57,7 +56,7 @@ interface AvailabilityApi {
      * A temporary closure overrides both regular hours and duty.
      * Responses:
      *  - 201: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *  - 404: The addressed resource does not exist or is not visible to the caller.

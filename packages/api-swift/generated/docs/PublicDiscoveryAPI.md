@@ -29,7 +29,7 @@ let categoryId = "categoryId_example" // String | Category to list. Required.
 let provinceId = "provinceId_example" // String | Province to scope the query to.
 let bbox = "bbox_example" // String | Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
 let cityId = "cityId_example" // String | Optional city filter. (optional)
-let cursor = "cursor_example" // String | Opaque cursor returned in the previous page's next link. (optional)
+let cursor = "cursor_example" // String | Opaque token returned as `nextCursor` by the previous page. (optional)
 let dutyNow = "dutyNow_example" // String | Pass true to keep only facilities currently on duty. (optional)
 let latitude = "latitude_example" // String | Caller latitude in WGS84 decimal degrees. Must be sent with longitude. (optional)
 let limit = 987 // Int | Page size, maximum 100, default 30. (optional)
@@ -61,7 +61,7 @@ Name | Type | Description  | Notes
  **provinceId** | **String** | Province to scope the query to. | 
  **bbox** | **String** | Viewport as west,south,east,north in WGS84 decimal degrees. | [optional] 
  **cityId** | **String** | Optional city filter. | [optional] 
- **cursor** | **String** | Opaque cursor returned in the previous page&#39;s next link. | [optional] 
+ **cursor** | **String** | Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] 
  **dutyNow** | **String** | Pass true to keep only facilities currently on duty. | [optional] 
  **latitude** | **String** | Caller latitude in WGS84 decimal degrees. Must be sent with longitude. | [optional] 
  **limit** | **Int** | Page size, maximum 100, default 30. | [optional] 
@@ -290,7 +290,7 @@ let q = "q_example" // String | Search term, at least two characters.
 let bbox = "bbox_example" // String | Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
 let categoryId = "categoryId_example" // String | Optional category filter. (optional)
 let cityId = "cityId_example" // String | Optional city filter. (optional)
-let cursor = "cursor_example" // String | Opaque cursor returned in the previous page's next link. (optional)
+let cursor = "cursor_example" // String | Opaque token returned as `nextCursor` by the previous page. (optional)
 let latitude = "latitude_example" // String | Caller latitude in WGS84 decimal degrees. Must be sent with longitude. (optional)
 let limit = 987 // Int | Page size, maximum 100, default 30. (optional)
 let longitude = "longitude_example" // String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
@@ -321,7 +321,7 @@ Name | Type | Description  | Notes
  **bbox** | **String** | Viewport as west,south,east,north in WGS84 decimal degrees. | [optional] 
  **categoryId** | **String** | Optional category filter. | [optional] 
  **cityId** | **String** | Optional city filter. | [optional] 
- **cursor** | **String** | Opaque cursor returned in the previous page&#39;s next link. | [optional] 
+ **cursor** | **String** | Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] 
  **latitude** | **String** | Caller latitude in WGS84 decimal degrees. Must be sent with longitude. | [optional] 
  **limit** | **Int** | Page size, maximum 100, default 30. | [optional] 
  **longitude** | **String** | Caller longitude in WGS84 decimal degrees. Must be sent with latitude. | [optional] 

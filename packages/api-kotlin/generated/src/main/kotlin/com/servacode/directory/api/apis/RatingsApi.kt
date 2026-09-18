@@ -7,7 +7,7 @@ import okhttp3.RequestBody
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.FacilityRating
 import com.servacode.directory.api.models.RatingWrite
 
@@ -33,7 +33,7 @@ interface RatingsApi {
      * One rating per user per facility, so repeating the call replaces the previous value. Only categories that declare the ratings capability accept this.
      * Responses:
      *  - 200: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *  - 404: The addressed resource does not exist or is not visible to the caller.

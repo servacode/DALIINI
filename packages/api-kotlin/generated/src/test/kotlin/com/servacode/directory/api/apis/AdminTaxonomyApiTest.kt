@@ -25,7 +25,7 @@ import com.servacode.directory.api.models.AdminCategoryGroupList
 import com.servacode.directory.api.models.AdminCategoryList
 import com.servacode.directory.api.models.AdminCategoryProvinceRequest
 import com.servacode.directory.api.models.AdminId
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 
 class AdminTaxonomyApiTest : ShouldSpec() {
     init {

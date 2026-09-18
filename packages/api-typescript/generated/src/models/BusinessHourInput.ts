@@ -42,7 +42,7 @@ export interface BusinessHourInput {
      * @type {number}
      * @memberof BusinessHourInput
      */
-    sortOrder?: number;
+    sequence?: number;
 }
 
 /**
@@ -68,7 +68,7 @@ export function BusinessHourInputFromJSONTyped(json: any, ignoreDiscriminator: b
         'weekday': json['weekday'],
         'opensAt': json['opensAt'],
         'closesAt': json['closesAt'],
-        'sortOrder': json['sortOrder'] == null ? undefined : json['sortOrder'],
+        'sequence': json['sequence'] == null ? undefined : json['sequence'],
     };
 }
 
@@ -86,7 +86,7 @@ export function BusinessHourInputToJSONTyped(value?: BusinessHourInput | null, i
         'weekday': value['weekday'],
         'opensAt': value['opensAt'],
         'closesAt': value['closesAt'],
-        'sortOrder': value['sortOrder'],
+        'sequence': value['sequence'],
     };
 }
 

@@ -27,7 +27,7 @@ import kotlinx.serialization.Contextual
  * @param weekday 0 is Monday, matching Python weekday numbering.
  * @param opensAt 
  * @param closesAt A value earlier than opensAt denotes an overnight span.
- * @param sortOrder 
+ * @param sequence Ordering within a weekday, for categories that open in several spans.
  */
 @Serializable
 
@@ -47,8 +47,9 @@ data class BusinessHour (
     @SerialName(value = "closesAt")
     val closesAt: kotlin.String,
 
-    @SerialName(value = "sortOrder")
-    val sortOrder: kotlin.Int
+    /* Ordering within a weekday, for categories that open in several spans. */
+    @SerialName(value = "sequence")
+    val sequence: kotlin.Int
 
 ) {
 

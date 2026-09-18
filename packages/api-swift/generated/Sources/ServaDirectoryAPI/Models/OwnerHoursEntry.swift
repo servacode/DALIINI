@@ -17,14 +17,14 @@ public struct OwnerHoursEntry: Codable, JSONEncodable, Hashable {
     public var weekday: Int
     public var opensAt: String
     public var closesAt: String
-    public var sortOrder: Int
+    public var sequence: Int
 
-    public init(id: UUID, weekday: Int, opensAt: String, closesAt: String, sortOrder: Int) {
+    public init(id: UUID, weekday: Int, opensAt: String, closesAt: String, sequence: Int) {
         self.id = id
         self.weekday = weekday
         self.opensAt = opensAt
         self.closesAt = closesAt
-        self.sortOrder = sortOrder
+        self.sequence = sequence
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
@@ -32,7 +32,7 @@ public struct OwnerHoursEntry: Codable, JSONEncodable, Hashable {
         case weekday
         case opensAt
         case closesAt
-        case sortOrder
+        case sequence
     }
 
     // Encodable protocol methods
@@ -43,7 +43,7 @@ public struct OwnerHoursEntry: Codable, JSONEncodable, Hashable {
         try container.encode(weekday, forKey: .weekday)
         try container.encode(opensAt, forKey: .opensAt)
         try container.encode(closesAt, forKey: .closesAt)
-        try container.encode(sortOrder, forKey: .sortOrder)
+        try container.encode(sequence, forKey: .sequence)
     }
 }
 

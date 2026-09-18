@@ -15,17 +15,14 @@
 
 import * as runtime from '../runtime';
 import type {
-  DetailError,
-  DomainError,
+  ApiError,
   OwnerEvidenceCreated,
   OwnerFacilityImage,
   OwnerFacilityImageList,
 } from '../models/index';
 import {
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
-    DomainErrorFromJSON,
-    DomainErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
     OwnerEvidenceCreatedFromJSON,
     OwnerEvidenceCreatedToJSON,
     OwnerFacilityImageFromJSON,

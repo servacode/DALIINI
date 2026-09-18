@@ -10,7 +10,7 @@ import Foundation
 import AnyCodable
 #endif
 
-/** Emitted from &#x60;QuerySet.values()&#x60;, therefore snake_case. Snapshots are redacted. */
+/** Snapshots in &#x60;metadata&#x60; are redacted before they are recorded. */
 public struct AdminAuditEntry: Codable, JSONEncodable, Hashable {
 
     public var id: UUID
@@ -35,13 +35,13 @@ public struct AdminAuditEntry: Codable, JSONEncodable, Hashable {
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case id
-        case actorId = "actor_id"
+        case actorId
         case action
-        case targetType = "target_type"
-        case targetId = "target_id"
-        case requestId = "request_id"
+        case targetType
+        case targetId
+        case requestId
         case metadata
-        case createdAt = "created_at"
+        case createdAt
     }
 
     // Encodable protocol methods

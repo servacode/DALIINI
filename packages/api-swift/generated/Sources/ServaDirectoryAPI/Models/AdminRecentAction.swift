@@ -26,9 +26,9 @@ public struct AdminRecentAction: Codable, JSONEncodable, Hashable {
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case action
-        case targetType = "target_type"
-        case targetId = "target_id"
-        case createdAt = "created_at"
+        case targetType
+        case targetId
+        case createdAt
     }
 
     // Encodable protocol methods

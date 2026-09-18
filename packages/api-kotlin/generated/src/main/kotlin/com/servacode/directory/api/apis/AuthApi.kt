@@ -7,10 +7,10 @@ import okhttp3.RequestBody
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.ChallengeAccepted
 import com.servacode.directory.api.models.ChallengeVerified
 import com.servacode.directory.api.models.ChallengeVerify
-import com.servacode.directory.api.models.DetailError
 import com.servacode.directory.api.models.Login
 import com.servacode.directory.api.models.LogoutRequest
 import com.servacode.directory.api.models.RecoveryReset
@@ -28,8 +28,8 @@ interface AuthApi {
      * 
      * Responses:
      *  - 200: 
-     *  - 400: Request validation failed.
-     *  - 429: Rate limit exceeded for this endpoint.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 429: Rate limit exceeded for this endpoint; see the `Retry-After` header.
      *
      * @param login 
      * @return [SessionCredentials]
@@ -43,7 +43,7 @@ interface AuthApi {
      * 
      * Responses:
      *  - 204: No response body
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *
@@ -73,7 +73,7 @@ interface AuthApi {
      * A successful reset revokes every existing session for that user.
      * Responses:
      *  - 204: No response body
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *
      * @param recoveryReset 
      * @return [Unit]
@@ -87,8 +87,8 @@ interface AuthApi {
      * 
      * Responses:
      *  - 202: 
-     *  - 400: Request validation failed.
-     *  - 429: Rate limit exceeded for this endpoint.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 429: Rate limit exceeded for this endpoint; see the `Retry-After` header.
      *
      * @param recoveryStart 
      * @return [ChallengeAccepted]
@@ -102,8 +102,8 @@ interface AuthApi {
      * 
      * Responses:
      *  - 200: 
-     *  - 400: Request validation failed.
-     *  - 429: Rate limit exceeded for this endpoint.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 429: Rate limit exceeded for this endpoint; see the `Retry-After` header.
      *
      * @param challengeVerify 
      * @return [ChallengeVerified]
@@ -117,7 +117,7 @@ interface AuthApi {
      * The supplied secret is rotated on every successful call. Replaying a secret outside the short concurrency grace window is treated as compromise and revokes every session belonging to the user.
      * Responses:
      *  - 200: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *
      * @param refresh 
      * @return [SessionCredentials]
@@ -131,7 +131,7 @@ interface AuthApi {
      * 
      * Responses:
      *  - 201: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *
      * @param registerComplete 
      * @return [SessionCredentials]
@@ -145,8 +145,8 @@ interface AuthApi {
      * Accepts 09XXXXXXXX, +9639XXXXXXXX or 009639XXXXXXXX and normalises to the canonical form. The OTP code is delivered by the configured provider and is never returned in the response.
      * Responses:
      *  - 202: 
-     *  - 400: Request validation failed.
-     *  - 429: Rate limit exceeded for this endpoint.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 429: Rate limit exceeded for this endpoint; see the `Retry-After` header.
      *
      * @param registerStart 
      * @return [ChallengeAccepted]
@@ -160,8 +160,8 @@ interface AuthApi {
      * 
      * Responses:
      *  - 200: 
-     *  - 400: Request validation failed.
-     *  - 429: Rate limit exceeded for this endpoint.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 429: Rate limit exceeded for this endpoint; see the `Retry-After` header.
      *
      * @param challengeVerify 
      * @return [ChallengeVerified]
@@ -175,7 +175,7 @@ interface AuthApi {
      * 
      * Responses:
      *  - 204: No response body
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *

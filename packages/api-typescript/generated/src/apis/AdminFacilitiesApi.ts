@@ -18,7 +18,7 @@ import type {
   AdminDecisionRequest,
   AdminFacility,
   AdminFacilityList,
-  DetailError,
+  ApiError,
 } from '../models/index';
 import {
     AdminDecisionRequestFromJSON,
@@ -27,8 +27,8 @@ import {
     AdminFacilityToJSON,
     AdminFacilityListFromJSON,
     AdminFacilityListToJSON,
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
 } from '../models/index';
 
 export interface AdminFacilityCloseRequest {

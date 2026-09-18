@@ -22,38 +22,38 @@ import {
 } from './CompactFacility';
 
 /**
- * DRF cursor pagination envelope as emitted by `FacilityCursorPagination`.
+ * The cursor envelope of `08-API-CONTRACT.md`, emitted by `core.pagination.CursorPage`.
  * @export
  * @interface FacilityCursorPage
  */
 export interface FacilityCursorPage {
     /**
-     * Absolute URL of the next page, or null on the last page.
-     * @type {string}
-     * @memberof FacilityCursorPage
-     */
-    next: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof FacilityCursorPage
-     */
-    previous: string | null;
-    /**
      * 
      * @type {Array<CompactFacility>}
      * @memberof FacilityCursorPage
      */
-    results: Array<CompactFacility>;
+    items: Array<CompactFacility>;
+    /**
+     * Opaque token for the next page, or null on the last page. Send it back unchanged as the `cursor` query parameter; never parse it.
+     * @type {string}
+     * @memberof FacilityCursorPage
+     */
+    nextCursor: string | null;
+    /**
+     * True when `nextCursor` is set.
+     * @type {boolean}
+     * @memberof FacilityCursorPage
+     */
+    hasMore: boolean;
 }
 
 /**
  * Check if a given object implements the FacilityCursorPage interface.
  */
 export function instanceOfFacilityCursorPage(value: object): value is FacilityCursorPage {
-    if (!('next' in value) || value['next'] === undefined) return false;
-    if (!('previous' in value) || value['previous'] === undefined) return false;
-    if (!('results' in value) || value['results'] === undefined) return false;
+    if (!('items' in value) || value['items'] === undefined) return false;
+    if (!('nextCursor' in value) || value['nextCursor'] === undefined) return false;
+    if (!('hasMore' in value) || value['hasMore'] === undefined) return false;
     return true;
 }
 
@@ -67,9 +67,9 @@ export function FacilityCursorPageFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
-        'next': json['next'],
-        'previous': json['previous'],
-        'results': ((json['results'] as Array<any>).map(CompactFacilityFromJSON)),
+        'items': ((json['items'] as Array<any>).map(CompactFacilityFromJSON)),
+        'nextCursor': json['nextCursor'],
+        'hasMore': json['hasMore'],
     };
 }
 
@@ -84,9 +84,9 @@ export function FacilityCursorPageToJSONTyped(value?: FacilityCursorPage | null,
 
     return {
         
-        'next': value['next'],
-        'previous': value['previous'],
-        'results': ((value['results'] as Array<any>).map(CompactFacilityToJSON)),
+        'items': ((value['items'] as Array<any>).map(CompactFacilityToJSON)),
+        'nextCursor': value['nextCursor'],
+        'hasMore': value['hasMore'],
     };
 }
 

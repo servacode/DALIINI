@@ -17,12 +17,15 @@ import * as runtime from '../runtime';
 import type {
   AnalyticsEventAccepted,
   AnalyticsEventRequest,
+  ApiError,
 } from '../models/index';
 import {
     AnalyticsEventAcceptedFromJSON,
     AnalyticsEventAcceptedToJSON,
     AnalyticsEventRequestFromJSON,
     AnalyticsEventRequestToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
 } from '../models/index';
 
 export interface AnalyticsEventCreateRequest {

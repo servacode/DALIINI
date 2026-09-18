@@ -44,11 +44,11 @@ export interface BusinessHour {
      */
     closesAt: string;
     /**
-     * 
+     * Ordering within a weekday, for categories that open in several spans.
      * @type {number}
      * @memberof BusinessHour
      */
-    sortOrder: number;
+    sequence: number;
 }
 
 /**
@@ -59,7 +59,7 @@ export function instanceOfBusinessHour(value: object): value is BusinessHour {
     if (!('weekday' in value) || value['weekday'] === undefined) return false;
     if (!('opensAt' in value) || value['opensAt'] === undefined) return false;
     if (!('closesAt' in value) || value['closesAt'] === undefined) return false;
-    if (!('sortOrder' in value) || value['sortOrder'] === undefined) return false;
+    if (!('sequence' in value) || value['sequence'] === undefined) return false;
     return true;
 }
 
@@ -77,7 +77,7 @@ export function BusinessHourFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'weekday': json['weekday'],
         'opensAt': json['opensAt'],
         'closesAt': json['closesAt'],
-        'sortOrder': json['sortOrder'],
+        'sequence': json['sequence'],
     };
 }
 
@@ -96,7 +96,7 @@ export function BusinessHourToJSONTyped(value?: BusinessHour | null, ignoreDiscr
         'weekday': value['weekday'],
         'opensAt': value['opensAt'],
         'closesAt': value['closesAt'],
-        'sortOrder': value['sortOrder'],
+        'sequence': value['sequence'],
     };
 }
 

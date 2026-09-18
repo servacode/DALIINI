@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
 import com.servacode.directory.api.models.AdminId
 import com.servacode.directory.api.models.AdminVerificationRequirementList
 import com.servacode.directory.api.models.AdminVerificationRequirementRequest
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 
 interface AdminVerificationApi {
     /**
@@ -19,7 +19,7 @@ interface AdminVerificationApi {
      * Requires the manage permission, which is re-checked inside the handler.
      * Responses:
      *  - 201: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *

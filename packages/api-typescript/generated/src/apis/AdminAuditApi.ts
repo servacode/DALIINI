@@ -16,13 +16,13 @@
 import * as runtime from '../runtime';
 import type {
   AdminAuditList,
-  DetailError,
+  ApiError,
 } from '../models/index';
 import {
     AdminAuditListFromJSON,
     AdminAuditListToJSON,
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
 } from '../models/index';
 
 /**

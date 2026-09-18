@@ -21,7 +21,7 @@ import io.kotlintest.specs.ShouldSpec
 import com.servacode.directory.api.apis.AdminSystemApi
 import com.servacode.directory.api.models.AdminDashboard
 import com.servacode.directory.api.models.AdminSystemStatus
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 
 class AdminSystemApiTest : ShouldSpec() {
     init {

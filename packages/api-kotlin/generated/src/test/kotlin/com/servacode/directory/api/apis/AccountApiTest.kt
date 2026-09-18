@@ -21,8 +21,8 @@ import io.kotlintest.specs.ShouldSpec
 import com.servacode.directory.api.apis.AccountApi
 import com.servacode.directory.api.models.AccountDeletionRequested
 import com.servacode.directory.api.models.AccountRatingList
+import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.DeletionRequest
-import com.servacode.directory.api.models.DetailError
 import com.servacode.directory.api.models.PatchedProfilePatch
 import com.servacode.directory.api.models.Profile
 

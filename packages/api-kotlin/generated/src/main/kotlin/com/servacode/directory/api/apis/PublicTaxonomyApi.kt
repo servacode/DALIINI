@@ -7,7 +7,7 @@ import okhttp3.RequestBody
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.PublicCategoryList
 import com.servacode.directory.api.models.PublicCityList
 import com.servacode.directory.api.models.PublicProvinceList

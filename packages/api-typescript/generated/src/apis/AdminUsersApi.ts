@@ -20,7 +20,7 @@ import type {
   AdminUserDetail,
   AdminUserList,
   AdminUserRolesRequest,
-  DetailError,
+  ApiError,
 } from '../models/index';
 import {
     AdminRoleListFromJSON,
@@ -33,8 +33,8 @@ import {
     AdminUserListToJSON,
     AdminUserRolesRequestFromJSON,
     AdminUserRolesRequestToJSON,
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
 } from '../models/index';
 
 export interface AdminUserBlockRequest {

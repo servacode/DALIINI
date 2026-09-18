@@ -19,8 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.MediaApi
-import com.servacode.directory.api.models.DetailError
-import com.servacode.directory.api.models.DomainError
+import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.OwnerEvidenceCreated
 import com.servacode.directory.api.models.OwnerFacilityImage
 import com.servacode.directory.api.models.OwnerFacilityImageList

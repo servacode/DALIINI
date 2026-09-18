@@ -24,8 +24,8 @@ public struct AdminAuditTrailEntry: Codable, JSONEncodable, Hashable {
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case action
-        case requestId = "request_id"
-        case createdAt = "created_at"
+        case requestId
+        case createdAt
     }
 
     // Encodable protocol methods

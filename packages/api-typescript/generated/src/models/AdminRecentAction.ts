@@ -67,9 +67,9 @@ export function AdminRecentActionFromJSONTyped(json: any, ignoreDiscriminator: b
     return {
         
         'action': json['action'],
-        'targetType': json['target_type'],
-        'targetId': json['target_id'],
-        'createdAt': (new Date(json['created_at'])),
+        'targetType': json['targetType'],
+        'targetId': json['targetId'],
+        'createdAt': (new Date(json['createdAt'])),
     };
 }
 
@@ -85,9 +85,9 @@ export function AdminRecentActionToJSONTyped(value?: AdminRecentAction | null, i
     return {
         
         'action': value['action'],
-        'target_type': value['targetType'],
-        'target_id': value['targetId'],
-        'created_at': ((value['createdAt']).toISOString()),
+        'targetType': value['targetType'],
+        'targetId': value['targetId'],
+        'createdAt': ((value['createdAt']).toISOString()),
     };
 }
 

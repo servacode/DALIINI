@@ -14,7 +14,7 @@
 
 import { mapValues } from '../runtime';
 /**
- * Emitted from `QuerySet.values()`, therefore snake_case. Snapshots are redacted.
+ * Snapshots in `metadata` are redacted before they are recorded.
  * @export
  * @interface AdminAuditEntry
  */
@@ -95,13 +95,13 @@ export function AdminAuditEntryFromJSONTyped(json: any, ignoreDiscriminator: boo
     return {
         
         'id': json['id'],
-        'actorId': json['actor_id'],
+        'actorId': json['actorId'],
         'action': json['action'],
-        'targetType': json['target_type'],
-        'targetId': json['target_id'],
-        'requestId': json['request_id'],
+        'targetType': json['targetType'],
+        'targetId': json['targetId'],
+        'requestId': json['requestId'],
         'metadata': json['metadata'],
-        'createdAt': (new Date(json['created_at'])),
+        'createdAt': (new Date(json['createdAt'])),
     };
 }
 
@@ -117,13 +117,13 @@ export function AdminAuditEntryToJSONTyped(value?: AdminAuditEntry | null, ignor
     return {
         
         'id': value['id'],
-        'actor_id': value['actorId'],
+        'actorId': value['actorId'],
         'action': value['action'],
-        'target_type': value['targetType'],
-        'target_id': value['targetId'],
-        'request_id': value['requestId'],
+        'targetType': value['targetType'],
+        'targetId': value['targetId'],
+        'requestId': value['requestId'],
         'metadata': value['metadata'],
-        'created_at': ((value['createdAt']).toISOString()),
+        'createdAt': ((value['createdAt']).toISOString()),
     };
 }
 

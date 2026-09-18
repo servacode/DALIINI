@@ -21,7 +21,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * Emitted from `QuerySet.values()`, therefore snake_case.
+ * 
  *
  * @param key 
  * @param valueType 
@@ -35,13 +35,13 @@ data class AdminSetting (
     @SerialName(value = "key")
     val key: kotlin.String,
 
-    @SerialName(value = "value_type")
+    @SerialName(value = "valueType")
     val valueType: kotlin.String,
 
     @Contextual @SerialName(value = "value")
     val `value`: kotlin.Any?,
 
-    @Contextual @SerialName(value = "updated_at")
+    @Contextual @SerialName(value = "updatedAt")
     val updatedAt: java.time.OffsetDateTime
 
 ) {

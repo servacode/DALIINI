@@ -49,10 +49,10 @@ class BusinessHourTest : ShouldSpec() {
             //modelInstance.closesAt shouldBe ("TODO")
         }
 
-        // to test the property `sortOrder`
-        should("test sortOrder") {
+        // to test the property `sequence` - Ordering within a weekday, for categories that open in several spans.
+        should("test sequence") {
             // uncomment below to test the property
-            //modelInstance.sortOrder shouldBe ("TODO")
+            //modelInstance.sequence shouldBe ("TODO")
         }
 
     }

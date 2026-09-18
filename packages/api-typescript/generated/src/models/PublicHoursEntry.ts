@@ -21,6 +21,12 @@ import { mapValues } from '../runtime';
 export interface PublicHoursEntry {
     /**
      * 
+     * @type {string}
+     * @memberof PublicHoursEntry
+     */
+    id: string;
+    /**
+     * 
      * @type {number}
      * @memberof PublicHoursEntry
      */
@@ -37,15 +43,23 @@ export interface PublicHoursEntry {
      * @memberof PublicHoursEntry
      */
     closesAt: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof PublicHoursEntry
+     */
+    sequence: number;
 }
 
 /**
  * Check if a given object implements the PublicHoursEntry interface.
  */
 export function instanceOfPublicHoursEntry(value: object): value is PublicHoursEntry {
+    if (!('id' in value) || value['id'] === undefined) return false;
     if (!('weekday' in value) || value['weekday'] === undefined) return false;
     if (!('opensAt' in value) || value['opensAt'] === undefined) return false;
     if (!('closesAt' in value) || value['closesAt'] === undefined) return false;
+    if (!('sequence' in value) || value['sequence'] === undefined) return false;
     return true;
 }
 
@@ -59,9 +73,11 @@ export function PublicHoursEntryFromJSONTyped(json: any, ignoreDiscriminator: bo
     }
     return {
         
+        'id': json['id'],
         'weekday': json['weekday'],
         'opensAt': json['opensAt'],
         'closesAt': json['closesAt'],
+        'sequence': json['sequence'],
     };
 }
 
@@ -76,9 +92,11 @@ export function PublicHoursEntryToJSONTyped(value?: PublicHoursEntry | null, ign
 
     return {
         
+        'id': value['id'],
         'weekday': value['weekday'],
         'opensAt': value['opensAt'],
         'closesAt': value['closesAt'],
+        'sequence': value['sequence'],
     };
 }
 

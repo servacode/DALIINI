@@ -22,7 +22,7 @@ import {
 } from './AdvertisementTargetScopeEnum';
 
 /**
- * Emitted from `QuerySet.values()`, therefore snake_case.
+ * 
  * @export
  * @interface AdminAdvertisement
  */
@@ -105,13 +105,13 @@ export function AdminAdvertisementFromJSONTyped(json: any, ignoreDiscriminator: 
     return {
         
         'id': json['id'],
-        'titleAr': json['title_ar'],
-        'targetScope': AdvertisementTargetScopeEnumFromJSON(json['target_scope']),
+        'titleAr': json['titleAr'],
+        'targetScope': AdvertisementTargetScopeEnumFromJSON(json['targetScope']),
         'enabled': json['enabled'],
-        'startsAt': (json['starts_at'] == null ? null : new Date(json['starts_at'])),
-        'endsAt': (json['ends_at'] == null ? null : new Date(json['ends_at'])),
-        'sortOrder': json['sort_order'],
-        'slideDurationMs': json['slide_duration_ms'],
+        'startsAt': (json['startsAt'] == null ? null : new Date(json['startsAt'])),
+        'endsAt': (json['endsAt'] == null ? null : new Date(json['endsAt'])),
+        'sortOrder': json['sortOrder'],
+        'slideDurationMs': json['slideDurationMs'],
     };
 }
 
@@ -127,13 +127,13 @@ export function AdminAdvertisementToJSONTyped(value?: AdminAdvertisement | null,
     return {
         
         'id': value['id'],
-        'title_ar': value['titleAr'],
-        'target_scope': AdvertisementTargetScopeEnumToJSON(value['targetScope']),
+        'titleAr': value['titleAr'],
+        'targetScope': AdvertisementTargetScopeEnumToJSON(value['targetScope']),
         'enabled': value['enabled'],
-        'starts_at': ((value['startsAt'] as any).toISOString()),
-        'ends_at': ((value['endsAt'] as any).toISOString()),
-        'sort_order': value['sortOrder'],
-        'slide_duration_ms': value['slideDurationMs'],
+        'startsAt': ((value['startsAt'] as any).toISOString()),
+        'endsAt': ((value['endsAt'] as any).toISOString()),
+        'sortOrder': value['sortOrder'],
+        'slideDurationMs': value['slideDurationMs'],
     };
 }
 

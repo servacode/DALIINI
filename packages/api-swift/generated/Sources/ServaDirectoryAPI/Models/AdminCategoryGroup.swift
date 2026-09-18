@@ -10,7 +10,6 @@ import Foundation
 import AnyCodable
 #endif
 
-/** Emitted from &#x60;QuerySet.values()&#x60;, therefore snake_case. */
 public struct AdminCategoryGroup: Codable, JSONEncodable, Hashable {
 
     public var id: UUID
@@ -32,10 +31,10 @@ public struct AdminCategoryGroup: Codable, JSONEncodable, Hashable {
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case id
         case code
-        case nameAr = "name_ar"
-        case nameEn = "name_en"
+        case nameAr
+        case nameEn
         case active
-        case sortOrder = "sort_order"
+        case sortOrder
     }
 
     // Encodable protocol methods

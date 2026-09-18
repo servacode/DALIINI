@@ -40,19 +40,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/account/profile/:
@@ -74,13 +75,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
     patch:
@@ -112,19 +113,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/account/ratings/:
@@ -146,13 +148,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/admin/ads/:
@@ -174,13 +176,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
     post:
@@ -215,19 +217,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/admin/ads/{advertisement_id}/:
@@ -252,20 +255,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/admin/analytics/:
@@ -287,13 +290,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/admin/applications/:
@@ -316,13 +319,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/admin/applications/{application_id}/:
@@ -353,20 +356,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/admin/applications/{application_id}/approve/:
@@ -409,26 +412,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/admin/applications/{application_id}/reject/:
@@ -469,26 +473,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/admin/audit/:
@@ -511,13 +516,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/admin/categories/:
@@ -539,13 +544,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/admin/categories/{category_id}/capabilities/:
@@ -586,26 +591,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/admin/categories/{category_id}/provinces/:
@@ -647,26 +653,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/admin/category-groups/:
@@ -688,13 +695,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/admin/dashboard/:
@@ -716,13 +723,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/admin/evidence/{evidence_id}/content/:
@@ -753,20 +760,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/admin/facilities/:
@@ -789,13 +796,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/admin/facilities/{facility_id}/:
@@ -824,20 +831,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/admin/facilities/{facility_id}/close/:
@@ -877,26 +884,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/admin/facilities/{facility_id}/reactivate/:
@@ -936,26 +944,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/admin/facilities/{facility_id}/suspend/:
@@ -996,26 +1005,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/admin/provinces/:
@@ -1037,13 +1047,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/admin/provinces/{province_id}/:
@@ -1083,20 +1093,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/admin/roles/:
@@ -1118,13 +1128,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/admin/settings/:
@@ -1146,13 +1156,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
     put:
@@ -1187,19 +1197,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/admin/system/status/:
@@ -1223,13 +1234,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/admin/users/:
@@ -1252,13 +1263,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/admin/users/{user_id}/:
@@ -1287,20 +1298,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/admin/users/{user_id}/block/:
@@ -1330,20 +1341,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/admin/users/{user_id}/roles/:
@@ -1382,26 +1393,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/admin/users/{user_id}/unblock/:
@@ -1431,20 +1443,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/admin/verification-requirements/:
@@ -1466,13 +1478,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
     post:
@@ -1507,19 +1519,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/analytics/events/:
@@ -1560,8 +1573,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
   /api/v1/auth/login/:
     post:
       operationId: authLogin
@@ -1593,14 +1607,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '429':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
-          description: Rate limit exceeded for this endpoint.
+                $ref: '#/components/schemas/ApiError'
+          description: Rate limit exceeded for this endpoint; see the `Retry-After`
+            header.
   /api/v1/auth/logout/:
     post:
       operationId: authLogout
@@ -1628,19 +1644,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/auth/logout-all/:
@@ -1658,13 +1675,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/auth/recovery/reset/:
@@ -1695,8 +1712,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
   /api/v1/auth/recovery/start/:
     post:
       operationId: authRecoveryStart
@@ -1728,14 +1746,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '429':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
-          description: Rate limit exceeded for this endpoint.
+                $ref: '#/components/schemas/ApiError'
+          description: Rate limit exceeded for this endpoint; see the `Retry-After`
+            header.
   /api/v1/auth/recovery/verify/:
     post:
       operationId: authRecoveryVerify
@@ -1767,14 +1787,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '429':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
-          description: Rate limit exceeded for this endpoint.
+                $ref: '#/components/schemas/ApiError'
+          description: Rate limit exceeded for this endpoint; see the `Retry-After`
+            header.
   /api/v1/auth/refresh/:
     post:
       operationId: authRefresh
@@ -1809,8 +1831,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
   /api/v1/auth/register/complete/:
     post:
       operationId: authRegisterComplete
@@ -1842,8 +1865,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
   /api/v1/auth/register/start/:
     post:
       operationId: authRegisterStart
@@ -1878,14 +1902,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '429':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
-          description: Rate limit exceeded for this endpoint.
+                $ref: '#/components/schemas/ApiError'
+          description: Rate limit exceeded for this endpoint; see the `Retry-After`
+            header.
   /api/v1/auth/register/verify/:
     post:
       operationId: authRegisterVerify
@@ -1917,14 +1943,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '429':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
-          description: Rate limit exceeded for this endpoint.
+                $ref: '#/components/schemas/ApiError'
+          description: Rate limit exceeded for this endpoint; see the `Retry-After`
+            header.
   /api/v1/auth/sessions/:
     get:
       operationId: authSessionsList
@@ -1946,13 +1974,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/auth/sessions/{session_id}/:
@@ -1977,19 +2005,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/facilities/{facility_id}/rating/:
@@ -2033,26 +2062,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
     delete:
@@ -2076,13 +2106,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/owner/config/:
@@ -2114,26 +2144,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainError'
-          description: The request was rejected by a domain rule.
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/owner/facilities/:
@@ -2155,13 +2185,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
     post:
@@ -2197,19 +2227,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainError'
-          description: The request was rejected by a domain rule.
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
   /api/v1/owner/facilities/{facility_id}/:
@@ -2238,20 +2268,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
     patch:
@@ -2292,26 +2322,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainError'
-          description: The request was rejected by a domain rule.
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/owner/facilities/{facility_id}/duty/:
@@ -2340,20 +2370,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
     post:
@@ -2396,33 +2426,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
         '409':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainError'
+                $ref: '#/components/schemas/ApiError'
           description: The request conflicts with the current state or with a domain
             rule.
   /api/v1/owner/facilities/{facility_id}/duty/{shift_id}/:
@@ -2468,33 +2499,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
         '409':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainError'
+                $ref: '#/components/schemas/ApiError'
           description: The request conflicts with the current state or with a domain
             rule.
     delete:
@@ -2524,20 +2556,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/owner/facilities/{facility_id}/evidence/:
@@ -2575,33 +2607,33 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainError'
-          description: The request was rejected by a domain rule.
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
         '409':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainError'
+                $ref: '#/components/schemas/ApiError'
           description: The request conflicts with the current state or with a domain
             rule.
   /api/v1/owner/facilities/{facility_id}/evidence/{evidence_id}/:
@@ -2633,27 +2665,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
         '409':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainError'
+                $ref: '#/components/schemas/ApiError'
           description: The request conflicts with the current state or with a domain
             rule.
   /api/v1/owner/facilities/{facility_id}/hours/:
@@ -2703,33 +2735,33 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainError'
-          description: The request was rejected by a domain rule.
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
         '409':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainError'
+                $ref: '#/components/schemas/ApiError'
           description: The request conflicts with the current state or with a domain
             rule.
   /api/v1/owner/facilities/{facility_id}/images/:
@@ -2758,20 +2790,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
     post:
@@ -2808,33 +2840,33 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainError'
-          description: The request was rejected by a domain rule.
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
         '409':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainError'
+                $ref: '#/components/schemas/ApiError'
           description: The request conflicts with the current state or with a domain
             rule.
   /api/v1/owner/facilities/{facility_id}/images/{image_id}/:
@@ -2865,20 +2897,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/owner/facilities/{facility_id}/location/:
@@ -2921,26 +2953,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/owner/facilities/{facility_id}/members/:
@@ -2969,20 +3002,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
     post:
@@ -3023,33 +3056,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
         '409':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainError'
+                $ref: '#/components/schemas/ApiError'
           description: The request conflicts with the current state or with a domain
             rule.
   /api/v1/owner/facilities/{facility_id}/members/{user_id}/:
@@ -3081,27 +3115,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
         '409':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainError'
+                $ref: '#/components/schemas/ApiError'
           description: The request conflicts with the current state or with a domain
             rule.
   /api/v1/owner/facilities/{facility_id}/submit/:
@@ -3133,26 +3167,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainError'
-          description: The request was rejected by a domain rule.
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/owner/facilities/{facility_id}/temporary-closures/:
@@ -3181,20 +3215,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
     post:
@@ -3235,33 +3269,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
         '409':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DomainError'
+                $ref: '#/components/schemas/ApiError'
           description: The request conflicts with the current state or with a domain
             rule.
   /api/v1/owner/facilities/{facility_id}/temporary-closures/{closure_id}/:
@@ -3292,20 +3327,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: No valid access token was supplied.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/public/ads/:
@@ -3362,7 +3397,7 @@ paths:
         name: cursor
         schema:
           type: string
-        description: Opaque cursor returned in the previous page's next link.
+        description: Opaque token returned as `nextCursor` by the previous page.
       - in: query
         name: dutyNow
         schema:
@@ -3433,8 +3468,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
   /api/v1/public/facilities/{facility_id}/:
     get:
       operationId: publicFacilityRetrieve
@@ -3465,7 +3501,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/public/home/:
@@ -3545,13 +3581,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/public/map/facilities/:
@@ -3630,8 +3667,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
   /api/v1/public/provinces/:
     get:
       operationId: publicProvincesList
@@ -3675,7 +3713,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/public/provinces/{province_id}/cities/:
@@ -3702,7 +3740,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DetailError'
+                $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
   /api/v1/public/search/:
@@ -3729,7 +3767,7 @@ paths:
         name: cursor
         schema:
           type: string
-        description: Opaque cursor returned in the previous page's next link.
+        description: Opaque token returned as `nextCursor` by the previous page.
       - in: query
         name: latitude
         schema:
@@ -3796,8 +3834,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldValidationError'
-          description: Request validation failed.
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
 components:
   schemas:
     AccountDeletionRequested:
@@ -3852,38 +3891,37 @@ components:
       - items
     AdminAdvertisement:
       type: object
-      description: Emitted from `QuerySet.values()`, therefore snake_case.
       properties:
         id:
           type: string
           format: uuid
-        title_ar:
+        titleAr:
           type: string
-        target_scope:
+        targetScope:
           $ref: '#/components/schemas/AdvertisementTargetScopeEnum'
         enabled:
           type: boolean
-        starts_at:
+        startsAt:
           type: string
           format: date-time
           nullable: true
-        ends_at:
+        endsAt:
           type: string
           format: date-time
           nullable: true
-        sort_order:
+        sortOrder:
           type: integer
-        slide_duration_ms:
+        slideDurationMs:
           type: integer
       required:
       - enabled
-      - ends_at
+      - endsAt
       - id
-      - slide_duration_ms
-      - sort_order
-      - starts_at
-      - target_scope
-      - title_ar
+      - slideDurationMs
+      - sortOrder
+      - startsAt
+      - targetScope
+      - titleAr
     AdminAdvertisementList:
       type: object
       properties:
@@ -4073,39 +4111,38 @@ components:
       - items
     AdminAuditEntry:
       type: object
-      description: Emitted from `QuerySet.values()`, therefore snake_case. Snapshots
-        are redacted.
+      description: Snapshots in `metadata` are redacted before they are recorded.
       properties:
         id:
           type: string
           format: uuid
-        actor_id:
+        actorId:
           type: string
           format: uuid
           nullable: true
         action:
           type: string
-        target_type:
+        targetType:
           type: string
-        target_id:
+        targetId:
           type: string
-        request_id:
+        requestId:
           type: string
         metadata:
           type: object
           additionalProperties: {}
-        created_at:
+        createdAt:
           type: string
           format: date-time
       required:
       - action
-      - actor_id
-      - created_at
+      - actorId
+      - createdAt
       - id
       - metadata
-      - request_id
-      - target_id
-      - target_type
+      - requestId
+      - targetId
+      - targetType
     AdminAuditList:
       type: object
       properties:
@@ -4120,15 +4157,15 @@ components:
       properties:
         action:
           type: string
-        request_id:
+        requestId:
           type: string
-        created_at:
+        createdAt:
           type: string
           format: date-time
       required:
       - action
-      - created_at
-      - request_id
+      - createdAt
+      - requestId
     AdminCapabilities:
       type: object
       description: The response echoes every capability flag after the update.
@@ -4170,65 +4207,63 @@ components:
           type: boolean
     AdminCategory:
       type: object
-      description: Emitted from `QuerySet.values()`, therefore snake_case.
       properties:
         id:
           type: string
           format: uuid
-        group_id:
+        groupId:
           type: string
           format: uuid
         code:
           type: string
         slug:
           type: string
-        name_ar:
+        nameAr:
           type: string
-        name_en:
+        nameEn:
           type: string
-        icon_key:
+        iconKey:
           type: string
         specialization:
           type: string
         active:
           type: boolean
-        sort_order:
+        sortOrder:
           type: integer
       required:
       - active
       - code
-      - group_id
-      - icon_key
+      - groupId
+      - iconKey
       - id
-      - name_ar
-      - name_en
+      - nameAr
+      - nameEn
       - slug
-      - sort_order
+      - sortOrder
       - specialization
     AdminCategoryGroup:
       type: object
-      description: Emitted from `QuerySet.values()`, therefore snake_case.
       properties:
         id:
           type: string
           format: uuid
         code:
           type: string
-        name_ar:
+        nameAr:
           type: string
-        name_en:
+        nameEn:
           type: string
         active:
           type: boolean
-        sort_order:
+        sortOrder:
           type: integer
       required:
       - active
       - code
       - id
-      - name_ar
-      - name_en
-      - sort_order
+      - nameAr
+      - nameEn
+      - sortOrder
     AdminCategoryGroupList:
       type: object
       properties:
@@ -4388,28 +4423,27 @@ components:
       - id
     AdminProvince:
       type: object
-      description: Emitted from `QuerySet.values()`, therefore snake_case.
       properties:
         id:
           type: string
           format: uuid
         code:
           type: string
-        name_ar:
+        nameAr:
           type: string
-        name_en:
+        nameEn:
           type: string
         active:
           type: boolean
-        sort_order:
+        sortOrder:
           type: integer
       required:
       - active
       - code
       - id
-      - name_ar
-      - name_en
-      - sort_order
+      - nameAr
+      - nameEn
+      - sortOrder
     AdminProvinceList:
       type: object
       properties:
@@ -4441,18 +4475,18 @@ components:
       properties:
         action:
           type: string
-        target_type:
+        targetType:
           type: string
-        target_id:
+        targetId:
           type: string
-        created_at:
+        createdAt:
           type: string
           format: date-time
       required:
       - action
-      - created_at
-      - target_id
-      - target_type
+      - createdAt
+      - targetId
+      - targetType
     AdminRole:
       type: object
       properties:
@@ -4482,22 +4516,21 @@ components:
       - items
     AdminSetting:
       type: object
-      description: Emitted from `QuerySet.values()`, therefore snake_case.
       properties:
         key:
           type: string
-        value_type:
+        valueType:
           type: string
         value:
           nullable: true
-        updated_at:
+        updatedAt:
           type: string
           format: date-time
       required:
       - key
-      - updated_at
+      - updatedAt
       - value
-      - value_type
+      - valueType
     AdminSettingList:
       type: object
       properties:
@@ -4653,38 +4686,37 @@ components:
       - roleIds
     AdminVerificationRequirement:
       type: object
-      description: Emitted from `QuerySet.values()`, therefore snake_case.
       properties:
         id:
           type: string
           format: uuid
-        category_id:
+        categoryId:
           type: string
           format: uuid
-        label_ar:
+        labelAr:
           type: string
-        label_en:
+        labelEn:
           type: string
         required:
           type: boolean
         active:
           type: boolean
-        min_files:
+        minFiles:
           type: integer
-        max_files:
+        maxFiles:
           type: integer
-        sort_order:
+        sortOrder:
           type: integer
       required:
       - active
-      - category_id
+      - categoryId
       - id
-      - label_ar
-      - label_en
-      - max_files
-      - min_files
+      - labelAr
+      - labelEn
+      - maxFiles
+      - minFiles
       - required
-      - sort_order
+      - sortOrder
     AdminVerificationRequirementList:
       type: object
       properties:
@@ -4796,6 +4828,42 @@ components:
           description: Client-side event time, ISO-8601. Defaults to receipt time.
       required:
       - name
+    ApiError:
+      type: object
+      description: The single error envelope returned by every failing request.
+      properties:
+        code:
+          type: string
+          description: Stable machine-readable code. Clients branch on this and never
+            on `message`. Transport codes are VALIDATION_ERROR, AUTHENTICATION_REQUIRED,
+            AUTHENTICATION_FAILED, PERMISSION_DENIED, NOT_FOUND, METHOD_NOT_ALLOWED,
+            NOT_ACCEPTABLE, UNSUPPORTED_MEDIA_TYPE, THROTTLED and INTERNAL_ERROR;
+            domain codes such as DUTY_OVERLAP_OR_INVALID are documented on the operations
+            that raise them.
+        message:
+          type: string
+          description: Human-readable Arabic message, safe to display. Never parsed
+            by clients.
+        details:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          description: Field-scoped messages keyed by request field path. Nested paths
+            are joined with dots and list indices are bracketed, for example `contacts[1].phone`.
+            A message with no field of its own appears under `nonFieldErrors`. Empty
+            when the error is not field-scoped.
+        requestId:
+          type: string
+          description: The request correlation id, identical to the `X-Request-ID`
+            response header and to the id recorded in the server logs. Quote it in
+            a support report.
+      required:
+      - code
+      - details
+      - message
+      - requestId
     Availability:
       type: object
       description: Computed server-side by the availability engine; clients must not
@@ -4855,13 +4923,15 @@ components:
           type: string
           format: time
           description: A value earlier than opensAt denotes an overnight span.
-        sortOrder:
+        sequence:
           type: integer
+          description: Ordering within a weekday, for categories that open in several
+            spans.
       required:
       - closesAt
       - id
       - opensAt
-      - sortOrder
+      - sequence
       - weekday
     BusinessHourInput:
       type: object
@@ -4876,7 +4946,7 @@ components:
         closesAt:
           type: string
           format: time
-        sortOrder:
+        sequence:
           type: integer
           minimum: 0
           default: 0
@@ -5058,36 +5128,6 @@ components:
       description: |-
         * `configured` - configured
         * `unconfigured` - unconfigured
-    DetailError:
-      type: object
-      description: DRF's default single-message body, used for auth, permission, 404
-        and throttling.
-      properties:
-        detail:
-          type: string
-      required:
-      - detail
-    DomainError:
-      type: object
-      description: 'Domain rule rejection: `{"error": {"code": ..., "details": ...}}`.'
-      properties:
-        error:
-          $ref: '#/components/schemas/DomainErrorBody'
-      required:
-      - error
-    DomainErrorBody:
-      type: object
-      properties:
-        code:
-          type: string
-          description: Stable machine-readable domain code, for example DUTY_OVERLAP_OR_INVALID.
-        details:
-          type: object
-          additionalProperties: {}
-          description: Optional field-scoped detail, present on validation-style domain
-            errors.
-      required:
-      - code
     DutyShift:
       type: object
       properties:
@@ -5167,23 +5207,24 @@ components:
       - provinceId
     FacilityCursorPage:
       type: object
-      description: DRF cursor pagination envelope as emitted by `FacilityCursorPagination`.
+      description: The cursor envelope of `08-API-CONTRACT.md`, emitted by `core.pagination.CursorPage`.
       properties:
-        next:
-          type: string
-          nullable: true
-          description: Absolute URL of the next page, or null on the last page.
-        previous:
-          type: string
-          nullable: true
-        results:
+        items:
           type: array
           items:
             $ref: '#/components/schemas/CompactFacility'
+        nextCursor:
+          type: string
+          nullable: true
+          description: Opaque token for the next page, or null on the last page. Send
+            it back unchanged as the `cursor` query parameter; never parse it.
+        hasMore:
+          type: boolean
+          description: True when `nextCursor` is set.
       required:
-      - next
-      - previous
-      - results
+      - hasMore
+      - items
+      - nextCursor
     FacilityImage:
       type: object
       properties:
@@ -5261,14 +5302,6 @@ components:
         * `REVERIFICATION_REQUIRED` - Reverification required
         * `SUSPENDED` - Suspended
         * `CLOSED` - Closed
-    FieldValidationError:
-      type: object
-      description: Field-scoped validation errors. Keys are request field names; values
-        are the messages for that field. A non-field error is reported under `non_field_errors`.
-      additionalProperties:
-        type: array
-        items:
-          type: string
     HomeCategory:
       type: object
       properties:
@@ -5693,13 +5726,13 @@ components:
         closesAt:
           type: string
           format: time
-        sortOrder:
+        sequence:
           type: integer
       required:
       - closesAt
       - id
       - opensAt
-      - sortOrder
+      - sequence
       - weekday
     OwnerMember:
       type: object
@@ -6122,6 +6155,9 @@ components:
     PublicHoursEntry:
       type: object
       properties:
+        id:
+          type: string
+          format: uuid
         weekday:
           type: integer
           maximum: 6
@@ -6132,9 +6168,13 @@ components:
         closesAt:
           type: string
           format: time
+        sequence:
+          type: integer
       required:
       - closesAt
+      - id
       - opensAt
+      - sequence
       - weekday
     PublicImageUpload:
       type: object

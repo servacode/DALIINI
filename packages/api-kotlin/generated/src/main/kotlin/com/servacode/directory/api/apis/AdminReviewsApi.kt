@@ -12,7 +12,7 @@ import com.servacode.directory.api.models.AdminApplication
 import com.servacode.directory.api.models.AdminApplicationDetail
 import com.servacode.directory.api.models.AdminApplicationList
 import com.servacode.directory.api.models.AdminDecisionRequest
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 
 interface AdminReviewsApi {
     /**
@@ -37,7 +37,7 @@ interface AdminReviewsApi {
      * Runs in one transaction: the application and the facility lifecycle are locked, the current requirements are re-checked, the change is audited and the realtime event is emitted only after commit.
      * Responses:
      *  - 200: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *  - 404: The addressed resource does not exist or is not visible to the caller.
@@ -55,7 +55,7 @@ interface AdminReviewsApi {
      * A reason is recorded in the audit trail; nothing is silently deleted.
      * Responses:
      *  - 200: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *  - 404: The addressed resource does not exist or is not visible to the caller.

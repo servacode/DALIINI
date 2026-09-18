@@ -13,7 +13,7 @@ import com.servacode.directory.api.models.AdminCategoryGroupList
 import com.servacode.directory.api.models.AdminCategoryList
 import com.servacode.directory.api.models.AdminCategoryProvinceRequest
 import com.servacode.directory.api.models.AdminId
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 
 interface AdminTaxonomyApi {
     /**
@@ -36,7 +36,7 @@ interface AdminTaxonomyApi {
      * Duty can only be enabled for an approved specialization.
      * Responses:
      *  - 200: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *  - 404: The addressed resource does not exist or is not visible to the caller.
@@ -68,7 +68,7 @@ interface AdminTaxonomyApi {
      * Public visibility and owner onboarding are independent switches.
      * Responses:
      *  - 200: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *  - 404: The addressed resource does not exist or is not visible to the caller.

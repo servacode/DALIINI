@@ -16,13 +16,13 @@
 import * as runtime from '../runtime';
 import type {
   AdminAnalytics,
-  DetailError,
+  ApiError,
 } from '../models/index';
 import {
     AdminAnalyticsFromJSON,
     AdminAnalyticsToJSON,
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
 } from '../models/index';
 
 /**

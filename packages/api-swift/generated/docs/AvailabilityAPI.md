@@ -25,7 +25,7 @@ The whole week is replaced in one call. Overnight spans are supported and same-d
 import ServaDirectoryAPI
 
 let facilityId = 987 // UUID | 
-let businessHourInput = [BusinessHourInput(weekday: 123, opensAt: "opensAt_example", closesAt: "closesAt_example", sortOrder: 123)] // [BusinessHourInput] | 
+let businessHourInput = [BusinessHourInput(weekday: 123, opensAt: "opensAt_example", closesAt: "closesAt_example", sequence: 123)] // [BusinessHourInput] | 
 
 // Replace the weekly opening hours of a facility
 AvailabilityAPI.ownerFacilityHoursReplace(facilityId: facilityId, businessHourInput: businessHourInput) { (response, error) in

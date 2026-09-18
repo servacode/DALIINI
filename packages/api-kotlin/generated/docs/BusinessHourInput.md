@@ -7,7 +7,7 @@
 | **weekday** | **kotlin.Int** |  |  |
 | **opensAt** | **kotlin.String** |  |  |
 | **closesAt** | **kotlin.String** |  |  |
-| **sortOrder** | **kotlin.Int** |  |  [optional] |
+| **sequence** | **kotlin.Int** |  |  [optional] |
 
 
 

@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 
 import com.servacode.directory.api.models.AdminDashboard
 import com.servacode.directory.api.models.AdminSystemStatus
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 
 interface AdminSystemApi {
     /**

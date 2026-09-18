@@ -21,7 +21,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * Emitted from `QuerySet.values()`, therefore snake_case.
+ * 
  *
  * @param id 
  * @param groupId 
@@ -41,7 +41,7 @@ data class AdminCategory (
     @Contextual @SerialName(value = "id")
     val id: java.util.UUID,
 
-    @Contextual @SerialName(value = "group_id")
+    @Contextual @SerialName(value = "groupId")
     val groupId: java.util.UUID,
 
     @SerialName(value = "code")
@@ -50,13 +50,13 @@ data class AdminCategory (
     @SerialName(value = "slug")
     val slug: kotlin.String,
 
-    @SerialName(value = "name_ar")
+    @SerialName(value = "nameAr")
     val nameAr: kotlin.String,
 
-    @SerialName(value = "name_en")
+    @SerialName(value = "nameEn")
     val nameEn: kotlin.String,
 
-    @SerialName(value = "icon_key")
+    @SerialName(value = "iconKey")
     val iconKey: kotlin.String,
 
     @SerialName(value = "specialization")
@@ -65,7 +65,7 @@ data class AdminCategory (
     @SerialName(value = "active")
     val active: kotlin.Boolean,
 
-    @SerialName(value = "sort_order")
+    @SerialName(value = "sortOrder")
     val sortOrder: kotlin.Int
 
 ) {

@@ -26,22 +26,22 @@ class FacilityCursorPageTest : ShouldSpec() {
         // uncomment below to create an instance of FacilityCursorPage
         //val modelInstance = FacilityCursorPage()
 
-        // to test the property `next` - Absolute URL of the next page, or null on the last page.
-        should("test next") {
+        // to test the property `items`
+        should("test items") {
             // uncomment below to test the property
-            //modelInstance.next shouldBe ("TODO")
+            //modelInstance.items shouldBe ("TODO")
         }
 
-        // to test the property `previous`
-        should("test previous") {
+        // to test the property `nextCursor` - Opaque token for the next page, or null on the last page. Send it back unchanged as the `cursor` query parameter; never parse it.
+        should("test nextCursor") {
             // uncomment below to test the property
-            //modelInstance.previous shouldBe ("TODO")
+            //modelInstance.nextCursor shouldBe ("TODO")
         }
 
-        // to test the property `results`
-        should("test results") {
+        // to test the property `hasMore` - True when `nextCursor` is set.
+        should("test hasMore") {
             // uncomment below to test the property
-            //modelInstance.results shouldBe ("TODO")
+            //modelInstance.hasMore shouldBe ("TODO")
         }
 
     }

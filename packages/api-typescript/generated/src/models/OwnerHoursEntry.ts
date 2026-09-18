@@ -48,7 +48,7 @@ export interface OwnerHoursEntry {
      * @type {number}
      * @memberof OwnerHoursEntry
      */
-    sortOrder: number;
+    sequence: number;
 }
 
 /**
@@ -59,7 +59,7 @@ export function instanceOfOwnerHoursEntry(value: object): value is OwnerHoursEnt
     if (!('weekday' in value) || value['weekday'] === undefined) return false;
     if (!('opensAt' in value) || value['opensAt'] === undefined) return false;
     if (!('closesAt' in value) || value['closesAt'] === undefined) return false;
-    if (!('sortOrder' in value) || value['sortOrder'] === undefined) return false;
+    if (!('sequence' in value) || value['sequence'] === undefined) return false;
     return true;
 }
 
@@ -77,7 +77,7 @@ export function OwnerHoursEntryFromJSONTyped(json: any, ignoreDiscriminator: boo
         'weekday': json['weekday'],
         'opensAt': json['opensAt'],
         'closesAt': json['closesAt'],
-        'sortOrder': json['sortOrder'],
+        'sequence': json['sequence'],
     };
 }
 
@@ -96,7 +96,7 @@ export function OwnerHoursEntryToJSONTyped(value?: OwnerHoursEntry | null, ignor
         'weekday': value['weekday'],
         'opensAt': value['opensAt'],
         'closesAt': value['closesAt'],
-        'sortOrder': value['sortOrder'],
+        'sequence': value['sequence'],
     };
 }
 

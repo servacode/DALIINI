@@ -15,17 +15,14 @@
 
 import * as runtime from '../runtime';
 import type {
-  DetailError,
-  DomainError,
+  ApiError,
   DutyShift,
   DutyShiftList,
   PatchedDutyShift,
 } from '../models/index';
 import {
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
-    DomainErrorFromJSON,
-    DomainErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
     DutyShiftFromJSON,
     DutyShiftToJSON,
     DutyShiftListFromJSON,

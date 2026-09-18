@@ -19,7 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.RatingsApi
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.FacilityRating
 import com.servacode.directory.api.models.RatingWrite
 

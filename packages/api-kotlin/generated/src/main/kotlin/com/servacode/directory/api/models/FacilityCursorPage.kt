@@ -22,25 +22,26 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * DRF cursor pagination envelope as emitted by `FacilityCursorPagination`.
+ * The cursor envelope of `08-API-CONTRACT.md`, emitted by `core.pagination.CursorPage`.
  *
- * @param next Absolute URL of the next page, or null on the last page.
- * @param previous 
- * @param results 
+ * @param items 
+ * @param nextCursor Opaque token for the next page, or null on the last page. Send it back unchanged as the `cursor` query parameter; never parse it.
+ * @param hasMore True when `nextCursor` is set.
  */
 @Serializable
 
 data class FacilityCursorPage (
 
-    /* Absolute URL of the next page, or null on the last page. */
-    @SerialName(value = "next")
-    val next: kotlin.String?,
+    @SerialName(value = "items")
+    val items: kotlin.collections.List<CompactFacility>,
 
-    @SerialName(value = "previous")
-    val previous: kotlin.String?,
+    /* Opaque token for the next page, or null on the last page. Send it back unchanged as the `cursor` query parameter; never parse it. */
+    @SerialName(value = "nextCursor")
+    val nextCursor: kotlin.String?,
 
-    @SerialName(value = "results")
-    val results: kotlin.collections.List<CompactFacility>
+    /* True when `nextCursor` is set. */
+    @SerialName(value = "hasMore")
+    val hasMore: kotlin.Boolean
 
 ) {
 

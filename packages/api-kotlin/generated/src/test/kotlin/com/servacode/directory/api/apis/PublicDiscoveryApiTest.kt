@@ -19,7 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.PublicDiscoveryApi
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.FacilityCursorPage
 import com.servacode.directory.api.models.MapMarkerList
 import com.servacode.directory.api.models.PublicFacilityDetail
@@ -37,7 +37,7 @@ class PublicDiscoveryApiTest : ShouldSpec() {
             //val provinceId : kotlin.String = provinceId_example // kotlin.String | Province to scope the query to.
             //val bbox : kotlin.String = bbox_example // kotlin.String | Viewport as west,south,east,north in WGS84 decimal degrees.
             //val cityId : kotlin.String = cityId_example // kotlin.String | Optional city filter.
-            //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque cursor returned in the previous page's next link.
+            //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
             //val dutyNow : kotlin.String = dutyNow_example // kotlin.String | Pass true to keep only facilities currently on duty.
             //val latitude : kotlin.String = latitude_example // kotlin.String | Caller latitude in WGS84 decimal degrees. Must be sent with longitude.
             //val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 100, default 30.
@@ -101,7 +101,7 @@ class PublicDiscoveryApiTest : ShouldSpec() {
             //val bbox : kotlin.String = bbox_example // kotlin.String | Viewport as west,south,east,north in WGS84 decimal degrees.
             //val categoryId : kotlin.String = categoryId_example // kotlin.String | Optional category filter.
             //val cityId : kotlin.String = cityId_example // kotlin.String | Optional city filter.
-            //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque cursor returned in the previous page's next link.
+            //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
             //val latitude : kotlin.String = latitude_example // kotlin.String | Caller latitude in WGS84 decimal degrees. Must be sent with longitude.
             //val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 100, default 30.
             //val longitude : kotlin.String = longitude_example // kotlin.String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude.

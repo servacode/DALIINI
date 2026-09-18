@@ -4,9 +4,9 @@
 ## Properties
 | Name | Type | Description | Notes |
 | ------------ | ------------- | ------------- | ------------- |
-| **next** | **kotlin.String** | Absolute URL of the next page, or null on the last page. |  |
-| **previous** | **kotlin.String** |  |  |
-| **results** | [**kotlin.collections.List&lt;CompactFacility&gt;**](CompactFacility.md) |  |  |
+| **items** | [**kotlin.collections.List&lt;CompactFacility&gt;**](CompactFacility.md) |  |  |
+| **nextCursor** | **kotlin.String** | Opaque token for the next page, or null on the last page. Send it back unchanged as the &#x60;cursor&#x60; query parameter; never parse it. |  |
+| **hasMore** | **kotlin.Boolean** | True when &#x60;nextCursor&#x60; is set. |  |
 
 
 

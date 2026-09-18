@@ -15,13 +15,13 @@
 
 import * as runtime from '../runtime';
 import type {
-  DetailError,
+  ApiError,
   FacilityRating,
   RatingWrite,
 } from '../models/index';
 import {
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
     FacilityRatingFromJSON,
     FacilityRatingToJSON,
     RatingWriteFromJSON,

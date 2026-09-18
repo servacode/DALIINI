@@ -10,33 +10,34 @@ import Foundation
 import AnyCodable
 #endif
 
-/** DRF cursor pagination envelope as emitted by &#x60;FacilityCursorPagination&#x60;. */
+/** The cursor envelope of &#x60;08-API-CONTRACT.md&#x60;, emitted by &#x60;core.pagination.CursorPage&#x60;. */
 public struct FacilityCursorPage: Codable, JSONEncodable, Hashable {
 
-    /** Absolute URL of the next page, or null on the last page. */
-    public var next: String?
-    public var previous: String?
-    public var results: [CompactFacility]
+    public var items: [CompactFacility]
+    /** Opaque token for the next page, or null on the last page. Send it back unchanged as the `cursor` query parameter; never parse it. */
+    public var nextCursor: String?
+    /** True when `nextCursor` is set. */
+    public var hasMore: Bool
 
-    public init(next: String?, previous: String?, results: [CompactFacility]) {
-        self.next = next
-        self.previous = previous
-        self.results = results
+    public init(items: [CompactFacility], nextCursor: String?, hasMore: Bool) {
+        self.items = items
+        self.nextCursor = nextCursor
+        self.hasMore = hasMore
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
-        case next
-        case previous
-        case results
+        case items
+        case nextCursor
+        case hasMore
     }
 
     // Encodable protocol methods
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(next, forKey: .next)
-        try container.encode(previous, forKey: .previous)
-        try container.encode(results, forKey: .results)
+        try container.encode(items, forKey: .items)
+        try container.encode(nextCursor, forKey: .nextCursor)
+        try container.encode(hasMore, forKey: .hasMore)
     }
 }
 

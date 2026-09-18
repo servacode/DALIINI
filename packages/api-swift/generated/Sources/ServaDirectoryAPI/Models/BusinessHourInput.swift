@@ -13,24 +13,24 @@ import AnyCodable
 public struct BusinessHourInput: Codable, JSONEncodable, Hashable {
 
     public static let weekdayRule = NumericRule<Int>(minimum: 0, exclusiveMinimum: false, maximum: 6, exclusiveMaximum: false, multipleOf: nil)
-    public static let sortOrderRule = NumericRule<Int>(minimum: 0, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
+    public static let sequenceRule = NumericRule<Int>(minimum: 0, exclusiveMinimum: false, maximum: nil, exclusiveMaximum: false, multipleOf: nil)
     public var weekday: Int
     public var opensAt: String
     public var closesAt: String
-    public var sortOrder: Int? = 0
+    public var sequence: Int? = 0
 
-    public init(weekday: Int, opensAt: String, closesAt: String, sortOrder: Int? = 0) {
+    public init(weekday: Int, opensAt: String, closesAt: String, sequence: Int? = 0) {
         self.weekday = weekday
         self.opensAt = opensAt
         self.closesAt = closesAt
-        self.sortOrder = sortOrder
+        self.sequence = sequence
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case weekday
         case opensAt
         case closesAt
-        case sortOrder
+        case sequence
     }
 
     // Encodable protocol methods
@@ -40,7 +40,7 @@ public struct BusinessHourInput: Codable, JSONEncodable, Hashable {
         try container.encode(weekday, forKey: .weekday)
         try container.encode(opensAt, forKey: .opensAt)
         try container.encode(closesAt, forKey: .closesAt)
-        try container.encodeIfPresent(sortOrder, forKey: .sortOrder)
+        try container.encodeIfPresent(sequence, forKey: .sequence)
     }
 }
 

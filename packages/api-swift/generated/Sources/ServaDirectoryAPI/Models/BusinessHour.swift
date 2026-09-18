@@ -19,14 +19,15 @@ public struct BusinessHour: Codable, JSONEncodable, Hashable {
     public var opensAt: String
     /** A value earlier than opensAt denotes an overnight span. */
     public var closesAt: String
-    public var sortOrder: Int
+    /** Ordering within a weekday, for categories that open in several spans. */
+    public var sequence: Int
 
-    public init(id: UUID, weekday: Int, opensAt: String, closesAt: String, sortOrder: Int) {
+    public init(id: UUID, weekday: Int, opensAt: String, closesAt: String, sequence: Int) {
         self.id = id
         self.weekday = weekday
         self.opensAt = opensAt
         self.closesAt = closesAt
-        self.sortOrder = sortOrder
+        self.sequence = sequence
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
@@ -34,7 +35,7 @@ public struct BusinessHour: Codable, JSONEncodable, Hashable {
         case weekday
         case opensAt
         case closesAt
-        case sortOrder
+        case sequence
     }
 
     // Encodable protocol methods
@@ -45,7 +46,7 @@ public struct BusinessHour: Codable, JSONEncodable, Hashable {
         try container.encode(weekday, forKey: .weekday)
         try container.encode(opensAt, forKey: .opensAt)
         try container.encode(closesAt, forKey: .closesAt)
-        try container.encode(sortOrder, forKey: .sortOrder)
+        try container.encode(sequence, forKey: .sequence)
     }
 }
 

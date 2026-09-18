@@ -19,10 +19,10 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.AuthApi
+import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.ChallengeAccepted
 import com.servacode.directory.api.models.ChallengeVerified
 import com.servacode.directory.api.models.ChallengeVerify
-import com.servacode.directory.api.models.DetailError
 import com.servacode.directory.api.models.Login
 import com.servacode.directory.api.models.LogoutRequest
 import com.servacode.directory.api.models.RecoveryReset

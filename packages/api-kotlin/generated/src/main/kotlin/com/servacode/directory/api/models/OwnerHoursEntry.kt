@@ -27,7 +27,7 @@ import kotlinx.serialization.Contextual
  * @param weekday 
  * @param opensAt 
  * @param closesAt 
- * @param sortOrder 
+ * @param sequence 
  */
 @Serializable
 
@@ -45,8 +45,8 @@ data class OwnerHoursEntry (
     @SerialName(value = "closesAt")
     val closesAt: kotlin.String,
 
-    @SerialName(value = "sortOrder")
-    val sortOrder: kotlin.Int
+    @SerialName(value = "sequence")
+    val sequence: kotlin.Int
 
 ) {
 

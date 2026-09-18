@@ -21,7 +21,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * Emitted from `QuerySet.values()`, therefore snake_case.
+ * 
  *
  * @param id 
  * @param categoryId 
@@ -40,13 +40,13 @@ data class AdminVerificationRequirement (
     @Contextual @SerialName(value = "id")
     val id: java.util.UUID,
 
-    @Contextual @SerialName(value = "category_id")
+    @Contextual @SerialName(value = "categoryId")
     val categoryId: java.util.UUID,
 
-    @SerialName(value = "label_ar")
+    @SerialName(value = "labelAr")
     val labelAr: kotlin.String,
 
-    @SerialName(value = "label_en")
+    @SerialName(value = "labelEn")
     val labelEn: kotlin.String,
 
     @SerialName(value = "required")
@@ -55,13 +55,13 @@ data class AdminVerificationRequirement (
     @SerialName(value = "active")
     val active: kotlin.Boolean,
 
-    @SerialName(value = "min_files")
+    @SerialName(value = "minFiles")
     val minFiles: kotlin.Int,
 
-    @SerialName(value = "max_files")
+    @SerialName(value = "maxFiles")
     val maxFiles: kotlin.Int,
 
-    @SerialName(value = "sort_order")
+    @SerialName(value = "sortOrder")
     val sortOrder: kotlin.Int
 
 ) {

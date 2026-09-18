@@ -34,10 +34,10 @@ data class AdminAuditTrailEntry (
     @SerialName(value = "action")
     val action: kotlin.String,
 
-    @SerialName(value = "request_id")
+    @SerialName(value = "requestId")
     val requestId: kotlin.String,
 
-    @Contextual @SerialName(value = "created_at")
+    @Contextual @SerialName(value = "createdAt")
     val createdAt: java.time.OffsetDateTime
 
 ) {

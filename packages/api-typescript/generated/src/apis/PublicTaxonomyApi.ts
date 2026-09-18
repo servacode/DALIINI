@@ -15,14 +15,14 @@
 
 import * as runtime from '../runtime';
 import type {
-  DetailError,
+  ApiError,
   PublicCategoryList,
   PublicCityList,
   PublicProvinceList,
 } from '../models/index';
 import {
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
     PublicCategoryListFromJSON,
     PublicCategoryListToJSON,
     PublicCityListFromJSON,

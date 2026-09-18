@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 
 import com.servacode.directory.api.models.AnalyticsEventAccepted
 import com.servacode.directory.api.models.AnalyticsEventRequest
+import com.servacode.directory.api.models.ApiError
 
 interface AnalyticsApi {
     /**
@@ -17,7 +18,7 @@ interface AnalyticsApi {
      * The event name must exist in the central registry and its properties are checked against the keys declared for that event. Forbidden keys such as raw coordinates, phone numbers and tokens are rejected rather than stored.
      * Responses:
      *  - 202: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *
      * @param analyticsEventRequest 
      * @param xAnonymousId Client-generated pseudonymous id for unauthenticated callers. (optional)

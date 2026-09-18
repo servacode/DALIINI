@@ -18,7 +18,7 @@ import type {
   AdminAdvertisementList,
   AdminAdvertisementRequest,
   AdminId,
-  DetailError,
+  ApiError,
 } from '../models/index';
 import {
     AdminAdvertisementListFromJSON,
@@ -27,8 +27,8 @@ import {
     AdminAdvertisementRequestToJSON,
     AdminIdFromJSON,
     AdminIdToJSON,
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
 } from '../models/index';
 
 export interface AdminAdCreateRequest {

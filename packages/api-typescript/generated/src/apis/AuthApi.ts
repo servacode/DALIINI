@@ -15,10 +15,10 @@
 
 import * as runtime from '../runtime';
 import type {
+  ApiError,
   ChallengeAccepted,
   ChallengeVerified,
   ChallengeVerify,
-  DetailError,
   Login,
   LogoutRequest,
   RecoveryReset,
@@ -30,14 +30,14 @@ import type {
   UserSessionList,
 } from '../models/index';
 import {
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
     ChallengeAcceptedFromJSON,
     ChallengeAcceptedToJSON,
     ChallengeVerifiedFromJSON,
     ChallengeVerifiedToJSON,
     ChallengeVerifyFromJSON,
     ChallengeVerifyToJSON,
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
     LoginFromJSON,
     LoginToJSON,
     LogoutRequestFromJSON,

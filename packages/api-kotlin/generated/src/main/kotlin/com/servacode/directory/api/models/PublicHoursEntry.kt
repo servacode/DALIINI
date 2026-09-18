@@ -23,13 +23,18 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
+ * @param id 
  * @param weekday 
  * @param opensAt 
  * @param closesAt 
+ * @param sequence 
  */
 @Serializable
 
 data class PublicHoursEntry (
+
+    @Contextual @SerialName(value = "id")
+    val id: java.util.UUID,
 
     @SerialName(value = "weekday")
     val weekday: kotlin.Int,
@@ -38,7 +43,10 @@ data class PublicHoursEntry (
     val opensAt: kotlin.String,
 
     @SerialName(value = "closesAt")
-    val closesAt: kotlin.String
+    val closesAt: kotlin.String,
+
+    @SerialName(value = "sequence")
+    val sequence: kotlin.Int
 
 ) {
 

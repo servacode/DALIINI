@@ -7,7 +7,7 @@ import okhttp3.RequestBody
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.FacilityCursorPage
 import com.servacode.directory.api.models.MapMarkerList
 import com.servacode.directory.api.models.PublicFacilityDetail
@@ -20,13 +20,13 @@ interface PublicDiscoveryApi {
      * Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend; openNow and dutyNow filter on that computed state rather than on a stored flag.
      * Responses:
      *  - 200: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *
      * @param categoryId Category to list. Required.
      * @param provinceId Province to scope the query to.
      * @param bbox Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
      * @param cityId Optional city filter. (optional)
-     * @param cursor Opaque cursor returned in the previous page&#39;s next link. (optional)
+     * @param cursor Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
      * @param dutyNow Pass true to keep only facilities currently on duty. (optional)
      * @param latitude Caller latitude in WGS84 decimal degrees. Must be sent with longitude. (optional)
      * @param limit Page size, maximum 100, default 30. (optional)
@@ -61,7 +61,7 @@ interface PublicDiscoveryApi {
      * Bundles advertisements, the active category grid and three facility strips so the first screen needs one round trip. serverTime is authoritative.
      * Responses:
      *  - 200: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *  - 404: The addressed resource does not exist or is not visible to the caller.
      *
      * @param provinceId Province to scope the query to.
@@ -85,7 +85,7 @@ interface PublicDiscoveryApi {
      * Capped at 500 markers. Facilities without coordinates are omitted.
      * Responses:
      *  - 200: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *
      * @param provinceId Province to scope the query to.
      * @param bbox Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
@@ -108,14 +108,14 @@ interface PublicDiscoveryApi {
      * 
      * Responses:
      *  - 200: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *
      * @param provinceId Province to scope the query to.
      * @param q Search term, at least two characters.
      * @param bbox Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
      * @param categoryId Optional category filter. (optional)
      * @param cityId Optional city filter. (optional)
-     * @param cursor Opaque cursor returned in the previous page&#39;s next link. (optional)
+     * @param cursor Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
      * @param latitude Caller latitude in WGS84 decimal degrees. Must be sent with longitude. (optional)
      * @param limit Page size, maximum 100, default 30. (optional)
      * @param longitude Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)

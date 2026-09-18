@@ -8,7 +8,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 import com.servacode.directory.api.models.AdminAnalytics
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 
 interface AdminAnalyticsApi {
     /**

@@ -15,8 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
-  DetailError,
-  DomainError,
+  ApiError,
   FacilityCreate,
   FacilityLocation,
   FacilityMember,
@@ -29,10 +28,8 @@ import type {
   PatchedFacilityPatch,
 } from '../models/index';
 import {
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
-    DomainErrorFromJSON,
-    DomainErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
     FacilityCreateFromJSON,
     FacilityCreateToJSON,
     FacilityLocationFromJSON,

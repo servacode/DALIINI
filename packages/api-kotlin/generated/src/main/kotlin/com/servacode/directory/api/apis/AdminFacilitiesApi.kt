@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
 import com.servacode.directory.api.models.AdminDecisionRequest
 import com.servacode.directory.api.models.AdminFacility
 import com.servacode.directory.api.models.AdminFacilityList
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 
 interface AdminFacilitiesApi {
     /**
@@ -33,7 +33,7 @@ interface AdminFacilitiesApi {
      * 
      * Responses:
      *  - 200: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *  - 404: The addressed resource does not exist or is not visible to the caller.
@@ -51,7 +51,7 @@ interface AdminFacilitiesApi {
      * 
      * Responses:
      *  - 200: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *  - 404: The addressed resource does not exist or is not visible to the caller.
@@ -85,7 +85,7 @@ interface AdminFacilitiesApi {
      * A suspended facility leaves public discovery and cannot self-reactivate.
      * Responses:
      *  - 200: 
-     *  - 400: Request validation failed.
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *  - 404: The addressed resource does not exist or is not visible to the caller.

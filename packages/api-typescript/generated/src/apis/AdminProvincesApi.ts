@@ -18,7 +18,7 @@ import type {
   AdminProvinceList,
   AdminProvinceUpdateRequest,
   AdminProvinceUpdated,
-  DetailError,
+  ApiError,
 } from '../models/index';
 import {
     AdminProvinceListFromJSON,
@@ -27,8 +27,8 @@ import {
     AdminProvinceUpdateRequestToJSON,
     AdminProvinceUpdatedFromJSON,
     AdminProvinceUpdatedToJSON,
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
 } from '../models/index';
 
 export interface AdminProvinceUpdateOperationRequest {

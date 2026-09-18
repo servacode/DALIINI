@@ -10,7 +10,6 @@ import Foundation
 import AnyCodable
 #endif
 
-/** Emitted from &#x60;QuerySet.values()&#x60;, therefore snake_case. */
 public struct AdminSetting: Codable, JSONEncodable, Hashable {
 
     public var key: String
@@ -27,9 +26,9 @@ public struct AdminSetting: Codable, JSONEncodable, Hashable {
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case key
-        case valueType = "value_type"
+        case valueType
         case value
-        case updatedAt = "updated_at"
+        case updatedAt
     }
 
     // Encodable protocol methods

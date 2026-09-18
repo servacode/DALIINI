@@ -14,7 +14,7 @@
 
 import { mapValues } from '../runtime';
 /**
- * Emitted from `QuerySet.values()`, therefore snake_case.
+ * 
  * @export
  * @interface AdminVerificationRequirement
  */
@@ -102,14 +102,14 @@ export function AdminVerificationRequirementFromJSONTyped(json: any, ignoreDiscr
     return {
         
         'id': json['id'],
-        'categoryId': json['category_id'],
-        'labelAr': json['label_ar'],
-        'labelEn': json['label_en'],
+        'categoryId': json['categoryId'],
+        'labelAr': json['labelAr'],
+        'labelEn': json['labelEn'],
         'required': json['required'],
         'active': json['active'],
-        'minFiles': json['min_files'],
-        'maxFiles': json['max_files'],
-        'sortOrder': json['sort_order'],
+        'minFiles': json['minFiles'],
+        'maxFiles': json['maxFiles'],
+        'sortOrder': json['sortOrder'],
     };
 }
 
@@ -125,14 +125,14 @@ export function AdminVerificationRequirementToJSONTyped(value?: AdminVerificatio
     return {
         
         'id': value['id'],
-        'category_id': value['categoryId'],
-        'label_ar': value['labelAr'],
-        'label_en': value['labelEn'],
+        'categoryId': value['categoryId'],
+        'labelAr': value['labelAr'],
+        'labelEn': value['labelEn'],
         'required': value['required'],
         'active': value['active'],
-        'min_files': value['minFiles'],
-        'max_files': value['maxFiles'],
-        'sort_order': value['sortOrder'],
+        'minFiles': value['minFiles'],
+        'maxFiles': value['maxFiles'],
+        'sortOrder': value['sortOrder'],
     };
 }
 

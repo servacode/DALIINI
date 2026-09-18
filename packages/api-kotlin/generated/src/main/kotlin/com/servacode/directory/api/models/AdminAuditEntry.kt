@@ -21,7 +21,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * Emitted from `QuerySet.values()`, therefore snake_case. Snapshots are redacted.
+ * Snapshots in `metadata` are redacted before they are recorded.
  *
  * @param id 
  * @param actorId 
@@ -39,25 +39,25 @@ data class AdminAuditEntry (
     @Contextual @SerialName(value = "id")
     val id: java.util.UUID,
 
-    @Contextual @SerialName(value = "actor_id")
+    @Contextual @SerialName(value = "actorId")
     val actorId: java.util.UUID?,
 
     @SerialName(value = "action")
     val action: kotlin.String,
 
-    @SerialName(value = "target_type")
+    @SerialName(value = "targetType")
     val targetType: kotlin.String,
 
-    @SerialName(value = "target_id")
+    @SerialName(value = "targetId")
     val targetId: kotlin.String,
 
-    @SerialName(value = "request_id")
+    @SerialName(value = "requestId")
     val requestId: kotlin.String,
 
     @Contextual @SerialName(value = "metadata")
     val metadata: kotlin.collections.Map<kotlin.String, kotlin.Any>,
 
-    @Contextual @SerialName(value = "created_at")
+    @Contextual @SerialName(value = "createdAt")
     val createdAt: java.time.OffsetDateTime
 
 ) {

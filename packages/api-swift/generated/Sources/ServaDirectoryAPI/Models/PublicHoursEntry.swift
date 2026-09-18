@@ -13,29 +13,40 @@ import AnyCodable
 public struct PublicHoursEntry: Codable, JSONEncodable, Hashable {
 
     public static let weekdayRule = NumericRule<Int>(minimum: 0, exclusiveMinimum: false, maximum: 6, exclusiveMaximum: false, multipleOf: nil)
+    public var id: UUID
     public var weekday: Int
     public var opensAt: String
     public var closesAt: String
+    public var sequence: Int
 
-    public init(weekday: Int, opensAt: String, closesAt: String) {
+    public init(id: UUID, weekday: Int, opensAt: String, closesAt: String, sequence: Int) {
+        self.id = id
         self.weekday = weekday
         self.opensAt = opensAt
         self.closesAt = closesAt
+        self.sequence = sequence
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
+        case id
         case weekday
         case opensAt
         case closesAt
+        case sequence
     }
 
     // Encodable protocol methods
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
         try container.encode(weekday, forKey: .weekday)
         try container.encode(opensAt, forKey: .opensAt)
         try container.encode(closesAt, forKey: .closesAt)
+        try container.encode(sequence, forKey: .sequence)
     }
 }
 
+
+@available(iOS 13, tvOS 13, watchOS 6, macOS 10.15, *)
+extension PublicHoursEntry: Identifiable {}

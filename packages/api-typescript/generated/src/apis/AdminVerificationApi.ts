@@ -18,7 +18,7 @@ import type {
   AdminId,
   AdminVerificationRequirementList,
   AdminVerificationRequirementRequest,
-  DetailError,
+  ApiError,
 } from '../models/index';
 import {
     AdminIdFromJSON,
@@ -27,8 +27,8 @@ import {
     AdminVerificationRequirementListToJSON,
     AdminVerificationRequirementRequestFromJSON,
     AdminVerificationRequirementRequestToJSON,
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
 } from '../models/index';
 
 export interface AdminVerificationRequirementCreateRequest {

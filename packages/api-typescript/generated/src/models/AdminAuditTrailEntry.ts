@@ -60,8 +60,8 @@ export function AdminAuditTrailEntryFromJSONTyped(json: any, ignoreDiscriminator
     return {
         
         'action': json['action'],
-        'requestId': json['request_id'],
-        'createdAt': (new Date(json['created_at'])),
+        'requestId': json['requestId'],
+        'createdAt': (new Date(json['createdAt'])),
     };
 }
 
@@ -77,8 +77,8 @@ export function AdminAuditTrailEntryToJSONTyped(value?: AdminAuditTrailEntry | n
     return {
         
         'action': value['action'],
-        'request_id': value['requestId'],
-        'created_at': ((value['createdAt']).toISOString()),
+        'requestId': value['requestId'],
+        'createdAt': ((value['createdAt']).toISOString()),
     };
 }
 

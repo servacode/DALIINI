@@ -18,7 +18,7 @@ import type {
   AdminSettingList,
   AdminSettingWriteRequest,
   AdminSettingWritten,
-  DetailError,
+  ApiError,
 } from '../models/index';
 import {
     AdminSettingListFromJSON,
@@ -27,8 +27,8 @@ import {
     AdminSettingWriteRequestToJSON,
     AdminSettingWrittenFromJSON,
     AdminSettingWrittenToJSON,
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
 } from '../models/index';
 
 export interface AdminSettingWriteOperationRequest {

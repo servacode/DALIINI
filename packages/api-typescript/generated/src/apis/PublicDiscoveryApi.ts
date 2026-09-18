@@ -15,15 +15,15 @@
 
 import * as runtime from '../runtime';
 import type {
-  DetailError,
+  ApiError,
   FacilityCursorPage,
   MapMarkerList,
   PublicFacilityDetail,
   PublicHome,
 } from '../models/index';
 import {
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
     FacilityCursorPageFromJSON,
     FacilityCursorPageToJSON,
     MapMarkerListFromJSON,

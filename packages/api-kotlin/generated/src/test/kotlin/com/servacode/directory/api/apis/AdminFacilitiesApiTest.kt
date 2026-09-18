@@ -22,7 +22,7 @@ import com.servacode.directory.api.apis.AdminFacilitiesApi
 import com.servacode.directory.api.models.AdminDecisionRequest
 import com.servacode.directory.api.models.AdminFacility
 import com.servacode.directory.api.models.AdminFacilityList
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 
 class AdminFacilitiesApiTest : ShouldSpec() {
     init {

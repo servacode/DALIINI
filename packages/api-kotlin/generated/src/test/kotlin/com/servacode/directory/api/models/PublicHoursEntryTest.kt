@@ -25,6 +25,12 @@ class PublicHoursEntryTest : ShouldSpec() {
         // uncomment below to create an instance of PublicHoursEntry
         //val modelInstance = PublicHoursEntry()
 
+        // to test the property `id`
+        should("test id") {
+            // uncomment below to test the property
+            //modelInstance.id shouldBe ("TODO")
+        }
+
         // to test the property `weekday`
         should("test weekday") {
             // uncomment below to test the property
@@ -41,6 +47,12 @@ class PublicHoursEntryTest : ShouldSpec() {
         should("test closesAt") {
             // uncomment below to test the property
             //modelInstance.closesAt shouldBe ("TODO")
+        }
+
+        // to test the property `sequence`
+        should("test sequence") {
+            // uncomment below to test the property
+            //modelInstance.sequence shouldBe ("TODO")
         }
 
     }

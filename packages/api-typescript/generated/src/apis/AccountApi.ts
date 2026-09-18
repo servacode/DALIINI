@@ -17,8 +17,8 @@ import * as runtime from '../runtime';
 import type {
   AccountDeletionRequested,
   AccountRatingList,
+  ApiError,
   DeletionRequest,
-  DetailError,
   PatchedProfilePatch,
   Profile,
 } from '../models/index';
@@ -27,10 +27,10 @@ import {
     AccountDeletionRequestedToJSON,
     AccountRatingListFromJSON,
     AccountRatingListToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
     DeletionRequestFromJSON,
     DeletionRequestToJSON,
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
     PatchedProfilePatchFromJSON,
     PatchedProfilePatchToJSON,
     ProfileFromJSON,

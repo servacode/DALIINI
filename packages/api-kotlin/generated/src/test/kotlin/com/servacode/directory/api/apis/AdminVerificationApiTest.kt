@@ -22,7 +22,7 @@ import com.servacode.directory.api.apis.AdminVerificationApi
 import com.servacode.directory.api.models.AdminId
 import com.servacode.directory.api.models.AdminVerificationRequirementList
 import com.servacode.directory.api.models.AdminVerificationRequirementRequest
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 
 class AdminVerificationApiTest : ShouldSpec() {
     init {

@@ -22,7 +22,7 @@ import com.servacode.directory.api.apis.AdminSettingsApi
 import com.servacode.directory.api.models.AdminSettingList
 import com.servacode.directory.api.models.AdminSettingWriteRequest
 import com.servacode.directory.api.models.AdminSettingWritten
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 
 class AdminSettingsApiTest : ShouldSpec() {
     init {

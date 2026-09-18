@@ -17,15 +17,15 @@ import * as runtime from '../runtime';
 import type {
   AdminDashboard,
   AdminSystemStatus,
-  DetailError,
+  ApiError,
 } from '../models/index';
 import {
     AdminDashboardFromJSON,
     AdminDashboardToJSON,
     AdminSystemStatusFromJSON,
     AdminSystemStatusToJSON,
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
 } from '../models/index';
 
 /**

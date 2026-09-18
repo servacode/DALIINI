@@ -22,7 +22,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * Emitted from `QuerySet.values()`, therefore snake_case.
+ * 
  *
  * @param id 
  * @param titleAr 
@@ -40,25 +40,25 @@ data class AdminAdvertisement (
     @Contextual @SerialName(value = "id")
     val id: java.util.UUID,
 
-    @SerialName(value = "title_ar")
+    @SerialName(value = "titleAr")
     val titleAr: kotlin.String,
 
-    @Contextual @SerialName(value = "target_scope")
+    @Contextual @SerialName(value = "targetScope")
     val targetScope: AdvertisementTargetScopeEnum,
 
     @SerialName(value = "enabled")
     val enabled: kotlin.Boolean,
 
-    @Contextual @SerialName(value = "starts_at")
+    @Contextual @SerialName(value = "startsAt")
     val startsAt: java.time.OffsetDateTime?,
 
-    @Contextual @SerialName(value = "ends_at")
+    @Contextual @SerialName(value = "endsAt")
     val endsAt: java.time.OffsetDateTime?,
 
-    @SerialName(value = "sort_order")
+    @SerialName(value = "sortOrder")
     val sortOrder: kotlin.Int,
 
-    @SerialName(value = "slide_duration_ms")
+    @SerialName(value = "slideDurationMs")
     val slideDurationMs: kotlin.Int
 
 ) {

@@ -20,7 +20,7 @@ import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.AdminAnalyticsApi
 import com.servacode.directory.api.models.AdminAnalytics
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 
 class AdminAnalyticsApiTest : ShouldSpec() {
     init {

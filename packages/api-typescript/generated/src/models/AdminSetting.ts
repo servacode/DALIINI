@@ -14,7 +14,7 @@
 
 import { mapValues } from '../runtime';
 /**
- * Emitted from `QuerySet.values()`, therefore snake_case.
+ * 
  * @export
  * @interface AdminSetting
  */
@@ -67,9 +67,9 @@ export function AdminSettingFromJSONTyped(json: any, ignoreDiscriminator: boolea
     return {
         
         'key': json['key'],
-        'valueType': json['value_type'],
+        'valueType': json['valueType'],
         'value': json['value'],
-        'updatedAt': (new Date(json['updated_at'])),
+        'updatedAt': (new Date(json['updatedAt'])),
     };
 }
 
@@ -85,9 +85,9 @@ export function AdminSettingToJSONTyped(value?: AdminSetting | null, ignoreDiscr
     return {
         
         'key': value['key'],
-        'value_type': value['valueType'],
+        'valueType': value['valueType'],
         'value': value['value'],
-        'updated_at': ((value['updatedAt']).toISOString()),
+        'updatedAt': ((value['updatedAt']).toISOString()),
     };
 }
 

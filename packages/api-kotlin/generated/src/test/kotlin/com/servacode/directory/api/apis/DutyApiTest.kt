@@ -19,8 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.DutyApi
-import com.servacode.directory.api.models.DetailError
-import com.servacode.directory.api.models.DomainError
+import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.DutyShift
 import com.servacode.directory.api.models.DutyShiftList
 import com.servacode.directory.api.models.PatchedDutyShift

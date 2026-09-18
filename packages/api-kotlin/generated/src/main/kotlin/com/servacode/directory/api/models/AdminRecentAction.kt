@@ -35,13 +35,13 @@ data class AdminRecentAction (
     @SerialName(value = "action")
     val action: kotlin.String,
 
-    @SerialName(value = "target_type")
+    @SerialName(value = "targetType")
     val targetType: kotlin.String,
 
-    @SerialName(value = "target_id")
+    @SerialName(value = "targetId")
     val targetId: kotlin.String,
 
-    @Contextual @SerialName(value = "created_at")
+    @Contextual @SerialName(value = "createdAt")
     val createdAt: java.time.OffsetDateTime
 
 ) {

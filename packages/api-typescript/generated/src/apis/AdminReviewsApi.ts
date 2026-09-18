@@ -19,7 +19,7 @@ import type {
   AdminApplicationDetail,
   AdminApplicationList,
   AdminDecisionRequest,
-  DetailError,
+  ApiError,
 } from '../models/index';
 import {
     AdminApplicationFromJSON,
@@ -30,8 +30,8 @@ import {
     AdminApplicationListToJSON,
     AdminDecisionRequestFromJSON,
     AdminDecisionRequestToJSON,
-    DetailErrorFromJSON,
-    DetailErrorToJSON,
+    ApiErrorFromJSON,
+    ApiErrorToJSON,
 } from '../models/index';
 
 export interface AdminEvidenceContentRetrieveRequest {

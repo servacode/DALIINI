@@ -30,7 +30,7 @@ val categoryId : kotlin.String = categoryId_example // kotlin.String | Category 
 val provinceId : kotlin.String = provinceId_example // kotlin.String | Province to scope the query to.
 val bbox : kotlin.String = bbox_example // kotlin.String | Viewport as west,south,east,north in WGS84 decimal degrees.
 val cityId : kotlin.String = cityId_example // kotlin.String | Optional city filter.
-val cursor : kotlin.String = cursor_example // kotlin.String | Opaque cursor returned in the previous page's next link.
+val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
 val dutyNow : kotlin.String = dutyNow_example // kotlin.String | Pass true to keep only facilities currently on duty.
 val latitude : kotlin.String = latitude_example // kotlin.String | Caller latitude in WGS84 decimal degrees. Must be sent with longitude.
 val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 100, default 30.
@@ -51,7 +51,7 @@ launch(Dispatchers.IO) {
 | **provinceId** | **kotlin.String**| Province to scope the query to. | |
 | **bbox** | **kotlin.String**| Viewport as west,south,east,north in WGS84 decimal degrees. | [optional] |
 | **cityId** | **kotlin.String**| Optional city filter. | [optional] |
-| **cursor** | **kotlin.String**| Opaque cursor returned in the previous page&#39;s next link. | [optional] |
+| **cursor** | **kotlin.String**| Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] |
 | **dutyNow** | **kotlin.String**| Pass true to keep only facilities currently on duty. | [optional] |
 | **latitude** | **kotlin.String**| Caller latitude in WGS84 decimal degrees. Must be sent with longitude. | [optional] |
 | **limit** | **kotlin.Int**| Page size, maximum 100, default 30. | [optional] |
@@ -259,7 +259,7 @@ val q : kotlin.String = q_example // kotlin.String | Search term, at least two c
 val bbox : kotlin.String = bbox_example // kotlin.String | Viewport as west,south,east,north in WGS84 decimal degrees.
 val categoryId : kotlin.String = categoryId_example // kotlin.String | Optional category filter.
 val cityId : kotlin.String = cityId_example // kotlin.String | Optional city filter.
-val cursor : kotlin.String = cursor_example // kotlin.String | Opaque cursor returned in the previous page's next link.
+val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
 val latitude : kotlin.String = latitude_example // kotlin.String | Caller latitude in WGS84 decimal degrees. Must be sent with longitude.
 val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 100, default 30.
 val longitude : kotlin.String = longitude_example // kotlin.String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude.
@@ -279,7 +279,7 @@ launch(Dispatchers.IO) {
 | **bbox** | **kotlin.String**| Viewport as west,south,east,north in WGS84 decimal degrees. | [optional] |
 | **categoryId** | **kotlin.String**| Optional category filter. | [optional] |
 | **cityId** | **kotlin.String**| Optional city filter. | [optional] |
-| **cursor** | **kotlin.String**| Opaque cursor returned in the previous page&#39;s next link. | [optional] |
+| **cursor** | **kotlin.String**| Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] |
 | **latitude** | **kotlin.String**| Caller latitude in WGS84 decimal degrees. Must be sent with longitude. | [optional] |
 | **limit** | **kotlin.Int**| Page size, maximum 100, default 30. | [optional] |
 | **longitude** | **kotlin.String**| Caller longitude in WGS84 decimal degrees. Must be sent with latitude. | [optional] |

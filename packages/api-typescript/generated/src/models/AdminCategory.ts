@@ -14,7 +14,7 @@
 
 import { mapValues } from '../runtime';
 /**
- * Emitted from `QuerySet.values()`, therefore snake_case.
+ * 
  * @export
  * @interface AdminCategory
  */
@@ -109,15 +109,15 @@ export function AdminCategoryFromJSONTyped(json: any, ignoreDiscriminator: boole
     return {
         
         'id': json['id'],
-        'groupId': json['group_id'],
+        'groupId': json['groupId'],
         'code': json['code'],
         'slug': json['slug'],
-        'nameAr': json['name_ar'],
-        'nameEn': json['name_en'],
-        'iconKey': json['icon_key'],
+        'nameAr': json['nameAr'],
+        'nameEn': json['nameEn'],
+        'iconKey': json['iconKey'],
         'specialization': json['specialization'],
         'active': json['active'],
-        'sortOrder': json['sort_order'],
+        'sortOrder': json['sortOrder'],
     };
 }
 
@@ -133,15 +133,15 @@ export function AdminCategoryToJSONTyped(value?: AdminCategory | null, ignoreDis
     return {
         
         'id': value['id'],
-        'group_id': value['groupId'],
+        'groupId': value['groupId'],
         'code': value['code'],
         'slug': value['slug'],
-        'name_ar': value['nameAr'],
-        'name_en': value['nameEn'],
-        'icon_key': value['iconKey'],
+        'nameAr': value['nameAr'],
+        'nameEn': value['nameEn'],
+        'iconKey': value['iconKey'],
         'specialization': value['specialization'],
         'active': value['active'],
-        'sort_order': value['sortOrder'],
+        'sortOrder': value['sortOrder'],
     };
 }
 

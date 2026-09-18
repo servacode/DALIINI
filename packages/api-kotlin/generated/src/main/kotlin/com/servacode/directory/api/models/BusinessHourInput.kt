@@ -26,7 +26,7 @@ import kotlinx.serialization.Contextual
  * @param weekday 
  * @param opensAt 
  * @param closesAt 
- * @param sortOrder 
+ * @param sequence 
  */
 @Serializable
 
@@ -41,8 +41,8 @@ data class BusinessHourInput (
     @SerialName(value = "closesAt")
     val closesAt: kotlin.String,
 
-    @SerialName(value = "sortOrder")
-    val sortOrder: kotlin.Int? = 0
+    @SerialName(value = "sequence")
+    val sequence: kotlin.Int? = 0
 
 ) {
 

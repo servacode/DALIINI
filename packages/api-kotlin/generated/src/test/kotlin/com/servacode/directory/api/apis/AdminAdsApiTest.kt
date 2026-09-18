@@ -22,7 +22,7 @@ import com.servacode.directory.api.apis.AdminAdsApi
 import com.servacode.directory.api.models.AdminAdvertisementList
 import com.servacode.directory.api.models.AdminAdvertisementRequest
 import com.servacode.directory.api.models.AdminId
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 
 class AdminAdsApiTest : ShouldSpec() {
     init {

@@ -24,7 +24,7 @@ import com.servacode.directory.api.models.AdminUser
 import com.servacode.directory.api.models.AdminUserDetail
 import com.servacode.directory.api.models.AdminUserList
 import com.servacode.directory.api.models.AdminUserRolesRequest
-import com.servacode.directory.api.models.DetailError
+import com.servacode.directory.api.models.ApiError
 
 class AdminUsersApiTest : ShouldSpec() {
     init {

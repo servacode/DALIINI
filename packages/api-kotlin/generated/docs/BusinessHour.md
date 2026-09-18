@@ -8,7 +8,7 @@
 | **weekday** | **kotlin.Int** | 0 is Monday, matching Python weekday numbering. |  |
 | **opensAt** | **kotlin.String** |  |  |
 | **closesAt** | **kotlin.String** | A value earlier than opensAt denotes an overnight span. |  |
-| **sortOrder** | **kotlin.Int** |  |  |
+| **sequence** | **kotlin.Int** | Ordering within a weekday, for categories that open in several spans. |  |
 
 
 
