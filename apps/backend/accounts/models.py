@@ -1,9 +1,10 @@
 import uuid
+from typing import Any
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
 
-class UserManager(BaseUserManager):
-    def create_user(self, phone, password=None, **extra):
+class UserManager(BaseUserManager["User"]):
+    def create_user(self, phone: str, password: str | None = None, **extra: Any) -> "User":
         if not phone:
             raise ValueError('phone is required')
         user=self.model(phone=phone, **extra)
@@ -11,7 +12,7 @@ class UserManager(BaseUserManager):
         else: user.set_unusable_password()
         user.save(using=self._db)
         return user
-    def create_superuser(self, phone, password, **extra):
+    def create_superuser(self, phone: str, password: str, **extra: Any) -> "User":
         extra.setdefault('is_staff', True); extra.setdefault('is_superuser', True)
         return self.create_user(phone, password, **extra)
 
