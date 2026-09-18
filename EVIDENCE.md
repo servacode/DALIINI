@@ -134,6 +134,14 @@ The full receipt and verification audit is recorded in `RECEIPT-AUDIT-2026-09-17
 | 2026-09-19 | INT-046 login GET | P11-P13 tree | server-rendered HTML + Playwright | — | **FIXED** — form posts, submit disabled until hydration | `artifacts/evidence/admin-binding-20260919.txt` |
 | 2026-09-19 | Quality debt | P11-P13 tree | ruff, mypy in the backend container | — | ruff 100; mypy 783 against 797 — reduced, none added | `artifacts/evidence/admin-binding-20260919.txt` |
 | 2026-09-19 | Evidence streaming | P11-P13 tree | — | — | NOT_VERIFIED — no object storage in the e2e stack; refusal and 404 verified | `artifacts/evidence/admin-binding-20260919.txt` |
+| 2026-09-19 | Android connected data layer | ANDROID-BINDING tree | JVM, generated Kotlin client + NetworkModule wiring → Django + PostGIS + Redis + MinIO | `scripts/e2e-android.sh` | **PASS** — 26/26 (21/26 on the first run; five failures traced to three backend defects and two test assumptions) | `artifacts/evidence/android-binding-20260919.txt` |
+| 2026-09-19 | Android unit suite | ANDROID-BINDING tree | `apps/android/jvm-verification`, Maven Central only | `gradle test` | **PASS** — 89/89 in 25 classes | `artifacts/evidence/android-binding-20260919.txt` |
+| 2026-09-19 | Generated Kotlin client compile | ANDROID-BINDING tree | Kotlin 2.3.21, serialization 1.9.0, Retrofit 3.0.0, OkHttp 5.3.0 | `gradle compileKotlin` | **PASS** after INT-052 and INT-053; it had never compiled | `artifacts/evidence/android-binding-20260919.txt` |
+| 2026-09-19 | Android app build | ANDROID-BINDING tree | AGP 9.4.0 | `gradle :app:assembleDebug` | **NOT_VERIFIED** — ENVIRONMENT_LIMITATION: Google Maven 404 | `artifacts/evidence/android-binding-20260919.txt` |
+| 2026-09-19 | Backend regression | ANDROID-BINDING tree | `check`, `makemigrations --check`, `pytest` on PostGIS | — | **PASS** — no issues, no changes, 225 passed from 211 | `artifacts/evidence/android-binding-20260919.txt` |
+| 2026-09-19 | Contract | ANDROID-BINDING tree | spectacular, drift, client regeneration | — | **PASS** — 91 operations, 144 components, zero warnings, no schema or client drift | `artifacts/evidence/android-binding-20260919.txt` |
+| 2026-09-19 | Admin regression | ANDROID-BINDING tree | Playwright + Vitest + tsc after the session binding | `scripts/e2e-admin.sh` | **PASS** — 31/31, 71/71, exit 0 | `artifacts/evidence/android-binding-20260919.txt` |
+| 2026-09-19 | Quality debt | ANDROID-BINDING tree | ruff, mypy in the backend container | — | ruff 99 from 100; mypy 727 from 783 — reduced, none added | `artifacts/evidence/android-binding-20260919.txt` |
 
 `P10 CONTRACT PASS` is achieved for schema generation, contract description, committed
 canonical artefacts, the drift gate, contract tests and runtime conformance. Kotlin client

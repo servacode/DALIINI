@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Updated: 2026-09-19
+Updated: 2026-09-19 (Android binding)
 
 ## Verification baseline
 
@@ -35,15 +35,15 @@ the generated client. Cycle J runs from the Admin. 31 Playwright tests against a
 build, Django, PostGIS and Redis; 71 Vitest tests; 211 backend tests. P12 and P13
 `CONNECTED_VERIFIED`.
 
+**Android generated-client integration (§1–§48)** — the data layer runs on the generated
+client, verified on the JVM against the real backend: 26 connected and 89 unit tests. The
+app itself is not built. Fourteen defects were fixed on the way, nine of them in the contract
+or the backend, and three more are recorded open (INT-048 to INT-064).
+
 ## Next executable phase
 
-**Android generated-client integration and the Android golden path.**
-
-Replace `UnboundGeneratedPublicApi` and `UnboundGeneratedOwnerApi` with the committed Kotlin
-client, bind the public discovery and owner onboarding screens, and qualify them against the
-same backend the Admin now runs against. The blocker is unchanged: Google Maven and the
-Gradle distribution are unreachable from this machine (`ENVIRONMENT_LIMITATION`). It needs
-a network that can reach them, or a CI runner, before any Android gate can be claimed.
+The rest of the Android brief, from §49. The Android build still needs a network that reaches
+Google Maven, or a CI runner (`ENVIRONMENT_LIMITATION`); `BUILD_VERIFIED` waits on it.
 
 ## Gate status
 

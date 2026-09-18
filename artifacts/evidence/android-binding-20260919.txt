@@ -1,0 +1,95 @@
+ANDROID GENERATED CLIENT INTEGRATION + ANDROID GOLDEN PATH (§1–§48)
+Date: 2026-09-19
+Base commit at start of batch: 888105003a5f122b217e5732ae7bab87d40abeb2
+
+What ran where, stated first because it bounds every claim below:
+  The Android app itself was NOT built. Google Maven (dl.google.com, maven.google.com) returns
+  404 from Google's download server for artifacts that certainly exist; Maven Central, the
+  Gradle Plugin Portal and the Gradle distribution answer. No AGP, Compose or AndroidX version
+  was changed, no mirror was used. BUILD_VERIFIED and DEVICE_VERIFIED are not claimed.
+  apps/android/jvm-verification compiles the generated Kotlin client and every platform-free
+  Android source file with the app's own catalog versions (Kotlin 2.3.21, kotlinx.serialization
+  1.9.0, Retrofit 3.0.0, OkHttp 5.3.0), runs the module unit tests, and runs a connected suite
+  against the real backend.
+
+== 1. Connected suite: generated client -> live backend (scripts/e2e-android.sh) ==
+  Topology: JVM test -> NetworkModule's own providers -> generated Kotlin client ->
+  runserver (daphne, HTTP + WebSocket) :8000 -> PostGIS 17-3.5 + Redis 8 + MinIO.
+  Database migrated fresh, launch baseline from migrations, seed_e2e_mobile_fixtures.
+  minio ready with both buckets
+  mobile fixtures ready: 2 accounts, 7 facilities
+  django ready on 8000
+  DiscoveryConnectedTest > the provinces come from the backend and include Raqqa PASSED
+  DiscoveryConnectedTest > availability is the backend's answer for each state PASSED
+  DiscoveryConnectedTest > filters narrow the list on the backend PASSED
+  DiscoveryConnectedTest > search is the backend's PASSED
+  DiscoveryConnectedTest > Raqqa shows pharmacy and nothing whose public switch is off PASSED
+  DiscoveryConnectedTest > pages follow the opaque cursor, nearest first, without repeats PASSED
+  DiscoveryConnectedTest > detail hours arrive ordered by sequence within the day PASSED
+  DiscoveryConnectedTest > the map shows the markers inside the viewport PASSED
+  DiscoveryConnectedTest > a cursor the backend did not issue is refused on the cursor field PASSED
+  DiscoveryConnectedTest > home is province-wide without a location and carries the category PASSED
+  RatingsConnectedTest > a rating is stored, shown in the account, counted publicly, changed and removed PASSED
+  RatingsConnectedTest > the backend refuses stars outside one to five on its own PASSED
+  OwnerConnectedTest > a draft is built step by step, uploaded to, and submitted PASSED
+  OwnerConnectedTest > onboarding offers what the backend opened and asks for no evidence it has not configured PASSED
+  OwnerConnectedTest > a selection the backend has not opened is refused by the backend PASSED
+  OwnerConnectedTest > a change the owner makes reaches a listening device as an event, and only as a signal PASSED
+  RealtimeConnectedTest > a valid access token authenticates on the socket PASSED
+  RealtimeConnectedTest > a token the backend cannot verify is refused, and the socket stays usable for public events PASSED
+  RealtimeConnectedTest > the app's stream connects, closes and connects again PASSED
+  RegistrationConnectedTest > a forgotten password is reset in three steps, open sessions end and the new one signs in PASSED
+  RegistrationConnectedTest > a new account is registered in three steps and signs in on completion PASSED
+  SessionConnectedTest > signing out revokes the session on the backend and clears the device PASSED
+  SessionConnectedTest > a wrong password is refused as such, and nothing is refreshed PASSED
+  SessionConnectedTest > an expired token is refreshed once for concurrent requests and the secret rotates PASSED
+  SessionConnectedTest > a replayed refresh secret ends the session and the device signs out PASSED
+  SessionConnectedTest > revoking a session elsewhere ends it at once, over REST and on the socket PASSED
+  BUILD SUCCESSFUL in 1m 14s
+  connected exit=0
+  First run: 21/26. The five failures were two wrong test assumptions (the category is
+  "Pharmacies") and three backend defects, fixed in 1aaa18e: INT-058 (page two of a
+  nearest-first list answered 500), INT-059 (detail hours lacked id and sequence, so the
+  generated client could not decode the facility; the app reported UNEXPECTED, not a wrong
+  state), INT-060 (public image URLs pointed at a route that does not exist).
+
+== 2. Unit tests in jvm-verification: 89/89 in 25 classes ==
+  Mappers and error mapping on canned contract JSON; what the generated client puts on the
+  wire (PATCH with one field, bare-text UUID multipart part, duty shift without id, filters
+  only when set, cursor returned byte for byte); refresh through NetworkModule's providers
+  (eight concurrent 401s -> one refresh; the same test deadlocks when both clients share one
+  OkHttp dispatcher, verified by removing the separate dispatchers and restoring them);
+  refused versus transient refresh; cache-first order; paging offsets keep the backend's
+  order across pages; sign-out clears the device even offline; duty visibility; availability
+  wording in Asia/Damascus; hours form with several spans and overnight.
+
+== 3. Contract ==
+  91 operations, 91 unique ids, 144 components (143 before: +DutyShiftInput,
+  +PatchedDutyShiftInput, +TemporaryClosureInput, -PatchedDutyShift, -NullEnum).
+  spectacular --validate --fail-on-warn: exit 0. Schema and client drift after the last
+  commit: none. schema.sha256 6834f1d05db83e3415e5be753f5775f6b704be2383dc1cb46e505b1d1377a42f
+  New contract tests, each failing on the previous schema: upload parts are binary (INT-048),
+  request bodies never require a read-only field (INT-049), every enum has a value (INT-052).
+
+== 4. Backend regression, PostGIS in the backend container ==
+  System check identified no issues (0 silenced).
+  No changes detected
+  225 passed in 18.93s
+  ruff: Found 100 errors.
+  mypy: Found 727 errors in 91 files (checked 217 source files)
+  After the last lint fix: ruff 99 (100 at batch start), mypy 727 (783 at batch start).
+  New executed tests: accounts/tests/test_session_security.py (8, five fail on the previous
+  code), search/tests/test_public_wire_contract.py (3, all fail on the previous code),
+  three contract tests.
+
+== 5. Admin regression after the auth change ==
+  scripts/e2e-admin.sh: Playwright 31 passed (43.4s) against next build/start + Django.
+  Vitest 71/71 in 8 files. tsc --noEmit exit 0.
+
+== 6. Not done, stated plainly ==
+  Android assembleDebug, lint, Compose tests, instrumentation, device: NOT_VERIFIED
+  (ENVIRONMENT_LIMITATION: Google Maven). Screens and ViewModels are not compiled by anything
+  that ran here. Room ordering is verified against an in-memory cache with the same
+  semantics, not against Room. desugar_jdk_libs 2.1.5 could not be downloaded to check.
+  Push: no contract operation and no FCM integration (INT-057); provider delivery
+  NOT_VERIFIED. Deep links: none exist in the baseline; not added.

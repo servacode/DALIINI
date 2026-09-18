@@ -472,7 +472,7 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-010 | P2 | P5 | owner, media and rating views declare no `permission_classes`; anonymous caller receives 500 | FIXED (P10) |
 | INT-011 | P2 | P12/P13 | Admin UI is a descriptive scaffold with no data binding | OPEN |
 | INT-012 | P2 | P12 | the Admin `__Host-` refresh cookie sets `secure` only when `NODE_ENV=production`, and browsers reject a `__Host-` cookie without `Secure`, so the development login flow cannot work | FIXED (ADMIN-BFF) |
-| INT-013 | P2 | P14 | every Android API boundary throws `GeneratedClientRequiredException` | OPEN |
+| INT-013 | P2 | P14 | every Android API boundary throws `GeneratedClientRequiredException` | FIXED (ANDROID-BINDING) — public, owner and auth boundaries bound to the generated client; push registration has no operation to bind to (INT-057) |
 | INT-014 | P3 | P14–P20 | qualifier scripts use `read_text()` without an encoding and scan `node_modules` and `build` | OPEN |
 | INT-015 | P2 | P13 | eight unguarded `objects.get` calls in `admin_console/views.py` return 500 instead of 404 | FIXED (ADMIN-BINDING) — nine lookups and two service paths; the contract said 404 and now the runtime does |
 | INT-016 | P2 | P2 | `/api/schema/` publicly reachable in every environment | FIXED (P10) |
@@ -507,9 +507,26 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-045 | P1 | P11/P12 | the Admin CSP was a static `script-src 'self'`, which blocks the App Router's inline RSC scripts; the console rendered and never hydrated, so every control was inert. Invisible to HTTP-level checks, found by the first run in a real browser | FIXED (ADMIN-BINDING) — per-request nonce with `'strict-dynamic'` in `proxy.ts` |
 | INT-046 | P1 | P12 | the login form had no method, so a submit before hydration went out as GET with the phone number and password in the URL; reproduced under load by Playwright | FIXED (ADMIN-BINDING) — `method="post"` and the submit button disabled until hydration |
 | INT-047 | P3 | P12 | the login form printed the backend message directly instead of going through the central error mapper | FIXED (ADMIN-BINDING) |
+| INT-048 | P1 | P10 | the evidence and image upload parts were described as `format: uri`, so the Kotlin and Swift clients typed them as a URI and sent its text; no mobile client could upload a file | FIXED (ANDROID-BINDING) — binary upload field; contract test over every multipart request |
+| INT-049 | P3 | P10 | duty shift and temporary closure creation reused their response component, whose read-only `id` is required, so the Kotlin client could not build a request without inventing an id | FIXED (ANDROID-BINDING) — input serializers; contract test over every request body |
+| INT-050 | P2 | P18 | the Android realtime default URL was `/ws/events/`; the backend serves `/ws/v1/directory/` | FIXED (ANDROID-BINDING) |
+| INT-051 | P1 | P3 | access tokens carried only the user: logging out or revoking a session left its access token working for up to fifteen minutes, and a WebSocket authenticated with it stayed authenticated | FIXED (ANDROID-BINDING) — `sid` claim resolved against the live session on REST and WebSocket; open sockets closed before a private event reaches a dead session |
+| INT-052 | P1 | P10 | the Kotlin client did not compile: nullable choice fields were described as `oneOf: [<Enum>, NullEnum]` and the generator rendered `NullEnum` as an enum with no entries. P10 generated the client but never compiled it | FIXED (ANDROID-BINDING) — `ENUM_ADD_EXPLICIT_BLANK_NULL_CHOICE = False`; contract test refuses an enum without a value |
+| INT-053 | P1 | P10 | free-form JSON fields were generated as `kotlin.Any`, which kotlinx.serialization cannot serialize; the Kotlin compiler crashed in its back end | FIXED (ANDROID-BINDING) — Kotlin type mapping to `JsonElement` |
+| INT-054 | P1 | P3 | a replayed refresh secret was refused, but `rotate_refresh` raised inside its atomic block, so the compromise marking and the revocation of every session were rolled back with it | FIXED (ANDROID-BINDING) — the replay is recorded in a transaction that commits before the refusal |
+| INT-055 | P2 | P14 | thirteen feature modules imported `hiltViewModel`, four imported `toRoute`, and the app imported MapLibre, without declaring the dependencies; the first real compile would have failed | FIXED (ANDROID-BINDING) — dependencies declared; not yet proven by an Android compile |
+| INT-056 | P3 | P5 | owner facility responses do not carry their category's capabilities, so the app cannot tell from the facility whether it supports duty or closures | OPEN — the app reads them from the owner configuration and hides a control whose capability it cannot confirm |
+| INT-057 | P2 | P18 | the contract has no push-registration operation and the Android app has no FCM integration, so the push boundary cannot be bound | OPEN — needs a backend operation and EXT FCM credentials |
+| INT-058 | P1 | P7 | the second page of any nearest-first facility list answered 500: the cursor stored GeoDjango's `Distance` measure as text (`"123.4 m"`) and the next query could not compare it | FIXED (ANDROID-BINDING) — ordering and cursor on a float distance in metres |
+| INT-059 | P1 | P7 | public facility detail served opening hours without the `id` and `sequence` the contract requires, so a generated client could not decode any facility that had hours | FIXED (ANDROID-BINDING) |
+| INT-060 | P2 | P7 | every public facility image pointed at `/api/v1/public/media/images/<id>/`, a route that does not exist | FIXED (ANDROID-BINDING) — the storage URL, as the owner endpoint serves it |
+| INT-061 | P3 | P7 | public image URLs are pre-signed and expire, so an image a cache-first screen stored goes dark after the signature lapses | OPEN — a deployment decision: a public-read bucket or CDN for public media |
+| INT-062 | P2 | P10 | the generated Kotlin serializer uses `encodeDefaults = true`, so a PATCH naming one field sent every other optional field as null, which the backend refuses or applies as a clear | FIXED (ANDROID-BINDING) — the app configures `encodeDefaults = false` and `explicitNulls = false` before first use |
+| INT-063 | P2 | P14 | the Android session coordinator cleared the session on any refresh failure, so being offline at the moment a token expired signed the user out | FIXED (ANDROID-BINDING) — only a refused secret ends the session |
+| INT-064 | P3 | P14 | the Android refresh authenticator reported the token in the store, not the one the failed request carried, as the failed token, so a request that failed on the old token after another had refreshed spent the secret again | FIXED (ANDROID-BINDING) |
 
 ## Rules
 
 - An identifier is never reused, even after the defect is fixed or retired.
 - A defect is registered here before it is referenced anywhere else.
-- The next free identifier is `INT-048`.
+- The next free identifier is `INT-065`.

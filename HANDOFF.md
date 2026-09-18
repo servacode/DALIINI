@@ -640,10 +640,34 @@ the e2e stack has no object storage. LAUNCH_POLICY_PENDING: the pharmacy verific
 must be configured and qualified before owner onboarding opens publicly. `apps/web` still
 lacks HSTS and still rewrites its tsconfig.
 
+## ANDROID — 2026-09-19
+
+The Android data layer runs on the generated client and has been driven against the real
+backend. The app has not been built: Google Maven answers 404 from this machine.
+
+**How it reaches the backend.** `core/network/api/` is the only code that imports generated
+types. Add an operation there, map it in `Mappers.kt`, and expose it through a boundary;
+never call Retrofit from a feature. The generated serializer is configured in
+`GeneratedClient` before first use — do not touch `Serializer` elsewhere.
+
+**Clients.** Anonymous for discovery, sign-in, registration, recovery and refresh; authorized
+for the user's own requests. Each keeps its own OkHttp dispatcher (DECISION-029): sharing one
+deadlocks refresh under load, and `RefreshCoordinationTest` proves it.
+
+**Environments.** `local` (emulator host alias, cleartext allowed there only), `staging`,
+`production`. Addresses come from Gradle properties or the environment; placeholders are
+refused at the first request.
+
+**Verify.** `cd apps/android/jvm-verification && gradle test`, and `./scripts/e2e-android.sh`
+for the connected suite (Django, PostGIS, Redis, MinIO). Neither is an Android build.
+
+**Open.** The Android build and everything after it; push (INT-057); capabilities on owner
+responses (INT-056); expiring public image URLs (INT-061); LAUNCH_POLICY_PENDING.
+
 ## NEXT
 
-**Android generated-client integration and the Android golden path.** Replace
-`UnboundGeneratedPublicApi` and `UnboundGeneratedOwnerApi` with the committed Kotlin client,
-bind public discovery and owner onboarding, and qualify them against the same backend. The
-blocker is environmental: Google Maven and the Gradle distribution are unreachable from this
-machine, so this needs a network or CI runner that can reach them.
+The ANDROID GENERATED CLIENT INTEGRATION brief arrived cut off at §49 ("Gradle"). Its
+remaining sections have to be read before anything further is done. Whatever they ask, the
+Android build needs a network that reaches Google Maven, or a trusted CI runner, before
+`BUILD_VERIFIED` can be claimed; the first run should be `:app:assembleLocalDebug`, then lint,
+unit and Compose tests.

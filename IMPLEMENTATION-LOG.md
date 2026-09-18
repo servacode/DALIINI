@@ -1379,3 +1379,55 @@ The refusal, the 404 and the absence of any storage key on the page are verified
 Evidence: `artifacts/evidence/admin-binding-20260919.txt`,
 `artifacts/evidence/admin-bff-auth-20260918.txt`,
 `artifacts/evidence/admin-route-inventory-20260918.md`.
+
+## ANDROID GENERATED CLIENT INTEGRATION (§1–§48) — 2026-09-19
+
+The brief arrived cut off at §49. Everything up to §48 is done or recorded as not possible
+here; nothing from §49 on was assumed.
+
+### Environment
+
+Google Maven still answers 404 from this machine, so the Android app was not built. A second
+Gradle build, `apps/android/jvm-verification`, compiles the generated client and every
+platform-free Android file with the app's catalog versions and Maven Central alone, and runs
+the module unit tests and a connected suite against the real backend (DECISION-028).
+
+### What compiling the generated client found
+
+P10 generated the Kotlin client and never compiled it. It did not compile: an empty
+`NullEnum` (INT-052) and `kotlin.Any` for free-form JSON, which crashed the compiler
+(INT-053). Reading the generated code found that no mobile client could upload a file
+(INT-048) or create a duty shift or closure without inventing an id (INT-049). All four were
+fixed in the contract, with a contract test for each rule.
+
+### What the connected suite found
+
+Session security, before the Android code was even wired: a replayed refresh secret was
+refused but the revocation it triggered was rolled back (INT-054), and revoking a session did
+not stop its access token or its socket (INT-051). The first connected run, 21/26, found three
+more in public discovery: page two of a nearest-first list answered 500 (INT-058), no facility
+with opening hours could be decoded (INT-059), and every public image pointed at a missing
+route (INT-060). All fixed in the backend with tests that fail on the previous code.
+
+### The binding
+
+One configured client, one error mapper, one mapper file, adapters for the public, owner and
+auth boundaries; two HTTP clients on separate dispatchers so a refresh is never starved; the
+session id kept with the refresh secret; only a refused secret ends a session. Cache-first
+flows, opaque-cursor paging, backend-computed availability, hours by `sequence`, sign-in,
+registration and recovery screens, owner onboarding from configuration, duty only where the
+capability is known. Local, staging and production flavors; cleartext only in local.
+
+### Numbers
+
+Connected 26/26. Unit 89/89. Backend 225 passed from 211; ruff 99 from 100; mypy 727 from
+783. Contract 91 operations, 144 components, no drift. Admin regression 31/31, 71/71.
+
+### Not verified
+
+The Android build, lint, Compose tests, instrumentation and any device. Screens and
+ViewModels are not compiled by anything that ran. Room ordering is tested against an
+in-memory equivalent. Push has no contract operation and no FCM (INT-057).
+
+Evidence: `artifacts/evidence/android-binding-20260919.txt`,
+`artifacts/evidence/android-integration-inventory-20260919.md`.

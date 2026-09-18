@@ -409,13 +409,131 @@ The authoritative source for admin authorization remains the project RBAC. `user
 
 ---
 
+## DECISION-027 — The generated Kotlin client is compiled as source, and only `api/` sees it
+
+**Date:** 2026-09-19
+
+**Subject:** How the P10 Kotlin client enters the Android build.
+
+**Decision:** `:core:network` adds `packages/api-kotlin/generated/src/main/kotlin` as a source directory, as `:core:designsystem` does with the generated tokens. Within the module, only `core/network/api/` references generated types: one configured `GeneratedClient`, one error mapper, one file of mappers, and adapters behind `PublicApiBoundary`, `OwnerApiBoundary` and `AuthApiBoundary`. Repositories and screens see domain models and `AppError` only.
+
+**Reason:** The spec's module list has no place for a separate client module, and a copy would drift from the committed artefact the drift gate protects.
+
+**Alternatives:** A published artefact (no repository to publish to); a `:core:api` module (outside the spec's module list).
+
+**Impact:** Regenerating the client changes the app with no copy step. A contract change that renames a generated type fails the build in `api/`, nowhere else.
+
+---
+
+## DECISION-028 — A JVM build over the Android sources, while Google Maven is out of reach
+
+**Date:** 2026-09-19
+
+**Subject:** Google Maven answers 404 from this machine, so nothing Android can be built.
+
+**Decision:** `apps/android/jvm-verification` is a second Gradle build that compiles the generated client and every platform-free Android source file straight from the modules' directories, with the app's own version catalog, and runs the module unit tests and a connected suite against the real backend. It is evidence for the transport and data layers only and is never reported as `BUILD_VERIFIED`.
+
+**Reason:** Without it, the batch would have written thousands of lines of Kotlin that nothing compiled. It found six defects the Android build could not have found either, because they are in the contract and the backend.
+
+**Alternatives:** Downgrading AGP or using an unvetted mirror, both refused by the owner; waiting for a network that reaches Google Maven, which leaves the binding unverified.
+
+**Impact:** The files it must leave out are listed in its `build.gradle.kts`. Screens and ViewModels remain uncompiled until the Android build runs.
+
+---
+
+## DECISION-029 — Two HTTP clients, each with its own dispatcher
+
+**Date:** 2026-09-19
+
+**Subject:** Where the refresh authenticator runs, and what it can block.
+
+**Decision:** An anonymous client for discovery, sign-in, registration, recovery and refresh, with no token and no authenticator. An authorized client for the user's own requests, with the token interceptor and the refresh authenticator. Each has its own OkHttp dispatcher.
+
+**Reason:** A wrong password must not trigger a refresh; public data must not carry a token that could turn it into a 401; and the authenticator blocks the thread of the request that failed, so on a shared dispatcher five such requests would occupy the per-host limit that the refresh call itself needs. The unit test deadlocks when the dispatchers are shared.
+
+**Impact:** A refresh can always run, however many requests are waiting for it.
+
+---
+
+## DECISION-030 — An access token is bound to its session
+
+**Date:** 2026-09-19
+
+**Subject:** INT-051 and INT-054.
+
+**Decision:** Access tokens carry `sid`. REST authentication and the WebSocket resolve the live session through one query, `live_sessions_for`; a socket re-checks before delivering a user or admin event and closes with 4401 if the session is gone. A detected refresh replay is recorded in a transaction that commits before the refusal is raised.
+
+**Reason:** Revocation and replay detection were in the code but did not take effect.
+
+**Alternatives:** Shorter access tokens, which narrow the window without closing it.
+
+**Impact:** One indexed query per authenticated request, replacing the user lookup it already made. Tokens issued before this change stop working; there is no production traffic to disturb.
+
+---
+
+## DECISION-031 — The generated serializer is configured before first use
+
+**Date:** 2026-09-19
+
+**Subject:** Three generator defaults that are wrong for this API.
+
+**Decision:** `GeneratedClient` sets `encodeDefaults = false` and `explicitNulls = false`, registers a contextual serializer for free-form maps, and puts a converter first that sends a UUID multipart part as plain text. Its OkHttp client is always the app's.
+
+**Reason:** The defaults sent every unset PATCH field as null (INT-062), could not decode a free-form map, quoted the UUID part so the backend refused it, and would have logged request bodies — passwords included — once a logger was attached.
+
+**Impact:** A field cannot be cleared by sending null through a generated PATCH; none of the app's flows needs to.
+
+---
+
+## DECISION-032 — Environments are flavors, and cleartext exists only in `local`
+
+**Date:** 2026-09-19
+
+**Subject:** Where the app finds its backend (§5).
+
+**Decision:** `local`, `staging` and `production` flavors. `local` defaults to the emulator's host alias and may use cleartext only to it, through a network security config that exists in that flavor alone. `staging` and `production` take their addresses from Gradle properties or the environment and default to placeholders, which `ApiEnvironment` refuses at the first request rather than at start-up. Only the production release tasks feed Play validation.
+
+**Reason:** No developer machine address, no localhost and no placeholder may reach a shipped build.
+
+**Impact:** A phone on a local network needs its server's address added to the local network security config.
+
+---
+
+## DECISION-033 — Core library desugaring for `java.time`
+
+**Date:** 2026-09-19
+
+**Subject:** The generated client uses `java.time`; `11-ANDROID-KOTLIN.md` sets `minSdk 24`, which predates it.
+
+**Decision:** Desugaring in both conventions, `desugar_jdk_libs` 2.1.5.
+
+**Reason:** Changing the minimum SDK is a product decision; regenerating the client with string dates would move date parsing out of the one boundary that should own it.
+
+**Impact:** The desugaring artifact comes from Google Maven and could not be downloaded here to confirm; the first Android build confirms it.
+
+---
+
+## DECISION-034 — The app offers an owner control only when it knows the category supports it
+
+**Date:** 2026-09-19
+
+**Subject:** INT-056: owner facility responses carry no capabilities.
+
+**Decision:** Duty controls appear when the owner configuration for the facility's province says its category supports duty, and are hidden otherwise, including when the category is absent from the configuration.
+
+**Reason:** Hiding a control that would work is recoverable; offering one that the backend then refuses is the worse failure, and the backend refuses it either way.
+
+**Alternatives:** Capabilities on owner facility responses, which is the right fix and is recorded as INT-056.
+
+---
+
 # Technical Debt Register
 
 Mandatory before staging or production closure. None of these blocks P2 or P10.
 
 ## DEBT-001 — Ruff baseline
 
-**Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch.
+**Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19).
 
 Concentrated in `directory/models.py`, which is written in a compressed style with semicolons and lines up to 249 characters against a 100 limit. Rule: **no new lint debt** — any file touched must not increase the count. Forbidden remedies: disabling rules broadly, blanket ignores, or weakening CI to make the result green.
 
@@ -429,7 +547,8 @@ absent, so it silently analyses less. Measured in the backend container, where t
 loads, the same tree at `c9a4cae` reports **797 errors in 100 files across 191 source
 files**. That is the figure to compare against from now on; earlier reports are not
 rewritten, and 556 is kept above so the record stays traceable. After the CONTRACT
-ALIGNMENT batch the container figure is **789**.
+ALIGNMENT batch the container figure is **789**. After the Android binding batch it is **727**: the touched
+auth, realtime and contract-test modules were annotated in full.
 
 `[tool.mypy] strict = true` is declared while the codebase is largely unannotated. Rule: **no new type debt**. Removing `strict` requires a recorded ADR; a blanket ignore is forbidden. New modules are expected to be strict-clean; every module added in the CONTRACT ALIGNMENT batch is.
 
