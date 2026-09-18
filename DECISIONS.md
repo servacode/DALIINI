@@ -181,6 +181,72 @@ The authoritative source for admin authorization remains the project RBAC. `user
 
 **Impact:** The contract is honest today, and INT-035, INT-036 and INT-037 carry the reconciliation work.
 
+**Closed:** 2026-09-18 by the CONTRACT ALIGNMENT batch. The runtime was changed to match the specification and the schema regenerated from it, so the divergence no longer exists. See DECISION-013 to DECISION-016.
+
+---
+
+## DECISION-013 — One DRF exception handler owns every error response
+
+**Date:** 2026-09-18
+
+**Subject:** Three unrelated error shapes reached clients: DRF's `{"detail": ...}`, DRF's field map, and a hand-rolled `{"error": {"code": ...}}` built in views. INT-038.
+
+**Decision:** Install `core.exceptions.exception_handler` as `REST_FRAMEWORK["EXCEPTION_HANDLER"]`. It renders every failure as `{code, message, details, requestId}`. Views raise `DomainError` or `ConflictError` instead of returning an error `Response`, and twelve hand-built error bodies were converted.
+
+**Reason:** A shape assembled per view cannot be kept consistent, cannot be described once in the contract, and cannot be audited for leaks. A single handler is the only place where "no stack trace, no SQL, no secret, no token material" can actually be enforced. Raising also rolls the surrounding transaction back, which a returned `Response` did not.
+
+**Alternatives:** A base view class. Rejected, it does not cover exceptions raised in serializers, permissions, authentication or throttling. A middleware. Rejected, it runs after DRF has already rendered the body.
+
+**Impact:** `requestId` comes from `RequestIdMiddleware`, so the value in the body, the `X-Request-ID` header and the server log are the same string. An unexpected failure is logged with its traceback under `django.request` and answered with a bare `INTERNAL_ERROR`; a 5xx `APIException` is deliberately not echoed either.
+
+---
+
+## DECISION-014 — The cursor is a token, and `previous` is not exposed
+
+**Date:** 2026-09-18
+
+**Subject:** `08-API-CONTRACT.md` specifies `{items, nextCursor, hasMore}`. DRF emits `{next, previous, results}` where the links are absolute URLs. INT-035.
+
+**Decision:** `core.pagination.CursorPage` emits the specified three keys. `nextCursor` is the opaque cursor token extracted from DRF's link, not the link. `previous` is not emitted, because the specified envelope has no field for it.
+
+**Reason:** The URL carries the scheme, host, path and every query parameter the caller sent. A client that persists a page token would persist all of that, and a host rewritten by a proxy would leak into stored client state. The token alone is sufficient and reveals nothing about routing.
+
+**Alternatives:** Keep `previous` as a fourth key. Rejected, it would diverge from the specified envelope again, and no consumer exists that needs backward paging; the field can be added deliberately when one does.
+
+**Impact:** Backward paging is unreachable until the contract adds a field for it. `ordering` must end in a unique column on every subclass, which is documented on the class.
+
+---
+
+## DECISION-015 — A malformed cursor is a validation error, not a 404
+
+**Date:** 2026-09-18
+
+**Subject:** DRF raises `NotFound` when `decode_cursor` fails.
+
+**Decision:** `CursorPage.decode_cursor` converts it to a `ValidationError` on the `cursor` field, so the caller gets 400 `VALIDATION_ERROR` with `details.cursor`.
+
+**Reason:** The cursor is client input in a query parameter. A 404 tells the caller the collection does not exist, which is false and sends a client debugging the wrong thing.
+
+**Alternatives:** Leave DRF's behaviour. Rejected as actively misleading.
+
+**Impact:** Covered by `test_a_mangled_cursor_is_a_field_error_not_a_missing_collection`.
+
+---
+
+## DECISION-016 — Wire names are translated at the boundary, never by renaming columns
+
+**Date:** 2026-09-18
+
+**Subject:** Admin list endpoints answered from `QuerySet.values()` and returned column names (INT-036), and `06-DATA-MODEL.md` calls the business-hour ordering field `sequence` while the column is `sort_order` (INT-037).
+
+**Decision:** Do the translation in serializers with `source=`. Keep `QuerySet.values()` so a grid page still does not instantiate models. Rename no database column and write no `RenameField` migration.
+
+**Reason:** A column rename rewrites a table, invalidates every existing query and index reference, and buys nothing the boundary cannot provide. The API contract and the storage schema are allowed to use different vocabularies; the serializer is where they meet.
+
+**Alternatives:** `RenameField` for `sort_order` to `sequence`. Rejected, a migration for a naming preference. Drop `values()` and serialize model instances. Rejected, it would undo a deliberate performance choice.
+
+**Impact:** The Admin serializers in `admin_console/schemas.py` are now the real output path rather than documentation. A structural test fails if any future response serializer in that app declares a field containing an underscore. `AdminCapabilities*` is the one remaining snake_case pair and is registered as INT-039.
+
 ---
 
 # Technical Debt Register
@@ -197,7 +263,15 @@ Concentrated in `directory/models.py`, which is written in a compressed style wi
 
 **Recorded:** 2026-09-17 · **Baseline:** 556 errors in 82 files.
 
-`[tool.mypy] strict = true` is declared while the codebase is largely unannotated. Rule: **no new type debt**. Removing `strict` requires a recorded ADR; a blanket ignore is forbidden.
+**Correction, 2026-09-18:** the 556 figure was measured on the Windows host, where the
+`django-stubs` plugin cannot import `directory_backend.settings.test` because GDAL is
+absent, so it silently analyses less. Measured in the backend container, where the plugin
+loads, the same tree at `c9a4cae` reports **797 errors in 100 files across 191 source
+files**. That is the figure to compare against from now on; earlier reports are not
+rewritten, and 556 is kept above so the record stays traceable. After the CONTRACT
+ALIGNMENT batch the container figure is **789**.
+
+`[tool.mypy] strict = true` is declared while the codebase is largely unannotated. Rule: **no new type debt**. Removing `strict` requires a recorded ADR; a blanket ignore is forbidden. New modules are expected to be strict-clean; every module added in the CONTRACT ALIGNMENT batch is.
 
 ## DEBT-003 — Evaluate removal of Django `PermissionsMixin` after contract and runtime recovery
 

@@ -1,6 +1,6 @@
 # HANDOFF
 
-Last updated: 2026-09-18T02:40:00+03:00
+Last updated: 2026-09-18T04:30:00+03:00
 
 ## PROJECT SUMMARY
 
@@ -494,6 +494,10 @@ the first response. See DECISION-012.
 Reconciling these is product work with its own review, not something to slip into a schema
 batch.
 
+**Closed 2026-09-18 by the CONTRACT ALIGNMENT batch**, together with INT-038, which had no
+identifier of its own until the canonical register was written. The runtime was changed to
+match the specification and the artefacts regenerated. See the section below.
+
 ### Verification levels, stated precisely
 
 - Schema generation, contract description, canonical artefacts, drift gate, 12 contract
@@ -520,3 +524,42 @@ reject a `__Host-` cookie without `Secure`, so the development flow cannot work 
 
 Android and iOS remain where they were. `/public/provinces/` still returns an empty list
 because the P4 seed does not exist.
+
+
+## CONTRACT ALIGNMENT — 2026-09-18
+
+The API boundary conventions are now settled and enforced by tests. Anything built on top
+of this API can rely on them.
+
+**Errors.** Every failing request returns `{code, message, details, requestId}`. Branch on
+`code`, never on `message`. `details` is always a `{field path: [message, ...]}` map, empty
+when the error is not field-scoped; nested paths look like `contacts[1].phone` and anything
+without a field of its own is under `nonFieldErrors`. `requestId` equals the
+`X-Request-ID` response header and the id in the server logs, so it is the right thing to
+quote in a bug report. An unexpected failure returns `INTERNAL_ERROR` and nothing else —
+no exception text, no stack frame, no SQL, no connection string.
+
+Server-side: raise `core.exceptions.DomainError` or `ConflictError`. Never return an error
+`Response` by hand — it bypasses the envelope and it does not roll the transaction back.
+
+**Cursor pages.** `{items, nextCursor, hasMore}`. `nextCursor` is an opaque token; send it
+back unchanged as `?cursor=` and never parse it. There is no `previous`. A malformed cursor
+is a 400 `VALIDATION_ERROR` on the `cursor` field. New paginated endpoints subclass
+`core.pagination.CursorPage` and set only `ordering`, which must end in a unique column.
+
+**Casing.** camelCase everywhere, including the Admin endpoints that read through
+`QuerySet.values()`. A wire name that differs from a column is translated with `source=` in
+the serializer. Do not rename a column to change a wire name. The business-hour ordering
+field is `sequence` on the wire and `sort_order` in the database.
+
+One exception remains: `AdminCapabilitiesRequestSerializer` and
+`AdminCapabilitiesSerializer` still use `supports_*` on both request and response. That is
+INT-039. It is not a list endpoint, so it was left out of this batch deliberately rather
+than widened into it without review.
+
+**Regenerate after any request or response change.** `./scripts/generate-openapi.sh` then
+`./scripts/generate-api-clients.sh`, and commit the artefacts with the source change.
+`ApiError` replaced `DetailError`, `DomainError` and `DomainErrorBody` in all three
+clients, so a consumer that referenced those types will need updating.
+
+`/public/provinces/` still returns an empty list. The P4 seed (INT-006) does not exist yet.

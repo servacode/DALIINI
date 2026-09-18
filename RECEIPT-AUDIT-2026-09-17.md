@@ -427,3 +427,81 @@ Starting P23 now would add a third client built against a contract that does not
 
 *Audit performed with execution evidence only. No project file was modified during the
 audit; `git status` reported zero tracked changes and HEAD was unchanged at completion.*
+
+
+---
+
+# Canonical Defect Register
+
+**Added:** 2026-09-18. This section supersedes the scattered identifier usage in earlier
+reports. Nothing above is rewritten; the corrections are stated here explicitly.
+
+## Correction notice
+
+Three identifier faults were found while reviewing the P10 report and are corrected here.
+
+1. **`INT-035` and `INT-036` were used for two different things.** The P10 error-contract
+   narrative used them for the *error envelope* divergence, while the bug list used them
+   for *pagination* and *Admin casing*. The canonical meanings are the bug-list ones, kept
+   unchanged so nothing has to be renumbered, and the error envelope — which never had an
+   identifier of its own — is now **`INT-038`**.
+2. **`INT-012` was referenced but never registered.** `HANDOFF.md` and `plan.md` cite it
+   for the Admin `__Host-` refresh cookie, but the audit register skipped from `INT-011`
+   to `INT-013`. It is defined below.
+3. **`INT-032` was never assigned.** It appeared once in conversation and in no committed
+   document. It is retired permanently and must not be reused, so the record of what was
+   said stays traceable.
+
+From this point every identifier below is canonical and stable.
+
+## Register
+
+Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
+
+| ID | Sev | Introduced | Defect | Status |
+|---|---|---|---|---|
+| INT-001 | P0 | P2 | ASGI does not start; routing imported before `get_asgi_application()` | FIXED (FIX-P0) |
+| INT-002 | P0 | P2 | every HTTP request returns 500; `MessageMiddleware` without session middleware | FIXED (FIX-P0) |
+| INT-003 | P0 | P3 | migration graph invalid; dependency uses the module name `sessions` instead of the app label | FIXED (FIX-P0) |
+| INT-004 | P0 | P14 | Android does not compile; AGP 8 `CommonExtension` signature under AGP 9.4 | FIXED (FIX-P0) |
+| INT-005 | P1 | P10 | generated OpenAPI carries no component schemas and no request bodies | FIXED (P10) |
+| INT-006 | P1 | P4 | no province or taxonomy seed exists | OPEN |
+| INT-007 | P1 | P2 | `settings/test.py` uses SQLite while the models are spatial | FIXED (P2) |
+| INT-008 | P1 | P6 | `DutyShift` missing `created_by`, `cancelled_at`, `ended_early_at`; hard delete; constraint has no cancelled condition | OPEN |
+| INT-009 | P1 | P3/P6/P9 | migration drift across seven apps | FIXED (P2) |
+| INT-010 | P2 | P5 | owner, media and rating views declare no `permission_classes`; anonymous caller receives 500 | FIXED (P10) |
+| INT-011 | P2 | P12/P13 | Admin UI is a descriptive scaffold with no data binding | OPEN |
+| INT-012 | P2 | P12 | the Admin `__Host-` refresh cookie sets `secure` only when `NODE_ENV=production`, and browsers reject a `__Host-` cookie without `Secure`, so the development login flow cannot work | OPEN |
+| INT-013 | P2 | P14 | every Android API boundary throws `GeneratedClientRequiredException` | OPEN |
+| INT-014 | P3 | P14–P20 | qualifier scripts use `read_text()` without an encoding and scan `node_modules` and `build` | OPEN |
+| INT-015 | P2 | P13 | eight unguarded `objects.get` calls in `admin_console/views.py` return 500 instead of 404 | OPEN |
+| INT-016 | P2 | P2 | `/api/schema/` publicly reachable in every environment | FIXED (P10) |
+| INT-017 | P2 | P3/P5 | `PUT`/`DELETE /account/profile-image/` not implemented | OPEN |
+| INT-018 | P2 | P13 | Admin taxonomy is read-only, so `Cycle J` cannot be executed | OPEN |
+| INT-019 | P2 | P14 | no Gradle wrapper, contrary to `26-REPOSITORY-STRUCTURE.md` | OPEN |
+| INT-020 | P3 | P0 | CI contract-drift gate is a no-op; no Android or Admin/Web jobs | FIXED (P10) |
+| INT-021 | P3 | P0 | no lockfiles committed; Dockerfile does not copy a lockfile | PARTIAL — lockfiles committed in P2; the Dockerfile still resolves at build time |
+| INT-022 | P3 | P11/P12 | Tailwind, Radix, Vitest and Playwright absent despite `02-BASELINE-DECISIONS.md` | OPEN |
+| INT-023 | P3 | P11 | `apps/web/tsconfig.json` uses `jsx: "preserve"`, rewritten on every Next 16 build | OPEN |
+| INT-024 | P3 | P11/P12 | HSTS header missing | OPEN |
+| INT-025 | P3 | P4 | `directory/models.py` written in a compressed style violating `.editorconfig` and ruff | OPEN |
+| INT-026 | P3 | P3 | missing indexes on user status, `UserSession(user, revoked)` and `last_seen_at` | OPEN |
+| INT-027 | P3 | P3 | a non-UUID refresh token yields 500 instead of 401 | OPEN |
+| INT-028 | P1 | P3/P13 | pytest collection aborts; three `tests/` packages lack `__init__.py` and two module basenames repeat | FIXED (P2) |
+| INT-029 | P2 | P8 | a Redis connection error propagates after the transaction has committed; `publish_after_commit` guards `channel_layer is None` but not a connection failure | OPEN |
+| INT-030 | P1 | P5 | `submit_facility` applies `FOR UPDATE` across a LEFT OUTER JOIN, which PostgreSQL refuses | FIXED (P2) |
+| INT-031 | P1 | P3 | `Province` filtered on `is_active` at three sites; the field is `active` | FIXED (P10) |
+| INT-032 | — | — | never assigned; retired permanently and must not be reused | RETIRED |
+| INT-033 | P0 | P3 | registration completion, login and password reset return 500; views pass `**validated_data` into services while the serializers declare camelCase fields with no `source` | FIXED (P10) |
+| INT-034 | P1 | P5 | `facility_detail` orders business hours by `sequence`, a field that does not exist on the model | FIXED (P10) |
+| INT-035 | P2 | P7 | cursor pagination emits `{next, previous, results}`; `08-API-CONTRACT.md` specifies `{items, nextCursor, hasMore}` | FIXED (CONTRACT-ALIGNMENT) |
+| INT-036 | P2 | P13 | several Admin list endpoints answer from `QuerySet.values()` and return snake_case keys; `08-API-CONTRACT.md` requires one convention at the boundary | FIXED (CONTRACT-ALIGNMENT) |
+| INT-037 | P3 | P6 | `06-DATA-MODEL.md` names the business-hour ordering field `sequence`; the model and the wire contract use `sort_order` | FIXED (CONTRACT-ALIGNMENT) — wire name only; the column keeps `sort_order` |
+| INT-038 | P2 | P2/P13 | the runtime emits three unrelated error shapes; `08-API-CONTRACT.md` specifies a single envelope carrying `code`, `message`, `details` and `requestId` | FIXED (CONTRACT-ALIGNMENT) |
+| INT-039 | P3 | P13 | `AdminCapabilitiesRequestSerializer` and `AdminCapabilitiesSerializer` declare `supports_*` on the wire, the last snake_case pair left in the Admin API; it is not a list endpoint, so it was outside the CONTRACT-ALIGNMENT scope | OPEN |
+
+## Rules
+
+- An identifier is never reused, even after the defect is fixed or retired.
+- A defect is registered here before it is referenced anywhere else.
+- The next free identifier is `INT-040`.

@@ -1,0 +1,99 @@
+CONTRACT ALIGNMENT — INT-035, INT-036, INT-037, INT-038
+Date: 2026-09-18
+Host: Windows 11, Docker 29.5.2
+Runtime: python:3.13 image directory-v3-p2dev:local; PostGIS 17-3.5 (p10pg); Redis 8 (p10redis)
+Base commit: c9a4cae
+
+== 1. Backend suite ==
+........................................................................ [ 54%]
+.............................................................            [100%]
+133 passed in 13.10s
+
+== 2. New contract suites, run in isolation ==
+........................................................................ [100%]
+72 passed in 5.07s
+
+== 3. Runtime contract smoke, 17 real requests validated against the generated schema ==
+
+     CASE                                           OPERATION ID                       HTTP  DETAIL
+----------------------------------------------------------------------------------------------------------------------------------
+PASS auth register start                            authRegisterStart                  202   matches
+PASS auth register verify                           authRegisterVerify                 200   matches
+PASS auth register complete                         authRegisterComplete               201   matches
+PASS auth login                                     authLogin                          200   matches
+PASS account profile                                accountProfileRetrieve             200   matches
+PASS public provinces                               publicProvincesList                200   matches
+PASS public facility list                           publicFacilitiesList               200   matches
+PASS public facility detail                         publicFacilityRetrieve             200   matches
+PASS public home                                    publicHomeRetrieve                 200   matches
+PASS owner facility create                          ownerFacilityCreate                201   matches
+PASS owner facility list                            ownerFacilitiesList                200   matches
+PASS admin province update                          adminProvinceUpdate                200   matches
+PASS admin dashboard                                adminDashboardRetrieve             200   matches
+PASS validation failure (missing categoryId)        publicFacilitiesList               400   matches
+PASS permission failure (no token)                  adminDashboardRetrieve             401   matches
+PASS permission failure (token without the admin permission) adminDashboardRetrieve             403   matches
+PASS INT-010: owner list without a token            ownerFacilitiesList                401   matches
+
+17/17 runtime responses match the declared contract
+
+== 4. Schema generation ==
+spectacular exit=0
+b59b38c76a13e0fc1d0bc30975cd187778677ff62355988282c8b0ffe0553a8f  /tmp/s.yaml
+committed openapi/schema.sha256:
+b59b38c76a13e0fc1d0bc30975cd187778677ff62355988282c8b0ffe0553a8f  schema.yaml
+
+== 5. Quality debt, measured in the container against the same baseline ==
+ruff  after : Found 101 errors.
+mypy  after : Found 789 errors in 100 files (checked 197 source files)
+
+Baseline for section 5, measured the same way on a detached worktree at c9a4cae inside the
+same container image, because the counts recorded earlier were taken on the Windows host
+where the django-stubs plugin cannot load the settings module and therefore under-reports:
+
+  ruff  baseline: Found 101 errors.
+  mypy  baseline: Found 797 errors in 100 files (checked 191 source files)
+
+ruff is unchanged at 101. mypy is 8 lower than the baseline despite six new modules,
+because every new module is strict-clean and `serialize_hours` gained annotations.
+Zero mypy findings in core/exceptions.py, core/pagination.py and the four new test modules.
+
+== 6. Generated clients ==
+openapi-generator 7.15.0, official image, pinned.
+  TypeScript  136 models, compiled with tsc --noEmit, exit 0
+  Kotlin      331 sources
+  Swift       170 sources
+ApiError is present in all three: packages/api-typescript/generated/src/models/ApiError.ts,
+packages/api-kotlin/generated/src/main/kotlin/com/servacode/directory/api/models/ApiError.kt,
+packages/api-swift/generated/Sources/ServaDirectoryAPI/Models/ApiError.swift.
+DetailError, DomainError and DomainErrorBody are removed from every client; they described
+error shapes the runtime no longer emits.
+
+== 7. What each defect fix is proven by ==
+INT-038  core/tests/test_error_contract.py, 17 cases, including the three real-stack cases
+         that assert requestId equals the X-Request-ID header and that an unexpected
+         failure discloses no connection string, exception class or traceback.
+INT-035  core/tests/test_pagination.py, 6 cases: first page, middle page, last page,
+         opaque-token check, full walk with no duplicate or omission, mangled cursor.
+INT-036  admin_console/tests/test_camel_case_contract.py, 6 connected cases plus a
+         structural sweep over every response serializer in the app.
+INT-037  business_hours/tests/test_wire_contract.py, 5 cases covering both directions and
+         asserting the column is still named sort_order.
+
+== 8. Drift gates, run after the artefacts were committed ==
+Schema gate. scripts/check-openapi-drift.sh runs spectacular on the host, which has no
+GDAL, so its logic was executed step by step with generation in the backend container:
+
+  git hash-object openapi/schema.yaml    before 97693c06f5b78a88d6b7130596c2fc0222d71b37
+  git hash-object openapi/schema.yaml    after  97693c06f5b78a88d6b7130596c2fc0222d71b37
+  git hash-object openapi/schema.sha256  before 61bbb960089b605c2a1c2c345ba0420865e8c83a
+  git hash-object openapi/schema.sha256  after  61bbb960089b605c2a1c2c345ba0420865e8c83a
+  PASS — no drift.
+
+Client gate. scripts/generate-api-clients.sh re-run against the committed schema:
+  git status --short packages/  -> empty. PASS — no drift in any of the three clients.
+
+== 9. Commits ==
+  6cc3205  feat(api): unify the error, pagination and casing contracts
+  3566584  build(contract): regenerate the schema and all three clients
+  21cbd56  docs: record the contract alignment batch and correct two baselines

@@ -1082,7 +1082,7 @@ authentication, permission, not-found and throttling, and `DomainError` for doma
 rejections, plus DRF's field-scoped validation map. `08-API-CONTRACT.md` specifies a single
 richer envelope with `code`, `message`, `details` and `requestId` which nothing emits.
 Describing that instead would have produced clients that break on the first error. See
-DECISION-012; the divergence is recorded as INT-035 and INT-036 rather than hidden.
+DECISION-012; the divergence is recorded rather than hidden. It is INT-038 in the canonical register; this paragraph originally cited INT-035 and INT-036, which name the pagination and Admin-casing divergences instead. See the correction notice in `RECEIPT-AUDIT-2026-09-17.md`.
 
 ### Defects found while writing the contract
 
@@ -1148,3 +1148,77 @@ Central, so it should compile from a network that can reach the Gradle services.
 generated as a contract artefact; no Swift toolchain here, and iOS work is not started.
 
 Evidence: `artifacts/evidence/p10-contracts-20260918.txt`.
+
+
+## CONTRACT ALIGNMENT — 2026-09-18
+
+Four recorded divergences between `08-API-CONTRACT.md` and the running service were closed
+by changing the service, not the document. The schema and all three clients were then
+regenerated from Django, which is still the only source of truth.
+
+### INT-038 — one error envelope
+
+There was no `EXCEPTION_HANDLER` configured, so three shapes reached clients: DRF's
+`{"detail": ...}` for authentication, permission, 404 and throttling; DRF's field map for
+validation; and a hand-rolled `{"error": {"code": ...}}` assembled in twelve places across
+`business_hours`, `facilities` and `pharmacy_duty`.
+
+`core/exceptions.py` now renders every failure as `{code, message, details, requestId}`.
+It covers validation, authentication, permission, not found, method, media type, domain
+conflict, throttling and unexpected server errors. Views raise `DomainError` or
+`ConflictError` instead of returning a `Response`, which also means the surrounding
+transaction rolls back; `pharmacy_duty` no longer needs its explicit
+`transaction.set_rollback(True)` before the rejection.
+
+`details` is always a `{path: [message, ...]}` map. DRF hands back nested structures for
+nested and `many=True` serializers, so they are flattened with dotted paths and bracketed
+indices — `contacts[1].phone` — and anything without a field of its own lands under
+`nonFieldErrors`.
+
+Nothing leaks. An unexpected failure is logged with its traceback under `django.request`,
+correlated by request id, and answered with a bare `INTERNAL_ERROR`; a 5xx `APIException`
+is excluded from the pass-through branch for the same reason. `requestId` is the value
+`RequestIdMiddleware` already assigns, so the body, the `X-Request-ID` header and the log
+line carry the same string — asserted directly in the tests.
+
+### INT-035 — the cursor envelope
+
+`core/pagination.py` emits `{items, nextCursor, hasMore}`. `nextCursor` is the opaque
+token, not DRF's absolute URL: that URL carries the host, the path and every query
+parameter the caller sent, so a client persisting a page token would persist all of it.
+`previous` is not emitted, because the specified envelope has no field for it.
+
+A malformed cursor now answers 400 `VALIDATION_ERROR` with `details.cursor` instead of
+DRF's 404, which told the caller the collection did not exist.
+
+### INT-036 — camelCase across the Admin API
+
+Eight Admin endpoints answered straight from `QuerySet.values(...)` and returned column
+names. The `values()` calls stay — a grid page still does not instantiate models — and the
+serializers in `admin_console/schemas.py`, until now documentation only, became the real
+output path with `source=` doing the translation. No database column was renamed.
+
+### INT-037 — `sequence` on the wire
+
+`06-DATA-MODEL.md` names the business-hour ordering field `sequence`. The column stays
+`sort_order`; the serializer translates. `BusinessHourInputSerializer.sequence` writes
+`sort_order`, `serialize_hours` emits `sequence`, and the owner, public and hours schemas
+follow. The facility-image `sortOrder` is a different field and is untouched.
+
+### Verification
+
+133 backend tests pass, from 61. The four new suites contribute 72 cases and are also run
+in isolation. The 17-case runtime smoke passes against PostGIS and Redis with every body
+validated against the regenerated schema, including the 400, 401 and 403 cases that now
+carry the new envelope. `spectacular` exits 0 with zero warnings; two independent
+generations produce the same digest. The TypeScript client compiles.
+
+ruff is unchanged at its 101 baseline. mypy is 789 against a 797 baseline measured the
+same way, with zero findings in all six new modules; the previously recorded 556 was a
+host-side under-count and is corrected in DEBT-002.
+
+`AdminCapabilitiesRequestSerializer` and `AdminCapabilitiesSerializer` still declare
+`supports_*` on the wire. They are not list endpoints, so they were outside this batch's
+scope; registered as INT-039 rather than quietly widened into it.
+
+Evidence: `artifacts/evidence/contract-alignment-20260918.txt`.
