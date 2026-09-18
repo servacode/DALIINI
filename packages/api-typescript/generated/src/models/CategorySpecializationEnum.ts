@@ -16,17 +16,15 @@
 /**
  * * `GENERIC` - Generic
  * * `PHARMACY` - Pharmacy
- * * `DOCTOR` - Doctor
- * * `NURSING` - Nursing
- * * `MEDICAL_SUPPLIES` - Medical supplies
+ * * `MEDICAL_CLINIC` - Medical clinic
+ * * `NURSING_CENTER` - Nursing center
  * @export
  */
 export const CategorySpecializationEnum = {
     Generic: 'GENERIC',
     Pharmacy: 'PHARMACY',
-    Doctor: 'DOCTOR',
-    Nursing: 'NURSING',
-    MedicalSupplies: 'MEDICAL_SUPPLIES'
+    MedicalClinic: 'MEDICAL_CLINIC',
+    NursingCenter: 'NURSING_CENTER'
 } as const;
 export type CategorySpecializationEnum = typeof CategorySpecializationEnum[keyof typeof CategorySpecializationEnum];
 

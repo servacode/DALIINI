@@ -8,11 +8,9 @@
 
     * `PHARMACY` (value: `"PHARMACY"`)
 
-    * `DOCTOR` (value: `"DOCTOR"`)
+    * `MEDICAL_CLINIC` (value: `"MEDICAL_CLINIC"`)
 
-    * `NURSING` (value: `"NURSING"`)
-
-    * `MEDICAL_SUPPLIES` (value: `"MEDICAL_SUPPLIES"`)
+    * `NURSING_CENTER` (value: `"NURSING_CENTER"`)
 
 
 

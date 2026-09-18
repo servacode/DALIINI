@@ -21,9 +21,9 @@ import kotlinx.serialization.Serializable
 
 
 /**
- * * `GENERIC` - Generic * `PHARMACY` - Pharmacy * `DOCTOR` - Doctor * `NURSING` - Nursing * `MEDICAL_SUPPLIES` - Medical supplies
+ * * `GENERIC` - Generic * `PHARMACY` - Pharmacy * `MEDICAL_CLINIC` - Medical clinic * `NURSING_CENTER` - Nursing center
  *
- * Values: GENERIC,PHARMACY,DOCTOR,NURSING,MEDICAL_SUPPLIES
+ * Values: GENERIC,PHARMACY,MEDICAL_CLINIC,NURSING_CENTER
  */
 @Serializable
 enum class CategorySpecializationEnum(val value: kotlin.String) {
@@ -34,14 +34,11 @@ enum class CategorySpecializationEnum(val value: kotlin.String) {
     @SerialName(value = "PHARMACY")
     PHARMACY("PHARMACY"),
 
-    @SerialName(value = "DOCTOR")
-    DOCTOR("DOCTOR"),
+    @SerialName(value = "MEDICAL_CLINIC")
+    MEDICAL_CLINIC("MEDICAL_CLINIC"),
 
-    @SerialName(value = "NURSING")
-    NURSING("NURSING"),
-
-    @SerialName(value = "MEDICAL_SUPPLIES")
-    MEDICAL_SUPPLIES("MEDICAL_SUPPLIES");
+    @SerialName(value = "NURSING_CENTER")
+    NURSING_CENTER("NURSING_CENTER");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

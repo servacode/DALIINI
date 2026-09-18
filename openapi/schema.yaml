@@ -5000,16 +5000,14 @@ components:
       enum:
       - GENERIC
       - PHARMACY
-      - DOCTOR
-      - NURSING
-      - MEDICAL_SUPPLIES
+      - MEDICAL_CLINIC
+      - NURSING_CENTER
       type: string
       description: |-
         * `GENERIC` - Generic
         * `PHARMACY` - Pharmacy
-        * `DOCTOR` - Doctor
-        * `NURSING` - Nursing
-        * `MEDICAL_SUPPLIES` - Medical supplies
+        * `MEDICAL_CLINIC` - Medical clinic
+        * `NURSING_CENTER` - Nursing center
     ChallengeAccepted:
       type: object
       description: Returned when an OTP challenge is created. The code itself is never

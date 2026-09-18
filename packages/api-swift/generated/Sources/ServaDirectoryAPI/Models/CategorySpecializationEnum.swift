@@ -10,11 +10,10 @@ import Foundation
 import AnyCodable
 #endif
 
-/** * &#x60;GENERIC&#x60; - Generic * &#x60;PHARMACY&#x60; - Pharmacy * &#x60;DOCTOR&#x60; - Doctor * &#x60;NURSING&#x60; - Nursing * &#x60;MEDICAL_SUPPLIES&#x60; - Medical supplies */
+/** * &#x60;GENERIC&#x60; - Generic * &#x60;PHARMACY&#x60; - Pharmacy * &#x60;MEDICAL_CLINIC&#x60; - Medical clinic * &#x60;NURSING_CENTER&#x60; - Nursing center */
 public enum CategorySpecializationEnum: String, Codable, CaseIterable {
     case generic = "GENERIC"
     case pharmacy = "PHARMACY"
-    case doctor = "DOCTOR"
-    case nursing = "NURSING"
-    case medicalSupplies = "MEDICAL_SUPPLIES"
+    case medicalClinic = "MEDICAL_CLINIC"
+    case nursingCenter = "NURSING_CENTER"
 }
