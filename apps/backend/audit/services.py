@@ -1,3 +1,5 @@
+from typing import Any
+
 from .models import AuditEvent
 
 SENSITIVE_PARTS = (
@@ -15,7 +17,7 @@ SENSITIVE_PARTS = (
 )
 
 
-def _redact(value):
+def _redact(value: Any) -> Any:
     if isinstance(value, dict):
         output = {}
         for key, item in value.items():
@@ -33,14 +35,14 @@ def _redact(value):
 
 def record_audit(
     *,
-    actor,
-    action,
-    target,
-    metadata=None,
-    before_snapshot=None,
-    after_snapshot=None,
-    request_id="",
-):
+    actor: Any,
+    action: str,
+    target: Any,
+    metadata: dict[str, Any] | None = None,
+    before_snapshot: dict[str, Any] | None = None,
+    after_snapshot: dict[str, Any] | None = None,
+    request_id: str = "",
+) -> AuditEvent:
     return AuditEvent.objects.create(
         actor=actor,
         action=action,
