@@ -64,7 +64,7 @@ data class AdminAdvertisementUpdateRequest (
     val actionType: AdvertisementActionTypeEnum? = null,
 
     @Contextual @SerialName(value = "actionPayload")
-    val actionPayload: kotlin.collections.Map<kotlin.String, kotlin.Any>? = null,
+    val actionPayload: kotlin.collections.Map<kotlin.String, kotlinx.serialization.json.JsonElement>? = null,
 
     @Contextual @SerialName(value = "targetScope")
     val targetScope: AdvertisementTargetScopeEnum? = null,

@@ -10,7 +10,7 @@
 | **subtitleAr** | **kotlin.String** |  |  [optional] |
 | **subtitleEn** | **kotlin.String** |  |  [optional] |
 | **actionType** | [**AdvertisementActionTypeEnum**](AdvertisementActionTypeEnum.md) |  |  [optional] |
-| **actionPayload** | [**kotlin.collections.Map&lt;kotlin.String, kotlin.Any&gt;**](kotlin.Any.md) |  |  [optional] |
+| **actionPayload** | [**kotlin.collections.Map&lt;kotlin.String, kotlinx.serialization.json.JsonElement&gt;**](kotlinx.serialization.json.JsonElement.md) |  |  [optional] |
 | **targetScope** | [**AdvertisementTargetScopeEnum**](AdvertisementTargetScopeEnum.md) |  |  [optional] |
 | **provinceId** | [**java.util.UUID**](java.util.UUID.md) |  |  [optional] |
 | **categoryId** | [**java.util.UUID**](java.util.UUID.md) |  |  [optional] |

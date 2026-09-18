@@ -6,7 +6,7 @@
 | ------------ | ------------- | ------------- | ------------- |
 | **key** | **kotlin.String** |  |  |
 | **type** | **kotlin.String** |  |  [optional] |
-| **&#x60;value&#x60;** | [**kotlin.Any**](.md) |  |  [optional] |
+| **&#x60;value&#x60;** | [**kotlinx.serialization.json.JsonElement**](.md) |  |  [optional] |
 
 
 

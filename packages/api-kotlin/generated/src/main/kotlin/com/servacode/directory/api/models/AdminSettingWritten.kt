@@ -38,7 +38,7 @@ data class AdminSettingWritten (
     val type: kotlin.String,
 
     @Contextual @SerialName(value = "value")
-    val `value`: kotlin.Any?
+    val `value`: kotlinx.serialization.json.JsonElement?
 
 ) {
 

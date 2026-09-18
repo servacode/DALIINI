@@ -96,7 +96,6 @@ export * from './LogoutRequest';
 export * from './MapMarker';
 export * from './MapMarkerList';
 export * from './NamedRef';
-export * from './NullEnum';
 export * from './OwnerApplication';
 export * from './OwnerCapabilities';
 export * from './OwnerCategory';

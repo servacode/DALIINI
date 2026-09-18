@@ -37,7 +37,7 @@ data class AnalyticsEventRequest (
 
     /* Event properties, restricted to the keys declared for this event. */
     @Contextual @SerialName(value = "properties")
-    val properties: kotlin.collections.Map<kotlin.String, kotlin.Any>? = null,
+    val properties: kotlin.collections.Map<kotlin.String, kotlinx.serialization.json.JsonElement>? = null,
 
     /* Client-side event time, ISO-8601. Defaults to receipt time. */
     @Contextual @SerialName(value = "occurredAt")

@@ -55,7 +55,7 @@ data class AdminAuditEntry (
     val requestId: kotlin.String,
 
     @Contextual @SerialName(value = "metadata")
-    val metadata: kotlin.collections.Map<kotlin.String, kotlin.Any>,
+    val metadata: kotlin.collections.Map<kotlin.String, kotlinx.serialization.json.JsonElement>,
 
     @Contextual @SerialName(value = "createdAt")
     val createdAt: java.time.OffsetDateTime

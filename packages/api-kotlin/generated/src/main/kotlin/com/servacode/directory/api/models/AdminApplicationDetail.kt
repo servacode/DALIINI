@@ -83,7 +83,7 @@ data class AdminApplicationDetail (
 
     /* Redacted submission snapshot. */
     @Contextual @SerialName(value = "snapshot")
-    val snapshot: kotlin.collections.Map<kotlin.String, kotlin.Any>,
+    val snapshot: kotlin.collections.Map<kotlin.String, kotlinx.serialization.json.JsonElement>,
 
     @SerialName(value = "publicImageIds")
     val publicImageIds: kotlin.collections.List<@Contextual java.util.UUID>,

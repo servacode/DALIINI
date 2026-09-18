@@ -217,7 +217,6 @@ Class | Method | HTTP request | Description
  - [MapMarker](docs/MapMarker.md)
  - [MapMarkerList](docs/MapMarkerList.md)
  - [NamedRef](docs/NamedRef.md)
- - [NullEnum](docs/NullEnum.md)
  - [OwnerApplication](docs/OwnerApplication.md)
  - [OwnerCapabilities](docs/OwnerCapabilities.md)
  - [OwnerCategory](docs/OwnerCategory.md)

@@ -6074,9 +6074,6 @@ components:
       required:
       - id
       - nameAr
-    NullEnum:
-      enum:
-      - null
     OwnerApplication:
       type: object
       properties:
@@ -6220,10 +6217,9 @@ components:
           type: string
           format: date-time
         requiredAction:
-          nullable: true
-          oneOf:
+          allOf:
           - $ref: '#/components/schemas/OwnerRequiredActionEnum'
-          - $ref: '#/components/schemas/NullEnum'
+          nullable: true
         nameEn:
           type: string
           nullable: true
@@ -6347,10 +6343,9 @@ components:
           type: string
           format: date-time
         requiredAction:
-          nullable: true
-          oneOf:
+          allOf:
           - $ref: '#/components/schemas/OwnerRequiredActionEnum'
-          - $ref: '#/components/schemas/NullEnum'
+          nullable: true
       required:
       - category
       - id

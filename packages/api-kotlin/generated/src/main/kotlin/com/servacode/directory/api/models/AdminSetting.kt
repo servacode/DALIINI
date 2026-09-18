@@ -39,7 +39,7 @@ data class AdminSetting (
     val valueType: kotlin.String,
 
     @Contextual @SerialName(value = "value")
-    val `value`: kotlin.Any?,
+    val `value`: kotlinx.serialization.json.JsonElement?,
 
     @Contextual @SerialName(value = "updatedAt")
     val updatedAt: java.time.OffsetDateTime

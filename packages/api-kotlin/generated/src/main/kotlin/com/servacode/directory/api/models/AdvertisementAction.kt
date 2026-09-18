@@ -36,7 +36,7 @@ data class AdvertisementAction (
 
     /* Action arguments, validated server-side per action type. */
     @Contextual @SerialName(value = "payload")
-    val payload: kotlin.collections.Map<kotlin.String, kotlin.Any>
+    val payload: kotlin.collections.Map<kotlin.String, kotlinx.serialization.json.JsonElement>
 
 ) {
 

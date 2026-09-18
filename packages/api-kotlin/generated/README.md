@@ -237,7 +237,6 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.MapMarker](docs/MapMarker.md)
  - [com.servacode.directory.api.models.MapMarkerList](docs/MapMarkerList.md)
  - [com.servacode.directory.api.models.NamedRef](docs/NamedRef.md)
- - [com.servacode.directory.api.models.NullEnum](docs/NullEnum.md)
  - [com.servacode.directory.api.models.OwnerApplication](docs/OwnerApplication.md)
  - [com.servacode.directory.api.models.OwnerCapabilities](docs/OwnerCapabilities.md)
  - [com.servacode.directory.api.models.OwnerCategory](docs/OwnerCategory.md)
