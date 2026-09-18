@@ -471,7 +471,7 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-009 | P1 | P3/P6/P9 | migration drift across seven apps | FIXED (P2) |
 | INT-010 | P2 | P5 | owner, media and rating views declare no `permission_classes`; anonymous caller receives 500 | FIXED (P10) |
 | INT-011 | P2 | P12/P13 | Admin UI is a descriptive scaffold with no data binding | OPEN |
-| INT-012 | P2 | P12 | the Admin `__Host-` refresh cookie sets `secure` only when `NODE_ENV=production`, and browsers reject a `__Host-` cookie without `Secure`, so the development login flow cannot work | OPEN |
+| INT-012 | P2 | P12 | the Admin `__Host-` refresh cookie sets `secure` only when `NODE_ENV=production`, and browsers reject a `__Host-` cookie without `Secure`, so the development login flow cannot work | FIXED (ADMIN-BFF) |
 | INT-013 | P2 | P14 | every Android API boundary throws `GeneratedClientRequiredException` | OPEN |
 | INT-014 | P3 | P14–P20 | qualifier scripts use `read_text()` without an encoding and scan `node_modules` and `build` | OPEN |
 | INT-015 | P2 | P13 | eight unguarded `objects.get` calls in `admin_console/views.py` return 500 instead of 404 | OPEN |
@@ -482,7 +482,7 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-020 | P3 | P0 | CI contract-drift gate is a no-op; no Android or Admin/Web jobs | FIXED (P10) |
 | INT-021 | P3 | P0 | no lockfiles committed; Dockerfile does not copy a lockfile | PARTIAL — lockfiles committed in P2; the Dockerfile still resolves at build time |
 | INT-022 | P3 | P11/P12 | Tailwind, Radix, Vitest and Playwright absent despite `02-BASELINE-DECISIONS.md` | OPEN |
-| INT-023 | P3 | P11 | `apps/web/tsconfig.json` uses `jsx: "preserve"`, rewritten on every Next 16 build | OPEN |
+| INT-023 | P3 | P11 | `apps/web/tsconfig.json` uses `jsx: "preserve"`, rewritten on every Next 16 build | PARTIAL — `apps/admin` now commits the form Next 16 writes, so its build no longer dirties the tree; `apps/web` is unchanged |
 | INT-024 | P3 | P11/P12 | HSTS header missing | OPEN |
 | INT-025 | P3 | P4 | `directory/models.py` written in a compressed style violating `.editorconfig` and ruff | OPEN |
 | INT-026 | P3 | P3 | missing indexes on user status, `UserSession(user, revoked)` and `last_seen_at` | OPEN |
@@ -500,9 +500,11 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-038 | P2 | P2/P13 | the runtime emits three unrelated error shapes; `08-API-CONTRACT.md` specifies a single envelope carrying `code`, `message`, `details` and `requestId` | FIXED (CONTRACT-ALIGNMENT) |
 | INT-039 | P3 | P13 | `AdminCapabilitiesRequestSerializer` and `AdminCapabilitiesSerializer` declare `supports_*` on the wire, the last snake_case pair left in the Admin API; it is not a list endpoint, so it was outside the CONTRACT-ALIGNMENT scope | OPEN |
 | INT-040 | P2 | P4 | `Category.Specialization` declared GENERIC, PHARMACY, DOCTOR, NURSING and MEDICAL_SUPPLIES; `01-MASTER-SPECIFICATION.md` section 5 names GENERIC, PHARMACY, MEDICAL_CLINIC and NURSING_CENTER. Found while seeding, because the baseline could not be expressed in the declared values | FIXED (LAUNCH-BASELINE) |
+| INT-041 | P2 | P13 | four Admin list views filter on 14 query parameters the contract declares nowhere, so the generated clients cannot express a search box or a filter | FIXED (ADMIN-BFF) |
+| INT-042 | P2 | P13 | no endpoint returns the caller's own Admin permissions. `accountProfileRetrieve` omits them, and reading them through `adminUserRetrieve` plus `adminRolesList` requires `admin.users.read` and `admin.roles.read`, which most operators will not hold. Permission-aware navigation cannot be built without either a new endpoint or probing every route for a 403 | OPEN |
 
 ## Rules
 
 - An identifier is never reused, even after the defect is fixed or retired.
 - A defect is registered here before it is referenced anywhere else.
-- The next free identifier is `INT-041`.
+- The next free identifier is `INT-043`.

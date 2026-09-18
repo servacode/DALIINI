@@ -1,0 +1,88 @@
+ADMIN BFF AUTHENTICATION — INT-012, INT-023, INT-041, and the fail-open origin check
+Date: 2026-09-18
+Base commit: 8473bcf
+
+Topology under test. Nothing is stubbed:
+  probe -> next start :3000 -> generated TypeScript client -> runserver :8000 -> PostGIS 17-3.5
+  ADMIN_PUBLIC_ORIGIN=http://localhost:3000  (loopback http, so cookies cannot be Secure)
+  ADMIN_API_ORIGIN=http://127.0.0.1:8000
+  Database seeded by directory.0004_launch_baseline; one operator holding all 24 permissions.
+
+== 1. End-to-end qualification, 21 assertions ==
+== 1. CSRF, fail-closed on unsafe methods ==
+PASS  login without an Origin header is refused
+PASS  the refusal names no internal detail
+PASS  login from a foreign Origin is refused
+PASS  login with Sec-Fetch-Site cross-site is refused
+PASS  a form-encoded body is refused
+
+== 2. Validation, before any credential reaches the backend ==
+PASS  an empty form is rejected
+PASS  the envelope names both fields
+
+== 3. Wrong credentials ==
+PASS  a bad password is refused
+PASS  no stack trace, framework name, token or credential in the body
+PASS  no session cookie on a failed login
+
+== 4. Login ==
+PASS  correct credentials are accepted
+PASS  the response body carries no token, only {"ok": true}
+
+   Set-Cookie attributes as sent:
+     directory_admin_refresh=<redacted>; Path=/; Expires=Sun, 18 Oct 2026 07:35:51 GMT; Max-Age=2591999; HttpOnly; SameSite=strict
+     directory_admin_access=<redacted>; Path=/; Expires=Fri, 18 Sep 2026 07:49:51 GMT; Max-Age=839; HttpOnly; SameSite=strict
+PASS  directory_admin_refresh is HttpOnly, SameSite=Strict, Path=/, no Domain
+PASS  directory_admin_access is HttpOnly, SameSite=Strict, Path=/, no Domain
+PASS  the __Host- prefix is absent on a loopback http origin, as it must be
+
+== 5. Refresh rotates the secret ==
+PASS  an authenticated refresh succeeds
+PASS  the refresh secret rotated
+PASS  the access token was replaced too
+
+== 6. The rotated secret is the live one ==
+PASS  refreshing again with the rotated secret succeeds
+
+== 7. A replayed secret is refused and the session is dropped ==
+PASS  a spent refresh secret is refused
+
+== 8. Logout ==
+PASS  logout succeeds
+PASS  both cookies are cleared
+PASS  refresh after logout is refused, with no loop
+PASS  the refusal is the contract envelope
+
+== 9. Safe methods are not obstructed ==
+PASS  the login page renders without an Origin header
+
+FAILURES: none
+
+== 2. Cookie naming across the three deployment shapes, each actually run ==
+--- case A: https://admin.example.com ---
+     set-cookie: __Host-directory_admin_refresh=<redacted>; Path=/; Expires=Sun, 18 Oct 2026 07:35:56 GMT; Max-Age=2591999; Secure; HttpOnly; SameSite=strict
+     set-cookie: __Host-directory_admin_access=<redacted>; Path=/; Expires=Fri, 18 Sep 2026 07:49:56 GMT; Max-Age=839; Secure; HttpOnly; SameSite=strict
+
+--- case B: http://localhost:3000 ---
+     set-cookie: directory_admin_refresh=<redacted>; Path=/; Expires=Sun, 18 Oct 2026 07:35:59 GMT; Max-Age=2591999; HttpOnly; SameSite=strict
+     set-cookie: directory_admin_access=<redacted>; Path=/; Expires=Fri, 18 Sep 2026 07:49:59 GMT; Max-Age=839; HttpOnly; SameSite=strict
+  boot warning emitted:
+     loopback http origin: session cookies will be written without Secure and without the __Host- prefix. Local development only.
+
+--- case C: http://admin.example.com (http on a real host) ---
+  exit code: 1
+     ADMIN_PUBLIC_ORIGIN must use https outside loopback; session cookies would otherwise cross the network without Secure
+
+== 3. Regression checks on the backend side of the change ==
+INT-041 declared 14 query parameters on four Admin list operations. The generated
+TypeScript client now carries typed request interfaces for all of them:
+
+  AdminReviewsListRequest    { category?, kind?, province?, status? }
+  AdminFacilitiesListRequest { category?, province?, q?, status? }
+  AdminUsersListRequest      { q?, status? }
+  AdminAuditListRequest      { action?, actor?, requestId?, resource? }
+
+== 4. What this batch does NOT yet cover ==
+The thirteen Admin pages are still the static OperationPage scaffold. Only the login screen
+is bound. Vitest and Playwright are still absent (INT-022), so the §26 golden-path runner
+does not exist yet; the qualification above is a direct HTTP probe, not a browser test.
