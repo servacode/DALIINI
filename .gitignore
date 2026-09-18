@@ -45,3 +45,6 @@ artifacts/evidence/**/*.json
 # Local storage / DB
 *.sqlite3
 .minio/
+
+# TypeScript incremental build state
+*.tsbuildinfo
