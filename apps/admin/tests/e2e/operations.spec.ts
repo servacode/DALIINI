@@ -37,7 +37,7 @@ test.describe("review golden path", () => {
   test("a rejection records the reason and moves the application", async ({ page }) => {
     await openConsole(page);
     await page.goto("/reviews");
-    await page.getByTestId("data-table").getByRole("link", { name: "فتح" }).first().click();
+    await page.getByRole("link", { name: "e2e-صيدلية قيد المراجعة" }).click();
 
     await page.getByTestId("reject").click();
     await page.getByTestId("reject-reason").fill("الأدلة غير مكتملة.");
@@ -50,6 +50,56 @@ test.describe("review golden path", () => {
       action: "facility_application.rejected",
     });
     expect(audit.items.length).toBeGreaterThan(0);
+  });
+});
+
+test.describe("approval", () => {
+  test("approving makes the facility public, and a second decision is refused", async ({
+    page,
+  }) => {
+    await openConsole(page);
+    await page.goto("/reviews");
+    await page.getByRole("link", { name: "e2e-صيدلية للقبول" }).click();
+    await expect(page).toHaveURL(/\/reviews\/[0-9a-f-]+$/);
+    const applicationId = page.url().split("/").pop()!;
+
+    await page.getByTestId("approve").click();
+    await page.getByTestId("confirm-accept").click();
+
+    await expect(page.getByTestId("toast")).toContainText("تم قبول الطلب");
+    await expect(page.getByTestId("status-badge").first()).toContainText("مقبول");
+    // The decision buttons are gone: the application is no longer SUBMITTED.
+    await expect(page.getByTestId("approve")).toHaveCount(0);
+
+    // The approval reached the outside world.
+    const provinces = await readPublic<{ items: { id: string; code: string }[] }>(
+      page,
+      "/api/v1/public/provinces/",
+    );
+    const raqqa = provinces.items.find((item) => item.code === "raqqa")!.id;
+    const categories = await readPublic<{ items: { id: string; nameAr: string }[] }>(
+      page,
+      `/api/v1/public/provinces/${raqqa}/categories/`,
+    );
+    const pharmacy = categories.items.find((item) => item.nameAr === "صيدليات")!.id;
+    const listing = await readPublic<{ items: { nameAr: string }[] }>(
+      page,
+      `/api/v1/public/facilities/?provinceId=${raqqa}&categoryId=${pharmacy}`,
+    );
+    expect(listing.items.map((item) => item.nameAr)).toContain("e2e-صيدلية للقبول");
+
+    // Deciding again is refused by the backend, whatever the UI would have offered.
+    const second = await page.evaluate(async (id) => {
+      const response = await fetch("/api/admin/reviewReject", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, reason: "محاولة ثانية" }),
+      });
+      return { status: response.status, body: await response.json() };
+    }, applicationId);
+    expect(second.status).toBe(400);
+    expect(second.body.code).toBe("VALIDATION_ERROR");
   });
 });
 

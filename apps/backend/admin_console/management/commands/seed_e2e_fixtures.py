@@ -84,6 +84,23 @@ class Command(BaseCommand):
             submitted_at=timezone.now(),
             snapshot={"nameAr": "e2e-صيدلية قيد المراجعة"},
         )
+        # A second pending application, so approval and rejection each have their own.
+        approvable = Facility.objects.create(
+            category=pharmacy,
+            province=raqqa,
+            name_ar="e2e-صيدلية للقبول",
+            status=Facility.Status.SUBMITTED,
+        )
+        FacilityMembership.objects.create(
+            facility=approvable, user=owner, role=FacilityMembership.Role.OWNER
+        )
+        FacilityApplication.objects.create(
+            facility=approvable,
+            kind=FacilityApplication.Kind.INITIAL,
+            status=FacilityApplication.Status.SUBMITTED,
+            submitted_at=timezone.now(),
+            snapshot={"nameAr": "e2e-صيدلية للقبول"},
+        )
         Facility.objects.create(
             category=pharmacy,
             province=raqqa,
@@ -95,7 +112,7 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 f"fixtures ready: full operator {full.phone}, "
-                f"limited operator {LIMITED_OPERATOR['phone']}, 2 facilities"
+                f"limited operator {LIMITED_OPERATOR['phone']}, 3 facilities"
             )
         )
 
