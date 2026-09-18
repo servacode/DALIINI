@@ -1,6 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-import { FULL, LIMITED, readOperation, readPublic, signIn } from "./fixtures";
+import {
+  FULL_STATE,
+  openConsole,
+  readOperation,
+  readPublic,
+  rerunLaunchSeed,
+} from "./fixtures";
 
 /**
  * The operational golden paths.
@@ -8,11 +14,16 @@ import { FULL, LIMITED, readOperation, readPublic, signIn } from "./fixtures";
  * Every assertion here ends somewhere observable: an audit row, a public API response, or a
  * status the backend reports back. A screen that says a change was made is not evidence
  * that it was.
+ *
+ * Every test runs on the session `global-setup.ts` created, so the suite spends two logins
+ * rather than one per test against the backend's throttle.
  */
+
+test.use({ storageState: FULL_STATE });
 
 test.describe("review golden path", () => {
   test("the queue lists the pending application and filters narrow it", async ({ page }) => {
-    await signIn(page, FULL);
+    await openConsole(page);
     await page.goto("/reviews");
 
     await expect(page.getByTestId("data-table")).toContainText("e2e-صيدلية قيد المراجعة");
@@ -24,7 +35,7 @@ test.describe("review golden path", () => {
   });
 
   test("a rejection records the reason and moves the application", async ({ page }) => {
-    await signIn(page, FULL);
+    await openConsole(page);
     await page.goto("/reviews");
     await page.getByTestId("data-table").getByRole("link", { name: "فتح" }).first().click();
 
@@ -40,24 +51,11 @@ test.describe("review golden path", () => {
     });
     expect(audit.items.length).toBeGreaterThan(0);
   });
-
-  test("evidence is offered only to an operator who may read it", async ({ page }) => {
-    await signIn(page, LIMITED);
-    await page.goto("/reviews");
-    await page.getByTestId("data-table").getByRole("link", { name: "فتح" }).first().click();
-
-    // The limited operator holds reviews.read but not evidence.read.
-    await expect(page.locator("[data-testid^='evidence-denied-']").first()).toBeHidden({
-      timeout: 2_000,
-    }).catch(() => undefined);
-    const body = (await page.locator("body").textContent()) ?? "";
-    expect(body).not.toContain("storage_key");
-  });
 });
 
 test.describe("facility lifecycle", () => {
   test("suspending and reactivating both land in the audit trail", async ({ page }) => {
-    await signIn(page, FULL);
+    await openConsole(page);
     await page.goto("/facilities");
     await page.getByTestId("filter-q").fill("e2e-صيدلية فعّالة");
     await page.getByTestId("filter-bar").getByRole("button", { name: "تطبيق" }).click();
@@ -83,7 +81,7 @@ test.describe("facility lifecycle", () => {
 
 test.describe("user lifecycle", () => {
   test("blocking and unblocking are recorded", async ({ page }) => {
-    await signIn(page, FULL);
+    await openConsole(page);
     await page.goto("/users");
     await page.getByTestId("filter-q").fill("مالك الاختبار");
     await page.getByTestId("filter-bar").getByRole("button", { name: "تطبيق" }).click();
@@ -108,7 +106,7 @@ test.describe("user lifecycle", () => {
 
 test.describe("Cycle J", () => {
   test("a province switch changes what the public API serves", async ({ page }) => {
-    await signIn(page, FULL);
+    await openConsole(page);
 
     const before = await readPublic<{ items: { nameAr: string }[] }>(
       page,
@@ -153,7 +151,7 @@ test.describe("Cycle J", () => {
   });
 
   test("duty is refused for a category that is not a pharmacy", async ({ page }) => {
-    await signIn(page, FULL);
+    await openConsole(page);
     await page.goto("/taxonomy/categories");
     await page.getByTestId("configure-medical-laboratory").click();
 
@@ -164,7 +162,7 @@ test.describe("Cycle J", () => {
   });
 
   test("a new category is invisible until a switch is turned on", async ({ page }) => {
-    await signIn(page, FULL);
+    await openConsole(page);
     await page.goto("/taxonomy/categories");
 
     await page.getByTestId("new-category").click();
@@ -192,7 +190,7 @@ test.describe("province rollout", () => {
   test("activating Aleppo changes the public list, and the seed does not undo it", async ({
     page,
   }) => {
-    await signIn(page, FULL);
+    await openConsole(page);
     await page.goto("/provinces");
 
     await page.getByTestId("toggle-province-aleppo").click();
@@ -204,6 +202,15 @@ test.describe("province rollout", () => {
       "/api/v1/public/provinces/",
     );
     expect(publicList.items.map((item) => item.code).sort()).toEqual(["aleppo", "raqqa"]);
+
+    // The launch seed runs again, as it would after a restore or during qualification.
+    const seedOutput = rerunLaunchSeed();
+    expect(seedOutput).toContain("Nothing to do");
+    const afterSeed = await readPublic<{ items: { code: string }[] }>(
+      page,
+      "/api/v1/public/provinces/",
+    );
+    expect(afterSeed.items.map((item) => item.code).sort()).toEqual(["aleppo", "raqqa"]);
 
     const audit = await readOperation<{ items: { action: string }[] }>(page, "audit", {
       action: "province.updated",
@@ -219,7 +226,7 @@ test.describe("province rollout", () => {
 
 test.describe("verification policy", () => {
   test("a requirement can be created, edited and retired", async ({ page }) => {
-    await signIn(page, FULL);
+    await openConsole(page);
     await page.goto("/verification");
 
     await page.getByTestId("new-requirement").click();
@@ -243,7 +250,7 @@ test.describe("verification policy", () => {
   });
 
   test("the screen does not claim the pharmacy policy is settled", async ({ page }) => {
-    await signIn(page, FULL);
+    await openConsole(page);
     await page.goto("/verification");
 
     const notice = (await page.locator(".notice").textContent()) ?? "";
@@ -253,7 +260,7 @@ test.describe("verification policy", () => {
 
 test.describe("advertisements", () => {
   test("an end before its start is refused by the backend", async ({ page }) => {
-    await signIn(page, FULL);
+    await openConsole(page);
     await page.goto("/ads");
 
     await page.getByTestId("new-ad").click();
@@ -268,7 +275,7 @@ test.describe("advertisements", () => {
   });
 
   test("a valid advertisement can be created, edited and activated", async ({ page }) => {
-    await signIn(page, FULL);
+    await openConsole(page);
     await page.goto("/ads");
 
     await page.getByTestId("new-ad").click();
@@ -289,7 +296,7 @@ test.describe("advertisements", () => {
 
 test.describe("read-only screens", () => {
   test("audit, analytics, settings and system all render real data", async ({ page }) => {
-    await signIn(page, FULL);
+    await openConsole(page);
 
     for (const [path, marker] of [
       ["/audit", "سجل التدقيق"],
@@ -304,7 +311,7 @@ test.describe("read-only screens", () => {
   });
 
   test("system status exposes no credential or connection string", async ({ page }) => {
-    await signIn(page, FULL);
+    await openConsole(page);
     await page.goto("/system");
     await expect(page.getByRole("heading", { name: "الاعتماديات" })).toBeVisible();
 
@@ -317,7 +324,7 @@ test.describe("read-only screens", () => {
   test("the audit trail shows the request id, which is what a report quotes", async ({
     page,
   }) => {
-    await signIn(page, FULL);
+    await openConsole(page);
     await page.goto("/audit");
 
     await expect(page.getByTestId("data-table")).toBeVisible();

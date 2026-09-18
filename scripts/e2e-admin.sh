@@ -20,15 +20,31 @@ REDIS_HOST="${E2E_REDIS_HOST:-p10redis}"
 NETWORK="${E2E_NETWORK:-p10net}"
 IMAGE="${E2E_BACKEND_IMAGE:-directory-v3-p2dev:local}"
 
+stop_admin() {
+  for pid in $(netstat -ano 2>/dev/null | grep ":$ADMIN_PORT" | grep LISTENING | awk '{print $5}' | sort -u); do
+    # /T takes the whole process tree: `next start` serves from a child of the process
+    # that launched it, and killing only the parent leaves the port bound.
+    # Single slashes: this script exports MSYS_NO_PATHCONV=1, so Git Bash passes arguments
+    # through untouched and `//PID` would reach taskkill literally and fail in silence —
+    # which is how earlier runs left a stale server holding the port.
+    taskkill /PID "$pid" /F /T >/dev/null 2>&1 || kill -9 "$pid" >/dev/null 2>&1 || true
+  done
+}
+
 cleanup() {
   docker rm -f e2e-api >/dev/null 2>&1 || true
-  for pid in $(netstat -ano 2>/dev/null | grep ":$ADMIN_PORT" | grep LISTENING | awk '{print $5}' | sort -u); do
-    taskkill //PID "$pid" //F >/dev/null 2>&1 || kill -9 "$pid" >/dev/null 2>&1 || true
-  done
+  stop_admin
+}
+
+port_in_use() {
+  netstat -ano 2>/dev/null | grep ":$ADMIN_PORT" | grep -q LISTENING
 }
 trap cleanup EXIT
 
 echo "== 1. Reset the database and apply migrations =="
+# Redis holds the login throttle history. A previous run inside the same minute would
+# otherwise count against this one.
+docker exec "$REDIS_HOST" redis-cli FLUSHALL >/dev/null
 docker exec "$PG" psql -U directory -d postgres \
   -c "DROP DATABASE IF EXISTS directory WITH (FORCE);" \
   -c "CREATE DATABASE directory OWNER directory;" >/dev/null
@@ -70,6 +86,14 @@ echo "== 3. Build and serve the Admin, production mode =="
 cd "$ADMIN"
 export ADMIN_API_ORIGIN="http://127.0.0.1:$API_PORT"
 export ADMIN_PUBLIC_ORIGIN="http://localhost:$ADMIN_PORT"
+# A server left over from an earlier run would keep answering on the port while this build
+# replaced the chunks under it, and every test would then run against stale code that can
+# no longer load its own scripts. Refuse to go on rather than test the wrong thing.
+stop_admin
+if port_in_use; then
+  echo "FAIL: port $ADMIN_PORT is still in use by another process"
+  exit 1
+fi
 ./node_modules/.bin/next build >/dev/null 2>&1 || { echo "FAIL: next build"; exit 1; }
 ./node_modules/.bin/next start -p "$ADMIN_PORT" > "$ADMIN/.e2e-admin.log" 2>&1 &
 
@@ -80,6 +104,10 @@ for _ in $(seq 1 40); do
   fi
   sleep 1
 done
+if grep -aq "EADDRINUSE\|Failed to start server" "$ADMIN/.e2e-admin.log"; then
+  echo "FAIL: next start did not bind $ADMIN_PORT; another server is answering"
+  exit 1
+fi
 
 echo
 echo "== 4. Playwright =="

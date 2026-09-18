@@ -1,13 +1,18 @@
 import { expect, test } from "@playwright/test";
 
-import { FULL, LIMITED, signIn } from "./fixtures";
+import { FULL, FULL_STATE, LIMITED_STATE, openConsole, signIn } from "./fixtures";
 
 /**
  * Authentication, against a real Django and a real browser.
  *
  * The cookie assertions are the reason this suite exists rather than a unit test: INT-012
- * was a cookie a browser silently refused, and nothing short of a browser could have caught
- * it. A unit test would have confirmed the attributes we intended to set.
+ * was a cookie a browser silently refused, and the CSP defect that left the console
+ * un-hydrated was invisible to every HTTP-level check. Only a browser shows either.
+ *
+ * Tests about the session itself — logging in, rotating, logging out, tampering — sign in
+ * fresh, because they spend or revoke the session they use. Everything else borrows the
+ * session `global-setup.ts` created, which keeps the suite under the backend's login
+ * throttle rather than loosening it.
  */
 
 test.describe("sign in", () => {
@@ -19,6 +24,7 @@ test.describe("sign in", () => {
 
     const error = page.getByTestId("login-error");
     await expect(error).toBeVisible();
+    // The central mapper's phrase for AUTHENTICATION_FAILED, not the backend's own text.
     await expect(error).toHaveText("بيانات الدخول غير صحيحة.");
 
     const body = (await page.locator("body").textContent()) ?? "";
@@ -46,39 +52,9 @@ test.describe("sign in", () => {
       expect(cookie!.path).toBe("/");
     }
   });
-
-  test("neither token is readable from the page", async ({ page }) => {
-    await signIn(page, FULL);
-
-    const exposed = await page.evaluate(() => ({
-      cookie: document.cookie,
-      local: JSON.stringify(window.localStorage),
-      session: JSON.stringify(window.sessionStorage),
-    }));
-
-    expect(exposed.cookie).not.toContain("directory_admin");
-    expect(exposed.local).not.toContain("eyJ");
-    expect(exposed.session).not.toContain("eyJ");
-  });
 });
 
 test.describe("session lifecycle", () => {
-  test("the shell renders the operator returned by /admin/me/", async ({ page }) => {
-    await signIn(page, FULL);
-
-    const me = await page.evaluate(async () => {
-      const response = await fetch("/api/admin/me", { credentials: "same-origin" });
-      return response.json();
-    });
-
-    expect(me.userId).toBeTruthy();
-    expect(me.displayName).toBe(FULL.name);
-    expect(Array.isArray(me.permissions)).toBe(true);
-    expect(me.permissions.length).toBeGreaterThan(10);
-    // Nothing beyond the three declared fields.
-    expect(Object.keys(me).sort()).toEqual(["displayName", "permissions", "userId"]);
-  });
-
   test("refreshing rotates the secret and the session keeps working", async ({
     page,
     context,
@@ -148,31 +124,46 @@ test.describe("session lifecycle", () => {
   });
 });
 
-test.describe("cross-origin protection", () => {
-  test("a mutation without an Origin header is refused", async ({ page, request }) => {
-    await signIn(page, FULL);
+test.describe("with an established session", () => {
+  test.use({ storageState: FULL_STATE });
 
-    // `request` is a separate context that does not send an Origin header.
-    const response = await request.post("http://localhost:3000/api/session/logout", {
-      headers: { "Content-Type": "application/json" },
-      data: {},
-    });
+  test("neither token is readable from the page", async ({ page }) => {
+    await openConsole(page);
 
-    expect(response.status()).toBe(403);
-    expect((await response.json()).code).toBe("ORIGIN_REJECTED");
+    const exposed = await page.evaluate(() => ({
+      cookie: document.cookie,
+      local: JSON.stringify(window.localStorage),
+      session: JSON.stringify(window.sessionStorage),
+    }));
+
+    expect(exposed.cookie).not.toContain("directory_admin");
+    expect(exposed.local).not.toContain("eyJ");
+    expect(exposed.session).not.toContain("eyJ");
   });
 
-  test("a mutation from a foreign Origin is refused", async ({ request }) => {
-    const response = await request.post("http://localhost:3000/api/admin/provinceUpdate", {
-      headers: { "Content-Type": "application/json", Origin: "https://evil.example" },
-      data: { id: "x", active: true },
+  test("the shell renders the operator returned by /admin/me/", async ({ page }) => {
+    await openConsole(page);
+
+    const me = await page.evaluate(async () => {
+      const response = await fetch("/api/admin/me", { credentials: "same-origin" });
+      return response.json();
     });
 
-    expect(response.status()).toBe(403);
+    expect(me.userId).toBeTruthy();
+    expect(me.displayName).toBe(FULL.name);
+    expect(me.permissions.length).toBeGreaterThan(10);
+    expect(Object.keys(me).sort()).toEqual(["displayName", "permissions", "userId"]);
+    await expect(page.getByTestId("operator-name")).toContainText(FULL.name);
+  });
+
+  test("a full operator sees every section", async ({ page }) => {
+    await openConsole(page);
+
+    await expect(page.getByTestId("admin-nav").locator("a")).toHaveCount(13);
   });
 
   test("a mutation has no GET form at all", async ({ page }) => {
-    await signIn(page, FULL);
+    await openConsole(page);
 
     const status = await page.evaluate(async () => {
       const response = await fetch("/api/admin/facilityClose?id=x", {
@@ -185,16 +176,11 @@ test.describe("cross-origin protection", () => {
   });
 });
 
-test.describe("permission-aware navigation", () => {
-  test("a full operator sees every section", async ({ page }) => {
-    await signIn(page, FULL);
+test.describe("as a limited operator", () => {
+  test.use({ storageState: LIMITED_STATE });
 
-    const links = page.getByTestId("admin-nav").locator("a");
-    await expect(links).toHaveCount(13);
-  });
-
-  test("a limited operator sees only what they hold", async ({ page }) => {
-    await signIn(page, LIMITED);
+  test("the navigation shows only what they hold", async ({ page }) => {
+    await openConsole(page);
 
     const nav = page.getByTestId("admin-nav");
     await expect(nav.locator("a")).toHaveCount(2);
@@ -203,9 +189,7 @@ test.describe("permission-aware navigation", () => {
     await expect(nav).not.toContainText("الإعدادات");
   });
 
-  test("typing the URL does not get a limited operator past the backend", async ({ page }) => {
-    await signIn(page, LIMITED);
-
+  test("typing the URL does not get past the backend", async ({ page }) => {
     await page.goto("/settings");
 
     // The page renders — hiding a link was never the boundary — and the data call is refused.
@@ -213,8 +197,8 @@ test.describe("permission-aware navigation", () => {
     await expect(page.getByTestId("error-state")).toContainText("لا تملك الصلاحية");
   });
 
-  test("a direct mutation by a limited operator is refused by the backend", async ({ page }) => {
-    await signIn(page, LIMITED);
+  test("a direct mutation is refused by the backend", async ({ page }) => {
+    await openConsole(page);
 
     const result = await page.evaluate(async () => {
       const response = await fetch("/api/admin/provinceUpdate", {
@@ -228,5 +212,41 @@ test.describe("permission-aware navigation", () => {
 
     expect(result.status).toBe(403);
     expect(result.body.code).toBe("PERMISSION_DENIED");
+  });
+
+  test("private evidence is refused, not merely hidden", async ({ page }) => {
+    await openConsole(page);
+
+    const result = await page.evaluate(async () => {
+      const response = await fetch("/api/admin/evidence/00000000-0000-4000-8000-000000000000", {
+        credentials: "same-origin",
+      });
+      return { status: response.status, body: await response.json() };
+    });
+
+    expect(result.status).toBe(403);
+    expect(result.body.code).toBe("PERMISSION_DENIED");
+  });
+});
+
+test.describe("cross-origin protection", () => {
+  test("a mutation without an Origin header is refused", async ({ request }) => {
+    // A separate request context sends no Origin header at all.
+    const response = await request.post("/api/session/logout", {
+      headers: { "Content-Type": "application/json" },
+      data: {},
+    });
+
+    expect(response.status()).toBe(403);
+    expect((await response.json()).code).toBe("ORIGIN_REJECTED");
+  });
+
+  test("a mutation from a foreign Origin is refused", async ({ request }) => {
+    const response = await request.post("/api/admin/provinceUpdate", {
+      headers: { "Content-Type": "application/json", Origin: "https://evil.example" },
+      data: { id: "x", active: true },
+    });
+
+    expect(response.status()).toBe(403);
   });
 });

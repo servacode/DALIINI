@@ -14,6 +14,7 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./tests/e2e",
+  globalSetup: "./tests/e2e/global-setup.ts",
   fullyParallel: false,
   // Serial on purpose. These tests mutate shared state — a province is activated, a user is
   // blocked — and running them in parallel against one database would make each one depend
