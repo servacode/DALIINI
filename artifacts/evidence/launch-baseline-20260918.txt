@@ -1,0 +1,230 @@
+LAUNCH BASELINE — INT-006, plus INT-040 found while seeding
+Date: 2026-09-18
+Host: Windows 11, Docker 29.5.2
+Runtime: directory-v3-p2dev:local; PostGIS 17-3.5 (p10pg); Redis 8 (p10redis)
+Base commit: 34e6dca
+
+== 1. Regression gate ==
+manage.py check                       : System check identified no issues (0 silenced).
+manage.py makemigrations --check      : No changes detected
+manage.py sqlmigrate directory 0003   : (no-op) — choices only, no DDL
+uv run pytest                         : 
+..............                                                           [100%]
+158 passed in 16.53s
+ruff                                  : Found 100 errors.
+mypy                                  : Found 789 errors in 100 files (checked 205 source files)
+
+   baseline at c9a4cae, measured the same way: ruff 101, mypy 797 in 191 files.
+   Zero findings in every module added by this batch.
+
+== 2. Seed qualification, directory/tests/test_launch_baseline.py ==
+.........................                                                [100%]
+25 passed in 4.97s
+
+== 3. Fresh database state, straight after migrate ==
+Captured on a database created, migrated and read without any other command running
+against it, so nothing below is a later mutation.
+
+
+provinces 14  active 1
+groups 1  categories 5  capabilities 5
+province switches 70  public on 1  onboarding on 1
+
+code            active sort  id                                    name
+raqqa           True     0  58fea422-2cae-5f93-a396-b81a9a7d37e2  الرقة
+damascus        False    1  54caf516-01c4-5653-b528-6739c3c4c9a5  دمشق
+rif-dimashq     False    2  5031f893-0673-5ad9-adb5-d5e89d4f7257  ريف دمشق
+aleppo          False    3  2dcb3ebc-5ee8-5d89-a2b4-a75ad5eaa005  حلب
+homs            False    4  e944deed-d6e6-5690-8af8-f6925a34b029  حمص
+hama            False    5  bbb161c9-b836-5769-90a9-ae18f4bc4937  حماة
+latakia         False    6  3be1553e-dfb4-538e-885b-7184f423bef0  اللاذقية
+tartus          False    7  8a19efdf-cb91-5db8-a0d8-6b19c668bcd9  طرطوس
+idlib           False    8  cc647204-3aba-5bcc-b510-17ddde2984d5  إدلب
+deir-ez-zor     False    9  fc9e21e9-378f-5d87-bcc2-c14aaf42d847  دير الزور
+al-hasakah      False   10  a56c40d9-8329-5a2c-974e-ddf034a7cc70  الحسكة
+daraa           False   11  e5bdaa0c-04cd-5f15-92ac-efcb15d70bc5  درعا
+as-suwayda      False   12  62918dee-b8cc-50e1-b74c-79080c7287ac  السويداء
+quneitra        False   13  4aad580a-3dfb-5ffe-a3a9-d3eb16f89fe9  القنيطرة
+
+category            spec            active duty  raqqa-public raqqa-onboarding  id
+pharmacy            PHARMACY        True   True  True         True              8dbcc319-bc20-5f72-84c3-a6f16ebbf3be
+medical-laboratory  GENERIC         True   False False        False             c6e2643e-4e9e-5f19-84d5-fa7a55806f73
+medical-clinic      MEDICAL_CLINIC  True   False False        False             11f3a504-3ffe-5d0c-80d2-4dfc47d73a5d
+nursing-center      NURSING_CENTER  True   False False        False             1b33f979-7ea5-5f43-885a-1eaf884084d2
+medical-supplies    GENERIC         True   False False        False             1538d573-18cc-5b50-abe6-98c0d9bd8bcf
+
+== 4. Idempotency, Admin authority and recovery, run against the live database ==
+--- first run ---
+dataset launch_v1
+  capabilities         created   0  left unchanged   5
+  category             created   0  left unchanged   5
+  category group       created   0  left unchanged   1
+  province             created   0  left unchanged  14
+  province switch      created   0  left unchanged  70
+Nothing to do; everything is present.
+--- second run ---
+dataset launch_v1
+  capabilities         created   0  left unchanged   5
+  category             created   0  left unchanged   5
+  category group       created   0  left unchanged   1
+  province             created   0  left unchanged  14
+  province switch      created   0  left unchanged  70
+Nothing to do; everything is present.
+--- --check on a complete database ---
+dataset launch_v1
+  capabilities         created   0  left unchanged   5
+  category             created   0  left unchanged   5
+  category group       created   0  left unchanged   1
+  province             created   0  left unchanged  14
+  province switch      created   0  left unchanged  70
+Reference data is complete.
+--- an operator activates Aleppo and turns the clinic switch on in Raqqa ---
+
+aleppo active -> True
+--- re-run the seed ---
+dataset launch_v1
+  capabilities         created   0  left unchanged   5
+  category             created   0  left unchanged   5
+  category group       created   0  left unchanged   1
+  province             created   0  left unchanged  14
+  province switch      created   0  left unchanged  70
+Nothing to do; everything is present.
+
+aleppo active=True sort_order=99   (operator set True/99)
+raqqa medical-clinic public=True        (operator set True)
+raqqa pharmacy onboarding=False          (operator set False)
+--- delete a canonical row, then recover it ---
+
+deleting 4aad580a-3dfb-5ffe-a3a9-d3eb16f89fe9
+dataset launch_v1
+  capabilities         created   0  left unchanged   5
+  category             created   0  left unchanged   5
+  category group       created   0  left unchanged   1
+  province             created   1  left unchanged  13
+  province switch      created   5  left unchanged  65
+CommandError: 6 reference rows are missing. Nothing was written; run the command without --check to create them.
+dataset launch_v1
+  capabilities         created   0  left unchanged   5
+  category             created   0  left unchanged   5
+  category group       created   0  left unchanged   1
+  province             created   1  left unchanged  13
+  province switch      created   5  left unchanged  65
+Created 6 missing rows.
+
+restored 4aad580a-3dfb-5ffe-a3a9-d3eb16f89fe9  active=False  switches=5
+
+== 5. Existing-database upgrade qualification ==
+A fully migrated database is rewound to directory 0002, given operator-created rows, then
+receives 0003 and 0004 exactly as a real deployment would.
+== Stage 2: operator data that predates the upgrade ==
+created legacy province 614ca336-ed50-4568-bb42-338633f947cd and category c5bb1ec7-5192-4582-9e6a-490958073bea
+
+== Stage 3: apply the new migrations ==
+Operations to perform:
+  Apply all migrations: directory
+Running migrations:
+  Applying directory.0003_specialization_matches_specification... OK
+  Applying directory.0004_launch_baseline... OK
+
+== Stage 4: verify ==
+PASS  14 canonical provinces exist
+PASS  Raqqa is the only active canonical province
+PASS  deterministic ids match a freshly seeded database
+PASS  the operator's legacy province is untouched — active=True sort_order=42
+PASS  the operator's legacy switch is untouched
+PASS  5 canonical categories plus the legacy one — count=6
+PASS  pharmacy specialization is PHARMACY
+PASS  pharmacy duty capability is on
+PASS  only Raqqa + pharmacy is publicly enabled among canonical rows
+
+== Stage 5: the command is a no-op on the upgraded database ==
+dataset launch_v1
+  capabilities         created   0  left unchanged   5
+  category             created   0  left unchanged   5
+  category group       created   0  left unchanged   1
+  province             created   0  left unchanged  14
+  province switch      created   0  left unchanged  70
+Nothing to do; everything is present.
+PASS  re-running the command changed nothing
+
+FAILURES: none
+
+== 6. API runtime evidence on a freshly migrated database ==
+== GET /api/v1/public/provinces/ ==
+PASS  public provinces  HTTP 200
+      {"items": [{"id": "58fea422-2cae-5f93-a396-b81a9a7d37e2", "code": "raqqa", "nameAr": "الرقة", "nameEn": "Raqqa"}]}
+PASS  exactly one active province is served
+PASS  it is Raqqa
+PASS  its id is the deterministic one
+PASS  the endpoint is no longer empty
+
+== GET /api/v1/public/provinces/<raqqa>/categories/ ==
+PASS  raqqa public taxonomy  HTTP 200
+      {"items": [{"id": "8dbcc319-bc20-5f72-84c3-a6f16ebbf3be", "nameAr": "صيدليات", "nameEn": "Pharmacies", "iconKey": "pharmacy", "group": {"id": "dc3829d8-5cd8-56b9-9c1e-588b852066f0", "nameAr": "الصحة"}, "capabilities": {"hours": true, "photos": true, "ratings": true, "duty": true, "specialtyFilter": false, "serviceFilter": false, "temporaryClosure": true, "ownerOnboarding": true}}]}
+PASS  only pharmacies are publicly visible — got ['صيدليات']
+PASS  no laboratory, clinic, nursing or supplies category is visible
+PASS  the duty capability is advertised
+
+== GET /api/v1/public/provinces/<aleppo>/categories/  (inactive province) ==
+PASS  inactive province taxonomy  HTTP 404
+      {"code": "NOT_FOUND", "message": "العنصر المطلوب غير موجود.", "details": {}, "requestId": "351553dc-0d4f-402f-9b6f-b1bf8c6e9240"}
+
+== Owner onboarding ==
+PASS  owner config for Raqqa  HTTP 200
+      {"province": {"id": "58fea422-2cae-5f93-a396-b81a9a7d37e2", "nameAr": "الرقة"}, "categories": [{"category": {"id": "8dbcc319-bc20-5f72-84c3-a6f16ebbf3be", "nameAr": "صيدليات", "nameEn": "Pharmacies", "iconKey": "pharmacy", "specialization": "PHARMACY"}, "capabilities": {"hours": true, "photos": true, "duty": true, "specialtyFilter": false, "serviceFilter": false, "temporaryClosure": true, "ownerOn
+PASS  only pharmacies offer owner onboarding in Raqqa — got ['صيدليات']
+PASS  owner config for Aleppo (inactive)  HTTP 404
+      {"code": "NOT_FOUND", "message": "العنصر المطلوب غير موجود.", "details": {}, "requestId": "a477036d-9b21-4a40-919f-022dbc8772e2"}
+
+FAILURES: none
+
+== 7. Runtime contract smoke, now exercising the seeded canonical rows ==
+
+     CASE                                           OPERATION ID                       HTTP  DETAIL
+----------------------------------------------------------------------------------------------------------------------------------
+PASS auth register start                            authRegisterStart                  202   matches
+PASS auth register verify                           authRegisterVerify                 200   matches
+PASS auth register complete                         authRegisterComplete               201   matches
+PASS auth login                                     authLogin                          200   matches
+PASS account profile                                accountProfileRetrieve             200   matches
+PASS public provinces                               publicProvincesList                200   matches
+PASS public facility list                           publicFacilitiesList               200   matches
+PASS public facility detail                         publicFacilityRetrieve             200   matches
+PASS public home                                    publicHomeRetrieve                 200   matches
+PASS owner facility create                          ownerFacilityCreate                201   matches
+PASS owner facility list                            ownerFacilitiesList                200   matches
+PASS admin province update                          adminProvinceUpdate                200   matches
+PASS admin dashboard                                adminDashboardRetrieve             200   matches
+PASS validation failure (missing categoryId)        publicFacilitiesList               400   matches
+PASS permission failure (no token)                  adminDashboardRetrieve             401   matches
+PASS permission failure (token without the admin permission) adminDashboardRetrieve             403   matches
+PASS INT-010: owner list without a token            ownerFacilitiesList                401   matches
+
+17/17 runtime responses match the declared contract
+
+== 8. Contract drift after the batch ==
+The enum changed, so regeneration was required and performed.
+  CategorySpecializationEnum: GENERIC, PHARMACY, MEDICAL_CLINIC, NURSING_CENTER
+  (was GENERIC, PHARMACY, DOCTOR, NURSING, MEDICAL_SUPPLIES)
+  openapi/schema.sha256 fc7bbe8206e44c889a60779b23f4ce84de0cd1e9d25c70ab5c34cefa5ae85dfd
+  TypeScript client recompiled: tsc --noEmit exit 0.
+
+== 9. What was deliberately NOT seeded ==
+  cities, neighborhoods, boundaries, coordinates — no authoritative dataset exists and the
+    specification names only provinces; City.city and Facility.neighborhood stay nullable.
+  VerificationRequirement — LAUNCH_POLICY_PENDING, see DECISIONS.md. Creating a mandatory
+    requirement would decide product policy inside a migration.
+  facilities, users, owners, ratings, duty shifts, opening hours, ads, GPS points,
+    test phones — none. The seed carries reference and configuration data only.
+  hospitals, physiotherapy, dental, commercial and service categories — future work.
+
+== 10. Drift gates, run after the artefacts were committed ==
+  git hash-object openapi/schema.yaml    before/after 08c795ce718d0eac27a7461f5af7bd01966f6285
+  git hash-object openapi/schema.sha256  before/after a4f8c51444d4621ba6197ebc118d7d0274cb01ae
+  scripts/generate-api-clients.sh re-run -> git status packages/ empty
+  PASS — no schema drift, no client drift.
+
+== 11. Commits ==
+  9732991  feat(directory): seed the V3 launch baseline
+  92d5bbe  build(contract): regenerate for the corrected specialization enum
+  b3938e4  docs: record the launch baseline and move P4 to CONNECTED_VERIFIED

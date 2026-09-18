@@ -465,7 +465,7 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-003 | P0 | P3 | migration graph invalid; dependency uses the module name `sessions` instead of the app label | FIXED (FIX-P0) |
 | INT-004 | P0 | P14 | Android does not compile; AGP 8 `CommonExtension` signature under AGP 9.4 | FIXED (FIX-P0) |
 | INT-005 | P1 | P10 | generated OpenAPI carries no component schemas and no request bodies | FIXED (P10) |
-| INT-006 | P1 | P4 | no province or taxonomy seed exists | OPEN |
+| INT-006 | P1 | P4 | no province or taxonomy seed exists | FIXED (LAUNCH-BASELINE) |
 | INT-007 | P1 | P2 | `settings/test.py` uses SQLite while the models are spatial | FIXED (P2) |
 | INT-008 | P1 | P6 | `DutyShift` missing `created_by`, `cancelled_at`, `ended_early_at`; hard delete; constraint has no cancelled condition | OPEN |
 | INT-009 | P1 | P3/P6/P9 | migration drift across seven apps | FIXED (P2) |
@@ -499,9 +499,10 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-037 | P3 | P6 | `06-DATA-MODEL.md` names the business-hour ordering field `sequence`; the model and the wire contract use `sort_order` | FIXED (CONTRACT-ALIGNMENT) — wire name only; the column keeps `sort_order` |
 | INT-038 | P2 | P2/P13 | the runtime emits three unrelated error shapes; `08-API-CONTRACT.md` specifies a single envelope carrying `code`, `message`, `details` and `requestId` | FIXED (CONTRACT-ALIGNMENT) |
 | INT-039 | P3 | P13 | `AdminCapabilitiesRequestSerializer` and `AdminCapabilitiesSerializer` declare `supports_*` on the wire, the last snake_case pair left in the Admin API; it is not a list endpoint, so it was outside the CONTRACT-ALIGNMENT scope | OPEN |
+| INT-040 | P2 | P4 | `Category.Specialization` declared GENERIC, PHARMACY, DOCTOR, NURSING and MEDICAL_SUPPLIES; `01-MASTER-SPECIFICATION.md` section 5 names GENERIC, PHARMACY, MEDICAL_CLINIC and NURSING_CENTER. Found while seeding, because the baseline could not be expressed in the declared values | FIXED (LAUNCH-BASELINE) |
 
 ## Rules
 
 - An identifier is never reused, even after the defect is fixed or retired.
 - A defect is registered here before it is referenced anywhere else.
-- The next free identifier is `INT-040`.
+- The next free identifier is `INT-041`.

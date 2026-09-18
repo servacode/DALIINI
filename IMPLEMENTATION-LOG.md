@@ -1222,3 +1222,95 @@ host-side under-count and is corrected in DEBT-002.
 scope; registered as INT-039 rather than quietly widened into it.
 
 Evidence: `artifacts/evidence/contract-alignment-20260918.txt`.
+
+
+## LAUNCH BASELINE — 2026-09-18
+
+`/public/provinces/` returned `{"items": []}` in every environment because no seed existed.
+That was INT-006, open since P4. It is closed.
+
+### What ships
+
+`directory/reference_data/launch_v1.py` is a frozen dataset of values only — no model
+imports, no QuerySets, no side effects. `apply.py` is the single implementation that writes
+it. Two callers use it: the data migration `directory/0004_launch_baseline`, which passes
+its historical `apps.get_model`, and the `seed_launch_baseline` management command, which
+passes the live one. Nothing is duplicated between them.
+
+The migration is what matters for correctness: a fresh database — a developer's, CI's,
+staging's, production's — arrives at the launch state without anyone remembering a command.
+The command covers what a migration cannot, which is qualification, verifying a restored
+database, and recreating a canonical row someone removed.
+
+### The data
+
+Fourteen provinces, Raqqa active and the other thirteen inactive. One health group. Five
+health categories: pharmacies, medical laboratories, medical clinics, nursing centers and
+medical supplies. Seventy province switches, one per pair, with only Raqqa plus pharmacies
+public and open to owner onboarding. Pharmacy carries the duty capability; none of the
+others do.
+
+No canonical province codes existed anywhere in the project, the specification or any
+legacy dataset, so they are established here and are stable from now on.
+
+### Identity
+
+Every canonical row carries a UUIDv5 derived from a fixed project namespace and its
+immutable code, so Raqqa is `58fea422-2cae-5f93-a396-b81a9a7d37e2` in every environment and
+in any restored database. A row found under the right code with the wrong primary key is
+reported as `REFERENCE_ID_MISMATCH` and nothing is written — rewriting a primary key that
+foreign keys already point at is not something a seed may do quietly.
+
+### Re-running is safe by construction
+
+Launch defaults apply at creation only. After that, `active`, `public_enabled`,
+`owner_registration_enabled`, names and sort orders belong to whoever set them in the Admin.
+There is no `--force` and no `--reset`; forced reconciliation for disaster recovery is a
+separate, audited command, not a flag anyone can reach.
+
+Proven rather than asserted: a test activates Aleppo, sets its sort order to 99, switches
+the Raqqa clinic on and the Raqqa pharmacy onboarding off, re-runs the seed, and asserts all
+four survived. The same sequence is in the evidence file as live command output.
+
+### INT-040, found while seeding
+
+`Category.Specialization` declared `GENERIC, PHARMACY, DOCTOR, NURSING, MEDICAL_SUPPLIES`.
+`01-MASTER-SPECIFICATION.md` section 5 names `GENERIC, PHARMACY, MEDICAL_CLINIC,
+NURSING_CENTER`. The baseline could not be expressed in the declared values, which is how
+the divergence surfaced. The model now matches the specification.
+
+`sqlmigrate` confirms `0003` is `(no-op)` — `choices` is not a database constraint on
+PostgreSQL — and no row existed in any environment, so the correction cost nothing now and
+would have cost a data migration later. It does change `CategorySpecializationEnum` in the
+contract, so the schema and all three clients were regenerated.
+
+### What was deliberately left out
+
+No city, neighborhood, boundary or coordinate. The specification names provinces explicitly
+and gives no authoritative geography below that level; inventing one and presenting it as
+canonical is worse than leaving the nullable fields null.
+
+No `VerificationRequirement`. It decides what blocks submission, approval and
+re-verification, so creating a mandatory one would settle product policy inside a migration.
+Recorded as **LAUNCH_POLICY_PENDING**: pharmacy requirements must be configured and
+qualified before owner onboarding opens publicly in production. Not a development blocker.
+
+No facilities, users, ratings, duty shifts, opening hours, advertisements, GPS points or
+test phones. Reference and configuration data only.
+
+### Verification
+
+158 backend tests pass, from 133; the 25 new ones are the seed qualification. Fresh-database
+and existing-database upgrade both qualify, the latter by rewinding a fully migrated
+database to directory 0002, giving it operator-created rows, and applying 0003 and 0004 as a
+real deployment would — the legacy rows came through untouched.
+
+`/public/provinces/` now serves Raqqa with its deterministic id. Raqqa's public taxonomy
+serves pharmacies and nothing else. Owner onboarding is offered for Raqqa plus pharmacies
+and refused everywhere else. The 17-case runtime smoke passes and now exercises the seeded
+canonical rows instead of building a parallel taxonomy beside them.
+
+ruff is 100 against a 101 baseline. mypy is 789 against 797, unchanged from before this
+work despite fourteen more source files, with zero findings in every new module.
+
+Evidence: `artifacts/evidence/launch-baseline-20260918.txt`.

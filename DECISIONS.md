@@ -249,6 +249,70 @@ The authoritative source for admin authorization remains the project RBAC. `user
 
 ---
 
+## DECISION-017 — The launch baseline ships as a data migration, applied by shared code
+
+**Date:** 2026-09-18
+
+**Subject:** How the fourteen provinces and the health taxonomy reach a database. INT-006.
+
+**Decision:** A data migration, `directory/0004_launch_baseline`, plus a `seed_launch_baseline` management command. Both call the same `apply_dataset`, so the logic exists once. The data lives in `directory/reference_data/launch_v1.py`, which holds nothing but values — no model imports, no QuerySets, no side effects.
+
+**Reason:** A migration means a fresh database is correct without anyone remembering to run anything, and migration history then describes the product's required initial state. The command covers what a migration cannot: qualification, verifying a restored database, and recreating a canonical row that was removed. Duplicating the logic across the two would guarantee they diverge.
+
+**Alternatives:** Migration only. Rejected, there would be no way to repair or verify a live database. Command only. Rejected, staging and production would depend on someone remembering. A fixture. Rejected, `loaddata` overwrites by primary key and would undo operator changes.
+
+**Impact:** `apply.py` may only use plain field access and the default manager, because a historical model registry has no custom methods. `launch_v1` is immutable now that it has entered a shared migration; a future baseline is `launch_v2` and a new migration.
+
+---
+
+## DECISION-018 — Reference rows carry deterministic UUIDv5 primary keys
+
+**Date:** 2026-09-18
+
+**Subject:** Primary keys for canonical provinces, category groups and categories.
+
+**Decision:** `uuid5(NAMESPACE, "<entity type>:<code>")` with a fixed project namespace hardcoded as a literal. The immutable `code` is the identity; the UUID is derived from it. If a row already exists under the right code but a different primary key, the seed reports `REFERENCE_ID_MISMATCH` and writes nothing.
+
+**Reason:** The same province must be the same id in development, CI, staging, production and any restored database, so a client can cache an id and an operator can compare two environments directly. Rewriting a primary key to force agreement is the one thing a seed must never do quietly: foreign keys already point at it.
+
+**Alternatives:** Random UUIDs with `update_or_create` on `code`. Rejected, every environment would disagree on ids. Rewriting the primary key on mismatch. Rejected as unsafe under live foreign keys.
+
+**Impact:** Raqqa is always `58fea422-2cae-5f93-a396-b81a9a7d37e2`. A mismatch is a loud qualification failure that a human resolves.
+
+---
+
+## DECISION-019 — The seed never overrules an operator, and has no force mode
+
+**Date:** 2026-09-18
+
+**Subject:** What a second run of the seed is allowed to change.
+
+**Decision:** Launch defaults apply at creation only. Once a row exists it is left alone — `active`, `public_enabled`, `owner_registration_enabled`, names and sort orders included. The seed repairs a missing canonical row and verifies identity; that is all. There is no `--force` and no `--reset`.
+
+**Reason:** Activating Aleppo or switching a category off is an operational decision taken in the Admin. A seed that re-imposed launch defaults would silently revert it, and would do so most destructively in production, where the divergence from launch is largest. A command able to flatten production configuration should not be one keystroke away.
+
+**Alternatives:** `update_or_create` with the full launch defaults. Rejected for exactly that reason. A `--force` flag. Rejected in this batch; forced reconciliation for disaster recovery belongs in a separate, audited command.
+
+**Impact:** `--check` reports what is missing and exits non-zero without writing, for use as a gate. Proven by a test that activates a province, flips two switches, re-runs the seed and asserts none of it was reverted.
+
+---
+
+## DECISION-020 — No city, neighborhood or verification requirement is invented
+
+**Date:** 2026-09-18
+
+**Subject:** The boundary of the launch dataset.
+
+**Decision:** Seed provinces, one category group, five health categories, their capabilities and all seventy province switches. Seed no city, no neighborhood, no boundary, no coordinate, and no `VerificationRequirement`. No facility, user, rating, duty shift, opening hour, advertisement or test phone.
+
+**Reason:** The specification names provinces explicitly and gives no authoritative city or neighborhood dataset, so any city list would be invented geography presented as canonical; `city` and `neighborhood` are nullable for that reason. A `VerificationRequirement` is not UI configuration — it decides what blocks submission, approval and re-verification — so creating a mandatory one would be a product policy decision taken inside a migration, where the Admin cannot see it and no reviewer signed it off.
+
+**Alternatives:** Seed Raqqa's cities. Rejected as invented data. Seed a storefront-photo and business-card requirement as the specification sketches. Rejected: the specification does not settle whether either is required, how many files each takes, or whether a pharmacy licence document is needed instead.
+
+**Impact:** **LAUNCH_POLICY_PENDING.** Pharmacy verification requirements must be configured and qualified before owner onboarding is opened publicly in production. This blocks neither backend nor Admin development; it is a production launch gate. Recorded in the debt register below.
+
+---
+
 # Technical Debt Register
 
 Mandatory before staging or production closure. None of these blocks P2 or P10.
@@ -287,3 +351,11 @@ The project must not keep two parallel authorization surfaces without need. Befo
 - no Django Admin depends on them.
 
 Requires an ADR and a security regression suite. Until then the mixin stays present but non-authoritative.
+
+## LAUNCH_POLICY_PENDING — Pharmacy verification requirements
+
+**Recorded:** 2026-09-18 · See DECISION-020.
+
+`launch_v1` seeds no `VerificationRequirement`, deliberately. Before owner onboarding is opened to the public in production, the pharmacy requirements must be decided, configured through the Admin and qualified: which documents are required, how many files each accepts, and whether a licence document replaces or accompanies the storefront and business-card proofs the specification sketches.
+
+This is a **Production Launch Gate**, not a development blocker. Backend and Admin work proceed without it.

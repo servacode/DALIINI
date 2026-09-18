@@ -1,6 +1,6 @@
 # HANDOFF
 
-Last updated: 2026-09-18T04:30:00+03:00
+Last updated: 2026-09-18T07:00:00+03:00
 
 ## PROJECT SUMMARY
 
@@ -562,4 +562,66 @@ than widened into it without review.
 `ApiError` replaced `DetailError`, `DomainError` and `DomainErrorBody` in all three
 clients, so a consumer that referenced those types will need updating.
 
-`/public/provinces/` still returns an empty list. The P4 seed (INT-006) does not exist yet.
+`/public/provinces/` served an empty list until the LAUNCH BASELINE batch; see the section below.
+
+
+## LAUNCH BASELINE — 2026-09-18
+
+A migrated database now arrives at the launch state on its own. No command to remember.
+
+**What is there.** Fourteen provinces with Raqqa active and the other thirteen inactive. One
+health group. Five health categories — pharmacies, medical laboratories, medical clinics,
+nursing centers, medical supplies — with all seventy province switches created explicitly.
+Only Raqqa plus pharmacies is public and open to owner onboarding. Pharmacy carries the duty
+capability; none of the others do.
+
+**Ids are stable everywhere.** Every canonical row's primary key is a UUIDv5 of its
+immutable code under a fixed project namespace, so Raqqa is
+`58fea422-2cae-5f93-a396-b81a9a7d37e2` in development, CI, staging, production and any
+restored database. A client may cache an id; two environments can be compared by eye.
+
+**Changing the dataset.** `directory/reference_data/launch_v1.py` is **immutable** — it has
+entered a shared migration, so editing it would give two databases different canonical data
+while both claim the same migration state. A new baseline is `launch_v2.py` plus a new
+migration. The dataset holds values only; `apply.py` is the single implementation that
+writes it, used by both the migration and the command.
+
+**Running `seed_launch_baseline` is safe.** It creates what is missing and leaves everything
+else alone, including `active`, `public_enabled`, `owner_registration_enabled`, names and
+sort orders. Activating a province in the Admin survives every re-run. `--check` reports
+what is missing and exits non-zero without writing, for use as a gate. There is no
+`--force` and no `--reset`, on purpose.
+
+**If you see `REFERENCE_ID_MISMATCH`**, a canonical row exists under the right code with the
+wrong primary key. The seed stops and writes nothing rather than rewriting a key that
+foreign keys may already reference. Resolve it deliberately; do not work around it.
+
+**Two things are deliberately absent.** There is no city or neighborhood data — the
+specification gives no authoritative dataset below province level, so `city` and
+`neighborhood` stay nullable rather than carry invented geography. And there is no
+`VerificationRequirement`: **LAUNCH_POLICY_PENDING** in `DECISIONS.md`. Pharmacy
+requirements must be configured and qualified before owner onboarding opens publicly in
+production. It blocks neither backend nor Admin work.
+
+**One contract change.** `Category.Specialization` declared `DOCTOR`, `NURSING` and
+`MEDICAL_SUPPLIES`; the specification names `MEDICAL_CLINIC` and `NURSING_CENTER`. The model
+now matches (INT-040), so `CategorySpecializationEnum` changed in all three generated
+clients.
+
+## NEXT
+
+**P11 to P13, Admin data binding and the Admin golden path.** The Admin is still a
+descriptive scaffold: `backendRequest`, `setRefreshCookie` and `getRefreshCookie` exist but
+are never called, and every page renders a static `OperationPage` naming the endpoint it
+would call. Neither Playwright nor Vitest is installed, so `P13 ADMIN GOLDEN PATH PASS` has
+no runner yet.
+
+Start with the login and refresh BFF against `authLogin` and `authRefresh`, and fix INT-012
+while doing it: the `__Host-` refresh cookie sets `secure` only when `NODE_ENV=production`,
+and a browser rejects a `__Host-` cookie without `Secure`, so the development login flow
+cannot work today.
+
+Two things make this easier than it was. The API boundary is settled and typed — one error
+envelope, one cursor envelope, camelCase throughout, generated clients for all three
+platforms. And the database has real provinces and a real taxonomy, so an Admin grid has
+something to render on first load.
