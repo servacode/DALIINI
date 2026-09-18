@@ -13,21 +13,25 @@ Method | HTTP request | Description
 
 # **adminFacilitiesList**
 ```swift
-    open class func adminFacilitiesList(completion: @escaping (_ data: AdminFacilityList?, _ error: Error?) -> Void)
+    open class func adminFacilitiesList(category: String? = nil, province: String? = nil, q: String? = nil, status: String? = nil, completion: @escaping (_ data: AdminFacilityList?, _ error: Error?) -> Void)
 ```
 
 List facilities for operations
 
-Capped at 250 rows.
+Capped at 250 rows. Every filter is optional and combines with the rest.
 
 ### Example
 ```swift
 // The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
 import ServaDirectoryAPI
 
+let category = "category_example" // String | Category id. (optional)
+let province = "province_example" // String | Province id. (optional)
+let q = "q_example" // String | Free text matched against the Arabic and English facility names. (optional)
+let status = "status_example" // String | Facility status, for example ACTIVE or SUSPENDED. (optional)
 
 // List facilities for operations
-AdminFacilitiesAPI.adminFacilitiesList() { (response, error) in
+AdminFacilitiesAPI.adminFacilitiesList(category: category, province: province, q: q, status: status) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -40,7 +44,13 @@ AdminFacilitiesAPI.adminFacilitiesList() { (response, error) in
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **category** | **String** | Category id. | [optional] 
+ **province** | **String** | Province id. | [optional] 
+ **q** | **String** | Free text matched against the Arabic and English facility names. | [optional] 
+ **status** | **String** | Facility status, for example ACTIVE or SUSPENDED. | [optional] 
 
 ### Return type
 

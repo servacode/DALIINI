@@ -184,7 +184,7 @@ Configure bearerAccessToken:
 
 List facility applications awaiting or past review
 
-Capped at 200 rows.
+Capped at 200 rows. Every filter is optional and combines with the rest.
 
 ### Example
 ```kotlin
@@ -196,14 +196,23 @@ Capped at 200 rows.
 val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AdminReviewsApi::class.java)
+val category : kotlin.String = category_example // kotlin.String | Category id of the facility the application belongs to.
+val kind : kotlin.String = kind_example // kotlin.String | Application kind, for example REGISTRATION or REVERIFICATION.
+val province : kotlin.String = province_example // kotlin.String | Province id of the facility the application belongs to.
+val status : kotlin.String = status_example // kotlin.String | Application status, for example SUBMITTED or APPROVED.
 
 launch(Dispatchers.IO) {
-    val result : AdminApplicationList = webService.adminReviewsList()
+    val result : AdminApplicationList = webService.adminReviewsList(category, kind, province, status)
 }
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+| **category** | **kotlin.String**| Category id of the facility the application belongs to. | [optional] |
+| **kind** | **kotlin.String**| Application kind, for example REGISTRATION or REVERIFICATION. | [optional] |
+| **province** | **kotlin.String**| Province id of the facility the application belongs to. | [optional] |
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **status** | **kotlin.String**| Application status, for example SUBMITTED or APPROVED. | [optional] |
 
 ### Return type
 

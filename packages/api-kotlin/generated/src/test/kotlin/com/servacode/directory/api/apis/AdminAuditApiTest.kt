@@ -30,7 +30,11 @@ class AdminAuditApiTest : ShouldSpec() {
         // to test adminAuditList
         should("test adminAuditList") {
             // uncomment below to test adminAuditList
-            //val result : AdminAuditList = apiInstance.adminAuditList()
+            //val action : kotlin.String = action_example // kotlin.String | Substring matched against the action code, case-insensitive.
+            //val actor : kotlin.String = actor_example // kotlin.String | Actor user id.
+            //val requestId : kotlin.String = requestId_example // kotlin.String | Exact request correlation id, as returned in an error body.
+            //val resource : kotlin.String = resource_example // kotlin.String | Substring matched against the target type, or an exact target id.
+            //val result : AdminAuditList = apiInstance.adminAuditList(action, actor, requestId, resource)
             //result shouldBe ("TODO")
         }
 

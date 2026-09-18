@@ -25,17 +25,40 @@ import {
     ApiErrorToJSON,
 } from '../models/index';
 
+export interface AdminAuditListRequest {
+    action?: string;
+    actor?: string;
+    requestId?: string;
+    resource?: string;
+}
+
 /**
  * 
  */
 export class AdminAuditApi extends runtime.BaseAPI {
 
     /**
-     * Capped at 250 rows. Snapshots and metadata are stored redacted.
+     * Capped at 250 rows. Snapshots and metadata are stored redacted. Every filter is optional and combines with the rest.
      * Search the audit trail
      */
-    async adminAuditListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminAuditList>> {
+    async adminAuditListRaw(requestParameters: AdminAuditListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminAuditList>> {
         const queryParameters: any = {};
+
+        if (requestParameters['action'] != null) {
+            queryParameters['action'] = requestParameters['action'];
+        }
+
+        if (requestParameters['actor'] != null) {
+            queryParameters['actor'] = requestParameters['actor'];
+        }
+
+        if (requestParameters['requestId'] != null) {
+            queryParameters['requestId'] = requestParameters['requestId'];
+        }
+
+        if (requestParameters['resource'] != null) {
+            queryParameters['resource'] = requestParameters['resource'];
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -61,11 +84,11 @@ export class AdminAuditApi extends runtime.BaseAPI {
     }
 
     /**
-     * Capped at 250 rows. Snapshots and metadata are stored redacted.
+     * Capped at 250 rows. Snapshots and metadata are stored redacted. Every filter is optional and combines with the rest.
      * Search the audit trail
      */
-    async adminAuditList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminAuditList> {
-        const response = await this.adminAuditListRaw(initOverrides);
+    async adminAuditList(requestParameters: AdminAuditListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminAuditList> {
+        const response = await this.adminAuditListRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

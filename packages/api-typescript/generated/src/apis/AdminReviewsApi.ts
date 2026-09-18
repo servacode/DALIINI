@@ -52,6 +52,13 @@ export interface AdminReviewRetrieveRequest {
     applicationId: string;
 }
 
+export interface AdminReviewsListRequest {
+    category?: string;
+    kind?: string;
+    province?: string;
+    status?: string;
+}
+
 /**
  * 
  */
@@ -250,11 +257,27 @@ export class AdminReviewsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Capped at 200 rows.
+     * Capped at 200 rows. Every filter is optional and combines with the rest.
      * List facility applications awaiting or past review
      */
-    async adminReviewsListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminApplicationList>> {
+    async adminReviewsListRaw(requestParameters: AdminReviewsListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminApplicationList>> {
         const queryParameters: any = {};
+
+        if (requestParameters['category'] != null) {
+            queryParameters['category'] = requestParameters['category'];
+        }
+
+        if (requestParameters['kind'] != null) {
+            queryParameters['kind'] = requestParameters['kind'];
+        }
+
+        if (requestParameters['province'] != null) {
+            queryParameters['province'] = requestParameters['province'];
+        }
+
+        if (requestParameters['status'] != null) {
+            queryParameters['status'] = requestParameters['status'];
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -280,11 +303,11 @@ export class AdminReviewsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Capped at 200 rows.
+     * Capped at 200 rows. Every filter is optional and combines with the rest.
      * List facility applications awaiting or past review
      */
-    async adminReviewsList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminApplicationList> {
-        const response = await this.adminReviewsListRaw(initOverrides);
+    async adminReviewsList(requestParameters: AdminReviewsListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminApplicationList> {
+        const response = await this.adminReviewsListRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

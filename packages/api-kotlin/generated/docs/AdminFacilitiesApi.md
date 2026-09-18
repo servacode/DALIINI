@@ -14,7 +14,7 @@ All URIs are relative to *http://localhost*
 
 List facilities for operations
 
-Capped at 250 rows.
+Capped at 250 rows. Every filter is optional and combines with the rest.
 
 ### Example
 ```kotlin
@@ -26,14 +26,23 @@ Capped at 250 rows.
 val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AdminFacilitiesApi::class.java)
+val category : kotlin.String = category_example // kotlin.String | Category id.
+val province : kotlin.String = province_example // kotlin.String | Province id.
+val q : kotlin.String = q_example // kotlin.String | Free text matched against the Arabic and English facility names.
+val status : kotlin.String = status_example // kotlin.String | Facility status, for example ACTIVE or SUSPENDED.
 
 launch(Dispatchers.IO) {
-    val result : AdminFacilityList = webService.adminFacilitiesList()
+    val result : AdminFacilityList = webService.adminFacilitiesList(category, province, q, status)
 }
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+| **category** | **kotlin.String**| Category id. | [optional] |
+| **province** | **kotlin.String**| Province id. | [optional] |
+| **q** | **kotlin.String**| Free text matched against the Arabic and English facility names. | [optional] |
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **status** | **kotlin.String**| Facility status, for example ACTIVE or SUSPENDED. | [optional] |
 
 ### Return type
 

@@ -73,7 +73,9 @@ class AdminUsersApiTest : ShouldSpec() {
         // to test adminUsersList
         should("test adminUsersList") {
             // uncomment below to test adminUsersList
-            //val result : AdminUserList = apiInstance.adminUsersList()
+            //val q : kotlin.String = q_example // kotlin.String | Free text matched against the account name and phone number.
+            //val status : kotlin.String = status_example // kotlin.String | `active` keeps active accounts; any other value keeps blocked accounts.
+            //val result : AdminUserList = apiInstance.adminUsersList(q, status)
             //result shouldBe ("TODO")
         }
 

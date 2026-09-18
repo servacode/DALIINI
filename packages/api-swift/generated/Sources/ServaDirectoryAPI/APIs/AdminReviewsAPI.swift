@@ -186,28 +186,42 @@ open class AdminReviewsAPI {
     /**
      List facility applications awaiting or past review
      
+     - parameter category: (query) Category id of the facility the application belongs to. (optional)
+     - parameter kind: (query) Application kind, for example REGISTRATION or REVERIFICATION. (optional)
+     - parameter province: (query) Province id of the facility the application belongs to. (optional)
+     - parameter status: (query) Application status, for example SUBMITTED or APPROVED. (optional)
      - returns: AdminApplicationList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminReviewsList() async throws -> AdminApplicationList {
-        return try await adminReviewsListWithRequestBuilder().execute().body
+    open class func adminReviewsList(category: String? = nil, kind: String? = nil, province: String? = nil, status: String? = nil) async throws -> AdminApplicationList {
+        return try await adminReviewsListWithRequestBuilder(category: category, kind: kind, province: province, status: status).execute().body
     }
 
     /**
      List facility applications awaiting or past review
      - GET /api/v1/admin/applications/
-     - Capped at 200 rows.
+     - Capped at 200 rows. Every filter is optional and combines with the rest.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken
+     - parameter category: (query) Category id of the facility the application belongs to. (optional)
+     - parameter kind: (query) Application kind, for example REGISTRATION or REVERIFICATION. (optional)
+     - parameter province: (query) Province id of the facility the application belongs to. (optional)
+     - parameter status: (query) Application status, for example SUBMITTED or APPROVED. (optional)
      - returns: RequestBuilder<AdminApplicationList> 
      */
-    open class func adminReviewsListWithRequestBuilder() -> RequestBuilder<AdminApplicationList> {
+    open class func adminReviewsListWithRequestBuilder(category: String? = nil, kind: String? = nil, province: String? = nil, status: String? = nil) -> RequestBuilder<AdminApplicationList> {
         let localVariablePath = "/api/v1/admin/applications/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
 
-        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "category": (wrappedValue: category?.encodeToJSON(), isExplode: true),
+            "kind": (wrappedValue: kind?.encodeToJSON(), isExplode: true),
+            "province": (wrappedValue: province?.encodeToJSON(), isExplode: true),
+            "status": (wrappedValue: status?.encodeToJSON(), isExplode: true),
+        ])
 
         let localVariableNillableHeaders: [String: Any?] = [
             :

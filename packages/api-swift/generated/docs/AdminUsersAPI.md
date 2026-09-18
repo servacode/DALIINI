@@ -258,21 +258,23 @@ Name | Type | Description  | Notes
 
 # **adminUsersList**
 ```swift
-    open class func adminUsersList(completion: @escaping (_ data: AdminUserList?, _ error: Error?) -> Void)
+    open class func adminUsersList(q: String? = nil, status: String? = nil, completion: @escaping (_ data: AdminUserList?, _ error: Error?) -> Void)
 ```
 
 Search user accounts
 
-Password hashes and session secret material are never returned.
+Password hashes and session secret material are never returned. Capped at 250 rows. Both filters are optional.
 
 ### Example
 ```swift
 // The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
 import ServaDirectoryAPI
 
+let q = "q_example" // String | Free text matched against the account name and phone number. (optional)
+let status = "status_example" // String | `active` keeps active accounts; any other value keeps blocked accounts. (optional)
 
 // Search user accounts
-AdminUsersAPI.adminUsersList() { (response, error) in
+AdminUsersAPI.adminUsersList(q: q, status: status) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -285,7 +287,11 @@ AdminUsersAPI.adminUsersList() { (response, error) in
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **q** | **String** | Free text matched against the account name and phone number. | [optional] 
+ **status** | **String** | &#x60;active&#x60; keeps active accounts; any other value keeps blocked accounts. | [optional] 
 
 ### Return type
 

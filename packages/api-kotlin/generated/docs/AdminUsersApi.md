@@ -220,7 +220,7 @@ Configure bearerAccessToken:
 
 Search user accounts
 
-Password hashes and session secret material are never returned.
+Password hashes and session secret material are never returned. Capped at 250 rows. Both filters are optional.
 
 ### Example
 ```kotlin
@@ -232,14 +232,19 @@ Password hashes and session secret material are never returned.
 val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AdminUsersApi::class.java)
+val q : kotlin.String = q_example // kotlin.String | Free text matched against the account name and phone number.
+val status : kotlin.String = status_example // kotlin.String | `active` keeps active accounts; any other value keeps blocked accounts.
 
 launch(Dispatchers.IO) {
-    val result : AdminUserList = webService.adminUsersList()
+    val result : AdminUserList = webService.adminUsersList(q, status)
 }
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+| **q** | **kotlin.String**| Free text matched against the account name and phone number. | [optional] |
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **status** | **kotlin.String**| &#x60;active&#x60; keeps active accounts; any other value keeps blocked accounts. | [optional] |
 
 ### Return type
 

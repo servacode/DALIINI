@@ -54,6 +54,11 @@ export interface AdminUserUnblockRequest {
     userId: string;
 }
 
+export interface AdminUsersListRequest {
+    q?: string;
+    status?: string;
+}
+
 /**
  * 
  */
@@ -292,11 +297,19 @@ export class AdminUsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Password hashes and session secret material are never returned.
+     * Password hashes and session secret material are never returned. Capped at 250 rows. Both filters are optional.
      * Search user accounts
      */
-    async adminUsersListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminUserList>> {
+    async adminUsersListRaw(requestParameters: AdminUsersListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminUserList>> {
         const queryParameters: any = {};
+
+        if (requestParameters['q'] != null) {
+            queryParameters['q'] = requestParameters['q'];
+        }
+
+        if (requestParameters['status'] != null) {
+            queryParameters['status'] = requestParameters['status'];
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -322,11 +335,11 @@ export class AdminUsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Password hashes and session secret material are never returned.
+     * Password hashes and session secret material are never returned. Capped at 250 rows. Both filters are optional.
      * Search user accounts
      */
-    async adminUsersList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminUserList> {
-        const response = await this.adminUsersListRaw(initOverrides);
+    async adminUsersList(requestParameters: AdminUsersListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminUserList> {
+        const response = await this.adminUsersListRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

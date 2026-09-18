@@ -67,7 +67,11 @@ class AdminReviewsApiTest : ShouldSpec() {
         // to test adminReviewsList
         should("test adminReviewsList") {
             // uncomment below to test adminReviewsList
-            //val result : AdminApplicationList = apiInstance.adminReviewsList()
+            //val category : kotlin.String = category_example // kotlin.String | Category id of the facility the application belongs to.
+            //val kind : kotlin.String = kind_example // kotlin.String | Application kind, for example REGISTRATION or REVERIFICATION.
+            //val province : kotlin.String = province_example // kotlin.String | Province id of the facility the application belongs to.
+            //val status : kotlin.String = status_example // kotlin.String | Application status, for example SUBMITTED or APPROVED.
+            //val result : AdminApplicationList = apiInstance.adminReviewsList(category, kind, province, status)
             //result shouldBe ("TODO")
         }
 

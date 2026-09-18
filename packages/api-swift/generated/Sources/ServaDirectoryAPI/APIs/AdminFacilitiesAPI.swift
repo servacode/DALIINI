@@ -15,28 +15,42 @@ open class AdminFacilitiesAPI {
     /**
      List facilities for operations
      
+     - parameter category: (query) Category id. (optional)
+     - parameter province: (query) Province id. (optional)
+     - parameter q: (query) Free text matched against the Arabic and English facility names. (optional)
+     - parameter status: (query) Facility status, for example ACTIVE or SUSPENDED. (optional)
      - returns: AdminFacilityList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminFacilitiesList() async throws -> AdminFacilityList {
-        return try await adminFacilitiesListWithRequestBuilder().execute().body
+    open class func adminFacilitiesList(category: String? = nil, province: String? = nil, q: String? = nil, status: String? = nil) async throws -> AdminFacilityList {
+        return try await adminFacilitiesListWithRequestBuilder(category: category, province: province, q: q, status: status).execute().body
     }
 
     /**
      List facilities for operations
      - GET /api/v1/admin/facilities/
-     - Capped at 250 rows.
+     - Capped at 250 rows. Every filter is optional and combines with the rest.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken
+     - parameter category: (query) Category id. (optional)
+     - parameter province: (query) Province id. (optional)
+     - parameter q: (query) Free text matched against the Arabic and English facility names. (optional)
+     - parameter status: (query) Facility status, for example ACTIVE or SUSPENDED. (optional)
      - returns: RequestBuilder<AdminFacilityList> 
      */
-    open class func adminFacilitiesListWithRequestBuilder() -> RequestBuilder<AdminFacilityList> {
+    open class func adminFacilitiesListWithRequestBuilder(category: String? = nil, province: String? = nil, q: String? = nil, status: String? = nil) -> RequestBuilder<AdminFacilityList> {
         let localVariablePath = "/api/v1/admin/facilities/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
 
-        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "category": (wrappedValue: category?.encodeToJSON(), isExplode: true),
+            "province": (wrappedValue: province?.encodeToJSON(), isExplode: true),
+            "q": (wrappedValue: q?.encodeToJSON(), isExplode: true),
+            "status": (wrappedValue: status?.encodeToJSON(), isExplode: true),
+        ])
 
         let localVariableNillableHeaders: [String: Any?] = [
             :

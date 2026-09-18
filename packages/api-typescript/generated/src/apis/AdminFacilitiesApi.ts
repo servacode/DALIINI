@@ -31,6 +31,13 @@ import {
     ApiErrorToJSON,
 } from '../models/index';
 
+export interface AdminFacilitiesListRequest {
+    category?: string;
+    province?: string;
+    q?: string;
+    status?: string;
+}
+
 export interface AdminFacilityCloseRequest {
     facilityId: string;
     adminDecisionRequest?: AdminDecisionRequest;
@@ -56,11 +63,27 @@ export interface AdminFacilitySuspendRequest {
 export class AdminFacilitiesApi extends runtime.BaseAPI {
 
     /**
-     * Capped at 250 rows.
+     * Capped at 250 rows. Every filter is optional and combines with the rest.
      * List facilities for operations
      */
-    async adminFacilitiesListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminFacilityList>> {
+    async adminFacilitiesListRaw(requestParameters: AdminFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminFacilityList>> {
         const queryParameters: any = {};
+
+        if (requestParameters['category'] != null) {
+            queryParameters['category'] = requestParameters['category'];
+        }
+
+        if (requestParameters['province'] != null) {
+            queryParameters['province'] = requestParameters['province'];
+        }
+
+        if (requestParameters['q'] != null) {
+            queryParameters['q'] = requestParameters['q'];
+        }
+
+        if (requestParameters['status'] != null) {
+            queryParameters['status'] = requestParameters['status'];
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -86,11 +109,11 @@ export class AdminFacilitiesApi extends runtime.BaseAPI {
     }
 
     /**
-     * Capped at 250 rows.
+     * Capped at 250 rows. Every filter is optional and combines with the rest.
      * List facilities for operations
      */
-    async adminFacilitiesList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacilityList> {
-        const response = await this.adminFacilitiesListRaw(initOverrides);
+    async adminFacilitiesList(requestParameters: AdminFacilitiesListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacilityList> {
+        const response = await this.adminFacilitiesListRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

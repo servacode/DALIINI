@@ -2,5 +2,11 @@
   "name": "@servacode/api-typescript",
   "private": true,
   "version": "0.0.0",
-  "description": "Generated OpenAPI client; do not hand-edit generated sources"
+  "description": "Generated OpenAPI client; do not hand-edit generated sources",
+  "type": "module",
+  "main": "./generated/src/index.ts",
+  "types": "./generated/src/index.ts",
+  "exports": {
+    ".": "./generated/src/index.ts"
+  }
 }

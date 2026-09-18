@@ -32,7 +32,11 @@ class AdminFacilitiesApiTest : ShouldSpec() {
         // to test adminFacilitiesList
         should("test adminFacilitiesList") {
             // uncomment below to test adminFacilitiesList
-            //val result : AdminFacilityList = apiInstance.adminFacilitiesList()
+            //val category : kotlin.String = category_example // kotlin.String | Category id.
+            //val province : kotlin.String = province_example // kotlin.String | Province id.
+            //val q : kotlin.String = q_example // kotlin.String | Free text matched against the Arabic and English facility names.
+            //val status : kotlin.String = status_example // kotlin.String | Facility status, for example ACTIVE or SUSPENDED.
+            //val result : AdminFacilityList = apiInstance.adminFacilitiesList(category, province, q, status)
             //result shouldBe ("TODO")
         }
 

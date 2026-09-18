@@ -86,15 +86,19 @@ interface AdminReviewsApi {
     /**
      * GET api/v1/admin/applications/
      * List facility applications awaiting or past review
-     * Capped at 200 rows.
+     * Capped at 200 rows. Every filter is optional and combines with the rest.
      * Responses:
      *  - 200: 
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *
+     * @param category Category id of the facility the application belongs to. (optional)
+     * @param kind Application kind, for example REGISTRATION or REVERIFICATION. (optional)
+     * @param province Province id of the facility the application belongs to. (optional)
+     * @param status Application status, for example SUBMITTED or APPROVED. (optional)
      * @return [AdminApplicationList]
      */
     @GET("api/v1/admin/applications/")
-    suspend fun adminReviewsList(): Response<AdminApplicationList>
+    suspend fun adminReviewsList(@Query("category") category: kotlin.String? = null, @Query("kind") kind: kotlin.String? = null, @Query("province") province: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminApplicationList>
 
 }

@@ -15,28 +15,42 @@ open class AdminAuditAPI {
     /**
      Search the audit trail
      
+     - parameter action: (query) Substring matched against the action code, case-insensitive. (optional)
+     - parameter actor: (query) Actor user id. (optional)
+     - parameter requestId: (query) Exact request correlation id, as returned in an error body. (optional)
+     - parameter resource: (query) Substring matched against the target type, or an exact target id. (optional)
      - returns: AdminAuditList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminAuditList() async throws -> AdminAuditList {
-        return try await adminAuditListWithRequestBuilder().execute().body
+    open class func adminAuditList(action: String? = nil, actor: String? = nil, requestId: String? = nil, resource: String? = nil) async throws -> AdminAuditList {
+        return try await adminAuditListWithRequestBuilder(action: action, actor: actor, requestId: requestId, resource: resource).execute().body
     }
 
     /**
      Search the audit trail
      - GET /api/v1/admin/audit/
-     - Capped at 250 rows. Snapshots and metadata are stored redacted.
+     - Capped at 250 rows. Snapshots and metadata are stored redacted. Every filter is optional and combines with the rest.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken
+     - parameter action: (query) Substring matched against the action code, case-insensitive. (optional)
+     - parameter actor: (query) Actor user id. (optional)
+     - parameter requestId: (query) Exact request correlation id, as returned in an error body. (optional)
+     - parameter resource: (query) Substring matched against the target type, or an exact target id. (optional)
      - returns: RequestBuilder<AdminAuditList> 
      */
-    open class func adminAuditListWithRequestBuilder() -> RequestBuilder<AdminAuditList> {
+    open class func adminAuditListWithRequestBuilder(action: String? = nil, actor: String? = nil, requestId: String? = nil, resource: String? = nil) -> RequestBuilder<AdminAuditList> {
         let localVariablePath = "/api/v1/admin/audit/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
 
-        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "action": (wrappedValue: action?.encodeToJSON(), isExplode: true),
+            "actor": (wrappedValue: actor?.encodeToJSON(), isExplode: true),
+            "requestId": (wrappedValue: requestId?.encodeToJSON(), isExplode: true),
+            "resource": (wrappedValue: resource?.encodeToJSON(), isExplode: true),
+        ])
 
         let localVariableNillableHeaders: [String: Any?] = [
             :

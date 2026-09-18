@@ -4,7 +4,12 @@ from django.db.models import Avg, Count, Q
 from django.http import FileResponse
 from django.utils import timezone
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+    extend_schema_view,
+)
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -80,6 +85,13 @@ def _request_id(request):
     return getattr(request, "request_id", "")
 
 
+def _filter(name, description):
+    """Declare an optional query filter. Every one below is already honoured by its view."""
+    return OpenApiParameter(
+        name, str, OpenApiParameter.QUERY, required=False, description=description
+    )
+
+
 def _validation_error(exc):
     if hasattr(exc, "message_dict"):
         return ValidationError(exc.message_dict)
@@ -129,7 +141,13 @@ class ApplicationListView(AdminView):
         operation_id="adminReviewsList",
         tags=["Admin Reviews"],
         summary="List facility applications awaiting or past review",
-        description="Capped at 200 rows.",
+        description="Capped at 200 rows. Every filter is optional and combines with the rest.",
+        parameters=[
+            _filter("kind", "Application kind, for example REGISTRATION or REVERIFICATION."),
+            _filter("status", "Application status, for example SUBMITTED or APPROVED."),
+            _filter("province", "Province id of the facility the application belongs to."),
+            _filter("category", "Category id of the facility the application belongs to."),
+        ],
         responses={200: AppList, **protected()},
     )
     def get(self, request):
@@ -288,7 +306,13 @@ class FacilityListView(AdminView):
         operation_id="adminFacilitiesList",
         tags=["Admin Facilities"],
         summary="List facilities for operations",
-        description="Capped at 250 rows.",
+        description="Capped at 250 rows. Every filter is optional and combines with the rest.",
+        parameters=[
+            _filter("status", "Facility status, for example ACTIVE or SUSPENDED."),
+            _filter("province", "Province id."),
+            _filter("category", "Category id."),
+            _filter("q", "Free text matched against the Arabic and English facility names."),
+        ],
         responses={200: AdminFacilityListSerializer, **protected()},
     )
     def get(self, request):
@@ -408,7 +432,17 @@ class UserListView(AdminView):
         operation_id="adminUsersList",
         tags=["Admin Users"],
         summary="Search user accounts",
-        description="Password hashes and session secret material are never returned.",
+        description=(
+            "Password hashes and session secret material are never returned. Capped at 250 "
+            "rows. Both filters are optional."
+        ),
+        parameters=[
+            _filter("q", "Free text matched against the account name and phone number."),
+            _filter(
+                "status",
+                "`active` keeps active accounts; any other value keeps blocked accounts.",
+            ),
+        ],
         responses={200: AdminUserListSerializer, **protected()},
     )
     def get(self, request):
@@ -876,7 +910,19 @@ class AuditListView(AdminView):
         operation_id="adminAuditList",
         tags=["Admin Audit"],
         summary="Search the audit trail",
-        description="Capped at 250 rows. Snapshots and metadata are stored redacted.",
+        description=(
+            "Capped at 250 rows. Snapshots and metadata are stored redacted. Every filter "
+            "is optional and combines with the rest."
+        ),
+        parameters=[
+            _filter("actor", "Actor user id."),
+            _filter("action", "Substring matched against the action code, case-insensitive."),
+            _filter(
+                "resource",
+                "Substring matched against the target type, or an exact target id.",
+            ),
+            _filter("requestId", "Exact request correlation id, as returned in an error body."),
+        ],
         responses={200: AdminAuditListSerializer, **protected()},
     )
     def get(self, request):

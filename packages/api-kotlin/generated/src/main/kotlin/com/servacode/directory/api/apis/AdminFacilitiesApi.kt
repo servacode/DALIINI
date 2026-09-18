@@ -16,16 +16,20 @@ interface AdminFacilitiesApi {
     /**
      * GET api/v1/admin/facilities/
      * List facilities for operations
-     * Capped at 250 rows.
+     * Capped at 250 rows. Every filter is optional and combines with the rest.
      * Responses:
      *  - 200: 
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *
+     * @param category Category id. (optional)
+     * @param province Province id. (optional)
+     * @param q Free text matched against the Arabic and English facility names. (optional)
+     * @param status Facility status, for example ACTIVE or SUSPENDED. (optional)
      * @return [AdminFacilityList]
      */
     @GET("api/v1/admin/facilities/")
-    suspend fun adminFacilitiesList(): Response<AdminFacilityList>
+    suspend fun adminFacilitiesList(@Query("category") category: kotlin.String? = null, @Query("province") province: kotlin.String? = null, @Query("q") q: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminFacilityList>
 
     /**
      * POST api/v1/admin/facilities/{facility_id}/close/

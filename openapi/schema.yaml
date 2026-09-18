@@ -302,8 +302,30 @@ paths:
   /api/v1/admin/applications/:
     get:
       operationId: adminReviewsList
-      description: Capped at 200 rows.
+      description: Capped at 200 rows. Every filter is optional and combines with
+        the rest.
       summary: List facility applications awaiting or past review
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Category id of the facility the application belongs to.
+      - in: query
+        name: kind
+        schema:
+          type: string
+        description: Application kind, for example REGISTRATION or REVERIFICATION.
+      - in: query
+        name: province
+        schema:
+          type: string
+        description: Province id of the facility the application belongs to.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Application status, for example SUBMITTED or APPROVED.
       tags:
       - Admin Reviews
       security:
@@ -500,7 +522,30 @@ paths:
     get:
       operationId: adminAuditList
       description: Capped at 250 rows. Snapshots and metadata are stored redacted.
+        Every filter is optional and combines with the rest.
       summary: Search the audit trail
+      parameters:
+      - in: query
+        name: action
+        schema:
+          type: string
+        description: Substring matched against the action code, case-insensitive.
+      - in: query
+        name: actor
+        schema:
+          type: string
+        description: Actor user id.
+      - in: query
+        name: requestId
+        schema:
+          type: string
+        description: Exact request correlation id, as returned in an error body.
+      - in: query
+        name: resource
+        schema:
+          type: string
+        description: Substring matched against the target type, or an exact target
+          id.
       tags:
       - Admin Audit
       security:
@@ -779,8 +824,30 @@ paths:
   /api/v1/admin/facilities/:
     get:
       operationId: adminFacilitiesList
-      description: Capped at 250 rows.
+      description: Capped at 250 rows. Every filter is optional and combines with
+        the rest.
       summary: List facilities for operations
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Category id.
+      - in: query
+        name: province
+        schema:
+          type: string
+        description: Province id.
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Free text matched against the Arabic and English facility names.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Facility status, for example ACTIVE or SUSPENDED.
       tags:
       - Admin Facilities
       security:
@@ -1247,7 +1314,20 @@ paths:
     get:
       operationId: adminUsersList
       description: Password hashes and session secret material are never returned.
+        Capped at 250 rows. Both filters are optional.
       summary: Search user accounts
+      parameters:
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Free text matched against the account name and phone number.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: '`active` keeps active accounts; any other value keeps blocked
+          accounts.'
       tags:
       - Admin Users
       security:

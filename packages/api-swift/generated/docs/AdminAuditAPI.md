@@ -9,21 +9,25 @@ Method | HTTP request | Description
 
 # **adminAuditList**
 ```swift
-    open class func adminAuditList(completion: @escaping (_ data: AdminAuditList?, _ error: Error?) -> Void)
+    open class func adminAuditList(action: String? = nil, actor: String? = nil, requestId: String? = nil, resource: String? = nil, completion: @escaping (_ data: AdminAuditList?, _ error: Error?) -> Void)
 ```
 
 Search the audit trail
 
-Capped at 250 rows. Snapshots and metadata are stored redacted.
+Capped at 250 rows. Snapshots and metadata are stored redacted. Every filter is optional and combines with the rest.
 
 ### Example
 ```swift
 // The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
 import ServaDirectoryAPI
 
+let action = "action_example" // String | Substring matched against the action code, case-insensitive. (optional)
+let actor = "actor_example" // String | Actor user id. (optional)
+let requestId = "requestId_example" // String | Exact request correlation id, as returned in an error body. (optional)
+let resource = "resource_example" // String | Substring matched against the target type, or an exact target id. (optional)
 
 // Search the audit trail
-AdminAuditAPI.adminAuditList() { (response, error) in
+AdminAuditAPI.adminAuditList(action: action, actor: actor, requestId: requestId, resource: resource) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -36,7 +40,13 @@ AdminAuditAPI.adminAuditList() { (response, error) in
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **action** | **String** | Substring matched against the action code, case-insensitive. | [optional] 
+ **actor** | **String** | Actor user id. | [optional] 
+ **requestId** | **String** | Exact request correlation id, as returned in an error body. | [optional] 
+ **resource** | **String** | Substring matched against the target type, or an exact target id. | [optional] 
 
 ### Return type
 

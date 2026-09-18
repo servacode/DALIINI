@@ -215,21 +215,25 @@ Name | Type | Description  | Notes
 
 # **adminReviewsList**
 ```swift
-    open class func adminReviewsList(completion: @escaping (_ data: AdminApplicationList?, _ error: Error?) -> Void)
+    open class func adminReviewsList(category: String? = nil, kind: String? = nil, province: String? = nil, status: String? = nil, completion: @escaping (_ data: AdminApplicationList?, _ error: Error?) -> Void)
 ```
 
 List facility applications awaiting or past review
 
-Capped at 200 rows.
+Capped at 200 rows. Every filter is optional and combines with the rest.
 
 ### Example
 ```swift
 // The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
 import ServaDirectoryAPI
 
+let category = "category_example" // String | Category id of the facility the application belongs to. (optional)
+let kind = "kind_example" // String | Application kind, for example REGISTRATION or REVERIFICATION. (optional)
+let province = "province_example" // String | Province id of the facility the application belongs to. (optional)
+let status = "status_example" // String | Application status, for example SUBMITTED or APPROVED. (optional)
 
 // List facility applications awaiting or past review
-AdminReviewsAPI.adminReviewsList() { (response, error) in
+AdminReviewsAPI.adminReviewsList(category: category, kind: kind, province: province, status: status) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -242,7 +246,13 @@ AdminReviewsAPI.adminReviewsList() { (response, error) in
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **category** | **String** | Category id of the facility the application belongs to. | [optional] 
+ **kind** | **String** | Application kind, for example REGISTRATION or REVERIFICATION. | [optional] 
+ **province** | **String** | Province id of the facility the application belongs to. | [optional] 
+ **status** | **String** | Application status, for example SUBMITTED or APPROVED. | [optional] 
 
 ### Return type
 

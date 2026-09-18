@@ -220,28 +220,36 @@ open class AdminUsersAPI {
     /**
      Search user accounts
      
+     - parameter q: (query) Free text matched against the account name and phone number. (optional)
+     - parameter status: (query) &#x60;active&#x60; keeps active accounts; any other value keeps blocked accounts. (optional)
      - returns: AdminUserList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminUsersList() async throws -> AdminUserList {
-        return try await adminUsersListWithRequestBuilder().execute().body
+    open class func adminUsersList(q: String? = nil, status: String? = nil) async throws -> AdminUserList {
+        return try await adminUsersListWithRequestBuilder(q: q, status: status).execute().body
     }
 
     /**
      Search user accounts
      - GET /api/v1/admin/users/
-     - Password hashes and session secret material are never returned.
+     - Password hashes and session secret material are never returned. Capped at 250 rows. Both filters are optional.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken
+     - parameter q: (query) Free text matched against the account name and phone number. (optional)
+     - parameter status: (query) &#x60;active&#x60; keeps active accounts; any other value keeps blocked accounts. (optional)
      - returns: RequestBuilder<AdminUserList> 
      */
-    open class func adminUsersListWithRequestBuilder() -> RequestBuilder<AdminUserList> {
+    open class func adminUsersListWithRequestBuilder(q: String? = nil, status: String? = nil) -> RequestBuilder<AdminUserList> {
         let localVariablePath = "/api/v1/admin/users/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
 
-        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "q": (wrappedValue: q?.encodeToJSON(), isExplode: true),
+            "status": (wrappedValue: status?.encodeToJSON(), isExplode: true),
+        ])
 
         let localVariableNillableHeaders: [String: Any?] = [
             :
