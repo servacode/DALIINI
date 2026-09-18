@@ -64,6 +64,31 @@ export const READS = {
     apis.audit.adminAuditList(filled(p, ["actor", "action", "resource", "requestId"])),
 } as const satisfies Record<string, ReadFn>;
 
+/**
+ * Turn the schedule's ISO strings into `Date` objects for the generated client.
+ *
+ * The generated serialisers call `.toISOString()` on date-time fields, so a JSON string
+ * from the browser would throw inside the client and surface as a 502. Only keys that are
+ * present are touched: an absent key must stay absent, because an update is partial, and an
+ * explicit `null` clears the schedule on purpose.
+ */
+function withDates(body: Body, keys: readonly string[]): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...body };
+  for (const key of keys) {
+    if (!(key in body)) continue;
+    const value = body[key];
+    if (value === null || value === undefined || value === "") {
+      out[key] = null;
+      continue;
+    }
+    const parsed = new Date(String(value));
+    out[key] = Number.isNaN(parsed.getTime()) ? value : parsed;
+  }
+  return out;
+}
+
+const SCHEDULE = ["startsAt", "endsAt"] as const;
+
 export const WRITES = {
   reviewApprove: (apis: AdminApis, b: Body) =>
     apis.reviews.adminReviewApprove({
@@ -143,11 +168,11 @@ export const WRITES = {
     }),
 
   adCreate: (apis: AdminApis, b: Body) =>
-    apis.ads.adminAdCreate({ adminAdvertisementRequest: b as never }),
+    apis.ads.adminAdCreate({ adminAdvertisementRequest: withDates(b, SCHEDULE) as never }),
   adUpdate: (apis: AdminApis, b: Body) =>
     apis.ads.adminAdUpdate({
       advertisementId: String(b.id),
-      adminAdvertisementUpdateRequest: b,
+      adminAdvertisementUpdateRequest: withDates(b, SCHEDULE),
     }),
   adDelete: (apis: AdminApis, b: Body) =>
     apis.ads.adminAdDelete({ advertisementId: String(b.id) }),

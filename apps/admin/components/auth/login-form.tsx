@@ -1,15 +1,22 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useRef, useState } from "react";
+import { useId, useRef, useState, useSyncExternalStore } from "react";
 
-type FieldErrors = Readonly<Record<string, readonly string[]>>;
+import { type ApiErrorBody, fieldErrorsFor, messageFor } from "../../lib/errors/messages";
 
-type ErrorBody = Readonly<{
-  code?: string;
-  message?: string;
-  details?: FieldErrors;
-}>;
+type FieldErrors = Readonly<Record<string, string>>;
+
+// True only once React owns the page. On the server and during hydration the snapshot is
+// false, so the submit button renders disabled until the handler below is attached.
+const subscribeNever = () => () => undefined;
+function useHydrated(): boolean {
+  return useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false,
+  );
+}
 
 /**
  * The sign-in form.
@@ -18,13 +25,21 @@ type ErrorBody = Readonly<{
  * and the session arrives as `HttpOnly` cookies the page cannot read. Nothing is written to
  * `localStorage` or `sessionStorage`.
  *
- * What it shows on failure is the `message` from the error envelope and the `details` map
- * keyed by field. Neither carries a stack trace, an upstream URL, a token or an exception
- * class — the BFF replaces anything it does not recognise with a generic message before it
- * gets here.
+ * Failures go through the central mapper in `lib/errors/messages.ts`, like every other
+ * screen, so a wrong password reads the same here as anywhere else a credential is refused.
+ * An earlier version printed the backend `message` directly and so bypassed that mapper.
+ *
+ * Two guards against the page being used before React has hydrated it. A click that lands
+ * before the `onSubmit` handler is attached makes the browser submit the form itself, and a
+ * form with no method submits by GET — which put the phone number and the password in the
+ * URL, and from there into history, logs and any proxy in between. The first Playwright run
+ * under load produced exactly that. So the form declares `method="post"`, which keeps the
+ * credentials out of the URL even if JavaScript never runs, and the submit button stays
+ * disabled until hydration completes, so the native path is not reachable at all.
  */
 export function LoginForm() {
   const router = useRouter();
+  const hydrated = useHydrated();
   const phoneId = useId();
   const passwordId = useId();
   const errorId = useId();
@@ -64,23 +79,25 @@ export function LoginForm() {
         return;
       }
 
-      const body = (await response.json().catch(() => ({}))) as ErrorBody;
-      setFieldErrors(body.details ?? {});
-      setFormError(body.message ?? "تعذر تسجيل الدخول. حاول مرة أخرى.");
+      const body = (await response.json().catch(() => null)) as ApiErrorBody | null;
+      setFieldErrors(fieldErrorsFor(body));
+      setFormError(messageFor(body));
       formErrorRef.current?.focus();
     } catch {
-      setFormError("تعذر الاتصال بالخادم. تحقق من الشبكة وحاول مرة أخرى.");
+      setFormError(
+        messageFor({ code: "NETWORK_UNAVAILABLE", message: "", details: {}, requestId: "" }),
+      );
       formErrorRef.current?.focus();
     } finally {
       setPending(false);
     }
   }
 
-  const phoneErrors = fieldErrors.phone ?? [];
-  const passwordErrors = fieldErrors.password ?? [];
+  const phoneError = fieldErrors.phone ?? "";
+  const passwordError = fieldErrors.password ?? "";
 
   return (
-    <form className="login-form" onSubmit={onSubmit} noValidate>
+    <form className="login-form" method="post" onSubmit={onSubmit} noValidate>
       {formError ? (
         <p
           className="form-error"
@@ -105,13 +122,13 @@ export function LoginForm() {
           autoComplete="username"
           required
           disabled={pending}
-          aria-invalid={phoneErrors.length > 0}
-          aria-describedby={phoneErrors.length > 0 ? `${phoneId}-error` : undefined}
+          aria-invalid={Boolean(phoneError)}
+          aria-describedby={phoneError ? `${phoneId}-error` : undefined}
           data-testid="login-phone"
         />
-        {phoneErrors.length > 0 ? (
+        {phoneError ? (
           <p className="field-error" id={`${phoneId}-error`}>
-            {phoneErrors.join(" ")}
+            {phoneError}
           </p>
         ) : null}
       </div>
@@ -125,18 +142,23 @@ export function LoginForm() {
           autoComplete="current-password"
           required
           disabled={pending}
-          aria-invalid={passwordErrors.length > 0}
-          aria-describedby={passwordErrors.length > 0 ? `${passwordId}-error` : undefined}
+          aria-invalid={Boolean(passwordError)}
+          aria-describedby={passwordError ? `${passwordId}-error` : undefined}
           data-testid="login-password"
         />
-        {passwordErrors.length > 0 ? (
+        {passwordError ? (
           <p className="field-error" id={`${passwordId}-error`}>
-            {passwordErrors.join(" ")}
+            {passwordError}
           </p>
         ) : null}
       </div>
 
-      <button type="submit" className="button-primary" disabled={pending} data-testid="login-submit">
+      <button
+        type="submit"
+        className="button-primary"
+        disabled={pending || !hydrated}
+        data-testid="login-submit"
+      >
         {pending ? "جارٍ تسجيل الدخول…" : "تسجيل الدخول"}
       </button>
 
