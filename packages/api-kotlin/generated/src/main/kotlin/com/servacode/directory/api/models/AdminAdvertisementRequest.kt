@@ -35,6 +35,8 @@ import kotlinx.serialization.Contextual
  * @param targetScope 
  * @param provinceId 
  * @param categoryId 
+ * @param startsAt 
+ * @param endsAt 
  * @param enabled 
  * @param sortOrder 
  * @param slideDurationMs 
@@ -72,6 +74,12 @@ data class AdminAdvertisementRequest (
 
     @Contextual @SerialName(value = "categoryId")
     val categoryId: java.util.UUID? = null,
+
+    @Contextual @SerialName(value = "startsAt")
+    val startsAt: java.time.OffsetDateTime? = null,
+
+    @Contextual @SerialName(value = "endsAt")
+    val endsAt: java.time.OffsetDateTime? = null,
 
     @SerialName(value = "enabled")
     val enabled: kotlin.Boolean? = false,

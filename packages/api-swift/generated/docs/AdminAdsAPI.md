@@ -24,7 +24,7 @@ Requires the manage permission, which is re-checked inside the handler. Action p
 // The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
 import ServaDirectoryAPI
 
-let adminAdvertisementRequest = AdminAdvertisementRequest(imageKey: "imageKey_example", titleAr: "titleAr_example", titleEn: "titleEn_example", subtitleAr: "subtitleAr_example", subtitleEn: "subtitleEn_example", actionType: AdvertisementActionTypeEnum(), actionPayload: "TODO", targetScope: AdvertisementTargetScopeEnum(), provinceId: 123, categoryId: 123, enabled: false, sortOrder: 123, slideDurationMs: 123) // AdminAdvertisementRequest | 
+let adminAdvertisementRequest = AdminAdvertisementRequest(imageKey: "imageKey_example", titleAr: "titleAr_example", titleEn: "titleEn_example", subtitleAr: "subtitleAr_example", subtitleEn: "subtitleEn_example", actionType: AdvertisementActionTypeEnum(), actionPayload: "TODO", targetScope: AdvertisementTargetScopeEnum(), provinceId: 123, categoryId: 123, startsAt: Date(), endsAt: Date(), enabled: false, sortOrder: 123, slideDurationMs: 123) // AdminAdvertisementRequest | 
 
 // Create an advertisement
 AdminAdsAPI.adminAdCreate(adminAdvertisementRequest: adminAdvertisementRequest) { (response, error) in

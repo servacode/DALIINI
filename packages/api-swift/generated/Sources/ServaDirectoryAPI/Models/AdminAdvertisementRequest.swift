@@ -22,11 +22,13 @@ public struct AdminAdvertisementRequest: Codable, JSONEncodable, Hashable {
     public var targetScope: AdvertisementTargetScopeEnum?
     public var provinceId: UUID?
     public var categoryId: UUID?
+    public var startsAt: Date?
+    public var endsAt: Date?
     public var enabled: Bool? = false
     public var sortOrder: Int? = 0
     public var slideDurationMs: Int? = 5000
 
-    public init(imageKey: String, titleAr: String? = nil, titleEn: String? = nil, subtitleAr: String? = nil, subtitleEn: String? = nil, actionType: AdvertisementActionTypeEnum? = nil, actionPayload: [String: AnyCodable]? = nil, targetScope: AdvertisementTargetScopeEnum? = nil, provinceId: UUID? = nil, categoryId: UUID? = nil, enabled: Bool? = false, sortOrder: Int? = 0, slideDurationMs: Int? = 5000) {
+    public init(imageKey: String, titleAr: String? = nil, titleEn: String? = nil, subtitleAr: String? = nil, subtitleEn: String? = nil, actionType: AdvertisementActionTypeEnum? = nil, actionPayload: [String: AnyCodable]? = nil, targetScope: AdvertisementTargetScopeEnum? = nil, provinceId: UUID? = nil, categoryId: UUID? = nil, startsAt: Date? = nil, endsAt: Date? = nil, enabled: Bool? = false, sortOrder: Int? = 0, slideDurationMs: Int? = 5000) {
         self.imageKey = imageKey
         self.titleAr = titleAr
         self.titleEn = titleEn
@@ -37,6 +39,8 @@ public struct AdminAdvertisementRequest: Codable, JSONEncodable, Hashable {
         self.targetScope = targetScope
         self.provinceId = provinceId
         self.categoryId = categoryId
+        self.startsAt = startsAt
+        self.endsAt = endsAt
         self.enabled = enabled
         self.sortOrder = sortOrder
         self.slideDurationMs = slideDurationMs
@@ -53,6 +57,8 @@ public struct AdminAdvertisementRequest: Codable, JSONEncodable, Hashable {
         case targetScope
         case provinceId
         case categoryId
+        case startsAt
+        case endsAt
         case enabled
         case sortOrder
         case slideDurationMs
@@ -72,6 +78,8 @@ public struct AdminAdvertisementRequest: Codable, JSONEncodable, Hashable {
         try container.encodeIfPresent(targetScope, forKey: .targetScope)
         try container.encodeIfPresent(provinceId, forKey: .provinceId)
         try container.encodeIfPresent(categoryId, forKey: .categoryId)
+        try container.encodeIfPresent(startsAt, forKey: .startsAt)
+        try container.encodeIfPresent(endsAt, forKey: .endsAt)
         try container.encodeIfPresent(enabled, forKey: .enabled)
         try container.encodeIfPresent(sortOrder, forKey: .sortOrder)
         try container.encodeIfPresent(slideDurationMs, forKey: .slideDurationMs)

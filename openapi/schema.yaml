@@ -4416,6 +4416,14 @@ components:
           type: string
           format: uuid
           nullable: true
+        startsAt:
+          type: string
+          format: date-time
+          nullable: true
+        endsAt:
+          type: string
+          format: date-time
+          nullable: true
         enabled:
           type: boolean
           default: false

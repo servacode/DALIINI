@@ -96,6 +96,18 @@ export interface AdminAdvertisementRequest {
     categoryId?: string | null;
     /**
      * 
+     * @type {Date}
+     * @memberof AdminAdvertisementRequest
+     */
+    startsAt?: Date | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof AdminAdvertisementRequest
+     */
+    endsAt?: Date | null;
+    /**
+     * 
      * @type {boolean}
      * @memberof AdminAdvertisementRequest
      */
@@ -144,6 +156,8 @@ export function AdminAdvertisementRequestFromJSONTyped(json: any, ignoreDiscrimi
         'targetScope': json['targetScope'] == null ? undefined : AdvertisementTargetScopeEnumFromJSON(json['targetScope']),
         'provinceId': json['provinceId'] == null ? undefined : json['provinceId'],
         'categoryId': json['categoryId'] == null ? undefined : json['categoryId'],
+        'startsAt': json['startsAt'] == null ? undefined : (new Date(json['startsAt'])),
+        'endsAt': json['endsAt'] == null ? undefined : (new Date(json['endsAt'])),
         'enabled': json['enabled'] == null ? undefined : json['enabled'],
         'sortOrder': json['sortOrder'] == null ? undefined : json['sortOrder'],
         'slideDurationMs': json['slideDurationMs'] == null ? undefined : json['slideDurationMs'],
@@ -171,6 +185,8 @@ export function AdminAdvertisementRequestToJSONTyped(value?: AdminAdvertisementR
         'targetScope': AdvertisementTargetScopeEnumToJSON(value['targetScope']),
         'provinceId': value['provinceId'],
         'categoryId': value['categoryId'],
+        'startsAt': value['startsAt'] === null ? null : ((value['startsAt'] as any)?.toISOString()),
+        'endsAt': value['endsAt'] === null ? null : ((value['endsAt'] as any)?.toISOString()),
         'enabled': value['enabled'],
         'sortOrder': value['sortOrder'],
         'slideDurationMs': value['slideDurationMs'],

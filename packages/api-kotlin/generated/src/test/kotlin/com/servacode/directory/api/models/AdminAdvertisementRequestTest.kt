@@ -87,6 +87,18 @@ class AdminAdvertisementRequestTest : ShouldSpec() {
             //modelInstance.categoryId shouldBe ("TODO")
         }
 
+        // to test the property `startsAt`
+        should("test startsAt") {
+            // uncomment below to test the property
+            //modelInstance.startsAt shouldBe ("TODO")
+        }
+
+        // to test the property `endsAt`
+        should("test endsAt") {
+            // uncomment below to test the property
+            //modelInstance.endsAt shouldBe ("TODO")
+        }
+
         // to test the property `enabled`
         should("test enabled") {
             // uncomment below to test the property

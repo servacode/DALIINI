@@ -13,6 +13,8 @@ Name | Type | Description | Notes
 **targetScope** | [**AdvertisementTargetScopeEnum**](AdvertisementTargetScopeEnum.md) |  | [optional] 
 **provinceId** | **UUID** |  | [optional] 
 **categoryId** | **UUID** |  | [optional] 
+**startsAt** | **Date** |  | [optional] 
+**endsAt** | **Date** |  | [optional] 
 **enabled** | **Bool** |  | [optional] [default to false]
 **sortOrder** | **Int** |  | [optional] [default to 0]
 **slideDurationMs** | **Int** |  | [optional] [default to 5000]
