@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import secrets
 from datetime import timedelta
+from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -37,16 +38,16 @@ def _new_refresh_for(session: UserSession) -> str:
     return f"{session.pk}.{secrets.token_urlsafe(48)}"
 
 
-def _session_payload(user: User, session: UserSession, raw_refresh: str) -> dict:
+def _session_payload(user: User, session: UserSession, raw_refresh: str) -> dict[str, Any]:
     return {
-        "accessToken": issue_access_token(user.pk),
+        "accessToken": issue_access_token(user.pk, session.pk),
         "refreshToken": raw_refresh,
         "sessionId": str(session.pk),
         "expiresAt": session.expires_at.isoformat(),
     }
 
 
-def create_session(*, user: User, platform: str, device_name: str) -> dict:
+def create_session(*, user: User, platform: str, device_name: str) -> dict[str, Any]:
     session = UserSession.objects.create(
         user=user,
         refresh_digest="pending-" + secrets.token_hex(32),
@@ -135,15 +136,30 @@ def complete_registration(*, challenge_id, password: str, platform: str, device_
     return create_session(user=user, platform=platform, device_name=device_name)
 
 
-def login(*, phone: str, password: str, platform: str, device_name: str) -> dict:
+def login(*, phone: str, password: str, platform: str, device_name: str) -> dict[str, Any]:
     user = authenticate(phone=phone, password=password)
     if user is None or not user.is_active:
         raise AuthenticationFailed("Invalid credentials.")
     return create_session(user=user, platform=platform, device_name=device_name)
 
 
+def rotate_refresh(*, raw_refresh: str) -> dict[str, Any]:
+    """Rotate a refresh secret, or record a replay and refuse it.
+
+    A replay has to revoke every session of the user, and that write has to survive the
+    refusal. Raising inside the atomic block rolled it back, so a replayed secret was
+    refused and nothing was revoked (INT-054). The refusal is therefore raised only after
+    the transaction that records the compromise has committed.
+    """
+    outcome = _rotate_refresh(raw_refresh=raw_refresh)
+    if outcome is None:
+        raise AuthenticationFailed("Invalid refresh token.")
+    return outcome
+
+
 @transaction.atomic
-def rotate_refresh(*, raw_refresh: str) -> dict:
+def _rotate_refresh(*, raw_refresh: str) -> dict[str, Any] | None:
+    """Rotate inside one transaction; None means a replay was detected and recorded."""
     try:
         session_id, _ = raw_refresh.split(".", 1)
     except ValueError as exc:
@@ -183,7 +199,7 @@ def rotate_refresh(*, raw_refresh: str) -> dict:
             user=session.user,
             revoked_at__isnull=True,
         ).update(revoked_at=now)
-        raise AuthenticationFailed("Invalid refresh token.")
+        return None
     raw_new = _new_refresh_for(session)
     session.previous_refresh_digest = session.refresh_digest
     session.previous_valid_until = now + REFRESH_GRACE

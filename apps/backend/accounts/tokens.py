@@ -5,6 +5,7 @@ import hashlib
 import hmac
 import json
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from django.conf import settings
 
@@ -22,11 +23,18 @@ def _key() -> bytes:
     return settings.ACCESS_TOKEN_SIGNING_KEY.encode("utf-8")
 
 
-def issue_access_token(user_id, ttl_seconds=900) -> str:
+def issue_access_token(user_id: object, session_id: object, ttl_seconds: int = 900) -> str:
+    """Sign a short-lived access token bound to the session that issued it.
+
+    `sid` is what lets a revoked or compromised session stop working at once. Without it
+    an access token outlived its session by up to `ttl_seconds`, and a WebSocket that
+    authenticated with one stayed authenticated (INT-051).
+    """
     now = datetime.now(UTC)
     header = {"alg": "HS256", "typ": "JWT"}
     payload = {
         "sub": str(user_id),
+        "sid": str(session_id),
         "iat": int(now.timestamp()),
         "exp": int((now + timedelta(seconds=ttl_seconds)).timestamp()),
     }
@@ -37,7 +45,7 @@ def issue_access_token(user_id, ttl_seconds=900) -> str:
     return f"{encoded_header}.{encoded_payload}.{signature}"
 
 
-def decode_access_token(token: str):
+def decode_access_token(token: str) -> dict[str, Any] | None:
     try:
         encoded_header, encoded_payload, encoded_signature = token.split(".")
         message = f"{encoded_header}.{encoded_payload}".encode("ascii")
@@ -47,11 +55,11 @@ def decode_access_token(token: str):
             return None
         header = json.loads(_unb64(encoded_header))
         claims = json.loads(_unb64(encoded_payload))
-        if header != {"alg": "HS256", "typ": "JWT"}:
+        if header != {"alg": "HS256", "typ": "JWT"} or not isinstance(claims, dict):
             return None
         if int(claims["exp"]) <= int(datetime.now(UTC).timestamp()):
             return None
-        if not isinstance(claims.get("sub"), str):
+        if not isinstance(claims.get("sub"), str) or not isinstance(claims.get("sid"), str):
             return None
         return claims
     except (KeyError, TypeError, ValueError, json.JSONDecodeError):

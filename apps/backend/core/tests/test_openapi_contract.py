@@ -9,13 +9,15 @@ import collections
 import hashlib
 import io
 import pathlib
+from collections.abc import Iterator
+from typing import Any
 
 import pytest
 import yaml
 from django.core.management import call_command
 
 
-def _repo_root():
+def _repo_root() -> pathlib.Path:
     """Locate the directory that holds the canonical contract.
 
     Walking up rather than counting parents keeps the tests working both in the
@@ -93,30 +95,30 @@ FORBIDDEN_SCHEMA_TOKENS = [
 ]
 
 
-def generate_schema():
+def generate_schema() -> str:
     buffer = io.StringIO()
     call_command("spectacular", "--format", "openapi", stdout=buffer)
     return buffer.getvalue()
 
 
 @pytest.fixture(scope="module")
-def schema():
+def schema() -> Any:
     return yaml.safe_load(generate_schema())
 
 
-def operations(schema):
+def operations(schema: dict[str, Any]) -> Iterator[tuple[str, str, dict[str, Any]]]:
     for path, item in schema["paths"].items():
         for method, operation in item.items():
             if method in HTTP_METHODS:
                 yield path, method, operation
 
 
-def test_schema_generates_and_has_paths(schema):
+def test_schema_generates_and_has_paths(schema: dict[str, Any]) -> None:
     assert schema["paths"], "the schema carries no paths"
     assert len(list(operations(schema))) >= 80
 
 
-def test_component_schemas_exist(schema):
+def test_component_schemas_exist(schema: dict[str, Any]) -> None:
     schemas = schema.get("components", {}).get("schemas", {})
     assert len(schemas) >= 100, (
         "the contract must carry real component schemas; a generated client built from a "
@@ -124,18 +126,18 @@ def test_component_schemas_exist(schema):
     )
 
 
-def test_operation_ids_are_unique_and_named(schema):
+def test_operation_ids_are_unique_and_named(schema: dict[str, Any]) -> None:
     ids = [operation.get("operationId") for _, _, operation in operations(schema)]
     assert all(ids), "every operation needs an explicit operationId"
     duplicates = {name: count for name, count in collections.Counter(ids).items() if count > 1}
     assert not duplicates, f"duplicate operationIds: {duplicates}"
-    suffixed = [name for name in ids if name[-1].isdigit() and name[-2] == "_"]
+    suffixed = [name for name in ids if name and name[-1].isdigit() and name[-2] == "_"]
     assert not suffixed, (
         f"numeral-suffixed operationIds indicate an unresolved collision: {suffixed}"
     )
 
 
-def test_mutations_carry_a_request_schema(schema):
+def test_mutations_carry_a_request_schema(schema: dict[str, Any]) -> None:
     missing = [
         (path, method)
         for path, method, operation in operations(schema)
@@ -146,8 +148,8 @@ def test_mutations_carry_a_request_schema(schema):
     assert not missing, f"mutations without a request schema: {missing}"
 
 
-def test_successful_responses_carry_a_schema(schema):
-    missing = []
+def test_successful_responses_carry_a_schema(schema: dict[str, Any]) -> None:
+    missing: list[tuple[str, str]] = []
     for path, method, operation in operations(schema):
         if (path, method) in NO_CONTENT_OPERATIONS:
             continue
@@ -162,7 +164,9 @@ def test_successful_responses_carry_a_schema(schema):
     assert not missing, f"successful responses without a schema: {missing}"
 
 
-def _request_components(schema):
+def _request_components(
+    schema: dict[str, Any],
+) -> Iterator[tuple[str, str, str, dict[str, Any]]]:
     """Yield (operationId, media type, component name, component) for every request body."""
     components = schema["components"]["schemas"]
     for _, _, operation in operations(schema):
@@ -175,7 +179,7 @@ def _request_components(schema):
                 yield operation["operationId"], media_type, name, components[name]
 
 
-def test_upload_parts_are_binary(schema):
+def test_upload_parts_are_binary(schema: dict[str, Any]) -> None:
     """A file part must be bytes on the wire (INT-048).
 
     Described as `format: uri`, the Kotlin and Swift generators typed the part as a URI and
@@ -191,7 +195,7 @@ def test_upload_parts_are_binary(schema):
     assert not wrong, f"multipart parts described as a URI rather than binary: {wrong}"
 
 
-def test_request_bodies_do_not_require_server_assigned_fields(schema):
+def test_request_bodies_do_not_require_server_assigned_fields(schema: dict[str, Any]) -> None:
     """A client cannot be made to supply a value only the server assigns (INT-049).
 
     Duty shifts and temporary closures reused their response component as the request, so
@@ -207,7 +211,7 @@ def test_request_bodies_do_not_require_server_assigned_fields(schema):
     assert not wrong, f"request bodies requiring a read-only field: {sorted(set(wrong))}"
 
 
-def test_every_enum_has_a_value(schema):
+def test_every_enum_has_a_value(schema: dict[str, Any]) -> None:
     """An enum of nothing but null does not compile in the Kotlin client (INT-052).
 
     drf-spectacular described nullable choice fields as `oneOf: [<Enum>, NullEnum]`, and
@@ -221,7 +225,7 @@ def test_every_enum_has_a_value(schema):
     assert not empty, f"enum components without a non-null value: {empty}"
 
 
-def test_bearer_security_scheme_is_declared(schema):
+def test_bearer_security_scheme_is_declared(schema: dict[str, Any]) -> None:
     schemes = schema.get("components", {}).get("securitySchemes", {})
     assert "bearerAccessToken" in schemes, "the access-token scheme is missing"
     scheme = schemes["bearerAccessToken"]
@@ -229,8 +233,8 @@ def test_bearer_security_scheme_is_declared(schema):
     assert scheme["scheme"] == "bearer"
 
 
-def test_public_operations_do_not_require_authentication(schema):
-    offenders = []
+def test_public_operations_do_not_require_authentication(schema: dict[str, Any]) -> None:
+    offenders: list[tuple[str, ...]] = []
     for path, method, operation in operations(schema):
         public = path.startswith(PUBLIC_PREFIXES) or (path, method) in PUBLIC_EXTRA
         if not public:
@@ -241,8 +245,8 @@ def test_public_operations_do_not_require_authentication(schema):
     assert not offenders, f"public operations must stay reachable without a token: {offenders}"
 
 
-def test_protected_operations_require_authentication(schema):
-    offenders = []
+def test_protected_operations_require_authentication(schema: dict[str, Any]) -> None:
+    offenders: list[tuple[str, ...]] = []
     for path, method, operation in operations(schema):
         protected = path.startswith(("/api/v1/admin/", "/api/v1/owner/", "/api/v1/account/"))
         if not protected:
@@ -255,13 +259,13 @@ def test_protected_operations_require_authentication(schema):
     assert not offenders, f"protected operations must require the access token: {offenders}"
 
 
-def test_schema_does_not_leak_internal_fields():
+def test_schema_does_not_leak_internal_fields() -> None:
     document = generate_schema()
     leaked = [token for token in FORBIDDEN_SCHEMA_TOKENS if token in document]
     assert not leaked, f"the contract exposes internal or secret field names: {leaked}"
 
 
-def test_committed_schema_matches_the_source():
+def test_committed_schema_matches_the_source() -> None:
     assert CANONICAL_SCHEMA.exists(), "openapi/schema.yaml is not committed"
     generated = generate_schema()
     committed = CANONICAL_SCHEMA.read_text(encoding="utf-8")
@@ -270,14 +274,14 @@ def test_committed_schema_matches_the_source():
     )
 
 
-def test_committed_hash_matches_the_committed_schema():
+def test_committed_hash_matches_the_committed_schema() -> None:
     assert CANONICAL_HASH.exists(), "openapi/schema.sha256 is not committed"
     recorded = CANONICAL_HASH.read_text(encoding="utf-8").split()[0]
     actual = hashlib.sha256(CANONICAL_SCHEMA.read_bytes()).hexdigest()
     assert recorded == actual, "openapi/schema.sha256 does not describe openapi/schema.yaml"
 
 
-def test_generation_is_deterministic():
+def test_generation_is_deterministic() -> None:
     assert generate_schema() == generate_schema(), (
         "two generations differ, so the drift gate would fail at random"
     )
