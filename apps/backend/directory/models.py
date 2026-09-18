@@ -10,7 +10,11 @@ class CategoryGroup(models.Model):
     sort_order=models.PositiveIntegerField(default=0)
 class Category(models.Model):
     class Specialization(models.TextChoices):
-        GENERIC='GENERIC','Generic'; PHARMACY='PHARMACY','Pharmacy'; DOCTOR='DOCTOR','Doctor'; NURSING='NURSING','Nursing'; MEDICAL_SUPPLIES='MEDICAL_SUPPLIES','Medical supplies'
+        # The canonical list is 01-MASTER-SPECIFICATION.md section 5. It is deliberately short:
+        # a specialization exists only where specialized logic exists, so a laboratory or a
+        # supplies shop is GENERIC. The earlier DOCTOR/NURSING/MEDICAL_SUPPLIES values were
+        # not in that list and were never persisted anywhere; see INT-040.
+        GENERIC='GENERIC','Generic'; PHARMACY='PHARMACY','Pharmacy'; MEDICAL_CLINIC='MEDICAL_CLINIC','Medical clinic'; NURSING_CENTER='NURSING_CENTER','Nursing center'
     id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     group=models.ForeignKey(CategoryGroup,on_delete=models.PROTECT,related_name='categories')
     code=models.CharField(max_length=80,unique=True)
