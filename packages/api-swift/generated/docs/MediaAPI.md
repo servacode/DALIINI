@@ -13,7 +13,7 @@ Method | HTTP request | Description
 
 # **ownerFacilityEvidenceCreate**
 ```swift
-    open class func ownerFacilityEvidenceCreate(facilityId: UUID, requirementId: UUID, file: String, completion: @escaping (_ data: OwnerEvidenceCreated?, _ error: Error?) -> Void)
+    open class func ownerFacilityEvidenceCreate(facilityId: UUID, requirementId: UUID, file: URL, completion: @escaping (_ data: OwnerEvidenceCreated?, _ error: Error?) -> Void)
 ```
 
 Upload private verification evidence
@@ -27,7 +27,7 @@ import ServaDirectoryAPI
 
 let facilityId = 987 // UUID | 
 let requirementId = 987 // UUID | 
-let file = "file_example" // String | 
+let file = URL(string: "https://example.com")! // URL | 
 
 // Upload private verification evidence
 MediaAPI.ownerFacilityEvidenceCreate(facilityId: facilityId, requirementId: requirementId, file: file) { (response, error) in
@@ -48,7 +48,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **facilityId** | **UUID** |  | 
  **requirementId** | **UUID** |  | 
- **file** | **String** |  | 
+ **file** | **URL** |  | 
 
 ### Return type
 
@@ -119,7 +119,7 @@ Void (empty response body)
 
 # **ownerFacilityImageCreate**
 ```swift
-    open class func ownerFacilityImageCreate(facilityId: UUID, file: String, completion: @escaping (_ data: OwnerFacilityImage?, _ error: Error?) -> Void)
+    open class func ownerFacilityImageCreate(facilityId: UUID, file: URL, completion: @escaping (_ data: OwnerFacilityImage?, _ error: Error?) -> Void)
 ```
 
 Upload a public facility image
@@ -132,7 +132,7 @@ Sent as multipart/form-data. The server decodes the file, enforces byte and pixe
 import ServaDirectoryAPI
 
 let facilityId = 987 // UUID | 
-let file = "file_example" // String | 
+let file = URL(string: "https://example.com")! // URL | 
 
 // Upload a public facility image
 MediaAPI.ownerFacilityImageCreate(facilityId: facilityId, file: file) { (response, error) in
@@ -152,7 +152,7 @@ MediaAPI.ownerFacilityImageCreate(facilityId: facilityId, file: file) { (respons
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **facilityId** | **UUID** |  | 
- **file** | **String** |  | 
+ **file** | **URL** |  | 
 
 ### Return type
 

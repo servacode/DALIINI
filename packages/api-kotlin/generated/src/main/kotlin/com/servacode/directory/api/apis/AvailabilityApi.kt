@@ -11,6 +11,7 @@ import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.BusinessHourInput
 import com.servacode.directory.api.models.BusinessHoursList
 import com.servacode.directory.api.models.TemporaryClosure
+import com.servacode.directory.api.models.TemporaryClosureInput
 import com.servacode.directory.api.models.TemporaryClosureList
 
 interface AvailabilityApi {
@@ -63,11 +64,11 @@ interface AvailabilityApi {
      *  - 409: The request conflicts with the current state or with a domain rule.
      *
      * @param facilityId 
-     * @param temporaryClosure 
+     * @param temporaryClosureInput 
      * @return [TemporaryClosure]
      */
     @POST("api/v1/owner/facilities/{facility_id}/temporary-closures/")
-    suspend fun ownerFacilityTemporaryClosureCreate(@Path("facility_id") facilityId: java.util.UUID, @Body temporaryClosure: TemporaryClosure): Response<TemporaryClosure>
+    suspend fun ownerFacilityTemporaryClosureCreate(@Path("facility_id") facilityId: java.util.UUID, @Body temporaryClosureInput: TemporaryClosureInput): Response<TemporaryClosure>
 
     /**
      * GET api/v1/owner/facilities/{facility_id}/temporary-closures/

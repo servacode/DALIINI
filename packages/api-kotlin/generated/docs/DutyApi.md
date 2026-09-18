@@ -26,10 +26,10 @@ val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(DutyApi::class.java)
 val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-val dutyShift : DutyShift =  // DutyShift | 
+val dutyShiftInput : DutyShiftInput =  // DutyShiftInput | 
 
 launch(Dispatchers.IO) {
-    val result : DutyShift = webService.ownerFacilityDutyCreate(facilityId, dutyShift)
+    val result : DutyShift = webService.ownerFacilityDutyCreate(facilityId, dutyShiftInput)
 }
 ```
 
@@ -37,7 +37,7 @@ launch(Dispatchers.IO) {
 | **facilityId** | **java.util.UUID**|  | |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
-| **dutyShift** | [**DutyShift**](DutyShift.md)|  | |
+| **dutyShiftInput** | [**DutyShiftInput**](DutyShiftInput.md)|  | |
 
 ### Return type
 
@@ -151,10 +151,10 @@ apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(DutyApi::class.java)
 val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
 val shiftId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-val patchedDutyShift : PatchedDutyShift =  // PatchedDutyShift | 
+val patchedDutyShiftInput : PatchedDutyShiftInput =  // PatchedDutyShiftInput | 
 
 launch(Dispatchers.IO) {
-    val result : DutyShift = webService.ownerFacilityDutyUpdate(facilityId, shiftId, patchedDutyShift)
+    val result : DutyShift = webService.ownerFacilityDutyUpdate(facilityId, shiftId, patchedDutyShiftInput)
 }
 ```
 
@@ -163,7 +163,7 @@ launch(Dispatchers.IO) {
 | **shiftId** | **java.util.UUID**|  | |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
-| **patchedDutyShift** | [**PatchedDutyShift**](PatchedDutyShift.md)|  | [optional] |
+| **patchedDutyShiftInput** | [**PatchedDutyShiftInput**](PatchedDutyShiftInput.md)|  | [optional] |
 
 ### Return type
 

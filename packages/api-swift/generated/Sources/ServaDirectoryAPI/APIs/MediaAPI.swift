@@ -21,7 +21,7 @@ open class MediaAPI {
      - returns: OwnerEvidenceCreated
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func ownerFacilityEvidenceCreate(facilityId: UUID, requirementId: UUID, file: String) async throws -> OwnerEvidenceCreated {
+    open class func ownerFacilityEvidenceCreate(facilityId: UUID, requirementId: UUID, file: URL) async throws -> OwnerEvidenceCreated {
         return try await ownerFacilityEvidenceCreateWithRequestBuilder(facilityId: facilityId, requirementId: requirementId, file: file).execute().body
     }
 
@@ -37,7 +37,7 @@ open class MediaAPI {
      - parameter file: (form)  
      - returns: RequestBuilder<OwnerEvidenceCreated> 
      */
-    open class func ownerFacilityEvidenceCreateWithRequestBuilder(facilityId: UUID, requirementId: UUID, file: String) -> RequestBuilder<OwnerEvidenceCreated> {
+    open class func ownerFacilityEvidenceCreateWithRequestBuilder(facilityId: UUID, requirementId: UUID, file: URL) -> RequestBuilder<OwnerEvidenceCreated> {
         var localVariablePath = "/api/v1/owner/facilities/{facility_id}/evidence/"
         let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
         let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -119,7 +119,7 @@ open class MediaAPI {
      - returns: OwnerFacilityImage
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func ownerFacilityImageCreate(facilityId: UUID, file: String) async throws -> OwnerFacilityImage {
+    open class func ownerFacilityImageCreate(facilityId: UUID, file: URL) async throws -> OwnerFacilityImage {
         return try await ownerFacilityImageCreateWithRequestBuilder(facilityId: facilityId, file: file).execute().body
     }
 
@@ -134,7 +134,7 @@ open class MediaAPI {
      - parameter file: (form)  
      - returns: RequestBuilder<OwnerFacilityImage> 
      */
-    open class func ownerFacilityImageCreateWithRequestBuilder(facilityId: UUID, file: String) -> RequestBuilder<OwnerFacilityImage> {
+    open class func ownerFacilityImageCreateWithRequestBuilder(facilityId: UUID, file: URL) -> RequestBuilder<OwnerFacilityImage> {
         var localVariablePath = "/api/v1/owner/facilities/{facility_id}/images/"
         let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
         let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""

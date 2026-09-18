@@ -28,7 +28,7 @@ apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(MediaApi::class.java)
 val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
 val requirementId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-val file : java.net.URI = file_example // java.net.URI | 
+val file : java.io.File = BINARY_DATA_HERE // java.io.File | 
 
 launch(Dispatchers.IO) {
     val result : OwnerEvidenceCreated = webService.ownerFacilityEvidenceCreate(facilityId, requirementId, file)
@@ -40,7 +40,7 @@ launch(Dispatchers.IO) {
 | **requirementId** | **java.util.UUID**|  | |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
-| **file** | **java.net.URI**|  | |
+| **file** | **java.io.File**|  | |
 
 ### Return type
 
@@ -117,7 +117,7 @@ val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(MediaApi::class.java)
 val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-val file : java.net.URI = file_example // java.net.URI | 
+val file : java.io.File = BINARY_DATA_HERE // java.io.File | 
 
 launch(Dispatchers.IO) {
     val result : OwnerFacilityImage = webService.ownerFacilityImageCreate(facilityId, file)
@@ -128,7 +128,7 @@ launch(Dispatchers.IO) {
 | **facilityId** | **java.util.UUID**|  | |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
-| **file** | **java.net.URI**|  | |
+| **file** | **java.io.File**|  | |
 
 ### Return type
 

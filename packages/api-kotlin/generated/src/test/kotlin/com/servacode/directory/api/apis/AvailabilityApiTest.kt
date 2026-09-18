@@ -23,6 +23,7 @@ import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.BusinessHourInput
 import com.servacode.directory.api.models.BusinessHoursList
 import com.servacode.directory.api.models.TemporaryClosure
+import com.servacode.directory.api.models.TemporaryClosureInput
 import com.servacode.directory.api.models.TemporaryClosureList
 
 class AvailabilityApiTest : ShouldSpec() {
@@ -51,8 +52,8 @@ class AvailabilityApiTest : ShouldSpec() {
         should("test ownerFacilityTemporaryClosureCreate") {
             // uncomment below to test ownerFacilityTemporaryClosureCreate
             //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-            //val temporaryClosure : TemporaryClosure =  // TemporaryClosure | 
-            //val result : TemporaryClosure = apiInstance.ownerFacilityTemporaryClosureCreate(facilityId, temporaryClosure)
+            //val temporaryClosureInput : TemporaryClosureInput =  // TemporaryClosureInput | 
+            //val result : TemporaryClosure = apiInstance.ownerFacilityTemporaryClosureCreate(facilityId, temporaryClosureInput)
             //result shouldBe ("TODO")
         }
 

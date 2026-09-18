@@ -17,23 +17,26 @@ import * as runtime from '../runtime';
 import type {
   ApiError,
   DutyShift,
+  DutyShiftInput,
   DutyShiftList,
-  PatchedDutyShift,
+  PatchedDutyShiftInput,
 } from '../models/index';
 import {
     ApiErrorFromJSON,
     ApiErrorToJSON,
     DutyShiftFromJSON,
     DutyShiftToJSON,
+    DutyShiftInputFromJSON,
+    DutyShiftInputToJSON,
     DutyShiftListFromJSON,
     DutyShiftListToJSON,
-    PatchedDutyShiftFromJSON,
-    PatchedDutyShiftToJSON,
+    PatchedDutyShiftInputFromJSON,
+    PatchedDutyShiftInputToJSON,
 } from '../models/index';
 
 export interface OwnerFacilityDutyCreateRequest {
     facilityId: string;
-    dutyShift: Omit<DutyShift, 'id'>;
+    dutyShiftInput: DutyShiftInput;
 }
 
 export interface OwnerFacilityDutyDeleteRequest {
@@ -48,7 +51,7 @@ export interface OwnerFacilityDutyListRequest {
 export interface OwnerFacilityDutyUpdateRequest {
     facilityId: string;
     shiftId: string;
-    patchedDutyShift?: Omit<PatchedDutyShift, 'id'>;
+    patchedDutyShiftInput?: PatchedDutyShiftInput;
 }
 
 /**
@@ -68,10 +71,10 @@ export class DutyApi extends runtime.BaseAPI {
             );
         }
 
-        if (requestParameters['dutyShift'] == null) {
+        if (requestParameters['dutyShiftInput'] == null) {
             throw new runtime.RequiredError(
-                'dutyShift',
-                'Required parameter "dutyShift" was null or undefined when calling ownerFacilityDutyCreate().'
+                'dutyShiftInput',
+                'Required parameter "dutyShiftInput" was null or undefined when calling ownerFacilityDutyCreate().'
             );
         }
 
@@ -98,7 +101,7 @@ export class DutyApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: DutyShiftToJSON(requestParameters['dutyShift']),
+            body: DutyShiftInputToJSON(requestParameters['dutyShiftInput']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => DutyShiftFromJSON(jsonValue));
@@ -252,7 +255,7 @@ export class DutyApi extends runtime.BaseAPI {
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
-            body: PatchedDutyShiftToJSON(requestParameters['patchedDutyShift']),
+            body: PatchedDutyShiftInputToJSON(requestParameters['patchedDutyShiftInput']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => DutyShiftFromJSON(jsonValue));

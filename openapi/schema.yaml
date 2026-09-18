@@ -2862,13 +2862,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DutyShift'
+              $ref: '#/components/schemas/DutyShiftInput'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/DutyShift'
+              $ref: '#/components/schemas/DutyShiftInput'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/DutyShift'
+              $ref: '#/components/schemas/DutyShiftInput'
         required: true
       security:
       - bearerAccessToken: []
@@ -2936,13 +2936,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedDutyShift'
+              $ref: '#/components/schemas/PatchedDutyShiftInput'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedDutyShift'
+              $ref: '#/components/schemas/PatchedDutyShiftInput'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedDutyShift'
+              $ref: '#/components/schemas/PatchedDutyShiftInput'
       security:
       - bearerAccessToken: []
       responses:
@@ -3705,13 +3705,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TemporaryClosure'
+              $ref: '#/components/schemas/TemporaryClosureInput'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TemporaryClosure'
+              $ref: '#/components/schemas/TemporaryClosureInput'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TemporaryClosure'
+              $ref: '#/components/schemas/TemporaryClosureInput'
         required: true
       security:
       - bearerAccessToken: []
@@ -5790,6 +5790,19 @@ components:
       - endsAt
       - id
       - startsAt
+    DutyShiftInput:
+      type: object
+      description: A duty shift as the client sends it. The server assigns the id.
+      properties:
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+      required:
+      - endsAt
+      - startsAt
     DutyShiftList:
       type: object
       properties:
@@ -5807,7 +5820,7 @@ components:
           format: uuid
         file:
           type: string
-          format: uri
+          format: binary
       required:
       - file
       - requirementId
@@ -6478,13 +6491,10 @@ components:
       - maxFiles
       - minFiles
       - required
-    PatchedDutyShift:
+    PatchedDutyShiftInput:
       type: object
+      description: A duty shift as the client sends it. The server assigns the id.
       properties:
-        id:
-          type: string
-          format: uuid
-          readOnly: true
         startsAt:
           type: string
           format: date-time
@@ -6826,7 +6836,7 @@ components:
       properties:
         file:
           type: string
-          format: uri
+          format: binary
       required:
       - file
     PublicProvince:
@@ -6969,6 +6979,23 @@ components:
       required:
       - endsAt
       - id
+      - startsAt
+    TemporaryClosureInput:
+      type: object
+      description: A temporary closure as the client sends it. The server assigns
+        the id.
+      properties:
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        reason:
+          type: string
+          maxLength: 240
+      required:
+      - endsAt
       - startsAt
     TemporaryClosureList:
       type: object

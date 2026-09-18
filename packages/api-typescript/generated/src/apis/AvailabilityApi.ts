@@ -19,6 +19,7 @@ import type {
   BusinessHourInput,
   BusinessHoursList,
   TemporaryClosure,
+  TemporaryClosureInput,
   TemporaryClosureList,
 } from '../models/index';
 import {
@@ -30,6 +31,8 @@ import {
     BusinessHoursListToJSON,
     TemporaryClosureFromJSON,
     TemporaryClosureToJSON,
+    TemporaryClosureInputFromJSON,
+    TemporaryClosureInputToJSON,
     TemporaryClosureListFromJSON,
     TemporaryClosureListToJSON,
 } from '../models/index';
@@ -46,7 +49,7 @@ export interface OwnerFacilityTemporaryClosureCancelRequest {
 
 export interface OwnerFacilityTemporaryClosureCreateRequest {
     facilityId: string;
-    temporaryClosure: Omit<TemporaryClosure, 'id'>;
+    temporaryClosureInput: TemporaryClosureInput;
 }
 
 export interface OwnerFacilityTemporaryClosuresListRequest {
@@ -179,10 +182,10 @@ export class AvailabilityApi extends runtime.BaseAPI {
             );
         }
 
-        if (requestParameters['temporaryClosure'] == null) {
+        if (requestParameters['temporaryClosureInput'] == null) {
             throw new runtime.RequiredError(
-                'temporaryClosure',
-                'Required parameter "temporaryClosure" was null or undefined when calling ownerFacilityTemporaryClosureCreate().'
+                'temporaryClosureInput',
+                'Required parameter "temporaryClosureInput" was null or undefined when calling ownerFacilityTemporaryClosureCreate().'
             );
         }
 
@@ -209,7 +212,7 @@ export class AvailabilityApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: TemporaryClosureToJSON(requestParameters['temporaryClosure']),
+            body: TemporaryClosureInputToJSON(requestParameters['temporaryClosureInput']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => TemporaryClosureFromJSON(jsonValue));

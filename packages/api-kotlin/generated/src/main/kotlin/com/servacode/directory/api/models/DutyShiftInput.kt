@@ -21,24 +21,20 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * 
+ * A duty shift as the client sends it. The server assigns the id.
  *
- * @param id 
  * @param startsAt 
  * @param endsAt 
  */
 @Serializable
 
-data class PatchedDutyShift (
-
-    @Contextual @SerialName(value = "id")
-    val id: java.util.UUID? = null,
+data class DutyShiftInput (
 
     @Contextual @SerialName(value = "startsAt")
-    val startsAt: java.time.OffsetDateTime? = null,
+    val startsAt: java.time.OffsetDateTime,
 
     @Contextual @SerialName(value = "endsAt")
-    val endsAt: java.time.OffsetDateTime? = null
+    val endsAt: java.time.OffsetDateTime
 
 ) {
 

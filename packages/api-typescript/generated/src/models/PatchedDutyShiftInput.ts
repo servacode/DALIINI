@@ -14,59 +14,52 @@
 
 import { mapValues } from '../runtime';
 /**
- * 
+ * A duty shift as the client sends it. The server assigns the id.
  * @export
- * @interface PatchedDutyShift
+ * @interface PatchedDutyShiftInput
  */
-export interface PatchedDutyShift {
-    /**
-     * 
-     * @type {string}
-     * @memberof PatchedDutyShift
-     */
-    readonly id?: string;
+export interface PatchedDutyShiftInput {
     /**
      * 
      * @type {Date}
-     * @memberof PatchedDutyShift
+     * @memberof PatchedDutyShiftInput
      */
     startsAt?: Date;
     /**
      * 
      * @type {Date}
-     * @memberof PatchedDutyShift
+     * @memberof PatchedDutyShiftInput
      */
     endsAt?: Date;
 }
 
 /**
- * Check if a given object implements the PatchedDutyShift interface.
+ * Check if a given object implements the PatchedDutyShiftInput interface.
  */
-export function instanceOfPatchedDutyShift(value: object): value is PatchedDutyShift {
+export function instanceOfPatchedDutyShiftInput(value: object): value is PatchedDutyShiftInput {
     return true;
 }
 
-export function PatchedDutyShiftFromJSON(json: any): PatchedDutyShift {
-    return PatchedDutyShiftFromJSONTyped(json, false);
+export function PatchedDutyShiftInputFromJSON(json: any): PatchedDutyShiftInput {
+    return PatchedDutyShiftInputFromJSONTyped(json, false);
 }
 
-export function PatchedDutyShiftFromJSONTyped(json: any, ignoreDiscriminator: boolean): PatchedDutyShift {
+export function PatchedDutyShiftInputFromJSONTyped(json: any, ignoreDiscriminator: boolean): PatchedDutyShiftInput {
     if (json == null) {
         return json;
     }
     return {
         
-        'id': json['id'] == null ? undefined : json['id'],
         'startsAt': json['startsAt'] == null ? undefined : (new Date(json['startsAt'])),
         'endsAt': json['endsAt'] == null ? undefined : (new Date(json['endsAt'])),
     };
 }
 
-export function PatchedDutyShiftToJSON(json: any): PatchedDutyShift {
-    return PatchedDutyShiftToJSONTyped(json, false);
+export function PatchedDutyShiftInputToJSON(json: any): PatchedDutyShiftInput {
+    return PatchedDutyShiftInputToJSONTyped(json, false);
 }
 
-export function PatchedDutyShiftToJSONTyped(value?: Omit<PatchedDutyShift, 'id'> | null, ignoreDiscriminator: boolean = false): any {
+export function PatchedDutyShiftInputToJSONTyped(value?: PatchedDutyShiftInput | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

@@ -106,12 +106,12 @@ open class AvailabilityAPI {
      Open a temporary closure window
      
      - parameter facilityId: (path)  
-     - parameter temporaryClosure: (body)  
+     - parameter temporaryClosureInput: (body)  
      - returns: TemporaryClosure
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func ownerFacilityTemporaryClosureCreate(facilityId: UUID, temporaryClosure: TemporaryClosure) async throws -> TemporaryClosure {
-        return try await ownerFacilityTemporaryClosureCreateWithRequestBuilder(facilityId: facilityId, temporaryClosure: temporaryClosure).execute().body
+    open class func ownerFacilityTemporaryClosureCreate(facilityId: UUID, temporaryClosureInput: TemporaryClosureInput) async throws -> TemporaryClosure {
+        return try await ownerFacilityTemporaryClosureCreateWithRequestBuilder(facilityId: facilityId, temporaryClosureInput: temporaryClosureInput).execute().body
     }
 
     /**
@@ -122,16 +122,16 @@ open class AvailabilityAPI {
        - type: http
        - name: bearerAccessToken
      - parameter facilityId: (path)  
-     - parameter temporaryClosure: (body)  
+     - parameter temporaryClosureInput: (body)  
      - returns: RequestBuilder<TemporaryClosure> 
      */
-    open class func ownerFacilityTemporaryClosureCreateWithRequestBuilder(facilityId: UUID, temporaryClosure: TemporaryClosure) -> RequestBuilder<TemporaryClosure> {
+    open class func ownerFacilityTemporaryClosureCreateWithRequestBuilder(facilityId: UUID, temporaryClosureInput: TemporaryClosureInput) -> RequestBuilder<TemporaryClosure> {
         var localVariablePath = "/api/v1/owner/facilities/{facility_id}/temporary-closures/"
         let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
         let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
         localVariablePath = localVariablePath.replacingOccurrences(of: "{facility_id}", with: facilityIdPostEscape, options: .literal, range: nil)
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
-        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: temporaryClosure)
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: temporaryClosureInput)
 
         let localVariableUrlComponents = URLComponents(string: localVariableURLString)
 

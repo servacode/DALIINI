@@ -112,10 +112,10 @@ val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AvailabilityApi::class.java)
 val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-val temporaryClosure : TemporaryClosure =  // TemporaryClosure | 
+val temporaryClosureInput : TemporaryClosureInput =  // TemporaryClosureInput | 
 
 launch(Dispatchers.IO) {
-    val result : TemporaryClosure = webService.ownerFacilityTemporaryClosureCreate(facilityId, temporaryClosure)
+    val result : TemporaryClosure = webService.ownerFacilityTemporaryClosureCreate(facilityId, temporaryClosureInput)
 }
 ```
 
@@ -123,7 +123,7 @@ launch(Dispatchers.IO) {
 | **facilityId** | **java.util.UUID**|  | |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
-| **temporaryClosure** | [**TemporaryClosure**](TemporaryClosure.md)|  | |
+| **temporaryClosureInput** | [**TemporaryClosureInput**](TemporaryClosureInput.md)|  | |
 
 ### Return type
 

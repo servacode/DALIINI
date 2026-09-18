@@ -18,18 +18,12 @@ package com.servacode.directory.api.models
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
-import com.servacode.directory.api.models.PatchedDutyShift
+import com.servacode.directory.api.models.DutyShiftInput
 
-class PatchedDutyShiftTest : ShouldSpec() {
+class DutyShiftInputTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of PatchedDutyShift
-        //val modelInstance = PatchedDutyShift()
-
-        // to test the property `id`
-        should("test id") {
-            // uncomment below to test the property
-            //modelInstance.id shouldBe ("TODO")
-        }
+        // uncomment below to create an instance of DutyShiftInput
+        //val modelInstance = DutyShiftInput()
 
         // to test the property `startsAt`
         should("test startsAt") {

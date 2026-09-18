@@ -34,7 +34,7 @@ import {
 export interface OwnerFacilityEvidenceCreateRequest {
     facilityId: string;
     requirementId: string;
-    file: string;
+    file: Blob;
 }
 
 export interface OwnerFacilityEvidenceDeleteRequest {
@@ -44,7 +44,7 @@ export interface OwnerFacilityEvidenceDeleteRequest {
 
 export interface OwnerFacilityImageCreateRequest {
     facilityId: string;
-    file: string;
+    file: Blob;
 }
 
 export interface OwnerFacilityImageDeleteRequest {
@@ -107,6 +107,8 @@ export class MediaApi extends runtime.BaseAPI {
 
         let formParams: { append(param: string, value: any): any };
         let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
         if (useForm) {
             formParams = new FormData();
         } else {
@@ -238,6 +240,8 @@ export class MediaApi extends runtime.BaseAPI {
 
         let formParams: { append(param: string, value: any): any };
         let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
         if (useForm) {
             formParams = new FormData();
         } else {

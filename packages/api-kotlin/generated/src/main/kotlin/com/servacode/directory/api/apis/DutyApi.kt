@@ -9,8 +9,9 @@ import kotlinx.serialization.Serializable
 
 import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.DutyShift
+import com.servacode.directory.api.models.DutyShiftInput
 import com.servacode.directory.api.models.DutyShiftList
-import com.servacode.directory.api.models.PatchedDutyShift
+import com.servacode.directory.api.models.PatchedDutyShiftInput
 
 interface DutyApi {
     /**
@@ -26,11 +27,11 @@ interface DutyApi {
      *  - 409: The request conflicts with the current state or with a domain rule.
      *
      * @param facilityId 
-     * @param dutyShift 
+     * @param dutyShiftInput 
      * @return [DutyShift]
      */
     @POST("api/v1/owner/facilities/{facility_id}/duty/")
-    suspend fun ownerFacilityDutyCreate(@Path("facility_id") facilityId: java.util.UUID, @Body dutyShift: DutyShift): Response<DutyShift>
+    suspend fun ownerFacilityDutyCreate(@Path("facility_id") facilityId: java.util.UUID, @Body dutyShiftInput: DutyShiftInput): Response<DutyShift>
 
     /**
      * DELETE api/v1/owner/facilities/{facility_id}/duty/{shift_id}/
@@ -79,10 +80,10 @@ interface DutyApi {
      *
      * @param facilityId 
      * @param shiftId 
-     * @param patchedDutyShift  (optional)
+     * @param patchedDutyShiftInput  (optional)
      * @return [DutyShift]
      */
     @PATCH("api/v1/owner/facilities/{facility_id}/duty/{shift_id}/")
-    suspend fun ownerFacilityDutyUpdate(@Path("facility_id") facilityId: java.util.UUID, @Path("shift_id") shiftId: java.util.UUID, @Body patchedDutyShift: PatchedDutyShift? = null): Response<DutyShift>
+    suspend fun ownerFacilityDutyUpdate(@Path("facility_id") facilityId: java.util.UUID, @Path("shift_id") shiftId: java.util.UUID, @Body patchedDutyShiftInput: PatchedDutyShiftInput? = null): Response<DutyShift>
 
 }

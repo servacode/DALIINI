@@ -12,7 +12,7 @@ Method | HTTP request | Description
 
 # **ownerFacilityDutyCreate**
 ```swift
-    open class func ownerFacilityDutyCreate(facilityId: UUID, dutyShift: DutyShift, completion: @escaping (_ data: DutyShift?, _ error: Error?) -> Void)
+    open class func ownerFacilityDutyCreate(facilityId: UUID, dutyShiftInput: DutyShiftInput, completion: @escaping (_ data: DutyShift?, _ error: Error?) -> Void)
 ```
 
 Schedule a duty shift
@@ -25,10 +25,10 @@ Overlapping shifts for the same facility are refused by a PostgreSQL exclusion c
 import ServaDirectoryAPI
 
 let facilityId = 987 // UUID | 
-let dutyShift = DutyShift(id: 123, startsAt: Date(), endsAt: Date()) // DutyShift | 
+let dutyShiftInput = DutyShiftInput(startsAt: Date(), endsAt: Date()) // DutyShiftInput | 
 
 // Schedule a duty shift
-DutyAPI.ownerFacilityDutyCreate(facilityId: facilityId, dutyShift: dutyShift) { (response, error) in
+DutyAPI.ownerFacilityDutyCreate(facilityId: facilityId, dutyShiftInput: dutyShiftInput) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -45,7 +45,7 @@ DutyAPI.ownerFacilityDutyCreate(facilityId: facilityId, dutyShift: dutyShift) { 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **facilityId** | **UUID** |  | 
- **dutyShift** | [**DutyShift**](DutyShift.md) |  | 
+ **dutyShiftInput** | [**DutyShiftInput**](DutyShiftInput.md) |  | 
 
 ### Return type
 
@@ -162,7 +162,7 @@ Name | Type | Description  | Notes
 
 # **ownerFacilityDutyUpdate**
 ```swift
-    open class func ownerFacilityDutyUpdate(facilityId: UUID, shiftId: UUID, patchedDutyShift: PatchedDutyShift? = nil, completion: @escaping (_ data: DutyShift?, _ error: Error?) -> Void)
+    open class func ownerFacilityDutyUpdate(facilityId: UUID, shiftId: UUID, patchedDutyShiftInput: PatchedDutyShiftInput? = nil, completion: @escaping (_ data: DutyShift?, _ error: Error?) -> Void)
 ```
 
 Adjust a duty shift
@@ -174,10 +174,10 @@ import ServaDirectoryAPI
 
 let facilityId = 987 // UUID | 
 let shiftId = 987 // UUID | 
-let patchedDutyShift = PatchedDutyShift(id: 123, startsAt: Date(), endsAt: Date()) // PatchedDutyShift |  (optional)
+let patchedDutyShiftInput = PatchedDutyShiftInput(startsAt: Date(), endsAt: Date()) // PatchedDutyShiftInput |  (optional)
 
 // Adjust a duty shift
-DutyAPI.ownerFacilityDutyUpdate(facilityId: facilityId, shiftId: shiftId, patchedDutyShift: patchedDutyShift) { (response, error) in
+DutyAPI.ownerFacilityDutyUpdate(facilityId: facilityId, shiftId: shiftId, patchedDutyShiftInput: patchedDutyShiftInput) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -195,7 +195,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **facilityId** | **UUID** |  | 
  **shiftId** | **UUID** |  | 
- **patchedDutyShift** | [**PatchedDutyShift**](PatchedDutyShift.md) |  | [optional] 
+ **patchedDutyShiftInput** | [**PatchedDutyShiftInput**](PatchedDutyShiftInput.md) |  | [optional] 
 
 ### Return type
 

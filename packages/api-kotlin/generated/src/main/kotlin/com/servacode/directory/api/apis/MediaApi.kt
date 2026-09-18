@@ -12,6 +12,8 @@ import com.servacode.directory.api.models.OwnerEvidenceCreated
 import com.servacode.directory.api.models.OwnerFacilityImage
 import com.servacode.directory.api.models.OwnerFacilityImageList
 
+import okhttp3.MultipartBody
+
 interface MediaApi {
     /**
      * POST api/v1/owner/facilities/{facility_id}/evidence/
@@ -32,7 +34,7 @@ interface MediaApi {
      */
     @Multipart
     @POST("api/v1/owner/facilities/{facility_id}/evidence/")
-    suspend fun ownerFacilityEvidenceCreate(@Path("facility_id") facilityId: java.util.UUID, @Part("requirementId") requirementId: java.util.UUID, @Part("file") file: java.net.URI): Response<OwnerEvidenceCreated>
+    suspend fun ownerFacilityEvidenceCreate(@Path("facility_id") facilityId: java.util.UUID, @Part("requirementId") requirementId: java.util.UUID, @Part file: MultipartBody.Part): Response<OwnerEvidenceCreated>
 
     /**
      * DELETE api/v1/owner/facilities/{facility_id}/evidence/{evidence_id}/
@@ -70,7 +72,7 @@ interface MediaApi {
      */
     @Multipart
     @POST("api/v1/owner/facilities/{facility_id}/images/")
-    suspend fun ownerFacilityImageCreate(@Path("facility_id") facilityId: java.util.UUID, @Part("file") file: java.net.URI): Response<OwnerFacilityImage>
+    suspend fun ownerFacilityImageCreate(@Path("facility_id") facilityId: java.util.UUID, @Part file: MultipartBody.Part): Response<OwnerFacilityImage>
 
     /**
      * DELETE api/v1/owner/facilities/{facility_id}/images/{image_id}/

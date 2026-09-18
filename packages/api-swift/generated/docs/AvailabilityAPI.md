@@ -114,7 +114,7 @@ Void (empty response body)
 
 # **ownerFacilityTemporaryClosureCreate**
 ```swift
-    open class func ownerFacilityTemporaryClosureCreate(facilityId: UUID, temporaryClosure: TemporaryClosure, completion: @escaping (_ data: TemporaryClosure?, _ error: Error?) -> Void)
+    open class func ownerFacilityTemporaryClosureCreate(facilityId: UUID, temporaryClosureInput: TemporaryClosureInput, completion: @escaping (_ data: TemporaryClosure?, _ error: Error?) -> Void)
 ```
 
 Open a temporary closure window
@@ -127,10 +127,10 @@ A temporary closure overrides both regular hours and duty.
 import ServaDirectoryAPI
 
 let facilityId = 987 // UUID | 
-let temporaryClosure = TemporaryClosure(id: 123, startsAt: Date(), endsAt: Date(), reason: "reason_example") // TemporaryClosure | 
+let temporaryClosureInput = TemporaryClosureInput(startsAt: Date(), endsAt: Date(), reason: "reason_example") // TemporaryClosureInput | 
 
 // Open a temporary closure window
-AvailabilityAPI.ownerFacilityTemporaryClosureCreate(facilityId: facilityId, temporaryClosure: temporaryClosure) { (response, error) in
+AvailabilityAPI.ownerFacilityTemporaryClosureCreate(facilityId: facilityId, temporaryClosureInput: temporaryClosureInput) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -147,7 +147,7 @@ AvailabilityAPI.ownerFacilityTemporaryClosureCreate(facilityId: facilityId, temp
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **facilityId** | **UUID** |  | 
- **temporaryClosure** | [**TemporaryClosure**](TemporaryClosure.md) |  | 
+ **temporaryClosureInput** | [**TemporaryClosureInput**](TemporaryClosureInput.md) |  | 
 
 ### Return type
 

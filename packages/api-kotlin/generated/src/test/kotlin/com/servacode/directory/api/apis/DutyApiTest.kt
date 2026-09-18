@@ -21,8 +21,9 @@ import io.kotlintest.specs.ShouldSpec
 import com.servacode.directory.api.apis.DutyApi
 import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.DutyShift
+import com.servacode.directory.api.models.DutyShiftInput
 import com.servacode.directory.api.models.DutyShiftList
-import com.servacode.directory.api.models.PatchedDutyShift
+import com.servacode.directory.api.models.PatchedDutyShiftInput
 
 class DutyApiTest : ShouldSpec() {
     init {
@@ -33,8 +34,8 @@ class DutyApiTest : ShouldSpec() {
         should("test ownerFacilityDutyCreate") {
             // uncomment below to test ownerFacilityDutyCreate
             //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-            //val dutyShift : DutyShift =  // DutyShift | 
-            //val result : DutyShift = apiInstance.ownerFacilityDutyCreate(facilityId, dutyShift)
+            //val dutyShiftInput : DutyShiftInput =  // DutyShiftInput | 
+            //val result : DutyShift = apiInstance.ownerFacilityDutyCreate(facilityId, dutyShiftInput)
             //result shouldBe ("TODO")
         }
 
@@ -59,8 +60,8 @@ class DutyApiTest : ShouldSpec() {
             // uncomment below to test ownerFacilityDutyUpdate
             //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //val shiftId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-            //val patchedDutyShift : PatchedDutyShift =  // PatchedDutyShift | 
-            //val result : DutyShift = apiInstance.ownerFacilityDutyUpdate(facilityId, shiftId, patchedDutyShift)
+            //val patchedDutyShiftInput : PatchedDutyShiftInput =  // PatchedDutyShiftInput | 
+            //val result : DutyShift = apiInstance.ownerFacilityDutyUpdate(facilityId, shiftId, patchedDutyShiftInput)
             //result shouldBe ("TODO")
         }
 

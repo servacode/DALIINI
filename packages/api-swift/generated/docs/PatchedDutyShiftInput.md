@@ -1,9 +1,8 @@
-# PatchedDutyShift
+# PatchedDutyShiftInput
 
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **UUID** |  | [optional] [readonly] 
 **startsAt** | **Date** |  | [optional] 
 **endsAt** | **Date** |  | [optional] 
 

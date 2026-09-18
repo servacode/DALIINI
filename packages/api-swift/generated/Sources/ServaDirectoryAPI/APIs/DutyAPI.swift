@@ -16,12 +16,12 @@ open class DutyAPI {
      Schedule a duty shift
      
      - parameter facilityId: (path)  
-     - parameter dutyShift: (body)  
+     - parameter dutyShiftInput: (body)  
      - returns: DutyShift
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func ownerFacilityDutyCreate(facilityId: UUID, dutyShift: DutyShift) async throws -> DutyShift {
-        return try await ownerFacilityDutyCreateWithRequestBuilder(facilityId: facilityId, dutyShift: dutyShift).execute().body
+    open class func ownerFacilityDutyCreate(facilityId: UUID, dutyShiftInput: DutyShiftInput) async throws -> DutyShift {
+        return try await ownerFacilityDutyCreateWithRequestBuilder(facilityId: facilityId, dutyShiftInput: dutyShiftInput).execute().body
     }
 
     /**
@@ -32,16 +32,16 @@ open class DutyAPI {
        - type: http
        - name: bearerAccessToken
      - parameter facilityId: (path)  
-     - parameter dutyShift: (body)  
+     - parameter dutyShiftInput: (body)  
      - returns: RequestBuilder<DutyShift> 
      */
-    open class func ownerFacilityDutyCreateWithRequestBuilder(facilityId: UUID, dutyShift: DutyShift) -> RequestBuilder<DutyShift> {
+    open class func ownerFacilityDutyCreateWithRequestBuilder(facilityId: UUID, dutyShiftInput: DutyShiftInput) -> RequestBuilder<DutyShift> {
         var localVariablePath = "/api/v1/owner/facilities/{facility_id}/duty/"
         let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
         let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
         localVariablePath = localVariablePath.replacingOccurrences(of: "{facility_id}", with: facilityIdPostEscape, options: .literal, range: nil)
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
-        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: dutyShift)
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: dutyShiftInput)
 
         let localVariableUrlComponents = URLComponents(string: localVariableURLString)
 
@@ -148,12 +148,12 @@ open class DutyAPI {
      
      - parameter facilityId: (path)  
      - parameter shiftId: (path)  
-     - parameter patchedDutyShift: (body)  (optional)
+     - parameter patchedDutyShiftInput: (body)  (optional)
      - returns: DutyShift
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func ownerFacilityDutyUpdate(facilityId: UUID, shiftId: UUID, patchedDutyShift: PatchedDutyShift? = nil) async throws -> DutyShift {
-        return try await ownerFacilityDutyUpdateWithRequestBuilder(facilityId: facilityId, shiftId: shiftId, patchedDutyShift: patchedDutyShift).execute().body
+    open class func ownerFacilityDutyUpdate(facilityId: UUID, shiftId: UUID, patchedDutyShiftInput: PatchedDutyShiftInput? = nil) async throws -> DutyShift {
+        return try await ownerFacilityDutyUpdateWithRequestBuilder(facilityId: facilityId, shiftId: shiftId, patchedDutyShiftInput: patchedDutyShiftInput).execute().body
     }
 
     /**
@@ -164,10 +164,10 @@ open class DutyAPI {
        - name: bearerAccessToken
      - parameter facilityId: (path)  
      - parameter shiftId: (path)  
-     - parameter patchedDutyShift: (body)  (optional)
+     - parameter patchedDutyShiftInput: (body)  (optional)
      - returns: RequestBuilder<DutyShift> 
      */
-    open class func ownerFacilityDutyUpdateWithRequestBuilder(facilityId: UUID, shiftId: UUID, patchedDutyShift: PatchedDutyShift? = nil) -> RequestBuilder<DutyShift> {
+    open class func ownerFacilityDutyUpdateWithRequestBuilder(facilityId: UUID, shiftId: UUID, patchedDutyShiftInput: PatchedDutyShiftInput? = nil) -> RequestBuilder<DutyShift> {
         var localVariablePath = "/api/v1/owner/facilities/{facility_id}/duty/{shift_id}/"
         let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
         let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -176,7 +176,7 @@ open class DutyAPI {
         let shiftIdPostEscape = shiftIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
         localVariablePath = localVariablePath.replacingOccurrences(of: "{shift_id}", with: shiftIdPostEscape, options: .literal, range: nil)
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
-        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: patchedDutyShift)
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: patchedDutyShiftInput)
 
         let localVariableUrlComponents = URLComponents(string: localVariableURLString)
 
