@@ -132,7 +132,7 @@ class PublicFacilityListView(APIView):
             queryset = filter_for_availability_state(queryset, AvailabilityState.DUTY)
         paginator = FacilityCursorPagination()
         if request.query_params.get("latitude") and request.query_params.get("longitude"):
-            paginator.ordering = ("distance", "id")
+            paginator.ordering = ("distance_meters", "id")
         page = paginator.paginate_queryset(queryset, request)
         return paginator.get_paginated_response([compact_facility(row) for row in page])
 

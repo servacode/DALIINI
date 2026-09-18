@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point, Polygon
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count, ExpressionWrapper, FloatField, Q
 
 from facilities.models import Facility
 
@@ -40,9 +40,13 @@ def with_distance(queryset, latitude=None, longitude=None):
     if latitude is None or longitude is None:
         return queryset
     point = Point(float(longitude), float(latitude), srid=4326)
+    # A plain float, in metres, rather than GeoDjango's Distance measure. The cursor paginator
+    # stores the ordering value of the last row as text and filters on it for the next page;
+    # a measure serialises as "123.4 m", which the database cannot compare, so the second page
+    # of any nearest-first list failed with a 500 (INT-058).
     return queryset.filter(location__isnull=False).annotate(
-        distance=Distance("location", point)
-    ).order_by("distance", "name_ar", "id")
+        distance_meters=ExpressionWrapper(Distance("location", point), output_field=FloatField())
+    ).order_by("distance_meters", "name_ar", "id")
 
 
 def within_bbox(queryset, bbox: str | None):

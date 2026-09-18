@@ -1,4 +1,6 @@
+from business_hours.serializers import serialize_hours
 from business_hours.services import get_facility_availability
+from storage.backends import PublicS3Storage
 
 
 def _availability_payload(facility):
@@ -10,7 +12,7 @@ def _availability_payload(facility):
 
 
 def compact_facility(facility):
-    distance = getattr(facility, "distance", None)
+    distance = getattr(facility, "distance_meters", None)
     return {
         "id": str(facility.id),
         "nameAr": facility.name_ar,
@@ -25,7 +27,7 @@ def compact_facility(facility):
             if facility.city_id
             else None
         ),
-        "distanceMeters": round(distance.m, 1) if distance is not None else None,
+        "distanceMeters": round(distance, 1) if distance is not None else None,
         "ratingAverage": (
             round(float(facility.rating_average), 2)
             if getattr(facility, "rating_average", None) is not None
@@ -37,6 +39,7 @@ def compact_facility(facility):
 
 
 def facility_detail(facility):
+    storage = PublicS3Storage()
     payload = compact_facility(facility)
     payload.update(
         {
@@ -61,10 +64,13 @@ def facility_detail(facility):
                 if facility.location
                 else None
             ),
+            # The storage URL, as the owner endpoint serves it. The previous relative path
+            # pointed at a route that does not exist, so every public image was a broken
+            # link (INT-060).
             "images": [
                 {
                     "id": str(image.id),
-                    "url": f"/api/v1/public/media/images/{image.id}/",
+                    "url": storage.url(image.storage_key),
                 }
                 for image in facility.images.order_by("sort_order", "created_at")
             ],
@@ -82,18 +88,12 @@ def facility_detail(facility):
                 }
                 for link in facility.service_links.select_related("service_tag")
             ],
-            "hours": [
-                {
-                    "weekday": row.weekday,
-                    "opensAt": row.opens_at.isoformat(),
-                    "closesAt": row.closes_at.isoformat(),
-                }
-                for row in facility.business_hours.order_by(
-                    "weekday",
-                    "opens_at",
-                    "sort_order",
-                )
-            ],
+            # The shape the contract declares: with the id and the `sequence` that orders a
+            # day's spans. Both were missing, so a generated client could not read any
+            # facility that had opening hours (INT-059).
+            "hours": serialize_hours(
+                facility.business_hours.order_by("weekday", "sort_order", "opens_at")
+            ),
         }
     )
     return payload
