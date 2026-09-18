@@ -1,6 +1,19 @@
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from .models import FacilityMembership
+
+
+@extend_schema_field(OpenApiTypes.BINARY)
+class UploadedFileField(serializers.FileField):
+    """A file part of a multipart request, described as bytes rather than a URL.
+
+    drf-spectacular describes `FileField` as `format: uri` whenever request and response
+    share components, which is right for a response and wrong for an upload: the Kotlin
+    and Swift generators then type the part as a URI and send its text instead of the
+    file (INT-048). These serializers only ever read uploads, so the part is binary.
+    """
 
 
 class FacilityCreateSerializer(serializers.Serializer):
@@ -35,11 +48,11 @@ class FacilityLocationSerializer(serializers.Serializer):
 
 class EvidenceUploadSerializer(serializers.Serializer):
     requirementId = serializers.UUIDField()
-    file = serializers.FileField()
+    file = UploadedFileField()
 
 
 class PublicImageUploadSerializer(serializers.Serializer):
-    file = serializers.FileField()
+    file = UploadedFileField()
 
 
 class FacilityMemberSerializer(serializers.Serializer):

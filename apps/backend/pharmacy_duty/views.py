@@ -13,7 +13,7 @@ from facilities.models import Facility
 
 from .models import DutyShift
 from .schemas import DutyShiftListSerializer
-from .serializers import DutyShiftSerializer
+from .serializers import DutyShiftInputSerializer, DutyShiftSerializer
 
 
 def _duty_error():
@@ -52,7 +52,7 @@ class DutyListCreateView(APIView):
             "exclusion constraint, not only by application code. Only categories that "
             "declare the duty capability accept this."
         ),
-        request=DutyShiftSerializer,
+        request=DutyShiftInputSerializer,
         responses={
             201: DutyShiftSerializer,
             400: VALIDATION_400,
@@ -70,7 +70,7 @@ class DutyListCreateView(APIView):
                 "DUTY_NOT_SUPPORTED",
                 message="هذا التصنيف لا يدعم ورديات المناوبة.",
             )
-        serializer = DutyShiftSerializer(data=request.data)
+        serializer = DutyShiftInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         row = DutyShift(facility=facility, **serializer.validated_data)
         try:
@@ -88,7 +88,7 @@ class DutyDetailView(APIView):
         operation_id="ownerFacilityDutyUpdate",
         tags=["Duty"],
         summary="Adjust a duty shift",
-        request=DutyShiftSerializer,
+        request=DutyShiftInputSerializer,
         responses={
             200: DutyShiftSerializer,
             400: VALIDATION_400,
@@ -106,7 +106,7 @@ class DutyDetailView(APIView):
             pk=shift_id,
             facility=facility,
         )
-        serializer = DutyShiftSerializer(row, data=request.data, partial=True)
+        serializer = DutyShiftInputSerializer(row, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         for key, value in serializer.validated_data.items():
             setattr(row, key, value)

@@ -162,6 +162,51 @@ def test_successful_responses_carry_a_schema(schema):
     assert not missing, f"successful responses without a schema: {missing}"
 
 
+def _request_components(schema):
+    """Yield (operationId, media type, component name, component) for every request body."""
+    components = schema["components"]["schemas"]
+    for _, _, operation in operations(schema):
+        content = (operation.get("requestBody") or {}).get("content") or {}
+        for media_type, media in content.items():
+            body = media.get("schema") or {}
+            ref = body.get("$ref") or (body.get("items") or {}).get("$ref")
+            if ref:
+                name = ref.rsplit("/", 1)[-1]
+                yield operation["operationId"], media_type, name, components[name]
+
+
+def test_upload_parts_are_binary(schema):
+    """A file part must be bytes on the wire (INT-048).
+
+    Described as `format: uri`, the Kotlin and Swift generators typed the part as a URI and
+    sent its text instead of the file, so no mobile client could upload anything.
+    """
+    wrong = [
+        (operation_id, name, field)
+        for operation_id, media_type, name, component in _request_components(schema)
+        if media_type == "multipart/form-data"
+        for field, spec in (component.get("properties") or {}).items()
+        if spec.get("format") == "uri"
+    ]
+    assert not wrong, f"multipart parts described as a URI rather than binary: {wrong}"
+
+
+def test_request_bodies_do_not_require_server_assigned_fields(schema):
+    """A client cannot be made to supply a value only the server assigns (INT-049).
+
+    Duty shifts and temporary closures reused their response component as the request, so
+    the read-only `id` was required and a generated Kotlin client could not build a request
+    without inventing one.
+    """
+    wrong = [
+        (operation_id, name, field)
+        for operation_id, _, name, component in _request_components(schema)
+        for field in component.get("required") or []
+        if (component.get("properties") or {}).get(field, {}).get("readOnly")
+    ]
+    assert not wrong, f"request bodies requiring a read-only field: {sorted(set(wrong))}"
+
+
 def test_bearer_security_scheme_is_declared(schema):
     schemes = schema.get("components", {}).get("securitySchemes", {})
     assert "bearerAccessToken" in schemes, "the access-token scheme is missing"

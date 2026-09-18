@@ -39,6 +39,15 @@ class TemporaryClosureSerializer(serializers.ModelSerializer):
         return attrs
 
 
+# See `DutyShiftInputSerializer` for why the request no longer reuses the response
+# component (INT-049).
+class TemporaryClosureInputSerializer(TemporaryClosureSerializer):
+    """A temporary closure as the client sends it. The server assigns the id."""
+
+    class Meta(TemporaryClosureSerializer.Meta):
+        fields = ["startsAt", "endsAt", "reason"]
+
+
 def serialize_hours(rows: Iterable[BusinessHour]) -> list[dict[str, Any]]:
     return [
         {

@@ -19,3 +19,13 @@ class DutyShiftSerializer(serializers.ModelSerializer):
                 {"endsAt": "Must be after startsAt."}
             )
         return attrs
+
+
+# The response component carries the server-assigned `id` as required, so a request that
+# reused it forced generated clients to invent an id before the server had assigned one
+# (INT-049). The request is the same shape minus that field.
+class DutyShiftInputSerializer(DutyShiftSerializer):
+    """A duty shift as the client sends it. The server assigns the id."""
+
+    class Meta(DutyShiftSerializer.Meta):
+        fields = ["startsAt", "endsAt"]

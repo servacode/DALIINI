@@ -14,6 +14,7 @@ from .permissions import require_facility_manager
 from .schemas import BusinessHoursListSerializer, TemporaryClosureListSerializer
 from .serializers import (
     BusinessHourInputSerializer,
+    TemporaryClosureInputSerializer,
     TemporaryClosureSerializer,
     serialize_hours,
 )
@@ -93,7 +94,7 @@ class TemporaryClosureListCreateView(APIView):
         tags=["Availability"],
         summary="Open a temporary closure window",
         description="A temporary closure overrides both regular hours and duty.",
-        request=TemporaryClosureSerializer,
+        request=TemporaryClosureInputSerializer,
         responses={
             201: TemporaryClosureSerializer,
             400: VALIDATION_400,
@@ -110,7 +111,7 @@ class TemporaryClosureListCreateView(APIView):
                 "TEMPORARY_CLOSURE_NOT_SUPPORTED",
                 message="هذا التصنيف لا يدعم الإغلاق المؤقت.",
             )
-        serializer = TemporaryClosureSerializer(data=request.data)
+        serializer = TemporaryClosureInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         obj = serializer.save(facility=facility)
         return Response(TemporaryClosureSerializer(obj).data, status=201)
