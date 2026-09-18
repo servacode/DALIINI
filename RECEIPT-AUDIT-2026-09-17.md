@@ -474,16 +474,16 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-012 | P2 | P12 | the Admin `__Host-` refresh cookie sets `secure` only when `NODE_ENV=production`, and browsers reject a `__Host-` cookie without `Secure`, so the development login flow cannot work | FIXED (ADMIN-BFF) |
 | INT-013 | P2 | P14 | every Android API boundary throws `GeneratedClientRequiredException` | OPEN |
 | INT-014 | P3 | P14–P20 | qualifier scripts use `read_text()` without an encoding and scan `node_modules` and `build` | OPEN |
-| INT-015 | P2 | P13 | eight unguarded `objects.get` calls in `admin_console/views.py` return 500 instead of 404 | OPEN |
+| INT-015 | P2 | P13 | eight unguarded `objects.get` calls in `admin_console/views.py` return 500 instead of 404 | FIXED (ADMIN-BINDING) — nine lookups and two service paths; the contract said 404 and now the runtime does |
 | INT-016 | P2 | P2 | `/api/schema/` publicly reachable in every environment | FIXED (P10) |
 | INT-017 | P2 | P3/P5 | `PUT`/`DELETE /account/profile-image/` not implemented | OPEN |
-| INT-018 | P2 | P13 | Admin taxonomy is read-only, so `Cycle J` cannot be executed | OPEN |
+| INT-018 | P2 | P13 | Admin taxonomy is read-only, so `Cycle J` cannot be executed | FIXED (ADMIN-BINDING) — group and category create/update, requirement update, advertisement update; no delete, by design |
 | INT-019 | P2 | P14 | no Gradle wrapper, contrary to `26-REPOSITORY-STRUCTURE.md` | OPEN |
 | INT-020 | P3 | P0 | CI contract-drift gate is a no-op; no Android or Admin/Web jobs | FIXED (P10) |
 | INT-021 | P3 | P0 | no lockfiles committed; Dockerfile does not copy a lockfile | PARTIAL — lockfiles committed in P2; the Dockerfile still resolves at build time |
-| INT-022 | P3 | P11/P12 | Tailwind, Radix, Vitest and Playwright absent despite `02-BASELINE-DECISIONS.md` | OPEN |
+| INT-022 | P3 | P11/P12 | Tailwind, Radix, Vitest and Playwright absent despite `02-BASELINE-DECISIONS.md` | PARTIAL — Vitest and Playwright installed and running in `apps/admin`; Tailwind and Radix deliberately not adopted, the console uses the generated design tokens directly |
 | INT-023 | P3 | P11 | `apps/web/tsconfig.json` uses `jsx: "preserve"`, rewritten on every Next 16 build | PARTIAL — `apps/admin` now commits the form Next 16 writes, so its build no longer dirties the tree; `apps/web` is unchanged |
-| INT-024 | P3 | P11/P12 | HSTS header missing | OPEN |
+| INT-024 | P3 | P11/P12 | HSTS header missing | PARTIAL — the Admin sends HSTS on https deployments; `apps/web` does not yet |
 | INT-025 | P3 | P4 | `directory/models.py` written in a compressed style violating `.editorconfig` and ruff | OPEN |
 | INT-026 | P3 | P3 | missing indexes on user status, `UserSession(user, revoked)` and `last_seen_at` | OPEN |
 | INT-027 | P3 | P3 | a non-UUID refresh token yields 500 instead of 401 | OPEN |
@@ -498,13 +498,18 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-036 | P2 | P13 | several Admin list endpoints answer from `QuerySet.values()` and return snake_case keys; `08-API-CONTRACT.md` requires one convention at the boundary | FIXED (CONTRACT-ALIGNMENT) |
 | INT-037 | P3 | P6 | `06-DATA-MODEL.md` names the business-hour ordering field `sequence`; the model and the wire contract use `sort_order` | FIXED (CONTRACT-ALIGNMENT) — wire name only; the column keeps `sort_order` |
 | INT-038 | P2 | P2/P13 | the runtime emits three unrelated error shapes; `08-API-CONTRACT.md` specifies a single envelope carrying `code`, `message`, `details` and `requestId` | FIXED (CONTRACT-ALIGNMENT) |
-| INT-039 | P3 | P13 | `AdminCapabilitiesRequestSerializer` and `AdminCapabilitiesSerializer` declare `supports_*` on the wire, the last snake_case pair left in the Admin API; it is not a list endpoint, so it was outside the CONTRACT-ALIGNMENT scope | OPEN |
+| INT-039 | P3 | P13 | `AdminCapabilitiesRequestSerializer` and `AdminCapabilitiesSerializer` declare `supports_*` on the wire, the last snake_case pair left in the Admin API; it is not a list endpoint, so it was outside the CONTRACT-ALIGNMENT scope | FIXED (ADMIN-BINDING) |
 | INT-040 | P2 | P4 | `Category.Specialization` declared GENERIC, PHARMACY, DOCTOR, NURSING and MEDICAL_SUPPLIES; `01-MASTER-SPECIFICATION.md` section 5 names GENERIC, PHARMACY, MEDICAL_CLINIC and NURSING_CENTER. Found while seeding, because the baseline could not be expressed in the declared values | FIXED (LAUNCH-BASELINE) |
 | INT-041 | P2 | P13 | four Admin list views filter on 14 query parameters the contract declares nowhere, so the generated clients cannot express a search box or a filter | FIXED (ADMIN-BFF) |
-| INT-042 | P2 | P13 | no endpoint returns the caller's own Admin permissions. `accountProfileRetrieve` omits them, and reading them through `adminUserRetrieve` plus `adminRolesList` requires `admin.users.read` and `admin.roles.read`, which most operators will not hold. Permission-aware navigation cannot be built without either a new endpoint or probing every route for a 403 | OPEN |
+| INT-042 | P2 | P13 | no endpoint returns the caller's own Admin permissions. `accountProfileRetrieve` omits them, and reading them through `adminUserRetrieve` plus `adminRolesList` requires `admin.users.read` and `admin.roles.read`, which most operators will not hold. Permission-aware navigation cannot be built without either a new endpoint or probing every route for a 403 | FIXED (ADMIN-BINDING) — `GET /api/v1/admin/me/` |
+| INT-043 | P2 | P13 | `AdminVerificationRequirement.id` declared as a UUID while the model key is a `BigAutoField`; DRF's `UUIDField` stringifies without validating on output, so the contract claimed `format: uuid` for a field returning `"2"` | FIXED (ADMIN-BINDING) |
+| INT-044 | P2 | P13 | the advertisement create contract omitted `startsAt` and `endsAt`, so a generated client stripped the schedule and every advertisement was created unscheduled; the end-before-start rule could never fire on creation | FIXED (ADMIN-BINDING) |
+| INT-045 | P1 | P11/P12 | the Admin CSP was a static `script-src 'self'`, which blocks the App Router's inline RSC scripts; the console rendered and never hydrated, so every control was inert. Invisible to HTTP-level checks, found by the first run in a real browser | FIXED (ADMIN-BINDING) — per-request nonce with `'strict-dynamic'` in `proxy.ts` |
+| INT-046 | P1 | P12 | the login form had no method, so a submit before hydration went out as GET with the phone number and password in the URL; reproduced under load by Playwright | FIXED (ADMIN-BINDING) — `method="post"` and the submit button disabled until hydration |
+| INT-047 | P3 | P12 | the login form printed the backend message directly instead of going through the central error mapper | FIXED (ADMIN-BINDING) |
 
 ## Rules
 
 - An identifier is never reused, even after the defect is fixed or retired.
 - A defect is registered here before it is referenced anywhere else.
-- The next free identifier is `INT-043`.
+- The next free identifier is `INT-048`.

@@ -313,6 +313,102 @@ The authoritative source for admin authorization remains the project RBAC. `user
 
 ---
 
+## DECISION-021 — The Admin learns its permissions from `/admin/me/`, resolved in one place
+
+**Date:** 2026-09-18
+
+**Subject:** INT-042. Nothing returned the caller's own Admin permissions.
+
+**Decision:** `GET /api/v1/admin/me/` returns `userId`, `displayName` and the deduplicated, sorted permission codes. It is guarded by holding an active Admin role, not by a permission code, because requiring one would be circular. The codes come from `accounts.rbac.admin_permissions_for`, beside the check `HasAdminPermission` already used.
+
+**Reason:** A navigation built from one resolver and enforced by another would eventually disagree. Reading permissions through `adminUserRetrieve` plus `adminRolesList` needs `admin.users.read` and `admin.roles.read`, which most operators will not hold. Probing every route for a 403 is slow and noisy.
+
+**Alternatives:** Probing. Rejected. Returning role names. Rejected: the UI branches on permissions, and role names are labels an administrator can rename.
+
+**Impact:** Django `groups`, `user_permissions` and `is_superuser` grant nothing, asserted by test. An operator whose roles carry no permissions gets an empty list, which is a valid state. The UI gate is presentation; every endpoint still enforces.
+
+---
+
+## DECISION-022 — One BFF route, one registry of named operations, reads and writes apart
+
+**Date:** 2026-09-18
+
+**Subject:** How thirteen screens reach the backend without hand-written transport.
+
+**Decision:** `lib/api/operations.ts` names every call and maps it to a generated client method. `/api/admin/[operation]` serves `READS` over GET and `WRITES` over POST. An unregistered name is a 404 before any network call. Evidence content has its own streaming route because it is a file, not an envelope.
+
+**Reason:** §2 forbids scattered fetch calls and hand-written DTOs. A registry keeps the whole transport surface in one reviewable file, and separating reads from writes means a mutation has no GET form, so a link, a prefetch or an image tag cannot trigger one.
+
+**Alternatives:** One route file per operation. Rejected: forty near-identical files. A generic proxy to Django. Rejected: it would forward anything the browser asked for.
+
+**Impact:** No screen names an endpoint or builds a query string. Regenerating the client touches the registry only where a signature changed.
+
+---
+
+## DECISION-023 — Session material lives in HttpOnly cookies named from the public origin
+
+**Date:** 2026-09-18
+
+**Subject:** INT-012 and §4–§7.
+
+**Decision:** Access and refresh material are both `HttpOnly`, `SameSite=Strict`, `Path=/`, no `Domain`. Whether they carry `Secure` and the `__Host-` prefix is decided by `ADMIN_PUBLIC_ORIGIN`: https gives both, loopback http gives neither, http on any other host stops the process at boot. Refresh coalesces per session and a call retries at most once, only after a 401.
+
+**Reason:** `NODE_ENV` knows nothing about the transport and was the original defect. The prefix and `Secure` are one decision because a browser refuses a `__Host-` cookie without `Secure`. The refresh secret rotates and reuse is treated as theft, so two concurrent refreshes must not both spend it.
+
+**Alternatives:** An explicit `ADMIN_INSECURE_COOKIES` switch. Rejected after it reintroduced `NODE_ENV` as a veto. Access token in memory on the client. Rejected by §6.
+
+**Impact:** The browser never holds a token. Misconfiguration fails at boot rather than at first login.
+
+---
+
+## DECISION-024 — Scripts are allowed by a per-request nonce, and every page renders per request
+
+**Date:** 2026-09-19
+
+**Subject:** INT-045. A static `script-src 'self'` blocked the App Router's inline scripts and the console never hydrated.
+
+**Decision:** `proxy.ts` generates a nonce per request and sends `script-src 'self' 'nonce-…' 'strict-dynamic'`; Next stamps it on its own scripts. The root layout calls `connection()` so no page is prerendered without a request. Styles keep `'unsafe-inline'`. HSTS and `upgrade-insecure-requests` are sent only on https.
+
+**Reason:** This is the documented approach for Next 16 and it avoids `'unsafe-inline'` for scripts. A prerendered page has no request and therefore no nonce.
+
+**Alternatives:** `'unsafe-inline'` for scripts. Rejected: it gives up most of what CSP is for. Hashes. Rejected: the RSC payload differs per render.
+
+**Impact:** An operations console gains nothing from static prerendering, so the cost is nil. The fault was invisible to every HTTP-level check and was found by the first real browser run.
+
+---
+
+## DECISION-025 — Retirement, not deletion, for taxonomy and verification policy
+
+**Date:** 2026-09-18
+
+**Subject:** INT-018. Which lifecycle operations Cycle J needs.
+
+**Decision:** Category groups and categories gain create and update; verification requirements gain update; advertisements gain update. None of the first three gains delete. `code` and `slug` are refused on update, visibly. A requirement cannot move between categories.
+
+**Reason:** Facilities, applications and evidence reference these rows under `PROTECT`, the specification offers no delete for them, and `active = false` already removes a row from every public surface. Silently ignoring a changed `code` would let an operator believe a rename worked.
+
+**Alternatives:** Full CRUD. Rejected by §19: the goal is an operational Admin, not a CRUD generator.
+
+**Impact:** `LAUNCH_POLICY_PENDING` stays open. The tool to configure pharmacy verification exists; the policy is not decided by its existence.
+
+---
+
+## DECISION-026 — The end-to-end suite spends logins sparingly rather than loosening the throttle
+
+**Date:** 2026-09-19
+
+**Subject:** The backend throttles login at ten attempts a minute and the suite tripped it.
+
+**Decision:** `global-setup.ts` signs each operator in once through the real BFF; tests reuse those sessions. Only tests about the session itself create their own. The runner flushes Redis per run.
+
+**Reason:** Raising the throttle for tests would weaken production to suit a test harness.
+
+**Alternatives:** A test-only throttle setting. Rejected for the same reason.
+
+**Impact:** A full run spends seven logins. A session shared this way must outlive the suite; access tokens last about fourteen minutes and the suite takes under one.
+
+---
+
 # Technical Debt Register
 
 Mandatory before staging or production closure. None of these blocks P2 or P10.

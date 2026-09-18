@@ -1,0 +1,117 @@
+P11–P13 ADMIN DATA BINDING + ADMIN GOLDEN PATH
+Dates: 2026-09-18 to 2026-09-19
+Base commit at start of batch: d93dbbc
+
+Topology for every connected result below. Nothing mocked at the network boundary:
+  Chromium (Playwright 1.56.1) -> next start :3000 (production build) -> proxy.ts (CSP nonce)
+    -> BFF route -> operation registry -> generated TypeScript client
+    -> runserver :8000 -> PostGIS 17-3.5 + Redis 8
+  Database migrated fresh each run; launch baseline from directory.0004; two operators from
+  seed_e2e_fixtures (full: every permission; limited: dashboard.read + reviews.read;
+  three facilities: one to reject, one to approve, one active to suspend).
+
+== 1. Playwright golden path — 31 tests ==
+== 1. Reset the database and apply migrations ==
+fixtures ready: full operator +963900111222, limited operator +963900333444, 3 facilities
+== 2. Start Django ==
+django ready on 8000
+== 3. Build and serve the Admin, production mode ==
+admin ready on 3000
+== 4. Playwright ==
+Running 31 tests using 1 worker
+[1/31] [chromium] › tests\e2e\auth.spec.ts:19:7 › sign in › a wrong password is refused, with nothing technical on screen
+[2/31] [chromium] › tests\e2e\auth.spec.ts:37:7 › sign in › a correct password lands on the dashboard and sets usable cookies
+[3/31] [chromium] › tests\e2e\auth.spec.ts:58:7 › session lifecycle › refreshing rotates the secret and the session keeps working
+[4/31] [chromium] › tests\e2e\auth.spec.ts:88:7 › session lifecycle › signing out clears the session and the console is no longer reachable
+[5/31] [chromium] › tests\e2e\auth.spec.ts:105:7 › session lifecycle › an invalid refresh cookie ends the session instead of looping
+[6/31] [chromium] › tests\e2e\auth.spec.ts:130:7 › with an established session › neither token is readable from the page
+[7/31] [chromium] › tests\e2e\auth.spec.ts:144:7 › with an established session › the shell renders the operator returned by /admin/me/
+[8/31] [chromium] › tests\e2e\auth.spec.ts:159:7 › with an established session › a full operator sees every section
+[9/31] [chromium] › tests\e2e\auth.spec.ts:165:7 › with an established session › a mutation has no GET form at all
+[10/31] [chromium] › tests\e2e\auth.spec.ts:182:7 › as a limited operator › the navigation shows only what they hold
+[11/31] [chromium] › tests\e2e\auth.spec.ts:192:7 › as a limited operator › typing the URL does not get past the backend
+[12/31] [chromium] › tests\e2e\auth.spec.ts:200:7 › as a limited operator › a direct mutation is refused by the backend
+[13/31] [chromium] › tests\e2e\auth.spec.ts:217:7 › as a limited operator › private evidence is refused, not merely hidden
+[14/31] [chromium] › tests\e2e\auth.spec.ts:233:7 › cross-origin protection › a mutation without an Origin header is refused
+[15/31] [chromium] › tests\e2e\auth.spec.ts:244:7 › cross-origin protection › a mutation from a foreign Origin is refused
+[16/31] [chromium] › tests\e2e\operations.spec.ts:25:7 › review golden path › the queue lists the pending application and filters narrow it
+[17/31] [chromium] › tests\e2e\operations.spec.ts:37:7 › review golden path › a rejection records the reason and moves the application
+[18/31] [chromium] › tests\e2e\operations.spec.ts:57:7 › approval › approving makes the facility public, and a second decision is refused
+[19/31] [chromium] › tests\e2e\operations.spec.ts:107:7 › facility lifecycle › suspending and reactivating both land in the audit trail
+[20/31] [chromium] › tests\e2e\operations.spec.ts:133:7 › user lifecycle › blocking and unblocking are recorded
+[21/31] [chromium] › tests\e2e\operations.spec.ts:158:7 › Cycle J › a province switch changes what the public API serves
+[22/31] [chromium] › tests\e2e\operations.spec.ts:203:7 › Cycle J › duty is refused for a category that is not a pharmacy
+[23/31] [chromium] › tests\e2e\operations.spec.ts:214:7 › Cycle J › a new category is invisible until a switch is turned on
+[24/31] [chromium] › tests\e2e\operations.spec.ts:240:7 › province rollout › activating Aleppo changes the public list, and the seed does not undo it
+[25/31] [chromium] › tests\e2e\operations.spec.ts:278:7 › verification policy › a requirement can be created, edited and retired
+[26/31] [chromium] › tests\e2e\operations.spec.ts:302:7 › verification policy › the screen does not claim the pharmacy policy is settled
+[27/31] [chromium] › tests\e2e\operations.spec.ts:312:7 › advertisements › an end before its start is refused by the backend
+[28/31] [chromium] › tests\e2e\operations.spec.ts:327:7 › advertisements › a valid advertisement can be created, edited and activated
+[29/31] [chromium] › tests\e2e\operations.spec.ts:348:7 › read-only screens › audit, analytics, settings and system all render real data
+[30/31] [chromium] › tests\e2e\operations.spec.ts:363:7 › read-only screens › system status exposes no credential or connection string
+[31/31] [chromium] › tests\e2e\operations.spec.ts:374:7 › read-only screens › the audit trail shows the request id, which is what a report quotes
+  31 passed (58.2s)
+playwright exit=0
+
+== 2. Vitest — 71 tests, 8 files ==
+  node        cookies (7)  csrf (10)  csp (4)  errors (13)  operations (10)  session (8)
+  components  gate (16)  login (3)
+  Covers: cookie naming dev vs https vs refused; fail-closed origin/CSRF; per-request CSP
+  nonce; refresh coalescing (three concurrent callers spend the secret once); cleanup on a
+  rejected refresh; one retry after 401 and none after 403; the error mapper; filter
+  serialisation; registry separation of reads and writes; PermissionGate; ConfirmDialog
+  locking while pending; DiffViewer; and the login form's pre-hydration HTML (method=post,
+  submit disabled).
+
+== 3. Backend regression, PostGIS in the backend container ==
+System check identified no issues (0 silenced).
+No changes detected
+...................................................................      [100%]
+211 passed in 26.22s
+ruff: Found 100 errors.
+mypy: Found 783 errors in 94 files (checked 211 source files)
+  Baseline measured the same way at c9a4cae: ruff 101, mypy 797 over 191 files.
+  New in this batch: admin_console/tests/test_admin_me.py (10), test_admin_operations.py (42).
+
+== 4. Contract ==
+  91 operations, 91 unique operation ids, 143 component schemas.
+  spectacular: exit 0, zero errors, zero warnings.
+  Schema drift after commit: git hash-object unchanged across regeneration — PASS.
+  New operations: adminMeRetrieve, adminCategoryGroupCreate, adminCategoryGroupUpdate,
+  adminCategoryCreate, adminCategoryUpdate, adminVerificationRequirementUpdate, adminAdUpdate.
+  14 query filters declared on four list operations (INT-041).
+
+== 5. Build and bundle ==
+  next build: exit 0, no warnings; every route dynamic; Proxy (Middleware) present.
+  Client bundle searched for ADMIN_API_ORIGIN, 127.0.0.1:8000, directory_admin_refresh,
+  directory_admin_access, bearerAccessToken, Authorization: 0 client files each.
+  tsconfig.json and next-env.d.ts unchanged by the build (INT-023 holds for apps/admin).
+  CSP on the served login page: script-src 'self' 'nonce-…' 'strict-dynamic'; all 10 script
+  tags carry that request's nonce. No HSTS on the loopback http origin; HSTS and
+  upgrade-insecure-requests only when ADMIN_PUBLIC_ORIGIN is https.
+
+== 6. Defects found and fixed in this batch ==
+  INT-015  missing resources answered 500 instead of 404 on eleven Admin routes
+  INT-018  taxonomy read-only; Cycle J could not run from the Admin
+  INT-039  AdminCapabilities snake_case on the wire
+  INT-041  14 list filters honoured by the runtime and undeclared in the contract
+  INT-042  no endpoint returned the caller's own permissions
+  INT-043  AdminVerificationRequirement.id declared uuid, actually an integer
+  INT-044  advertisement create contract omitted the schedule
+  INT-045  static CSP blocked the App Router's inline scripts; the console never hydrated
+  INT-046  login form submitted by GET before hydration, putting the password in the URL
+  INT-047  login form bypassed the central error mapper
+  Also: test_ad_mutations_are_audited grepped source text and is now executed; the e2e
+  runner silently failed to kill stale servers (taskkill //PID under MSYS_NO_PATHCONV=1).
+
+== 7. Not done, stated plainly ==
+  apps/web still lacks HSTS (INT-024 partial) and still rewrites its tsconfig (INT-023
+  partial). Category description_ar/en from 06-DATA-MODEL.md is not in the model and was
+  not added. LAUNCH_POLICY_PENDING stays open: the verification tool exists, the pharmacy
+  policy is not decided. Kotlin compilation and any Swift build remain NOT_VERIFIED for the
+  environment reasons recorded in P10.
+  Streaming an evidence file to an authorised operator is not exercised end to end: the e2e
+  stack runs no object storage, so no evidence file exists to stream. What is proven is the
+  refusal (403 for an operator without admin.evidence.read, before any lookup), the 404 for
+  a missing id, and that no storage key or URL reaches the page. The allowed path with real
+  bytes needs MinIO in the e2e stack and is NOT_VERIFIED here.

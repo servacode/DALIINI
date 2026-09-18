@@ -125,6 +125,15 @@ The full receipt and verification audit is recorded in `RECEIPT-AUDIT-2026-09-17
 | 2026-09-18T07:00:00+03:00 | Contract regeneration | LAUNCH BASELINE tree | openapi-generator 7.15.0 pinned image | regenerate schema and clients after the enum correction; `tsc --noEmit` | **PASS** — `CategorySpecializationEnum` is now GENERIC/PHARMACY/MEDICAL_CLINIC/NURSING_CENTER; digest `fc7bbe8206e44c889a60779b23f4ce84de0cd1e9d25c70ab5c34cefa5ae85dfd`; TypeScript compiles exit 0 | `openapi/schema.sha256` |
 | 2026-09-18T07:00:00+03:00 | Quality debt | LAUNCH BASELINE tree | backend container | `ruff check .`, `mypy .` | ruff 100 against a 101 baseline; mypy 789 against 797 across 205 source files, up from 191. **Reduced on both, none added**; zero findings in every module this batch adds | DEBT-001, DEBT-002 |
 | 2026-09-18T07:00:00+03:00 | Deliberate omissions | LAUNCH BASELINE tree | — | dataset review | No city, neighborhood, boundary or coordinate — no authoritative dataset exists. No `VerificationRequirement` — **LAUNCH_POLICY_PENDING**, a production launch gate, not a development blocker. No facility, user, rating, duty shift, opening hour, advertisement or test phone | DECISION-020 |
+| 2026-09-19 | Admin golden path | P11-P13 tree | Playwright, Chromium, production build + Django + PostGIS + Redis | — | **PASS** — 31/31 in 58s | `artifacts/evidence/admin-binding-20260919.txt` |
+| 2026-09-19 | Admin unit suite | P11-P13 tree | Vitest, node and jsdom projects | — | **PASS** — 71/71 | `artifacts/evidence/admin-binding-20260919.txt` |
+| 2026-09-19 | Backend regression | P11-P13 tree | `check`, `makemigrations --check`, `pytest` on PostGIS | — | **PASS** — no issues, no changes, 211 passed from 158 | `artifacts/evidence/admin-binding-20260919.txt` |
+| 2026-09-19 | Contract | P11-P13 tree | spectacular, drift gate, client regeneration | — | **PASS** — 91 operations, 143 components, zero warnings, no schema or client drift | `artifacts/evidence/admin-binding-20260919.txt` |
+| 2026-09-19 | Admin build | P11-P13 tree | `next build`, bundle search, tsconfig diff | — | **PASS** — exit 0, no warnings, no server secret in the client bundle, no tsconfig drift | `artifacts/evidence/admin-binding-20260919.txt` |
+| 2026-09-19 | INT-045 CSP | P11-P13 tree | served login page | — | **FIXED** — all ten script tags carry the request nonce; the console hydrates | `artifacts/evidence/admin-binding-20260919.txt` |
+| 2026-09-19 | INT-046 login GET | P11-P13 tree | server-rendered HTML + Playwright | — | **FIXED** — form posts, submit disabled until hydration | `artifacts/evidence/admin-binding-20260919.txt` |
+| 2026-09-19 | Quality debt | P11-P13 tree | ruff, mypy in the backend container | — | ruff 100; mypy 783 against 797 — reduced, none added | `artifacts/evidence/admin-binding-20260919.txt` |
+| 2026-09-19 | Evidence streaming | P11-P13 tree | — | — | NOT_VERIFIED — no object storage in the e2e stack; refusal and 404 verified | `artifacts/evidence/admin-binding-20260919.txt` |
 
 `P10 CONTRACT PASS` is achieved for schema generation, contract description, committed
 canonical artefacts, the drift gate, contract tests and runtime conformance. Kotlin client
@@ -139,3 +148,7 @@ The LAUNCH BASELINE batch closes INT-006 and INT-040 with executed evidence on b
 and an upgraded database. P4 moves to `CONNECTED_VERIFIED`; it is not `CLOSED`, because the
 Admin taxonomy is still read-only (INT-018) and the pharmacy verification policy is still
 pending.
+
+The P11–P13 batch qualifies P12 and P13 as `CONNECTED_VERIFIED` on executed evidence in a
+real browser. They are not `CLOSED`: the evidence-streaming path with real bytes, and the
+production launch gate LAUNCH_POLICY_PENDING, remain.

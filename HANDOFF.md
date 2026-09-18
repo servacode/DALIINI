@@ -1,6 +1,6 @@
 # HANDOFF
 
-Last updated: 2026-09-18T07:00:00+03:00
+Last updated: 2026-09-19
 
 ## PROJECT SUMMARY
 
@@ -608,20 +608,42 @@ production. It blocks neither backend nor Admin work.
 now matches (INT-040), so `CategorySpecializationEnum` changed in all three generated
 clients.
 
+## ADMIN — 2026-09-19
+
+The Admin is a working console on the real backend. P12 and P13 are `CONNECTED_VERIFIED`.
+
+**How it reaches the backend.** The browser only ever calls same-origin routes. Data goes
+through `/api/admin/[operation]`, which looks the name up in `lib/api/operations.ts` and runs
+the generated client method. To add a call, add it to `READS` or `WRITES`; never call `fetch`
+at Django from a page, and never hand-write a request shape. Evidence files stream through
+`/api/admin/evidence/[id]`.
+
+**Sessions.** Both tokens are HttpOnly cookies. Set `ADMIN_PUBLIC_ORIGIN` to the URL
+operators open: https gives `__Host-` cookies with `Secure` and HSTS; loopback http is for
+local work; http on any other host refuses to boot. `ADMIN_API_ORIGIN` is where the server
+reaches Django.
+
+**Permissions.** The shell reads `/admin/me/` once. Hiding a link is presentation; the
+backend enforces every call, and a 403 is handled on screen.
+
+**CSP.** `proxy.ts` issues a nonce per request and every page renders per request. Do not
+move the policy back into `next.config.ts` and do not add `'unsafe-inline'` for scripts: that
+is the fault that left the console un-hydrated (INT-045).
+
+**Tests.** `./scripts/e2e-admin.sh` resets the test database, starts Django, builds and
+serves the Admin in production mode, and runs Playwright; `pnpm test` in `apps/admin` runs
+Vitest. The Playwright browser was installed by hand into the shared cache on this machine,
+because Playwright's own extractor produced empty directories here.
+
+**Open.** Streaming an evidence file to an authorised operator is not exercised end to end —
+the e2e stack has no object storage. LAUNCH_POLICY_PENDING: the pharmacy verification policy
+must be configured and qualified before owner onboarding opens publicly. `apps/web` still
+lacks HSTS and still rewrites its tsconfig.
+
 ## NEXT
 
-**P11 to P13, Admin data binding and the Admin golden path.** The Admin is still a
-descriptive scaffold: `backendRequest`, `setRefreshCookie` and `getRefreshCookie` exist but
-are never called, and every page renders a static `OperationPage` naming the endpoint it
-would call. Neither Playwright nor Vitest is installed, so `P13 ADMIN GOLDEN PATH PASS` has
-no runner yet.
-
-Start with the login and refresh BFF against `authLogin` and `authRefresh`, and fix INT-012
-while doing it: the `__Host-` refresh cookie sets `secure` only when `NODE_ENV=production`,
-and a browser rejects a `__Host-` cookie without `Secure`, so the development login flow
-cannot work today.
-
-Two things make this easier than it was. The API boundary is settled and typed — one error
-envelope, one cursor envelope, camelCase throughout, generated clients for all three
-platforms. And the database has real provinces and a real taxonomy, so an Admin grid has
-something to render on first load.
+**Android generated-client integration and the Android golden path.** Replace
+`UnboundGeneratedPublicApi` and `UnboundGeneratedOwnerApi` with the committed Kotlin client,
+bind public discovery and owner onboarding, and qualify them against the same backend. The
+blocker is environmental: Google Maven and the Gradle distribution are unreachable from this
+machine, so this needs a network or CI runner that can reach them.

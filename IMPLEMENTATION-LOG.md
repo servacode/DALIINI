@@ -1314,3 +1314,68 @@ ruff is 100 against a 101 baseline. mypy is 789 against 797, unchanged from befo
 work despite fourteen more source files, with zero findings in every new module.
 
 Evidence: `artifacts/evidence/launch-baseline-20260918.txt`.
+
+
+## P11–P13 ADMIN DATA BINDING + ADMIN GOLDEN PATH — 2026-09-18 to 2026-09-19
+
+The Admin went from thirteen static pages that described the endpoint they would call, to
+a console an operator can run the platform from. Everything below was proven against a
+production build in a real browser, talking to a real Django, PostGIS and Redis.
+
+### Backend additions
+
+`GET /admin/me/` (INT-042) returns the caller's permission codes from the same resolver the
+permission class uses. Category groups and categories gained create and update, verification
+requirements and advertisements gained update (INT-018). None gained delete: they are
+referenced under `PROTECT`, and retirement is `active = false`. `code` and `slug` are refused
+on update, visibly. `AdminCapabilities` became camelCase (INT-039). Fourteen list filters the
+views already honoured were declared in the contract (INT-041), and a verification
+requirement's id stopped claiming to be a UUID (INT-043). The advertisement create contract
+gained the schedule it had always been missing (INT-044). Eleven Admin routes stopped
+answering 500 for a missing id (INT-015).
+
+### The console
+
+One BFF route and one operation registry carry every call through the generated client;
+reads are GET and writes are POST, on separate registries, so a mutation has no GET form.
+Sessions live in HttpOnly cookies whose name and `Secure` flag come from the public origin.
+Refresh coalesces per session and retries once, after a 401 only. The origin check is
+fail-closed. Fifteen shared components — table, filters, pagination, form sections, confirm
+dialog, states, diff, audit timeline, status badge, permission gate — are built once and used
+throughout, RTL by inheritance and on design tokens only.
+
+### What only a browser could show
+
+The first Playwright run found that the Content Security Policy blocked the App Router's
+inline scripts (INT-045). Pages rendered and never hydrated; every control was inert. It had
+been that way since the scaffold, and no HTTP-level check could see it. A per-request nonce
+in `proxy.ts` fixed it without `'unsafe-inline'`.
+
+A run under load then found that the login form, having no method, submitted by GET when
+clicked before hydration — with the password in the URL (INT-046). The form now posts and
+its button stays disabled until React owns the page. The same form had bypassed the central
+error mapper (INT-047).
+
+### The runner
+
+Three runs in a row tested the wrong server. `taskkill //PID` under `MSYS_NO_PATHCONV=1`
+reached taskkill literally and failed silently, an old `next start` kept the port, and the
+fresh build replaced the chunks under it. The runner now kills the process tree correctly,
+refuses to continue while the port is bound, and fails if `next start` reports EADDRINUSE.
+The suite also stopped tripping the backend's ten-a-minute login throttle: it signs each
+operator in once and reuses the session, rather than loosening the throttle.
+
+### Numbers
+
+Playwright 31/31. Vitest 71/71. Backend 211 passed, from 158. ruff 100; mypy 783 against a
+797 baseline measured the same way. Contract 91 operations, 143 components, zero warnings,
+schema and client drift PASS. No backend secret or API origin in the client bundle.
+
+### Not verified
+
+Streaming an evidence file to an authorised operator: the e2e stack has no object storage.
+The refusal, the 404 and the absence of any storage key on the page are verified.
+
+Evidence: `artifacts/evidence/admin-binding-20260919.txt`,
+`artifacts/evidence/admin-bff-auth-20260918.txt`,
+`artifacts/evidence/admin-route-inventory-20260918.md`.
