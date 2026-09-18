@@ -1,5 +1,13 @@
 import type { NextConfig } from "next";
 
+/**
+ * Static security headers.
+ *
+ * The Content Security Policy is not here. It needs a fresh nonce per request, which a
+ * build-time header cannot carry, so `proxy.ts` sets it — together with HSTS on https
+ * deployments. Two CSP headers would both be enforced, and a nonce-less one here would
+ * block exactly the scripts the proxy's nonce exists to allow.
+ */
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   transpilePackages: ["@servacode/design-tokens", "@servacode/api-typescript"],
@@ -11,10 +19,7 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "same-origin" },
           { key: "X-Frame-Options", value: "DENY" },
-          {
-            key: "Content-Security-Policy",
-            value: "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
-          },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
         ],
       },
     ];

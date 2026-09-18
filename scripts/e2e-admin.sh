@@ -83,10 +83,6 @@ done
 
 echo
 echo "== 4. Playwright =="
-# Browsers live under the app rather than in the shared per-user cache: another Playwright
-# version on the same machine prunes that cache, which silently removes the build this
-# version needs.
-export PLAYWRIGHT_BROWSERS_PATH="${PLAYWRIGHT_BROWSERS_PATH:-$ADMIN/.playwright-browsers}"
 E2E_API_ORIGIN="http://127.0.0.1:$API_PORT" \
 ADMIN_E2E_URL="http://localhost:$ADMIN_PORT" \
   ./node_modules/.bin/playwright test "$@"
