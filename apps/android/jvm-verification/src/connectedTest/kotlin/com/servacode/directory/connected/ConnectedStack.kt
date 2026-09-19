@@ -8,6 +8,7 @@ import com.servacode.directory.core.network.AuthApiBoundary
 import com.servacode.directory.core.network.NetworkModule
 import com.servacode.directory.core.network.OwnerApiBoundary
 import com.servacode.directory.core.network.PublicApiBoundary
+import com.servacode.directory.core.network.PushRegistrationBoundary
 import com.servacode.directory.core.network.RequestIdInterceptor
 import com.servacode.directory.core.network.api.ApiEnvironment
 import com.servacode.directory.core.network.api.GeneratedClient
@@ -19,6 +20,7 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
@@ -60,6 +62,7 @@ class Device {
     )
     val public: PublicApiBoundary = NetworkModule.providePublicApiBoundary(anonymous, authorized)
     val owner: OwnerApiBoundary = GeneratedOwnerApi(authorized)
+    val push: PushRegistrationBoundary = NetworkModule.providePushRegistrationBoundary(authorized)
     val auth: AuthApiBoundary = NetworkModule.provideAuthApiBoundary(
         anonymous,
         authorized,
@@ -92,13 +95,33 @@ object Citizen {
  * no other way to learn a code. The command refuses to run with a real provider.
  */
 fun setOtp(challengeId: String, code: String) {
+    manage("e2e_set_otp", "--challenge", challengeId, "--code", code)
+}
+
+/**
+ * How many push tokens the backend holds as active for [sessionId], read with Django's ORM in
+ * the API container. The API never echoes a token back, by design, so there is no other way
+ * to see what a sign-out or a revocation did to one.
+ */
+fun activePushTokens(sessionId: String): Int {
+    UUID.fromString(sessionId)
+    val output = manage(
+        "shell", "-c",
+        "from notifications.models import DevicePushToken as T; " +
+            "print(T.objects.filter(session_id='$sessionId', active=True).count())",
+    )
+    return output.trim().lines().last().trim().toInt()
+}
+
+/** Runs a Django management command in the API container and returns what it printed. */
+private fun manage(vararg args: String): String {
     val container = System.getenv("E2E_API_CONTAINER").orEmpty().ifBlank { "e2e-api" }
-    val process = ProcessBuilder(
-        "docker", "exec", container, "uv", "run", "python", "manage.py", "e2e_set_otp",
-        "--challenge", challengeId, "--code", code,
-    ).redirectErrorStream(true).start()
+    val process = ProcessBuilder(listOf("docker", "exec", container, "uv", "run", "python", "manage.py") + args)
+        .redirectErrorStream(true)
+        .start()
     val output = process.inputStream.bufferedReader().readText()
-    check(process.waitFor(60, TimeUnit.SECONDS) && process.exitValue() == 0) { "e2e_set_otp failed: $output" }
+    check(process.waitFor(60, TimeUnit.SECONDS) && process.exitValue() == 0) { "manage.py ${args.first()} failed: $output" }
+    return output
 }
 
 class MemoryAccess : AccessTokenStore {
@@ -113,6 +136,22 @@ class MemoryVault : RefreshTokenVault {
     override fun write(value: String) = this.value.set(value)
     override fun clear() = value.set(null)
 }
+
+/** A small, real JPEG, as a phone camera would hand the app one. */
+fun jpeg(width: Int = 64, height: Int = 48): ByteArray {
+    val image = java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB)
+    val out = java.io.ByteArrayOutputStream()
+    check(javax.imageio.ImageIO.write(image, "jpg", out))
+    return out.toByteArray()
+}
+
+/** What anyone on the internet gets for [url]: no session, no credentials, no signature. */
+class AnonymousFetch(val status: Int, val contentType: String?, val bytes: ByteArray)
+
+fun fetchAnonymously(url: String): AnonymousFetch =
+    OkHttpClient().newCall(Request.Builder().url(url).build()).execute().use { response ->
+        AnonymousFetch(response.code, response.header("Content-Type"), response.body.bytes())
+    }
 
 /** The backend's socket, on the same host as the API. */
 fun socketUrl(): String = Device.baseUrl().replaceFirst("http", "ws") + "ws/v1/directory/"

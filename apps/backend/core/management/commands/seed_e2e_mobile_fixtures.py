@@ -21,7 +21,7 @@ from django.utils import timezone
 
 from accounts.models import OTPChallenge, User
 from business_hours.models import BusinessHour, TemporaryClosure
-from directory.models import Category
+from directory.models import Category, VerificationRequirement
 from facilities.models import Facility, FacilityMembership
 from locations.models import Province
 from pharmacy_duty.models import DutyShift
@@ -54,7 +54,9 @@ class Command(BaseCommand):
             raise CommandError(f"Refusing to seed fixtures into {name!r}.")
 
         phones = [CITIZEN["phone"], MOBILE_OWNER["phone"], REGISTRANT_PHONE]
+        # Facilities first: their evidence protects the requirements it answers.
         Facility.objects.filter(name_ar__startswith=PREFIX).delete()
+        VerificationRequirement.objects.filter(label_ar__startswith=PREFIX).delete()
         User.objects.filter(phone__in=phones).delete()
         OTPChallenge.objects.filter(phone__in=phones).delete()
 
@@ -64,6 +66,20 @@ class Command(BaseCommand):
         pharmacy = Category.objects.get(code="pharmacy")
         raqqa = Province.objects.get(code="raqqa")
         now = timezone.now()
+
+        # A test requirement, so that evidence travels from the owner app to the Admin exactly
+        # as a configured policy would make it. It exists only in this test database: the
+        # launch baseline configures none, because the pharmacy policy is still undecided
+        # (LAUNCH_POLICY_PENDING).
+        VerificationRequirement.objects.create(
+            category=pharmacy,
+            label_ar=f"{PREFIX}ترخيص مزاولة (اختبار)",
+            instructions_ar="صورة واضحة للترخيص.",
+            required=True,
+            min_files=1,
+            max_files=2,
+            active=True,
+        )
 
         def public(index: int, label: str) -> Facility:
             longitude, latitude = CENTRE
@@ -134,7 +150,11 @@ class Command(BaseCommand):
             facility=owned, user=owner, role=FacilityMembership.Role.OWNER
         )
 
-        self.stdout.write(self.style.SUCCESS("mobile fixtures ready: 2 accounts, 7 facilities"))
+        self.stdout.write(
+            self.style.SUCCESS(
+                "mobile fixtures ready: 2 accounts, 7 facilities, 1 test requirement"
+            )
+        )
 
     @staticmethod
     def _account(spec: dict[str, str]) -> User:

@@ -27,10 +27,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.awt.image.BufferedImage
-import java.io.ByteArrayOutputStream
 import java.util.UUID
-import javax.imageio.ImageIO
 
 /** One owner session for the whole class: owner logins count against a per-account throttle. */
 private object Owner {
@@ -43,24 +40,32 @@ class OwnerConnectedTest {
 
     private fun raqqaId(): String = runBlocking { device.public.provinces().first { it.nameEn == "Raqqa" }.id }
 
-    private fun jpeg(): ByteArray {
-        val image = BufferedImage(64, 48, BufferedImage.TYPE_INT_RGB)
-        val out = ByteArrayOutputStream()
-        check(ImageIO.write(image, "jpg", out))
-        return out.toByteArray()
-    }
-
     private fun appError(block: suspend () -> Any?): AppError =
         runBlocking { (runCatching { block() }.exceptionOrNull() as AppException).error }
 
-    @Test fun `onboarding offers what the backend opened and asks for no evidence it has not configured`() {
+    @Test fun `onboarding offers what the backend opened and asks for exactly the evidence it configured`() {
         val config = runBlocking { owner.ownerConfig(raqqaId()) }
 
         val pharmacy = config.categories.single()
         assertEquals("PHARMACY", pharmacy.specialization)
-        // LAUNCH_POLICY_PENDING: no pharmacy verification requirement is configured yet.
-        assertTrue(pharmacy.verificationRequirements.isEmpty())
         assertTrue(pharmacy.capabilities.supportsOwnerOnboarding)
+        // The launch baseline configures no pharmacy requirement (LAUNCH_POLICY_PENDING); the
+        // mobile fixtures add one test requirement, and the app shows what the backend sends.
+        val requirement = pharmacy.verificationRequirements.single()
+        assertEquals("e2e-m-ترخيص مزاولة (اختبار)", requirement.labelAr)
+        assertTrue(requirement.required)
+        assertEquals(1, requirement.minFiles)
+        assertEquals(2, requirement.maxFiles)
+    }
+
+    @Test fun `each owned facility carries its category's capabilities`() = runBlocking {
+        val pharmacy = owner.ownerConfig(raqqaId()).categories.single().capabilities
+        val facilities = owner.facilities()
+
+        assertTrue(facilities.isNotEmpty())
+        // The app decides what to offer from these, and never from a category it hard-codes.
+        facilities.forEach { assertEquals(it.nameAr, pharmacy, it.capabilities) }
+        assertTrue(facilities.all { it.capabilities.supportsDuty && it.capabilities.supportsTemporaryClosure })
     }
 
     @Test fun `a selection the backend has not opened is refused by the backend`() {
@@ -73,7 +78,8 @@ class OwnerConnectedTest {
 
     @Test fun `a draft is built step by step, uploaded to, and submitted`() = runBlocking {
         val raqqa = raqqaId()
-        val pharmacy = owner.ownerConfig(raqqa).categories.single().category.id
+        val config = owner.ownerConfig(raqqa).categories.single()
+        val pharmacy = config.category.id
 
         val draft = owner.createFacility(OwnerFacilityDraftInput(raqqa, pharmacy, "e2e-m-مسودة جديدة"))
         assertEquals(OwnerFacilityStatus.DRAFT, draft.summary.status)
@@ -101,6 +107,10 @@ class OwnerConnectedTest {
         assertEquals(64, image.width)
         assertTrue(image.url.startsWith("http"))
         assertFalse(image.url.contains("private"))
+        // Public media has a permanent address: unsigned, the same on every read, open to anyone.
+        assertFalse(image.url.contains("X-Amz-"))
+        assertEquals(listOf(image.url), owner.images(id).map { it.url })
+        assertEquals(200, fetchAnonymously(image.url).status)
         assertEquals(listOf(image.id), owner.images(id).map { it.id })
 
         val notAnImage = appError {
@@ -112,9 +122,9 @@ class OwnerConnectedTest {
         }
         assertEquals(AppError.Kind.VALIDATION, oversized.kind)
         val unknownRequirement = appError {
-            owner.uploadEvidence(id, UUID.randomUUID().toString(), OwnerUploadPayload("e.jpg", "image/jpeg", jpeg()))
+            owner.uploadEvidence(id, "999999", OwnerUploadPayload("e.jpg", "image/jpeg", jpeg()))
         }
-        assertTrue(unknownRequirement.kind in setOf(AppError.Kind.VALIDATION, AppError.Kind.NOT_FOUND))
+        assertEquals(AppError.Kind.NOT_FOUND, unknownRequirement.kind)
 
         val day = 24 * 60 * 60 * 1000L
         val now = System.currentTimeMillis()
@@ -126,6 +136,16 @@ class OwnerConnectedTest {
         val shift = owner.createDuty(id, DutyShiftInput(now + day, now + day + 8 * 60 * 60 * 1000L))
         assertEquals(listOf(shift.id), owner.duty(id).map { it.id })
         owner.deleteDuty(id, shift.id)
+
+        // The configured requirement is answered before submitting; the backend checks it.
+        val requirement = config.verificationRequirements.single()
+        val evidence = owner.uploadEvidence(
+            id,
+            requirement.id,
+            OwnerUploadPayload("licence.jpg", "image/jpeg", jpeg()),
+        )
+        assertEquals(requirement.id, evidence.requirementId)
+        assertEquals(listOf(evidence.id), owner.facility(id).evidence.map { it.id })
 
         val submission = owner.submitFacility(id)
         assertEquals("SUBMITTED", submission.status)

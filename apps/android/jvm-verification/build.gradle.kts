@@ -119,6 +119,8 @@ tasks.register<Test>("connectedCheck") {
     environment("DIRECTORY_API_BASE_URL", System.getenv("DIRECTORY_API_BASE_URL") ?: "")
     // The backend container, for the test-only OTP helper; see ConnectedStack.setOtp.
     environment("E2E_API_CONTAINER", System.getenv("E2E_API_CONTAINER") ?: "e2e-api")
+    // The Android -> Admin -> Android hand-off runs in phases; see HandoffConnectedTest.
+    environment("HANDOFF_PHASE", System.getenv("HANDOFF_PHASE") ?: "")
     testLogging {
         events("passed", "failed", "skipped")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
