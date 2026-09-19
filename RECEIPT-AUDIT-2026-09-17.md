@@ -533,9 +533,10 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-071 | P2 | P14 | `distinctUntilChanged()` applied to a `StateFlow` in `AccountViewModel` and `PushSetup`; kotlinx.coroutines deprecates it at error level because a StateFlow already emits only changes, so neither compiled. Android-only sources the JVM harness does not compile; found by the first real Android build (CI run 35425452454) | FIXED (ANDROID-CI) — operator removed; behaviour unchanged |
 | INT-072 | P1 | P15 | `AccountViewModel.deleteAccount()` called `deleteAccount()`, meant for the injected use case of that name; inside the function it resolves to the function itself, which returns `Unit`, so the module did not compile — and had it compiled as a recursion, account deletion would never have reached the backend. Found by the first real Android build (CI run 35425452454) | FIXED (ANDROID-CI) — the use case is named `accountDeletion` |
 | INT-073 | P1 | P14 | the project compiled against API 36 while 21 pinned libraries (Navigation 2.10.1, Compose 1.12, Lifecycle 2.11.0, Core 1.19.0, Coil 3.6.2) require API 37, so `checkLocalDebugAarMetadata` refused the app. Found by the first real Android build (CI run 35425779550) | FIXED (ANDROID-CI) — compileSdk 37, targetSdk 36 unchanged (DECISION-040) |
+| INT-074 | P2 | P15 | `feature:home` imports `androidx.activity.compose` for the location permission request without declaring it, the same omission INT-055 fixed in other modules. Found by the first real Android build (CI run 35425779550) | FIXED (ANDROID-CI) — declared |
 
 ## Rules
 
 - An identifier is never reused, even after the defect is fixed or retired.
 - A defect is registered here before it is referenced anywhere else.
-- The next free identifier is `INT-074`.
+- The next free identifier is `INT-075`.
