@@ -6,6 +6,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.toColorInt
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -15,7 +16,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import com.servacode.directory.designsystem.generated.DirectoryTokens
 
-private fun color(hex: String): Color = Color(android.graphics.Color.parseColor(hex))
+private fun color(hex: String): Color = Color(hex.toColorInt())
 
 private val DirectoryColors = lightColorScheme(
     primary = color(DirectoryTokens.SemanticActionPrimary),
