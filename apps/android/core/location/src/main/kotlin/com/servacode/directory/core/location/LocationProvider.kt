@@ -28,3 +28,16 @@ interface LocationProvider {
  */
 suspend fun LocationProvider.fixWithoutPrompt(timeoutMillis: Long = 3_000L): LocationFix? =
     lastKnown() ?: (current(timeoutMillis) as? LocationResult.Available)?.fix
+
+/**
+ * The only location permissions this app ever asks for, both of them foreground.
+ *
+ * Background location is not among them and never will be: the platform treats it as a separate,
+ * sensitive request, the app has no use that would justify it, and `15-SECURITY-PRIVACY.md`
+ * forbids it. The screen that asks and the screens that offer to sort by distance all launch
+ * exactly this list.
+ */
+val FOREGROUND_LOCATION_PERMISSIONS = listOf(
+    "android.permission.ACCESS_COARSE_LOCATION",
+    "android.permission.ACCESS_FINE_LOCATION",
+)

@@ -13,7 +13,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun BootstrapScreen(
-    onReady: (String?) -> Unit,
+    onReady: (StartDestination) -> Unit,
     viewModel: BootstrapViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -22,8 +22,8 @@ fun BootstrapScreen(
     if (state !is BootstrapUiState.Error) DirectorySplashScreen()
     when (val value = state) {
         BootstrapUiState.Loading -> Unit
-        is BootstrapUiState.Ready -> LaunchedEffect(value.selectedProvinceId) {
-            onReady(value.selectedProvinceId)
+        is BootstrapUiState.Ready -> LaunchedEffect(value.start) {
+            onReady(value.start)
         }
         is BootstrapUiState.Error -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("تعذر بدء التطبيق")

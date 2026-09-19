@@ -6,6 +6,8 @@ data class DirectoryPreferences(
     val selectedProvinceId: String? = null,
     val locationPreference: LocationPreference = LocationPreference.ASK,
     val onboardingHintsSeen: Boolean = false,
+    /** The welcome and the location question have been through once; they are not shown again. */
+    val welcomeCompleted: Boolean = false,
 )
 
 enum class LocationPreference { ASK, ENABLED, DISABLED }
@@ -18,4 +20,5 @@ interface DirectoryPreferencesStore {
     val values: Flow<DirectoryPreferences>
     suspend fun selectProvince(id: String)
     suspend fun setLocationPreference(value: LocationPreference)
+    suspend fun setWelcomeCompleted()
 }

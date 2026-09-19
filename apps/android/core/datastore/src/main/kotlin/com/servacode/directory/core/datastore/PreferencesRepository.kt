@@ -28,6 +28,7 @@ class PreferencesRepository @Inject constructor(
                 ?.let { runCatching { LocationPreference.valueOf(it) }.getOrNull() }
                 ?: LocationPreference.ASK,
             onboardingHintsSeen = prefs[ONBOARDING_HINTS] ?: false,
+            welcomeCompleted = prefs[WELCOME_COMPLETED] ?: false,
         )
     }
 
@@ -39,10 +40,15 @@ class PreferencesRepository @Inject constructor(
         context.directoryDataStore.edit { it[LOCATION_PREFERENCE] = value.name }
     }
 
+    override suspend fun setWelcomeCompleted() {
+        context.directoryDataStore.edit { it[WELCOME_COMPLETED] = true }
+    }
+
     private companion object {
         val SELECTED_PROVINCE = stringPreferencesKey("selected_province_id")
         val LOCATION_PREFERENCE = stringPreferencesKey("location_preference")
         val ONBOARDING_HINTS = booleanPreferencesKey("onboarding_hints_seen")
+        val WELCOME_COMPLETED = booleanPreferencesKey("welcome_completed")
     }
 }
 

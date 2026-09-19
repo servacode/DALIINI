@@ -4,6 +4,9 @@ import kotlinx.serialization.Serializable
 
 sealed interface DirectoryRoute {
     @Serializable data object Bootstrap : DirectoryRoute
+    /** The first run: a welcome, then the location question, then Home. */
+    @Serializable data object Welcome : DirectoryRoute
+    @Serializable data object LocationPermission : DirectoryRoute
     @Serializable data object Home : DirectoryRoute
     @Serializable data object ProvincePicker : DirectoryRoute
     @Serializable data object Search : DirectoryRoute

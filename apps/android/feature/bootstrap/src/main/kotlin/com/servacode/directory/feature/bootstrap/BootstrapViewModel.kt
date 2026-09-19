@@ -11,7 +11,7 @@ import javax.inject.Inject
 
 sealed interface BootstrapUiState {
     data object Loading : BootstrapUiState
-    data class Ready(val selectedProvinceId: String?) : BootstrapUiState
+    data class Ready(val selectedProvinceId: String?, val start: StartDestination) : BootstrapUiState
     data class Error(val code: String) : BootstrapUiState
 }
 
@@ -25,7 +25,7 @@ class BootstrapViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             _state.value = when (val result = bootstrap()) {
-                is BootstrapResult.Ready -> BootstrapUiState.Ready(result.selectedProvinceId)
+                is BootstrapResult.Ready -> BootstrapUiState.Ready(result.selectedProvinceId, result.start)
                 is BootstrapResult.Failed -> BootstrapUiState.Error(result.reason)
             }
         }

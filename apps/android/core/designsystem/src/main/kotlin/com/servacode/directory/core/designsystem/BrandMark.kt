@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /** The size of the mark itself on the splash: the middle 120 units of brand_mark.xml. */
@@ -18,18 +19,18 @@ val BrandMarkSize = 120.dp
 val BrandMarkCanvas = 288.dp
 
 /**
- * The brand mark, currently a placeholder (docs/design/BRAND-ASSETS.md). It takes
- * BrandMarkSize in the layout and draws its canvas around it, as the system splash does.
- * Decorative: the app's name is always written next to it, so TalkBack does not stop on it.
+ * The brand mark, currently a placeholder (docs/design/BRAND-ASSETS.md). It takes [size] in the
+ * layout and draws its canvas around it, as the system splash does. Decorative: the app's name
+ * is always written next to it, so TalkBack does not stop on the picture.
  */
 @Composable
-fun BrandMark(modifier: Modifier = Modifier) {
+fun BrandMark(modifier: Modifier = Modifier, size: Dp = BrandMarkSize) {
     Image(
         painter = painterResource(R.drawable.brand_mark),
         contentDescription = null,
         modifier = modifier.layout { measurable, _ ->
-            val canvas = BrandMarkCanvas.roundToPx()
-            val mark = BrandMarkSize.roundToPx()
+            val mark = size.roundToPx()
+            val canvas = (mark * (BrandMarkCanvas / BrandMarkSize)).toInt()
             val placeable = measurable.measure(Constraints.fixed(canvas, canvas))
             layout(mark, mark) { placeable.place((mark - canvas) / 2, (mark - canvas) / 2) }
         },

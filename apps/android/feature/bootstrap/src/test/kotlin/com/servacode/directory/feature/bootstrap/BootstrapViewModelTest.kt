@@ -18,22 +18,24 @@ class BootstrapViewModelTest {
     private fun viewModel(province: String?) =
         BootstrapViewModel(BootstrapUseCase(DefaultBootstrapRepository(FakePreferences(province))))
 
+    private fun ready(province: String?, start: StartDestination) = BootstrapUiState.Ready(province, start)
+
     @Test fun `ready with the saved province, with no time passing`() = runTest(main.dispatcher) {
         val model = viewModel("raqqa")
         assertEquals(BootstrapUiState.Loading, model.state.value)
 
         runCurrent()
 
-        assertEquals(BootstrapUiState.Ready("raqqa"), model.state.value)
+        assertEquals(ready("raqqa", StartDestination.HOME), model.state.value)
         assertEquals(0L, testScheduler.currentTime)
     }
 
-    @Test fun `a first start goes on to choose a province, still without waiting`() = runTest(main.dispatcher) {
+    @Test fun `a first start goes to the welcome, still without waiting`() = runTest(main.dispatcher) {
         val model = viewModel(null)
 
         runCurrent()
 
-        assertEquals(BootstrapUiState.Ready(null), model.state.value)
+        assertEquals(ready(null, StartDestination.WELCOME), model.state.value)
         assertEquals(0L, testScheduler.currentTime)
     }
 }

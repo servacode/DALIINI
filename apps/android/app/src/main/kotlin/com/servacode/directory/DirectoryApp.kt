@@ -18,6 +18,9 @@ import com.servacode.directory.feature.auth.RegisterScreen
 import kotlinx.coroutines.flow.StateFlow
 import com.servacode.directory.feature.account.AccountScreen
 import com.servacode.directory.feature.bootstrap.BootstrapScreen
+import com.servacode.directory.feature.bootstrap.LocationPermissionScreen
+import com.servacode.directory.feature.bootstrap.StartDestination
+import com.servacode.directory.feature.bootstrap.WelcomeScreen
 import com.servacode.directory.feature.directory.DirectoryScreen
 import com.servacode.directory.feature.owner.MyFacilitiesScreen
 import com.servacode.directory.feature.owner.ManageFacilityScreen
@@ -56,9 +59,26 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
     NavHost(navController = navController, startDestination = DirectoryRoute.Bootstrap) {
         composable<DirectoryRoute.Bootstrap> {
             BootstrapScreen(
-                onReady = {
-                    navController.navigate(DirectoryRoute.Home) {
+                onReady = { start ->
+                    val destination = when (start) {
+                        StartDestination.WELCOME -> DirectoryRoute.Welcome
+                        StartDestination.HOME -> DirectoryRoute.Home
+                    }
+                    navController.navigate(destination) {
                         popUpTo<DirectoryRoute.Bootstrap> { inclusive = true }
+                    }
+                },
+            )
+        }
+        composable<DirectoryRoute.Welcome> {
+            WelcomeScreen(onContinue = { navController.navigate(DirectoryRoute.LocationPermission) })
+        }
+        composable<DirectoryRoute.LocationPermission> {
+            LocationPermissionScreen(
+                onDone = {
+                    navController.navigate(DirectoryRoute.Home) {
+                        // The first run is over; back from Home leaves the app, as it always did.
+                        popUpTo<DirectoryRoute.Welcome> { inclusive = true }
                     }
                 },
             )
