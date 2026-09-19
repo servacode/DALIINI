@@ -1,5 +1,6 @@
 package com.servacode.directory
 
+import com.servacode.directory.core.designsystem.BrandMarkCanvas
 import com.servacode.directory.core.designsystem.BrandMarkSize
 import com.servacode.directory.designsystem.generated.DirectoryTokens
 import org.junit.Assert.assertEquals
@@ -63,15 +64,17 @@ class SplashThemeTest {
         assertEquals(DirectoryTokens.SemanticSurfaceDefault.uppercase(), value.uppercase())
     }
 
-    @Test fun `the system splash draws the mark at the size the app's splash draws it`() {
-        assertEquals("@drawable/brand_mark_splash", style("Theme.Directory.Starting").item("windowSplashScreenAnimatedIcon"))
-        val inset = document("../core/designsystem/src/main/res/drawable/brand_mark_splash.xml").documentElement
+    @Test fun `both splashes draw one mark file, the mark in the middle of its canvas`() {
+        assertEquals("@drawable/brand_mark", style("Theme.Directory.Starting").item("windowSplashScreenAnimatedIcon"))
         val mark = document("../core/designsystem/src/main/res/drawable/brand_mark.xml").documentElement
-        val markSize = dp(mark.getAttributeNS(android, "width"))
+        val canvas = dp(mark.getAttributeNS(android, "width"))
+        val group = mark.getElementsByTagName("group").item(0) as Element
 
-        assertEquals("@drawable/brand_mark", inset.getAttributeNS(android, "drawable"))
-        assertEquals(BrandMarkSize.value, markSize)
-        // Without an icon background the system splash draws its icon in a 288 dp box.
-        assertEquals(288f, markSize + 2 * dp(inset.getAttributeNS(android, "inset")))
+        // The app's splash draws the whole canvas at BrandMarkCanvas, like the system splash.
+        assertEquals(BrandMarkCanvas.value, canvas)
+        assertEquals(canvas, mark.getAttributeNS(android, "viewportWidth").toFloat())
+        // The mark is a margin-free 120 units, centred: proportional at any size it is drawn.
+        assertEquals(group.getAttributeNS(android, "translateX"), group.getAttributeNS(android, "translateY"))
+        assertEquals(BrandMarkSize.value, canvas - 2 * group.getAttributeNS(android, "translateX").toFloat())
     }
 }
