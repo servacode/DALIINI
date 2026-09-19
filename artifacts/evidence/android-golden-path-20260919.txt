@@ -1,0 +1,125 @@
+ANDROID GENERATED CLIENT INTEGRATION + ANDROID GOLDEN PATH (§49–§89) — 2026-09-19
+Commit range 7ab64be..db7ac98 (docs commit follows). Workstation: Windows 11, Docker 29.5.2,
+JDK 25, Gradle 9.6.0 wrapper, Node 24.17.0.
+
+Two kinds of verification are reported here and they are never merged:
+  JVM VERIFICATION (apps/android/jvm-verification): proves portable/data-layer integration
+    only — the generated client, adapters, mappers, session coordination, repositories and
+    use cases, compiled from the app's own sources with Maven Central, and driven against
+    the real backend.
+  ANDROID GRADLE VERIFICATION (apps/android, AGP 9.4.0): the app itself — Compose, Room,
+    DataStore, Hilt's graph, resources, manifest, R8, lint, instrumentation. NOT RUN: see 2.
+
+1. Gradle wrapper (INT-019) — 9afa924
+  apps/android/gradlew, gradlew.bat, gradle/wrapper/gradle-wrapper.{jar,properties}
+  gradle-wrapper.jar SHA-256 497c8c2a7e5031f6aa847f88104aa80a93532ec32ee17bdb8d1d2f67a194a9c7
+    = the value gradle.org publishes for 9.6.0
+  distributionSha256Sum=bbaeb2fef8710818cf0e261201dab964c572f92b942812df0c3620d62a529a01
+  ./gradlew --version -> Gradle 9.6.0                                           exit 0
+
+2. Android Gradle build — NETWORK_ENVIRONMENT_FAILURE
+  Full diagnosis: artifacts/evidence/google-maven-diagnosis-20260919.txt (DNS, proxies, hosts,
+  TLS chain, five Google edges, controls, Gradle --info). Re-checked 2026-09-19 01:01 UTC:
+    curl -I https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/9.4.0/gradle-9.4.0.pom
+      HTTP/1.1 404 Not Found · Server: downloads
+    curl -I https://repo.maven.apache.org/maven2/com/squareup/retrofit2/retrofit/3.0.0/retrofit-3.0.0.pom
+      HTTP/1.1 200 OK
+  ./gradlew clean                                                               exit 1
+  ./gradlew :app:assembleLocalDebug                                             exit 1
+    Plugin [id: 'com.android.application', version: '9.4.0', apply: false] was not found
+    in any of the following sources: ... Searched in the following repositories: Google,
+    MavenRepo
+  No dependency version, repository, mirror or AGP version was changed to get past it.
+  Therefore: BUILD_VERIFIED no · APK none · APK security scan not run · Android lint not run ·
+  Compose tests not run · instrumentation not run · DEVICE_VERIFIED = NOT_RUN.
+
+3. Backend (Docker, PostGIS 17.5, Redis)
+  manage.py check                                            no issues            exit 0
+  manage.py makemigrations --check --dry-run                 No changes detected  exit 0
+  pytest                                                     245 passed           exit 0
+    new: admin_console/tests/test_evidence_stream.py (2) — the first fails on the old code
+         for INT-066 (octet-stream) and INT-067 (key file name in Content-Disposition)
+         facilities/tests/test_requirement_ids.py (4) — all four fail on the old code
+         (INT-068): config served "1", upload refused 400, review empty, contract uuid
+  ruff                                                       99 (baseline 99, no new debt)
+  mypy (container)                                           645 (from 727 at the start of
+                                                             the batch; 648 before INT-068)
+
+4. Contract — a4b1256 (and 4b71762 earlier in the batch)
+  Five fields string/uuid -> integer (INT-068). Schema regenerated in the backend image;
+  TypeScript, Kotlin and Swift regenerated with openapi-generator 7.15.0.
+  Drift check (the gate's steps, run through Docker because the host has no GDAL):
+    regenerate schema + hash + three clients -> byte-identical to the committed tree.
+  core/tests/test_openapi_contract.py inside the 245.
+
+5. Admin
+  tsc --noEmit                                               exit 0
+  eslint                                                     exit 0
+  vitest                                                     71/71 passed
+  scripts/e2e-admin.sh (production build, Chromium, Django, PostGIS, Redis)
+                                                             31 passed, 1 skipped  exit 0
+    The skipped test is tests/e2e/handoff.spec.ts, which runs only inside
+    scripts/e2e-android.sh, between the two JVM halves.
+
+6. JVM verification — unit
+  ../gradlew -p apps/android/jvm-verification test --rerun-tasks   92/92 passed    exit 0
+    GeneratedAdapterTest 16 (new: a configured requirement decodes with its integer id;
+    the requirement id is sent as a text/plain form field; push register/unregister),
+    PushRegistrationCoordinatorTest 3, OwnerCapabilitiesTest rewritten for INT-056.
+
+7. JVM verification — connected golden path: scripts/e2e-android.sh           exit 0
+  Stack: PostGIS (reset), Redis (flushed), MinIO RELEASE.2025-09-07T16-13-09Z with
+  directory-public (anonymous download) and directory-private (no anonymous access),
+  Django runserver with Channels; S3_PUBLIC_MEDIA_BASE_URL=http://127.0.0.1:9000/directory-public.
+  Fixtures: 2 operators, 3 Admin facilities; 2 mobile accounts, 7 facilities, 1 test
+  requirement (e2e-m- prefix, test database only; the launch baseline has none).
+
+  PASS  connected suite ............... 27 passed, 2 skipped (the hand-off halves)
+    Discovery 10 · Owner 5 · Ratings 2 · Realtime 3 · Registration 2 · Session 5
+    Regressions inside: INT-051 (revoked session refused over REST and on the socket),
+    INT-054 (replayed refresh ends the session), INT-058 (nearest-first paging to the end),
+    INT-059 (detail hours by sequence).
+    New: owned facilities carry the category's capabilities (INT-056); the photo address is
+    unsigned, stable across reads and read anonymously (INT-061); evidence answers the
+    configured requirement before submit; an unknown requirement id is NOT_FOUND; push
+    register twice / unregister twice are idempotent, a token stops when its session signs
+    out, and revoking one device's session stops that device only (INT-057).
+  PASS  handoff submit ................ owner: config requirement read, draft, phone,
+                                        location, hours, photo; submit refused (VALIDATION)
+                                        without evidence; evidence uploaded; SUBMITTED
+  PASS  handoff admin review .......... Playwright, 1 passed (4.2s): the application found
+                                        in the queue; one evidence link; its bytes are the
+                                        owner's JPEG (FF D8 FF), image/jpeg, no-store,
+                                        nosniff, no storage path in any header; audit
+                                        verification_evidence.viewed for that evidence id;
+                                        no evidence key, private bucket or signature in the
+                                        page or its data; approved; audit
+                                        facility_application.approved exactly once
+  PASS  handoff public ................ owner sees ACTIVE and application APPROVED; anonymous
+                                        discovery lists it; its photo URL is under
+                                        /directory-public/facilities/<id>/public/, carries no
+                                        X-Amz-/Signature/Expires, is the same on a second
+                                        read, and is fetched without credentials: 200
+                                        image/jpeg FF D8 FF
+  PASS  public media readable anonymously .... 200
+  PASS  private evidence refused anonymously .. 403
+  failures=0
+
+  First run (before INT-068 was fixed): 6 of 7 steps failed. ownerConfig could not be
+  decoded once a requirement existed ("id": "1" against format uuid), so the owner could
+  not submit, the Admin found nothing to review, and nothing was uploaded to either
+  bucket. That run is why INT-068 is registered.
+
+8. Security
+  Evidence: private bucket, 403 without credentials; bytes only through the backend, with
+    admin.evidence.read, audited, private no-store, nosniff, attachment at the BFF, no key
+    or key file name in any header (INT-067), no permanent URL.
+  Public media: its own bucket; anonymous read only there; unguessable uuid4 keys.
+  Push tokens: never echoed by the API, never logged (backend test with caplog), stored as
+    Fernet ciphertext and keyed digest; deactivated with their session.
+  Secret scan over every staged diff in this batch (AIza…, AKIA…, private key blocks,
+    ghp_…, google-services): 0 matches. No Firebase configuration is committed.
+
+9. External
+  FCM_PROVIDER_DELIVERY = EXTERNAL_NOT_VERIFIED (no Firebase project exists).
+  DEVICE_VERIFIED = NOT_RUN (no Android build; see 2).

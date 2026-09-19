@@ -483,6 +483,8 @@ The authoritative source for admin authorization remains the project RBAC. `user
 
 **Impact:** A field cannot be cleared by sending null through a generated PATCH; none of the app's flows needs to.
 
+**Note, 2026-09-19:** since INT-068 the evidence upload's `requirementId` part is an integer, which Retrofit's scalars converter already sends as plain text; no generated operation has a UUID part today.
+
 ---
 
 ## DECISION-032 — Environments are flavors, and cleartext exists only in `local`
@@ -525,6 +527,80 @@ The authoritative source for admin authorization remains the project RBAC. `user
 
 **Alternatives:** Capabilities on owner facility responses, which is the right fix and is recorded as INT-056.
 
+**Superseded 2026-09-19:** INT-056 is fixed. Each owner facility carries its category's capabilities, and the app reads them from the facility. The rule stands: a control whose capability is not confirmed is not offered.
+
+---
+
+## DECISION-035 — The official Gradle wrapper, verified by checksum
+
+**Date:** 2026-09-19
+
+**Subject:** INT-019: the repository had no Gradle wrapper.
+
+**Decision:** `apps/android` carries the Gradle 9.6.0 wrapper exactly as Gradle publishes it. The jar's SHA-256 matches gradle.org's published value, and `distributionSha256Sum` pins the distribution. `gradlew` is LF and executable, `gradlew.bat` is CRLF, and the jar is binary (`apps/android/.gitattributes`).
+
+**Reason:** AGP 9.4.0 requires Gradle 9.6.0 at least. A wrapper that is hand-made, or not checked against a checksum, is an unverified executable in the build.
+
+**Impact:** Every Android build, including `jvm-verification`, runs through `./gradlew`. The wrapper downloads the distribution from services.gradle.org, which answers on this network.
+
+---
+
+## DECISION-036 — Public media has a permanent address; private evidence has none
+
+**Date:** 2026-09-19
+
+**Subject:** INT-061 and INT-065: public images were served with signatures that expire, and advertisement images pointed at a route that does not exist.
+
+**Decision:** Two classes of object, in two buckets. PUBLIC_MEDIA (facility photos and advertisement images) is addressed through one function, `public_media_url`, from `S3_PUBLIC_MEDIA_BASE_URL`. That setting is required in production, where it names the CDN, and defaults to the public bucket in development. The address is never signed, never expires and is the same on every read. PRIVATE_EVIDENCE stays in its own bucket, which grants no anonymous read. It has no public address, and its bytes reach an operator only through the backend: permission-checked, audited, `no-store`, and named after nothing in storage (INT-066, INT-067). Keys are unguessable (`uuid4`) in both.
+
+**Reason:** A photo that a cache-first screen has stored must still load a day later, and an operator must never receive a link to a private document that outlives the check that allowed it.
+
+**Alternatives:** Pre-signed URLs with a long expiry, which still expire and differ on every read, and so defeat any cache. Making the whole bucket public was ruled out by the batch instruction.
+
+**Impact:** A photo uploaded to a draft is readable by anyone who has its address before the facility is approved. The address is not guessable and is shown only to the owner. Production needs a public-read bucket or CDN origin for `directory-public`; the golden path proves the policy on MinIO.
+
+---
+
+## DECISION-037 — A push token belongs to a session
+
+**Date:** 2026-09-19
+
+**Subject:** INT-057: registering a device for push.
+
+**Decision:** `PUT /account/push-token/` registers the calling session's device and replaces any earlier token from the same session and platform. `POST /account/push-token/unregister/` stops pushes to a token. Both answer 204 and never return the token. When a session ends, through logout, revocation, a detected refresh replay, a password reset or account deletion, its tokens stop receiving pushes. A provider's refusal deactivates the token. The token is stored only as Fernet ciphertext and a keyed digest, and never reaches a log, the Admin or analytics.
+
+**Reason:** A token outliving the session that registered it would deliver a signed-out user's notices to whoever holds the phone next.
+
+**Impact:** The app registers again after each sign-in; `PushRegistrationCoordinator` does so.
+
+---
+
+## DECISION-038 — Firebase is configured by the build, never committed
+
+**Date:** 2026-09-19
+
+**Subject:** FCM on Android without committing a Firebase configuration.
+
+**Decision:** `firebase-messaging` 25.1.1 is integrated without the google-services plugin. The four client values (project id, application id, API key and sender id) come from Gradle properties or the environment, and `FirebaseApp` is initialised only when all four are present. Otherwise the app runs with push off. A push carries identifiers only; the app shows a neutral notice and fetches the substance over REST.
+
+**Reason:** No Firebase project exists for this product yet. A fake `google-services.json` or placeholder key would pretend otherwise and could reach a build.
+
+**Impact:** `FCM_PROVIDER_DELIVERY = EXTERNAL_NOT_VERIFIED` until a Firebase project is created and its values are supplied to a build. The Android 13 runtime notification permission request is not implemented yet; without it, the notice stays silent where notifications are off.
+
+---
+
+## DECISION-039 — The hand-off is proven across the three real parties
+
+**Date:** 2026-09-19
+
+**Subject:** How to prove Android -> Admin -> Android without an Android build.
+
+**Decision:** `scripts/e2e-android.sh` runs the app's data layer, from `jvm-verification`, against Django, PostGIS, Redis and MinIO in two phases (`HANDOFF_PHASE`). Between them, the production Admin build runs in Chromium: the owner's evidence is submitted from the JVM, opened and approved in the browser, and the result is read back from the JVM. The fixtures add one verification requirement, prefixed `e2e-m-`, to the test database only.
+
+**Reason:** The hand-off crosses three processes, and each boundary has hidden a defect. INT-068 was invisible until a requirement existed. The launch baseline must not gain one before the pharmacy policy is decided (LAUNCH_POLICY_PENDING).
+
+**Impact:** This proves the data layer and the backend, not the Android UI. `jvm-verification` proves portable and data-layer integration only; the Android build, Compose, instrumentation and a device are separate gates.
+
 ---
 
 # Technical Debt Register
@@ -533,7 +609,7 @@ Mandatory before staging or production closure. None of these blocks P2 or P10.
 
 ## DEBT-001 — Ruff baseline
 
-**Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19).
+**Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch.
 
 Concentrated in `directory/models.py`, which is written in a compressed style with semicolons and lines up to 249 characters against a 100 limit. Rule: **no new lint debt** — any file touched must not increase the count. Forbidden remedies: disabling rules broadly, blanket ignores, or weakening CI to make the result green.
 
@@ -548,7 +624,9 @@ loads, the same tree at `c9a4cae` reports **797 errors in 100 files across 191 s
 files**. That is the figure to compare against from now on; earlier reports are not
 rewritten, and 556 is kept above so the record stays traceable. After the CONTRACT
 ALIGNMENT batch the container figure is **789**. After the Android binding batch it is **727**: the touched
-auth, realtime and contract-test modules were annotated in full.
+auth, realtime and contract-test modules were annotated in full. After the Android golden path batch it
+is **645**: `core.openapi.protected()` gained a signature (78 at its call sites), and every touched
+module was annotated.
 
 `[tool.mypy] strict = true` is declared while the codebase is largely unannotated. Rule: **no new type debt**. Removing `strict` requires a recorded ADR; a blanket ignore is forbidden. New modules are expected to be strict-clean; every module added in the CONTRACT ALIGNMENT batch is.
 

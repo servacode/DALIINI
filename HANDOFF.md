@@ -635,10 +635,11 @@ serves the Admin in production mode, and runs Playwright; `pnpm test` in `apps/a
 Vitest. The Playwright browser was installed by hand into the shared cache on this machine,
 because Playwright's own extractor produced empty directories here.
 
-**Open.** Streaming an evidence file to an authorised operator is not exercised end to end —
-the e2e stack has no object storage. LAUNCH_POLICY_PENDING: the pharmacy verification policy
-must be configured and qualified before owner onboarding opens publicly. `apps/web` still
-lacks HSTS and still rewrites its tsconfig.
+**Open.** LAUNCH_POLICY_PENDING: the pharmacy verification policy must be configured and
+qualified before owner onboarding opens publicly. `apps/web` still lacks HSTS and still
+rewrites its tsconfig. Evidence streaming with real bytes from object storage is verified
+(2026-09-19, `tests/e2e/handoff.spec.ts` inside `scripts/e2e-android.sh`); P13 stays
+`CONNECTED_VERIFIED` until the owner decides otherwise.
 
 ## ANDROID — 2026-09-19
 
@@ -658,16 +659,39 @@ deadlocks refresh under load, and `RefreshCoordinationTest` proves it.
 `production`. Addresses come from Gradle properties or the environment; placeholders are
 refused at the first request.
 
-**Verify.** `cd apps/android/jvm-verification && gradle test`, and `./scripts/e2e-android.sh`
-for the connected suite (Django, PostGIS, Redis, MinIO). Neither is an Android build.
+**Verify.** `cd apps/android/jvm-verification && ../gradlew -p . test`, and
+`./scripts/e2e-android.sh` for the connected suite and the Android -> Admin -> Android hand-off
+(Django, PostGIS, Redis, MinIO with a public and a private bucket, the production Admin in
+Chromium). Both are JVM verification: they prove portable and data-layer integration only,
+and neither is an Android build.
 
-**Open.** The Android build and everything after it; push (INT-057); capabilities on owner
-responses (INT-056); expiring public image URLs (INT-061); LAUNCH_POLICY_PENDING.
+**Push.** Registration is bound, and tokens end with their session (DECISION-037). FCM needs
+`DIRECTORY_FIREBASE_*` supplied to the build (DECISION-038). Nothing is committed, and
+without all four values the app runs with push off.
+
+**Media.** Photos have a permanent public address from `S3_PUBLIC_MEDIA_BASE_URL`; evidence
+has none (DECISION-036). For an emulator or a phone, see
+`docs/runbooks/android-local-networking.md`.
+
+**Open.** The Android build and everything after it: APK, lint, Compose, instrumentation, a
+device. FCM delivery, the Android 13 notification permission request, and
+LAUNCH_POLICY_PENDING.
+
+## ANDROID GOLDEN PATH — 2026-09-19
+
+The brief's §49–§89 are done, apart from what needs an Android build. The official Gradle
+wrapper is in (INT-019). The Android build was attempted and stops at the AGP plugin, because
+Google Maven answers 404 here. That was diagnosed on this network without changing anything
+in the project: NETWORK_ENVIRONMENT_FAILURE (`artifacts/evidence/google-maven-diagnosis-20260919.txt`).
+The backend gained capabilities on owner facilities (INT-056), push registration (INT-057)
+and permanent public media (INT-061, INT-065). The hand-off runs green end to end and found
+INT-066, INT-067 and INT-068. Statuses: P13 `CONNECTED_VERIFIED`, not raised; P14 to P18
+`SOURCE_IMPLEMENTED`. Evidence: `artifacts/evidence/android-golden-path-20260919.txt`.
 
 ## NEXT
 
-The ANDROID GENERATED CLIENT INTEGRATION brief arrived cut off at §49 ("Gradle"). Its
-remaining sections have to be read before anything further is done. Whatever they ask, the
-Android build needs a network that reaches Google Maven, or a trusted CI runner, before
-`BUILD_VERIFIED` can be claimed; the first run should be `:app:assembleLocalDebug`, then lint,
-unit and Compose tests.
+Full Android Device QA + Staging Qualification. It cannot start until the Android app builds,
+and that needs a network that reaches Google Maven or a trusted CI runner, both of which are
+the owner's to provide. On such a network, run `./gradlew :app:assembleLocalDebug` first, then
+lint, unit and Compose tests, then follow `docs/runbooks/android-local-networking.md` for a
+device.

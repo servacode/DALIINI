@@ -478,7 +478,7 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-016 | P2 | P2 | `/api/schema/` publicly reachable in every environment | FIXED (P10) |
 | INT-017 | P2 | P3/P5 | `PUT`/`DELETE /account/profile-image/` not implemented | OPEN |
 | INT-018 | P2 | P13 | Admin taxonomy is read-only, so `Cycle J` cannot be executed | FIXED (ADMIN-BINDING) — group and category create/update, requirement update, advertisement update; no delete, by design |
-| INT-019 | P2 | P14 | no Gradle wrapper, contrary to `26-REPOSITORY-STRUCTURE.md` | OPEN |
+| INT-019 | P2 | P14 | no Gradle wrapper, contrary to `26-REPOSITORY-STRUCTURE.md` | FIXED (ANDROID-GOLDEN-PATH) — the official Gradle 9.6.0 wrapper; jar and distribution checksums match gradle.org |
 | INT-020 | P3 | P0 | CI contract-drift gate is a no-op; no Android or Admin/Web jobs | FIXED (P10) |
 | INT-021 | P3 | P0 | no lockfiles committed; Dockerfile does not copy a lockfile | PARTIAL — lockfiles committed in P2; the Dockerfile still resolves at build time |
 | INT-022 | P3 | P11/P12 | Tailwind, Radix, Vitest and Playwright absent despite `02-BASELINE-DECISIONS.md` | PARTIAL — Vitest and Playwright installed and running in `apps/admin`; Tailwind and Radix deliberately not adopted, the console uses the generated design tokens directly |
@@ -515,18 +515,22 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-053 | P1 | P10 | free-form JSON fields were generated as `kotlin.Any`, which kotlinx.serialization cannot serialize; the Kotlin compiler crashed in its back end | FIXED (ANDROID-BINDING) — Kotlin type mapping to `JsonElement` |
 | INT-054 | P1 | P3 | a replayed refresh secret was refused, but `rotate_refresh` raised inside its atomic block, so the compromise marking and the revocation of every session were rolled back with it | FIXED (ANDROID-BINDING) — the replay is recorded in a transaction that commits before the refusal |
 | INT-055 | P2 | P14 | thirteen feature modules imported `hiltViewModel`, four imported `toRoute`, and the app imported MapLibre, without declaring the dependencies; the first real compile would have failed | FIXED (ANDROID-BINDING) — dependencies declared; not yet proven by an Android compile |
-| INT-056 | P3 | P5 | owner facility responses do not carry their category's capabilities, so the app cannot tell from the facility whether it supports duty or closures | OPEN — the app reads them from the owner configuration and hides a control whose capability it cannot confirm |
-| INT-057 | P2 | P18 | the contract has no push-registration operation and the Android app has no FCM integration, so the push boundary cannot be bound | OPEN — needs a backend operation and EXT FCM credentials |
+| INT-056 | P3 | P5 | owner facility responses do not carry their category's capabilities, so the app cannot tell from the facility whether it supports duty or closures | FIXED (ANDROID-GOLDEN-PATH) — summaries and details carry the eight flags from one presenter; the app reads them from the facility |
+| INT-057 | P2 | P18 | the contract has no push-registration operation and the Android app has no FCM integration, so the push boundary cannot be bound | FIXED (ANDROID-GOLDEN-PATH) — `accountPushTokenRegister`/`Unregister`, tokens tied to the session; the app is bound and FCM is integrated behind build configuration. Delivery through FCM is EXTERNAL_NOT_VERIFIED: no Firebase project is configured |
 | INT-058 | P1 | P7 | the second page of any nearest-first facility list answered 500: the cursor stored GeoDjango's `Distance` measure as text (`"123.4 m"`) and the next query could not compare it | FIXED (ANDROID-BINDING) — ordering and cursor on a float distance in metres |
 | INT-059 | P1 | P7 | public facility detail served opening hours without the `id` and `sequence` the contract requires, so a generated client could not decode any facility that had hours | FIXED (ANDROID-BINDING) |
 | INT-060 | P2 | P7 | every public facility image pointed at `/api/v1/public/media/images/<id>/`, a route that does not exist | FIXED (ANDROID-BINDING) — the storage URL, as the owner endpoint serves it |
-| INT-061 | P3 | P7 | public image URLs are pre-signed and expire, so an image a cache-first screen stored goes dark after the signature lapses | OPEN — a deployment decision: a public-read bucket or CDN for public media |
+| INT-061 | P3 | P7 | public image URLs are pre-signed and expire, so an image a cache-first screen stored goes dark after the signature lapses | FIXED (ANDROID-GOLDEN-PATH) — public media is addressed from `S3_PUBLIC_MEDIA_BASE_URL`, unsigned; read anonymously from MinIO in the golden path |
 | INT-062 | P2 | P10 | the generated Kotlin serializer uses `encodeDefaults = true`, so a PATCH naming one field sent every other optional field as null, which the backend refuses or applies as a clear | FIXED (ANDROID-BINDING) — the app configures `encodeDefaults = false` and `explicitNulls = false` before first use |
 | INT-063 | P2 | P14 | the Android session coordinator cleared the session on any refresh failure, so being offline at the moment a token expired signed the user out | FIXED (ANDROID-BINDING) — only a refused secret ends the session |
 | INT-064 | P3 | P14 | the Android refresh authenticator reported the token in the store, not the one the failed request carried, as the failed token, so a request that failed on the old token after another had refreshed spent the secret again | FIXED (ANDROID-BINDING) |
+| INT-065 | P2 | P9 | public advertisement images pointed at a route that does not exist | FIXED (ANDROID-GOLDEN-PATH) — the public media address, as facility photos use |
+| INT-066 | P3 | P13 | verification evidence was streamed as `application/octet-stream`, so the operator's browser was told nothing about what it received | FIXED (ANDROID-GOLDEN-PATH) — typed from the stored name; evidence is always re-encoded to JPEG |
+| INT-067 | P2 | P13 | the evidence response named its download after the stream, and an S3 file is named by its object key, so the key's file name left the backend in `Content-Disposition`. The Admin BFF replaces that header, so no browser received it | FIXED (ANDROID-GOLDEN-PATH) — a neutral name from the evidence id |
+| INT-068 | P1 | P5 | a verification requirement's id was declared a UUID in the owner and review contracts while the model keys it with an integer — INT-043 fixed the Admin component alone. The launch baseline configures no requirement, so nothing noticed: with the first one configured, the Android client could not decode the owner configuration and the upload serializer refused every id an owner could send, so no evidence could be uploaded. Found by the first hand-off run | FIXED (ANDROID-GOLDEN-PATH) — integer on the wire and in the contract; test over every `requirementId` component |
 
 ## Rules
 
 - An identifier is never reused, even after the defect is fixed or retired.
 - A defect is registered here before it is referenced anywhere else.
-- The next free identifier is `INT-065`.
+- The next free identifier is `INT-069`.

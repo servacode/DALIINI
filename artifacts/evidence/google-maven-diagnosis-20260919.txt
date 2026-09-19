@@ -1,0 +1,61 @@
+GOOGLE MAVEN DIAGNOSIS — current network, no network or project change
+Date: 2026-09-19. Host: Windows 11, Wi-Fi adapter only (Realtek RTL8821CE); TAP adapters and
+the installed VPN client disconnected and left alone, as instructed.
+
+Artifacts under test — real coordinates from apps/android/gradle/libs.versions.toml
+  com.android.tools.build:gradle:9.4.0     (agp = "9.4.0")
+  androidx.room:room-runtime:2.8.5          (room = "2.8.5")
+  androidx.core:core:1.19.0                 (core = "1.19.0"; also in the local Gradle cache,
+                                             fetched on this machine on 2026-09-11 — it exists)
+
+1. DNS — sound
+  dl.google.com     via 192.168.0.1 -> 142.251.142.110   via 1.1.1.1 -> 192.178.25.238
+                    via 8.8.8.8     -> 172.217.21.238
+  maven.google.com  CNAME www3.l.google.com on all three resolvers
+  PTR 172.217.21.238 -> fra16s13-in-f238.1e100.net; 192.178.25.238 -> lcsofb-ah-in-f14.1e100.net
+  Every answer is a Google address; the differences are ordinary anycast. No system DNS change
+  was made: nothing pointed at DNS.
+
+2. Proxies and hosts — none
+  WinINET ProxyEnable=0, no ProxyServer, no AutoConfigURL. WinHTTP: direct access.
+  No HTTP_PROXY / HTTPS_PROXY / ALL_PROXY in the environment. No ~/.gradle/gradle.properties.
+  No proxy key in apps/android/gradle.properties. hosts: no entry for any Google name.
+
+3. TLS — genuine Google, not intercepted
+  dl.google.com and maven.google.com: TLS 1.3, no certificate policy errors,
+  subject CN=*.google.com, issuer CN=WE2, O=Google Trust Services, valid 2026-09-04..2026-11-27,
+  chain *.google.com <- WE2 <- GlobalSign, built against the Windows trust store.
+
+4. HTTPS, curl.exe -I -L from Windows (not Gradle)
+  https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/9.4.0/gradle-9.4.0.pom
+    HTTP/1.1 404 Not Found · Server: downloads · Content-Type: text/html
+  https://maven.google.com/com/android/tools/build/gradle/9.4.0/gradle-9.4.0.pom
+    HTTP/1.1 301 · Server: sffe · Location: the dl.google.com URL above -> 404, Server: downloads
+  Same pattern, 404 from Server: downloads, for room-runtime-2.8.5.pom and core-1.19.0.pom.
+  Body of every 404: Google's generic page, "404. That’s an error. That’s all we know."
+  The same request to five Google edges (--resolve 142.251.142.110, 172.217.21.238,
+  192.178.25.238, 192.178.24.14, 172.217.16.142): 404, Server: downloads, on every one.
+
+5. Controls
+  https://repo.maven.apache.org/maven2/.../retrofit-3.0.0.pom                 200
+  https://dl.google.com/linux/linux_signing_key.pub                           200  Server: downloads
+  https://dl.google.com/android/repository/repository2-3.xml (SDK manifest)   404  Server: downloads
+  https://dl.google.com/android/repository/platform-tools-latest-windows.zip  404  Server: downloads
+  https://www.google.com/generate_204                                         204
+  Cloudflare trace for this network's egress: loc=TR, warp=off, gateway=off.
+
+6. Gradle — same answer, not the cause
+  ./gradlew --info --refresh-dependencies help:
+    Resource missing. [HTTP HEAD: https://dl.google.com/dl/android/maven2/com/android/
+    application/com.android.application.gradle.plugin/9.4.0/com.android.application.gradle.plugin-9.4.0.pom]
+  Gradle asks the official URL and receives the 404 curl receives.
+
+Conclusion
+  Not DNS, not a proxy, not TLS interception, not Gradle, not the cache. Google's download
+  service answers this network's address with 404 for Android developer content — the Maven
+  repository, the SDK manifest, platform-tools — while it serves other content from the same
+  host (the Linux signing key) to the same client. That selective refusal matches the way
+  Google restricts Android developer downloads by the client's location; which rule applies to
+  this address is Google's to say, and it cannot be seen from here.
+  Classification: NETWORK_ENVIRONMENT_FAILURE. It is not artifact-not-found, and nothing on
+  this machine or in the project can change it. Only a different egress network can.

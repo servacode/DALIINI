@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Updated: 2026-09-19 (Android binding)
+Updated: 2026-09-19 (Android golden path)
 
 ## Verification baseline
 
@@ -40,22 +40,35 @@ client, verified on the JVM against the real backend: 26 connected and 89 unit t
 app itself is not built. Fourteen defects were fixed on the way, nine of them in the contract
 or the backend, and three more are recorded open (INT-048 to INT-064).
 
+**Android golden path (§49–§89)** — the official Gradle wrapper; the three open Android
+defects fixed in the backend and bound in the app (capabilities, push registration,
+permanent public media); FCM behind build configuration. The Android -> Admin -> Android
+hand-off, with real evidence in MinIO's private bucket opened by an operator in the
+production Admin, runs green: 7/7 steps, 92 unit tests, 245 backend tests. It found INT-066,
+INT-067 and INT-068. The Android build was attempted and fails for a diagnosed network
+reason, NETWORK_ENVIRONMENT_FAILURE; P14 to P18 stay `SOURCE_IMPLEMENTED`.
+
 ## Next executable phase
 
-The rest of the Android brief, from §49. The Android build still needs a network that reaches
-Google Maven, or a CI runner (`ENVIRONMENT_LIMITATION`); `BUILD_VERIFIED` waits on it.
+Full Android Device QA + Staging Qualification. It needs the Android app built first, which
+needs a network that reaches Google Maven or a trusted CI runner. On such a network, run
+`./gradlew :app:assembleLocalDebug`, then lint, unit and Compose tests, then the device steps
+in `docs/runbooks/android-local-networking.md`.
 
 ## Gate status
 
 | Gate | Status |
 |---|---|
 | `P12 ADMIN FOUNDATION` | CONNECTED_VERIFIED |
-| `P13 ADMIN GOLDEN PATH` | CONNECTED_VERIFIED — see the one NOT_VERIFIED path below |
+| `P13 ADMIN GOLDEN PATH` | CONNECTED_VERIFIED — evidence streaming with real bytes now verified; not raised to CLOSED |
+| Android Gradle build | NOT_VERIFIED — NETWORK_ENVIRONMENT_FAILURE |
+| Android device | NOT_RUN |
+| FCM delivery | EXTERNAL_NOT_VERIFIED |
 
-Not verified end to end: streaming an evidence file to an authorised operator. The e2e
-stack runs no object storage, so no file exists to stream. The refusal, the 404 and the
-absence of any storage key on the page are verified; the allowed path with real bytes needs
-MinIO in the e2e stack.
+Evidence streaming is verified end to end (2026-09-19). An owner's document was uploaded to
+MinIO's private bucket, opened by an operator in the production Admin build (the owner's
+JPEG, typed, `no-store`, audited, with no storage key anywhere) and approved. The same object
+refuses an anonymous read.
 
 ## Deferred, recorded, not started
 
@@ -67,8 +80,8 @@ identifier in `RECEIPT-AUDIT-2026-09-17.md`.
 
 ## Quality debt
 
-`DECISIONS.md` carries the register. DEBT-001 ruff at 100, from 106 at intake. DEBT-002 mypy
-at 783 in the backend container, against a 797 baseline measured the same way. DEBT-003 the
+`DECISIONS.md` carries the register. DEBT-001 ruff at 99, from 106 at intake. DEBT-002 mypy
+at 645 in the backend container, against a 797 baseline measured the same way. DEBT-003 the
 deferred `PermissionsMixin` evaluation. The standing rule is no new lint or type debt in a
 touched file; every module added since P10 is strict-clean.
 

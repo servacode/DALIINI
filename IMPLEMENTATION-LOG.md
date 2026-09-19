@@ -1431,3 +1431,65 @@ in-memory equivalent. Push has no contract operation and no FCM (INT-057).
 
 Evidence: `artifacts/evidence/android-binding-20260919.txt`,
 `artifacts/evidence/android-integration-inventory-20260919.md`.
+
+
+## ANDROID GENERATED CLIENT INTEGRATION + ANDROID GOLDEN PATH (§49–§89) — 2026-09-19
+
+### Gradle and Google Maven
+
+The repository now carries the official Gradle 9.6.0 wrapper, with both checksums verified
+(INT-019). The first real Android build did not get past plugin resolution. As the owner
+asked, the cause was diagnosed on this network without changing a dependency, a repository or
+a Gradle setting. DNS, proxies, hosts and TLS are clean, and Gradle receives the same answer
+curl does: Google's download server returns 404 for Android developer content while serving
+other files from the same host. NETWORK_ENVIRONMENT_FAILURE. The Android app is therefore not
+built, linted, tested with Compose or run on a device in this batch.
+
+### Backend
+
+- Owner facilities carry their category's capabilities (INT-056).
+- Devices register push tokens tied to the session, which stop when the session ends
+  (INT-057).
+- Public media has a permanent, unsigned address from `S3_PUBLIC_MEDIA_BASE_URL`, and
+  advertisement images use it too (INT-061, INT-065). Private evidence has no public address.
+- Evidence streams are typed (INT-066) and no longer name the download after the object key
+  (INT-067).
+
+### Android
+
+The app reads capabilities from the facility, and push registration is bound to the new
+operations. FCM is integrated behind build configuration with nothing committed; delivery is
+EXTERNAL_NOT_VERIFIED.
+
+### The hand-off, and what it found
+
+`scripts/e2e-android.sh` now drives the whole path across the three real parties, against
+MinIO with a public bucket and a private one:
+1. The owner submits, from the JVM.
+2. An operator opens the evidence and approves, in the production Admin build in Chromium.
+3. The owner sees the approval, and anyone finds the facility with its photo, from the JVM.
+
+The first run failed at step 1. A verification requirement's id is an integer in the model
+but was declared a UUID in the owner and review contracts, so the app could not decode the
+owner configuration once one requirement existed. The upload serializer also refused every id
+an owner could send (INT-068). Nothing had noticed, because the launch baseline configures no
+requirement. The fixtures now add one test requirement, to the test database only.
+
+### Numbers
+
+- Golden path: 7/7 steps, with the connected suite at 27/27.
+- Unit tests: 92/92.
+- Backend: 245 passed; ruff 99; mypy 645, down from 727.
+- Contract: five fields changed, no drift.
+- Admin: 31 passed and 1 skipped; Vitest 71/71.
+
+### Not verified
+
+- The Android build, APK, lint, Compose, instrumentation and any device: DEVICE_VERIFIED =
+  NOT_RUN.
+- FCM delivery: EXTERNAL_NOT_VERIFIED.
+- The Android 13 notification permission request is not implemented.
+- `docs/runbooks/android-local-networking.md` is written but not yet exercised.
+
+Evidence: `artifacts/evidence/android-golden-path-20260919.txt`,
+`artifacts/evidence/google-maven-diagnosis-20260919.txt`.

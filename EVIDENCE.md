@@ -142,6 +142,17 @@ The full receipt and verification audit is recorded in `RECEIPT-AUDIT-2026-09-17
 | 2026-09-19 | Contract | ANDROID-BINDING tree | spectacular, drift, client regeneration | — | **PASS** — 91 operations, 144 components, zero warnings, no schema or client drift | `artifacts/evidence/android-binding-20260919.txt` |
 | 2026-09-19 | Admin regression | ANDROID-BINDING tree | Playwright + Vitest + tsc after the session binding | `scripts/e2e-admin.sh` | **PASS** — 31/31, 71/71, exit 0 | `artifacts/evidence/android-binding-20260919.txt` |
 | 2026-09-19 | Quality debt | ANDROID-BINDING tree | ruff, mypy in the backend container | — | ruff 99 from 100; mypy 727 from 783 — reduced, none added | `artifacts/evidence/android-binding-20260919.txt` |
+| 2026-09-19 | Gradle wrapper (INT-019) | 9afa924 | official Gradle 9.6.0 wrapper | `./gradlew --version` | **PASS** — Gradle 9.6.0; jar and distribution checksums match gradle.org | `artifacts/evidence/android-golden-path-20260919.txt` |
+| 2026-09-19 | Google Maven diagnosis | 9afa924 | this network, no dependency or Gradle change | DNS ×3, proxies, hosts, TLS, curl ×5 edges, controls, `gradlew --info` | NETWORK_ENVIRONMENT_FAILURE — 404 from Google's download server for Android content only; re-checked 01:01 UTC | `artifacts/evidence/google-maven-diagnosis-20260919.txt` |
+| 2026-09-19 | Android app build | db7ac98 | AGP 9.4.0 | `./gradlew clean`, `./gradlew :app:assembleLocalDebug` | **NOT_VERIFIED** — exit 1, AGP plugin not resolvable (Google Maven 404); no APK, lint, Compose, instrumentation or device | `artifacts/evidence/android-golden-path-20260919.txt` |
+| 2026-09-19 | Android -> Admin -> Android golden path | db7ac98 | JVM data layer + production Admin in Chromium → Django + PostGIS + Redis + MinIO (public and private buckets) | `scripts/e2e-android.sh` | **PASS** — 7/7 steps, exit 0: connected 27/27, hand-off submit, Admin evidence review and approval, hand-off public, public 200 / private 403. First run 1/7: found INT-068 | `artifacts/evidence/android-golden-path-20260919.txt` |
+| 2026-09-19 | Evidence streaming | db7ac98 | real bytes from MinIO's private bucket through the Admin BFF | Playwright `handoff.spec.ts` | **PASS** — owner's JPEG, image/jpeg, no-store, nosniff, audited per document, no key in headers, page or data (INT-066, INT-067) | `artifacts/evidence/android-golden-path-20260919.txt` |
+| 2026-09-19 | Android unit suite | db7ac98 | `apps/android/jvm-verification` | `../gradlew -p . test --rerun-tasks` | **PASS** — 92/92 | `artifacts/evidence/android-golden-path-20260919.txt` |
+| 2026-09-19 | Backend regression | db7ac98 | `check`, `makemigrations --check`, `pytest` on PostGIS | — | **PASS** — no issues, no changes, 245 passed | `artifacts/evidence/android-golden-path-20260919.txt` |
+| 2026-09-19 | Contract | a4b1256 | spectacular + three clients regenerated through Docker | — | **PASS** — five requirement-id fields to integer (INT-068); regeneration byte-identical | `artifacts/evidence/android-golden-path-20260919.txt` |
+| 2026-09-19 | Admin regression | db7ac98 | Playwright + Vitest + tsc + eslint | `scripts/e2e-admin.sh` | **PASS** — 31 passed, 1 skipped (the hand-off spec runs in the Android runner), 71/71, exit 0 | `artifacts/evidence/android-golden-path-20260919.txt` |
+| 2026-09-19 | Quality debt | db7ac98 | ruff, mypy in the backend container | — | ruff 99, unchanged; mypy 645 from 727 — reduced, none added | `artifacts/evidence/android-golden-path-20260919.txt` |
+| 2026-09-19 | FCM delivery | db7ac98 | — | — | EXTERNAL_NOT_VERIFIED — no Firebase project exists | `artifacts/evidence/android-golden-path-20260919.txt` |
 
 `P10 CONTRACT PASS` is achieved for schema generation, contract description, committed
 canonical artefacts, the drift gate, contract tests and runtime conformance. Kotlin client
@@ -160,3 +171,9 @@ pending.
 The P11–P13 batch qualifies P12 and P13 as `CONNECTED_VERIFIED` on executed evidence in a
 real browser. They are not `CLOSED`: the evidence-streaming path with real bytes, and the
 production launch gate LAUNCH_POLICY_PENDING, remain.
+
+The ANDROID GOLDEN PATH batch verifies the evidence-streaming path with real bytes from
+object storage. P13 is not raised to `CLOSED` on that account: raising it is the owner's
+decision, and LAUNCH_POLICY_PENDING remains. P14 to P18 stay `SOURCE_IMPLEMENTED`: every
+Android result above is JVM verification, which proves portable and data-layer integration
+only, and the Android Gradle build did not run.
