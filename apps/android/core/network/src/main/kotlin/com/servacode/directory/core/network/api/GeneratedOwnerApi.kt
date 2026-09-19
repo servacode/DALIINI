@@ -131,7 +131,8 @@ class GeneratedOwnerApi(client: GeneratedClient) : OwnerApiBoundary {
     ): OwnerEvidence = call {
         media.ownerFacilityEvidenceCreate(
             facilityId = UUID.fromString(id),
-            requirementId = UUID.fromString(requirementId),
+            // The model's integer key (INT-068); the domain keeps every id opaque.
+            requirementId = requirementId.toInt(),
             file = payload.toPart(),
         )
     }.let { OwnerEvidence(id = it.id.toString(), requirementId = it.requirementId.toString()) }

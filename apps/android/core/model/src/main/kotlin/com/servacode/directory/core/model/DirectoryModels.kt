@@ -171,6 +171,8 @@ data class OwnerFacilitySummary(
     val status: OwnerFacilityStatus,
     val lastUpdateEpochMillis: Long,
     val requiredAction: String? = null,
+    /** The category's capabilities, as the backend serves them with the facility. */
+    val capabilities: FacilityCapabilities,
 )
 
 @Serializable

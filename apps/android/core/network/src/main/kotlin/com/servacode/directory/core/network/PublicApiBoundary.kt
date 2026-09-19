@@ -61,8 +61,3 @@ interface PublicApiBoundary {
     suspend fun upsertRating(facilityId: String, stars: Int): Int
     suspend fun deleteRating(facilityId: String)
 }
-
-/** Thrown by boundaries that have no operation in the contract to bind to. */
-class GeneratedClientRequiredException : IllegalStateException(
-    "The contract has no operation for this boundary.",
-)

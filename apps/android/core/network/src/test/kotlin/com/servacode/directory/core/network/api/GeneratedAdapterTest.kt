@@ -27,6 +27,8 @@ private const val PROVINCE = "11111111-1111-4111-8111-111111111111"
 private const val PHARMACY = "22222222-2222-4222-8222-222222222222"
 private const val FACILITY = "33333333-3333-4333-8333-333333333333"
 private const val REQUIREMENT = "44444444-4444-4444-8444-444444444444"
+/** A verification requirement is keyed by the model's integer (INT-068). */
+private const val REQUIREMENT_ID = "7"
 
 /**
  * The generated client, the adapters and the mappers together, against canned responses in
@@ -191,21 +193,21 @@ class GeneratedAdapterTest {
     }
 
     @Test fun `evidence goes as a real file part with the requirement id as plain text`() = runTest {
-        respond("""{"id":"$FACILITY","requirementId":"$REQUIREMENT"}""", code = 201)
+        respond("""{"id":"$FACILITY","requirementId":$REQUIREMENT_ID}""", code = 201)
         val jpeg = byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte(), 0xE0.toByte())
 
         val evidence = ownerApi.uploadEvidence(
             FACILITY,
-            REQUIREMENT,
+            REQUIREMENT_ID,
             OwnerUploadPayload(fileName = "upload.jpg", mediaType = "image/jpeg", bytes = jpeg),
         )
 
-        assertEquals(REQUIREMENT, evidence.requirementId)
+        assertEquals(REQUIREMENT_ID, evidence.requirementId)
         val body = taken().body!!.string(Charsets.ISO_8859_1)
-        assertTrue(body.contains("name=\"requirementId\""))
-        // The id is the bare value, not a JSON string with quotes around it.
-        assertTrue(body.contains("\r\n\r\n$REQUIREMENT\r\n"))
-        assertFalse(body.contains("\"$REQUIREMENT\""))
+        // A text form field holding the bare value, not a JSON part.
+        val field = body.substringAfter("name=\"requirementId\"").substringBefore("--")
+        assertTrue(field, field.contains("Content-Type: text/plain"))
+        assertTrue(field, field.endsWith("\r\n\r\n$REQUIREMENT_ID\r\n"))
         assertTrue(body.contains("name=\"file\"; filename=\"upload.jpg\""))
         assertTrue(body.contains("Content-Type: image/jpeg"))
     }
@@ -228,10 +230,10 @@ class GeneratedAdapterTest {
         respond(
             """{"items":[{"id":"$FACILITY","nameAr":"صيدلية","category":{"id":"$PHARMACY","nameAr":"صيدلية"},
             "province":{"id":"$PROVINCE","nameAr":"الرقة"},"status":"SUBMITTED",
-            "lastUpdate":"2026-09-19T10:00:00Z","requiredAction":null},
+            "lastUpdate":"2026-09-19T10:00:00Z","requiredAction":null,"capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,"serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true}},
             {"id":"$REQUIREMENT","nameAr":"أخرى","category":{"id":"$PHARMACY","nameAr":"صيدلية"},
             "province":{"id":"$PROVINCE","nameAr":"الرقة"},"status":"DRAFT",
-            "lastUpdate":"2026-09-19T10:00:00Z","requiredAction":"COMPLETE_AND_SUBMIT"}]}""",
+            "lastUpdate":"2026-09-19T10:00:00Z","requiredAction":"COMPLETE_AND_SUBMIT","capabilities":{"hours":true,"photos":true,"ratings":true,"duty":false,"specialtyFilter":true,"serviceFilter":false,"temporaryClosure":false,"ownerOnboarding":true}}]}""",
         )
 
         val facilities = ownerApi.facilities()
@@ -239,14 +241,18 @@ class GeneratedAdapterTest {
         assertEquals(OwnerFacilityStatus.SUBMITTED, facilities[0].status)
         assertNull(facilities[0].requiredAction)
         assertEquals("COMPLETE_AND_SUBMIT", facilities[1].requiredAction)
+        // Capabilities come with each facility (INT-056), not from a side lookup.
+        assertTrue(facilities[0].capabilities.supportsDuty)
+        assertFalse(facilities[1].capabilities.supportsDuty)
+        assertFalse(facilities[1].capabilities.supportsTemporaryClosure)
     }
 
     @Test fun `the evidence form is whatever the backend configured, including nothing`() = runTest {
         respond(
             """{"province":{"id":"$PROVINCE","nameAr":"الرقة"},"categories":[{
             "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":null,"iconKey":null,"specialization":"PHARMACY"},
-            "capabilities":{"hours":true,"photos":true,"duty":true,"specialtyFilter":false,"serviceFilter":false,
-            "temporaryClosure":true,"ownerOnboarding":true},"verificationRequirements":[]}]}""",
+            "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,
+            "serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true},"verificationRequirements":[]}]}""",
         )
 
         val config = ownerApi.ownerConfig(PROVINCE)
@@ -255,6 +261,43 @@ class GeneratedAdapterTest {
         assertEquals("PHARMACY", pharmacy.specialization)
         assertTrue(pharmacy.verificationRequirements.isEmpty())
         assertTrue(pharmacy.capabilities.supportsDuty)
+        assertTrue(pharmacy.capabilities.supportsRatings)
+    }
+
+    @Test fun `a configured requirement arrives with the id the upload sends back`() = runTest {
+        respond(
+            """{"province":{"id":"$PROVINCE","nameAr":"الرقة"},"categories":[{
+            "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":null,"iconKey":null,"specialization":"PHARMACY"},
+            "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,
+            "serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true},"verificationRequirements":[
+            {"id":$REQUIREMENT_ID,"labelAr":"ترخيص","labelEn":null,"instructionsAr":null,"required":true,
+            "minFiles":1,"maxFiles":2}]}]}""",
+        )
+
+        val requirement = ownerApi.ownerConfig(PROVINCE).categories.single().verificationRequirements.single()
+
+        assertEquals(REQUIREMENT_ID, requirement.id)
+        assertEquals(1, requirement.minFiles)
+        assertEquals(2, requirement.maxFiles)
+    }
+
+    @Test fun `a push token is registered for android and unregistered by value`() = runTest {
+        server.enqueue(MockResponse.Builder().code(204).build())
+        server.enqueue(MockResponse.Builder().code(204).build())
+        val push = GeneratedPushRegistration(
+            GeneratedClient(ApiEnvironment(server.url("/").toString(), allowCleartext = true), OkHttpClient()),
+        )
+
+        push.registerAndroidToken("fcm-token-1")
+        push.deactivateAndroidToken("fcm-token-1")
+
+        val register = taken()
+        assertEquals("PUT", register.method)
+        assertEquals("/api/v1/account/push-token/", register.url.encodedPath)
+        assertEquals("""{"platform":"ANDROID","token":"fcm-token-1"}""", register.body!!.utf8())
+        val unregister = taken()
+        assertEquals("/api/v1/account/push-token/unregister/", unregister.url.encodedPath)
+        assertEquals("""{"token":"fcm-token-1"}""", unregister.body!!.utf8())
     }
 
     @Test fun `a no-content answer is success`() = runTest {
@@ -278,7 +321,7 @@ class GeneratedAdapterTest {
     private fun ownerDetail() = """
         {"id":"$FACILITY","nameAr":"صيدلية","category":{"id":"$PHARMACY","nameAr":"صيدلية"},
          "province":{"id":"$PROVINCE","nameAr":"الرقة"},"status":"DRAFT","lastUpdate":"2026-09-19T10:00:00Z",
-         "requiredAction":"COMPLETE_AND_SUBMIT","nameEn":null,"descriptionAr":null,"descriptionEn":null,
+         "requiredAction":"COMPLETE_AND_SUBMIT","capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,"serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true},"nameEn":null,"descriptionAr":null,"descriptionEn":null,
          "phone":"+963900000001","addressAr":null,"addressEn":null,"cityId":null,"neighborhoodId":null,
          "location":null,"specialtyIds":[],"serviceTagIds":[],"evidence":[],"hours":[],"application":null}
     """

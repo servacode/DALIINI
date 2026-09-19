@@ -2,8 +2,6 @@ package com.servacode.directory.feature.owner
 
 import com.servacode.directory.core.model.Category
 import com.servacode.directory.core.model.FacilityCapabilities
-import com.servacode.directory.core.model.OwnerCategoryConfig
-import com.servacode.directory.core.model.OwnerConfig
 import com.servacode.directory.core.model.OwnerFacilityStatus
 import com.servacode.directory.core.model.OwnerFacilitySummary
 import com.servacode.directory.core.model.Province
@@ -12,47 +10,29 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class OwnerCapabilitiesTest {
-    private val raqqa = Province("raqqa", "الرقة")
-
-    private fun facility(categoryId: String) = OwnerFacilitySummary(
+    private fun facility(duty: Boolean, closures: Boolean) = OwnerFacilitySummary(
         id = "f",
         nameAr = "منشأة",
-        category = Category(categoryId, "تصنيف"),
-        province = raqqa,
+        category = Category("c", "تصنيف"),
+        province = Province("raqqa", "الرقة"),
         status = OwnerFacilityStatus.ACTIVE,
         lastUpdateEpochMillis = 0,
-    )
-
-    private fun config(categoryId: String, duty: Boolean) = OwnerConfig(
-        province = raqqa,
-        categories = listOf(
-            OwnerCategoryConfig(
-                category = Category(categoryId, "تصنيف"),
-                specialization = "PHARMACY",
-                capabilities = FacilityCapabilities(
-                    supportsHours = true,
-                    supportsPhotos = true,
-                    supportsDuty = duty,
-                    supportsSpecialtyFilter = false,
-                    supportsServiceFilter = false,
-                    supportsTemporaryClosure = true,
-                    supportsOwnerOnboarding = true,
-                ),
-                verificationRequirements = emptyList(),
-            ),
+        capabilities = FacilityCapabilities(
+            supportsHours = true,
+            supportsPhotos = true,
+            supportsDuty = duty,
+            supportsSpecialtyFilter = false,
+            supportsServiceFilter = false,
+            supportsTemporaryClosure = closures,
+            supportsOwnerOnboarding = true,
+            supportsRatings = true,
         ),
     )
 
-    @Test fun `duty is offered when the category supports it`() {
-        assertTrue(OwnerCapabilities.supportsDuty(facility("pharmacy"), config("pharmacy", duty = true)))
-    }
-
-    @Test fun `duty is hidden when the category does not support it`() {
-        assertFalse(OwnerCapabilities.supportsDuty(facility("clinic"), config("clinic", duty = false)))
-    }
-
-    @Test fun `duty is hidden when the capability is unknown, rather than guessed`() {
-        assertFalse(OwnerCapabilities.supportsDuty(facility("clinic"), config("pharmacy", duty = true)))
-        assertFalse(OwnerCapabilities.supportsDuty(facility("pharmacy"), null))
+    @Test fun `the controls follow the capabilities served with the facility`() {
+        assertTrue(OwnerCapabilities.supportsDuty(facility(duty = true, closures = false)))
+        assertFalse(OwnerCapabilities.supportsDuty(facility(duty = false, closures = true)))
+        assertTrue(OwnerCapabilities.supportsTemporaryClosure(facility(duty = false, closures = true)))
+        assertFalse(OwnerCapabilities.supportsTemporaryClosure(facility(duty = true, closures = false)))
     }
 }

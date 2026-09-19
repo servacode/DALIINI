@@ -8,6 +8,7 @@ import com.servacode.directory.core.model.DirectoryRoute
 import com.servacode.directory.core.model.FacilityMember
 import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.model.OwnerFacilityDetail
+import com.servacode.directory.core.model.OwnerFacilitySummary
 import com.servacode.directory.core.model.TemporaryClosure
 import com.servacode.directory.core.model.AppErrorText
 import com.servacode.directory.core.model.toAppError
@@ -23,7 +24,7 @@ import javax.inject.Inject
 
 sealed interface MyFacilitiesUiState {
     data object Loading : MyFacilitiesUiState
-    data class Content(val items: List<OwnedFacility>) : MyFacilitiesUiState
+    data class Content(val items: List<OwnerFacilitySummary>) : MyFacilitiesUiState
     data class Error(val message: String) : MyFacilitiesUiState
 }
 
@@ -61,7 +62,6 @@ sealed interface ManageFacilityUiState {
         val facility: OwnerFacilityDetail,
         val closures: List<TemporaryClosure>,
         val members: List<FacilityMember>,
-        val supportsDuty: Boolean = false,
         val message: String? = null,
     ) : ManageFacilityUiState
     data class Error(val message: String) : ManageFacilityUiState
@@ -97,7 +97,6 @@ class ManageFacilityViewModel @Inject constructor(
                     facility = detail,
                     closures = closures.getOrThrow(),
                     members = members.getOrThrow(),
-                    supportsDuty = load.supportsDuty(detail.summary),
                 )
             } else {
                 ManageFacilityUiState.Error(AppErrorText.of(failure.toAppError()))

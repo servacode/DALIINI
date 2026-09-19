@@ -15,7 +15,6 @@ import com.servacode.directory.api.models.HomeCategory
 import com.servacode.directory.api.models.MapMarker
 import com.servacode.directory.api.models.NamedRef
 import com.servacode.directory.api.models.OwnerApplication as WireOwnerApplication
-import com.servacode.directory.api.models.OwnerCapabilities
 import com.servacode.directory.api.models.OwnerConfig as WireOwnerConfig
 import com.servacode.directory.api.models.OwnerEvidenceRef
 import com.servacode.directory.api.models.OwnerFacilityDetail as WireOwnerFacilityDetail
@@ -277,16 +276,6 @@ internal fun FacilityMemberRole.toWire(): FacilityMemberRoleEnum = when (this) {
     FacilityMemberRole.MANAGER -> FacilityMemberRoleEnum.MANAGER
 }
 
-private fun OwnerCapabilities.toDomain() = FacilityCapabilities(
-    supportsHours = hours,
-    supportsPhotos = photos,
-    supportsDuty = duty,
-    supportsSpecialtyFilter = specialtyFilter,
-    supportsServiceFilter = serviceFilter,
-    supportsTemporaryClosure = temporaryClosure,
-    supportsOwnerOnboarding = ownerOnboarding,
-)
-
 private fun OwnerVerificationRequirement.toDomain() = VerificationRequirementDescriptor(
     id = id.toString(),
     labelAr = labelAr,
@@ -327,6 +316,7 @@ internal fun WireOwnerFacilitySummary.toDomain() = OwnerFacilitySummary(
     status = status.toDomain(),
     lastUpdateEpochMillis = lastUpdate.toEpochMillis(),
     requiredAction = requiredAction?.value,
+    capabilities = capabilities.toDomain(),
 )
 
 private fun OwnerHoursEntry.toDomain() =
@@ -358,6 +348,7 @@ internal fun WireOwnerFacilityDetail.toDomain() = OwnerFacilityDetail(
         status = status.toDomain(),
         lastUpdateEpochMillis = lastUpdate.toEpochMillis(),
         requiredAction = requiredAction?.value,
+        capabilities = capabilities.toDomain(),
     ),
     nameEn = nameEn,
     descriptionAr = descriptionAr,

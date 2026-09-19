@@ -7,3 +7,5 @@ local.properties
 captures/
 .externalNativeBuild/
 .cxx/
+# Kotlin compiler session data and daemon logs.
+.kotlin/

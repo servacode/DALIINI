@@ -9,6 +9,7 @@ import com.servacode.directory.core.network.api.GeneratedAuthApi
 import com.servacode.directory.core.network.api.GeneratedClient
 import com.servacode.directory.core.network.api.GeneratedOwnerApi
 import com.servacode.directory.core.network.api.GeneratedPublicApi
+import com.servacode.directory.core.network.api.GeneratedPushRegistration
 import com.servacode.directory.core.network.api.GeneratedRefreshGateway
 import com.servacode.directory.core.observability.NoOpObservability
 import com.servacode.directory.core.observability.Observability
@@ -105,7 +106,7 @@ object NetworkModule {
         identity: ClientIdentity,
     ): AuthApiBoundary = GeneratedAuthApi(anonymous, authorized, identity.deviceName)
 
-    /** No push-registration operation exists in the contract yet; see the register. */
     @Provides @Singleton
-    fun providePushRegistrationBoundary(): PushRegistrationBoundary = UnboundPushRegistrationBoundary
+    fun providePushRegistrationBoundary(@AuthorizedApi authorized: GeneratedClient): PushRegistrationBoundary =
+        GeneratedPushRegistration(authorized)
 }
