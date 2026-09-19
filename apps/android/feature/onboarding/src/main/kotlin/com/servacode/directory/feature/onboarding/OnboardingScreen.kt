@@ -289,3 +289,15 @@ private fun HoursEditor(
     }
 }
 
+private fun stepLabel(step: OnboardingStep): String = when (step) {
+    OnboardingStep.PROVINCE_CATEGORY -> "المحافظة والتصنيف"
+    OnboardingStep.BASIC_INFO -> "البيانات الأساسية"
+    OnboardingStep.MAP_POINT -> "الموقع"
+    OnboardingStep.HOURS -> "ساعات العمل"
+    OnboardingStep.PUBLIC_IMAGES -> "الصور العامة"
+    OnboardingStep.SPECIALIZED_FIELDS -> "الحقول المتخصصة"
+    OnboardingStep.VERIFICATION_EVIDENCE -> "إثباتات التحقق"
+    OnboardingStep.REVIEW -> "المراجعة"
+    OnboardingStep.SUBMIT -> "الإرسال"
+    OnboardingStep.STATUS -> "الحالة"
+}

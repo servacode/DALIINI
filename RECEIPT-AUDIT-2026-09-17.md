@@ -535,9 +535,10 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-073 | P1 | P14 | the project compiled against API 36 while 21 pinned libraries (Navigation 2.10.1, Compose 1.12, Lifecycle 2.11.0, Core 1.19.0, Coil 3.6.2) require API 37, so `checkLocalDebugAarMetadata` refused the app. Found by the first real Android build (CI run 35425779550) | FIXED (ANDROID-CI) — compileSdk 37, targetSdk 36 unchanged (DECISION-040) |
 | INT-074 | P2 | P15 | `feature:home` imports `androidx.activity.compose` for the location permission request without declaring it, the same omission INT-055 fixed in other modules. Found by the first real Android build (CI run 35425779550) | FIXED (ANDROID-CI) — declared |
 | INT-075 | P2 | P17 | `NavigationViewModel.state`, public, exposed the internal `NavigationUiState`, which Kotlin refuses. Found by the first real Android build (CI run 35425779550) | FIXED (ANDROID-CI) — the property is internal; only the module's screen reads it |
+| INT-076 | P2 | P16 | `stepLabel`, which names each onboarding step on screen, was deleted by 474cbd5 while `OnboardingScreen` still called it. Found by the first real Android build (CI run 35425779550) | FIXED (ANDROID-CI) — restored exactly as it was |
 
 ## Rules
 
 - An identifier is never reused, even after the defect is fixed or retired.
 - A defect is registered here before it is referenced anywhere else.
-- The next free identifier is `INT-076`.
+- The next free identifier is `INT-077`.
