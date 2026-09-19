@@ -27,10 +27,10 @@ export interface OwnerEvidenceCreated {
     id: string;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof OwnerEvidenceCreated
      */
-    requirementId: string;
+    requirementId: number;
 }
 
 /**

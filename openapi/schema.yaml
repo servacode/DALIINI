@@ -5029,8 +5029,7 @@ components:
           type: string
           format: uuid
         requirementId:
-          type: string
-          format: uuid
+          type: integer
         labelAr:
           type: string
       required:
@@ -5907,8 +5906,8 @@ components:
       type: object
       properties:
         requirementId:
-          type: string
-          format: uuid
+          type: integer
+          minimum: 1
         file:
           type: string
           format: binary
@@ -6244,8 +6243,7 @@ components:
           type: string
           format: uuid
         requirementId:
-          type: string
-          format: uuid
+          type: integer
       required:
       - id
       - requirementId
@@ -6256,8 +6254,7 @@ components:
           type: string
           format: uuid
         requirementId:
-          type: string
-          format: uuid
+          type: integer
         createdAt:
           type: string
           format: date-time
@@ -6534,8 +6531,7 @@ components:
         described here.
       properties:
         id:
-          type: string
-          format: uuid
+          type: integer
         labelAr:
           type: string
         labelEn:

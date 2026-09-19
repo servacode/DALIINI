@@ -33,7 +33,7 @@ import {
 
 export interface OwnerFacilityEvidenceCreateRequest {
     facilityId: string;
-    requirementId: string;
+    requirementId: number;
     file: Blob;
 }
 

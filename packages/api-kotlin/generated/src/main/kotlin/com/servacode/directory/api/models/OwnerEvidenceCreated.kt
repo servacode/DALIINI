@@ -33,8 +33,8 @@ data class OwnerEvidenceCreated (
     @Contextual @SerialName(value = "id")
     val id: java.util.UUID,
 
-    @Contextual @SerialName(value = "requirementId")
-    val requirementId: java.util.UUID
+    @SerialName(value = "requirementId")
+    val requirementId: kotlin.Int
 
 ) {
 

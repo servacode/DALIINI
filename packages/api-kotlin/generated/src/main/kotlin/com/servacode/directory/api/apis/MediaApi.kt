@@ -34,7 +34,7 @@ interface MediaApi {
      */
     @Multipart
     @POST("api/v1/owner/facilities/{facility_id}/evidence/")
-    suspend fun ownerFacilityEvidenceCreate(@Path("facility_id") facilityId: java.util.UUID, @Part("requirementId") requirementId: java.util.UUID, @Part file: MultipartBody.Part): Response<OwnerEvidenceCreated>
+    suspend fun ownerFacilityEvidenceCreate(@Path("facility_id") facilityId: java.util.UUID, @Part("requirementId") requirementId: kotlin.Int, @Part file: MultipartBody.Part): Response<OwnerEvidenceCreated>
 
     /**
      * DELETE api/v1/owner/facilities/{facility_id}/evidence/{evidence_id}/

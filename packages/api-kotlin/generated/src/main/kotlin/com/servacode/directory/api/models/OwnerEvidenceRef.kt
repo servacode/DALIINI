@@ -34,8 +34,8 @@ data class OwnerEvidenceRef (
     @Contextual @SerialName(value = "id")
     val id: java.util.UUID,
 
-    @Contextual @SerialName(value = "requirementId")
-    val requirementId: java.util.UUID,
+    @SerialName(value = "requirementId")
+    val requirementId: kotlin.Int,
 
     @Contextual @SerialName(value = "createdAt")
     val createdAt: java.time.OffsetDateTime

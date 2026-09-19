@@ -14,10 +14,10 @@ import AnyCodable
 public struct AdminEvidenceRef: Codable, JSONEncodable, Hashable {
 
     public var id: UUID
-    public var requirementId: UUID
+    public var requirementId: Int
     public var labelAr: String
 
-    public init(id: UUID, requirementId: UUID, labelAr: String) {
+    public init(id: UUID, requirementId: Int, labelAr: String) {
         self.id = id
         self.requirementId = requirementId
         self.labelAr = labelAr

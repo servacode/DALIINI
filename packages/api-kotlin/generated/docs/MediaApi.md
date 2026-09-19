@@ -27,7 +27,7 @@ val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(MediaApi::class.java)
 val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-val requirementId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+val requirementId : kotlin.Int = 56 // kotlin.Int | 
 val file : java.io.File = BINARY_DATA_HERE // java.io.File | 
 
 launch(Dispatchers.IO) {
@@ -37,7 +37,7 @@ launch(Dispatchers.IO) {
 
 ### Parameters
 | **facilityId** | **java.util.UUID**|  | |
-| **requirementId** | **java.util.UUID**|  | |
+| **requirementId** | **kotlin.Int**|  | |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
 | **file** | **java.io.File**|  | |

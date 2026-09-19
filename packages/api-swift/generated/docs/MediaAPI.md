@@ -13,7 +13,7 @@ Method | HTTP request | Description
 
 # **ownerFacilityEvidenceCreate**
 ```swift
-    open class func ownerFacilityEvidenceCreate(facilityId: UUID, requirementId: UUID, file: URL, completion: @escaping (_ data: OwnerEvidenceCreated?, _ error: Error?) -> Void)
+    open class func ownerFacilityEvidenceCreate(facilityId: UUID, requirementId: Int, file: URL, completion: @escaping (_ data: OwnerEvidenceCreated?, _ error: Error?) -> Void)
 ```
 
 Upload private verification evidence
@@ -26,7 +26,7 @@ Sent as multipart/form-data and stored in the private namespace. The response ca
 import ServaDirectoryAPI
 
 let facilityId = 987 // UUID | 
-let requirementId = 987 // UUID | 
+let requirementId = 987 // Int | 
 let file = URL(string: "https://example.com")! // URL | 
 
 // Upload private verification evidence
@@ -47,7 +47,7 @@ MediaAPI.ownerFacilityEvidenceCreate(facilityId: facilityId, requirementId: requ
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **facilityId** | **UUID** |  | 
- **requirementId** | **UUID** |  | 
+ **requirementId** | **Int** |  | 
  **file** | **URL** |  | 
 
 ### Return type

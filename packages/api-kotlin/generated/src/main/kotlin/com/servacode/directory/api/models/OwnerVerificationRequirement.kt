@@ -35,8 +35,8 @@ import kotlinx.serialization.Contextual
 
 data class OwnerVerificationRequirement (
 
-    @Contextual @SerialName(value = "id")
-    val id: java.util.UUID,
+    @SerialName(value = "id")
+    val id: kotlin.Int,
 
     @SerialName(value = "labelAr")
     val labelAr: kotlin.String,

@@ -27,10 +27,10 @@ export interface AdminEvidenceRef {
     id: string;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof AdminEvidenceRef
      */
-    requirementId: string;
+    requirementId: number;
     /**
      * 
      * @type {string}

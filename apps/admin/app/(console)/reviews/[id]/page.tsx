@@ -30,7 +30,7 @@ type Detail = Readonly<{
   facility: Record<string, unknown>;
   snapshot: Record<string, unknown>;
   publicImageIds: readonly string[];
-  evidence: readonly { id: string; requirementId: string; labelAr: string }[];
+  evidence: readonly { id: string; requirementId: number; labelAr: string }[];
   audit: readonly { action: string; requestId: string; createdAt: string }[];
 }>;
 

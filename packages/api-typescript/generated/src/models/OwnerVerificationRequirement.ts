@@ -21,10 +21,10 @@ import { mapValues } from '../runtime';
 export interface OwnerVerificationRequirement {
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof OwnerVerificationRequirement
      */
-    id: string;
+    id: number;
     /**
      * 
      * @type {string}

@@ -13,7 +13,7 @@ import AnyCodable
 /** Safe descriptor of a requirement. The evidence itself is never described here. */
 public struct OwnerVerificationRequirement: Codable, JSONEncodable, Hashable {
 
-    public var id: UUID
+    public var id: Int
     public var labelAr: String
     public var labelEn: String?
     public var instructionsAr: String?
@@ -21,7 +21,7 @@ public struct OwnerVerificationRequirement: Codable, JSONEncodable, Hashable {
     public var minFiles: Int
     public var maxFiles: Int
 
-    public init(id: UUID, labelAr: String, labelEn: String?, instructionsAr: String?, _required: Bool, minFiles: Int, maxFiles: Int) {
+    public init(id: Int, labelAr: String, labelEn: String?, instructionsAr: String?, _required: Bool, minFiles: Int, maxFiles: Int) {
         self.id = id
         self.labelAr = labelAr
         self.labelEn = labelEn
