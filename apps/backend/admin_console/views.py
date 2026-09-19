@@ -1,3 +1,6 @@
+import mimetypes
+from pathlib import PurePosixPath
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import connection
@@ -357,7 +360,15 @@ class EvidenceContentView(AdminView):
             request_id=_request_id(request),
         )
         stream = PrivateS3Storage().open(evidence.storage_key, "rb")
-        response = FileResponse(stream, content_type="application/octet-stream")
+        # Evidence is re-encoded to JPEG on upload, and the stored name says so. Serving it as
+        # octet-stream told the operator's browser nothing about what it received (INT-066).
+        content_type = mimetypes.guess_type(evidence.storage_key)[0] or "application/octet-stream"
+        # FileResponse would otherwise name the download after the stream, and an S3 file is
+        # named by its object key: the file name must say nothing about where it is stored.
+        suffix = PurePosixPath(evidence.storage_key).suffix
+        response = FileResponse(
+            stream, content_type=content_type, filename=f"evidence-{evidence.pk}{suffix}"
+        )
         response["Cache-Control"] = "private, no-store"
         response["X-Content-Type-Options"] = "nosniff"
         return response
