@@ -63,6 +63,8 @@ sourceSets {
         for (feature in features) {
             kotlin.srcDir(android.resolve("feature/$feature/src/test/kotlin"))
         }
+        // ViewModels are not compiled here (androidOnly), so neither are their tests.
+        kotlin.exclude("**/*ViewModelTest.kt")
     }
 }
 

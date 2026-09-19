@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The splash background: token semantic.surface.default. The system splash and the app's
+         splash (BrandColors.splashBackground) both use it, so one hands over to the other without
+         a change of colour; SplashThemeTest holds them together. -->
+    <color name="brand_splash_background">@color/token_semantic_surface_default</color>
+</resources>

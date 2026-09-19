@@ -3,4 +3,14 @@
         <item name="android:fontFamily">sans</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>
+
+    <!-- The launch theme. The system splash (Android 12+, or the AndroidX emulation below it)
+         draws the brand mark on the splash background, then installSplashScreen() moves the
+         window on to Theme.Directory. The app's splash (feature/bootstrap) starts from the same
+         colour and mark, so the two read as one; SplashThemeTest holds them together. -->
+    <style name="Theme.Directory.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/brand_splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/brand_mark_splash</item>
+        <item name="postSplashScreenTheme">@style/Theme.Directory</item>
+    </style>
 </resources>

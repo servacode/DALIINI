@@ -154,6 +154,17 @@ def check_architecture() -> None:
         ),
         "bootstrap repository missing",
     )
+    # The splash is shown while bootstrap runs, so bootstrap reads the device only: a network
+    # call there would make the app's start wait on the network.
+    bootstrap_sources = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (ROOT / "feature/bootstrap/src/main").rglob("*.kt")
+    )
+    require(
+        ":core:network" not in text("feature/bootstrap/build.gradle.kts")
+        and "core.network" not in bootstrap_sources,
+        "bootstrap and the splash must not depend on the network",
+    )
 
 
 # Build outputs are not source: after a real build they hold compiled, binary XML (INT-014).

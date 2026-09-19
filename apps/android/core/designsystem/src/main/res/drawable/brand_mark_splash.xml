@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The mark as the system splash takes it. Without an icon background the splash draws its
+     icon in a 288 dp box and shows a 192 dp circle of it; an inset of 84 dp on each side keeps
+     the 120 dp mark at exactly the size the app's splash draws it (BrandMarkSize). -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/brand_mark"
+    android:inset="84dp" />

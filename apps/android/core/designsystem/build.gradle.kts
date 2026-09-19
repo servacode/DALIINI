@@ -10,10 +10,15 @@ extensions.configure<com.android.build.api.dsl.LibraryExtension> {
     sourceSets.getByName("main").kotlin.srcDir(
         rootProject.file("../../packages/design-tokens/generated")
     )
+    // The same tokens as colour resources, for XML that cannot read Kotlin (brand_mark.xml).
+    sourceSets.getByName("main").res.srcDir(
+        rootProject.file("../../packages/design-tokens/generated/android")
+    )
 }
 
 dependencies {
     implementation(project(":core:model"))
+    implementation(libs.androidx.core)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.material3)

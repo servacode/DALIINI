@@ -643,6 +643,18 @@ The authoritative source for admin authorization remains the project RBAC. `user
 
 **Boundaries:** Only Raqqa has a centre. A province without one serves null, and the app then keeps the map's default camera rather than guessing. A centre for another province is a new frozen module and migration, or an operator's change. The boundary geometry in the specification stays open.
 
+## DECISION-043 — The splash is the system splash handing over to the app's own
+
+**Date:** 2026-09-19
+
+**Subject:** UI/UX redesign, Screen 01. The app had no splash of its own: Android showed its default placeholder icon on a grey-white window, then the app showed a spinner under a grey status bar, then Home.
+
+**Decision:** The launcher activity starts in `Theme.Directory.Starting`, built on the AndroidX SplashScreen library (`androidx.core:core-splashscreen` 1.0.1). It gives Android 12+ and the older versions the same brand mark on the same background, and `installSplashScreen()` hands the window over to the unchanged `Theme.Directory`. The app's splash (`DirectorySplashScreen`, shown by the bootstrap destination) starts from the same colour and the same mark in the same place: the window's centre, at 120 dp. It then adds the name, a one-line tagline, a secondary footer and a light ping under the pin. It paints the system bars in its background only while it is on screen. It waits for nothing: navigation leaves as soon as bootstrap, which reads the device only, has an answer. The token generator also emits the colours as Android resources, so XML (the mark, the launch theme) uses tokens rather than hex values.
+
+**Reason:** A splash drawn only in Compose appears after the system's, so the two have to match or the hand-over flashes. The library is the supported way to set Android's own splash, with one configuration for every version.
+
+**Boundaries:** The mark and the copy are placeholders until approved (`docs/design/BRAND-ASSETS.md`). No launcher icon is added here. Other screens keep their theme and bars; the grey status bar of Home is Home's until its own redesign.
+
 ---
 
 # Technical Debt Register

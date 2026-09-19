@@ -27,6 +27,36 @@ private val DirectoryColors = lightColorScheme(
     error = color(DirectoryTokens.SemanticFeedbackDanger),
 )
 
+/** Brand colours that sit outside the Material colour scheme, from the same tokens. */
+object BrandColors {
+    /** The splash, system and app alike (brand_splash_background). */
+    val splashBackground = color(DirectoryTokens.SemanticSurfaceDefault)
+    val mark = color(DirectoryTokens.SemanticActionPrimary)
+    val soft = color(DirectoryTokens.SemanticSurfaceBrandSoft)
+    val softer = color(DirectoryTokens.ColorsPrimarySofter)
+    val contentSecondary = color(DirectoryTokens.SemanticContentSecondary)
+}
+
+/**
+ * Token roles the Material typography does not carry. Kept apart from it on purpose: Material
+ * components read their own roles (a navigation bar reads labelMedium), so filling those slots
+ * would restyle screens that never asked for it.
+ */
+object DirectoryTextStyles {
+    val display = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight(DirectoryTokens.TypographyRolesDisplayWeight),
+        fontSize = DirectoryTokens.TypographyRolesDisplaySize.sp,
+        lineHeight = DirectoryTokens.TypographyRolesDisplayLineHeight.sp,
+    )
+    val labelMedium = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight(DirectoryTokens.TypographyRolesLabelMediumWeight),
+        fontSize = DirectoryTokens.TypographyRolesLabelMediumSize.sp,
+        lineHeight = DirectoryTokens.TypographyRolesLabelMediumLineHeight.sp,
+    )
+}
+
 private val DirectoryTypography = Typography(
     headlineLarge = TextStyle(
         fontFamily = FontFamily.SansSerif,

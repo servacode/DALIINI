@@ -2,7 +2,6 @@ package com.servacode.directory.feature.bootstrap
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,10 +17,11 @@ fun BootstrapScreen(
     viewModel: BootstrapViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    // The splash stays while the app starts and while it hands over, so the first screen fades
+    // in from the splash rather than from an empty window. It never holds navigation back.
+    if (state !is BootstrapUiState.Error) DirectorySplashScreen()
     when (val value = state) {
-        BootstrapUiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
+        BootstrapUiState.Loading -> Unit
         is BootstrapUiState.Ready -> LaunchedEffect(value.selectedProvinceId) {
             onReady(value.selectedProvinceId)
         }

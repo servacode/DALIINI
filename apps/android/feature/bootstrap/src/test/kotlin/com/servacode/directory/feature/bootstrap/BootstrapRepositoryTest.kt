@@ -1,0 +1,39 @@
+package com.servacode.directory.feature.bootstrap
+
+import com.servacode.directory.core.datastore.DirectoryPreferences
+import com.servacode.directory.core.datastore.DirectoryPreferencesStore
+import com.servacode.directory.core.datastore.LocationPreference
+import com.servacode.directory.core.testing.FakePreferences
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Test
+import java.io.IOException
+
+/**
+ * What the splash waits on: the saved province, read from the device. The repository has no
+ * network collaborator to call, and nothing on the way takes time.
+ */
+class BootstrapRepositoryTest {
+    @Test fun `the start is known from the saved province alone, at once`() = runTest {
+        val result = DefaultBootstrapRepository(FakePreferences(selectedProvinceId = "raqqa")).initialize()
+
+        assertEquals(BootstrapResult.Ready("raqqa"), result)
+        assertEquals("no wait on the way", 0L, testScheduler.currentTime)
+    }
+
+    @Test fun `a first start, with no province yet, is ready too`() = runTest {
+        assertEquals(BootstrapResult.Ready(null), DefaultBootstrapRepository(FakePreferences()).initialize())
+    }
+
+    @Test fun `storage that cannot be read ends the splash with a failure instead of holding it`() = runTest {
+        val broken = object : DirectoryPreferencesStore {
+            override val values: Flow<DirectoryPreferences> = flow { throw IOException("disk") }
+            override suspend fun selectProvince(id: String) = Unit
+            override suspend fun setLocationPreference(value: LocationPreference) = Unit
+        }
+
+        assertEquals(BootstrapResult.Failed("BOOTSTRAP_STORAGE_UNAVAILABLE"), DefaultBootstrapRepository(broken).initialize())
+    }
+}
