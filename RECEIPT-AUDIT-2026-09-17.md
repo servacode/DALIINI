@@ -539,9 +539,10 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-077 | P1 | P18 | no manifest declared `ACCESS_NETWORK_STATE`, which `AndroidNetworkMonitor` needs for `getActiveNetwork` and `registerNetworkCallback`; both throw `SecurityException` without it, and the realtime coordinator starts the monitor when the app comes to the foreground, so the app would most likely have crashed on start. Found by Android lint in the first real build (CI run 35429821238) | FIXED (ANDROID-CI) — declared by core:network, the module that uses it |
 | INT-078 | P2 | P15 | the location provider guarded its calls with a helper and `runCatching` inside lambdas, which lint cannot see, and `core:location` declared none of the permissions it uses. Behaviour was safe; the protection was not explicit. Found by Android lint (CI run 35429821238) | FIXED (ANDROID-CI) — the module declares both location permissions; each protected call handles `SecurityException` explicitly |
 | INT-079 | P3 | P18 | `DirectoryMessagingService` posted a notice without checking POST_NOTIFICATIONS, relying on `runCatching` to swallow the refusal. Found by Android lint (CI run 35429821238) | FIXED (ANDROID-CI) — explicit check from Android 13; a withdrawal handled as `SecurityException` |
+| INT-080 | P3 | P14 | `core:database` and `feature:bootstrap` unit tests use `kotlinx.coroutines.test` without declaring it; the JVM harness supplies it to every test, which hid the omission. Found by the first real Android unit test run (CI run 35429821238) | FIXED (ANDROID-CI) — declared |
 
 ## Rules
 
 - An identifier is never reused, even after the defect is fixed or retired.
 - A defect is registered here before it is referenced anywhere else.
-- The next free identifier is `INT-080`.
+- The next free identifier is `INT-081`.
