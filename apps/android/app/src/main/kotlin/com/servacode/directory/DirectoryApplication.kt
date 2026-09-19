@@ -1,6 +1,7 @@
 package com.servacode.directory
 
 import android.app.Application
+import android.os.StrictMode
 import androidx.lifecycle.ProcessLifecycleOwner
 import dagger.hilt.android.HiltAndroidApp
 import org.maplibre.android.MapLibre
@@ -18,6 +19,17 @@ class DirectoryApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        if (BuildConfig.DEBUG) {
+            // Debug builds say where a resource that is never released was acquired: CloseGuard
+            // alone reports only that one leaked (INT-089). Logged, never fatal.
+            StrictMode.setVmPolicy(
+                StrictMode.VmPolicy.Builder()
+                    .detectLeakedClosableObjects()
+                    .detectLeakedRegistrationObjects()
+                    .penaltyLog()
+                    .build(),
+            )
+        }
         MapLibre.getInstance(this)
         ProcessLifecycleOwner.get().lifecycle.addObserver(realtimeCoordinator)
         pushSetup.start(this, scope)
