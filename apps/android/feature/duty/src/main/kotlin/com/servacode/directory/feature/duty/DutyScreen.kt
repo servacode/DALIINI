@@ -10,7 +10,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,12 +20,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.designsystem.DateTimeField
+import com.servacode.directory.core.model.DamascusTime
 
 @Composable
 fun DutyScreen(viewModel: DutyViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    var startText by remember { mutableStateOf("") }
-    var endText by remember { mutableStateOf("") }
+    var start by remember { mutableStateOf<Long?>(null) }
+    var end by remember { mutableStateOf<Long?>(null) }
     Column(
         Modifier.fillMaxSize().padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -42,32 +43,21 @@ fun DutyScreen(viewModel: DutyViewModel = hiltViewModel()) {
                 value.message?.let { Text(it) }
                 Button(
                     onClick = {
-                        val end = endText.toLongOrNull() ?: return@Button
-                        viewModel.startNow(end)
+                        viewModel.startNow(end ?: return@Button)
                     },
                 ) {
                     Text("بدء الآن حتى وقت النهاية")
                 }
-                OutlinedTextField(
-                    value = startText,
-                    onValueChange = { startText = it.filter(Char::isDigit) },
-                    label = { Text("وقت البداية epoch millis") },
-                )
-                OutlinedTextField(
-                    value = endText,
-                    onValueChange = { endText = it.filter(Char::isDigit) },
-                    label = { Text("وقت النهاية epoch millis") },
-                )
+                DateTimeField("وقت البداية", start, { start = it })
+                DateTimeField("وقت النهاية", end, { end = it })
                 Button(
                     onClick = {
-                        val start = startText.toLongOrNull() ?: return@Button
-                        val end = endText.toLongOrNull() ?: return@Button
-                        viewModel.schedule(start, end)
+                        viewModel.schedule(start ?: return@Button, end ?: return@Button)
                     },
                 ) { Text("جدولة") }
                 value.shifts.forEach { shift ->
                     Column(Modifier.fillMaxWidth()) {
-                        Text("${shift.startsAtEpochMillis} → ${shift.endsAtEpochMillis}")
+                        Text(DamascusTime.period(shift.startsAtEpochMillis, shift.endsAtEpochMillis))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedButton(onClick = { viewModel.endEarly(shift) }) {
                                 Text("إنهاء مبكر")

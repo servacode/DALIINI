@@ -23,6 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.designsystem.DateTimeField
+import com.servacode.directory.core.model.DamascusTime
 import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.model.OwnerLabels
 
@@ -79,8 +81,8 @@ fun ManageFacilityScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var managerId by remember { mutableStateOf("") }
-    var closureStart by remember { mutableStateOf("") }
-    var closureEnd by remember { mutableStateOf("") }
+    var closureStart by remember { mutableStateOf<Long?>(null) }
+    var closureEnd by remember { mutableStateOf<Long?>(null) }
     var closureReason by remember { mutableStateOf("") }
     Column(
         Modifier.fillMaxSize().padding(20.dp),
@@ -104,16 +106,8 @@ fun ManageFacilityScreen(
                 }
                 value.message?.let { Text(it) }
                 Text("الإغلاقات المؤقتة", style = MaterialTheme.typography.titleMedium)
-                OutlinedTextField(
-                    value = closureStart,
-                    onValueChange = { closureStart = it.filter(Char::isDigit) },
-                    label = { Text("بداية الإغلاق epoch millis") },
-                )
-                OutlinedTextField(
-                    value = closureEnd,
-                    onValueChange = { closureEnd = it.filter(Char::isDigit) },
-                    label = { Text("نهاية الإغلاق epoch millis") },
-                )
+                DateTimeField("بداية الإغلاق", closureStart, { closureStart = it })
+                DateTimeField("نهاية الإغلاق", closureEnd, { closureEnd = it })
                 OutlinedTextField(
                     value = closureReason,
                     onValueChange = { closureReason = it },
@@ -121,8 +115,8 @@ fun ManageFacilityScreen(
                 )
                 Button(
                     onClick = {
-                        val start = closureStart.toLongOrNull() ?: return@Button
-                        val end = closureEnd.toLongOrNull() ?: return@Button
+                        val start = closureStart ?: return@Button
+                        val end = closureEnd ?: return@Button
                         viewModel.createTemporaryClosure(
                             start,
                             end,
@@ -132,7 +126,10 @@ fun ManageFacilityScreen(
                 ) { Text("إضافة إغلاق مؤقت") }
                 value.closures.forEach { closure ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(closure.reason ?: "إغلاق مؤقت")
+                        Text(
+                            (closure.reason ?: "إغلاق مؤقت") + " • " +
+                                DamascusTime.period(closure.startsAtEpochMillis, closure.endsAtEpochMillis),
+                        )
                         OutlinedButton(
                             onClick = { viewModel.deleteTemporaryClosure(closure.id) },
                         ) { Text("حذف") }

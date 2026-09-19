@@ -13,6 +13,7 @@ extensions.configure<com.android.build.api.dsl.LibraryExtension> {
 }
 
 dependencies {
+    implementation(project(":core:model"))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.material3)
