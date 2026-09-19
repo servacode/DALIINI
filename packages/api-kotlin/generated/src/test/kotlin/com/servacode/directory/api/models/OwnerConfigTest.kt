@@ -19,8 +19,8 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.models.OwnerConfig
-import com.servacode.directory.api.models.NamedRef
 import com.servacode.directory.api.models.OwnerConfigCategory
+import com.servacode.directory.api.models.OwnerConfigProvince
 
 class OwnerConfigTest : ShouldSpec() {
     init {

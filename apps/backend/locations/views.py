@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from core.openapi import NOT_FOUND_404
 
 from .models import Province
+from .presenters import map_center
 from .schemas import PublicCityListSerializer, PublicProvinceListSerializer
 
 
@@ -30,6 +31,7 @@ class PublicProvinceListView(APIView):
                 "code": province.code,
                 "nameAr": province.name_ar,
                 "nameEn": province.name_en or None,
+                "mapCenter": map_center(province),
             }
             for province in Province.objects.filter(active=True).order_by(
                 "sort_order",

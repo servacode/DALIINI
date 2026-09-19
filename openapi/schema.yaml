@@ -6213,7 +6213,7 @@ components:
       type: object
       properties:
         province:
-          $ref: '#/components/schemas/NamedRef'
+          $ref: '#/components/schemas/OwnerConfigProvince'
         categories:
           type: array
           items:
@@ -6236,6 +6236,24 @@ components:
       - capabilities
       - category
       - verificationRequirements
+    OwnerConfigProvince:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        mapCenter:
+          allOf:
+          - $ref: '#/components/schemas/Coordinates'
+          nullable: true
+          description: Where the location picker opens when the owner's own position
+            is unknown. Null when no centre has been set.
+      required:
+      - id
+      - mapCenter
+      - nameAr
     OwnerEvidenceCreated:
       type: object
       properties:
@@ -6915,9 +6933,16 @@ components:
         nameEn:
           type: string
           nullable: true
+        mapCenter:
+          allOf:
+          - $ref: '#/components/schemas/Coordinates'
+          nullable: true
+          description: Where a map opens for this province when the user's own position
+            is unknown. Null when no centre has been set.
       required:
       - code
       - id
+      - mapCenter
       - nameAr
       - nameEn
     PublicProvinceList:

@@ -24,76 +24,60 @@ import {
 /**
  * 
  * @export
- * @interface PublicProvince
+ * @interface OwnerConfigProvince
  */
-export interface PublicProvince {
+export interface OwnerConfigProvince {
     /**
      * 
      * @type {string}
-     * @memberof PublicProvince
+     * @memberof OwnerConfigProvince
      */
     id: string;
     /**
      * 
      * @type {string}
-     * @memberof PublicProvince
-     */
-    code: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof PublicProvince
+     * @memberof OwnerConfigProvince
      */
     nameAr: string;
     /**
-     * 
-     * @type {string}
-     * @memberof PublicProvince
-     */
-    nameEn: string | null;
-    /**
-     * Where a map opens for this province when the user's own position is unknown. Null when no centre has been set.
+     * Where the location picker opens when the owner's own position is unknown. Null when no centre has been set.
      * @type {Coordinates}
-     * @memberof PublicProvince
+     * @memberof OwnerConfigProvince
      */
     mapCenter: Coordinates | null;
 }
 
 /**
- * Check if a given object implements the PublicProvince interface.
+ * Check if a given object implements the OwnerConfigProvince interface.
  */
-export function instanceOfPublicProvince(value: object): value is PublicProvince {
+export function instanceOfOwnerConfigProvince(value: object): value is OwnerConfigProvince {
     if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('code' in value) || value['code'] === undefined) return false;
     if (!('nameAr' in value) || value['nameAr'] === undefined) return false;
-    if (!('nameEn' in value) || value['nameEn'] === undefined) return false;
     if (!('mapCenter' in value) || value['mapCenter'] === undefined) return false;
     return true;
 }
 
-export function PublicProvinceFromJSON(json: any): PublicProvince {
-    return PublicProvinceFromJSONTyped(json, false);
+export function OwnerConfigProvinceFromJSON(json: any): OwnerConfigProvince {
+    return OwnerConfigProvinceFromJSONTyped(json, false);
 }
 
-export function PublicProvinceFromJSONTyped(json: any, ignoreDiscriminator: boolean): PublicProvince {
+export function OwnerConfigProvinceFromJSONTyped(json: any, ignoreDiscriminator: boolean): OwnerConfigProvince {
     if (json == null) {
         return json;
     }
     return {
         
         'id': json['id'],
-        'code': json['code'],
         'nameAr': json['nameAr'],
-        'nameEn': json['nameEn'],
         'mapCenter': CoordinatesFromJSON(json['mapCenter']),
     };
 }
 
-export function PublicProvinceToJSON(json: any): PublicProvince {
-    return PublicProvinceToJSONTyped(json, false);
+export function OwnerConfigProvinceToJSON(json: any): OwnerConfigProvince {
+    return OwnerConfigProvinceToJSONTyped(json, false);
 }
 
-export function PublicProvinceToJSONTyped(value?: PublicProvince | null, ignoreDiscriminator: boolean = false): any {
+export function OwnerConfigProvinceToJSONTyped(value?: OwnerConfigProvince | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
@@ -101,9 +85,7 @@ export function PublicProvinceToJSONTyped(value?: PublicProvince | null, ignoreD
     return {
         
         'id': value['id'],
-        'code': value['code'],
         'nameAr': value['nameAr'],
-        'nameEn': value['nameEn'],
         'mapCenter': CoordinatesToJSON(value['mapCenter']),
     };
 }

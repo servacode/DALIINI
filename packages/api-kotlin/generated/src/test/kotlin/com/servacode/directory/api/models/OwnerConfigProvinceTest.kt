@@ -18,24 +18,18 @@ package com.servacode.directory.api.models
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
-import com.servacode.directory.api.models.PublicProvince
+import com.servacode.directory.api.models.OwnerConfigProvince
 import com.servacode.directory.api.models.Coordinates
 
-class PublicProvinceTest : ShouldSpec() {
+class OwnerConfigProvinceTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of PublicProvince
-        //val modelInstance = PublicProvince()
+        // uncomment below to create an instance of OwnerConfigProvince
+        //val modelInstance = OwnerConfigProvince()
 
         // to test the property `id`
         should("test id") {
             // uncomment below to test the property
             //modelInstance.id shouldBe ("TODO")
-        }
-
-        // to test the property `code`
-        should("test code") {
-            // uncomment below to test the property
-            //modelInstance.code shouldBe ("TODO")
         }
 
         // to test the property `nameAr`
@@ -44,13 +38,7 @@ class PublicProvinceTest : ShouldSpec() {
             //modelInstance.nameAr shouldBe ("TODO")
         }
 
-        // to test the property `nameEn`
-        should("test nameEn") {
-            // uncomment below to test the property
-            //modelInstance.nameEn shouldBe ("TODO")
-        }
-
-        // to test the property `mapCenter` - Where a map opens for this province when the user's own position is unknown. Null when no centre has been set.
+        // to test the property `mapCenter` - Where the location picker opens when the owner's own position is unknown. Null when no centre has been set.
         should("test mapCenter") {
             // uncomment below to test the property
             //modelInstance.mapCenter shouldBe ("TODO")

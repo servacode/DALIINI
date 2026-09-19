@@ -6,12 +6,21 @@ responses, only to describe them, so the runtime payload stays the single source
 
 from rest_framework import serializers
 
+from core.openapi import CoordinatesSerializer
+
 
 class PublicProvinceSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     code = serializers.CharField()
     nameAr = serializers.CharField()
     nameEn = serializers.CharField(allow_null=True)
+    mapCenter = CoordinatesSerializer(
+        allow_null=True,
+        help_text=(
+            "Where a map opens for this province when the user's own position is unknown. "
+            "Null when no centre has been set."
+        ),
+    )
 
 
 class PublicProvinceListSerializer(serializers.Serializer):

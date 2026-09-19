@@ -2,11 +2,20 @@ package com.servacode.directory.core.model
 
 import kotlinx.serialization.Serializable
 
+/** A WGS84 position in decimal degrees, as the backend's `Coordinates`. */
+@Serializable
+data class GeoPoint(
+    val latitude: Double,
+    val longitude: Double,
+)
+
 @Serializable
 data class Province(
     val id: String,
     val nameAr: String,
     val nameEn: String? = null,
+    /** Where a map opens for the province when the user's position is unknown; null when unset. */
+    val mapCenter: GeoPoint? = null,
 )
 
 @Serializable

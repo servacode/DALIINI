@@ -15,8 +15,8 @@
 
 package com.servacode.directory.api.models
 
-import com.servacode.directory.api.models.NamedRef
 import com.servacode.directory.api.models.OwnerConfigCategory
+import com.servacode.directory.api.models.OwnerConfigProvince
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -33,7 +33,7 @@ import kotlinx.serialization.Contextual
 data class OwnerConfig (
 
     @SerialName(value = "province")
-    val province: NamedRef,
+    val province: OwnerConfigProvince,
 
     @SerialName(value = "categories")
     val categories: kotlin.collections.List<OwnerConfigCategory>

@@ -7,6 +7,7 @@ import com.servacode.directory.api.models.BusinessHour as WireBusinessHour
 import com.servacode.directory.api.models.CategoryCapabilities
 import com.servacode.directory.api.models.ChallengeAccepted
 import com.servacode.directory.api.models.CompactFacility
+import com.servacode.directory.api.models.Coordinates
 import com.servacode.directory.api.models.DutyShift as WireDutyShift
 import com.servacode.directory.api.models.FacilityCursorPage
 import com.servacode.directory.api.models.FacilityMemberRoleEnum
@@ -16,6 +17,7 @@ import com.servacode.directory.api.models.MapMarker
 import com.servacode.directory.api.models.NamedRef
 import com.servacode.directory.api.models.OwnerApplication as WireOwnerApplication
 import com.servacode.directory.api.models.OwnerConfig as WireOwnerConfig
+import com.servacode.directory.api.models.OwnerConfigProvince
 import com.servacode.directory.api.models.OwnerEvidenceRef
 import com.servacode.directory.api.models.OwnerFacilityDetail as WireOwnerFacilityDetail
 import com.servacode.directory.api.models.OwnerFacilityImage as WireOwnerFacilityImage
@@ -47,6 +49,7 @@ import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.FacilityMember
 import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.model.FacilitySummary
+import com.servacode.directory.core.model.GeoPoint
 import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.HomeSnapshot
 import com.servacode.directory.core.model.OwnerApplication
@@ -91,7 +94,20 @@ internal fun Long.toOffsetDateTime(): OffsetDateTime =
 
 // Taxonomy and places
 
-internal fun PublicProvince.toDomain() = Province(id = id.toString(), nameAr = nameAr, nameEn = nameEn)
+internal fun Coordinates.toGeoPoint() = GeoPoint(latitude = latitude, longitude = longitude)
+
+internal fun PublicProvince.toDomain() = Province(
+    id = id.toString(),
+    nameAr = nameAr,
+    nameEn = nameEn,
+    mapCenter = mapCenter?.toGeoPoint(),
+)
+
+internal fun OwnerConfigProvince.toDomain() = Province(
+    id = id.toString(),
+    nameAr = nameAr,
+    mapCenter = mapCenter?.toGeoPoint(),
+)
 
 internal fun NamedRef.toProvince() = Province(id = id.toString(), nameAr = nameAr)
 
@@ -292,7 +308,7 @@ private fun OwnerVerificationRequirement.toDomain() = VerificationRequirementDes
  * list may be empty, and then the app asks for nothing.
  */
 internal fun WireOwnerConfig.toDomain() = OwnerConfig(
-    province = province.toProvince(),
+    province = province.toDomain(),
     categories = categories.map { item ->
         OwnerCategoryConfig(
             category = Category(

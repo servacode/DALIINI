@@ -3,6 +3,7 @@ package com.servacode.directory.core.network.api
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.AppException
 import com.servacode.directory.core.model.AvailabilityState
+import com.servacode.directory.core.model.GeoPoint
 import com.servacode.directory.core.model.OwnerFacilityStatus
 import com.servacode.directory.core.model.Province
 import com.servacode.directory.core.network.DirectoryQuery
@@ -65,13 +66,33 @@ class GeneratedAdapterTest {
     """
 
     @Test fun `provinces come from the backend unchanged`() = runTest {
-        respond("""{"items":[{"id":"$PROVINCE","code":"raqqa","nameAr":"الرقة","nameEn":"Raqqa"}]}""")
+        respond(
+            """{"items":[{"id":"$PROVINCE","code":"raqqa","nameAr":"الرقة","nameEn":"Raqqa",
+            "mapCenter":{"latitude":35.9528,"longitude":39.0085}}]}""",
+        )
 
         val provinces = publicApi.provinces()
 
-        assertEquals(listOf(Province(PROVINCE, "الرقة", "Raqqa")), provinces)
+        assertEquals(listOf(Province(PROVINCE, "الرقة", "Raqqa", GeoPoint(35.9528, 39.0085))), provinces)
         val request = taken()
         assertEquals("/api/v1/public/provinces/", request.url.encodedPath)
+    }
+
+    @Test fun `a province without a map centre carries none`() = runTest {
+        respond("""{"items":[{"id":"$PROVINCE","code":"raqqa","nameAr":"الرقة","nameEn":null,"mapCenter":null}]}""")
+
+        assertNull(publicApi.provinces().single().mapCenter)
+    }
+
+    @Test fun `the owner config carries the province map centre`() = runTest {
+        respond(
+            """{"province":{"id":"$PROVINCE","nameAr":"الرقة","mapCenter":{"latitude":35.9528,"longitude":39.0085}},
+            "categories":[]}""",
+        )
+
+        val province = ownerApi.ownerConfig(PROVINCE).province
+
+        assertEquals(Province(PROVINCE, "الرقة", mapCenter = GeoPoint(35.9528, 39.0085)), province)
     }
 
     @Test fun `category capabilities decide what the screens offer`() = runTest {

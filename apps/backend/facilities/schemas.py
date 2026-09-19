@@ -5,6 +5,8 @@ object storage keys, private bucket paths and reviewer notes never appear here, 
 `15-SECURITY-PRIVACY.md`.
 """
 
+from typing import Any
+
 from rest_framework import serializers
 
 from core.openapi import CoordinatesSerializer, NamedRefSerializer
@@ -49,8 +51,20 @@ class OwnerConfigCategorySerializer(serializers.Serializer):
     verificationRequirements = OwnerVerificationRequirementSerializer(many=True)
 
 
+class OwnerConfigProvinceSerializer(serializers.Serializer[Any]):
+    id = serializers.UUIDField()
+    nameAr = serializers.CharField()
+    mapCenter = CoordinatesSerializer(
+        allow_null=True,
+        help_text=(
+            "Where the location picker opens when the owner's own position is unknown. "
+            "Null when no centre has been set."
+        ),
+    )
+
+
 class OwnerConfigSerializer(serializers.Serializer):
-    province = NamedRefSerializer()
+    province = OwnerConfigProvinceSerializer()
     categories = OwnerConfigCategorySerializer(many=True)
 
 

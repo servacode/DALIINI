@@ -22,6 +22,7 @@ from django.utils import timezone
 from accounts.models import OTPChallenge, User
 from business_hours.models import BusinessHour, TemporaryClosure
 from directory.models import Category, VerificationRequirement
+from directory.reference_data.province_map_centers_v1 import CENTERS
 from facilities.models import Facility, FacilityMembership
 from locations.models import Province
 from pharmacy_duty.models import DutyShift
@@ -31,8 +32,8 @@ MOBILE_OWNER = {"phone": "+963900777002", "password": "OwnerMobile123!", "name":
 # The registration test creates this account; it must not exist when a run starts.
 REGISTRANT_PHONE = "+963900777100"
 PREFIX = "e2e-m-"
-# Raqqa city centre, longitude first as PostGIS expects.
-CENTRE = (39.0085, 35.9528)
+# Raqqa city centre, from the province's map centre; longitude first as PostGIS expects.
+CENTRE = (CENTERS["raqqa"][1], CENTERS["raqqa"][0])
 
 
 class Command(BaseCommand):

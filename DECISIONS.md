@@ -631,6 +631,18 @@ The authoritative source for admin authorization remains the project RBAC. `user
 
 **Impact:** The app installed from run 35430793735 carries a key that existed only on a destroyed runner. Moving that device to the stable key takes one final uninstall. The keystore's only full copy outside GitHub is on the machine that created it (`~/.android/directory-platform-debug.keystore`), and it should be backed up privately. GitHub secrets cannot be read back.
 
+## DECISION-042 — A province carries the point its map opens on
+
+**Date:** 2026-09-19
+
+**Subject:** INT-092. The map and the owner location picker opened on the whole world, because nothing in the system says where a province is. `06-DATA-MODEL.md` gives a province an optional MultiPolygon geometry; the implementation has none, and no authoritative boundary data exists in the project.
+
+**Decision:** `Province.map_center` is a nullable PostGIS point (SRID 4326). It is reference data, like the launch baseline: the frozen module `directory/reference_data/province_map_centers_v1.py` gives Raqqa the centre of Raqqa city (35.9528, 39.0085). Migration `directory/0005` and `seed_launch_baseline` write it through the same `apply_map_centers`, which never overwrites a centre that is set. The API serves it as `mapCenter` (the shared `Coordinates` shape, or null) in `publicProvincesList` and in the province of `ownerConfigRetrieve`; the shared `NamedRef` is unchanged. The Android fixtures read the same value instead of repeating it. On the device the map opens on the user's position when it is known without prompting, else on this centre, at a city-level zoom; that choice lives in one place (`MapCameraPolicy`), not in a composable.
+
+**Reason:** The backend owns geographic truth (PostGIS), a province activated later needs its centre without an app release, and a coordinate written into several screens would drift. A boundary polygon would also answer the question, but inventing one is worse than carrying the one point a map needs.
+
+**Boundaries:** Only Raqqa has a centre. A province without one serves null, and the app then keeps the map's default camera rather than guessing. A centre for another province is a new frozen module and migration, or an operator's change. The boundary geometry in the specification stays open.
+
 ---
 
 # Technical Debt Register

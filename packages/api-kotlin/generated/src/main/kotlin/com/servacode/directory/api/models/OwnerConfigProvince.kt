@@ -25,28 +25,20 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param id 
- * @param code 
  * @param nameAr 
- * @param nameEn 
- * @param mapCenter Where a map opens for this province when the user's own position is unknown. Null when no centre has been set.
+ * @param mapCenter Where the location picker opens when the owner's own position is unknown. Null when no centre has been set.
  */
 @Serializable
 
-data class PublicProvince (
+data class OwnerConfigProvince (
 
     @Contextual @SerialName(value = "id")
     val id: java.util.UUID,
 
-    @SerialName(value = "code")
-    val code: kotlin.String,
-
     @SerialName(value = "nameAr")
     val nameAr: kotlin.String,
 
-    @SerialName(value = "nameEn")
-    val nameEn: kotlin.String?,
-
-    /* Where a map opens for this province when the user's own position is unknown. Null when no centre has been set. */
+    /* Where the location picker opens when the owner's own position is unknown. Null when no centre has been set. */
     @SerialName(value = "mapCenter")
     val mapCenter: Coordinates?
 

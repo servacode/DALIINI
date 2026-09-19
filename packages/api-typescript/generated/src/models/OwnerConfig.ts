@@ -20,13 +20,13 @@ import {
     OwnerConfigCategoryToJSON,
     OwnerConfigCategoryToJSONTyped,
 } from './OwnerConfigCategory';
-import type { NamedRef } from './NamedRef';
+import type { OwnerConfigProvince } from './OwnerConfigProvince';
 import {
-    NamedRefFromJSON,
-    NamedRefFromJSONTyped,
-    NamedRefToJSON,
-    NamedRefToJSONTyped,
-} from './NamedRef';
+    OwnerConfigProvinceFromJSON,
+    OwnerConfigProvinceFromJSONTyped,
+    OwnerConfigProvinceToJSON,
+    OwnerConfigProvinceToJSONTyped,
+} from './OwnerConfigProvince';
 
 /**
  * 
@@ -36,10 +36,10 @@ import {
 export interface OwnerConfig {
     /**
      * 
-     * @type {NamedRef}
+     * @type {OwnerConfigProvince}
      * @memberof OwnerConfig
      */
-    province: NamedRef;
+    province: OwnerConfigProvince;
     /**
      * 
      * @type {Array<OwnerConfigCategory>}
@@ -67,7 +67,7 @@ export function OwnerConfigFromJSONTyped(json: any, ignoreDiscriminator: boolean
     }
     return {
         
-        'province': NamedRefFromJSON(json['province']),
+        'province': OwnerConfigProvinceFromJSON(json['province']),
         'categories': ((json['categories'] as Array<any>).map(OwnerConfigCategoryFromJSON)),
     };
 }
@@ -83,7 +83,7 @@ export function OwnerConfigToJSONTyped(value?: OwnerConfig | null, ignoreDiscrim
 
     return {
         
-        'province': NamedRefToJSON(value['province']),
+        'province': OwnerConfigProvinceToJSON(value['province']),
         'categories': ((value['categories'] as Array<any>).map(OwnerConfigCategoryToJSON)),
     };
 }

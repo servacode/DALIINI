@@ -7,6 +7,8 @@ class Province(models.Model):
     name_en=models.CharField(max_length=120, blank=True)
     active=models.BooleanField(default=False)
     sort_order=models.PositiveIntegerField(default=0)
+    # Where a map opens for the province when the user's own position is unknown (INT-092).
+    map_center=models.PointField(srid=4326,null=True,blank=True)
 class City(models.Model):
     id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     province=models.ForeignKey(Province,on_delete=models.CASCADE,related_name='cities')

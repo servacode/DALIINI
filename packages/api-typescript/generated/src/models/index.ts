@@ -100,6 +100,7 @@ export * from './OwnerApplication';
 export * from './OwnerCategory';
 export * from './OwnerConfig';
 export * from './OwnerConfigCategory';
+export * from './OwnerConfigProvince';
 export * from './OwnerEvidenceCreated';
 export * from './OwnerEvidenceRef';
 export * from './OwnerFacilityDetail';

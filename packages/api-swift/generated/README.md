@@ -223,6 +223,7 @@ Class | Method | HTTP request | Description
  - [OwnerCategory](docs/OwnerCategory.md)
  - [OwnerConfig](docs/OwnerConfig.md)
  - [OwnerConfigCategory](docs/OwnerConfigCategory.md)
+ - [OwnerConfigProvince](docs/OwnerConfigProvince.md)
  - [OwnerEvidenceCreated](docs/OwnerEvidenceCreated.md)
  - [OwnerEvidenceRef](docs/OwnerEvidenceRef.md)
  - [OwnerFacilityDetail](docs/OwnerFacilityDetail.md)

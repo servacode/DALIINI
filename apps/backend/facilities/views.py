@@ -20,6 +20,7 @@ from core.openapi import (
 from directory.models import CategoryProvince, VerificationRequirement
 from directory.presenters import category_capabilities
 from locations.models import Province
+from locations.presenters import map_center
 from storage.backends import PrivateS3Storage, PublicS3Storage
 
 from .media import save_private_evidence, save_public_image
@@ -170,7 +171,11 @@ class OwnerConfigView(APIView):
         )
         return Response(
             {
-                "province": {"id": str(province.pk), "nameAr": province.name_ar},
+                "province": {
+                    "id": str(province.pk),
+                    "nameAr": province.name_ar,
+                    "mapCenter": map_center(province),
+                },
                 "categories": [_owner_config_item(item) for item in switches],
             }
         )

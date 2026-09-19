@@ -243,6 +243,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.OwnerCategory](docs/OwnerCategory.md)
  - [com.servacode.directory.api.models.OwnerConfig](docs/OwnerConfig.md)
  - [com.servacode.directory.api.models.OwnerConfigCategory](docs/OwnerConfigCategory.md)
+ - [com.servacode.directory.api.models.OwnerConfigProvince](docs/OwnerConfigProvince.md)
  - [com.servacode.directory.api.models.OwnerEvidenceCreated](docs/OwnerEvidenceCreated.md)
  - [com.servacode.directory.api.models.OwnerEvidenceRef](docs/OwnerEvidenceRef.md)
  - [com.servacode.directory.api.models.OwnerFacilityDetail](docs/OwnerFacilityDetail.md)
