@@ -47,6 +47,8 @@ BODYLESS_MUTATIONS = {
 
 # Endpoints that legitimately answer 204 with no body.
 NO_CONTENT_OPERATIONS = {
+    ("/api/v1/account/push-token/", "put"),
+    ("/api/v1/account/push-token/unregister/", "post"),
     ("/api/v1/admin/ads/{advertisement_id}/", "delete"),
     ("/api/v1/admin/users/{user_id}/roles/", "put"),
     ("/api/v1/auth/logout-all/", "post"),

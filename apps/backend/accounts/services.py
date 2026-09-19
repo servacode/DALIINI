@@ -15,6 +15,10 @@ from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from audit.services import record_audit
 from facilities.models import Facility, FacilityMembership
 from locations.models import Province
+from notifications.services import (
+    deactivate_push_tokens_for_sessions,
+    deactivate_push_tokens_for_user,
+)
 from sessions.models import UserSession
 
 from .models import AccountDeletionRequest, OTPChallenge, User
@@ -199,6 +203,7 @@ def _rotate_refresh(*, raw_refresh: str) -> dict[str, Any] | None:
             user=session.user,
             revoked_at__isnull=True,
         ).update(revoked_at=now)
+        deactivate_push_tokens_for_user(session.user)
         return None
     raw_new = _new_refresh_for(session)
     session.previous_refresh_digest = session.refresh_digest
@@ -222,10 +227,12 @@ def revoke_session(*, user: User, session_id) -> None:
     )
     if not updated:
         raise ValidationError({"sessionId": "Session not found."})
+    deactivate_push_tokens_for_sessions([session_id])
 
 
 def revoke_all_sessions(*, user: User) -> None:
     UserSession.objects.filter(user=user, revoked_at__isnull=True).update(revoked_at=timezone.now())
+    deactivate_push_tokens_for_user(user)
 
 
 @transaction.atomic

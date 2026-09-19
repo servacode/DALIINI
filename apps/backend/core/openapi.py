@@ -151,7 +151,7 @@ SERVER_ERROR_500 = OpenApiResponse(
 )
 
 
-def protected(*extra):
+def protected(*extra: tuple[int, OpenApiResponse]) -> dict[int, OpenApiResponse]:
     """Standard error set for an endpoint that requires authentication."""
     return {401: UNAUTHENTICATED_401, 403: FORBIDDEN_403, **dict(extra)}
 

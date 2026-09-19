@@ -12,5 +12,11 @@ class PushMessage:
     data: dict[str, str]
 
 
+class InvalidPushToken(Exception):
+    """The provider says the token is no longer registered to any app instance."""
+
+
 class PushProvider(Protocol):
-    def send(self, message: PushMessage) -> None: ...
+    def send(self, message: PushMessage) -> None:
+        """Deliver the message, or raise InvalidPushToken when the provider rejects the token."""
+        ...

@@ -8,7 +8,7 @@ from realtime.publisher import publish_after_commit
 
 from .crypto import decrypt_push_token, encrypt_push_token, push_token_digest
 from .models import DevicePushToken, Notification
-from .providers.base import PushMessage
+from .providers.base import InvalidPushToken, PushMessage
 from .providers.factory import get_push_provider
 from .sanitization import safe_notification_payload
 
@@ -17,17 +17,36 @@ def register_push_token(*, user, platform: str, token: str, session=None) -> Dev
     if not token or len(token) > 4096:
         raise ValueError("Invalid push token")
     digest = push_token_digest(token)
-    obj, _ = DevicePushToken.objects.update_or_create(
-        token_digest=digest,
-        defaults={
-            "user": user,
-            "session": session,
-            "platform": platform,
-            "token_ciphertext": encrypt_push_token(token),
-            "active": True,
-        },
-    )
+    with transaction.atomic():
+        if session is not None:
+            # One device per session: a new token from the same session replaces the one
+            # the provider rotated away, so the old token stops receiving anything.
+            DevicePushToken.objects.filter(
+                session=session, platform=platform, active=True
+            ).exclude(token_digest=digest).update(active=False)
+        obj, _ = DevicePushToken.objects.update_or_create(
+            token_digest=digest,
+            defaults={
+                "user": user,
+                "session": session,
+                "platform": platform,
+                "token_ciphertext": encrypt_push_token(token),
+                "active": True,
+            },
+        )
     return obj
+
+
+def deactivate_push_tokens_for_sessions(session_ids: list[object]) -> int:
+    """Stop pushing to the devices of sessions that have ended."""
+    return DevicePushToken.objects.filter(session_id__in=session_ids, active=True).update(
+        active=False
+    )
+
+
+def deactivate_push_tokens_for_user(user: object) -> int:
+    """Stop pushing to every device of a user whose sessions have all ended."""
+    return DevicePushToken.objects.filter(user=user, active=True).update(active=False)
 
 
 def deactivate_push_token(*, user, token: str) -> int:
@@ -67,11 +86,16 @@ def push_notification(notification: Notification, *, title: str, body: str) -> N
     data = {"notificationId": str(notification.id), "type": notification.type}
     for device in notification.user.push_tokens.filter(active=True):
         provider = get_push_provider(device.platform)
-        provider.send(
-            PushMessage(
-                token=decrypt_push_token(device.token_ciphertext),
-                title=title,
-                body=body,
-                data=data,
+        try:
+            provider.send(
+                PushMessage(
+                    token=decrypt_push_token(device.token_ciphertext),
+                    title=title,
+                    body=body,
+                    data=data,
+                )
             )
-        )
+        except InvalidPushToken:
+            # The provider no longer knows this token; keeping it would only fail again.
+            device.active = False
+            device.save(update_fields=["active"])
