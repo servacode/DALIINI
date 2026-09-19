@@ -56,3 +56,19 @@ Logcat (app uid only): no FATAL, AndroidRuntime or ANR. Known vendor lines (Adre
 Test data: the owner draft's location is now the confirmed point above (Raqqa city); the
 closure created for G was deleted. Screenshots of the map around the device position were
 deleted after checking.
+
+Approved statuses (report approved 2026-09-19)
+  INT-092, INT-093, INT-094, INT-095  FIXED + DEVICE VERIFIED
+  INT-096                             FIXED IN SOURCE/CI, DEVICE NOT VERIFIED
+  INT-089                             OPEN — EXTERNAL
+  INT-084                             OPEN — product/API UX gap
+  Within P17, verified on the device by this run:
+    MapLibre rendering                DEVICE VERIFIED
+    Initial camera policy             DEVICE VERIFIED
+    Map camera restore                DEVICE VERIFIED
+    Facility focus navigation         DEVICE VERIFIED
+    Owner location picker             DEVICE VERIFIED
+  P17 as a whole stays SOURCE_IMPLEMENTED until route drawing, live navigation, voice
+  guidance, rerouting and INT-096 during a navigation are tested on the device.
+  P15 CONNECTED_VERIFIED; P16 SOURCE_IMPLEMENTED; P18 SOURCE_IMPLEMENTED, FCM
+  EXTERNAL_NOT_VERIFIED.
