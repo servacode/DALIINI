@@ -4,7 +4,9 @@ plugins {
 
 extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
     namespace = "com.servacode.directory"
-    compileSdk = 36
+    // 37: the pinned AndroidX, Compose and Coil releases require it (DECISION-040).
+    // targetSdk stays 36; compiling against newer APIs does not opt into their behaviour.
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.servacode.directory"

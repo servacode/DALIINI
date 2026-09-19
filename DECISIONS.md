@@ -603,6 +603,20 @@ The authoritative source for admin authorization remains the project RBAC. `user
 
 ---
 
+## DECISION-040 — Compile against API 37, target API 36
+
+**Date:** 2026-09-19
+
+**Subject:** The first real Android build (CI run 35425779550) failed `checkLocalDebugAarMetadata`: 21 of the pinned libraries — Navigation 2.10.1, Compose UI 1.12.1, Foundation and Animation 1.12.0, Lifecycle 2.11.0, Core 1.19.0 and Coil 3.6.2 — require consumers to compile against API 37 or later.
+
+**Decision:** `compileSdk = 37` in both Android conventions. `targetSdk` stays 36 and `minSdk` stays 24.
+
+**Reason:** Both `02-BASELINE-DECISIONS.md` ("compileSdk: 36 (or higher compatible stable without changing target policy)") and `11-ANDROID-KOTLIN.md` ("compileSdk 36+") allow it. Downgrading the libraries instead is forbidden by the batch instruction. `compileSdk` only decides which APIs the code may reference; runtime behaviour follows `targetSdk`.
+
+**Impact:** None at runtime. Code that uses an API above `minSdk` still needs a version check, which lint enforces.
+
+---
+
 # Technical Debt Register
 
 Mandatory before staging or production closure. None of these blocks P2 or P10.
