@@ -617,6 +617,22 @@ The authoritative source for admin authorization remains the project RBAC. `user
 
 ---
 
+## DECISION-041 — One stable debug signing key, kept as a secret
+
+**Date:** 2026-09-19
+
+**Subject:** INT-091. Every CI run signed the debug APK with a key generated on its own runner, so a device could not update from one build to the next without losing the app and its data.
+
+**Decision:** Every debug build is signed with one project debug key: RSA 2048, PKCS12, alias `directory-debug`, certificate SHA-256 `21e9ff5c409a14cec929bb078d53625f4e3142ef1bb027337360e9e6d5b62caa`. `SECURITY.md` counts signing keys as secrets, so the keystore is never committed. CI reads it from the repository's Actions secrets (`DIRECTORY_DEBUG_KEYSTORE_BASE64`, `_KEYSTORE_PASSWORD`, `_KEY_ALIAS`, `_KEY_PASSWORD`). An authorised machine points Gradle at its private copy through the same four names. The workflow refuses to build without the secrets and fails when an APK carries any other certificate. The fingerprint is public and is pinned in the workflow.
+
+**Reason:** The redesign that follows produces many builds for one device. Each would otherwise need an uninstall and cost the device's local state.
+
+**Boundaries:** Debug builds only. This is not the upload key or the Play signing key, and release signing is unchanged (`ANDROID_UPLOAD_*`). The key authenticates nothing on the backend.
+
+**Impact:** The app installed from run 35430793735 carries a key that existed only on a destroyed runner. Moving that device to the stable key takes one final uninstall. The keystore's only full copy outside GitHub is on the machine that created it (`~/.android/directory-platform-debug.keystore`), and it should be backed up privately. GitHub secrets cannot be read back.
+
+---
+
 # Technical Debt Register
 
 Mandatory before staging or production closure. None of these blocks P2 or P10.

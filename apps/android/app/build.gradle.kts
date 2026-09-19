@@ -60,6 +60,17 @@ val firebaseApplicationId = firebase("DIRECTORY_FIREBASE_APPLICATION_ID")
 val firebaseApiKey = firebase("DIRECTORY_FIREBASE_API_KEY")
 val firebaseSenderId = firebase("DIRECTORY_FIREBASE_SENDER_ID")
 
+// A stable signature for debug builds, so a device keeps its app and data from one build to the
+// next (INT-091, DECISION-041). The key is for debug builds only, never the upload or Play key,
+// and never in Git: CI decodes it from a GitHub Actions secret, and an authorised machine points
+// at its private copy. Without it AGP signs with that machine's own debug key, which cannot
+// update an app installed from a build signed with this one.
+fun debugSigning(name: String) = providers.gradleProperty(name).orElse(providers.environmentVariable(name))
+val debugKeystorePath = debugSigning("DIRECTORY_DEBUG_KEYSTORE_PATH")
+val debugKeystorePassword = debugSigning("DIRECTORY_DEBUG_KEYSTORE_PASSWORD")
+val debugKeyAlias = debugSigning("DIRECTORY_DEBUG_KEY_ALIAS")
+val debugKeyPassword = debugSigning("DIRECTORY_DEBUG_KEY_PASSWORD")
+
 val uploadKeystorePath = providers.environmentVariable("ANDROID_UPLOAD_KEYSTORE_PATH")
 val uploadKeyAlias = providers.environmentVariable("ANDROID_UPLOAD_KEY_ALIAS")
 val uploadStorePassword = providers.environmentVariable("ANDROID_UPLOAD_STORE_PASSWORD")
@@ -68,6 +79,14 @@ val uploadKeyPassword = providers.environmentVariable("ANDROID_UPLOAD_KEY_PASSWO
 
 android {
     signingConfigs {
+        create("stableDebug") {
+            if (debugKeystorePath.isPresent) {
+                storeFile = file(debugKeystorePath.get())
+                storePassword = debugKeystorePassword.orNull
+                keyAlias = debugKeyAlias.orNull
+                keyPassword = debugKeyPassword.orNull
+            }
+        }
         create("release") {
             if (uploadKeystorePath.isPresent) {
                 storeFile = file(uploadKeystorePath.get())
@@ -121,6 +140,11 @@ android {
     }
 
     buildTypes {
+        getByName("debug") {
+            if (debugKeystorePath.isPresent) {
+                signingConfig = signingConfigs.getByName("stableDebug")
+            }
+        }
         getByName("release") {
             signingConfig = signingConfigs.getByName("release")
         }

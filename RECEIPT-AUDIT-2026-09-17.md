@@ -550,9 +550,10 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-088 | P3 | P14 | Firebase's own content provider tried to initialise FirebaseApp on every start of a build with no Firebase configuration ("Default FirebaseApp failed to initialize"). Found in the first device smoke | OPEN (DEVICE-SMOKE) |
 | INT-089 | P3 | P14 | CloseGuard reported "A resource failed to call release" four times during the device golden path: an Android resource was never released. Found in the first device smoke | OPEN (DEVICE-SMOKE) — trace with StrictMode |
 | INT-090 | P3 | P14 | predictive back was not enabled (`OnBackInvokedCallback is not enabled`) while targetSdk is 36. Found in the first device smoke | OPEN (DEVICE-SMOKE) |
+| INT-091 | P2 | P14 | every CI run signed the debug APK with a new, throwaway key (three runs, three certificates: 17e5e961…, 27aa54ad…, 08a5141e…), so a phone could never update from one build to the next: `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, signatures do not match. The installed build's key lived only on a destroyed runner and cannot be recovered | FIXED (DEVICE-SMOKE CLEANUP) — one stable debug key (certificate 21e9ff5c…2caa), from GitHub Actions secrets in CI and a private copy on an authorised machine, never in Git; CI refuses to build without it and fails if the APK carries another certificate (DECISION-041) |
 
 ## Rules
 
 - An identifier is never reused, even after the defect is fixed or retired.
 - A defect is registered here before it is referenced anywhere else.
-- The next free identifier is `INT-091`.
+- The next free identifier is `INT-092`.

@@ -31,6 +31,9 @@ jobs:
     env:
       DIRECTORY_LOCAL_API_BASE_URL: http://localhost:8000/
       DIRECTORY_LOCAL_REALTIME_WS_URL: ws://localhost:8000/ws/v1/directory/
+      # The certificate every debug APK must carry (INT-091, DECISION-041). Public: it is the
+      # key's fingerprint, not the key. The key itself comes from the repository's secrets.
+      EXPECTED_DEBUG_CERT_SHA256: 21e9ff5c409a14cec929bb078d53625f4e3142ef1bb027337360e9e6d5b62caa
     defaults:
       run:
         working-directory: apps/android
@@ -58,6 +61,30 @@ jobs:
           ls "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools"
           curl -sSI https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/9.4.0/gradle-9.4.0.pom | head -5
 
+      # Debug builds are signed with the project's stable debug key, so a device updates with
+      # `adb install -r` and keeps its data. Without the secret the build stops: an APK signed
+      # with this runner's throwaway key could never update the one on the device.
+      - name: Stable debug signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.DIRECTORY_DEBUG_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.DIRECTORY_DEBUG_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.DIRECTORY_DEBUG_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.DIRECTORY_DEBUG_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "::error::the DIRECTORY_DEBUG_* secrets are not set; refusing to sign with a throwaway key"
+            exit 1
+          fi
+          keystore="$RUNNER_TEMP/directory-debug.keystore"
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$keystore"
+          {
+            echo "DIRECTORY_DEBUG_KEYSTORE_PATH=$keystore"
+            echo "DIRECTORY_DEBUG_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "DIRECTORY_DEBUG_KEY_ALIAS=$KEY_ALIAS"
+            echo "DIRECTORY_DEBUG_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+
       # --continue: this code is compiled for the first time here, and one run should report
       # every module that fails, not only the first.
       - name: Gate 1 — assembleLocalDebug
@@ -72,6 +99,12 @@ jobs:
           apk="$(find "$dir" -maxdepth 1 -name '*.apk' | head -1)"
           aapt2="$(find "$ANDROID_HOME/build-tools" -name aapt2 -type f | sort -V | tail -1)"
           badging="$("$aapt2" dump badging "$apk")"
+          apksigner="$(dirname "$aapt2")/apksigner"
+          cert="$("$apksigner" verify --print-certs "$apk" | grep -m1 'certificate SHA-256 digest' | awk '{print $NF}')"
+          if [ "$cert" != "$EXPECTED_DEBUG_CERT_SHA256" ]; then
+            echo "::error::the APK is signed with $cert, not the stable debug key $EXPECTED_DEBUG_CERT_SHA256"
+            exit 1
+          fi
           field() { printf '%s\n' "$badging" | grep -o "$1='[^']*'" | head -1 | cut -d"'" -f2; }
           sdk() { printf '%s\n' "$badging" | grep -o "^$1:'[^']*'" | head -1 | cut -d"'" -f2; }
           {
@@ -88,6 +121,7 @@ jobs:
             echo "targetSdk=$(sdk targetSdkVersion)"
             echo "flavor=local"
             echo "buildType=debug"
+            echo "signingCertSha256=$cert"
             echo "apiBaseUrl=http://localhost:8000/ (reach it with adb reverse tcp:8000 tcp:8000)"
             echo "realtimeUrl=ws://localhost:8000/ws/v1/directory/"
             echo "commit=$GITHUB_SHA"

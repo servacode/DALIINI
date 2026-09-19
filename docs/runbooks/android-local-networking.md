@@ -32,6 +32,23 @@ for the host, and anything else is passed to the build as a Gradle property.
    ```
 5. `adb reverse` does not survive a reconnect; repeat step 2 after the cable is unplugged.
 
+## Signing: the same debug key as CI
+CI signs every debug APK with the project's stable debug key (DECISION-041), so a device updates
+with `adb install -r` and keeps its data. A debug build made on an authorised machine must use
+the same key, or it cannot update an app installed from CI. Set these four in
+`~/.gradle/gradle.properties` (never in the repository), pointing at the private copy of the
+keystore:
+
+```
+DIRECTORY_DEBUG_KEYSTORE_PATH=<path to directory-platform-debug.keystore>
+DIRECTORY_DEBUG_KEYSTORE_PASSWORD=<password>
+DIRECTORY_DEBUG_KEY_ALIAS=directory-debug
+DIRECTORY_DEBUG_KEY_PASSWORD=<password>
+```
+
+Check with `apksigner verify --print-certs <apk>`: the certificate SHA-256 must be
+`21e9ff5c409a14cec929bb078d53625f4e3142ef1bb027337360e9e6d5b62caa`.
+
 ## Push
 Push needs a Firebase project, which does not exist yet. Pass
 `DIRECTORY_FIREBASE_PROJECT_ID`, `DIRECTORY_FIREBASE_APPLICATION_ID`,
