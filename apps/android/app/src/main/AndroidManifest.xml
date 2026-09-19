@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -13,6 +14,15 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="false"
         android:theme="@style/Theme.Directory">
+        <!-- Firebase's own provider would initialise FirebaseApp at every start from a
+             google-services configuration this project never ships (INT-088). PushSetup
+             initialises Firebase explicitly, from the build's values and only when it has them,
+             in Application.onCreate, which runs before any FCM service. -->
+        <provider
+            android:name="com.google.firebase.provider.FirebaseInitProvider"
+            android:authorities="${applicationId}.firebaseinitprovider"
+            tools:node="remove" />
+
         <!-- Push arrives here. Firebase is initialised only when the build carries a
              configuration; see PushSetup. -->
         <service
