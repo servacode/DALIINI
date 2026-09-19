@@ -8,9 +8,18 @@ plugins {
 val apiBaseUrl = providers.gradleProperty("DIRECTORY_API_BASE_URL")
     .orElse(providers.environmentVariable("DIRECTORY_API_BASE_URL"))
     .orElse("https://api.<ROOT_DOMAIN>/")
+// The map style, per environment. Local builds use OpenFreeMap's Liberty style, free and
+// without a key, for development only (INT-087). Staging and production have their own settings
+// and stay unset until a provider is decided; the map refuses to render from the placeholder.
 val mapStyleUrl = providers.gradleProperty("DIRECTORY_MAP_STYLE_URL")
     .orElse(providers.environmentVariable("DIRECTORY_MAP_STYLE_URL"))
     .orElse("https://maps.<ROOT_DOMAIN>/style.json")
+val stagingMapStyleUrl = providers.gradleProperty("DIRECTORY_STAGING_MAP_STYLE_URL")
+    .orElse(providers.environmentVariable("DIRECTORY_STAGING_MAP_STYLE_URL"))
+    .orElse("https://maps.<ROOT_DOMAIN>/style.json")
+val localMapStyleUrl = providers.gradleProperty("DIRECTORY_LOCAL_MAP_STYLE_URL")
+    .orElse(providers.environmentVariable("DIRECTORY_LOCAL_MAP_STYLE_URL"))
+    .orElse("https://tiles.openfreemap.org/styles/liberty")
 val routingBaseUrl = providers.gradleProperty("DIRECTORY_ROUTING_BASE_URL")
     .orElse(providers.environmentVariable("DIRECTORY_ROUTING_BASE_URL"))
     .orElse("https://<ROUTING_PROVIDER_HOST>/")
@@ -70,7 +79,6 @@ android {
     }
 
     defaultConfig {
-        buildConfigField("String", "MAP_STYLE_URL", "\"${mapStyleUrl.get()}\"")
         buildConfigField("String", "ROUTING_BASE_URL", "\"${routingBaseUrl.get()}\"")
         buildConfigField("String", "GEOCODING_BASE_URL", "\"${geocodingBaseUrl.get()}\"")
         buildConfigField("String", "GEOCODING_USER_AGENT", "\"${geocodingUserAgent.get()}\"")
@@ -90,6 +98,7 @@ android {
             applicationIdSuffix = ".local"
             versionNameSuffix = "-local"
             buildConfigField("String", "API_BASE_URL", "\"${localApiBaseUrl.get()}\"")
+            buildConfigField("String", "MAP_STYLE_URL", "\"${localMapStyleUrl.get()}\"")
             buildConfigField("String", "REALTIME_WS_URL", "\"${localRealtimeWebSocketUrl.get()}\"")
             buildConfigField("boolean", "ALLOW_CLEARTEXT", "true")
         }
@@ -98,12 +107,14 @@ android {
             applicationIdSuffix = ".staging"
             versionNameSuffix = "-staging"
             buildConfigField("String", "API_BASE_URL", "\"${stagingApiBaseUrl.get()}\"")
+            buildConfigField("String", "MAP_STYLE_URL", "\"${stagingMapStyleUrl.get()}\"")
             buildConfigField("String", "REALTIME_WS_URL", "\"${stagingRealtimeWebSocketUrl.get()}\"")
             buildConfigField("boolean", "ALLOW_CLEARTEXT", "false")
         }
         create("production") {
             dimension = "environment"
             buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.get()}\"")
+            buildConfigField("String", "MAP_STYLE_URL", "\"${mapStyleUrl.get()}\"")
             buildConfigField("String", "REALTIME_WS_URL", "\"${realtimeWebSocketUrl.get()}\"")
             buildConfigField("boolean", "ALLOW_CLEARTEXT", "false")
         }
