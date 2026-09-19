@@ -11,8 +11,11 @@ import androidx.compose.ui.unit.dp
 /** The size of the mark itself on the splash: the middle 120 units of brand_mark.xml. */
 val BrandMarkSize = 120.dp
 
-/** The size brand_mark.xml's whole 256-unit canvas is drawn at, so the mark is BrandMarkSize. */
-val BrandMarkCanvas = 256.dp
+/**
+ * The size brand_mark.xml's whole 288-unit canvas is drawn at, so the mark is BrandMarkSize:
+ * the box Android 12+ draws a splash icon without a background in, so both splashes match.
+ */
+val BrandMarkCanvas = 288.dp
 
 /**
  * The brand mark, currently a placeholder (docs/design/BRAND-ASSETS.md). It takes

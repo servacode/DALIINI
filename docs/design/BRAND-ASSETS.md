@@ -7,7 +7,7 @@ listed as a placeholder may be shipped to a store as if it were approved.
 
 | Asset | Status | Where | Replace by |
 |---|---|---|---|
-| Brand mark: a location pin carrying a heart | **PLACEHOLDER** (2026-09-19, Screen 01) | `apps/android/core/designsystem/src/main/res/drawable/brand_mark.xml` | Replacing this one vector. The system splash and the app's splash (`BrandMark`) both draw it. Keep its layout: a 256-unit canvas with the mark in the middle 120 units, the margin inside the drawable, because Android 12+ scales a splash icon into its own box. `SplashThemeTest` fails if the canvas, the mark size or the centring drift. |
+| Brand mark: a location pin carrying a heart | **PLACEHOLDER** (2026-09-19, Screen 01) | `apps/android/core/designsystem/src/main/res/drawable/brand_mark.xml` | Replacing this one vector. The system splash and the app's splash (`BrandMark`) both draw it. Keep its layout: a 288-unit canvas with the mark in the middle 120 units, the margin inside the drawable, because Android 12+ scales a splash icon into a 288 dp box. `SplashThemeTest` fails if the canvas, the mark size or the centring drift. |
 | Launcher icon | **MISSING** | — | Not part of Screen 01. Lint reports it (MissingApplicationIcon); the store listing needs a 512 × 512 icon (`20-GOOGLE-PLAY-RELEASE.md`). |
 
 The placeholder uses only design-token colours (`colors.primary`, `colors.primarySoft`,

@@ -173,7 +173,7 @@ private const val PING_ALPHA = 0.22f
 private val PING_FROM = 28.dp
 private val PING_TO = 76.dp
 
-// The pin's tip sits 51 dp below the mark's centre: y 179 of brand_mark.xml's 256-unit canvas.
+// The pin's tip sits 51 dp below the mark's centre: y 195 of brand_mark.xml's 288-unit canvas.
 private val PIN_TIP_BELOW_CENTRE = 51.dp
 private val TITLE_GAP = 20.dp
 private val FOOTER_GAP = 28.dp
