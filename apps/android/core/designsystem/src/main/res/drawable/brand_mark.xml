@@ -6,10 +6,11 @@
      The canvas is 256 units with the mark in its middle 120. Android 12+ draws a splash icon
      without a background by scaling the whole drawable into its own box, so the mark keeps its
      proportion only if the margin is part of the drawable, not a fixed inset. The app's splash
-     draws the same canvas and shows the mark at BrandMarkSize. -->
+     draws the same canvas at BrandMarkCanvas, one unit to a dp, so the mark is BrandMarkSize.
+     The declared size is only nominal (lint asks for at most 200 dp); both splashes set their own. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="256dp"
-    android:height="256dp"
+    android:width="128dp"
+    android:height="128dp"
     android:viewportWidth="256"
     android:viewportHeight="256">
     <group

@@ -33,8 +33,6 @@ class SplashThemeTest {
             .single { it.getAttribute("name") == name }.textContent.trim()
     }
 
-    private fun dp(value: String): Float = value.removeSuffix("dp").toFloat()
-
     @Test fun `the launcher activity starts in the splash theme and moves on to the app theme`() {
         val activities = document("src/main/AndroidManifest.xml").getElementsByTagName("activity")
         val main = (0 until activities.length).map { activities.item(it) as Element }
@@ -67,12 +65,12 @@ class SplashThemeTest {
     @Test fun `both splashes draw one mark file, the mark in the middle of its canvas`() {
         assertEquals("@drawable/brand_mark", style("Theme.Directory.Starting").item("windowSplashScreenAnimatedIcon"))
         val mark = document("../core/designsystem/src/main/res/drawable/brand_mark.xml").documentElement
-        val canvas = dp(mark.getAttributeNS(android, "width"))
+        val canvas = mark.getAttributeNS(android, "viewportWidth").toFloat()
         val group = mark.getElementsByTagName("group").item(0) as Element
 
-        // The app's splash draws the whole canvas at BrandMarkCanvas, like the system splash.
+        // The app's splash draws the whole canvas at BrandMarkCanvas, one unit to a dp.
         assertEquals(BrandMarkCanvas.value, canvas)
-        assertEquals(canvas, mark.getAttributeNS(android, "viewportWidth").toFloat())
+        assertEquals(canvas, mark.getAttributeNS(android, "viewportHeight").toFloat())
         // The mark is a margin-free 120 units, centred: proportional at any size it is drawn.
         assertEquals(group.getAttributeNS(android, "translateX"), group.getAttributeNS(android, "translateY"))
         assertEquals(BrandMarkSize.value, canvas - 2 * group.getAttributeNS(android, "translateX").toFloat())
