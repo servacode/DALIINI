@@ -33,6 +33,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.model.BusinessHour
+import com.servacode.directory.core.model.OwnerLabels
 import com.servacode.directory.core.network.NotificationPermissionPolicy
 
 @Composable
@@ -211,7 +212,7 @@ fun OnboardingScreen(
                 OnboardingStep.SUBMIT -> item { CircularProgressIndicator() }
                 OnboardingStep.STATUS -> item {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("الحالة: ${value.draft?.summary?.status}")
+                        value.draft?.summary?.status?.let { Text("الحالة: ${OwnerLabels.status(it)}") }
                         value.draft?.application?.rejectionReason?.let { Text("سبب الرفض: $it") }
                         Button(onClick = onDone) { Text("العودة إلى منشآتي") }
                     }

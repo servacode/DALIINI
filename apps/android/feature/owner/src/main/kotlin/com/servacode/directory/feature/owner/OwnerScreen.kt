@@ -23,6 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.model.FacilityMemberRole
+import com.servacode.directory.core.model.OwnerLabels
 
 @Composable
 fun MyFacilitiesScreen(
@@ -54,8 +56,8 @@ fun MyFacilitiesScreen(
                     Column(Modifier.fillMaxWidth()) {
                         Text(item.nameAr, style = MaterialTheme.typography.titleLarge)
                         Text("${item.category.nameAr} • ${item.province.nameAr}")
-                        Text("الحالة: ${item.status}")
-                        item.requiredAction?.let { Text("الإجراء المطلوب: $it") }
+                        Text("الحالة: ${OwnerLabels.status(item.status)}")
+                        item.requiredAction?.let { Text("الإجراء المطلوب: ${OwnerLabels.requiredAction(it)}") }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(onClick = { onManage(item.id) }) { Text("إدارة") }
                             if (OwnerCapabilities.supportsDuty(item)) {
@@ -93,7 +95,7 @@ fun ManageFacilityScreen(
             }
             is ManageFacilityUiState.Content -> {
                 Text(value.facility.summary.nameAr, style = MaterialTheme.typography.headlineLarge)
-                Text("الحالة: ${value.facility.summary.status}")
+                Text("الحالة: ${OwnerLabels.status(value.facility.summary.status)}")
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = { onEdit(value.facility.summary.id) }) { Text("تعديل البيانات") }
                     if (OwnerCapabilities.supportsDuty(value.facility.summary)) {
@@ -139,8 +141,8 @@ fun ManageFacilityScreen(
                 Text("المدراء", style = MaterialTheme.typography.titleMedium)
                 value.members.forEach { member ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("${member.name} • ${member.role}")
-                        if (member.role.name == "MANAGER") {
+                        Text("${member.name} • ${OwnerLabels.role(member.role)}")
+                        if (member.role == FacilityMemberRole.MANAGER) {
                             OutlinedButton(onClick = { viewModel.removeMember(member.userId) }) {
                                 Text("إزالة")
                             }
