@@ -21,6 +21,8 @@ import type {
   DeletionRequest,
   PatchedProfilePatch,
   Profile,
+  PushToken,
+  PushTokenRegister,
 } from '../models/index';
 import {
     AccountDeletionRequestedFromJSON,
@@ -35,6 +37,10 @@ import {
     PatchedProfilePatchToJSON,
     ProfileFromJSON,
     ProfileToJSON,
+    PushTokenFromJSON,
+    PushTokenToJSON,
+    PushTokenRegisterFromJSON,
+    PushTokenRegisterToJSON,
 } from '../models/index';
 
 export interface AccountDeletionRequestCreateRequest {
@@ -43,6 +49,14 @@ export interface AccountDeletionRequestCreateRequest {
 
 export interface AccountProfileUpdateRequest {
     patchedProfilePatch?: PatchedProfilePatch;
+}
+
+export interface AccountPushTokenRegisterRequest {
+    pushTokenRegister: PushTokenRegister;
+}
+
+export interface AccountPushTokenUnregisterRequest {
+    pushToken: PushToken;
 }
 
 /**
@@ -174,6 +188,102 @@ export class AccountApi extends runtime.BaseAPI {
     async accountProfileUpdate(requestParameters: AccountProfileUpdateRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Profile> {
         const response = await this.accountProfileUpdateRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     * Idempotent. A new token from the same session replaces the previous one. The token is tied to the calling session and deactivated when that session ends.
+     * Register or refresh this device\'s push token
+     */
+    async accountPushTokenRegisterRaw(requestParameters: AccountPushTokenRegisterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['pushTokenRegister'] == null) {
+            throw new runtime.RequiredError(
+                'pushTokenRegister',
+                'Required parameter "pushTokenRegister" was null or undefined when calling accountPushTokenRegister().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/push-token/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PushTokenRegisterToJSON(requestParameters['pushTokenRegister']),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Idempotent. A new token from the same session replaces the previous one. The token is tied to the calling session and deactivated when that session ends.
+     * Register or refresh this device\'s push token
+     */
+    async accountPushTokenRegister(requestParameters: AccountPushTokenRegisterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.accountPushTokenRegisterRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Idempotent: an unknown or already inactive token also answers 204.
+     * Stop sending pushes to a device token
+     */
+    async accountPushTokenUnregisterRaw(requestParameters: AccountPushTokenUnregisterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['pushToken'] == null) {
+            throw new runtime.RequiredError(
+                'pushToken',
+                'Required parameter "pushToken" was null or undefined when calling accountPushTokenUnregister().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/push-token/unregister/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PushTokenToJSON(requestParameters['pushToken']),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Idempotent: an unknown or already inactive token also answers 204.
+     * Stop sending pushes to a device token
+     */
+    async accountPushTokenUnregister(requestParameters: AccountPushTokenUnregisterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.accountPushTokenUnregisterRaw(requestParameters, initOverrides);
     }
 
     /**

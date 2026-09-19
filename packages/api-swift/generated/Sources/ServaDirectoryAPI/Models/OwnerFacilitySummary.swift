@@ -19,8 +19,9 @@ public struct OwnerFacilitySummary: Codable, JSONEncodable, Hashable {
     public var status: FacilityStatusEnum
     public var lastUpdate: Date
     public var requiredAction: OwnerRequiredActionEnum?
+    public var capabilities: CategoryCapabilities
 
-    public init(id: UUID, nameAr: String, category: NamedRef, province: NamedRef, status: FacilityStatusEnum, lastUpdate: Date, requiredAction: OwnerRequiredActionEnum?) {
+    public init(id: UUID, nameAr: String, category: NamedRef, province: NamedRef, status: FacilityStatusEnum, lastUpdate: Date, requiredAction: OwnerRequiredActionEnum?, capabilities: CategoryCapabilities) {
         self.id = id
         self.nameAr = nameAr
         self.category = category
@@ -28,6 +29,7 @@ public struct OwnerFacilitySummary: Codable, JSONEncodable, Hashable {
         self.status = status
         self.lastUpdate = lastUpdate
         self.requiredAction = requiredAction
+        self.capabilities = capabilities
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
@@ -38,6 +40,7 @@ public struct OwnerFacilitySummary: Codable, JSONEncodable, Hashable {
         case status
         case lastUpdate
         case requiredAction
+        case capabilities
     }
 
     // Encodable protocol methods
@@ -51,6 +54,7 @@ public struct OwnerFacilitySummary: Codable, JSONEncodable, Hashable {
         try container.encode(status, forKey: .status)
         try container.encode(lastUpdate, forKey: .lastUpdate)
         try container.encode(requiredAction, forKey: .requiredAction)
+        try container.encode(capabilities, forKey: .capabilities)
     }
 }
 

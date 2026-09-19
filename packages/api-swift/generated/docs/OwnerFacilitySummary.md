@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **status** | [**FacilityStatusEnum**](FacilityStatusEnum.md) |  | 
 **lastUpdate** | **Date** |  | 
 **requiredAction** | [**OwnerRequiredActionEnum**](OwnerRequiredActionEnum.md) |  | 
+**capabilities** | [**CategoryCapabilities**](CategoryCapabilities.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -11,6 +11,7 @@
 | **status** | [**FacilityStatusEnum**](FacilityStatusEnum.md) |  |  |
 | **lastUpdate** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) |  |  |
 | **requiredAction** | [**OwnerRequiredActionEnum**](OwnerRequiredActionEnum.md) |  |  |
+| **capabilities** | [**CategoryCapabilities**](CategoryCapabilities.md) |  |  |
 
 
 

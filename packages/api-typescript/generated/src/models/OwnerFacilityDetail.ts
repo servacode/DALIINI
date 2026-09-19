@@ -48,6 +48,13 @@ import {
     FacilityStatusEnumToJSON,
     FacilityStatusEnumToJSONTyped,
 } from './FacilityStatusEnum';
+import type { CategoryCapabilities } from './CategoryCapabilities';
+import {
+    CategoryCapabilitiesFromJSON,
+    CategoryCapabilitiesFromJSONTyped,
+    CategoryCapabilitiesToJSON,
+    CategoryCapabilitiesToJSONTyped,
+} from './CategoryCapabilities';
 import type { NamedRef } from './NamedRef';
 import {
     NamedRefFromJSON,
@@ -111,6 +118,12 @@ export interface OwnerFacilityDetail {
      * @memberof OwnerFacilityDetail
      */
     requiredAction: OwnerRequiredActionEnum | null;
+    /**
+     * 
+     * @type {CategoryCapabilities}
+     * @memberof OwnerFacilityDetail
+     */
+    capabilities: CategoryCapabilities;
     /**
      * 
      * @type {string}
@@ -210,6 +223,7 @@ export function instanceOfOwnerFacilityDetail(value: object): value is OwnerFaci
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('lastUpdate' in value) || value['lastUpdate'] === undefined) return false;
     if (!('requiredAction' in value) || value['requiredAction'] === undefined) return false;
+    if (!('capabilities' in value) || value['capabilities'] === undefined) return false;
     if (!('nameEn' in value) || value['nameEn'] === undefined) return false;
     if (!('descriptionAr' in value) || value['descriptionAr'] === undefined) return false;
     if (!('descriptionEn' in value) || value['descriptionEn'] === undefined) return false;
@@ -244,6 +258,7 @@ export function OwnerFacilityDetailFromJSONTyped(json: any, ignoreDiscriminator:
         'status': FacilityStatusEnumFromJSON(json['status']),
         'lastUpdate': (new Date(json['lastUpdate'])),
         'requiredAction': OwnerRequiredActionEnumFromJSON(json['requiredAction']),
+        'capabilities': CategoryCapabilitiesFromJSON(json['capabilities']),
         'nameEn': json['nameEn'],
         'descriptionAr': json['descriptionAr'],
         'descriptionEn': json['descriptionEn'],
@@ -279,6 +294,7 @@ export function OwnerFacilityDetailToJSONTyped(value?: OwnerFacilityDetail | nul
         'status': FacilityStatusEnumToJSON(value['status']),
         'lastUpdate': ((value['lastUpdate']).toISOString()),
         'requiredAction': OwnerRequiredActionEnumToJSON(value['requiredAction']),
+        'capabilities': CategoryCapabilitiesToJSON(value['capabilities']),
         'nameEn': value['nameEn'],
         'descriptionAr': value['descriptionAr'],
         'descriptionEn': value['descriptionEn'],

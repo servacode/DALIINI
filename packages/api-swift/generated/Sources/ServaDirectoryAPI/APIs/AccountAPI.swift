@@ -126,6 +126,84 @@ open class AccountAPI {
     }
 
     /**
+     Register or refresh this device's push token
+     
+     - parameter pushTokenRegister: (body)  
+     - returns: Void
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountPushTokenRegister(pushTokenRegister: PushTokenRegister) async throws {
+        return try await accountPushTokenRegisterWithRequestBuilder(pushTokenRegister: pushTokenRegister).execute().body
+    }
+
+    /**
+     Register or refresh this device's push token
+     - PUT /api/v1/account/push-token/
+     - Idempotent. A new token from the same session replaces the previous one. The token is tied to the calling session and deactivated when that session ends.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter pushTokenRegister: (body)  
+     - returns: RequestBuilder<Void> 
+     */
+    open class func accountPushTokenRegisterWithRequestBuilder(pushTokenRegister: PushTokenRegister) -> RequestBuilder<Void> {
+        let localVariablePath = "/api/v1/account/push-token/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: pushTokenRegister)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Stop sending pushes to a device token
+     
+     - parameter pushToken: (body)  
+     - returns: Void
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountPushTokenUnregister(pushToken: PushToken) async throws {
+        return try await accountPushTokenUnregisterWithRequestBuilder(pushToken: pushToken).execute().body
+    }
+
+    /**
+     Stop sending pushes to a device token
+     - POST /api/v1/account/push-token/unregister/
+     - Idempotent: an unknown or already inactive token also answers 204.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter pushToken: (body)  
+     - returns: RequestBuilder<Void> 
+     */
+    open class func accountPushTokenUnregisterWithRequestBuilder(pushToken: PushToken) -> RequestBuilder<Void> {
+        let localVariablePath = "/api/v1/account/push-token/unregister/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: pushToken)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      List the ratings written by the caller
      
      - returns: AccountRatingList

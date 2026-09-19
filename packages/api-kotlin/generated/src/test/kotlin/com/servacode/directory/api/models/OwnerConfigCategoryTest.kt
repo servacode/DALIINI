@@ -19,7 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.models.OwnerConfigCategory
-import com.servacode.directory.api.models.OwnerCapabilities
+import com.servacode.directory.api.models.CategoryCapabilities
 import com.servacode.directory.api.models.OwnerCategory
 import com.servacode.directory.api.models.OwnerVerificationRequirement
 

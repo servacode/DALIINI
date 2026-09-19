@@ -27,6 +27,13 @@ import {
     FacilityStatusEnumToJSON,
     FacilityStatusEnumToJSONTyped,
 } from './FacilityStatusEnum';
+import type { CategoryCapabilities } from './CategoryCapabilities';
+import {
+    CategoryCapabilitiesFromJSON,
+    CategoryCapabilitiesFromJSONTyped,
+    CategoryCapabilitiesToJSON,
+    CategoryCapabilitiesToJSONTyped,
+} from './CategoryCapabilities';
 import type { NamedRef } from './NamedRef';
 import {
     NamedRefFromJSON,
@@ -83,6 +90,12 @@ export interface OwnerFacilitySummary {
      * @memberof OwnerFacilitySummary
      */
     requiredAction: OwnerRequiredActionEnum | null;
+    /**
+     * 
+     * @type {CategoryCapabilities}
+     * @memberof OwnerFacilitySummary
+     */
+    capabilities: CategoryCapabilities;
 }
 
 
@@ -98,6 +111,7 @@ export function instanceOfOwnerFacilitySummary(value: object): value is OwnerFac
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('lastUpdate' in value) || value['lastUpdate'] === undefined) return false;
     if (!('requiredAction' in value) || value['requiredAction'] === undefined) return false;
+    if (!('capabilities' in value) || value['capabilities'] === undefined) return false;
     return true;
 }
 
@@ -118,6 +132,7 @@ export function OwnerFacilitySummaryFromJSONTyped(json: any, ignoreDiscriminator
         'status': FacilityStatusEnumFromJSON(json['status']),
         'lastUpdate': (new Date(json['lastUpdate'])),
         'requiredAction': OwnerRequiredActionEnumFromJSON(json['requiredAction']),
+        'capabilities': CategoryCapabilitiesFromJSON(json['capabilities']),
     };
 }
 
@@ -139,6 +154,7 @@ export function OwnerFacilitySummaryToJSONTyped(value?: OwnerFacilitySummary | n
         'status': FacilityStatusEnumToJSON(value['status']),
         'lastUpdate': ((value['lastUpdate']).toISOString()),
         'requiredAction': OwnerRequiredActionEnumToJSON(value['requiredAction']),
+        'capabilities': CategoryCapabilitiesToJSON(value['capabilities']),
     };
 }
 

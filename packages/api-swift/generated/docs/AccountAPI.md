@@ -7,6 +7,8 @@ Method | HTTP request | Description
 [**accountDeletionRequestCreate**](AccountAPI.md#accountdeletionrequestcreate) | **POST** /api/v1/account/deletion-request/ | Request deletion of the account of the caller
 [**accountProfileRetrieve**](AccountAPI.md#accountprofileretrieve) | **GET** /api/v1/account/profile/ | Retrieve the profile of the caller
 [**accountProfileUpdate**](AccountAPI.md#accountprofileupdate) | **PATCH** /api/v1/account/profile/ | Update the display name or profile province of the caller
+[**accountPushTokenRegister**](AccountAPI.md#accountpushtokenregister) | **PUT** /api/v1/account/push-token/ | Register or refresh this device&#39;s push token
+[**accountPushTokenUnregister**](AccountAPI.md#accountpushtokenunregister) | **POST** /api/v1/account/push-token/unregister/ | Stop sending pushes to a device token
 [**accountRatingsList**](AccountAPI.md#accountratingslist) | **GET** /api/v1/account/ratings/ | List the ratings written by the caller
 
 
@@ -140,6 +142,106 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**Profile**](Profile.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **accountPushTokenRegister**
+```swift
+    open class func accountPushTokenRegister(pushTokenRegister: PushTokenRegister, completion: @escaping (_ data: Void?, _ error: Error?) -> Void)
+```
+
+Register or refresh this device's push token
+
+Idempotent. A new token from the same session replaces the previous one. The token is tied to the calling session and deactivated when that session ends.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let pushTokenRegister = PushTokenRegister(platform: PushPlatformEnum(), token: "token_example") // PushTokenRegister | 
+
+// Register or refresh this device's push token
+AccountAPI.accountPushTokenRegister(pushTokenRegister: pushTokenRegister) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **pushTokenRegister** | [**PushTokenRegister**](PushTokenRegister.md) |  | 
+
+### Return type
+
+Void (empty response body)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **accountPushTokenUnregister**
+```swift
+    open class func accountPushTokenUnregister(pushToken: PushToken, completion: @escaping (_ data: Void?, _ error: Error?) -> Void)
+```
+
+Stop sending pushes to a device token
+
+Idempotent: an unknown or already inactive token also answers 204.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let pushToken = PushToken(token: "token_example") // PushToken | 
+
+// Stop sending pushes to a device token
+AccountAPI.accountPushTokenUnregister(pushToken: pushToken) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **pushToken** | [**PushToken**](PushToken.md) |  | 
+
+### Return type
+
+Void (empty response body)
 
 ### Authorization
 

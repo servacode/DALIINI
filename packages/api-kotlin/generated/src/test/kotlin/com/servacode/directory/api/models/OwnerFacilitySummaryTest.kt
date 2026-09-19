@@ -19,6 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.models.OwnerFacilitySummary
+import com.servacode.directory.api.models.CategoryCapabilities
 import com.servacode.directory.api.models.FacilityStatusEnum
 import com.servacode.directory.api.models.NamedRef
 import com.servacode.directory.api.models.OwnerRequiredActionEnum
@@ -68,6 +69,12 @@ class OwnerFacilitySummaryTest : ShouldSpec() {
         should("test requiredAction") {
             // uncomment below to test the property
             //modelInstance.requiredAction shouldBe ("TODO")
+        }
+
+        // to test the property `capabilities`
+        should("test capabilities") {
+            // uncomment below to test the property
+            //modelInstance.capabilities shouldBe ("TODO")
         }
 
     }

@@ -13,10 +13,10 @@ import AnyCodable
 public struct OwnerConfigCategory: Codable, JSONEncodable, Hashable {
 
     public var category: OwnerCategory
-    public var capabilities: OwnerCapabilities
+    public var capabilities: CategoryCapabilities
     public var verificationRequirements: [OwnerVerificationRequirement]
 
-    public init(category: OwnerCategory, capabilities: OwnerCapabilities, verificationRequirements: [OwnerVerificationRequirement]) {
+    public init(category: OwnerCategory, capabilities: CategoryCapabilities, verificationRequirements: [OwnerVerificationRequirement]) {
         self.category = category
         self.capabilities = capabilities
         self.verificationRequirements = verificationRequirements

@@ -19,6 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.models.OwnerFacilityDetail
+import com.servacode.directory.api.models.CategoryCapabilities
 import com.servacode.directory.api.models.Coordinates
 import com.servacode.directory.api.models.FacilityStatusEnum
 import com.servacode.directory.api.models.NamedRef
@@ -72,6 +73,12 @@ class OwnerFacilityDetailTest : ShouldSpec() {
         should("test requiredAction") {
             // uncomment below to test the property
             //modelInstance.requiredAction shouldBe ("TODO")
+        }
+
+        // to test the property `capabilities`
+        should("test capabilities") {
+            // uncomment below to test the property
+            //modelInstance.capabilities shouldBe ("TODO")
         }
 
         // to test the property `nameEn`

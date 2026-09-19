@@ -19,6 +19,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
     public var status: FacilityStatusEnum
     public var lastUpdate: Date
     public var requiredAction: OwnerRequiredActionEnum?
+    public var capabilities: CategoryCapabilities
     public var nameEn: String?
     public var descriptionAr: String?
     public var descriptionEn: String?
@@ -34,7 +35,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
     public var hours: [OwnerHoursEntry]
     public var application: OwnerApplication?
 
-    public init(id: UUID, nameAr: String, category: NamedRef, province: NamedRef, status: FacilityStatusEnum, lastUpdate: Date, requiredAction: OwnerRequiredActionEnum?, nameEn: String?, descriptionAr: String?, descriptionEn: String?, phone: String?, addressAr: String?, addressEn: String?, cityId: UUID?, neighborhoodId: UUID?, location: Coordinates?, specialtyIds: [UUID], serviceTagIds: [UUID], evidence: [OwnerEvidenceRef], hours: [OwnerHoursEntry], application: OwnerApplication?) {
+    public init(id: UUID, nameAr: String, category: NamedRef, province: NamedRef, status: FacilityStatusEnum, lastUpdate: Date, requiredAction: OwnerRequiredActionEnum?, capabilities: CategoryCapabilities, nameEn: String?, descriptionAr: String?, descriptionEn: String?, phone: String?, addressAr: String?, addressEn: String?, cityId: UUID?, neighborhoodId: UUID?, location: Coordinates?, specialtyIds: [UUID], serviceTagIds: [UUID], evidence: [OwnerEvidenceRef], hours: [OwnerHoursEntry], application: OwnerApplication?) {
         self.id = id
         self.nameAr = nameAr
         self.category = category
@@ -42,6 +43,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
         self.status = status
         self.lastUpdate = lastUpdate
         self.requiredAction = requiredAction
+        self.capabilities = capabilities
         self.nameEn = nameEn
         self.descriptionAr = descriptionAr
         self.descriptionEn = descriptionEn
@@ -66,6 +68,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
         case status
         case lastUpdate
         case requiredAction
+        case capabilities
         case nameEn
         case descriptionAr
         case descriptionEn
@@ -93,6 +96,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
         try container.encode(status, forKey: .status)
         try container.encode(lastUpdate, forKey: .lastUpdate)
         try container.encode(requiredAction, forKey: .requiredAction)
+        try container.encode(capabilities, forKey: .capabilities)
         try container.encode(nameEn, forKey: .nameEn)
         try container.encode(descriptionAr, forKey: .descriptionAr)
         try container.encode(descriptionEn, forKey: .descriptionEn)

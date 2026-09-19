@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **status** | [**FacilityStatusEnum**](FacilityStatusEnum.md) |  | 
 **lastUpdate** | **Date** |  | 
 **requiredAction** | [**OwnerRequiredActionEnum**](OwnerRequiredActionEnum.md) |  | 
+**capabilities** | [**CategoryCapabilities**](CategoryCapabilities.md) |  | 
 **nameEn** | **String** |  | 
 **descriptionAr** | **String** |  | 
 **descriptionEn** | **String** |  | 

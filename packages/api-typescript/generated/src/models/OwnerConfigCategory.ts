@@ -20,13 +20,6 @@ import {
     OwnerVerificationRequirementToJSON,
     OwnerVerificationRequirementToJSONTyped,
 } from './OwnerVerificationRequirement';
-import type { OwnerCapabilities } from './OwnerCapabilities';
-import {
-    OwnerCapabilitiesFromJSON,
-    OwnerCapabilitiesFromJSONTyped,
-    OwnerCapabilitiesToJSON,
-    OwnerCapabilitiesToJSONTyped,
-} from './OwnerCapabilities';
 import type { OwnerCategory } from './OwnerCategory';
 import {
     OwnerCategoryFromJSON,
@@ -34,6 +27,13 @@ import {
     OwnerCategoryToJSON,
     OwnerCategoryToJSONTyped,
 } from './OwnerCategory';
+import type { CategoryCapabilities } from './CategoryCapabilities';
+import {
+    CategoryCapabilitiesFromJSON,
+    CategoryCapabilitiesFromJSONTyped,
+    CategoryCapabilitiesToJSON,
+    CategoryCapabilitiesToJSONTyped,
+} from './CategoryCapabilities';
 
 /**
  * 
@@ -49,10 +49,10 @@ export interface OwnerConfigCategory {
     category: OwnerCategory;
     /**
      * 
-     * @type {OwnerCapabilities}
+     * @type {CategoryCapabilities}
      * @memberof OwnerConfigCategory
      */
-    capabilities: OwnerCapabilities;
+    capabilities: CategoryCapabilities;
     /**
      * 
      * @type {Array<OwnerVerificationRequirement>}
@@ -82,7 +82,7 @@ export function OwnerConfigCategoryFromJSONTyped(json: any, ignoreDiscriminator:
     return {
         
         'category': OwnerCategoryFromJSON(json['category']),
-        'capabilities': OwnerCapabilitiesFromJSON(json['capabilities']),
+        'capabilities': CategoryCapabilitiesFromJSON(json['capabilities']),
         'verificationRequirements': ((json['verificationRequirements'] as Array<any>).map(OwnerVerificationRequirementFromJSON)),
     };
 }
@@ -99,7 +99,7 @@ export function OwnerConfigCategoryToJSONTyped(value?: OwnerConfigCategory | nul
     return {
         
         'category': OwnerCategoryToJSON(value['category']),
-        'capabilities': OwnerCapabilitiesToJSON(value['capabilities']),
+        'capabilities': CategoryCapabilitiesToJSON(value['capabilities']),
         'verificationRequirements': ((value['verificationRequirements'] as Array<any>).map(OwnerVerificationRequirementToJSON)),
     };
 }

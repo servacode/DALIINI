@@ -15,6 +15,7 @@
 
 package com.servacode.directory.api.models
 
+import com.servacode.directory.api.models.CategoryCapabilities
 import com.servacode.directory.api.models.FacilityStatusEnum
 import com.servacode.directory.api.models.NamedRef
 import com.servacode.directory.api.models.OwnerRequiredActionEnum
@@ -33,6 +34,7 @@ import kotlinx.serialization.Contextual
  * @param status 
  * @param lastUpdate 
  * @param requiredAction 
+ * @param capabilities 
  */
 @Serializable
 
@@ -57,7 +59,10 @@ data class OwnerFacilitySummary (
     val lastUpdate: java.time.OffsetDateTime,
 
     @Contextual @SerialName(value = "requiredAction")
-    val requiredAction: OwnerRequiredActionEnum?
+    val requiredAction: OwnerRequiredActionEnum?,
+
+    @SerialName(value = "capabilities")
+    val capabilities: CategoryCapabilities
 
 ) {
 

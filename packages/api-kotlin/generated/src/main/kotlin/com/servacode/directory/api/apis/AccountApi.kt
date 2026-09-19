@@ -13,6 +13,8 @@ import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.DeletionRequest
 import com.servacode.directory.api.models.PatchedProfilePatch
 import com.servacode.directory.api.models.Profile
+import com.servacode.directory.api.models.PushToken
+import com.servacode.directory.api.models.PushTokenRegister
 
 interface AccountApi {
     /**
@@ -60,6 +62,38 @@ interface AccountApi {
      */
     @PATCH("api/v1/account/profile/")
     suspend fun accountProfileUpdate(@Body patchedProfilePatch: PatchedProfilePatch? = null): Response<Profile>
+
+    /**
+     * PUT api/v1/account/push-token/
+     * Register or refresh this device&#39;s push token
+     * Idempotent. A new token from the same session replaces the previous one. The token is tied to the calling session and deactivated when that session ends.
+     * Responses:
+     *  - 204: No response body
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param pushTokenRegister 
+     * @return [Unit]
+     */
+    @PUT("api/v1/account/push-token/")
+    suspend fun accountPushTokenRegister(@Body pushTokenRegister: PushTokenRegister): Response<Unit>
+
+    /**
+     * POST api/v1/account/push-token/unregister/
+     * Stop sending pushes to a device token
+     * Idempotent: an unknown or already inactive token also answers 204.
+     * Responses:
+     *  - 204: No response body
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param pushToken 
+     * @return [Unit]
+     */
+    @POST("api/v1/account/push-token/unregister/")
+    suspend fun accountPushTokenUnregister(@Body pushToken: PushToken): Response<Unit>
 
     /**
      * GET api/v1/account/ratings/

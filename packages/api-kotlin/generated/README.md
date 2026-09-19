@@ -48,6 +48,8 @@ All URIs are relative to *http://localhost*
 | *AccountApi* | [**accountDeletionRequestCreate**](docs/AccountApi.md#accountdeletionrequestcreate) | **POST** api/v1/account/deletion-request/ | Request deletion of the account of the caller |
 | *AccountApi* | [**accountProfileRetrieve**](docs/AccountApi.md#accountprofileretrieve) | **GET** api/v1/account/profile/ | Retrieve the profile of the caller |
 | *AccountApi* | [**accountProfileUpdate**](docs/AccountApi.md#accountprofileupdate) | **PATCH** api/v1/account/profile/ | Update the display name or profile province of the caller |
+| *AccountApi* | [**accountPushTokenRegister**](docs/AccountApi.md#accountpushtokenregister) | **PUT** api/v1/account/push-token/ | Register or refresh this device's push token |
+| *AccountApi* | [**accountPushTokenUnregister**](docs/AccountApi.md#accountpushtokenunregister) | **POST** api/v1/account/push-token/unregister/ | Stop sending pushes to a device token |
 | *AccountApi* | [**accountRatingsList**](docs/AccountApi.md#accountratingslist) | **GET** api/v1/account/ratings/ | List the ratings written by the caller |
 | *AdminAdsApi* | [**adminAdCreate**](docs/AdminAdsApi.md#adminadcreate) | **POST** api/v1/admin/ads/ | Create an advertisement |
 | *AdminAdsApi* | [**adminAdDelete**](docs/AdminAdsApi.md#adminaddelete) | **DELETE** api/v1/admin/ads/{advertisement_id}/ | Delete an advertisement |
@@ -238,7 +240,6 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.MapMarkerList](docs/MapMarkerList.md)
  - [com.servacode.directory.api.models.NamedRef](docs/NamedRef.md)
  - [com.servacode.directory.api.models.OwnerApplication](docs/OwnerApplication.md)
- - [com.servacode.directory.api.models.OwnerCapabilities](docs/OwnerCapabilities.md)
  - [com.servacode.directory.api.models.OwnerCategory](docs/OwnerCategory.md)
  - [com.servacode.directory.api.models.OwnerConfig](docs/OwnerConfig.md)
  - [com.servacode.directory.api.models.OwnerConfigCategory](docs/OwnerConfigCategory.md)
@@ -271,6 +272,9 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.PublicHoursEntry](docs/PublicHoursEntry.md)
  - [com.servacode.directory.api.models.PublicProvince](docs/PublicProvince.md)
  - [com.servacode.directory.api.models.PublicProvinceList](docs/PublicProvinceList.md)
+ - [com.servacode.directory.api.models.PushPlatformEnum](docs/PushPlatformEnum.md)
+ - [com.servacode.directory.api.models.PushToken](docs/PushToken.md)
+ - [com.servacode.directory.api.models.PushTokenRegister](docs/PushTokenRegister.md)
  - [com.servacode.directory.api.models.RatingWrite](docs/RatingWrite.md)
  - [com.servacode.directory.api.models.RecoveryReset](docs/RecoveryReset.md)
  - [com.servacode.directory.api.models.RecoveryStart](docs/RecoveryStart.md)

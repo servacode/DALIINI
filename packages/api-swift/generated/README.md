@@ -29,6 +29,8 @@ Class | Method | HTTP request | Description
 *AccountAPI* | [**accountDeletionRequestCreate**](docs/AccountAPI.md#accountdeletionrequestcreate) | **POST** /api/v1/account/deletion-request/ | Request deletion of the account of the caller
 *AccountAPI* | [**accountProfileRetrieve**](docs/AccountAPI.md#accountprofileretrieve) | **GET** /api/v1/account/profile/ | Retrieve the profile of the caller
 *AccountAPI* | [**accountProfileUpdate**](docs/AccountAPI.md#accountprofileupdate) | **PATCH** /api/v1/account/profile/ | Update the display name or profile province of the caller
+*AccountAPI* | [**accountPushTokenRegister**](docs/AccountAPI.md#accountpushtokenregister) | **PUT** /api/v1/account/push-token/ | Register or refresh this device&#39;s push token
+*AccountAPI* | [**accountPushTokenUnregister**](docs/AccountAPI.md#accountpushtokenunregister) | **POST** /api/v1/account/push-token/unregister/ | Stop sending pushes to a device token
 *AccountAPI* | [**accountRatingsList**](docs/AccountAPI.md#accountratingslist) | **GET** /api/v1/account/ratings/ | List the ratings written by the caller
 *AdminAdsAPI* | [**adminAdCreate**](docs/AdminAdsAPI.md#adminadcreate) | **POST** /api/v1/admin/ads/ | Create an advertisement
 *AdminAdsAPI* | [**adminAdDelete**](docs/AdminAdsAPI.md#adminaddelete) | **DELETE** /api/v1/admin/ads/{advertisement_id}/ | Delete an advertisement
@@ -218,7 +220,6 @@ Class | Method | HTTP request | Description
  - [MapMarkerList](docs/MapMarkerList.md)
  - [NamedRef](docs/NamedRef.md)
  - [OwnerApplication](docs/OwnerApplication.md)
- - [OwnerCapabilities](docs/OwnerCapabilities.md)
  - [OwnerCategory](docs/OwnerCategory.md)
  - [OwnerConfig](docs/OwnerConfig.md)
  - [OwnerConfigCategory](docs/OwnerConfigCategory.md)
@@ -251,6 +252,9 @@ Class | Method | HTTP request | Description
  - [PublicHoursEntry](docs/PublicHoursEntry.md)
  - [PublicProvince](docs/PublicProvince.md)
  - [PublicProvinceList](docs/PublicProvinceList.md)
+ - [PushPlatformEnum](docs/PushPlatformEnum.md)
+ - [PushToken](docs/PushToken.md)
+ - [PushTokenRegister](docs/PushTokenRegister.md)
  - [RatingWrite](docs/RatingWrite.md)
  - [RecoveryReset](docs/RecoveryReset.md)
  - [RecoveryStart](docs/RecoveryStart.md)

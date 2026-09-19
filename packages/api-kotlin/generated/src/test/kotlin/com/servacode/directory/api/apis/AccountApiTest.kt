@@ -25,6 +25,8 @@ import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.DeletionRequest
 import com.servacode.directory.api.models.PatchedProfilePatch
 import com.servacode.directory.api.models.Profile
+import com.servacode.directory.api.models.PushToken
+import com.servacode.directory.api.models.PushTokenRegister
 
 class AccountApiTest : ShouldSpec() {
     init {
@@ -52,6 +54,20 @@ class AccountApiTest : ShouldSpec() {
             //val patchedProfilePatch : PatchedProfilePatch =  // PatchedProfilePatch | 
             //val result : Profile = apiInstance.accountProfileUpdate(patchedProfilePatch)
             //result shouldBe ("TODO")
+        }
+
+        // to test accountPushTokenRegister
+        should("test accountPushTokenRegister") {
+            // uncomment below to test accountPushTokenRegister
+            //val pushTokenRegister : PushTokenRegister =  // PushTokenRegister | 
+            //apiInstance.accountPushTokenRegister(pushTokenRegister)
+        }
+
+        // to test accountPushTokenUnregister
+        should("test accountPushTokenUnregister") {
+            // uncomment below to test accountPushTokenUnregister
+            //val pushToken : PushToken =  // PushToken | 
+            //apiInstance.accountPushTokenUnregister(pushToken)
         }
 
         // to test accountRatingsList

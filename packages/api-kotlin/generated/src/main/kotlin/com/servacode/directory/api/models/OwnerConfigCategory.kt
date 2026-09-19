@@ -15,7 +15,7 @@
 
 package com.servacode.directory.api.models
 
-import com.servacode.directory.api.models.OwnerCapabilities
+import com.servacode.directory.api.models.CategoryCapabilities
 import com.servacode.directory.api.models.OwnerCategory
 import com.servacode.directory.api.models.OwnerVerificationRequirement
 
@@ -38,7 +38,7 @@ data class OwnerConfigCategory (
     val category: OwnerCategory,
 
     @SerialName(value = "capabilities")
-    val capabilities: OwnerCapabilities,
+    val capabilities: CategoryCapabilities,
 
     @SerialName(value = "verificationRequirements")
     val verificationRequirements: kotlin.collections.List<OwnerVerificationRequirement>

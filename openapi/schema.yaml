@@ -129,6 +129,97 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+  /api/v1/account/push-token/:
+    put:
+      operationId: accountPushTokenRegister
+      description: Idempotent. A new token from the same session replaces the previous
+        one. The token is tied to the calling session and deactivated when that session
+        ends.
+      summary: Register or refresh this device's push token
+      tags:
+      - Account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PushTokenRegister'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PushTokenRegister'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PushTokenRegister'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/account/push-token/unregister/:
+    post:
+      operationId: accountPushTokenUnregister
+      description: 'Idempotent: an unknown or already inactive token also answers
+        204.'
+      summary: Stop sending pushes to a device token
+      tags:
+      - Account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PushToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PushToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PushToken'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/account/ratings/:
     get:
       operationId: accountRatingsList
@@ -6097,31 +6188,6 @@ components:
       - rejectionReason
       - status
       - submittedAt
-    OwnerCapabilities:
-      type: object
-      properties:
-        hours:
-          type: boolean
-        photos:
-          type: boolean
-        duty:
-          type: boolean
-        specialtyFilter:
-          type: boolean
-        serviceFilter:
-          type: boolean
-        temporaryClosure:
-          type: boolean
-        ownerOnboarding:
-          type: boolean
-      required:
-      - duty
-      - hours
-      - ownerOnboarding
-      - photos
-      - serviceFilter
-      - specialtyFilter
-      - temporaryClosure
     OwnerCategory:
       type: object
       properties:
@@ -6162,7 +6228,7 @@ components:
         category:
           $ref: '#/components/schemas/OwnerCategory'
         capabilities:
-          $ref: '#/components/schemas/OwnerCapabilities'
+          $ref: '#/components/schemas/CategoryCapabilities'
         verificationRequirements:
           type: array
           items:
@@ -6220,6 +6286,8 @@ components:
           allOf:
           - $ref: '#/components/schemas/OwnerRequiredActionEnum'
           nullable: true
+        capabilities:
+          $ref: '#/components/schemas/CategoryCapabilities'
         nameEn:
           type: string
           nullable: true
@@ -6276,6 +6344,7 @@ components:
       - addressAr
       - addressEn
       - application
+      - capabilities
       - category
       - cityId
       - descriptionAr
@@ -6346,7 +6415,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/OwnerRequiredActionEnum'
           nullable: true
+        capabilities:
+          $ref: '#/components/schemas/CategoryCapabilities'
       required:
+      - capabilities
       - category
       - id
       - lastUpdate
@@ -6861,6 +6933,35 @@ components:
             $ref: '#/components/schemas/PublicProvince'
       required:
       - items
+    PushPlatformEnum:
+      enum:
+      - ANDROID
+      - IOS
+      type: string
+      description: |-
+        * `ANDROID` - Android
+        * `IOS` - iOS
+    PushToken:
+      type: object
+      properties:
+        token:
+          type: string
+          maxLength: 4096
+      required:
+      - token
+    PushTokenRegister:
+      type: object
+      description: The device's current provider token. It is stored encrypted and
+        never returned.
+      properties:
+        platform:
+          $ref: '#/components/schemas/PushPlatformEnum'
+        token:
+          type: string
+          maxLength: 4096
+      required:
+      - platform
+      - token
     RatingWrite:
       type: object
       properties:
