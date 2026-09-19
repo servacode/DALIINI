@@ -156,9 +156,20 @@ def check_architecture() -> None:
     )
 
 
+# Build outputs are not source: after a real build they hold compiled, binary XML (INT-014).
+GENERATED = {"build", ".gradle", ".kotlin"}
+
+
+def source_paths(pattern: str) -> list[Path]:
+    return [
+        path for path in ROOT.rglob(pattern)
+        if not GENERATED.intersection(path.relative_to(ROOT).parts)
+    ]
+
+
 def check_hygiene() -> None:
-    source_files = [*ROOT.rglob("*.kt"), *ROOT.rglob("*.kts"), *ROOT.rglob("*.xml")]
-    combined = "\n".join(path.read_text() for path in source_files)
+    source_files = [*source_paths("*.kt"), *source_paths("*.kts"), *source_paths("*.xml")]
+    combined = "\n".join(path.read_text(encoding="utf-8") for path in source_files)
     require("React Native" not in combined, "React Native reference found in Android source")
     require("Flutter" not in combined, "Flutter reference found in Android source")
     # P21 may add an env-only release signing configuration. The foundation gate

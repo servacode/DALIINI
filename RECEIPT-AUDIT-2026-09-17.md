@@ -473,7 +473,7 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-011 | P2 | P12/P13 | Admin UI is a descriptive scaffold with no data binding | OPEN |
 | INT-012 | P2 | P12 | the Admin `__Host-` refresh cookie sets `secure` only when `NODE_ENV=production`, and browsers reject a `__Host-` cookie without `Secure`, so the development login flow cannot work | FIXED (ADMIN-BFF) |
 | INT-013 | P2 | P14 | every Android API boundary throws `GeneratedClientRequiredException` | FIXED (ANDROID-BINDING) — public, owner and auth boundaries bound to the generated client; push registration has no operation to bind to (INT-057) |
-| INT-014 | P3 | P14–P20 | qualifier scripts use `read_text()` without an encoding and scan `node_modules` and `build` | OPEN |
+| INT-014 | P3 | P14–P20 | qualifier scripts use `read_text()` without an encoding and scan `node_modules` and `build` | PARTIAL (ANDROID-CI) — `apps/android/scripts/qualify-source.py` reads UTF-8 and skips build outputs, proven against a binary build XML under UTF-8; the other qualifiers are unchanged |
 | INT-015 | P2 | P13 | eight unguarded `objects.get` calls in `admin_console/views.py` return 500 instead of 404 | FIXED (ADMIN-BINDING) — nine lookups and two service paths; the contract said 404 and now the runtime does |
 | INT-016 | P2 | P2 | `/api/schema/` publicly reachable in every environment | FIXED (P10) |
 | INT-017 | P2 | P3/P5 | `PUT`/`DELETE /account/profile-image/` not implemented | OPEN |
