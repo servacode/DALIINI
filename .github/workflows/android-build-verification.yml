@@ -1,0 +1,123 @@
+name: Android Build Verification
+
+# The Android app's real build, against the official repositories only: Google Maven and Maven
+# Central, exactly as apps/android/settings.gradle.kts declares them. It runs here because
+# Google Maven does not answer the network the app is developed on
+# (artifacts/evidence/google-maven-diagnosis-20260919.txt). No mirror, no artifact copied in
+# by hand, no version changed to suit a cache. apps/android/jvm-verification is a separate,
+# portable check and is not run here: it is no substitute for this build.
+
+on:
+  push:
+    branches: ['android-build-verification-*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: apps/android
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate the Gradle wrapper against gradle.org's checksums
+        uses: gradle/actions/wrapper-validation@v4
+
+      # AGP 9.4 needs JDK 17 or later; 21 is the current long-term release.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # Gradle's own action: caches the dependencies Gradle downloaded from the declared
+      # repositories, keyed on the build files, and nothing else.
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Record the toolchain and Google Maven's answer
+        run: |
+          java -version
+          ./gradlew --version
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools"
+          curl -sSI https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/9.4.0/gradle-9.4.0.pom | head -5
+
+      - name: Gate 1 — assembleLocalDebug
+        id: assemble
+        run: ./gradlew :app:assembleLocalDebug --stacktrace
+
+      - name: APK metadata
+        if: steps.assemble.outcome == 'success'
+        run: |
+          set -euo pipefail
+          dir=app/build/outputs/apk/local/debug
+          apk="$(find "$dir" -maxdepth 1 -name '*.apk' | head -1)"
+          aapt2="$(find "$ANDROID_HOME/build-tools" -name aapt2 -type f | sort -V | tail -1)"
+          badging="$("$aapt2" dump badging "$apk")"
+          field() { printf '%s\n' "$badging" | grep -o "$1='[^']*'" | head -1 | cut -d"'" -f2; }
+          sdk() { printf '%s\n' "$badging" | grep -o "^$1:'[^']*'" | head -1 | cut -d"'" -f2; }
+          {
+            echo "path=apps/android/$apk"
+            echo "filename=$(basename "$apk")"
+            echo "sha256=$(sha256sum "$apk" | cut -d' ' -f1)"
+            echo "size_bytes=$(stat -c %s "$apk")"
+            echo "applicationId=$(printf '%s\n' "$badging" | grep -o "^package: name='[^']*'" | cut -d"'" -f2)"
+            echo "versionName=$(field versionName)"
+            echo "versionCode=$(field versionCode)"
+            echo "minSdk=$(sdk sdkVersion)"
+            echo "targetSdk=$(sdk targetSdkVersion)"
+            echo "flavor=local"
+            echo "buildType=debug"
+            echo "commit=$GITHUB_SHA"
+          } > "$dir/apk-metadata.txt"
+          cat "$dir/apk-metadata.txt"
+          { echo '### APK'; echo '```'; cat "$dir/apk-metadata.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the APK
+        if: steps.assemble.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: directory-local-debug-apk
+          path: |
+            apps/android/app/build/outputs/apk/local/debug/*.apk
+            apps/android/app/build/outputs/apk/local/debug/apk-metadata.txt
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Gate 2 — Android unit tests
+        id: unit
+        if: steps.assemble.outcome == 'success'
+        run: ./gradlew testDebugUnitTest :app:testLocalDebugUnitTest --continue --stacktrace
+
+      - name: Gate 3 — Android lint
+        id: lint
+        if: always() && steps.assemble.outcome == 'success'
+        run: ./gradlew lintDebug :app:lintLocalDebug --continue --stacktrace
+
+      # The two source qualifiers that describe the current source. The public, owner,
+      # navigation and live-data qualifiers still assert the pre-binding stubs that INT-013
+      # removed, and are recorded as INT-069 rather than run and ignored.
+      - name: Gate 4 — Android source qualifiers
+        if: always() && steps.assemble.outcome == 'success'
+        run: |
+          python3 scripts/qualify-source.py
+          python3 scripts/qualify-play-rc-source.py
+
+      - name: Upload test and lint reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-reports
+          path: |
+            apps/android/**/build/reports/
+            apps/android/**/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 30
