@@ -47,7 +47,7 @@ class FacilityLocationSerializer(serializers.Serializer):
 
 
 class EvidenceUploadSerializer(serializers.Serializer):
-    requirementId = serializers.UUIDField()
+    requirementId = serializers.IntegerField(min_value=1)
     file = UploadedFileField()
 
 

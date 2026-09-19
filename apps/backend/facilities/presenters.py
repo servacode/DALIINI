@@ -65,7 +65,7 @@ def facility_detail(facility):
         "evidence": [
             {
                 "id": str(item.pk),
-                "requirementId": str(item.requirement_id),
+                "requirementId": item.requirement_id,
                 "createdAt": item.created_at.isoformat(),
             }
             for item in facility.evidence.all()

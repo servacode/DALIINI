@@ -25,7 +25,8 @@ REQUIRED_ACTIONS = [
 class OwnerVerificationRequirementSerializer(serializers.Serializer):
     """Safe descriptor of a requirement. The evidence itself is never described here."""
 
-    id = serializers.UUIDField()
+    # The model's integer key, as the Admin contract already declares it (INT-068).
+    id = serializers.IntegerField()
     labelAr = serializers.CharField()
     labelEn = serializers.CharField(allow_null=True)
     instructionsAr = serializers.CharField(allow_null=True)
@@ -70,7 +71,7 @@ class OwnerFacilitySummaryListSerializer(serializers.Serializer):
 
 class OwnerEvidenceRefSerializer(serializers.Serializer):
     id = serializers.UUIDField()
-    requirementId = serializers.UUIDField()
+    requirementId = serializers.IntegerField()
     createdAt = serializers.DateTimeField()
 
 
@@ -132,7 +133,7 @@ class OwnerFacilityImageListSerializer(serializers.Serializer):
 
 class OwnerEvidenceCreatedSerializer(serializers.Serializer):
     id = serializers.UUIDField()
-    requirementId = serializers.UUIDField()
+    requirementId = serializers.IntegerField()
 
 
 class OwnerMemberSerializer(serializers.Serializer):

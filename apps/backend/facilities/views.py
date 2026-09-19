@@ -107,7 +107,7 @@ def _owner_config_item(switch):
         "capabilities": category_capabilities(category),
         "verificationRequirements": [
             {
-                "id": str(item.pk),
+                "id": item.pk,
                 "labelAr": item.label_ar,
                 "labelEn": item.label_en or None,
                 "instructionsAr": item.instructions_ar or None,
@@ -531,7 +531,7 @@ class OwnerFacilityEvidenceView(APIView):
             request_id=_request_id(request),
         )
         return Response(
-            {"id": str(evidence.pk), "requirementId": str(requirement.pk)},
+            {"id": str(evidence.pk), "requirementId": requirement.pk},
             status=201,
         )
 

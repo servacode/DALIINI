@@ -256,7 +256,7 @@ class ApplicationDetailView(AdminView):
                 "evidence": [
                     {
                         "id": str(row.id),
-                        "requirementId": str(row.requirement_id),
+                        "requirementId": row.requirement_id,
                         "labelAr": row.requirement.label_ar,
                     }
                     for row in evidence

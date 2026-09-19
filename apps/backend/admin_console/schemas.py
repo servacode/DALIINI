@@ -74,7 +74,7 @@ class AdminEvidenceRefSerializer(serializers.Serializer):
     """Reviewer-facing evidence reference. The object key and any URL are withheld."""
 
     id = serializers.UUIDField()
-    requirementId = serializers.UUIDField()
+    requirementId = serializers.IntegerField()
     labelAr = serializers.CharField()
 
 
