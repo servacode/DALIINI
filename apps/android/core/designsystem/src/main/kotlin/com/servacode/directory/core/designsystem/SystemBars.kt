@@ -29,25 +29,28 @@ fun SystemBarsColor(color: Color) {
             onDispose { }
         } else {
             val controller = WindowCompat.getInsetsController(window, view)
+            val argb = color.toArgb()
             @Suppress("DEPRECATION")
             val statusBar = window.statusBarColor
             @Suppress("DEPRECATION")
             val navigationBar = window.navigationBarColor
             val lightStatusBar = controller.isAppearanceLightStatusBars
             val lightNavigationBar = controller.isAppearanceLightNavigationBars
+            // Only what differs: an appearance change relays the window out, which the splash's
+            // first frame would otherwise pay for.
             @Suppress("DEPRECATION")
-            window.statusBarColor = color.toArgb()
+            if (statusBar != argb) window.statusBarColor = argb
             @Suppress("DEPRECATION")
-            window.navigationBarColor = color.toArgb()
-            controller.isAppearanceLightStatusBars = true
-            controller.isAppearanceLightNavigationBars = true
+            if (navigationBar != argb) window.navigationBarColor = argb
+            if (!lightStatusBar) controller.isAppearanceLightStatusBars = true
+            if (!lightNavigationBar) controller.isAppearanceLightNavigationBars = true
             onDispose {
                 @Suppress("DEPRECATION")
-                window.statusBarColor = statusBar
+                if (statusBar != argb) window.statusBarColor = statusBar
                 @Suppress("DEPRECATION")
-                window.navigationBarColor = navigationBar
-                controller.isAppearanceLightStatusBars = lightStatusBar
-                controller.isAppearanceLightNavigationBars = lightNavigationBar
+                if (navigationBar != argb) window.navigationBarColor = navigationBar
+                if (!lightStatusBar) controller.isAppearanceLightStatusBars = false
+                if (!lightNavigationBar) controller.isAppearanceLightNavigationBars = false
             }
         }
     }

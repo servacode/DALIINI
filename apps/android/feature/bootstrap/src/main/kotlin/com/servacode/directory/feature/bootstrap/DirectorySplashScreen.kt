@@ -16,11 +16,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -46,77 +48,78 @@ import com.servacode.directory.designsystem.generated.DirectoryTokens
 /**
  * The app's splash, shown while the app starts and while it hands over to the first screen.
  *
- * Its first frame continues the system splash: the same background under the same bars, and the
- * brand mark at the same place and size. The rest appears over the tokens' emphasized duration,
- * with a slow ping under the pin. It waits for nothing: navigation leaves as soon as the start
- * is known.
+ * Its first frame is the system splash's last: the same background under the same bars and the
+ * brand mark at the same place and size, and nothing else, so the frame that ends the system
+ * splash costs no more than before this redesign. The name, the tagline, the footer, the soft
+ * shapes and a slow ping under the pin join on the next frame and fade in over the tokens'
+ * emphasized duration. It waits for nothing: navigation leaves as soon as the start is known.
  */
 @Composable
 fun DirectorySplashScreen(modifier: Modifier = Modifier) {
     SystemBarsColor(BrandColors.splashBackground)
-    var entered by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { entered = true }
+    var details by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        withFrameNanos { }
+        details = true
+    }
     val appear by animateFloatAsState(
-        targetValue = if (entered) 1f else 0f,
+        targetValue = if (details) 1f else 0f,
         animationSpec = tween(DirectoryTokens.MotionDurationEmphasized, easing = LinearOutSlowInEasing),
         label = "splash-appear",
     )
-    val ping by rememberInfiniteTransition(label = "splash-ping").animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(PING_MILLIS, easing = LinearOutSlowInEasing), RepeatMode.Restart),
-        label = "splash-ping-progress",
-    )
     val view = LocalView.current
-    // Set while placing; the backdrop reads it to draw under the mark.
+    // Set while placing; the ping reads it to draw under the mark.
     val markCentreY = remember { mutableFloatStateOf(Float.NaN) }
 
     Layout(
         modifier = modifier.fillMaxSize().background(BrandColors.splashBackground),
         content = {
-            Canvas(Modifier.fillMaxSize()) {
-                val centreY = markCentreY.floatValue.takeUnless { it.isNaN() } ?: (size.height / 2)
-                drawBackdrop(appear)
-                drawPing(Offset(size.width / 2, centreY + PIN_TIP_BELOW_CENTRE.toPx()), ping, appear)
-            }
             BrandMark()
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.graphicsLayer {
-                    alpha = appear
-                    translationY = (1f - appear) * RISE.toPx()
-                },
-            ) {
+            if (details) {
+                // Drawn once and faded as a layer, not redrawn on every frame of the fade.
+                Canvas(Modifier.fillMaxSize().graphicsLayer { alpha = appear }) { drawBackdrop() }
+                SplashPing(markCentreY, appear = { appear })
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.graphicsLayer {
+                        alpha = appear
+                        translationY = (1f - appear) * RISE.toPx()
+                    },
+                ) {
+                    Text(
+                        text = SplashCopy.NAME,
+                        style = DirectoryTextStyles.display,
+                        color = BrandColors.mark,
+                        modifier = Modifier.semantics { heading() },
+                    )
+                    Text(
+                        text = SplashCopy.TAGLINE,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = BrandColors.contentSecondary,
+                        textAlign = TextAlign.Center,
+                    )
+                }
                 Text(
-                    text = SplashCopy.NAME,
-                    style = DirectoryTextStyles.display,
-                    color = BrandColors.mark,
-                    modifier = Modifier.semantics { heading() },
-                )
-                Text(
-                    text = SplashCopy.TAGLINE,
-                    style = MaterialTheme.typography.bodyLarge,
+                    text = SplashCopy.FOOTER,
+                    style = DirectoryTextStyles.labelMedium,
                     color = BrandColors.contentSecondary,
-                    textAlign = TextAlign.Center,
+                    modifier = Modifier.graphicsLayer { alpha = appear },
                 )
             }
-            Text(
-                text = SplashCopy.FOOTER,
-                style = DirectoryTextStyles.labelMedium,
-                color = BrandColors.contentSecondary,
-                modifier = Modifier.graphicsLayer { alpha = appear },
-            )
         },
     ) { measurables, constraints ->
         val width = constraints.maxWidth
         val height = constraints.maxHeight
         val loose = constraints.copy(minWidth = 0, minHeight = 0)
-        val backdrop = measurables[0].measure(Constraints.fixed(width, height))
-        val mark = measurables[1].measure(loose)
+        val mark = measurables[0].measure(loose)
+        val full = Constraints.fixed(width, height)
         val side = SIDE.roundToPx()
-        val title = measurables[2].measure(loose.copy(maxWidth = (width - 2 * side).coerceAtLeast(0)))
-        val footer = measurables[3].measure(loose)
+        // Present from the second frame: backdrop, ping, title, footer.
+        val backdrop = measurables.getOrNull(1)?.measure(full)
+        val ping = measurables.getOrNull(2)?.measure(full)
+        val title = measurables.getOrNull(3)?.measure(loose.copy(maxWidth = (width - 2 * side).coerceAtLeast(0)))
+        val footer = measurables.getOrNull(4)?.measure(loose)
         layout(width, height) {
             // Placement runs after the window has laid this view out, so its offset is known.
             val location = IntArray(2).also(view::getLocationInWindow)
@@ -127,20 +130,37 @@ fun DirectorySplashScreen(modifier: Modifier = Modifier) {
                 markHeight = mark.height,
             )
             markCentreY.floatValue = centreY.toFloat()
-            backdrop.place(0, 0)
+            // Placed first, so drawn below the mark.
+            backdrop?.place(0, 0)
+            ping?.place(0, 0)
             mark.place((width - mark.width) / 2, centreY - mark.height / 2)
-            title.place((width - title.width) / 2, centreY + mark.height / 2 + TITLE_GAP.roundToPx())
-            footer.place((width - footer.width) / 2, height - footer.height - FOOTER_GAP.roundToPx())
+            title?.let { it.place((width - it.width) / 2, centreY + mark.height / 2 + TITLE_GAP.roundToPx()) }
+            footer?.let { it.place((width - it.width) / 2, height - it.height - FOOTER_GAP.roundToPx()) }
         }
     }
 }
 
+/** The ping, on its own so that only it redraws on each of its frames. */
+@Composable
+private fun SplashPing(markCentreY: MutableFloatState, appear: () -> Float) {
+    val progress by rememberInfiniteTransition(label = "splash-ping").animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(PING_MILLIS, easing = LinearOutSlowInEasing), RepeatMode.Restart),
+        label = "splash-ping-progress",
+    )
+    Canvas(Modifier.fillMaxSize()) {
+        val centreY = markCentreY.floatValue.takeUnless { it.isNaN() } ?: (size.height / 2)
+        drawPing(Offset(size.width / 2, centreY + PIN_TIP_BELOW_CENTRE.toPx()), progress, appear())
+    }
+}
+
 /** Two soft shapes and a faint map grid in the upper one; decoration only, no semantics. */
-private fun DrawScope.drawBackdrop(appear: Float) {
+private fun DrawScope.drawBackdrop() {
     val upper = Rect(Offset(size.width * 0.92f, size.height * 0.1f), size.width * 0.62f)
     val lower = Rect(Offset(size.width * 0.06f, size.height * 0.94f), size.width * 0.55f)
-    drawCircle(BrandColors.softer, upper.width / 2, upper.center, alpha = appear)
-    drawCircle(BrandColors.softer, lower.width / 2, lower.center, alpha = appear)
+    drawCircle(BrandColors.softer, upper.width / 2, upper.center)
+    drawCircle(BrandColors.softer, lower.width / 2, lower.center)
     val step = GRID_STEP.toPx()
     val dot = GRID_DOT.toPx()
     clipPath(Path().apply { addOval(upper) }) {
@@ -148,7 +168,7 @@ private fun DrawScope.drawBackdrop(appear: Float) {
         while (y < upper.bottom) {
             var x = upper.left + step / 2
             while (x < upper.right) {
-                drawCircle(BrandColors.soft, dot, Offset(x, y), alpha = appear)
+                drawCircle(BrandColors.soft, dot, Offset(x, y))
                 x += step
             }
             y += step
