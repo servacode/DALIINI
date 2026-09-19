@@ -5,7 +5,7 @@ import { loadTokens, resolveRefs } from './lib.mjs';
 const check = process.argv.includes('--check');
 const root = resolve(import.meta.dirname, '..');
 const output = resolve(root, 'generated');
-await mkdir(output, { recursive: true });
+await mkdir(resolve(output, 'android', 'values'), { recursive: true });
 const tokens = await loadTokens();
 const flat = resolveRefs(tokens);
 
@@ -17,7 +17,12 @@ const kotlinLines = Object.entries(flat).filter(([,v]) => typeof v === 'string' 
 const kotlin = `// GENERATED — DO NOT EDIT\npackage com.servacode.directory.designsystem.generated\n\nobject DirectoryTokens {\n${kotlinLines.join('\n')}\n}\n`;
 const swiftLines = Object.entries(flat).filter(([,v]) => typeof v === 'string' || typeof v === 'number').map(([k,v]) => `    static let ${pascal(k).replace(/^./, (c) => c.toLowerCase())} = ${typeof v === 'number' ? `${v}` : JSON.stringify(v)}`);
 const swift = `// GENERATED — DO NOT EDIT\nimport Foundation\n\nenum DirectoryTokens {\n${swiftLines.join('\n')}\n}\n`;
-const files = {'tokens.ts': ts, 'tokens.css': css, 'DirectoryTokens.kt': kotlin, 'DirectoryTokens.swift': swift};
+// Android resources cannot read Kotlin constants, so the colours are also emitted as colour
+// resources, for XML that needs them (a vector drawable, the launch theme). Named token_<path>.
+const androidName = (s) => `token_${s.replaceAll('.', '_').replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`)}`;
+const androidColorLines = Object.entries(flat).filter(([,v]) => typeof v === 'string' && /^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/.test(v)).map(([k,v]) => `    <color name="${androidName(k)}">${v}</color>`);
+const androidColors = `<?xml version="1.0" encoding="utf-8"?>\n<!-- GENERATED — DO NOT EDIT -->\n<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">\n${androidColorLines.join('\n')}\n</resources>\n`;
+const files = {'tokens.ts': ts, 'tokens.css': css, 'DirectoryTokens.kt': kotlin, 'DirectoryTokens.swift': swift, 'android/values/directory_token_colors.xml': androidColors};
 for (const [name, body] of Object.entries(files)) {
   const path = resolve(output, name);
   if (check) {
