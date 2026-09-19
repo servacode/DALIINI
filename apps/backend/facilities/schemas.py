@@ -9,6 +9,7 @@ from rest_framework import serializers
 
 from core.openapi import CoordinatesSerializer, NamedRefSerializer
 from directory.models import Category
+from directory.schemas import CategoryCapabilitiesSerializer
 
 from .models import Facility, FacilityApplication, FacilityMembership
 
@@ -41,19 +42,9 @@ class OwnerCategorySerializer(serializers.Serializer):
     specialization = serializers.ChoiceField(choices=Category.Specialization.choices)
 
 
-class OwnerCapabilitiesSerializer(serializers.Serializer):
-    hours = serializers.BooleanField()
-    photos = serializers.BooleanField()
-    duty = serializers.BooleanField()
-    specialtyFilter = serializers.BooleanField()
-    serviceFilter = serializers.BooleanField()
-    temporaryClosure = serializers.BooleanField()
-    ownerOnboarding = serializers.BooleanField()
-
-
 class OwnerConfigCategorySerializer(serializers.Serializer):
     category = OwnerCategorySerializer()
-    capabilities = OwnerCapabilitiesSerializer()
+    capabilities = CategoryCapabilitiesSerializer()
     verificationRequirements = OwnerVerificationRequirementSerializer(many=True)
 
 
@@ -70,6 +61,7 @@ class OwnerFacilitySummarySerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=Facility.Status.choices)
     lastUpdate = serializers.DateTimeField()
     requiredAction = serializers.ChoiceField(choices=REQUIRED_ACTIONS, allow_null=True)
+    capabilities = CategoryCapabilitiesSerializer()
 
 
 class OwnerFacilitySummaryListSerializer(serializers.Serializer):

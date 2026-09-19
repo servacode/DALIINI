@@ -18,6 +18,7 @@ from core.openapi import (
     protected,
 )
 from directory.models import CategoryProvince, VerificationRequirement
+from directory.presenters import category_capabilities
 from locations.models import Province
 from storage.backends import PrivateS3Storage, PublicS3Storage
 
@@ -80,7 +81,7 @@ def _validation_error(exc):
 def _owned_facilities(user):
     return (
         Facility.objects.filter(memberships__user=user)
-        .select_related("category", "province", "city", "neighborhood")
+        .select_related("category", "category__capabilities", "province", "city", "neighborhood")
         .prefetch_related(
             "applications",
             "business_hours",
@@ -94,7 +95,6 @@ def _owned_facilities(user):
 
 def _owner_config_item(switch):
     category = switch.category
-    caps = category.capabilities
     requirements = category.verification_requirements.filter(active=True).order_by("sort_order")
     return {
         "category": {
@@ -104,15 +104,7 @@ def _owner_config_item(switch):
             "iconKey": category.icon_key or None,
             "specialization": category.specialization,
         },
-        "capabilities": {
-            "hours": caps.supports_hours,
-            "photos": caps.supports_photos,
-            "duty": caps.supports_duty,
-            "specialtyFilter": caps.supports_specialty_filter,
-            "serviceFilter": caps.supports_service_filter,
-            "temporaryClosure": caps.supports_temporary_closure,
-            "ownerOnboarding": caps.supports_owner_onboarding,
-        },
+        "capabilities": category_capabilities(category),
         "verificationRequirements": [
             {
                 "id": str(item.pk),

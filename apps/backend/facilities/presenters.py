@@ -1,4 +1,5 @@
 from business_hours.serializers import serialize_hours
+from directory.presenters import category_capabilities
 
 
 def facility_summary(facility):
@@ -17,6 +18,9 @@ def facility_summary(facility):
         "status": facility.status,
         "lastUpdate": facility.updated_at.isoformat(),
         "requiredAction": _required_action(facility, latest),
+        # The category's capabilities, so an owner client shows exactly the controls this
+        # facility supports without looking them up elsewhere (INT-056).
+        "capabilities": category_capabilities(facility.category),
     }
 
 

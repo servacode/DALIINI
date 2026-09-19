@@ -7,21 +7,8 @@ from core.openapi import NOT_FOUND_404
 from locations.models import Province
 
 from .models import CategoryProvince
+from .presenters import category_capabilities
 from .schemas import PublicCategoryListSerializer
-
-
-def _capabilities(category):
-    caps = category.capabilities
-    return {
-        "hours": caps.supports_hours,
-        "photos": caps.supports_photos,
-        "ratings": caps.supports_ratings,
-        "duty": caps.supports_duty,
-        "specialtyFilter": caps.supports_specialty_filter,
-        "serviceFilter": caps.supports_service_filter,
-        "temporaryClosure": caps.supports_temporary_closure,
-        "ownerOnboarding": caps.supports_owner_onboarding,
-    }
 
 
 class PublicProvinceCategoriesView(APIView):
@@ -61,7 +48,7 @@ class PublicProvinceCategoriesView(APIView):
                     "id": str(switch.category.group_id),
                     "nameAr": switch.category.group.name_ar,
                 },
-                "capabilities": _capabilities(switch.category),
+                "capabilities": category_capabilities(switch.category),
             }
             for switch in switches
         ]
