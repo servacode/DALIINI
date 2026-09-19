@@ -555,9 +555,10 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-093 | P2 | P17 | back from a facility detail resets the map camera to the world. `MapView` is created in `remember` and destroyed when the screen is left, and the camera is not kept. Found in the device re-smoke | OPEN |
 | INT-094 | P3 | P15/P17 | "عرض على الخريطة" opens a general map that is not centred on the facility, and each tap pushes another map onto the back stack. Found in the device re-smoke | OPEN |
 | INT-095 | P3 | P16 | a temporary closure with no reason reads " • من …": the backend returns `""`, not `null`. Found in the device re-smoke | OPEN |
+| INT-096 | P3 | P17 | the built-in navigation map created a new map controller on every location fix, so each fix added another location marker and another copy of the route line, and none were ever removed: they pile up for the whole trip. Found by code review while unifying the MapView lifecycle in this batch | OPEN |
 
 ## Rules
 
 - An identifier is never reused, even after the defect is fixed or retired.
 - A defect is registered here before it is referenced anywhere else.
-- The next free identifier is `INT-096`.
+- The next free identifier is `INT-097`.

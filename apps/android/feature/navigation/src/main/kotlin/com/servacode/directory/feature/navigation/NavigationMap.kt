@@ -1,13 +1,11 @@
 package com.servacode.directory.feature.navigation
 
-import android.os.Bundle
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,18 +13,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import com.servacode.directory.core.maps.MapCamera
 import com.servacode.directory.core.maps.MapLibreController
 import com.servacode.directory.core.maps.MapPoint
+import com.servacode.directory.core.maps.MapStyle
 import com.servacode.directory.core.maps.NavigationRoute
-import org.maplibre.android.maps.MapLibreMap
-import org.maplibre.android.maps.MapView
+import com.servacode.directory.core.maps.rememberMapViewWithLifecycle
 
 @Composable
 internal fun NavigationMap(
@@ -34,58 +28,48 @@ internal fun NavigationMap(
     route: NavigationRoute?,
     location: MapPoint?,
 ) {
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val mapView = remember { MapView(context) }
-    var mapState by remember { mutableStateOf<MapLibreMap?>(null) }
-    val routeColor = MaterialTheme.colorScheme.primary.toArgb()
-    val configured = styleUrl.startsWith("https://") &&
-        !styleUrl.contains("<ROOT_DOMAIN>")
-
-    DisposableEffect(mapView, lifecycleOwner) {
-        mapView.onCreate(Bundle())
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_START -> mapView.onStart()
-                Lifecycle.Event.ON_RESUME -> mapView.onResume()
-                Lifecycle.Event.ON_PAUSE -> mapView.onPause()
-                Lifecycle.Event.ON_STOP -> mapView.onStop()
-                Lifecycle.Event.ON_DESTROY -> mapView.onDestroy()
-                else -> Unit
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-            mapView.onDestroy()
-        }
-    }
-
     Box(Modifier.fillMaxWidth().height(320.dp)) {
-        if (!configured) {
-            Text("يجب ضبط مزود خرائط الإنتاج قبل عرض مسار الملاحة")
+        if (MapStyle.isConfigured(styleUrl)) {
+            RouteMap(styleUrl, route, location)
         } else {
-            AndroidView(
-                factory = {
-                    mapView.apply {
-                        getMapAsync { map ->
-                            mapState = map
-                            map.setStyle(styleUrl)
-                        }
-                    }
-                },
-                modifier = Modifier.fillMaxWidth().height(320.dp),
-            )
+            Text("يجب ضبط مزود خرائط الإنتاج قبل عرض مسار الملاحة")
         }
     }
+}
 
-    LaunchedEffect(route, location, mapState) {
-        val map = mapState ?: return@LaunchedEffect
-        val controller = MapLibreController(map)
-        route?.let { controller.showRoute(it.geometry, routeColor) }
+@Composable
+private fun RouteMap(
+    styleUrl: String,
+    route: NavigationRoute?,
+    location: MapPoint?,
+) {
+    val routeColor = MaterialTheme.colorScheme.primary.toArgb()
+    val mapView = rememberMapViewWithLifecycle()
+    // One controller per map: it holds the route line and the location marker it replaces on
+    // every fix (INT-096).
+    var controller by remember(mapView) { mutableStateOf<MapLibreController?>(null) }
+
+    AndroidView(
+        factory = {
+            mapView.apply {
+                getMapAsync { map ->
+                    val mapController = MapLibreController(map)
+                    map.setStyle(styleUrl) { controller = mapController }
+                }
+            }
+        },
+        modifier = Modifier.fillMaxWidth().height(320.dp),
+    )
+
+    LaunchedEffect(controller, route) {
+        val map = controller ?: return@LaunchedEffect
+        route?.let { map.showRoute(it.geometry, routeColor) }
+    }
+    LaunchedEffect(controller, location) {
+        val map = controller ?: return@LaunchedEffect
         location?.let {
-            controller.showNavigationLocation(it)
-            controller.moveCamera(MapCamera(it, zoom = 16.0), animated = true)
+            map.showNavigationLocation(it)
+            map.moveCamera(MapCamera(it, zoom = 16.0), animated = true)
         }
     }
 }

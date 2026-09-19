@@ -75,7 +75,10 @@ def check_voice_and_map() -> None:
     require("WebView" not in source, "WebView navigation is forbidden")
     require("showRoute" in source, "route rendering missing")
     require("showNavigationLocation" in source, "navigation location rendering missing")
-    require("mutableStateOf<MapLibreMap?>" in source, "MapLibre async state is not Compose-observable")
+    require(
+        "mutableStateOf<MapLibreMap?>" in source or "mutableStateOf<MapLibreController?>" in source,
+        "MapLibre async state is not Compose-observable",
+    )
 
 
 def check_location_policy() -> None:
