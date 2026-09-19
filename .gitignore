@@ -58,3 +58,6 @@ apps/admin/.e2e-admin.log
 
 # Playwright sessions created by global setup
 apps/admin/tests/e2e/.auth/
+
+# scripts/local-stack.sh: generated photo, logs
+.local-stack/
