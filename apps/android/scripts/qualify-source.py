@@ -63,7 +63,8 @@ def check_sdk_policy() -> None:
     app = text("build-logic/src/main/kotlin/serva.android.application.gradle.kts")
     library = text("build-logic/src/main/kotlin/serva.android.library.gradle.kts")
     for source in (app, library):
-        require("compileSdk = 36" in source, "compileSdk must be 36")
+        # 36 or higher; 37 since the pinned libraries required it (DECISION-040).
+        require("compileSdk = 37" in source, "compileSdk must be 37")
         require("minSdk = 24" in source, "minSdk must be 24")
     require("targetSdk = 36" in app, "targetSdk must be 36")
     require('applicationId = "com.servacode.directory"' in app, "applicationId mismatch")
