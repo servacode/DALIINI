@@ -529,9 +529,10 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-067 | P2 | P13 | the evidence response named its download after the stream, and an S3 file is named by its object key, so the key's file name left the backend in `Content-Disposition`. The Admin BFF replaces that header, so no browser received it | FIXED (ANDROID-GOLDEN-PATH) — a neutral name from the evidence id |
 | INT-068 | P1 | P5 | a verification requirement's id was declared a UUID in the owner and review contracts while the model keys it with an integer — INT-043 fixed the Admin component alone. The launch baseline configures no requirement, so nothing noticed: with the first one configured, the Android client could not decode the owner configuration and the upload serializer refused every id an owner could send, so no evidence could be uploaded. Found by the first hand-off run | FIXED (ANDROID-GOLDEN-PATH) — integer on the wire and in the contract; test over every `requirementId` component |
 | INT-069 | P3 | P15–P18 | the public, owner, navigation and live-data source qualifiers in `apps/android/scripts` still assert the pre-binding stubs — `GeneratedClientRequiredException`, `PublicCacheDataSource`, `HourDraft`, an inline user-scope check — that INT-013 and the Android binding replaced by design, so they fail on correct source | OPEN — kept out of CI rather than run and ignored; rewrite or retire them. Text qualifiers do not qualify a gate on their own |
+| INT-070 | P1 | P14 | the application and library conventions looked the version catalog up inside `dependencies { }`, where `extensions` is the dependency handler's and holds only `ExtraPropertiesExtension`, so no Android module could be configured. Added with desugaring (DECISION-033) and never compiled; found by the first real Android build (CI run 35425273117) | FIXED (ANDROID-CI) — looked up on the project |
 
 ## Rules
 
 - An identifier is never reused, even after the defect is fixed or retired.
 - A defect is registered here before it is referenced anywhere else.
-- The next free identifier is `INT-070`.
+- The next free identifier is `INT-071`.

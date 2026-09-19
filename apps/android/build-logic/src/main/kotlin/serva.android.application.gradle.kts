@@ -27,9 +27,10 @@ extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
     }
 }
 
+// Looked up on the project. Inside `dependencies { }`, `extensions` is the dependency
+// handler's own, which holds no version catalog.
+val catalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
+
 dependencies {
-    add(
-        "coreLibraryDesugaring",
-        extensions.getByType<VersionCatalogsExtension>().named("libs").findLibrary("desugar-jdk-libs").get(),
-    )
+    add("coreLibraryDesugaring", catalog.findLibrary("desugar-jdk-libs").get())
 }
