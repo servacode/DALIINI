@@ -35,7 +35,9 @@ sealed interface AccountUiState {
 @HiltViewModel
 class AccountViewModel @Inject constructor(
     private val account: AccountUseCase,
-    private val deleteAccount: DeleteAccountUseCase,
+    // Not `deleteAccount`: inside the function of that name, `deleteAccount()` would call
+    // the function itself rather than the use case.
+    private val accountDeletion: DeleteAccountUseCase,
 ) : ViewModel() {
     private val _state = MutableStateFlow<AccountUiState>(AccountUiState.Loading)
     val state: StateFlow<AccountUiState> = _state.asStateFlow()
@@ -82,7 +84,7 @@ class AccountViewModel @Inject constructor(
     fun deleteAccount() {
         viewModelScope.launch {
             _deletionState.value = DeletionUiState.Deleting
-            _deletionState.value = deleteAccount().fold(
+            _deletionState.value = accountDeletion().fold(
                 onSuccess = { DeletionUiState.Deleted },
                 onFailure = { DeletionUiState.Error(AppErrorText.of(it.toAppError())) },
             )

@@ -531,9 +531,10 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-069 | P3 | P15–P18 | the public, owner, navigation and live-data source qualifiers in `apps/android/scripts` still assert the pre-binding stubs — `GeneratedClientRequiredException`, `PublicCacheDataSource`, `HourDraft`, an inline user-scope check — that INT-013 and the Android binding replaced by design, so they fail on correct source | OPEN — kept out of CI rather than run and ignored; rewrite or retire them. Text qualifiers do not qualify a gate on their own |
 | INT-070 | P1 | P14 | the application and library conventions looked the version catalog up inside `dependencies { }`, where `extensions` is the dependency handler's and holds only `ExtraPropertiesExtension`, so no Android module could be configured. Added with desugaring (DECISION-033) and never compiled; found by the first real Android build (CI run 35425273117) | FIXED (ANDROID-CI) — looked up on the project |
 | INT-071 | P2 | P14 | `distinctUntilChanged()` applied to a `StateFlow` in `AccountViewModel` and `PushSetup`; kotlinx.coroutines deprecates it at error level because a StateFlow already emits only changes, so neither compiled. Android-only sources the JVM harness does not compile; found by the first real Android build (CI run 35425452454) | FIXED (ANDROID-CI) — operator removed; behaviour unchanged |
+| INT-072 | P1 | P15 | `AccountViewModel.deleteAccount()` called `deleteAccount()`, meant for the injected use case of that name; inside the function it resolves to the function itself, which returns `Unit`, so the module did not compile — and had it compiled as a recursion, account deletion would never have reached the backend. Found by the first real Android build (CI run 35425452454) | FIXED (ANDROID-CI) — the use case is named `accountDeletion` |
 
 ## Rules
 
 - An identifier is never reused, even after the defect is fixed or retired.
 - A defect is registered here before it is referenced anywhere else.
-- The next free identifier is `INT-072`.
+- The next free identifier is `INT-073`.
