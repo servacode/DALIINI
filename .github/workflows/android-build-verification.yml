@@ -58,9 +58,11 @@ jobs:
           ls "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools"
           curl -sSI https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/9.4.0/gradle-9.4.0.pom | head -5
 
+      # --continue: this code is compiled for the first time here, and one run should report
+      # every module that fails, not only the first.
       - name: Gate 1 — assembleLocalDebug
         id: assemble
-        run: ./gradlew :app:assembleLocalDebug --stacktrace
+        run: ./gradlew :app:assembleLocalDebug --continue --stacktrace
 
       - name: APK metadata
         if: steps.assemble.outcome == 'success'
