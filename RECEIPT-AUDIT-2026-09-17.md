@@ -540,9 +540,10 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-078 | P2 | P15 | the location provider guarded its calls with a helper and `runCatching` inside lambdas, which lint cannot see, and `core:location` declared none of the permissions it uses. Behaviour was safe; the protection was not explicit. Found by Android lint (CI run 35429821238) | FIXED (ANDROID-CI) — the module declares both location permissions; each protected call handles `SecurityException` explicitly |
 | INT-079 | P3 | P18 | `DirectoryMessagingService` posted a notice without checking POST_NOTIFICATIONS, relying on `runCatching` to swallow the refusal. Found by Android lint (CI run 35429821238) | FIXED (ANDROID-CI) — explicit check from Android 13; a withdrawal handled as `SecurityException` |
 | INT-080 | P3 | P14 | `core:database` and `feature:bootstrap` unit tests use `kotlinx.coroutines.test` without declaring it; the JVM harness supplies it to every test, which hid the omission. Found by the first real Android unit test run (CI run 35429821238) | FIXED (ANDROID-CI) — declared |
+| INT-081 | P2 | P7 | the e2e MinIO gave the public bucket the canned `download` policy, which grants anonymous `s3:ListBucket` as well as `s3:GetObject`, so anyone could list every public key, a draft facility's photo included, defeating the unguessable keys DECISION-036 relies on. Found preparing the first device session: an anonymous GET of the bucket returned the listing | FIXED (DEVICE-SMOKE) — a policy of `s3:GetObject` on objects only; listing refused with 403, checked by the e2e runner and the local stack; the production origin must do the same (DECISION-036) |
 
 ## Rules
 
 - An identifier is never reused, even after the defect is fixed or retired.
 - A defect is registered here before it is referenced anywhere else.
-- The next free identifier is `INT-081`.
+- The next free identifier is `INT-082`.

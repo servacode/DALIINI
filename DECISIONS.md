@@ -557,7 +557,7 @@ The authoritative source for admin authorization remains the project RBAC. `user
 
 **Alternatives:** Pre-signed URLs with a long expiry, which still expire and differ on every read, and so defeat any cache. Making the whole bucket public was ruled out by the batch instruction.
 
-**Impact:** A photo uploaded to a draft is readable by anyone who has its address before the facility is approved. The address is not guessable and is shown only to the owner. Production needs a public-read bucket or CDN origin for `directory-public`; the golden path proves the policy on MinIO.
+**Impact:** A photo uploaded to a draft is readable by anyone who has its address before the facility is approved. The address is not guessable and is shown only to the owner. Production needs a public-read bucket or CDN origin for `directory-public` that grants object reads only, never listing: listing would expose every key, a draft's photo included (INT-081). The golden path and the local stack prove that policy on MinIO: an object reads 200 and an anonymous listing is refused with 403.
 
 ---
 
