@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.model.AvailabilityLabel
+import com.servacode.directory.core.model.DistanceText
 import com.servacode.directory.core.model.FacilitySummary
 
 @Composable
@@ -143,7 +144,7 @@ private fun FacilityRow(value: FacilitySummary, onFacility: (String) -> Unit) {
     ) {
         Text(value.nameAr, style = MaterialTheme.typography.titleMedium)
         val status = AvailabilityLabel.of(value)
-        val distance = value.distanceMeters?.let { " • ${it.toInt()} م" }.orEmpty()
+        val distance = value.distanceMeters?.let { " • " + DistanceText.of(it) }.orEmpty()
         Text(status + distance, style = MaterialTheme.typography.bodyMedium)
     }
 }

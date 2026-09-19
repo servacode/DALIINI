@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.maps.MapPoint
-import java.util.Locale
+import com.servacode.directory.core.model.DistanceText
 import kotlin.math.roundToInt
 
 @Composable
@@ -109,7 +109,7 @@ private fun NavigationProgressPanel(progress: NavigationProgress) {
                 style = MaterialTheme.typography.titleLarge,
             )
         }
-        Text("المتبقي: ${formatDistance(progress.remainingDistanceMeters)}")
+        Text("المتبقي: ${DistanceText.of(progress.remainingDistanceMeters)}")
         Text("الوقت التقريبي: ${formatDuration(progress.remainingDurationSeconds)}")
     }
 }
@@ -118,12 +118,6 @@ private fun progressOf(state: NavigationState): NavigationProgress? = when (stat
     is NavigationState.Navigating -> state.progress
     is NavigationState.Rerouting -> state.progress
     else -> null
-}
-
-private fun formatDistance(meters: Double): String = if (meters < 1_000.0) {
-    "${meters.roundToInt()} م"
-} else {
-    String.format(Locale.US, "%.1f كم", meters / 1_000.0)
 }
 
 private fun formatDuration(seconds: Double): String {

@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.model.AvailabilityLabel
+import com.servacode.directory.core.model.DistanceText
 
 @Composable
 fun DirectoryScreen(
@@ -64,7 +65,7 @@ fun DirectoryScreen(
                             Text(facility.nameAr, style = MaterialTheme.typography.titleMedium)
                             Text(facility.category.nameAr)
                             Text(AvailabilityLabel.of(facility))
-                            facility.distanceMeters?.let { Text("${it.toInt()} م") }
+                            facility.distanceMeters?.let { Text(DistanceText.of(it)) }
                         }
                     }
                     if (value.hasMore || value.moreError != null) {
