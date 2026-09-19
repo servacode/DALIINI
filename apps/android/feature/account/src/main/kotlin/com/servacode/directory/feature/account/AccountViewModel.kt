@@ -11,7 +11,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -47,7 +46,8 @@ class AccountViewModel @Inject constructor(
         // Follows the session: signing out here, or the session ending elsewhere, shows the
         // signed-out screen instead of a profile that is no longer the user's.
         viewModelScope.launch {
-            account.session.distinctUntilChanged().collect { session ->
+            // A StateFlow emits only changes already; distinctUntilChanged on it is an error.
+            account.session.collect { session ->
                 if (session == SessionState.SIGNED_IN) refresh() else _state.value = AccountUiState.SignedOut
             }
         }

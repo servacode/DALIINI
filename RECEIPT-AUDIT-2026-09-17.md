@@ -530,9 +530,10 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-068 | P1 | P5 | a verification requirement's id was declared a UUID in the owner and review contracts while the model keys it with an integer — INT-043 fixed the Admin component alone. The launch baseline configures no requirement, so nothing noticed: with the first one configured, the Android client could not decode the owner configuration and the upload serializer refused every id an owner could send, so no evidence could be uploaded. Found by the first hand-off run | FIXED (ANDROID-GOLDEN-PATH) — integer on the wire and in the contract; test over every `requirementId` component |
 | INT-069 | P3 | P15–P18 | the public, owner, navigation and live-data source qualifiers in `apps/android/scripts` still assert the pre-binding stubs — `GeneratedClientRequiredException`, `PublicCacheDataSource`, `HourDraft`, an inline user-scope check — that INT-013 and the Android binding replaced by design, so they fail on correct source | OPEN — kept out of CI rather than run and ignored; rewrite or retire them. Text qualifiers do not qualify a gate on their own |
 | INT-070 | P1 | P14 | the application and library conventions looked the version catalog up inside `dependencies { }`, where `extensions` is the dependency handler's and holds only `ExtraPropertiesExtension`, so no Android module could be configured. Added with desugaring (DECISION-033) and never compiled; found by the first real Android build (CI run 35425273117) | FIXED (ANDROID-CI) — looked up on the project |
+| INT-071 | P2 | P14 | `distinctUntilChanged()` applied to a `StateFlow` in `AccountViewModel` and `PushSetup`; kotlinx.coroutines deprecates it at error level because a StateFlow already emits only changes, so neither compiled. Android-only sources the JVM harness does not compile; found by the first real Android build (CI run 35425452454) | FIXED (ANDROID-CI) — operator removed; behaviour unchanged |
 
 ## Rules
 
 - An identifier is never reused, even after the defect is fixed or retired.
 - A defect is registered here before it is referenced anywhere else.
-- The next free identifier is `INT-071`.
+- The next free identifier is `INT-072`.

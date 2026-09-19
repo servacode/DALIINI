@@ -9,7 +9,6 @@ import com.servacode.directory.core.auth.SessionState
 import com.servacode.directory.core.network.PushAvailability
 import com.servacode.directory.core.network.PushRegistrationCoordinator
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -54,7 +53,7 @@ class PushSetup @Inject constructor(
             scope.launch { runCatching { coordinator.onTokenAvailable(token) } }
         }
         scope.launch {
-            session.state.distinctUntilChanged().collect { state ->
+            session.state.collect { state ->
                 if (state == SessionState.SIGNED_IN) runCatching { coordinator.onSignedIn() }
             }
         }
