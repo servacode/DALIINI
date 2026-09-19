@@ -2,8 +2,10 @@ package com.servacode.directory
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.Manifest
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -40,6 +42,13 @@ class DirectoryMessagingService : FirebaseMessagingService() {
         PushMessageData.from(message.data) ?: return
         val manager = NotificationManagerCompat.from(this)
         if (!manager.areNotificationsEnabled()) return
+        // From Android 13 posting needs the runtime permission; without it the notice is dropped
+        // and the update is still there the next time the app opens.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             getSystemService(NotificationManager::class.java).createNotificationChannel(
                 NotificationChannel(CHANNEL, "التحديثات", NotificationManager.IMPORTANCE_DEFAULT),
@@ -58,7 +67,11 @@ class DirectoryMessagingService : FirebaseMessagingService() {
             .setContentIntent(open)
             .setAutoCancel(true)
             .build()
-        runCatching { manager.notify(NOTICE, notice) }
+        try {
+            manager.notify(NOTICE, notice)
+        } catch (withdrawn: SecurityException) {
+            // The permission was withdrawn after the check above.
+        }
     }
 
     override fun onDestroy() {
