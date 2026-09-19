@@ -82,7 +82,9 @@ jobs:
             echo "applicationId=$(printf '%s\n' "$badging" | grep -o "^package: name='[^']*'" | cut -d"'" -f2)"
             echo "versionName=$(field versionName)"
             echo "versionCode=$(field versionCode)"
-            echo "minSdk=$(sdk sdkVersion)"
+            # aapt2 prints minSdkVersion; older tools printed sdkVersion.
+            min="$(sdk minSdkVersion)"; [ -n "$min" ] || min="$(sdk sdkVersion)"
+            echo "minSdk=$min"
             echo "targetSdk=$(sdk targetSdkVersion)"
             echo "flavor=local"
             echo "buildType=debug"
