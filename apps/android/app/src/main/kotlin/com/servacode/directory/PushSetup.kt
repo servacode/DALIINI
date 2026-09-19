@@ -6,6 +6,7 @@ import com.google.firebase.FirebaseOptions
 import com.google.firebase.messaging.FirebaseMessaging
 import com.servacode.directory.core.auth.SessionCoordinator
 import com.servacode.directory.core.auth.SessionState
+import com.servacode.directory.core.network.PushAvailability
 import com.servacode.directory.core.network.PushRegistrationCoordinator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -24,7 +25,10 @@ import javax.inject.Singleton
 class PushSetup @Inject constructor(
     private val coordinator: PushRegistrationCoordinator,
     private val session: SessionCoordinator,
-) {
+) : PushAvailability {
+    override val enabled: Boolean
+        get() = configured
+
     val configured: Boolean
         get() = listOf(
             BuildConfig.FIREBASE_PROJECT_ID,

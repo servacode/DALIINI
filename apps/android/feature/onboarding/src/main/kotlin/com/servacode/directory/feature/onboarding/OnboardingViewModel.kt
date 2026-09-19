@@ -17,6 +17,7 @@ import com.servacode.directory.core.model.OwnerFacilityDetail
 import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.network.OwnerFacilityDraftInput
 import com.servacode.directory.core.network.OwnerFacilityPatch
+import com.servacode.directory.core.network.PushAvailability
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -60,6 +61,8 @@ sealed interface OnboardingUiState {
         val form: OnboardingForm,
         val busy: Boolean = false,
         val message: String? = null,
+        /** Set once, on the submission that just succeeded; the screen may then ask for notifications. */
+        val justSubmitted: Boolean = false,
     ) : OnboardingUiState
     data object Error : OnboardingUiState
 }
@@ -72,7 +75,12 @@ class OnboardingViewModel @Inject constructor(
     private val preferences: DirectoryPreferencesStore,
     private val locationProvider: LocationProvider,
     private val uploadReader: OwnerUploadReader,
+    private val push: PushAvailability,
 ) : ViewModel() {
+    /** Whether this build can receive push, and so whether a notification permission is of any use. */
+    val pushEnabled: Boolean
+        get() = push.enabled
+
     private val route = savedStateHandle.toRoute<DirectoryRoute.Onboarding>()
     private val _state = MutableStateFlow<OnboardingUiState>(OnboardingUiState.Loading)
     val state: StateFlow<OnboardingUiState> = _state.asStateFlow()
@@ -285,6 +293,7 @@ class OnboardingViewModel @Inject constructor(
                             step = OnboardingStep.STATUS,
                             busy = false,
                             message = "تم إرسال الطلب للمراجعة",
+                            justSubmitted = true,
                         )
                     }
                 }
@@ -299,6 +308,8 @@ class OnboardingViewModel @Inject constructor(
             }
         }
     }
+
+    fun notificationPromptHandled() = mutate { it.copy(justSubmitted = false) }
 
     private fun mutate(change: (OnboardingUiState.Content) -> OnboardingUiState.Content) {
         val current = _state.value as? OnboardingUiState.Content ?: return

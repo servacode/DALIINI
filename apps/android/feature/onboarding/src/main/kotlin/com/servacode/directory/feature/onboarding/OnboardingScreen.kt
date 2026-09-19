@@ -1,6 +1,8 @@
 package com.servacode.directory.feature.onboarding
 
 import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,17 +20,20 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.model.BusinessHour
+import com.servacode.directory.core.network.NotificationPermissionPolicy
 
 @Composable
 fun OnboardingScreen(
@@ -45,6 +50,23 @@ fun OnboardingScreen(
         uri?.let(viewModel::uploadPublicImage)
     }
     var evidenceRequirementId by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    // Either answer is fine: a refusal only means the review decision arrives without a notice.
+    val notificationPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { }
+    val justSubmitted = (state as? OnboardingUiState.Content)?.justSubmitted == true
+    LaunchedEffect(justSubmitted) {
+        if (!justSubmitted) return@LaunchedEffect
+        viewModel.notificationPromptHandled()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val permission = Manifest.permission.POST_NOTIFICATIONS
+            val granted = context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
+            if (NotificationPermissionPolicy.shouldRequest(Build.VERSION.SDK_INT, granted, viewModel.pushEnabled)) {
+                notificationPermission.launch(permission)
+            }
+        }
+    }
     val evidencePicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         val requirementId = evidenceRequirementId
         if (uri != null && requirementId != null) viewModel.uploadEvidence(requirementId, uri)
