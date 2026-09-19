@@ -8,6 +8,11 @@ import androidx.navigation.toRoute
 import com.servacode.directory.core.datastore.DirectoryPreferencesStore
 import com.servacode.directory.core.location.LocationProvider
 import com.servacode.directory.core.location.LocationResult
+import com.servacode.directory.core.location.fixWithoutPrompt
+import com.servacode.directory.core.maps.MapCamera
+import com.servacode.directory.core.maps.MapCameraPolicy
+import com.servacode.directory.core.maps.MapPoint
+import com.servacode.directory.core.maps.toMapPoint
 import com.servacode.directory.core.model.AppErrorText
 import com.servacode.directory.core.model.BusinessHour
 import com.servacode.directory.core.model.DirectoryRoute
@@ -63,6 +68,11 @@ sealed interface OnboardingUiState {
         val message: String? = null,
         /** Set once, on the submission that just succeeded; the screen may then ask for notifications. */
         val justSubmitted: Boolean = false,
+        /** Where the location picker looks; null until known, and the picker waits for it. */
+        val pickerCamera: MapCamera? = null,
+        val pickerReady: Boolean = false,
+        /** The point the owner marked and has not saved yet. */
+        val pendingPoint: MapPoint? = null,
     ) : OnboardingUiState
     data object Error : OnboardingUiState
 }
@@ -118,6 +128,11 @@ class OnboardingViewModel @Inject constructor(
                     addressAr = existing?.addressAr.orEmpty(),
                 ),
             )
+            val pickerCamera = MapCameraPolicy.forPicker(
+                user = { locationProvider.fixWithoutPrompt()?.let { MapPoint(it.latitude, it.longitude) } },
+                province = { config.province.mapCenter?.toMapPoint() },
+            )
+            mutate { it.copy(pickerCamera = pickerCamera, pickerReady = true) }
         }
     }
 
@@ -191,32 +206,39 @@ class OnboardingViewModel @Inject constructor(
             }
     }
 
-    fun selectMapPoint(latitude: Double, longitude: Double) {
+    /** A tap on the picker marks the point; nothing is saved until [confirmMapPoint]. */
+    fun markMapPoint(point: MapPoint) = mutate { it.copy(pendingPoint = point, message = null) }
+
+    /** Saves the point the owner marked and can see on the map. */
+    fun confirmMapPoint() {
         val content = _state.value as? OnboardingUiState.Content ?: return
         val draft = content.draft ?: return
+        val point = content.pendingPoint ?: return
         viewModelScope.launch {
-            save.location(draft.summary.id, latitude, longitude).onSuccess { updated ->
-                mutate { it.copy(draft = updated, step = OnboardingStep.HOURS, message = null) }
+            save.location(draft.summary.id, point.latitude, point.longitude).onSuccess { updated ->
+                mutate {
+                    it.copy(draft = updated, pendingPoint = null, step = OnboardingStep.HOURS, message = null)
+                }
             }.onFailure { failure ->
                 mutate { it.copy(message = "تعذر حفظ الموقع: " + AppErrorText.of(failure.toAppError())) }
             }
         }
     }
 
+    /** Marks where the owner is and brings the picker there; saving stays their decision. */
     fun useCurrentLocation() {
         viewModelScope.launch {
-            val current = _state.value as? OnboardingUiState.Content ?: return@launch
-            val draft = current.draft ?: return@launch
             when (val result = locationProvider.current()) {
-                is LocationResult.Available -> save.location(
-                    draft.summary.id,
-                    result.fix.latitude,
-                    result.fix.longitude,
-                ).onSuccess { updated ->
-                    mutate { it.copy(draft = updated, step = OnboardingStep.HOURS, message = null) }
-                }.onFailure { failure ->
-                mutate { it.copy(message = "تعذر حفظ الموقع: " + AppErrorText.of(failure.toAppError())) }
-            }
+                is LocationResult.Available -> {
+                    val point = MapPoint(result.fix.latitude, result.fix.longitude)
+                    mutate {
+                        it.copy(
+                            pendingPoint = point,
+                            pickerCamera = MapCamera(point, MapCameraPolicy.FACILITY_ZOOM),
+                            message = null,
+                        )
+                    }
+                }
                 LocationResult.PermissionDenied -> mutate { it.copy(message = "يلزم السماح بالموقع") }
                 LocationResult.Unavailable -> mutate { it.copy(message = "تعذر تحديد الموقع") }
             }

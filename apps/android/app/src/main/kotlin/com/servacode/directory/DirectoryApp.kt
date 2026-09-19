@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.servacode.directory.core.auth.SessionState
 import com.servacode.directory.core.model.DirectoryRoute
+import com.servacode.directory.core.model.MapNavigation
 import com.servacode.directory.feature.auth.LoginScreen
 import com.servacode.directory.feature.auth.RecoveryScreen
 import com.servacode.directory.feature.auth.RegisterScreen
@@ -68,7 +69,7 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onSearch = { navController.navigate(DirectoryRoute.Search) },
                 onCategory = { navController.navigate(DirectoryRoute.Directory(it)) },
                 onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
-                onMap = { navController.navigate(DirectoryRoute.Map) },
+                onMap = { navController.navigate(DirectoryRoute.Map()) },
                 onAccount = { navController.navigate(DirectoryRoute.Account) },
             )
         }
@@ -92,9 +93,16 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onProvince = { navController.navigate(DirectoryRoute.ProvincePicker) },
             )
         }
-        composable<DirectoryRoute.FacilityDetailRoute> {
+        composable<DirectoryRoute.FacilityDetailRoute> { backStackEntry ->
+            val facilityId = backStackEntry.toRoute<DirectoryRoute.FacilityDetailRoute>().id
             FacilityScreen(
-                onMap = { navController.navigate(DirectoryRoute.Map) },
+                onMap = {
+                    // One map at most: any map already on the stack gives way to this one.
+                    navController.navigate(MapNavigation.mapFor(facilityId)) {
+                        popUpTo<DirectoryRoute.Map> { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
                 onDirections = { latitude, longitude ->
                     navController.navigate(DirectoryRoute.BuiltInNavigation(latitude, longitude))
                 },
@@ -105,7 +113,16 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
         composable<DirectoryRoute.Map> {
             MapScreen(
                 styleUrl = BuildConfig.MAP_STYLE_URL,
-                onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
+                onFacility = { id ->
+                    val below = navController.previousBackStackEntry
+                        ?.takeIf { it.destination.hasRoute<DirectoryRoute.FacilityDetailRoute>() }
+                        ?.toRoute<DirectoryRoute.FacilityDetailRoute>()
+                    if (MapNavigation.returnsToDetail(below, id)) {
+                        navController.popBackStack()
+                    } else {
+                        navController.navigate(DirectoryRoute.FacilityDetailRoute(id)) { launchSingleTop = true }
+                    }
+                },
             )
         }
         composable<DirectoryRoute.BuiltInNavigation> { backStackEntry ->

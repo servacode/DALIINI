@@ -9,7 +9,8 @@ sealed interface DirectoryRoute {
     @Serializable data object Search : DirectoryRoute
     @Serializable data class Directory(val categoryId: String) : DirectoryRoute
     @Serializable data class FacilityDetailRoute(val id: String) : DirectoryRoute
-    @Serializable data object Map : DirectoryRoute
+    /** The public map; opened for one facility, it centres on it and shows it selected. */
+    @Serializable data class Map(val focusFacilityId: String? = null) : DirectoryRoute
     @Serializable data class BuiltInNavigation(val latitude: Double, val longitude: Double) : DirectoryRoute
     @Serializable data object Login : DirectoryRoute
     @Serializable data object Register : DirectoryRoute

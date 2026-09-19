@@ -25,6 +25,8 @@ val androidOnly = listOf(
     "**/core/datastore/PreferencesRepository.kt",
     "**/core/location/AndroidLocationProvider.kt",
     "**/core/location/LocationModule.kt",
+    "**/core/maps/MapLibreController.kt",
+    "**/core/maps/MapViewLifecycle.kt",
     "**/*Screen.kt",
     "**/*Screens.kt",
     "**/*ViewModel.kt",
@@ -43,7 +45,7 @@ val features = listOf(
 sourceSets {
     main {
         kotlin.srcDir(generatedClient)
-        for (core in listOf("model", "observability", "auth", "network", "database", "datastore", "location")) {
+        for (core in listOf("model", "observability", "auth", "network", "database", "datastore", "location", "maps")) {
             kotlin.srcDir(android.resolve("core/$core/src/main/kotlin"))
         }
         for (feature in features) {
@@ -57,6 +59,7 @@ sourceSets {
         kotlin.srcDir(android.resolve("core/network/src/test/kotlin"))
         kotlin.srcDir(android.resolve("core/database/src/test/kotlin"))
         kotlin.srcDir(android.resolve("core/model/src/test/kotlin"))
+        kotlin.srcDir(android.resolve("core/maps/src/test/kotlin"))
         for (feature in features) {
             kotlin.srcDir(android.resolve("feature/$feature/src/test/kotlin"))
         }

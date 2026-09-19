@@ -21,3 +21,10 @@ interface LocationProvider {
     fun lastKnown(): LocationFix?
     fun updates(minTimeMillis: Long = 1_000L): Flow<LocationResult>
 }
+
+/**
+ * The position the app may already read, for placing a map: the last fix, else a fresh one
+ * within [timeoutMillis]. Never asks for the permission; without it the answer is null.
+ */
+suspend fun LocationProvider.fixWithoutPrompt(timeoutMillis: Long = 3_000L): LocationFix? =
+    lastKnown() ?: (current(timeoutMillis) as? LocationResult.Available)?.fix

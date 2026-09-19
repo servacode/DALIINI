@@ -134,16 +134,22 @@ fun OnboardingScreen(
                 OnboardingStep.MAP_POINT -> item {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("حدد نقطة المنشأة على الخريطة أو استخدم موقعك الحالي.")
-                        OnboardingMapPicker(
-                            styleUrl = styleUrl,
-                            current = value.draft?.latitude?.let { latitude ->
-                                value.draft.longitude?.let { longitude -> MapPoint(latitude, longitude) }
-                            },
-                            onSelected = { point ->
-                                viewModel.selectMapPoint(point.latitude, point.longitude)
-                            },
-                        )
+                        val saved = value.draft?.latitude?.let { latitude ->
+                            value.draft.longitude?.let { longitude -> MapPoint(latitude, longitude) }
+                        }
+                        if (value.pickerReady) {
+                            OnboardingMapPicker(
+                                styleUrl = styleUrl,
+                                camera = value.pickerCamera,
+                                point = value.pendingPoint ?: saved,
+                                onTap = viewModel::markMapPoint,
+                            )
+                        }
                         value.draft?.latitude?.let { Text("الموقع الحالي: $it, ${value.draft.longitude}") }
+                        value.pendingPoint?.let { point ->
+                            Text("النقطة المختارة: ${point.latitude}, ${point.longitude}")
+                            Button(onClick = viewModel::confirmMapPoint) { Text("حفظ هذا الموقع") }
+                        }
                         Button(
                             onClick = {
                                 locationPermission.launch(
