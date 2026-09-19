@@ -541,9 +541,18 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-079 | P3 | P18 | `DirectoryMessagingService` posted a notice without checking POST_NOTIFICATIONS, relying on `runCatching` to swallow the refusal. Found by Android lint (CI run 35429821238) | FIXED (ANDROID-CI) — explicit check from Android 13; a withdrawal handled as `SecurityException` |
 | INT-080 | P3 | P14 | `core:database` and `feature:bootstrap` unit tests use `kotlinx.coroutines.test` without declaring it; the JVM harness supplies it to every test, which hid the omission. Found by the first real Android unit test run (CI run 35429821238) | FIXED (ANDROID-CI) — declared |
 | INT-081 | P2 | P7 | the e2e MinIO gave the public bucket the canned `download` policy, which grants anonymous `s3:ListBucket` as well as `s3:GetObject`, so anyone could list every public key, a draft facility's photo included, defeating the unguessable keys DECISION-036 relies on. Found preparing the first device session: an anonymous GET of the bucket returned the listing | FIXED (DEVICE-SMOKE) — a policy of `s3:GetObject` on objects only; listing refused with 403, checked by the e2e runner and the local stack; the production origin must do the same (DECISION-036) |
+| INT-082 | P2 | P16 | the owner screens showed backend codes to the user — `DRAFT`, `ACTIVE`, `COMPLETE_AND_SUBMIT`, `OWNER` — instead of Arabic labels. Found in the first device smoke | OPEN (DEVICE-SMOKE) — a central domain-to-label mapping, with a safe fallback |
+| INT-083 | P2 | P16 | the duty-shift and temporary-closure forms asked the owner to type start and end times as epoch milliseconds (four fields). Found in the first device smoke | OPEN (DEVICE-SMOKE) — date and time pickers in Asia/Damascus behind one conversion boundary |
+| INT-084 | P3 | P16 | adding a facility manager requires typing the manager's raw account id. Found in the first device smoke | OPEN (DEVICE-SMOKE) |
+| INT-085 | P3 | P15 | distances were truncated (`toInt()`) rather than rounded, never switched to kilometres (`7758 م`), and were formatted separately in two screens. Found in the first device smoke | OPEN (DEVICE-SMOKE) — one formatter |
+| INT-086 | P3 | P15 | the home screen titled its list "الأقرب إليك" even when no location was available and the list was province-wide. Found in the first device smoke | OPEN (DEVICE-SMOKE) |
+| INT-087 | P2 | P17 | local builds carried the placeholder map style URL, so the map screen and the onboarding point picker refused to render. Found in the first device smoke | OPEN (DEVICE-SMOKE) — local builds use OpenFreeMap Liberty; staging and production stay undecided |
+| INT-088 | P3 | P14 | Firebase's own content provider tried to initialise FirebaseApp on every start of a build with no Firebase configuration ("Default FirebaseApp failed to initialize"). Found in the first device smoke | OPEN (DEVICE-SMOKE) |
+| INT-089 | P3 | P14 | CloseGuard reported "A resource failed to call release" four times during the device golden path: an Android resource was never released. Found in the first device smoke | OPEN (DEVICE-SMOKE) — trace with StrictMode |
+| INT-090 | P3 | P14 | predictive back was not enabled (`OnBackInvokedCallback is not enabled`) while targetSdk is 36. Found in the first device smoke | OPEN (DEVICE-SMOKE) |
 
 ## Rules
 
 - An identifier is never reused, even after the defect is fixed or retired.
 - A defect is registered here before it is referenced anywhere else.
-- The next free identifier is `INT-082`.
+- The next free identifier is `INT-091`.
