@@ -1,0 +1,81 @@
+ANDROID BUILD VERIFICATION ON GITHUB ACTIONS — 2026-09-19
+Repository: servacode/directory-platform-v3 (PRIVATE; created empty for this: no README,
+.gitignore, licence or initial commit). Branch: android-build-verification-20260919. main has
+not been pushed.
+
+This is the ANDROID GRADLE VERIFICATION of the app itself (AGP 9.4.0). It is separate from
+apps/android/jvm-verification, which proves portable/data-layer integration only and is not
+run in this workflow.
+
+1. Remote safety
+  servacode/directory-platform-v2: does not exist for the authenticated account (GraphQL and
+  REST 404); the account belongs to no organisation. servacode/directory (PUBLIC) was
+  fetched read-only: one commit b8baa97 "Empty repository", no common history; not used.
+  directory-platform-v3 before the first push: private:true, size 0, 0 branches, contents
+  "This repository is empty"; git ls-remote returned no refs. Stale local tracking refs from
+  the earlier bundle recovery (origin/main at 287accb) were pruned locally. Full history
+  secret scan before pushing (87 commits): 0 matches; no keystore, .env or
+  google-services.json tracked. Only the branch was pushed; never --force.
+
+2. Workflow: .github/workflows/android-build-verification.yml
+  ubuntu-24.04 runner image 20260828.587, Temurin 21.0.12.1, Gradle 9.6.0 (wrapper validated
+  against gradle.org), Kotlin 2.3.21, Android SDK platforms 34-37.2 and build-tools up to 37.
+  Repositories: Google Maven and Maven Central only, as settings.gradle.kts declares.
+  Google Maven from the runner:
+    curl -I .../com/android/tools/build/gradle/9.4.0/gradle-9.4.0.pom  ->  HTTP/2 200
+  Local flavour API http://localhost:8000/ and socket ws://localhost:8000/ws/v1/directory/
+  through the environment, for a device reached with adb reverse (no machine address).
+
+3. Runs
+  35425273117  c913069  Gate 1 FAIL  INT-070 version catalog looked up on the dependency handler
+  35425452454  cae014b  Gate 1 FAIL  INT-071 StateFlow.distinctUntilChanged (error level);
+                                     INT-072 AccountViewModel.deleteAccount() called itself
+  35425779550  e99472f  Gate 1 FAIL  INT-073 compileSdk 36 < 37 required by 21 pinned libraries;
+                                     INT-074 feature:home missing activity-compose;
+                                     INT-075 public property exposing internal type;
+                                     INT-076 stepLabel deleted by 474cbd5
+  35429821238  9341a19  Gate 1 PASS  Gate 2 FAIL (INT-080 coroutines-test undeclared)
+                                     Gate 3 FAIL (INT-077, INT-078, INT-079 MissingPermission)
+                                     Gate 4 FAIL (qualifier still required compileSdk 36)
+  35430444899  6c6f31c  Gates 1-3 PASS  Gate 4 FAIL (INT-014: binary build XML read as text)
+  35430793735  dc62840  ALL PASS  https://github.com/servacode/directory-platform-v3/actions/runs/35430793735
+
+4. Final run 35430793735 (dc628405df2c4a632c0f0ea7d5fc70fb125be750)
+  Gate 1  ./gradlew :app:assembleLocalDebug --continue            PASS
+  Gate 2  ./gradlew testDebugUnitTest :app:testLocalDebugUnitTest  PASS  104 tests, 16 modules,
+          0 failures, 0 skipped (core/network 48 incl. NotificationPermissionPolicyTest 4/4)
+  Gate 3  ./gradlew lintDebug :app:lintLocalDebug                  PASS  0 errors; 23 warnings:
+          NewerVersionAvailable 11, AndroidGradlePluginVersion 3, GradleDependency 3, UseKtx 3,
+          DataExtractionRules 1, MissingApplicationIcon 1, EmptySuperCall 1
+  Gate 4  qualify-source.py (27 modules) PASS; qualify-play-rc-source.py 7/7 PASS
+  Compose tests that need no device: none exist in the project.
+  Instrumentation, emulator, device: not run.
+
+5. APK — artifact "directory-local-debug-apk" (id 10580687264, 35,208,830 bytes zipped,
+   expires 2026-10-19T08:01:10Z)
+  file in artifact   app-local-debug.apk (+ apk-metadata.txt)
+  built at           apps/android/app/build/outputs/apk/local/debug/app-local-debug.apk
+  SHA-256            a6f36ac82ecf3cc5fe51806214011e238578e8ff59775678bcf15799a78952c9
+                     (recomputed locally after download: identical)
+  size               66,710,158 bytes
+  applicationId      com.servacode.directory.local
+  versionName        0.1.0-local        versionCode 1
+  minSdk 24 · targetSdk 36 · compileSdk 37 · flavor local · buildType debug · label الدليل
+
+6. APK security scan (aapt2 37.0.0 + byte search of all dex and resources)
+  No google-services.json, keystore, .p12, .pem, .env or local.properties packaged.
+  0 occurrences: fixture passwords (4), fixture phone numbers, development storage secret,
+  Google API key / AWS key / GitHub token shapes, private key blocks, the private bucket
+  name, backend secret names, LAN addresses. Firebase BuildConfig fields present and empty.
+  debuggable=true (debug build), allowBackup=false, usesCleartextTraffic=false with a
+  network security config that allows cleartext only to localhost and 10.0.2.2.
+  Permissions: INTERNET, ACCESS_NETWORK_STATE, ACCESS_COARSE/FINE_LOCATION,
+  POST_NOTIFICATIONS, plus ACCESS_WIFI_STATE, WAKE_LOCK, c2dm RECEIVE and the dynamic-receiver
+  permission from dependencies (Firebase, MapLibre). No background location.
+  Correction: the APK of run 35429821238, built before INT-077's fix, already carried
+  ACCESS_NETWORK_STATE through a dependency; INT-077's impact is recorded accordingly.
+
+7. Not verified
+  The app has not been launched on any emulator or device: DEVICE_VERIFIED = NOT_RUN.
+  FCM_PROVIDER_DELIVERY = EXTERNAL_NOT_VERIFIED. The notification permission dialog only
+  appears in a build with a Firebase configuration, which none has.

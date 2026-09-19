@@ -50,10 +50,10 @@ reason, NETWORK_ENVIRONMENT_FAILURE; P14 to P18 stay `SOURCE_IMPLEMENTED`.
 
 ## Next executable phase
 
-Full Android Device QA + Staging Qualification. It needs the Android app built first, which
-needs a network that reaches Google Maven or a trusted CI runner. On such a network, run
-`./gradlew :app:assembleLocalDebug`, then lint, unit and Compose tests, then the device steps
-in `docs/runbooks/android-local-networking.md`.
+The owner's first device smoke with the CI APK (run 35430793735): the app starts, reaches the
+local backend over `adb reverse`, shows Raqqa and pharmacies, lists and opens a facility with
+its photo, and signs in and out. Full Android Device QA follows only if that passes. The app
+now builds on GitHub Actions (`artifacts/evidence/android-ci-build-20260919.txt`).
 
 ## Gate status
 

@@ -153,6 +153,12 @@ The full receipt and verification audit is recorded in `RECEIPT-AUDIT-2026-09-17
 | 2026-09-19 | Admin regression | db7ac98 | Playwright + Vitest + tsc + eslint | `scripts/e2e-admin.sh` | **PASS** — 31 passed, 1 skipped (the hand-off spec runs in the Android runner), 71/71, exit 0 | `artifacts/evidence/android-golden-path-20260919.txt` |
 | 2026-09-19 | Quality debt | db7ac98 | ruff, mypy in the backend container | — | ruff 99, unchanged; mypy 645 from 727 — reduced, none added | `artifacts/evidence/android-golden-path-20260919.txt` |
 | 2026-09-19 | FCM delivery | db7ac98 | — | — | EXTERNAL_NOT_VERIFIED — no Firebase project exists | `artifacts/evidence/android-golden-path-20260919.txt` |
+| 2026-09-19 | Remote safety | c913069 | GitHub | read-only fetch of the candidates; new private repository verified empty; history secret scan | `servacode/directory-platform-v2` does not exist; `servacode/directory` is public and unrelated, not used; `directory-platform-v3` created private and empty; only the verification branch pushed | `artifacts/evidence/android-ci-build-20260919.txt` |
+| 2026-09-19 | Android app build | dc62840 | GitHub Actions ubuntu-24.04, JDK 21, Gradle 9.6.0, Google Maven 200 | `./gradlew :app:assembleLocalDebug` | **PASS** on run 35430793735, after three failing runs that found INT-070 to INT-076 | `artifacts/evidence/android-ci-build-20260919.txt` |
+| 2026-09-19 | Android unit tests | dc62840 | same | `./gradlew testDebugUnitTest :app:testLocalDebugUnitTest` | **PASS** — 104 tests in 16 modules (INT-080 fixed on the way) | `artifacts/evidence/android-ci-build-20260919.txt` |
+| 2026-09-19 | Android lint | dc62840 | same | `./gradlew lintDebug :app:lintLocalDebug` | **PASS** — 0 errors, 23 warnings (INT-077 to INT-079 fixed on the way) | `artifacts/evidence/android-ci-build-20260919.txt` |
+| 2026-09-19 | APK | dc62840 | artifact `directory-local-debug-apk` | aapt2 + SHA-256 + byte scan | `app-local-debug.apk`, SHA-256 a6f36ac82ecf3cc5fe51806214011e238578e8ff59775678bcf15799a78952c9, 66,710,158 bytes, com.servacode.directory.local 0.1.0-local (1), min 24 / target 36; no secret or fixture credential | `artifacts/evidence/android-ci-build-20260919.txt` |
+| 2026-09-19 | Android device | — | — | — | NOT_RUN | `artifacts/evidence/android-ci-build-20260919.txt` |
 
 `P10 CONTRACT PASS` is achieved for schema generation, contract description, committed
 canonical artefacts, the drift gate, contract tests and runtime conformance. Kotlin client

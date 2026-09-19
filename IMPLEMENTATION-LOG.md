@@ -1493,3 +1493,39 @@ requirement. The fixtures now add one test requirement, to the test database onl
 
 Evidence: `artifacts/evidence/android-golden-path-20260919.txt`,
 `artifacts/evidence/google-maven-diagnosis-20260919.txt`.
+
+## ANDROID BUILD VERIFICATION ON GITHUB ACTIONS — 2026-09-19
+
+The owner chose GitHub Actions to reach Google Maven. `servacode/directory-platform-v2` does
+not exist, and the only candidate, `servacode/directory`, is public and has an unrelated
+history, so nothing was pushed until the owner chose a new repository instead:
+`servacode/directory-platform-v3`, private and empty. Only the branch
+`android-build-verification-20260919` is pushed.
+
+The first real build of the Android app took six runs. Every failure was a defect in code
+that had never been compiled for Android:
+- The conventions looked the version catalog up on the dependency handler (INT-070).
+- A StateFlow was de-duplicated, which the library refuses (INT-071).
+- Account deletion called itself instead of its use case (INT-072).
+- The pinned libraries need compileSdk 37, while targetSdk stays 36 (INT-073, DECISION-040).
+- A module lacked a dependency it used (INT-074).
+- A public property exposed an internal type (INT-075).
+- A helper had been deleted while still in use (INT-076).
+- Lint found permissions declared nowhere or checked invisibly (INT-077 to INT-079).
+- Two test modules lacked coroutines-test (INT-080).
+- The P14 qualifier read binary build output as text (INT-014).
+
+The last run passes every gate:
+- assemble;
+- 104 Android unit tests;
+- lint with no errors;
+- both current qualifiers.
+
+The APK carries no secret and no fixture credential. POST_NOTIFICATIONS is requested only
+after an owner submits a facility for review, and only in a build that can receive push. It
+compiles, and its policy is tested.
+
+Not verified: the app has not been launched anywhere. The next step is the owner's device
+smoke over adb reverse.
+
+Evidence: `artifacts/evidence/android-ci-build-20260919.txt`.

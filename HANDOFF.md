@@ -688,10 +688,19 @@ and permanent public media (INT-061, INT-065). The hand-off runs green end to en
 INT-066, INT-067 and INT-068. Statuses: P13 `CONNECTED_VERIFIED`, not raised; P14 to P18
 `SOURCE_IMPLEMENTED`. Evidence: `artifacts/evidence/android-golden-path-20260919.txt`.
 
+## ANDROID CI BUILD — 2026-09-19
+
+The app builds on GitHub Actions in the private `servacode/directory-platform-v3`, branch
+`android-build-verification-20260919` (main not pushed). All four gates pass: assemble, 104
+unit tests, lint and qualifiers. The APK is the artifact `directory-local-debug-apk` of run
+35430793735, built for a phone reached with `adb reverse`. Eleven build defects were fixed:
+INT-070 to INT-080, plus INT-014 in the P14 qualifier. Evidence:
+`artifacts/evidence/android-ci-build-20260919.txt`.
+
 ## NEXT
 
-Full Android Device QA + Staging Qualification. It cannot start until the Android app builds,
-and that needs a network that reaches Google Maven or a trusted CI runner, both of which are
-the owner's to provide. On such a network, run `./gradlew :app:assembleLocalDebug` first, then
-lint, unit and Compose tests, then follow `docs/runbooks/android-local-networking.md` for a
-device.
+The owner's first device smoke: install the APK on a phone over USB, reach the local backend
+and MinIO through `adb reverse` (`docs/runbooks/android-local-networking.md`), and use the
+local Admin from the laptop. The backend's public media base must be
+`http://localhost:9000/directory-public` for photos to load on the phone. Full Device QA,
+staging and Google Play come after, and none has started.
