@@ -41,6 +41,16 @@ val localRealtimeWebSocketUrl = providers.gradleProperty("DIRECTORY_LOCAL_REALTI
     .orElse(providers.environmentVariable("DIRECTORY_LOCAL_REALTIME_WS_URL"))
     .orElse("ws://10.0.2.2:8000/ws/v1/directory/")
 
+// Firebase client configuration for push. Never committed: it comes from Gradle properties or
+// the environment, and when it is absent the app runs with push off.
+fun firebase(name: String) = providers.gradleProperty(name)
+    .orElse(providers.environmentVariable(name))
+    .orElse("")
+val firebaseProjectId = firebase("DIRECTORY_FIREBASE_PROJECT_ID")
+val firebaseApplicationId = firebase("DIRECTORY_FIREBASE_APPLICATION_ID")
+val firebaseApiKey = firebase("DIRECTORY_FIREBASE_API_KEY")
+val firebaseSenderId = firebase("DIRECTORY_FIREBASE_SENDER_ID")
+
 val uploadKeystorePath = providers.environmentVariable("ANDROID_UPLOAD_KEYSTORE_PATH")
 val uploadKeyAlias = providers.environmentVariable("ANDROID_UPLOAD_KEY_ALIAS")
 val uploadStorePassword = providers.environmentVariable("ANDROID_UPLOAD_STORE_PASSWORD")
@@ -64,6 +74,10 @@ android {
         buildConfigField("String", "ROUTING_BASE_URL", "\"${routingBaseUrl.get()}\"")
         buildConfigField("String", "GEOCODING_BASE_URL", "\"${geocodingBaseUrl.get()}\"")
         buildConfigField("String", "GEOCODING_USER_AGENT", "\"${geocodingUserAgent.get()}\"")
+        buildConfigField("String", "FIREBASE_PROJECT_ID", "\"${firebaseProjectId.get()}\"")
+        buildConfigField("String", "FIREBASE_APPLICATION_ID", "\"${firebaseApplicationId.get()}\"")
+        buildConfigField("String", "FIREBASE_API_KEY", "\"${firebaseApiKey.get()}\"")
+        buildConfigField("String", "FIREBASE_SENDER_ID", "\"${firebaseSenderId.get()}\"")
     }
 
     // Where the app finds its backend. Only `local` may use cleartext, and only towards the
@@ -139,6 +153,7 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.material3)
     implementation(libs.maplibre.android)
+    implementation(libs.firebase.messaging)
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(libs.junit)
 }
