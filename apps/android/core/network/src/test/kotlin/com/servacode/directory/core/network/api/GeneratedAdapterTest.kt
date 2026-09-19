@@ -247,6 +247,20 @@ class GeneratedAdapterTest {
         assertTrue(body.contains("\"startsAt\":\"2026-09-20T00:00Z\"") || body.contains("2026-09-20T00:00:00Z"))
     }
 
+    @Test fun `a closure the backend stored without a reason arrives with none`() = runTest {
+        respond(
+            """{"items":[
+            {"id":"$FACILITY","startsAt":"2026-09-20T05:00:00Z","endsAt":"2026-09-20T13:00:00Z","reason":""},
+            {"id":"$FACILITY","startsAt":"2026-09-20T05:00:00Z","endsAt":"2026-09-20T13:00:00Z","reason":"   "},
+            {"id":"$FACILITY","startsAt":"2026-09-20T05:00:00Z","endsAt":"2026-09-20T13:00:00Z","reason":null},
+            {"id":"$FACILITY","startsAt":"2026-09-20T05:00:00Z","endsAt":"2026-09-20T13:00:00Z","reason":"صيانة"}]}""",
+        )
+
+        val reasons = ownerApi.temporaryClosures(FACILITY).map { it.reason }
+
+        assertEquals(listOf(null, null, null, "صيانة"), reasons)
+    }
+
     @Test fun `owner facilities map status and a missing required action`() = runTest {
         respond(
             """{"items":[{"id":"$FACILITY","nameAr":"صيدلية","category":{"id":"$PHARMACY","nameAr":"صيدلية"},

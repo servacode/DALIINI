@@ -401,7 +401,8 @@ internal fun WireTemporaryClosure.toDomain() = TemporaryClosure(
     id = id.toString(),
     startsAtEpochMillis = startsAt.toEpochMillis(),
     endsAtEpochMillis = endsAt.toEpochMillis(),
-    reason = reason,
+    // The backend stores an omitted reason as "": in the app, no reason is null.
+    reason = reason?.trim()?.takeIf { it.isNotEmpty() },
 )
 
 internal fun WireDutyShift.toDomain() = DutyShift(

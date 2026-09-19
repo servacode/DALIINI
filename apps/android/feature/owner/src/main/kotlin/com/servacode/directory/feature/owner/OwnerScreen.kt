@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DateTimeField
-import com.servacode.directory.core.model.DamascusTime
+import com.servacode.directory.core.model.ClosureText
 import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.model.OwnerLabels
 
@@ -126,10 +126,7 @@ fun ManageFacilityScreen(
                 ) { Text("إضافة إغلاق مؤقت") }
                 value.closures.forEach { closure ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(
-                            (closure.reason ?: "إغلاق مؤقت") + " • " +
-                                DamascusTime.period(closure.startsAtEpochMillis, closure.endsAtEpochMillis),
-                        )
+                        Text(ClosureText.of(closure))
                         OutlinedButton(
                             onClick = { viewModel.deleteTemporaryClosure(closure.id) },
                         ) { Text("حذف") }
