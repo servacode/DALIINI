@@ -135,6 +135,7 @@ SPECTACULAR_SETTINGS = {
         "DependencyConfiguredEnum": "core.enums.DEPENDENCY_CONFIGURED",
         "DatabaseHealthEnum": "core.enums.DATABASE_HEALTH",
         "OwnerRequiredActionEnum": "core.enums.OWNER_REQUIRED_ACTION",
+        "PushPlatformEnum": "notifications.models.DevicePushToken.Platform",
     },
     # A nullable choice field is otherwise described as `oneOf: [<Enum>, NullEnum]`, where
     # NullEnum is an enum whose only value is null. The Kotlin generator renders that as an
@@ -166,6 +167,11 @@ S3_ACCESS_KEY_ID = env("S3_ACCESS_KEY_ID", "development")
 S3_SECRET_ACCESS_KEY = env("S3_SECRET_ACCESS_KEY", "development")
 S3_PUBLIC_BUCKET = env("S3_PUBLIC_BUCKET", "directory-public")
 S3_PRIVATE_BUCKET = env("S3_PRIVATE_BUCKET", "directory-private")
+# Where anyone reads public media from: a CDN in production, the public bucket path-style in
+# development. Only the public bucket is ever addressed; see storage/public_media.py.
+S3_PUBLIC_MEDIA_BASE_URL = env(
+    "S3_PUBLIC_MEDIA_BASE_URL", f"{S3_ENDPOINT_URL.rstrip('/')}/{S3_PUBLIC_BUCKET}"
+)
 PUSH_PROVIDER = env("PUSH_PROVIDER", "development")
 PUSH_TOKEN_ENCRYPTION_KEY = env("PUSH_TOKEN_ENCRYPTION_KEY", "development-push-token-key")
 FCM_PROJECT_ID = env("FCM_PROJECT_ID", "")
