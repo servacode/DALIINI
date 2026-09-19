@@ -129,7 +129,7 @@ fun HomeScreen(
                     FacilityRow(facility, onFacility)
                 }
             }
-            item { Text("الأقرب إليك", style = MaterialTheme.typography.titleLarge) }
+            item { Text(HomeHeadings.nearby(value.snapshot.nearby), style = MaterialTheme.typography.titleLarge) }
             items(value.snapshot.nearby, key = { "near-" + it.id }) { facility ->
                 FacilityRow(facility, onFacility)
             }
