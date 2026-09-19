@@ -41,11 +41,17 @@ class AndroidLocationProvider @Inject constructor(
                     @Deprecated("Legacy callback")
                     override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) = Unit
                 }
-                runCatching {
-                    manager.requestLocationUpdates(provider, 0L, 0f, listener, Looper.getMainLooper())
-                }.onFailure {
+                fun giveUp() {
                     manager.removeUpdates(listener)
                     if (continuation.isActive) continuation.resume(null)
+                }
+                try {
+                    manager.requestLocationUpdates(provider, 0L, 0f, listener, Looper.getMainLooper())
+                } catch (withdrawn: SecurityException) {
+                    // The permission was withdrawn between the check above and this call.
+                    giveUp()
+                } catch (unknownProvider: IllegalArgumentException) {
+                    giveUp()
                 }
                 continuation.invokeOnCancellation { manager.removeUpdates(listener) }
             }
@@ -58,7 +64,7 @@ class AndroidLocationProvider @Inject constructor(
     override fun lastKnown(): LocationFix? {
         if (!hasLocationPermission()) return null
         return listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
-            .mapNotNull { provider -> runCatching { manager.getLastKnownLocation(provider) }.getOrNull() }
+            .mapNotNull(::lastKnownFrom)
             .maxByOrNull { it.time }
             ?.toFix()
     }
@@ -85,7 +91,7 @@ class AndroidLocationProvider @Inject constructor(
             @Deprecated("Legacy callback")
             override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) = Unit
         }
-        runCatching {
+        try {
             manager.requestLocationUpdates(
                 provider,
                 minTimeMillis.coerceAtLeast(500L),
@@ -93,11 +99,23 @@ class AndroidLocationProvider @Inject constructor(
                 listener,
                 Looper.getMainLooper(),
             )
-        }.onFailure {
+        } catch (withdrawn: SecurityException) {
+            // The permission was withdrawn between the check above and this call.
+            trySend(LocationResult.PermissionDenied)
+            close()
+        } catch (unknownProvider: IllegalArgumentException) {
             trySend(LocationResult.Unavailable)
-            close(it)
+            close()
         }
         awaitClose { manager.removeUpdates(listener) }
+    }
+
+    private fun lastKnownFrom(provider: String): Location? = try {
+        manager.getLastKnownLocation(provider)
+    } catch (withdrawn: SecurityException) {
+        null
+    } catch (unknownProvider: IllegalArgumentException) {
+        null
     }
 
     private fun hasLocationPermission(): Boolean {

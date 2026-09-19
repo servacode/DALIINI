@@ -537,9 +537,10 @@ Status values: `OPEN`, `FIXED (<batch>)`, `RETIRED`.
 | INT-075 | P2 | P17 | `NavigationViewModel.state`, public, exposed the internal `NavigationUiState`, which Kotlin refuses. Found by the first real Android build (CI run 35425779550) | FIXED (ANDROID-CI) — the property is internal; only the module's screen reads it |
 | INT-076 | P2 | P16 | `stepLabel`, which names each onboarding step on screen, was deleted by 474cbd5 while `OnboardingScreen` still called it. Found by the first real Android build (CI run 35425779550) | FIXED (ANDROID-CI) — restored exactly as it was |
 | INT-077 | P1 | P18 | no manifest declared `ACCESS_NETWORK_STATE`, which `AndroidNetworkMonitor` needs for `getActiveNetwork` and `registerNetworkCallback`; both throw `SecurityException` without it, and the realtime coordinator starts the monitor when the app comes to the foreground, so the app would most likely have crashed on start. Found by Android lint in the first real build (CI run 35429821238) | FIXED (ANDROID-CI) — declared by core:network, the module that uses it |
+| INT-078 | P2 | P15 | the location provider guarded its calls with a helper and `runCatching` inside lambdas, which lint cannot see, and `core:location` declared none of the permissions it uses. Behaviour was safe; the protection was not explicit. Found by Android lint (CI run 35429821238) | FIXED (ANDROID-CI) — the module declares both location permissions; each protected call handles `SecurityException` explicitly |
 
 ## Rules
 
 - An identifier is never reused, even after the defect is fixed or retired.
 - A defect is registered here before it is referenced anywhere else.
-- The next free identifier is `INT-078`.
+- The next free identifier is `INT-079`.
