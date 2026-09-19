@@ -10,8 +10,9 @@ It is not a second app and it copies nothing. `build.gradle.kts` points at the m
 source directories and leaves out the files that need Android (`*Screen.kt`, `*ViewModel.kt`,
 Room, DataStore, the Keystore vault, Hilt modules that bind Android types). What remains — the
 generated P10 client, the adapters and mappers in `:core:network`, session coordination in
-`:core:auth`, the cache-first helper, and the feature repositories and use cases — is compiled
-and tested exactly as the app compiles it.
+`:core:auth`, the cache-first helper, the platform-free parts of `:core:maps` (camera policy,
+MapView lifecycle steps, navigation models), and the feature repositories and use cases — is
+compiled and tested exactly as the app compiles it.
 
 Passing here is **not** `BUILD_VERIFIED` for the app. It proves portable and data-layer
 integration only, and says nothing about Compose, Room, DataStore, Hilt's generated graph,
