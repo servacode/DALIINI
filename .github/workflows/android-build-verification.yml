@@ -23,6 +23,14 @@ jobs:
   android:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    # Built for a device on USB with `adb reverse` (docs/runbooks/android-local-networking.md):
+    # the phone reaches the developer's machine through its own localhost, which the local
+    # flavor's network security config already allows. The flavor's default, 10.0.2.2, is the
+    # emulator's alias and does not exist on a phone. No machine address is involved. The
+    # build reads these from the environment, so every gate below sees the same configuration.
+    env:
+      DIRECTORY_LOCAL_API_BASE_URL: http://localhost:8000/
+      DIRECTORY_LOCAL_REALTIME_WS_URL: ws://localhost:8000/ws/v1/directory/
     defaults:
       run:
         working-directory: apps/android
@@ -76,6 +84,8 @@ jobs:
             echo "targetSdk=$(sdk targetSdkVersion)"
             echo "flavor=local"
             echo "buildType=debug"
+            echo "apiBaseUrl=http://localhost:8000/ (reach it with adb reverse tcp:8000 tcp:8000)"
+            echo "realtimeUrl=ws://localhost:8000/ws/v1/directory/"
             echo "commit=$GITHUB_SHA"
           } > "$dir/apk-metadata.txt"
           cat "$dir/apk-metadata.txt"
