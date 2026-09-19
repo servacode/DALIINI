@@ -655,6 +655,18 @@ The authoritative source for admin authorization remains the project RBAC. `user
 
 **Boundaries:** The mark and the copy are placeholders until approved (`docs/design/BRAND-ASSETS.md`). No launcher icon is added here. Other screens keep their theme and bars; the grey status bar of Home is Home's until its own redesign.
 
+## DECISION-044 — A first run, once, and never again after a redesign
+
+**Date:** 2026-09-20
+
+**Subject:** UI/UX redesign, Screens 02 and 03. The app had no welcome and no screen for the location question: a first run landed on Home, which asked for a province, and the location was only offered by a button on Home, opening the system dialog with no explanation.
+
+**Decision:** Two screens run once, in order, before Home: a welcome (`DirectoryRoute.Welcome`) and the location question (`DirectoryRoute.LocationPermission`). A device that has been through them records it in one preference, `welcome_completed`; a device that already carries a selected province is treated as having been through them, so no one who installed the app earlier is sent back through onboarding by a redesign. The location screen explains what the location buys — nearest-first order, distances, a map on the right area — and asks only when the user presses the button; "ليس الآن" is a second choice beside it and leaves the offer on Home open. Either answer ends the first run. The permissions asked are the two foreground ones, from `FOREGROUND_LOCATION_PERMISSIONS`, which is also what any other screen launches.
+
+**Reason:** The system dialog alone does not say why an app wants a location, and a first-time user met a province picker before knowing what the app was for. Doing it once, with a recorded answer, keeps the rest of the app's flow untouched.
+
+**Boundaries:** Background location stays forbidden (`15-SECURITY-PRIVACY.md`); nothing here asks twice, and a refusal keeps the province and the whole directory, costing only distances and nearest-first order. Home's own location offer, the province picker and every route after Home are unchanged. The copy is provisional until product copy is approved.
+
 ---
 
 # Technical Debt Register
