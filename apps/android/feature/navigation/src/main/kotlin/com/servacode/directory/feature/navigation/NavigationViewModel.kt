@@ -34,7 +34,8 @@ class NavigationViewModel @Inject constructor(
     private val destination = MapPoint(route.latitude, route.longitude)
     private val engine = NavigationEngine()
     private val _state = MutableStateFlow(NavigationUiState())
-    val state: StateFlow<NavigationUiState> = _state.asStateFlow()
+    // Internal like the state it carries: only this module's screen reads it.
+    internal val state: StateFlow<NavigationUiState> = _state.asStateFlow()
     private var locationJob: Job? = null
     private var lastSpokenKey: String? = null
 
