@@ -1,36 +1,65 @@
 package com.servacode.directory.feature.home
 
-import android.Manifest
+import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.servacode.directory.core.model.AvailabilityLabel
-import com.servacode.directory.core.model.DistanceText
+import com.servacode.directory.core.designsystem.CategoryCircle
+import com.servacode.directory.core.designsystem.DirectoryCard
+import com.servacode.directory.core.designsystem.DirectoryEmptyState
+import com.servacode.directory.core.designsystem.DirectoryErrorState
+import com.servacode.directory.core.designsystem.DirectoryIcon
+import com.servacode.directory.core.designsystem.DirectoryIcons
+import com.servacode.directory.core.designsystem.DirectoryImage
+import com.servacode.directory.core.designsystem.DirectoryLoading
+import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
+import com.servacode.directory.core.designsystem.DirectoryPage
+import com.servacode.directory.core.designsystem.DirectorySearchEntry
+import com.servacode.directory.core.designsystem.DirectoryTextButton
+import com.servacode.directory.core.designsystem.DirectoryTopBar
+import com.servacode.directory.core.designsystem.FacilityRow
+import com.servacode.directory.core.designsystem.SectionHeader
+import com.servacode.directory.core.designsystem.Sizes
+import com.servacode.directory.core.designsystem.Space
+import com.servacode.directory.core.location.FOREGROUND_LOCATION_PERMISSIONS
 import com.servacode.directory.core.model.FacilitySummary
+import com.servacode.directory.core.model.HomeAd
+import com.servacode.directory.core.model.HomeSnapshot
 
+/**
+ * Screen 04. The app's front door: where the user is, one way to search, the categories the
+ * province serves, and the facilities themselves.
+ *
+ * Nothing here decides what the lists hold or in what order: the backend answers with the
+ * sections, and a distance appears on a row exactly when the backend put one there.
+ */
 @Composable
 fun HomeScreen(
     onProvince: () -> Unit,
@@ -42,109 +71,263 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val permissionLauncher = rememberLauncherForActivityResult(
+    val context = LocalContext.current
+    // The offer to use the location, and only while there is nothing to offer: a device that
+    // already allowed it is never asked again from here.
+    var offerLocation by rememberSaveable {
+        mutableStateOf(
+            FOREGROUND_LOCATION_PERMISSIONS.none {
+                context.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED
+            },
+        )
+    }
+    val askLocation = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
-    ) { viewModel.refresh() }
+    ) { result ->
+        offerLocation = result.values.none { it }
+        viewModel.refresh()
+    }
 
-    when (val value = state) {
-        HomeUiState.Loading -> Column(
-            Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) { CircularProgressIndicator() }
-        HomeUiState.ProvinceRequired -> Column(
-            Modifier.fillMaxSize().padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text("اختر المحافظة للبدء", style = MaterialTheme.typography.headlineLarge)
-            Spacer(Modifier.height(16.dp))
-            Button(onClick = onProvince) { Text("اختيار المحافظة") }
-        }
-        is HomeUiState.Error -> Column(Modifier.fillMaxSize().padding(24.dp)) {
-            Text("تعذر تحميل الدليل حاليًا")
-            Text(value.message)
-            Spacer(Modifier.height(12.dp))
-            Button(onClick = viewModel::refresh) { Text("إعادة المحاولة") }
-        }
-        is HomeUiState.Content -> LazyColumn(
-            Modifier.fillMaxSize().padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            item {
-                Row(
-                    Modifier.fillMaxWidth().padding(top = 18.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column {
-                        Text("الدليل", style = MaterialTheme.typography.headlineLarge)
-                        Text(value.snapshot.province.nameAr)
-                    }
-                    OutlinedButton(onClick = onProvince) { Text("تغيير") }
-                }
-                if (value.stale) {
-                    Text(
-                        "غير متصل — بعض البيانات وحالة مفتوح/مناوب قد تكون قديمة",
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = onSearch) { Text("بحث") }
-                    OutlinedButton(onClick = onMap) { Text("الخريطة") }
-                    OutlinedButton(onClick = onAccount) { Text("حسابي") }
-                }
-                OutlinedButton(
-                    onClick = {
-                        permissionLauncher.launch(
-                            arrayOf(
-                                Manifest.permission.ACCESS_COARSE_LOCATION,
-                                Manifest.permission.ACCESS_FINE_LOCATION,
-                            ),
-                        )
-                    },
-                ) { Text("استخدام موقعي للترتيب بالأقرب") }
-                value.snapshot.ads.forEach { ad ->
-                    ad.titleAr?.let { Text(it, style = MaterialTheme.typography.titleMedium) }
-                    ad.subtitleAr?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
-                }
-                Text("الأقسام", style = MaterialTheme.typography.titleLarge)
-            }
-            items(value.snapshot.categories, key = { it.id }) { category ->
-                Column(
-                    Modifier.fillMaxWidth().clickable { onCategory(category.id) }.padding(vertical = 10.dp),
-                ) {
-                    Text(category.nameAr, style = MaterialTheme.typography.titleMedium)
-                }
-                HorizontalDivider()
-            }
-            if (value.snapshot.dutyNow.isNotEmpty()) {
-                item { Text("المناوبون الآن", style = MaterialTheme.typography.titleLarge) }
-                items(value.snapshot.dutyNow, key = { "duty-" + it.id }) { facility ->
-                    FacilityRow(facility, onFacility)
-                }
-            }
-            if (value.snapshot.openNearby.isNotEmpty()) {
-                item { Text("مفتوح الآن", style = MaterialTheme.typography.titleLarge) }
-                items(value.snapshot.openNearby, key = { "open-" + it.id }) { facility ->
-                    FacilityRow(facility, onFacility)
-                }
-            }
-            item { Text(HomeHeadings.nearby(value.snapshot.nearby), style = MaterialTheme.typography.titleLarge) }
-            items(value.snapshot.nearby, key = { "near-" + it.id }) { facility ->
-                FacilityRow(facility, onFacility)
-            }
+    val province = (state as? HomeUiState.Content)?.snapshot?.province?.nameAr
+
+    DirectoryPage(
+        topBar = {
+            DirectoryTopBar(
+                title = HomeCopy.TITLE,
+                subtitle = province,
+                onSubtitle = if (province == null) null else onProvince,
+                leadingIcon = DirectoryIcons.person,
+                leadingLabel = HomeCopy.ACCOUNT,
+                onLeading = onAccount,
+                actionIcon = DirectoryIcons.pin,
+                actionLabel = HomeCopy.MAP,
+                onAction = onMap,
+            )
+        },
+    ) { padding ->
+        when (val value = state) {
+            HomeUiState.Loading -> DirectoryLoading(Modifier.padding(padding))
+            HomeUiState.ProvinceRequired -> DirectoryEmptyState(
+                title = HomeCopy.PROVINCE_REQUIRED,
+                modifier = Modifier.padding(padding),
+                body = HomeCopy.PROVINCE_REQUIRED_BODY,
+                icon = DirectoryIcons.pin,
+                action = HomeCopy.PROVINCE_CHOOSE,
+                onAction = onProvince,
+            )
+            is HomeUiState.Error -> DirectoryErrorState(
+                title = HomeCopy.ERROR,
+                modifier = Modifier.padding(padding),
+                body = value.message,
+                onRetry = viewModel::refresh,
+            )
+            is HomeUiState.Content -> HomeContent(
+                value = value,
+                padding = padding,
+                offerLocation = offerLocation,
+                onUseLocation = { askLocation.launch(FOREGROUND_LOCATION_PERMISSIONS.toTypedArray()) },
+                onRefresh = viewModel::refresh,
+                onSearch = onSearch,
+                onCategory = onCategory,
+                onFacility = onFacility,
+            )
         }
     }
 }
 
 @Composable
-private fun FacilityRow(value: FacilitySummary, onFacility: (String) -> Unit) {
-    Column(
-        Modifier.fillMaxWidth().clickable { onFacility(value.id) }.padding(vertical = 10.dp),
+private fun HomeContent(
+    value: HomeUiState.Content,
+    padding: PaddingValues,
+    offerLocation: Boolean,
+    onUseLocation: () -> Unit,
+    onRefresh: () -> Unit,
+    onSearch: () -> Unit,
+    onCategory: (String) -> Unit,
+    onFacility: (String) -> Unit,
+) {
+    val snapshot = value.snapshot
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(padding),
+        contentPadding = PaddingValues(bottom = Space.xxl),
     ) {
-        Text(value.nameAr, style = MaterialTheme.typography.titleMedium)
-        val status = AvailabilityLabel.of(value)
-        val distance = value.distanceMeters?.let { " • " + DistanceText.of(it) }.orEmpty()
-        Text(status + distance, style = MaterialTheme.typography.bodyMedium)
+        item(key = "search") {
+            DirectorySearchEntry(
+                placeholder = HomeCopy.SEARCH,
+                onClick = onSearch,
+                modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.sm),
+            )
+        }
+        if (value.stale) {
+            item(key = "stale") {
+                DirectoryOfflineNotice(
+                    modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.xs),
+                    onRetry = onRefresh,
+                )
+            }
+        }
+        if (offerLocation) {
+            item(key = "location") {
+                LocationOffer(
+                    onUseLocation = onUseLocation,
+                    modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.xs),
+                )
+            }
+        }
+        if (snapshot.ads.isNotEmpty()) {
+            item(key = "ads") { AdRow(snapshot.ads) }
+        }
+        if (snapshot.categories.isNotEmpty()) {
+            item(key = "categories") {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = Space.screen),
+                    horizontalArrangement = Arrangement.spacedBy(Space.xs),
+                    modifier = Modifier.padding(vertical = Space.sm),
+                ) {
+                    items(snapshot.categories, key = { it.id }) { category ->
+                        CategoryCircle(
+                            label = category.nameAr,
+                            icon = DirectoryIcons.category(category.iconKey),
+                            selected = false,
+                            onClick = { onCategory(category.id) },
+                        )
+                    }
+                }
+            }
+        }
+        facilitySection(HomeCopy.DUTY, snapshot.dutyNow, "duty", onFacility)
+        facilitySection(HomeCopy.OPEN, snapshot.openNearby, "open", onFacility)
+        facilitySection(HomeHeadings.nearby(snapshot.nearby), snapshot.nearby, "near", onFacility)
+        if (snapshot.isEmpty()) {
+            item(key = "empty") {
+                DirectoryEmptyState(
+                    title = HomeCopy.EMPTY,
+                    body = HomeCopy.EMPTY_BODY,
+                    modifier = Modifier.padding(top = Space.xxl),
+                )
+            }
+        }
     }
+}
+
+/** Nothing the backend returned for this province is worth a list. */
+private fun HomeSnapshot.isEmpty(): Boolean =
+    nearby.isEmpty() && openNearby.isEmpty() && dutyNow.isEmpty()
+
+/**
+ * One titled run of facilities. An empty list writes nothing at all: a heading over no rows
+ * reads as a failure, and these sections are simply absent when the backend sends none.
+ */
+private fun LazyListScope.facilitySection(
+    title: String,
+    facilities: List<FacilitySummary>,
+    keyPrefix: String,
+    onFacility: (String) -> Unit,
+) {
+    if (facilities.isEmpty()) return
+    item(key = "$keyPrefix-header") {
+        SectionHeader(
+            title = title,
+            modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.xs),
+        )
+    }
+    itemsIndexed(facilities, key = { _, facility -> "$keyPrefix-${facility.id}" }) { index, facility ->
+        Column {
+            FacilityRow(facility = facility, onClick = { onFacility(facility.id) })
+            if (index < facilities.lastIndex) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = Space.screen),
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                )
+            }
+        }
+    }
+}
+
+/**
+ * The one place the app asks for the location outside the first run, and it asks by explaining
+ * what it would add. Refusing costs the distances and the nearest-first order, nothing else.
+ */
+@Composable
+private fun LocationOffer(onUseLocation: () -> Unit, modifier: Modifier = Modifier) {
+    DirectoryCard(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Space.md),
+        ) {
+            DirectoryIcon(DirectoryIcons.pin, null, tint = MaterialTheme.colorScheme.primary)
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = HomeCopy.LOCATION_TITLE,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = HomeCopy.LOCATION_BODY,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            DirectoryTextButton(HomeCopy.LOCATION_ACTION, onUseLocation)
+        }
+    }
+}
+
+/** What the province wants seen first, as the backend ordered it. */
+@Composable
+private fun AdRow(ads: List<HomeAd>) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = Space.screen),
+        horizontalArrangement = Arrangement.spacedBy(Space.md),
+        modifier = Modifier.padding(vertical = Space.sm),
+    ) {
+        items(ads, key = { it.id }) { ad ->
+            DirectoryCard(modifier = Modifier.width(Sizes.banner)) {
+                DirectoryImage(
+                    url = ad.imageUrl,
+                    modifier = Modifier.fillMaxWidth().height(Sizes.bannerImage),
+                    contentDescription = ad.titleAr,
+                )
+                ad.titleAr?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = Space.sm),
+                    )
+                }
+                ad.subtitleAr?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** The words of Home, in one place, provisional until product copy is approved. */
+object HomeCopy {
+    const val TITLE = "الدليل"
+    const val ACCOUNT = "حسابي"
+    const val MAP = "الخريطة"
+    const val SEARCH = "ابحث عن منشأة أو تخصص..."
+    const val DUTY = "المناوبون الآن"
+    const val OPEN = "مفتوح الآن"
+    const val ERROR = "حدث خطأ"
+    const val EMPTY = "لا توجد منشآت"
+    const val EMPTY_BODY = "لم يتم العثور على منشآت في هذه المحافظة بعد."
+    const val PROVINCE_REQUIRED = "اختر المحافظة للبدء"
+    const val PROVINCE_REQUIRED_BODY = "يعرض الدليل المنشآت داخل المحافظة التي تختارها."
+    const val PROVINCE_CHOOSE = "اختيار المحافظة"
+    const val LOCATION_TITLE = "الترتيب بالأقرب إليك"
+    const val LOCATION_BODY = "فعّل الموقع لعرض المسافة وترتيب المنشآت بالأقرب."
+    const val LOCATION_ACTION = "تفعيل"
 }

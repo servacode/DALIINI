@@ -1,107 +1,293 @@
 package com.servacode.directory.feature.facility
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.ui.layout.ContentScale
-import coil3.compose.AsyncImage
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.servacode.directory.core.model.AvailabilityLabel
+import com.servacode.directory.core.designsystem.ActionCircle
+import com.servacode.directory.core.designsystem.AvailabilityPill
+import com.servacode.directory.core.designsystem.BrandColors
+import com.servacode.directory.core.designsystem.DirectoryErrorState
+import com.servacode.directory.core.designsystem.DirectoryIcon
+import com.servacode.directory.core.designsystem.DirectoryIconButton
+import com.servacode.directory.core.designsystem.DirectoryIcons
+import com.servacode.directory.core.designsystem.DirectoryLoading
+import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
+import com.servacode.directory.core.designsystem.DirectoryPage
+import com.servacode.directory.core.designsystem.DirectoryTextButton
+import com.servacode.directory.core.designsystem.IconSize
+import com.servacode.directory.core.designsystem.MetaRow
+import com.servacode.directory.core.designsystem.PhotoPager
+import com.servacode.directory.core.designsystem.Radius
+import com.servacode.directory.core.designsystem.RatingBadge
+import com.servacode.directory.core.designsystem.SectionHeader
+import com.servacode.directory.core.designsystem.Sizes
+import com.servacode.directory.core.designsystem.Space
+import com.servacode.directory.core.model.BusinessHour
 
+/**
+ * Screen 08. What the facility is, then what can be done about it, then the rest.
+ *
+ * Everything on this screen comes from the facility the backend answered with: an action whose
+ * data is missing is shown as unavailable rather than hidden, and nothing is filled in for it.
+ */
 @Composable
 fun FacilityScreen(
     onMap: () -> Unit,
     onDirections: (Double, Double) -> Unit,
     onRatings: () -> Unit,
     onSignIn: () -> Unit,
+    onCall: (String) -> Unit,
+    onBack: () -> Unit,
     viewModel: FacilityViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    when (val value = state) {
-        FacilityUiState.Loading -> CircularProgressIndicator(Modifier.padding(24.dp))
-        is FacilityUiState.Error -> Column(Modifier.padding(24.dp)) {
-            Text("تعذر تحميل المنشأة")
-            Text(value.message)
-        }
-        is FacilityUiState.Content -> Column(
-            Modifier.fillMaxSize().padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Text(value.value.summary.nameAr, style = MaterialTheme.typography.headlineLarge)
-            Text(value.value.summary.category.nameAr)
-            Text(AvailabilityLabel.of(value.value.summary), style = MaterialTheme.typography.titleMedium)
-            if (value.value.imageUrls.isNotEmpty()) {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(value.value.imageUrls) { url ->
-                        AsyncImage(
-                            model = url,
-                            contentDescription = value.value.summary.nameAr,
-                            modifier = Modifier.fillParentMaxWidth(0.82f).height(220.dp),
-                            contentScale = ContentScale.Crop,
+
+    DirectoryPage { padding ->
+        when (val value = state) {
+            FacilityUiState.Loading -> DirectoryLoading(Modifier.padding(padding))
+            is FacilityUiState.Error -> DirectoryErrorState(
+                title = FacilityCopy.ERROR,
+                modifier = Modifier.padding(padding),
+                body = value.message,
+            )
+            is FacilityUiState.Content -> Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                Box {
+                    PhotoPager(
+                        urls = value.value.imageUrls,
+                        contentDescription = value.value.summary.nameAr,
+                        modifier = Modifier.height(Sizes.hero),
+                    )
+                    Surface(
+                        modifier = Modifier.padding(Space.md).align(Alignment.TopStart),
+                        shape = RoundedCornerShape(Radius.pill),
+                        color = MaterialTheme.colorScheme.surface,
+                    ) {
+                        DirectoryIconButton(
+                            icon = DirectoryIcons.back,
+                            label = FacilityCopy.BACK,
+                            onClick = onBack,
+                            tint = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 }
-            }
-            value.value.addressAr?.let { Text(it) }
-            value.value.phone?.let { Text(it) }
-            value.value.descriptionAr?.let { Text(it) }
-            if (value.value.hours.isNotEmpty()) {
-                Text("ساعات العمل", style = MaterialTheme.typography.titleMedium)
-                value.value.hours.forEach { hour ->
-                    Text("${weekdayName(hour.weekday)}: ${hour.opensAt.take(5)} – ${hour.closesAt.take(5)}")
-                }
-            }
-            if (value.value.specialties.isNotEmpty()) Text(value.value.specialties.joinToString(" • "))
-            if (value.value.services.isNotEmpty()) Text(value.value.services.joinToString(" • "))
-            Text("التقييم ${value.value.summary.ratingAverage ?: "—"} (${value.value.summary.ratingCount})")
-            if (value.signedIn) {
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    (1..5).forEach { stars ->
-                        TextButton(onClick = { viewModel.rate(stars) }) {
-                            Text(if ((value.myRating ?: 0) >= stars) "★" else "☆")
-                        }
-                    }
-                }
-                value.ratingMessage?.let { Text(it) }
-            } else {
-                TextButton(onClick = onSignIn) { Text("سجّل الدخول لتقييم المنشأة") }
-            }
-            if (value.stale) Text("غير متصل — بعض البيانات وحالة مفتوح/مناوب قد تكون قديمة")
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = onMap,
-                    enabled = value.value.latitude != null && value.value.longitude != null,
-                ) { Text("عرض على الخريطة") }
-                OutlinedButton(
-                    onClick = {
-                        val latitude = value.value.latitude ?: return@OutlinedButton
-                        val longitude = value.value.longitude ?: return@OutlinedButton
-                        onDirections(latitude, longitude)
-                    },
-                    enabled = value.value.latitude != null && value.value.longitude != null,
-                ) { Text("الاتجاهات") }
-                OutlinedButton(onClick = onRatings) { Text("تقييماتي") }
+                FacilityBody(
+                    value = value,
+                    onMap = onMap,
+                    onDirections = onDirections,
+                    onRatings = onRatings,
+                    onSignIn = onSignIn,
+                    onCall = onCall,
+                    onRate = viewModel::rate,
+                )
             }
         }
     }
 }
+
+@Composable
+private fun FacilityBody(
+    value: FacilityUiState.Content,
+    onMap: () -> Unit,
+    onDirections: (Double, Double) -> Unit,
+    onRatings: () -> Unit,
+    onSignIn: () -> Unit,
+    onCall: (String) -> Unit,
+    onRate: (Int) -> Unit,
+) {
+    val detail = value.value
+    val summary = detail.summary
+    val placed = detail.latitude != null && detail.longitude != null
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(topStart = Radius.xl, topEnd = Radius.xl))
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = Space.screen, vertical = Space.lg),
+        verticalArrangement = Arrangement.spacedBy(Space.md),
+    ) {
+        Text(
+            text = summary.nameAr,
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.semantics { heading() },
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            RatingBadge(summary.ratingAverage, summary.ratingCount)
+            AvailabilityPill(summary)
+        }
+        Text(
+            text = summary.category.nameAr,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (value.stale) DirectoryOfflineNotice()
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            ActionCircle(
+                label = FacilityCopy.CALL,
+                icon = DirectoryIcons.phone,
+                onClick = { detail.phone?.let(onCall) },
+                enabled = detail.phone != null,
+            )
+            ActionCircle(
+                label = FacilityCopy.DIRECTIONS,
+                icon = DirectoryIcons.route,
+                onClick = {
+                    val latitude = detail.latitude ?: return@ActionCircle
+                    val longitude = detail.longitude ?: return@ActionCircle
+                    onDirections(latitude, longitude)
+                },
+                enabled = placed,
+            )
+            ActionCircle(
+                label = FacilityCopy.MAP,
+                icon = DirectoryIcons.map,
+                onClick = onMap,
+                enabled = placed,
+            )
+            ActionCircle(
+                label = FacilityCopy.RATINGS,
+                icon = DirectoryIcons.star,
+                onClick = onRatings,
+            )
+        }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+        val address = listOfNotNull(detail.neighborhoodNameAr, detail.addressAr).joinToString("، ")
+        if (address.isNotEmpty()) {
+            SectionHeader(FacilityCopy.ADDRESS)
+            MetaRow(DirectoryIcons.pin, address)
+        }
+        detail.phone?.let {
+            MetaRow(DirectoryIcons.phone, it)
+        }
+        if (detail.hours.isNotEmpty()) {
+            SectionHeader(FacilityCopy.HOURS)
+            detail.hours.forEach { hour -> HourRow(hour) }
+        }
+        detail.descriptionAr?.let {
+            SectionHeader(FacilityCopy.ABOUT)
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+        if (detail.specialties.isNotEmpty()) {
+            SectionHeader(FacilityCopy.SPECIALTIES)
+            Text(
+                text = detail.specialties.joinToString("، "),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+        if (detail.services.isNotEmpty()) {
+            SectionHeader(FacilityCopy.SERVICES)
+            Text(
+                text = detail.services.joinToString("، "),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+
+        SectionHeader(FacilityCopy.YOUR_RATING)
+        if (value.signedIn) {
+            RatingStars(myRating = value.myRating, onRate = onRate)
+            value.ratingMessage?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        } else {
+            DirectoryTextButton(FacilityCopy.SIGN_IN_TO_RATE, onSignIn)
+        }
+    }
+}
+
+/** The one rating this user leaves, out of five. */
+@Composable
+private fun RatingStars(myRating: Int?, onRate: (Int) -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
+        (1..STARS).forEach { stars ->
+            val given = (myRating ?: 0) >= stars
+            Box(modifier = Modifier.size(Sizes.touchTarget), contentAlignment = Alignment.Center) {
+                DirectoryIconButton(
+                    icon = DirectoryIcons.star,
+                    label = FacilityCopy.rateLabel(stars),
+                    onClick = { onRate(stars) },
+                    tint = if (given) BrandColors.warning else MaterialTheme.colorScheme.outline,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HourRow(hour: BusinessHour) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.md),
+    ) {
+        DirectoryIcon(
+            icon = DirectoryIcons.clock,
+            contentDescription = null,
+            size = IconSize.small,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = weekdayName(hour.weekday),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = "${hour.opensAt.take(5)} – ${hour.closesAt.take(5)}",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+private const val STARS = 5
 
 /** 0 is Monday, matching the backend's weekday numbering. */
 private fun weekdayName(weekday: Int): String = when (weekday) {
@@ -113,4 +299,23 @@ private fun weekdayName(weekday: Int): String = when (weekday) {
     5 -> "السبت"
     6 -> "الأحد"
     else -> "—"
+}
+
+/** The words of a facility's page, provisional until product copy is approved. */
+object FacilityCopy {
+    const val BACK = "رجوع"
+    const val ERROR = "تعذر تحميل المنشأة"
+    const val CALL = "اتصال"
+    const val DIRECTIONS = "الطريق"
+    const val MAP = "الخريطة"
+    const val RATINGS = "التقييمات"
+    const val ADDRESS = "العنوان"
+    const val HOURS = "ساعات العمل"
+    const val ABOUT = "نبذة"
+    const val SPECIALTIES = "الاختصاصات"
+    const val SERVICES = "الخدمات"
+    const val YOUR_RATING = "تقييمك"
+    const val SIGN_IN_TO_RATE = "سجّل الدخول لتقييم المنشأة"
+
+    fun rateLabel(stars: Int): String = "$stars من 5"
 }

@@ -1,8 +1,11 @@
 package com.servacode.directory
 
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
@@ -38,6 +41,7 @@ import com.servacode.directory.feature.search.SearchScreen
 fun DirectoryApp(sessionState: StateFlow<SessionState>) {
     val navController = rememberNavController()
     val session by sessionState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     // When the session ends — signed out elsewhere, revoked, or its refresh refused — a screen
     // that shows the user's own data gives way to sign-in instead of failing on every request.
@@ -100,17 +104,20 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                         popUpTo<DirectoryRoute.Home> { inclusive = true }
                     }
                 },
+                onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Search> {
             SearchScreen(
                 onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
+                onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Directory> {
             DirectoryScreen(
                 onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
                 onProvince = { navController.navigate(DirectoryRoute.ProvincePicker) },
+                onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.FacilityDetailRoute> { backStackEntry ->
@@ -128,11 +135,17 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 },
                 onRatings = { navController.navigate(DirectoryRoute.MyRatings) },
                 onSignIn = { navController.navigate(DirectoryRoute.Login) },
+                // The dialer opens with the number the backend published; the call is the user's.
+                onCall = { phone ->
+                    context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$phone".toUri()))
+                },
+                onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Map> {
             MapScreen(
                 styleUrl = BuildConfig.MAP_STYLE_URL,
+                onBack = { navController.popBackStack() },
                 onFacility = { id ->
                     val below = navController.previousBackStackEntry
                         ?.takeIf { it.destination.hasRoute<DirectoryRoute.FacilityDetailRoute>() }
