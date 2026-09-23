@@ -52,6 +52,7 @@ import com.servacode.directory.core.designsystem.MetaRow
 import com.servacode.directory.core.designsystem.PhotoPager
 import com.servacode.directory.core.designsystem.Radius
 import com.servacode.directory.core.designsystem.RatingBadge
+import com.servacode.directory.core.designsystem.RatingSummary
 import com.servacode.directory.core.designsystem.SectionHeader
 import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
@@ -253,6 +254,12 @@ private fun FacilityBody(
             )
         }
 
+        SectionHeader(FacilityCopy.RATINGS)
+        RatingSummary(
+            average = summary.ratingAverage,
+            count = summary.ratingCount,
+            modifier = Modifier.padding(vertical = Space.sm),
+        )
         SectionHeader(FacilityCopy.YOUR_RATING)
         if (value.signedIn) {
             StarPicker(stars = value.myRating, onRate = onRate, label = FacilityCopy::rateLabel)
