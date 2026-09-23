@@ -3,6 +3,8 @@ package com.servacode.directory.core.designsystem
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -121,9 +124,10 @@ fun DirectoryIconButton(
     label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     tint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
 ) {
-    IconButton(onClick = onClick, modifier = modifier.size(Sizes.touchTarget)) {
+    IconButton(onClick = onClick, modifier = modifier.size(Sizes.touchTarget), enabled = enabled) {
         DirectoryIcon(icon, label, tint = tint)
     }
 }
@@ -174,6 +178,7 @@ fun DirectoryPasswordField(
     modifier: Modifier = Modifier,
     error: String? = null,
     enabled: Boolean = true,
+    numeric: Boolean = false,
     showLabel: String = "إظهار كلمة المرور",
     hideLabel: String = "إخفاء كلمة المرور",
 ) {
@@ -194,7 +199,13 @@ fun DirectoryPasswordField(
             }
         },
         visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Password),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = if (numeric) {
+                androidx.compose.ui.text.input.KeyboardType.NumberPassword
+            } else {
+                androidx.compose.ui.text.input.KeyboardType.Password
+            },
+        ),
         isError = error != null,
         supportingText = error?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
         singleLine = true,
@@ -290,13 +301,14 @@ fun DirectoryFilterChip(
     )
 }
 
-/** A row of them, scrolling with the screen rather than clipping. */
+/** A row of them, wrapping onto the next line rather than running off the edge. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DirectoryChipRow(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    Row(
+    FlowRow(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(Space.sm),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalArrangement = Arrangement.spacedBy(Space.xs),
     ) { content() }
 }
 
@@ -366,7 +378,9 @@ fun DirectorySettingRow(
     modifier: Modifier = Modifier,
     value: String? = null,
     @DrawableRes icon: Int? = null,
-    tint: Color = MaterialTheme.colorScheme.primary,
+    danger: Boolean = false,
+    trailing: Boolean = true,
+    tint: Color = if (danger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
 ) {
     Row(
         modifier = modifier
@@ -381,7 +395,7 @@ fun DirectorySettingRow(
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = if (danger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f),
         )
         if (value != null) {
@@ -393,11 +407,65 @@ fun DirectorySettingRow(
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        DirectoryIcon(
-            icon = DirectoryIcons.chevron,
-            contentDescription = null,
-            modifier = Modifier.clearAndSetSemantics { },
-            tint = MaterialTheme.colorScheme.outlineVariant,
-        )
+        if (trailing) {
+            DirectoryIcon(
+                icon = DirectoryIcons.chevron,
+                contentDescription = null,
+                modifier = Modifier.clearAndSetSemantics { },
+                tint = MaterialTheme.colorScheme.outlineVariant,
+            )
+        }
     }
+}
+
+/**
+ * The app's one dialog: a question, what it means, and the two answers. A destructive answer is
+ * written in the danger colour and is never the one a stray tap lands on.
+ */
+@Composable
+fun DirectoryConfirmDialog(
+    title: String,
+    body: String,
+    confirm: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    dismiss: String = "إلغاء",
+    destructive: Boolean = false,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        },
+        text = {
+            Text(
+                text = body,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    text = confirm,
+                    color = if (destructive) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    },
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(dismiss, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(Radius.large),
+    )
 }

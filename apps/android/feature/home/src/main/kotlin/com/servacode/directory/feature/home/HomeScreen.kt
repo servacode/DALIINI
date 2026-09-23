@@ -66,8 +66,7 @@ fun HomeScreen(
     onSearch: () -> Unit,
     onCategory: (String) -> Unit,
     onFacility: (String) -> Unit,
-    onMap: () -> Unit,
-    onAccount: () -> Unit,
+    bottomBar: @Composable () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -96,14 +95,12 @@ fun HomeScreen(
                 title = HomeCopy.TITLE,
                 subtitle = province,
                 onSubtitle = if (province == null) null else onProvince,
-                leadingIcon = DirectoryIcons.person,
-                leadingLabel = HomeCopy.ACCOUNT,
-                onLeading = onAccount,
                 actionIcon = DirectoryIcons.pin,
-                actionLabel = HomeCopy.MAP,
-                onAction = onMap,
+                actionLabel = HomeCopy.PROVINCE,
+                onAction = onProvince,
             )
         },
+        bottomBar = bottomBar,
     ) { padding ->
         when (val value = state) {
             HomeUiState.Loading -> DirectoryLoading(Modifier.padding(padding))
@@ -316,8 +313,7 @@ private fun AdRow(ads: List<HomeAd>) {
 /** The words of Home, in one place, provisional until product copy is approved. */
 object HomeCopy {
     const val TITLE = "الدليل"
-    const val ACCOUNT = "حسابي"
-    const val MAP = "الخريطة"
+    const val PROVINCE = "المحافظة"
     const val SEARCH = "ابحث عن منشأة أو تخصص..."
     const val DUTY = "المناوبون الآن"
     const val OPEN = "مفتوح الآن"

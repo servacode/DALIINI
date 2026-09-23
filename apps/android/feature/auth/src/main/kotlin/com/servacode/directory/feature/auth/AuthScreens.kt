@@ -2,18 +2,16 @@ package com.servacode.directory.feature.auth
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,64 +19,37 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.servacode.directory.designsystem.generated.DirectoryTokens
+import com.servacode.directory.core.designsystem.DirectoryChipRow
+import com.servacode.directory.core.designsystem.DirectoryFilterChip
+import com.servacode.directory.core.designsystem.DirectoryIcons
+import com.servacode.directory.core.designsystem.DirectoryPage
+import com.servacode.directory.core.designsystem.DirectoryPasswordField
+import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
+import com.servacode.directory.core.designsystem.DirectoryTextButton
+import com.servacode.directory.core.designsystem.DirectoryTextField
+import com.servacode.directory.core.designsystem.DirectoryTopBar
+import com.servacode.directory.core.designsystem.Space
 
-private val gutter = DirectoryTokens.SpacingXl.dp
-private val gap = DirectoryTokens.SpacingMd.dp
-
-/** "Check this field" under every field the backend named; the backend's text is not shown. */
-@Composable
-private fun FieldHint(failure: FormFailure?, vararg fields: String) {
-    if (failure != null && fields.any { it in failure.fields }) {
-        Text("تحقق من هذا الحقل", color = MaterialTheme.colorScheme.error)
-    }
-}
-
-@Composable
-private fun FailureText(failure: FormFailure?) {
-    failure?.let { Text(it.message, color = MaterialTheme.colorScheme.error) }
-}
-
-@Composable
-private fun PhoneField(value: String, onChange: (String) -> Unit) = OutlinedTextField(
-    value = value,
-    onValueChange = onChange,
-    modifier = Modifier.fillMaxWidth(),
-    singleLine = true,
-    label = { Text("رقم الهاتف") },
-    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-)
-
-@Composable
-private fun SecretField(value: String, label: String, onChange: (String) -> Unit, numeric: Boolean = false) =
-    OutlinedTextField(
-        value = value,
-        onValueChange = onChange,
-        modifier = Modifier.fillMaxWidth(),
-        singleLine = true,
-        label = { Text(label) },
-        visualTransformation = PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = if (numeric) KeyboardType.NumberPassword else KeyboardType.Password,
-        ),
-    )
-
-@Composable
-private fun Submit(label: String, busy: Boolean, enabled: Boolean, onClick: () -> Unit) {
-    if (busy) CircularProgressIndicator() else Button(onClick = onClick, enabled = enabled) { Text(label) }
-}
-
+/**
+ * Screens 12 to 14: signing in, creating an account, and getting back into one.
+ *
+ * The account in this app is a phone number and a password, verified by a code sent to that
+ * number — that is what the API offers, and these screens ask for exactly that and nothing more.
+ */
 @Composable
 fun LoginScreen(
     onSignedIn: () -> Unit,
     onRegister: () -> Unit,
     onRecovery: () -> Unit,
+    onBack: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -86,27 +57,31 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     LaunchedEffect(state.signedIn) { if (state.signedIn) onSignedIn() }
 
-    Column(
-        Modifier.fillMaxSize().padding(gutter).verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(gap),
-    ) {
-        Text("تسجيل الدخول", style = MaterialTheme.typography.headlineLarge)
-        PhoneField(phone) { phone = it }
-        FieldHint(state.failure, "phone")
-        SecretField(password, "كلمة المرور", { password = it })
-        FieldHint(state.failure, "password")
+    AuthPage(title = AuthCopy.SIGN_IN, onBack = onBack) {
+        PhoneField(phone, state.failure) { phone = it }
+        DirectoryPasswordField(
+            value = password,
+            onValueChange = { password = it },
+            label = AuthCopy.PASSWORD,
+            error = fieldError(state.failure, "password"),
+        )
         FailureText(state.failure)
-        Submit("دخول", state.busy, phone.isNotBlank() && password.isNotEmpty()) {
-            viewModel.submit(phone, password)
-        }
-        TextButton(onClick = onRecovery) { Text("نسيت كلمة المرور؟") }
-        TextButton(onClick = onRegister) { Text("إنشاء حساب جديد") }
+        DirectoryPrimaryButton(
+            text = AuthCopy.SIGN_IN,
+            onClick = { viewModel.submit(phone, password) },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = phone.isNotBlank() && password.isNotEmpty(),
+            loading = state.busy,
+        )
+        DirectoryTextButton(AuthCopy.FORGOT, onRecovery, Modifier.fillMaxWidth())
+        DirectoryTextButton(AuthCopy.CREATE, onRegister, Modifier.fillMaxWidth())
     }
 }
 
 @Composable
 fun RegisterScreen(
     onRegistered: () -> Unit,
+    onBack: () -> Unit,
     viewModel: RegisterViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -116,51 +91,71 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     LaunchedEffect(state.step) { if (state.step == ChallengeStep.DONE) onRegistered() }
 
-    Column(
-        Modifier.fillMaxSize().padding(gutter).verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(gap),
-    ) {
-        Text("إنشاء حساب", style = MaterialTheme.typography.headlineLarge)
+    AuthPage(title = AuthCopy.CREATE_ACCOUNT, onBack = onBack) {
         when (state.step) {
             ChallengeStep.DETAILS -> {
-                OutlinedTextField(
+                DirectoryTextField(
                     value = name,
                     onValueChange = { name = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    label = { Text("الاسم") },
+                    label = AuthCopy.NAME,
+                    leadingIcon = DirectoryIcons.person,
+                    error = fieldError(state.failure, "displayName"),
                 )
-                FieldHint(state.failure, "displayName")
-                PhoneField(phone) { phone = it }
-                FieldHint(state.failure, "phone")
-                Text("المحافظة", style = MaterialTheme.typography.titleMedium)
-                state.provinces.forEach { province ->
-                    TextButton(onClick = { viewModel.chooseProvince(province.id) }) {
-                        Text(if (province.id == state.provinceId) "✓ ${province.nameAr}" else province.nameAr)
+                PhoneField(phone, state.failure) { phone = it }
+                Text(
+                    text = AuthCopy.PROVINCE,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                DirectoryChipRow {
+                    state.provinces.forEach { province ->
+                        DirectoryFilterChip(
+                            text = province.nameAr,
+                            selected = province.id == state.provinceId,
+                            onClick = { viewModel.chooseProvince(province.id) },
+                        )
                     }
                 }
-                FieldHint(state.failure, "provinceId")
+                fieldError(state.failure, "provinceId")?.let { ErrorText(it) }
                 FailureText(state.failure)
-                Submit(
-                    "إرسال رمز التحقق",
-                    state.busy,
-                    name.isNotBlank() && phone.isNotBlank() && state.provinceId != null,
-                ) { viewModel.start(name, phone) }
+                DirectoryPrimaryButton(
+                    text = AuthCopy.SEND_CODE,
+                    onClick = { viewModel.start(name, phone) },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = name.isNotBlank() && phone.isNotBlank() && state.provinceId != null,
+                    loading = state.busy,
+                )
             }
-            ChallengeStep.CODE -> {
-                Text("أدخل الرمز المرسل إلى هاتفك")
-                SecretField(code, "رمز التحقق", { code = it }, numeric = true)
-                FieldHint(state.failure, "code", "challengeId")
-                FailureText(state.failure)
-                Submit("تحقق", state.busy, code.isNotBlank()) { viewModel.verify(code) }
-            }
+            ChallengeStep.CODE -> CodeStep(
+                code = code,
+                onCode = { code = it },
+                failure = state.failure,
+                busy = state.busy,
+                onVerify = { viewModel.verify(code) },
+            )
             ChallengeStep.PASSWORD -> {
-                SecretField(password, "كلمة المرور", { password = it })
-                FieldHint(state.failure, "password")
+                DirectoryPasswordField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = AuthCopy.PASSWORD,
+                    error = fieldError(state.failure, "password"),
+                )
                 FailureText(state.failure)
-                Submit("إنشاء الحساب", state.busy, password.isNotEmpty()) { viewModel.complete(password) }
+                DirectoryPrimaryButton(
+                    text = AuthCopy.CREATE_ACCOUNT,
+                    onClick = { viewModel.complete(password) },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = password.isNotEmpty(),
+                    loading = state.busy,
+                )
             }
-            ChallengeStep.DONE -> CircularProgressIndicator()
+            ChallengeStep.DONE -> DirectoryPrimaryButton(
+                text = AuthCopy.CREATE_ACCOUNT,
+                onClick = {},
+                modifier = Modifier.fillMaxWidth(),
+                loading = true,
+            )
         }
     }
 }
@@ -168,6 +163,7 @@ fun RegisterScreen(
 @Composable
 fun RecoveryScreen(
     onDone: () -> Unit,
+    onBack: () -> Unit,
     viewModel: RecoveryViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -175,34 +171,184 @@ fun RecoveryScreen(
     var code by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    Column(
-        Modifier.fillMaxSize().padding(gutter).verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(gap),
-    ) {
-        Text("استعادة كلمة المرور", style = MaterialTheme.typography.headlineLarge)
+    AuthPage(title = AuthCopy.RECOVERY, onBack = onBack) {
         when (state.step) {
             ChallengeStep.DETAILS -> {
-                PhoneField(phone) { phone = it }
-                FieldHint(state.failure, "phone")
+                Text(
+                    text = AuthCopy.RECOVERY_NOTE,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                PhoneField(phone, state.failure) { phone = it }
                 FailureText(state.failure)
-                Submit("إرسال رمز التحقق", state.busy, phone.isNotBlank()) { viewModel.start(phone) }
+                DirectoryPrimaryButton(
+                    text = AuthCopy.SEND_CODE,
+                    onClick = { viewModel.start(phone) },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = phone.isNotBlank(),
+                    loading = state.busy,
+                )
             }
-            ChallengeStep.CODE -> {
-                SecretField(code, "رمز التحقق", { code = it }, numeric = true)
-                FieldHint(state.failure, "code", "challengeId")
-                FailureText(state.failure)
-                Submit("تحقق", state.busy, code.isNotBlank()) { viewModel.verify(code) }
-            }
+            ChallengeStep.CODE -> CodeStep(
+                code = code,
+                onCode = { code = it },
+                failure = state.failure,
+                busy = state.busy,
+                onVerify = { viewModel.verify(code) },
+            )
             ChallengeStep.PASSWORD -> {
-                SecretField(password, "كلمة المرور الجديدة", { password = it })
-                FieldHint(state.failure, "password")
+                DirectoryPasswordField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = AuthCopy.NEW_PASSWORD,
+                    error = fieldError(state.failure, "password"),
+                )
                 FailureText(state.failure)
-                Submit("حفظ", state.busy, password.isNotEmpty()) { viewModel.reset(password) }
+                DirectoryPrimaryButton(
+                    text = AuthCopy.SAVE,
+                    onClick = { viewModel.reset(password) },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = password.isNotEmpty(),
+                    loading = state.busy,
+                )
             }
             ChallengeStep.DONE -> {
-                Text("تم تغيير كلمة المرور. سجّل الدخول بها الآن.")
-                Button(onClick = onDone) { Text("تسجيل الدخول") }
+                Text(
+                    text = AuthCopy.RECOVERED,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                DirectoryPrimaryButton(
+                    text = AuthCopy.SIGN_IN,
+                    onClick = onDone,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
         }
     }
+}
+
+/** The one frame all three wear: a way back, the name of what is being done, then the form. */
+@Composable
+private fun AuthPage(
+    title: String,
+    onBack: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    DirectoryPage(
+        topBar = { DirectoryTopBar(title = "", onBack = onBack) },
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = Space.xl)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Space.md),
+        ) {
+            Spacer(Modifier.height(Space.lg))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.semantics { heading() },
+            )
+            Spacer(Modifier.height(Space.sm))
+            content()
+            Spacer(Modifier.height(Space.xxl))
+        }
+    }
+}
+
+/** The code sent to the phone, in both the account and the recovery flows. */
+@Composable
+private fun CodeStep(
+    code: String,
+    onCode: (String) -> Unit,
+    failure: FormFailure?,
+    busy: Boolean,
+    onVerify: () -> Unit,
+) {
+    Text(
+        text = AuthCopy.CODE_SENT,
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth(),
+    )
+    DirectoryPasswordField(
+        value = code,
+        onValueChange = onCode,
+        label = AuthCopy.CODE,
+        error = fieldError(failure, "code", "challengeId"),
+        numeric = true,
+    )
+    FailureText(failure)
+    DirectoryPrimaryButton(
+        text = AuthCopy.VERIFY,
+        onClick = onVerify,
+        modifier = Modifier.fillMaxWidth(),
+        enabled = code.isNotBlank(),
+        loading = busy,
+    )
+}
+
+@Composable
+private fun PhoneField(value: String, failure: FormFailure?, onChange: (String) -> Unit) {
+    DirectoryTextField(
+        value = value,
+        onValueChange = onChange,
+        label = AuthCopy.PHONE,
+        leadingIcon = DirectoryIcons.phone,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+        error = fieldError(failure, "phone"),
+    )
+}
+
+/** "Check this field" under every field the backend named; the backend's text is not shown. */
+private fun fieldError(failure: FormFailure?, vararg fields: String): String? =
+    if (failure != null && fields.any { it in failure.fields }) AuthCopy.FIELD_ERROR else null
+
+@Composable
+private fun FailureText(failure: FormFailure?) {
+    failure?.let { ErrorText(it.message) }
+}
+
+@Composable
+private fun ErrorText(message: String) {
+    Text(
+        text = message,
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.error,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
+/** The words of the account screens, provisional until product copy is approved. */
+object AuthCopy {
+    const val SIGN_IN = "تسجيل الدخول"
+    const val CREATE = "إنشاء حساب جديد"
+    const val CREATE_ACCOUNT = "إنشاء حساب"
+    const val RECOVERY = "استعادة كلمة المرور"
+    const val RECOVERY_NOTE = "أدخل رقم هاتفك وسنرسل إليك رمز تحقق."
+    const val PHONE = "رقم الهاتف"
+    const val NAME = "الاسم"
+    const val PROVINCE = "المحافظة"
+    const val PASSWORD = "كلمة المرور"
+    const val NEW_PASSWORD = "كلمة المرور الجديدة"
+    const val CODE = "رمز التحقق"
+    const val CODE_SENT = "أدخل الرمز المرسل إلى هاتفك"
+    const val SEND_CODE = "إرسال رمز التحقق"
+    const val VERIFY = "تحقق"
+    const val SAVE = "حفظ"
+    const val FORGOT = "نسيت كلمة المرور؟"
+    const val RECOVERED = "تم تغيير كلمة المرور. سجّل الدخول بها الآن."
+    const val FIELD_ERROR = "تحقق من هذا الحقل"
 }

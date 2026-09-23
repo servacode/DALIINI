@@ -227,3 +227,23 @@ fun LoadMoreRow(
     }
 }
 
+
+/** The same wait, inside a card or a row rather than filling a screen of its own. */
+@Composable
+fun DirectoryInlineLoading(message: String, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.md),
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(IconSize.large),
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+    }
+}

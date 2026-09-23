@@ -27,15 +27,23 @@ internal fun NavigationMap(
     styleUrl: String,
     route: NavigationRoute?,
     location: MapPoint?,
+    modifier: Modifier = Modifier.fillMaxWidth().height(DefaultMapHeight),
 ) {
-    Box(Modifier.fillMaxWidth().height(320.dp)) {
+    Box(modifier) {
         if (MapStyle.isConfigured(styleUrl)) {
             RouteMap(styleUrl, route, location)
         } else {
-            Text("يجب ضبط مزود خرائط الإنتاج قبل عرض مسار الملاحة")
+            Text(
+                text = "يجب ضبط مزود خرائط الإنتاج قبل عرض مسار الملاحة",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
+
+/** What the map is given when the screen around it does not say. */
+private val DefaultMapHeight = 320.dp
 
 @Composable
 private fun RouteMap(

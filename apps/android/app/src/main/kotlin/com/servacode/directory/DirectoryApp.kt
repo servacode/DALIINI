@@ -8,11 +8,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.servacode.directory.core.auth.SessionState
+import com.servacode.directory.core.designsystem.DirectoryBottomBar
+import com.servacode.directory.core.designsystem.DirectoryDestination
+import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.model.DirectoryRoute
 import com.servacode.directory.core.model.MapNavigation
 import com.servacode.directory.feature.auth.LoginScreen
@@ -93,8 +97,7 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onSearch = { navController.navigate(DirectoryRoute.Search) },
                 onCategory = { navController.navigate(DirectoryRoute.Directory(it)) },
                 onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
-                onMap = { navController.navigate(DirectoryRoute.Map()) },
-                onAccount = { navController.navigate(DirectoryRoute.Account) },
+                bottomBar = { DirectoryTabs(DirectoryTab.HOME, navController) },
             )
         }
         composable<DirectoryRoute.ProvincePicker> {
@@ -146,6 +149,7 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
             MapScreen(
                 styleUrl = BuildConfig.MAP_STYLE_URL,
                 onBack = { navController.popBackStack() },
+                bottomBar = { DirectoryTabs(DirectoryTab.MAP, navController) },
                 onFacility = { id ->
                     val below = navController.previousBackStackEntry
                         ?.takeIf { it.destination.hasRoute<DirectoryRoute.FacilityDetailRoute>() }
@@ -180,6 +184,8 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 },
                 onSignIn = { navController.navigate(DirectoryRoute.Login) },
                 onRegister = { navController.navigate(DirectoryRoute.Register) },
+                onBack = { navController.popBackStack() },
+                bottomBar = { DirectoryTabs(DirectoryTab.ACCOUNT, navController) },
             )
         }
         composable<DirectoryRoute.Login> {
@@ -187,6 +193,7 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onSignedIn = { navController.popBackStack() },
                 onRegister = { navController.navigate(DirectoryRoute.Register) },
                 onRecovery = { navController.navigate(DirectoryRoute.Recovery) },
+                onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Register> {
@@ -196,13 +203,17 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                         popUpTo<DirectoryRoute.Home>()
                     }
                 },
+                onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Recovery> {
-            RecoveryScreen(onDone = { navController.popBackStack() })
+            RecoveryScreen(
+                onDone = { navController.popBackStack() },
+                onBack = { navController.popBackStack() },
+            )
         }
         composable<DirectoryRoute.MyRatings> {
-            RatingsScreen()
+            RatingsScreen(onBack = { navController.popBackStack() })
         }
 
         composable<DirectoryRoute.MyFacilities> {
@@ -233,4 +244,58 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
             DutyScreen()
         }
     }
+}
+
+/** The app's few main places, as the bar along the bottom carries them. */
+private enum class DirectoryTab { HOME, MAP, ACCOUNT }
+
+/**
+ * The bottom bar.
+ *
+ * It holds the three places the app actually has. The references show a fourth, saved
+ * facilities, and nothing in the API stores them, so it is not drawn rather than drawn dead.
+ */
+@Composable
+private fun DirectoryTabs(current: DirectoryTab, navController: NavHostController) {
+    DirectoryBottomBar(
+        listOf(
+            DirectoryDestination(
+                label = "الرئيسية",
+                icon = DirectoryIcons.home,
+                selected = current == DirectoryTab.HOME,
+            ) {
+                if (current != DirectoryTab.HOME) {
+                    navController.navigate(DirectoryRoute.Home) {
+                        popUpTo<DirectoryRoute.Home> { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            },
+            DirectoryDestination(
+                label = "الخريطة",
+                icon = DirectoryIcons.map,
+                selected = current == DirectoryTab.MAP,
+            ) {
+                if (current != DirectoryTab.MAP) {
+                    // One map at most, as everywhere else that opens it.
+                    navController.navigate(DirectoryRoute.Map()) {
+                        popUpTo<DirectoryRoute.Map> { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            },
+            DirectoryDestination(
+                label = "حسابي",
+                icon = DirectoryIcons.person,
+                selected = current == DirectoryTab.ACCOUNT,
+            ) {
+                if (current != DirectoryTab.ACCOUNT) {
+                    navController.navigate(DirectoryRoute.Account) {
+                        popUpTo<DirectoryRoute.Account> { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            },
+        ),
+    )
 }

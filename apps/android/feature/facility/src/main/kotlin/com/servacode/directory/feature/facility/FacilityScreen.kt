@@ -1,6 +1,8 @@
 package com.servacode.directory.feature.facility
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,8 +10,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -19,6 +25,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,8 +37,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.ActionCircle
 import com.servacode.directory.core.designsystem.AvailabilityPill
-import com.servacode.directory.core.designsystem.BrandColors
 import com.servacode.directory.core.designsystem.DirectoryErrorState
+import com.servacode.directory.core.designsystem.DirectoryImage
 import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIconButton
 import com.servacode.directory.core.designsystem.DirectoryIcons
@@ -37,6 +46,7 @@ import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryTextButton
+import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.MetaRow
 import com.servacode.directory.core.designsystem.PhotoPager
@@ -45,6 +55,7 @@ import com.servacode.directory.core.designsystem.RatingBadge
 import com.servacode.directory.core.designsystem.SectionHeader
 import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
+import com.servacode.directory.core.designsystem.StarPicker
 import com.servacode.directory.core.model.BusinessHour
 
 /**
@@ -64,6 +75,21 @@ fun FacilityScreen(
     viewModel: FacilityViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    // Screen 10 lives here rather than on a route of its own: the pictures belong to the
+    // facility already loaded, and nothing is fetched to show them larger.
+    var photosOpen by remember { mutableStateOf(false) }
+    val photos = (state as? FacilityUiState.Content)?.value?.imageUrls.orEmpty()
+    BackHandler(enabled = photosOpen) { photosOpen = false }
+
+    if (photosOpen && photos.isNotEmpty()) {
+        val content = state as? FacilityUiState.Content
+        PhotosPage(
+            urls = photos,
+            name = content?.value?.summary?.nameAr,
+            onBack = { photosOpen = false },
+        )
+        return
+    }
 
     DirectoryPage { padding ->
         when (val value = state) {
@@ -84,6 +110,7 @@ fun FacilityScreen(
                         urls = value.value.imageUrls,
                         contentDescription = value.value.summary.nameAr,
                         modifier = Modifier.height(Sizes.hero),
+                        onPhoto = { photosOpen = true },
                     )
                     Surface(
                         modifier = Modifier.padding(Space.md).align(Alignment.TopStart),
@@ -228,7 +255,7 @@ private fun FacilityBody(
 
         SectionHeader(FacilityCopy.YOUR_RATING)
         if (value.signedIn) {
-            RatingStars(myRating = value.myRating, onRate = onRate)
+            StarPicker(stars = value.myRating, onRate = onRate, label = FacilityCopy::rateLabel)
             value.ratingMessage?.let {
                 Text(
                     text = it,
@@ -238,24 +265,6 @@ private fun FacilityBody(
             }
         } else {
             DirectoryTextButton(FacilityCopy.SIGN_IN_TO_RATE, onSignIn)
-        }
-    }
-}
-
-/** The one rating this user leaves, out of five. */
-@Composable
-private fun RatingStars(myRating: Int?, onRate: (Int) -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
-        (1..STARS).forEach { stars ->
-            val given = (myRating ?: 0) >= stars
-            Box(modifier = Modifier.size(Sizes.touchTarget), contentAlignment = Alignment.Center) {
-                DirectoryIconButton(
-                    icon = DirectoryIcons.star,
-                    label = FacilityCopy.rateLabel(stars),
-                    onClick = { onRate(stars) },
-                    tint = if (given) BrandColors.warning else MaterialTheme.colorScheme.outline,
-                )
-            }
         }
     }
 }
@@ -287,8 +296,6 @@ private fun HourRow(hour: BusinessHour) {
     }
 }
 
-private const val STARS = 5
-
 /** 0 is Monday, matching the backend's weekday numbering. */
 private fun weekdayName(weekday: Int): String = when (weekday) {
     0 -> "الاثنين"
@@ -316,6 +323,70 @@ object FacilityCopy {
     const val SERVICES = "الخدمات"
     const val YOUR_RATING = "تقييمك"
     const val SIGN_IN_TO_RATE = "سجّل الدخول لتقييم المنشأة"
+    const val PHOTOS = "الصور"
+    const val CLOSE = "إغلاق"
 
     fun rateLabel(stars: Int): String = "$stars من 5"
 }
+
+/**
+ * Screen 10. Every picture the facility has, two to a row, with any one of them opened large.
+ *
+ * The pictures are the ones the facility's own detail carries; there is no separate gallery in
+ * the contract, so nothing more is asked of the backend to show them.
+ */
+@Composable
+private fun PhotosPage(urls: List<String>, name: String?, onBack: () -> Unit) {
+    var opened by remember { mutableStateOf<Int?>(null) }
+    BackHandler(enabled = opened != null) { opened = null }
+
+    val openedIndex = opened
+    if (openedIndex != null) {
+        DirectoryPage(background = MaterialTheme.colorScheme.surfaceVariant) { padding ->
+            Box(Modifier.fillMaxSize().padding(padding)) {
+                PhotoPager(
+                    urls = urls.drop(openedIndex) + urls.take(openedIndex),
+                    contentDescription = name,
+                    modifier = Modifier.fillMaxSize(),
+                )
+                Surface(
+                    modifier = Modifier.padding(Space.md).align(Alignment.TopStart),
+                    shape = RoundedCornerShape(Radius.pill),
+                    color = MaterialTheme.colorScheme.surface,
+                ) {
+                    DirectoryIconButton(
+                        icon = DirectoryIcons.close,
+                        label = FacilityCopy.CLOSE,
+                        onClick = { opened = null },
+                        tint = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
+        }
+        return
+    }
+
+    DirectoryPage(
+        topBar = { DirectoryTopBar(title = FacilityCopy.PHOTOS, onBack = onBack) },
+    ) { padding ->
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(PHOTO_COLUMNS),
+            modifier = Modifier.fillMaxSize().padding(padding),
+            contentPadding = PaddingValues(Space.screen),
+            horizontalArrangement = Arrangement.spacedBy(Space.sm),
+            verticalArrangement = Arrangement.spacedBy(Space.sm),
+        ) {
+            itemsIndexed(urls) { index, url ->
+                DirectoryImage(
+                    url = url,
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .clickable { opened = index },
+                    contentDescription = name,
+                )
+            }
+        }
+    }
+}
+
+private const val PHOTO_COLUMNS = 2

@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import coil3.compose.AsyncImage
@@ -399,3 +400,97 @@ fun ActionCircle(
         )
     }
 }
+
+/**
+ * A rating as stars. The number is what the backend holds; the stars only draw it, rounding to
+ * the nearest whole star, and the figure is written beside them wherever it matters.
+ */
+@Composable
+fun StarRow(
+    stars: Int,
+    modifier: Modifier = Modifier,
+    size: Dp = IconSize.small,
+    max: Int = MAX_STARS,
+) {
+    Row(
+        modifier = modifier.clearAndSetSemantics { },
+        horizontalArrangement = Arrangement.spacedBy(Space.xs),
+    ) {
+        (1..max).forEach { star ->
+            DirectoryIcon(
+                icon = DirectoryIcons.star,
+                contentDescription = null,
+                size = size,
+                tint = if (star <= stars) BrandColors.warning else MaterialTheme.colorScheme.outline,
+            )
+        }
+    }
+}
+
+/** The stars the user themselves gives, out of five, each one its own target. */
+@Composable
+fun StarPicker(
+    stars: Int?,
+    onRate: (Int) -> Unit,
+    label: (Int) -> String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
+        (1..MAX_STARS).forEach { star ->
+            DirectoryIconButton(
+                icon = DirectoryIcons.star,
+                label = label(star),
+                onClick = { onRate(star) },
+                enabled = enabled,
+                tint = if (star <= (stars ?: 0)) BrandColors.warning else MaterialTheme.colorScheme.outline,
+            )
+        }
+    }
+}
+
+/**
+ * What a facility's rating adds up to: the average as the backend computed it, the stars that
+ * agree with it, and how many people it is made of. Nothing is shown where nobody has rated.
+ */
+@Composable
+fun RatingSummary(
+    average: Double?,
+    count: Int,
+    modifier: Modifier = Modifier,
+    emptyText: String = "لا توجد تقييمات بعد",
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        if (average == null || count <= 0) {
+            Text(
+                text = emptyText,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            return@Column
+        }
+        Text(
+            text = averageText(average),
+            style = DirectoryTextStyles.display,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        StarRow(stars = Math.round(average).toInt(), size = IconSize.large)
+        Text(
+            text = "($count)",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** "4.6" — one decimal, as the rest of the app writes an average. */
+fun averageText(average: Double): String {
+    val rounded = Math.round(average * 10).toInt()
+    return "${rounded / 10}.${rounded % 10}"
+}
+
+const val MAX_STARS = 5

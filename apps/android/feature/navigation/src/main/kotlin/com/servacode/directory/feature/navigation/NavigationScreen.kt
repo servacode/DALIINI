@@ -1,32 +1,47 @@
 package com.servacode.directory.feature.navigation
 
-import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.designsystem.DirectoryCard
+import com.servacode.directory.core.designsystem.DirectoryIcons
+import com.servacode.directory.core.designsystem.DirectoryInlineLoading
+import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
+import com.servacode.directory.core.designsystem.DirectoryPage
+import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
+import com.servacode.directory.core.designsystem.DirectorySecondaryButton
+import com.servacode.directory.core.designsystem.DirectoryTopBar
+import com.servacode.directory.core.designsystem.MetaRow
+import com.servacode.directory.core.designsystem.Space
+import com.servacode.directory.core.location.FOREGROUND_LOCATION_PERMISSIONS
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.model.DistanceText
+import androidx.compose.ui.platform.LocalContext
 import kotlin.math.roundToInt
 
+/**
+ * Screen 11. The route on the map, and under it the one instruction that matters now.
+ *
+ * The engine behind it is untouched: the same routing, the same following of the user's
+ * location, the same rerouting and the same spoken guidance. None of this has been tried on a
+ * device yet, and this screen does not claim otherwise.
+ */
 @Composable
 fun BuiltInNavigationScreen(
     styleUrl: String,
@@ -40,77 +55,122 @@ fun BuiltInNavigationScreen(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { viewModel.retry() }
 
-    Column(
-        Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text("الملاحة", style = MaterialTheme.typography.headlineLarge)
-        val progress = progressOf(state.navigation)
-        NavigationMap(
-            styleUrl = styleUrl,
-            route = progress?.route,
-            location = progress?.location,
-        )
-        when (val navigation = state.navigation) {
-            NavigationState.Idle,
-            NavigationState.Routing,
-            -> CircularProgressIndicator()
-            is NavigationState.Navigating -> NavigationProgressPanel(navigation.progress)
-            is NavigationState.Rerouting -> {
-                Text("جارٍ إعادة حساب المسار…")
-                NavigationProgressPanel(navigation.progress)
-            }
-            is NavigationState.Arrived -> Text(
-                "لقد وصلت إلى وجهتك",
-                style = MaterialTheme.typography.headlineSmall,
+    DirectoryPage(
+        topBar = { DirectoryTopBar(title = NavigationCopy.TITLE, onBack = onClose) },
+    ) { padding ->
+        Box(Modifier.fillMaxSize().padding(padding)) {
+            val progress = progressOf(state.navigation)
+            NavigationMap(
+                styleUrl = styleUrl,
+                route = progress?.route,
+                location = progress?.location,
+                modifier = Modifier.fillMaxSize(),
             )
-            is NavigationState.Error -> {
-                Text(errorMessage(navigation.reason))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (navigation.reason == "LOCATION_PERMISSION_REQUIRED") {
-                        Button(
-                            onClick = {
-                                permissionLauncher.launch(
-                                    arrayOf(
-                                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                                        Manifest.permission.ACCESS_FINE_LOCATION,
-                                    )
-                                )
-                            },
-                        ) { Text("السماح بالموقع") }
-                    } else {
-                        Button(onClick = viewModel::retry) { Text("إعادة المحاولة") }
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(Space.base),
+                verticalArrangement = Arrangement.spacedBy(Space.sm),
+            ) {
+                state.warning?.let { DirectoryOfflineNotice(text = warningMessage(it)) }
+                when (val navigation = state.navigation) {
+                    NavigationState.Idle,
+                    NavigationState.Routing,
+                    -> DirectoryCard { DirectoryInlineLoading(NavigationCopy.ROUTING) }
+                    is NavigationState.Navigating -> DirectoryCard {
+                        NavigationProgressPanel(navigation.progress)
                     }
-                    OutlinedButton(
-                        onClick = {
-                            val uri = Uri.parse(
-                                "geo:${destination.latitude},${destination.longitude}?q=" +
-                                    "${destination.latitude},${destination.longitude}"
+                    is NavigationState.Rerouting -> DirectoryCard {
+                        Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+                            Text(
+                                text = NavigationCopy.REROUTING,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
                             )
-                            context.startActivity(Intent(Intent.ACTION_VIEW, uri))
-                        },
-                    ) { Text("فتح تطبيق خرائط خارجي") }
+                            NavigationProgressPanel(navigation.progress)
+                        }
+                    }
+                    is NavigationState.Arrived -> DirectoryCard {
+                        Text(
+                            text = NavigationCopy.ARRIVED,
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    is NavigationState.Error -> DirectoryCard {
+                        Column(verticalArrangement = Arrangement.spacedBy(Space.md)) {
+                            Text(
+                                text = errorMessage(navigation.reason),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            if (navigation.reason == "LOCATION_PERMISSION_REQUIRED") {
+                                DirectoryPrimaryButton(
+                                    text = NavigationCopy.ALLOW_LOCATION,
+                                    onClick = {
+                                        permissionLauncher.launch(
+                                            FOREGROUND_LOCATION_PERMISSIONS.toTypedArray(),
+                                        )
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            } else {
+                                DirectoryPrimaryButton(
+                                    text = NavigationCopy.RETRY,
+                                    onClick = viewModel::retry,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            }
+                            DirectorySecondaryButton(
+                                text = NavigationCopy.EXTERNAL_MAPS,
+                                onClick = {
+                                    val uri = Uri.parse(
+                                        "geo:${destination.latitude},${destination.longitude}?q=" +
+                                            "${destination.latitude},${destination.longitude}",
+                                    )
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    }
                 }
+                DirectorySecondaryButton(
+                    text = NavigationCopy.END,
+                    onClick = onClose,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
-        }
-        state.warning?.let { Text(warningMessage(it)) }
-        OutlinedButton(onClick = onClose, modifier = Modifier.fillMaxWidth()) {
-            Text("إنهاء الملاحة")
         }
     }
 }
 
 @Composable
 private fun NavigationProgressPanel(progress: NavigationProgress) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
         progress.maneuver?.let {
             Text(
-                ArabicManeuverPhraseBuilder.phrase(it),
+                text = ArabicManeuverPhraseBuilder.phrase(it),
                 style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
-        Text("المتبقي: ${DistanceText.of(progress.remainingDistanceMeters)}")
-        Text("الوقت التقريبي: ${formatDuration(progress.remainingDurationSeconds)}")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(Space.lg),
+        ) {
+            MetaRow(
+                icon = DirectoryIcons.route,
+                text = DistanceText.of(progress.remainingDistanceMeters),
+                modifier = Modifier.weight(1f),
+            )
+            MetaRow(
+                icon = DirectoryIcons.clock,
+                text = formatDuration(progress.remainingDurationSeconds),
+                modifier = Modifier.weight(1f),
+            )
+        }
     }
 }
 
@@ -136,4 +196,16 @@ private fun warningMessage(code: String): String = when (code) {
     "REROUTE_NETWORK_FAILED" -> "تعذر إعادة التوجيه الآن؛ سيستمر عرض المسار الحالي."
     "LOCATION_TEMPORARILY_UNAVAILABLE" -> "إشارة الموقع غير متاحة مؤقتًا."
     else -> code
+}
+
+/** The words of the navigation, provisional until product copy is approved. */
+object NavigationCopy {
+    const val TITLE = "الملاحة"
+    const val ROUTING = "جارٍ حساب المسار…"
+    const val REROUTING = "جارٍ إعادة حساب المسار…"
+    const val ARRIVED = "لقد وصلت إلى وجهتك"
+    const val ALLOW_LOCATION = "السماح بالموقع"
+    const val RETRY = "إعادة المحاولة"
+    const val EXTERNAL_MAPS = "فتح تطبيق خرائط خارجي"
+    const val END = "إنهاء الملاحة"
 }

@@ -59,12 +59,14 @@ fun MapScreen(
     styleUrl: String,
     onFacility: (String) -> Unit,
     onBack: () -> Unit,
+    bottomBar: @Composable () -> Unit = {},
     viewModel: MapViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     DirectoryPage(
         topBar = { DirectoryTopBar(title = MapCopy.TITLE, onBack = onBack) },
+        bottomBar = bottomBar,
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
             when {
