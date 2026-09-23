@@ -1,0 +1,401 @@
+package com.servacode.directory.core.designsystem
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.annotation.DrawableRes
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import coil3.compose.AsyncImage
+import com.servacode.directory.core.model.AvailabilityLabel
+import com.servacode.directory.core.model.AvailabilityState
+import com.servacode.directory.core.model.DistanceText
+import com.servacode.directory.core.model.FacilitySummary
+
+/**
+ * A picture from the backend, on the app's own placeholder until it arrives. Decorative by
+ * default: a facility's name is always written beside its picture.
+ */
+@Composable
+fun DirectoryImage(
+    url: String?,
+    modifier: Modifier = Modifier,
+    contentDescription: String? = null,
+    shape: androidx.compose.ui.graphics.Shape = RoundedCornerShape(Radius.medium),
+) {
+    Box(
+        modifier = modifier
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        if (url != null) {
+            // The caller gives the frame its size; the picture fills exactly that and is cropped
+            // to it, so a slow or missing image never changes the layout around it.
+            AsyncImage(
+                model = url,
+                contentDescription = contentDescription,
+                modifier = Modifier.matchParentSize(),
+                contentScale = ContentScale.Crop,
+            )
+        }
+    }
+}
+
+/**
+ * Whether a facility is open, on duty, closed for now or closed, in the backend's words and in a
+ * colour that matches them. The word carries the meaning; the colour only agrees with it.
+ */
+@Composable
+fun AvailabilityPill(summary: FacilitySummary, modifier: Modifier = Modifier) {
+    AvailabilityPill(summary.availability, AvailabilityLabel.of(summary), modifier)
+}
+
+/** The same pill where all that is known is the state itself, as on the map. */
+@Composable
+fun AvailabilityPill(state: AvailabilityState, modifier: Modifier = Modifier) {
+    AvailabilityPill(state, AvailabilityLabel.of(state), modifier)
+}
+
+@Composable
+private fun AvailabilityPill(state: AvailabilityState, text: String, modifier: Modifier) {
+    val colour = when (state) {
+        AvailabilityState.OPEN -> BrandColors.success
+        AvailabilityState.DUTY -> BrandColors.info
+        AvailabilityState.TEMP_CLOSED -> BrandColors.warning
+        AvailabilityState.CLOSED -> BrandColors.contentMuted
+    }
+    Row(
+        modifier = modifier
+            .background(colour.copy(alpha = 0.10f), RoundedCornerShape(Radius.pill))
+            .padding(horizontal = Space.md, vertical = Space.xs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.xs),
+    ) {
+        Box(Modifier.size(Space.sm).clip(RoundedCornerShape(Radius.pill)).background(colour))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = colour,
+            maxLines = 1,
+        )
+    }
+}
+
+/** How far away the backend said a facility is. Shown only when it said. */
+@Composable
+fun DistanceLabel(meters: Double?, modifier: Modifier = Modifier) {
+    if (meters == null) return
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.xs),
+    ) {
+        DirectoryIcon(DirectoryIcons.pin, null, size = IconSize.small, tint = MaterialTheme.colorScheme.primary)
+        Text(
+            text = DistanceText.of(meters),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** A facility's rating, when it has one. */
+@Composable
+fun RatingBadge(average: Double?, count: Int, modifier: Modifier = Modifier) {
+    if (average == null || count <= 0) return
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.xs),
+    ) {
+        DirectoryIcon(DirectoryIcons.star, null, size = IconSize.small, tint = BrandColors.warning)
+        Text(
+            text = ratingText(average, count),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** "4.5 (12)" — the average as the backend holds it, with how many said so. */
+fun ratingText(average: Double, count: Int): String {
+    val rounded = Math.round(average * 10).toInt()
+    return "${rounded / 10}.${rounded % 10} ($count)"
+}
+
+/** A line of detail: an icon that repeats what the words say, and the words. */
+@Composable
+fun MetaRow(
+    @DrawableRes icon: Int,
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.md),
+    ) {
+        DirectoryIcon(icon, null, tint = color)
+        Text(text, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+    }
+}
+
+/**
+ * One facility in a list: its picture when it has one, its name, what it is, whether it is open,
+ * how far it is when the backend said, and its rating when it has one.
+ */
+@Composable
+fun FacilityRow(
+    facility: FacilitySummary,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = Space.md, horizontal = Space.base),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.md),
+    ) {
+        FacilityRowContent(facility)
+    }
+}
+
+/** The same facility, as its own card: how a result of a search or a saved list is shown. */
+@Composable
+fun FacilityCard(
+    facility: FacilitySummary,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    DirectoryCard(modifier = modifier, onClick = onClick) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Space.md),
+        ) {
+            FacilityRowContent(facility)
+        }
+    }
+}
+
+@Composable
+private fun RowScope.FacilityRowContent(facility: FacilitySummary) {
+    // The list contract carries no picture for a facility, only the detail does, so a row
+    // shows the brand's own mark rather than an empty frame.
+    FacilityThumbnail(Modifier.size(Sizes.thumbnail))
+    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        Text(
+            text = facility.nameAr,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = facility.category.nameAr,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Space.sm),
+        ) {
+            AvailabilityPill(facility)
+            DistanceLabel(facility.distanceMeters)
+            RatingBadge(facility.ratingAverage, facility.ratingCount)
+        }
+    }
+    DirectoryIcon(
+        icon = DirectoryIcons.chevron,
+        contentDescription = null,
+        modifier = Modifier.clearAndSetSemantics { },
+        tint = MaterialTheme.colorScheme.outlineVariant,
+    )
+}
+
+/** The mark a facility wears in a list, in place of a picture the list contract does not carry. */
+@Composable
+fun FacilityThumbnail(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(Radius.medium))
+            .background(MaterialTheme.colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center,
+    ) {
+        DirectoryIcon(DirectoryIcons.pin, null, size = IconSize.large, tint = MaterialTheme.colorScheme.primary)
+    }
+}
+
+/**
+ * A category, as Home shows them: a circle that fills when it is the one being looked at, with
+ * its name under it.
+ */
+@Composable
+fun CategoryCircle(
+    label: String,
+    @DrawableRes icon: Int,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .width(Sizes.categoryCircle + Space.xl)
+            .clickable(onClick = onClick)
+            .padding(vertical = Space.xs),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(Sizes.categoryCircle)
+                .clip(RoundedCornerShape(Radius.pill))
+                .background(
+                    if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            DirectoryIcon(
+                icon = icon,
+                contentDescription = null,
+                tint = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+            )
+        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = if (selected) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+/**
+ * The pictures a facility has, one at a time, with a mark under them for how many there are.
+ *
+ * A facility with no picture gets the brand's own frame instead of an empty grey box.
+ */
+@Composable
+fun PhotoPager(
+    urls: List<String>,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    onPhoto: ((Int) -> Unit)? = null,
+) {
+    if (urls.isEmpty()) {
+        FacilityThumbnail(modifier.fillMaxWidth())
+        return
+    }
+    val pages = rememberPagerState(pageCount = { urls.size })
+    Box(modifier = modifier.fillMaxWidth()) {
+        HorizontalPager(state = pages, modifier = Modifier.fillMaxSize()) { page ->
+            val photo = Modifier
+                .fillMaxSize()
+                .let { if (onPhoto == null) it else it.clickable { onPhoto(page) } }
+            DirectoryImage(
+                url = urls[page],
+                modifier = photo,
+                contentDescription = contentDescription,
+                shape = RectangleShape,
+            )
+        }
+        if (urls.size > 1) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(Space.base)
+                    .clearAndSetSemantics { },
+                horizontalArrangement = Arrangement.spacedBy(Space.xs),
+            ) {
+                urls.indices.forEach { index ->
+                    val here = index == pages.currentPage
+                    Box(
+                        modifier = Modifier
+                            .size(if (here) Space.sm else Space.xs)
+                            .clip(RoundedCornerShape(Radius.pill))
+                            .background(
+                                if (here) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.surface
+                                },
+                            ),
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * One of the few things a screen offers to do: a soft circle, the icon inside it, and the word
+ * under it. Disabled when the backend gave nothing to act on, rather than hidden.
+ */
+@Composable
+fun ActionCircle(
+    label: String,
+    @DrawableRes icon: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    val tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+    Column(
+        modifier = modifier
+            .width(Sizes.actionCircle + Space.xl)
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(vertical = Space.xs),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Space.xs),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(Sizes.actionCircle)
+                .clip(RoundedCornerShape(Radius.pill))
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center,
+        ) {
+            DirectoryIcon(icon, null, tint = tint)
+        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.outline,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
