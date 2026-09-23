@@ -134,6 +134,7 @@ fun FacilityScreen(
                     onSignIn = onSignIn,
                     onCall = onCall,
                     onRate = viewModel::rate,
+                    onToggleFavorite = viewModel::toggleFavorite,
                 )
             }
         }
@@ -149,6 +150,7 @@ private fun FacilityBody(
     onSignIn: () -> Unit,
     onCall: (String) -> Unit,
     onRate: (Int) -> Unit,
+    onToggleFavorite: () -> Unit,
 ) {
     val detail = value.value
     val summary = detail.summary
@@ -210,8 +212,13 @@ private fun FacilityBody(
                 enabled = placed,
             )
             ActionCircle(
-                label = FacilityCopy.RATINGS,
+                label = if (summary.isFavorite) FacilityCopy.SAVED else FacilityCopy.SAVE,
                 icon = DirectoryIcons.star,
+                onClick = { if (value.signedIn) onToggleFavorite() else onSignIn() },
+            )
+            ActionCircle(
+                label = FacilityCopy.RATINGS,
+                icon = DirectoryIcons.check,
                 onClick = onRatings,
             )
         }
@@ -323,6 +330,8 @@ object FacilityCopy {
     const val DIRECTIONS = "الطريق"
     const val MAP = "الخريطة"
     const val RATINGS = "التقييمات"
+    const val SAVE = "حفظ"
+    const val SAVED = "محفوظة"
     const val ADDRESS = "العنوان"
     const val HOURS = "ساعات العمل"
     const val ABOUT = "نبذة"

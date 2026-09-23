@@ -33,6 +33,16 @@ class AccountRepository @Inject constructor(
         api.updateProfile(provinceId = provinceId).also { preferences.selectProvince(provinceId) }
     }
 
+    /**
+     * The profile fields the backend accepts. A province chosen here is also what this device
+     * browses, so the two never disagree.
+     */
+    suspend fun update(displayName: String, provinceId: String?): Result<AccountProfile> = runCatching {
+        api.updateProfile(displayName = displayName, provinceId = provinceId).also {
+            if (provinceId != null) preferences.selectProvince(provinceId)
+        }
+    }
+
     /** The backend revokes every session on deletion, so this device's session ends too. */
     suspend fun deleteAccount(): Result<Unit> = runCatching {
         api.requestAccountDeletion()

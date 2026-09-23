@@ -13,6 +13,10 @@ class AccountUseCase @Inject constructor(
     suspend operator fun invoke(): Result<AccountProfile> = repository.profile()
     suspend fun provinces(): Result<List<Province>> = repository.provinces()
     suspend fun changeProvince(provinceId: String): Result<AccountProfile> = repository.changeProvince(provinceId)
+
+    /** The fields the backend accepts, and no others: a display name and a province. */
+    suspend fun update(displayName: String, provinceId: String?): Result<AccountProfile> =
+        repository.update(displayName, provinceId)
     suspend fun logout() = repository.logout()
 }
 

@@ -24,7 +24,15 @@ import com.servacode.directory.feature.auth.LoginScreen
 import com.servacode.directory.feature.auth.RecoveryScreen
 import com.servacode.directory.feature.auth.RegisterScreen
 import kotlinx.coroutines.flow.StateFlow
+import com.servacode.directory.core.model.LegalPageKey
 import com.servacode.directory.feature.account.AccountScreen
+import com.servacode.directory.feature.account.FavoritesScreen
+import com.servacode.directory.feature.account.NotificationsScreen
+import com.servacode.directory.feature.account.PasswordChangeScreen
+import com.servacode.directory.feature.account.ProfileEditScreen
+import com.servacode.directory.feature.settings.HelpScreen
+import com.servacode.directory.feature.settings.LegalPageScreen
+import com.servacode.directory.feature.settings.SettingsScreen
 import com.servacode.directory.feature.bootstrap.BootstrapScreen
 import com.servacode.directory.feature.bootstrap.LocationPermissionScreen
 import com.servacode.directory.feature.bootstrap.StartDestination
@@ -210,6 +218,12 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onSignIn = { navController.navigate(DirectoryRoute.Login) },
                 onRegister = { navController.navigate(DirectoryRoute.Register) },
                 onBack = { navController.popBackStack() },
+                onEditProfile = { navController.navigate(DirectoryRoute.EditProfile) },
+                onChangePassword = { navController.navigate(DirectoryRoute.ChangePassword) },
+                onFavorites = { navController.navigate(DirectoryRoute.Favorites) },
+                onNotifications = { navController.navigate(DirectoryRoute.Notifications) },
+                onSettings = { navController.navigate(DirectoryRoute.Settings) },
+                onHelp = { navController.navigate(DirectoryRoute.Help) },
                 bottomBar = { DirectoryTabs(DirectoryTab.ACCOUNT, navController) },
             )
         }
@@ -234,6 +248,60 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
         composable<DirectoryRoute.Recovery> {
             RecoveryScreen(
                 onDone = { navController.popBackStack() },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable<DirectoryRoute.Favorites> {
+            FavoritesScreen(
+                onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable<DirectoryRoute.Notifications> {
+            NotificationsScreen(
+                onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
+                onOwnerFacilities = { navController.navigate(DirectoryRoute.MyFacilities) },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable<DirectoryRoute.EditProfile> {
+            ProfileEditScreen(
+                onDone = { navController.popBackStack() },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable<DirectoryRoute.ChangePassword> {
+            PasswordChangeScreen(
+                // Every session ended, this one included: the app goes back to signing in.
+                onChanged = {
+                    navController.navigate(DirectoryRoute.Login) {
+                        popUpTo<DirectoryRoute.Home>()
+                    }
+                },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable<DirectoryRoute.Settings> {
+            SettingsScreen(
+                onChangePassword = { navController.navigate(DirectoryRoute.ChangePassword) },
+                onNotifications = { navController.navigate(DirectoryRoute.Notifications) },
+                onHelp = { navController.navigate(DirectoryRoute.Help) },
+                onBack = { navController.popBackStack() },
+                appVersion = BuildConfig.VERSION_NAME,
+                signedIn = session == SessionState.SIGNED_IN,
+            )
+        }
+        composable<DirectoryRoute.Help> {
+            HelpScreen(
+                onPage = { key -> navController.navigate(DirectoryRoute.LegalPageRoute(key.name)) },
+                onBack = { navController.popBackStack() },
+                appVersion = BuildConfig.VERSION_NAME,
+            )
+        }
+        composable<DirectoryRoute.LegalPageRoute> { backStackEntry ->
+            val key = backStackEntry.toRoute<DirectoryRoute.LegalPageRoute>().key
+            LegalPageScreen(
+                key = runCatching { LegalPageKey.valueOf(key) }.getOrDefault(LegalPageKey.ABOUT),
                 onBack = { navController.popBackStack() },
             )
         }

@@ -61,6 +61,12 @@ fun AccountScreen(
     onSignIn: () -> Unit,
     onRegister: () -> Unit,
     onBack: () -> Unit,
+    onEditProfile: () -> Unit,
+    onChangePassword: () -> Unit,
+    onFavorites: () -> Unit,
+    onNotifications: () -> Unit,
+    onSettings: () -> Unit,
+    onHelp: () -> Unit,
     bottomBar: @Composable () -> Unit = {},
     viewModel: AccountViewModel = hiltViewModel(),
 ) {
@@ -95,16 +101,24 @@ fun AccountScreen(
     ) { padding ->
         when (val value = state) {
             AccountUiState.Loading -> DirectoryLoading(Modifier.padding(padding))
-            AccountUiState.SignedOut -> DirectoryMessageState(
-                icon = DirectoryIcons.person,
-                title = AccountCopy.SIGNED_OUT,
-                body = AccountCopy.SIGNED_OUT_BODY,
-                modifier = Modifier.padding(padding),
-                primaryAction = AccountCopy.SIGN_IN,
-                onPrimaryAction = onSignIn,
-                secondaryAction = AccountCopy.REGISTER,
-                onSecondaryAction = onRegister,
-            )
+            AccountUiState.SignedOut -> Column(Modifier.padding(padding)) {
+                DirectoryMessageState(
+                    icon = DirectoryIcons.person,
+                    title = AccountCopy.SIGNED_OUT,
+                    body = AccountCopy.SIGNED_OUT_BODY,
+                    modifier = Modifier.weight(1f),
+                    primaryAction = AccountCopy.SIGN_IN,
+                    onPrimaryAction = onSignIn,
+                    secondaryAction = AccountCopy.REGISTER,
+                    onSecondaryAction = onRegister,
+                )
+                // The platform's own pages belong to everyone, signed in or not.
+                DirectorySettingRow(
+                    title = AccountCopy.HELP,
+                    onClick = onHelp,
+                    icon = DirectoryIcons.info,
+                )
+            }
             is AccountUiState.Error -> DirectoryErrorState(
                 title = AccountCopy.ERROR,
                 modifier = Modifier.padding(padding),
@@ -128,6 +142,11 @@ fun AccountScreen(
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 DirectorySettingRow(
+                    title = AccountCopy.EDIT_PROFILE,
+                    onClick = onEditProfile,
+                    icon = DirectoryIcons.person,
+                )
+                DirectorySettingRow(
                     title = AccountCopy.PROVINCE,
                     onClick = { provincesOpen = true },
                     value = value.provinces.firstOrNull { it.id == value.profile.provinceId }?.nameAr,
@@ -139,9 +158,35 @@ fun AccountScreen(
                     icon = DirectoryIcons.star,
                 )
                 DirectorySettingRow(
+                    title = AccountCopy.FAVORITES,
+                    onClick = onFavorites,
+                    icon = DirectoryIcons.star,
+                )
+                DirectorySettingRow(
+                    title = AccountCopy.NOTIFICATIONS,
+                    onClick = onNotifications,
+                    icon = DirectoryIcons.bell,
+                )
+                DirectorySettingRow(
                     title = AccountCopy.FACILITIES,
                     onClick = onFacilities,
                     icon = DirectoryIcons.hospital,
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                DirectorySettingRow(
+                    title = AccountCopy.SECURITY,
+                    onClick = onChangePassword,
+                    icon = DirectoryIcons.verified,
+                )
+                DirectorySettingRow(
+                    title = AccountCopy.SETTINGS,
+                    onClick = onSettings,
+                    icon = DirectoryIcons.grid,
+                )
+                DirectorySettingRow(
+                    title = AccountCopy.HELP,
+                    onClick = onHelp,
+                    icon = DirectoryIcons.info,
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 DirectorySettingRow(
@@ -286,7 +331,13 @@ object AccountCopy {
     const val SIGNED_OUT_BODY = "سجّل الدخول لإدارة تقييماتك ومنشآتك."
     const val SIGN_IN = "تسجيل الدخول"
     const val REGISTER = "إنشاء حساب"
+    const val EDIT_PROFILE = "المعلومات الشخصية"
     const val PROVINCE = "المحافظة"
+    const val FAVORITES = "المفضلة"
+    const val NOTIFICATIONS = "الإشعارات"
+    const val SECURITY = "تغيير كلمة المرور"
+    const val SETTINGS = "الإعدادات"
+    const val HELP = "المساعدة والمعلومات"
     const val RATINGS = "تقييماتي"
     const val FACILITIES = "منشآتي"
     const val SIGN_OUT = "تسجيل الخروج"

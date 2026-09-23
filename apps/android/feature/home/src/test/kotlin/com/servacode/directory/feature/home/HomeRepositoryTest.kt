@@ -29,7 +29,7 @@ class HomeRepositoryTest {
         province: String? = "raqqa",
         location: FakeLocation = FakeLocation(),
         preferences: FakePreferences = FakePreferences(province),
-    ) = HomeRepository(cache, api, preferences, location, BackendLocationNameResolver(api))
+    ) = HomeRepository(cache, api, preferences, location, BackendLocationNameResolver(api) { 0L })
 
     @Test fun `shows the cache first, then the backend's answer, and stores it`() = runTest {
         cache.provinces = listOf(raqqa)

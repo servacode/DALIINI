@@ -25,4 +25,23 @@ sealed interface DirectoryRoute {
     @Serializable data class ManageFacility(val id: String) : DirectoryRoute
     @Serializable data class Duty(val id: String) : DirectoryRoute
     @Serializable data object Settings : DirectoryRoute
+
+    /** The account's own saved facilities and the messages the platform sent it. */
+    @Serializable data object Favorites : DirectoryRoute
+    @Serializable data object Notifications : DirectoryRoute
+
+    /** Editing the account, and replacing its password. */
+    @Serializable data object EditProfile : DirectoryRoute
+    @Serializable data object ChangePassword : DirectoryRoute
+
+    /** The platform's published pages: the list, and one of them. */
+    @Serializable data object Help : DirectoryRoute
+    @Serializable data class LegalPageRoute(val key: String) : DirectoryRoute
+
+    /** A route before live navigation: the way there, seen before it is followed. */
+    @Serializable data class RoutePreview(
+        val facilityId: String,
+        val latitude: Double,
+        val longitude: Double,
+    ) : DirectoryRoute
 }

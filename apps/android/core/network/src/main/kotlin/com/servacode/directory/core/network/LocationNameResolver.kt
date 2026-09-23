@@ -32,10 +32,14 @@ interface LocationNameResolver {
 }
 
 @Singleton
-class BackendLocationNameResolver @Inject constructor(
+class BackendLocationNameResolver internal constructor(
     private val api: PublicApiBoundary,
-    private val clock: () -> Long = System::currentTimeMillis,
+    // Not a constructor default: a default value is invisible to Dagger, which would then look
+    // for a binding of `() -> Long`. Tests use this constructor; the app uses the one below.
+    private val clock: () -> Long,
 ) : LocationNameResolver {
+    @Inject constructor(api: PublicApiBoundary) : this(api, System::currentTimeMillis)
+
     private val mutex = Mutex()
     private var lastPlace: ResolvedPlace? = null
     private var lastLatitude: Double? = null

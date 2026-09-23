@@ -11,4 +11,8 @@ class FacilityUseCase @Inject constructor(
     operator fun invoke(id: String): Flow<Loaded<FacilityDetail>> = repository.load(id)
     suspend fun myRating(id: String): Result<Int?> = repository.myRating(id)
     suspend fun rate(id: String, stars: Int): Result<Int> = repository.rate(id, stars)
+
+    /** Saving is the account's, not the device's: the backend holds it. */
+    suspend fun save(id: String): Result<Boolean> = repository.save(id)
+    suspend fun unsave(id: String): Result<Boolean> = repository.unsave(id)
 }

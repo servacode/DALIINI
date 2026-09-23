@@ -56,6 +56,30 @@ class FacilityViewModel @Inject constructor(
 
     private fun signedIn() = session.state.value == SessionState.SIGNED_IN
 
+    /**
+     * Save or unsave the facility on screen.
+     *
+     * The heart fills at once and goes back if the backend refuses: the state shown belongs to
+     * the account, and the backend is the one that holds it.
+     */
+    fun toggleFavorite() {
+        val current = _state.value as? FacilityUiState.Content ?: return
+        if (!current.signedIn) return
+        val saved = current.value.summary.isFavorite
+        _state.value = current.copy(
+            value = current.value.copy(
+                summary = current.value.summary.copy(isFavorite = !saved),
+            ),
+        )
+        viewModelScope.launch {
+            val result = runCatching {
+                if (saved) facility.unsave(current.value.summary.id)
+                else facility.save(current.value.summary.id)
+            }
+            result.onFailure { _state.value = current }
+        }
+    }
+
     private fun refresh() {
         loading?.cancel()
         loading = viewModelScope.launch {

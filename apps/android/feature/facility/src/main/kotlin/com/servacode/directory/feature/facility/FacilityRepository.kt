@@ -40,4 +40,9 @@ class FacilityRepository @Inject constructor(
         }
         return runCatching { api.upsertRating(id, stars) }
     }
+
+    /** Save this facility to the account. Idempotent, as the backend's own call is. */
+    suspend fun save(id: String): Result<Boolean> = runCatching { api.addFavorite(id) }
+
+    suspend fun unsave(id: String): Result<Boolean> = runCatching { api.removeFavorite(id) }
 }

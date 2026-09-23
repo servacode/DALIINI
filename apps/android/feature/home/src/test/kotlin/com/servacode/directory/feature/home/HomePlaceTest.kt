@@ -32,7 +32,7 @@ class HomePlaceTest {
     private fun repository(
         preferences: FakePreferences,
         location: FakeLocation = FakeLocation(),
-    ) = HomeRepository(cache, api, preferences, location, BackendLocationNameResolver(api))
+    ) = HomeRepository(cache, api, preferences, location, BackendLocationNameResolver(api) { 0L })
 
     @Test fun `a known position names the place and is remembered`() = runTest {
         api.placeAnswer = { _, _ ->
