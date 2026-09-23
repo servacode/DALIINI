@@ -29,11 +29,34 @@ class MapViewModel @Inject constructor(
     val state: StateFlow<MapUiState> = _state.asStateFlow()
     private var loading: Job? = null
 
+    private var lastViewport: MapViewport? = null
+
     init {
         viewModelScope.launch {
             val restored = savedStateHandle.get<DoubleArray>(CAMERA)?.toCamera()
             val camera = startCamera(focusFacilityId, restored)
             _state.update { it.copy(camera = camera, cameraResolved = true) }
+        }
+        viewModelScope.launch {
+            val categories = loadMap.categories()
+            _state.update { it.copy(categories = categories) }
+        }
+    }
+
+    /**
+     * A filter changed: the markers on screen answer a question the user has just changed, so
+     * the same viewport is asked again. The camera is not touched — changing what is shown
+     * must never move the map out from under the person looking at it.
+     */
+    fun filter(change: (MapFilters) -> MapFilters) {
+        val filters = change(_state.value.filters)
+        _state.update { it.copy(filters = filters, loadedViewport = null) }
+        val viewport = lastViewport ?: return
+        loading?.cancel()
+        loading = viewModelScope.launch {
+            loadMap(viewport, filters).onSuccess { facilities ->
+                _state.update { it.copy(facilities = facilities, loadedViewport = viewport) }
+            }
         }
     }
 
@@ -41,10 +64,12 @@ class MapViewModel @Inject constructor(
     fun cameraIdle(camera: MapCamera, viewport: MapViewport) {
         savedStateHandle[CAMERA] = camera.toSaved()
         _state.update { it.copy(camera = camera) }
+        lastViewport = viewport
         if (!_state.value.needsLoad(viewport)) return
         loading?.cancel()
+        val filters = _state.value.filters
         loading = viewModelScope.launch {
-            loadMap(viewport).onSuccess { facilities ->
+            loadMap(viewport, filters).onSuccess { facilities ->
                 _state.update { it.copy(facilities = facilities, loadedViewport = viewport) }
             }
         }

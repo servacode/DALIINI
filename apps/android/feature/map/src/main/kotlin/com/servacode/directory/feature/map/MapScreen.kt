@@ -6,11 +6,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +39,7 @@ import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryMessageState
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryTopBar
+import com.servacode.directory.core.designsystem.Elevation
 import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.Radius
 import com.servacode.directory.core.designsystem.Sizes
@@ -44,6 +49,7 @@ import com.servacode.directory.core.maps.MapLibreController
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.maps.MapStyle
 import com.servacode.directory.core.maps.rememberMapViewWithLifecycle
+import com.servacode.directory.core.model.Category
 import com.servacode.directory.core.model.PublicMapFacility
 
 /**
@@ -79,6 +85,22 @@ fun MapScreen(
                 state.cameraResolved -> FacilityMap(styleUrl, state, viewModel, onFacility)
                 else -> DirectoryLoading()
             }
+            // Over the map, not instead of it: the bar is at the top and the rail hugs the
+            // start edge, both narrow enough to leave the map itself the screen.
+            MapQuickFilters(
+                filters = state.filters,
+                onOpenNow = { viewModel.filter { current -> current.toggleOpenNow() } },
+                onDutyNow = { viewModel.filter { current -> current.toggleDutyNow() } },
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
+            if (state.categories.isNotEmpty()) {
+                MapCategoryRail(
+                    categories = state.categories,
+                    selectedId = state.filters.categoryId,
+                    onCategory = { id -> viewModel.filter { current -> current.withCategory(id) } },
+                    modifier = Modifier.align(Alignment.CenterStart),
+                )
+            }
             val selected = state.facilities.firstOrNull { it.id == state.selectedFacilityId }
             if (selected != null && state.cameraResolved) {
                 SelectedFacilityCard(
@@ -88,6 +110,101 @@ fun MapScreen(
                         .align(Alignment.BottomCenter)
                         .padding(Space.base),
                 )
+            }
+        }
+    }
+}
+
+/**
+ * The same two questions Home asks, over the map.
+ *
+ * They are the backend's own filters: the markers change because the query changed, not because
+ * the map hid anything. Nearest is not among them — a map is already showing distance.
+ */
+@Composable
+private fun MapQuickFilters(
+    filters: MapFilters,
+    onOpenNow: () -> Unit,
+    onDutyNow: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.padding(Space.md),
+        horizontalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        MapFilterChip(MapCopy.OPEN_NOW, filters.openNow, onOpenNow)
+        MapFilterChip(MapCopy.DUTY_NOW, filters.dutyNow, onDutyNow)
+    }
+}
+
+/** A chip that has to read against a map, so it carries its own surface rather than a tint. */
+@Composable
+private fun MapFilterChip(text: String, selected: Boolean, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(Radius.pill),
+        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+        shadowElevation = Elevation.low,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            color = if (selected) {
+                MaterialTheme.colorScheme.onPrimary
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
+            modifier = Modifier.padding(horizontal = Space.base, vertical = Space.sm),
+        )
+    }
+}
+
+/**
+ * The province's categories, down the start edge.
+ *
+ * Whatever the backend serves, in its own order: one category today, and clinics, laboratories
+ * or anything else the moment a province starts serving them. It scrolls, so the rail holds as
+ * many as arrive without the map losing room.
+ */
+@Composable
+private fun MapCategoryRail(
+    categories: List<Category>,
+    selectedId: String?,
+    onCategory: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyColumn(
+        modifier = modifier
+            .padding(Space.md)
+            .heightIn(max = Sizes.railMaxHeight),
+        verticalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        items(categories, key = { it.id }) { category ->
+            val selected = category.id == selectedId
+            Surface(
+                onClick = { onCategory(category.id) },
+                shape = RoundedCornerShape(Radius.pill),
+                color = if (selected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.surface
+                },
+                shadowElevation = Elevation.low,
+            ) {
+                Box(
+                    modifier = Modifier.size(Sizes.touchTarget),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    DirectoryIcon(
+                        icon = DirectoryIcons.category(category.iconKey),
+                        contentDescription = category.nameAr,
+                        tint = if (selected) {
+                            MaterialTheme.colorScheme.onPrimary
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        },
+                    )
+                }
             }
         }
     }
@@ -198,6 +315,8 @@ private fun FacilityMap(
 /** The words of the map, provisional until product copy is approved. */
 object MapCopy {
     const val TITLE = "الخريطة"
+    const val OPEN_NOW = "مفتوح الآن"
+    const val DUTY_NOW = "مناوب الآن"
     const val UNCONFIGURED = "الخريطة غير متاحة"
     const val UNCONFIGURED_BODY = "يجب ضبط مزود خرائط الإنتاج قبل عرض الخريطة"
 }

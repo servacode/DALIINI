@@ -82,7 +82,7 @@ interface PublicDiscoveryApi {
     /**
      * GET api/v1/public/map/facilities/
      * List compact map markers inside a viewport
-     * Capped at 500 markers. Facilities without coordinates are omitted.
+     * Capped at 500 markers. Facilities without coordinates are omitted. openNow and dutyNow filter on the availability the backend computes, exactly as the list endpoint does, so a map and a list asked the same question answer the same.
      * Responses:
      *  - 200: 
      *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
@@ -91,16 +91,18 @@ interface PublicDiscoveryApi {
      * @param bbox Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
      * @param categoryId Optional category filter. (optional)
      * @param cityId Optional city filter. (optional)
+     * @param dutyNow Pass true to keep only facilities currently on duty. (optional)
      * @param latitude Caller latitude in WGS84 decimal degrees. Must be sent with longitude. (optional)
      * @param longitude Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
      * @param neighborhoodId Optional neighbourhood filter. (optional)
+     * @param openNow Pass true to keep only facilities currently open. (optional)
      * @param search Free-text term matched against facility text. (optional)
      * @param serviceId Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
      * @param specialtyId Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
      * @return [MapMarkerList]
      */
     @GET("api/v1/public/map/facilities/")
-    suspend fun publicMapFacilitiesList(@Query("provinceId") provinceId: kotlin.String, @Query("bbox") bbox: kotlin.String? = null, @Query("categoryId") categoryId: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("latitude") latitude: kotlin.String? = null, @Query("longitude") longitude: kotlin.String? = null, @Query("neighborhoodId") neighborhoodId: kotlin.String? = null, @Query("search") search: kotlin.String? = null, @Query("serviceId") serviceId: kotlin.String? = null, @Query("specialtyId") specialtyId: kotlin.String? = null): Response<MapMarkerList>
+    suspend fun publicMapFacilitiesList(@Query("provinceId") provinceId: kotlin.String, @Query("bbox") bbox: kotlin.String? = null, @Query("categoryId") categoryId: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("dutyNow") dutyNow: kotlin.String? = null, @Query("latitude") latitude: kotlin.String? = null, @Query("longitude") longitude: kotlin.String? = null, @Query("neighborhoodId") neighborhoodId: kotlin.String? = null, @Query("openNow") openNow: kotlin.String? = null, @Query("search") search: kotlin.String? = null, @Query("serviceId") serviceId: kotlin.String? = null, @Query("specialtyId") specialtyId: kotlin.String? = null): Response<MapMarkerList>
 
     /**
      * GET api/v1/public/search/

@@ -207,12 +207,12 @@ Name | Type | Description  | Notes
 
 # **publicMapFacilitiesList**
 ```swift
-    open class func publicMapFacilitiesList(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, latitude: String? = nil, longitude: String? = nil, neighborhoodId: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil, completion: @escaping (_ data: MapMarkerList?, _ error: Error?) -> Void)
+    open class func publicMapFacilitiesList(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, dutyNow: String? = nil, latitude: String? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil, completion: @escaping (_ data: MapMarkerList?, _ error: Error?) -> Void)
 ```
 
 List compact map markers inside a viewport
 
-Capped at 500 markers. Facilities without coordinates are omitted.
+Capped at 500 markers. Facilities without coordinates are omitted. openNow and dutyNow filter on the availability the backend computes, exactly as the list endpoint does, so a map and a list asked the same question answer the same.
 
 ### Example
 ```swift
@@ -223,15 +223,17 @@ let provinceId = "provinceId_example" // String | Province to scope the query to
 let bbox = "bbox_example" // String | Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
 let categoryId = "categoryId_example" // String | Optional category filter. (optional)
 let cityId = "cityId_example" // String | Optional city filter. (optional)
+let dutyNow = "dutyNow_example" // String | Pass true to keep only facilities currently on duty. (optional)
 let latitude = "latitude_example" // String | Caller latitude in WGS84 decimal degrees. Must be sent with longitude. (optional)
 let longitude = "longitude_example" // String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
 let neighborhoodId = "neighborhoodId_example" // String | Optional neighbourhood filter. (optional)
+let openNow = "openNow_example" // String | Pass true to keep only facilities currently open. (optional)
 let search = "search_example" // String | Free-text term matched against facility text. (optional)
 let serviceId = "serviceId_example" // String | Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
 let specialtyId = "specialtyId_example" // String | Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
 
 // List compact map markers inside a viewport
-PublicDiscoveryAPI.publicMapFacilitiesList(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, latitude: latitude, longitude: longitude, neighborhoodId: neighborhoodId, search: search, serviceId: serviceId, specialtyId: specialtyId) { (response, error) in
+PublicDiscoveryAPI.publicMapFacilitiesList(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, dutyNow: dutyNow, latitude: latitude, longitude: longitude, neighborhoodId: neighborhoodId, openNow: openNow, search: search, serviceId: serviceId, specialtyId: specialtyId) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -251,9 +253,11 @@ Name | Type | Description  | Notes
  **bbox** | **String** | Viewport as west,south,east,north in WGS84 decimal degrees. | [optional] 
  **categoryId** | **String** | Optional category filter. | [optional] 
  **cityId** | **String** | Optional city filter. | [optional] 
+ **dutyNow** | **String** | Pass true to keep only facilities currently on duty. | [optional] 
  **latitude** | **String** | Caller latitude in WGS84 decimal degrees. Must be sent with longitude. | [optional] 
  **longitude** | **String** | Caller longitude in WGS84 decimal degrees. Must be sent with latitude. | [optional] 
  **neighborhoodId** | **String** | Optional neighbourhood filter. | [optional] 
+ **openNow** | **String** | Pass true to keep only facilities currently open. | [optional] 
  **search** | **String** | Free-text term matched against facility text. | [optional] 
  **serviceId** | **String** | Optional service-tag filter; only meaningful when the category declares serviceFilter. | [optional] 
  **specialtyId** | **String** | Optional specialty filter; only meaningful when the category declares specialtyFilter. | [optional] 

@@ -24,6 +24,8 @@ dependencies {
     implementation(libs.androidx.material3)
     // The advertisement slider stops advancing when the app is not resumed.
     implementation(libs.androidx.lifecycle.runtime.compose)
+    // One place decides how a screen gives way to another (DirectoryMotion).
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     debugImplementation(libs.androidx.compose.ui.tooling)

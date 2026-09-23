@@ -17,6 +17,7 @@ import com.servacode.directory.core.auth.SessionState
 import com.servacode.directory.core.designsystem.DirectoryBottomBar
 import com.servacode.directory.core.designsystem.DirectoryDestination
 import com.servacode.directory.core.designsystem.DirectoryIcons
+import com.servacode.directory.core.designsystem.DirectoryMotion
 import com.servacode.directory.core.model.DirectoryRoute
 import com.servacode.directory.core.model.MapNavigation
 import com.servacode.directory.feature.auth.LoginScreen
@@ -64,7 +65,16 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
         }
     }
 
-    NavHost(navController = navController, startDestination = DirectoryRoute.Bootstrap) {
+    NavHost(
+        navController = navController,
+        startDestination = DirectoryRoute.Bootstrap,
+        // One policy for the whole graph (DirectoryMotion): a push slides in from the end and
+        // fades, back reverses it, and no screen animates itself.
+        enterTransition = DirectoryMotion.push,
+        exitTransition = DirectoryMotion.pushAway,
+        popEnterTransition = DirectoryMotion.popBack,
+        popExitTransition = DirectoryMotion.popAway,
+    ) {
         composable<DirectoryRoute.Bootstrap> {
             BootstrapScreen(
                 onReady = { start ->
@@ -91,7 +101,12 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 },
             )
         }
-        composable<DirectoryRoute.Home> {
+        composable<DirectoryRoute.Home>(
+            enterTransition = DirectoryMotion.tabIn,
+            exitTransition = DirectoryMotion.tabOut,
+            popEnterTransition = DirectoryMotion.tabIn,
+            popExitTransition = DirectoryMotion.tabOut,
+        ) {
             HomeScreen(
                 onProvince = { navController.navigate(DirectoryRoute.ProvincePicker) },
                 onSearch = { navController.navigate(DirectoryRoute.Search) },
@@ -145,7 +160,12 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onBack = { navController.popBackStack() },
             )
         }
-        composable<DirectoryRoute.Map> {
+        composable<DirectoryRoute.Map>(
+            enterTransition = DirectoryMotion.tabIn,
+            exitTransition = DirectoryMotion.tabOut,
+            popEnterTransition = DirectoryMotion.tabIn,
+            popExitTransition = DirectoryMotion.tabOut,
+        ) {
             MapScreen(
                 styleUrl = BuildConfig.MAP_STYLE_URL,
                 onBack = { navController.popBackStack() },
@@ -173,7 +193,12 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onClose = { navController.popBackStack() },
             )
         }
-        composable<DirectoryRoute.Account> {
+        composable<DirectoryRoute.Account>(
+            enterTransition = DirectoryMotion.tabIn,
+            exitTransition = DirectoryMotion.tabOut,
+            popEnterTransition = DirectoryMotion.tabIn,
+            popExitTransition = DirectoryMotion.tabOut,
+        ) {
             AccountScreen(
                 onRatings = { navController.navigate(DirectoryRoute.MyRatings) },
                 onFacilities = { navController.navigate(DirectoryRoute.MyFacilities) },

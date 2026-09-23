@@ -168,13 +168,21 @@ class ScriptedPublicApi : PublicApiBoundary {
         return directoryAnswer(query, cursor)
     }
 
+    var mapAnswer: (String?, Boolean, Boolean) -> List<PublicMapFacility> = { _, _, _ -> throw offline }
+
     override suspend fun mapFacilities(
         provinceId: String,
         west: Double,
         south: Double,
         east: Double,
         north: Double,
-    ): List<PublicMapFacility> = throw offline
+        categoryId: String?,
+        openNow: Boolean,
+        dutyNow: Boolean,
+    ): List<PublicMapFacility> {
+        calls += "map:$categoryId:$openNow:$dutyNow"
+        return mapAnswer(categoryId, openNow, dutyNow)
+    }
 
     override suspend fun facility(id: String): FacilityDetail = facilityAnswer(id).also { calls += "facility:$id" }
     override suspend fun profile(): AccountProfile = throw offline

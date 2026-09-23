@@ -4544,6 +4544,9 @@ paths:
     get:
       operationId: publicMapFacilitiesList
       description: Capped at 500 markers. Facilities without coordinates are omitted.
+        openNow and dutyNow filter on the availability the backend computes, exactly
+        as the list endpoint does, so a map and a list asked the same question answer
+        the same.
       summary: List compact map markers inside a viewport
       parameters:
       - in: query
@@ -4562,6 +4565,11 @@ paths:
           type: string
         description: Optional city filter.
       - in: query
+        name: dutyNow
+        schema:
+          type: string
+        description: Pass true to keep only facilities currently on duty.
+      - in: query
         name: latitude
         schema:
           type: string
@@ -4577,6 +4585,11 @@ paths:
         schema:
           type: string
         description: Optional neighbourhood filter.
+      - in: query
+        name: openNow
+        schema:
+          type: string
+        description: Pass true to keep only facilities currently open.
       - in: query
         name: provinceId
         schema:

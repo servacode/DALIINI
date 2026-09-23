@@ -184,7 +184,7 @@ Configure bearerAccessToken:
 
 List compact map markers inside a viewport
 
-Capped at 500 markers. Facilities without coordinates are omitted.
+Capped at 500 markers. Facilities without coordinates are omitted. openNow and dutyNow filter on the availability the backend computes, exactly as the list endpoint does, so a map and a list asked the same question answer the same.
 
 ### Example
 ```kotlin
@@ -200,15 +200,17 @@ val provinceId : kotlin.String = provinceId_example // kotlin.String | Province 
 val bbox : kotlin.String = bbox_example // kotlin.String | Viewport as west,south,east,north in WGS84 decimal degrees.
 val categoryId : kotlin.String = categoryId_example // kotlin.String | Optional category filter.
 val cityId : kotlin.String = cityId_example // kotlin.String | Optional city filter.
+val dutyNow : kotlin.String = dutyNow_example // kotlin.String | Pass true to keep only facilities currently on duty.
 val latitude : kotlin.String = latitude_example // kotlin.String | Caller latitude in WGS84 decimal degrees. Must be sent with longitude.
 val longitude : kotlin.String = longitude_example // kotlin.String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude.
 val neighborhoodId : kotlin.String = neighborhoodId_example // kotlin.String | Optional neighbourhood filter.
+val openNow : kotlin.String = openNow_example // kotlin.String | Pass true to keep only facilities currently open.
 val search : kotlin.String = search_example // kotlin.String | Free-text term matched against facility text.
 val serviceId : kotlin.String = serviceId_example // kotlin.String | Optional service-tag filter; only meaningful when the category declares serviceFilter.
 val specialtyId : kotlin.String = specialtyId_example // kotlin.String | Optional specialty filter; only meaningful when the category declares specialtyFilter.
 
 launch(Dispatchers.IO) {
-    val result : MapMarkerList = webService.publicMapFacilitiesList(provinceId, bbox, categoryId, cityId, latitude, longitude, neighborhoodId, search, serviceId, specialtyId)
+    val result : MapMarkerList = webService.publicMapFacilitiesList(provinceId, bbox, categoryId, cityId, dutyNow, latitude, longitude, neighborhoodId, openNow, search, serviceId, specialtyId)
 }
 ```
 
@@ -217,9 +219,11 @@ launch(Dispatchers.IO) {
 | **bbox** | **kotlin.String**| Viewport as west,south,east,north in WGS84 decimal degrees. | [optional] |
 | **categoryId** | **kotlin.String**| Optional category filter. | [optional] |
 | **cityId** | **kotlin.String**| Optional city filter. | [optional] |
+| **dutyNow** | **kotlin.String**| Pass true to keep only facilities currently on duty. | [optional] |
 | **latitude** | **kotlin.String**| Caller latitude in WGS84 decimal degrees. Must be sent with longitude. | [optional] |
 | **longitude** | **kotlin.String**| Caller longitude in WGS84 decimal degrees. Must be sent with latitude. | [optional] |
 | **neighborhoodId** | **kotlin.String**| Optional neighbourhood filter. | [optional] |
+| **openNow** | **kotlin.String**| Pass true to keep only facilities currently open. | [optional] |
 | **search** | **kotlin.String**| Free-text term matched against facility text. | [optional] |
 | **serviceId** | **kotlin.String**| Optional service-tag filter; only meaningful when the category declares serviceFilter. | [optional] |
 | Name | Type | Description  | Notes |

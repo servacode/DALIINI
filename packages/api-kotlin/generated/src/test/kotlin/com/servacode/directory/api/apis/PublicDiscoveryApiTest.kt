@@ -83,13 +83,15 @@ class PublicDiscoveryApiTest : ShouldSpec() {
             //val bbox : kotlin.String = bbox_example // kotlin.String | Viewport as west,south,east,north in WGS84 decimal degrees.
             //val categoryId : kotlin.String = categoryId_example // kotlin.String | Optional category filter.
             //val cityId : kotlin.String = cityId_example // kotlin.String | Optional city filter.
+            //val dutyNow : kotlin.String = dutyNow_example // kotlin.String | Pass true to keep only facilities currently on duty.
             //val latitude : kotlin.String = latitude_example // kotlin.String | Caller latitude in WGS84 decimal degrees. Must be sent with longitude.
             //val longitude : kotlin.String = longitude_example // kotlin.String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude.
             //val neighborhoodId : kotlin.String = neighborhoodId_example // kotlin.String | Optional neighbourhood filter.
+            //val openNow : kotlin.String = openNow_example // kotlin.String | Pass true to keep only facilities currently open.
             //val search : kotlin.String = search_example // kotlin.String | Free-text term matched against facility text.
             //val serviceId : kotlin.String = serviceId_example // kotlin.String | Optional service-tag filter; only meaningful when the category declares serviceFilter.
             //val specialtyId : kotlin.String = specialtyId_example // kotlin.String | Optional specialty filter; only meaningful when the category declares specialtyFilter.
-            //val result : MapMarkerList = apiInstance.publicMapFacilitiesList(provinceId, bbox, categoryId, cityId, latitude, longitude, neighborhoodId, search, serviceId, specialtyId)
+            //val result : MapMarkerList = apiInstance.publicMapFacilitiesList(provinceId, bbox, categoryId, cityId, dutyNow, latitude, longitude, neighborhoodId, openNow, search, serviceId, specialtyId)
             //result shouldBe ("TODO")
         }
 

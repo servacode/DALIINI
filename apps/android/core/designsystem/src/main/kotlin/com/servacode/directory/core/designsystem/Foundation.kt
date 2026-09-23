@@ -60,4 +60,7 @@ object Sizes {
     /** The picture a facility opens with, and the circles of its actions under it. */
     val hero = 260.dp
     val actionCircle = 52.dp
+
+    /** How much of the map's height the category rail may take before it scrolls. */
+    val railMaxHeight = 320.dp
 }

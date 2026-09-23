@@ -48,12 +48,19 @@ interface PublicApiBoundary {
 
     suspend fun directory(query: DirectoryQuery, cursor: String? = null): Page<FacilitySummary>
 
+    /**
+     * Markers inside a viewport, narrowed the same way a list is: by category and by the
+     * availability the backend computes. The map never decides any of that for itself.
+     */
     suspend fun mapFacilities(
         provinceId: String,
         west: Double,
         south: Double,
         east: Double,
         north: Double,
+        categoryId: String? = null,
+        openNow: Boolean = false,
+        dutyNow: Boolean = false,
     ): List<PublicMapFacility>
 
     suspend fun facility(id: String): FacilityDetail

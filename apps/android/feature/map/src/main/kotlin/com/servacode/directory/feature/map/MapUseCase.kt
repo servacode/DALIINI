@@ -9,7 +9,13 @@ import javax.inject.Inject
 class MapUseCase @Inject constructor(
     private val repository: MapRepository,
 ) {
-    suspend operator fun invoke(viewport: MapViewport): Result<List<PublicMapFacility>> = repository.load(viewport)
+    suspend operator fun invoke(
+        viewport: MapViewport,
+        filters: MapFilters = MapFilters(),
+    ): Result<List<PublicMapFacility>> = repository.load(viewport, filters)
+
+    /** The province's own categories, for the rail beside the map. */
+    suspend fun categories() = repository.categories()
 }
 
 /** Where the map opens, by [MapCameraPolicy]: each source is read only if the ones before it have nothing. */

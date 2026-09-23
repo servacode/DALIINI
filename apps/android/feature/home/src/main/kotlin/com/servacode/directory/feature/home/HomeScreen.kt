@@ -32,6 +32,7 @@ import com.servacode.directory.core.designsystem.AdSlider
 import com.servacode.directory.core.designsystem.CategoryCircle
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryChipRow
+import com.servacode.directory.core.designsystem.DirectoryFilterChip
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcon

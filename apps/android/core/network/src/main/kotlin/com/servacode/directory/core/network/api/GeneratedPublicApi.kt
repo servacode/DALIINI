@@ -94,8 +94,18 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
         south: Double,
         east: Double,
         north: Double,
+        categoryId: String?,
+        openNow: Boolean,
+        dutyNow: Boolean,
     ): List<PublicMapFacility> = call {
-        discovery.publicMapFacilitiesList(provinceId = provinceId, bbox = "$west,$south,$east,$north")
+        discovery.publicMapFacilitiesList(
+            provinceId = provinceId,
+            bbox = "$west,$south,$east,$north",
+            categoryId = categoryId,
+            // The backend treats only the literal "true" as a filter; absent means no filter.
+            openNow = if (openNow) "true" else null,
+            dutyNow = if (dutyNow) "true" else null,
+        )
     }.items.map { it.toDomain() }
 
     override suspend fun facility(id: String): FacilityDetail =

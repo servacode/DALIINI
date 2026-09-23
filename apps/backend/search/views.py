@@ -158,14 +158,27 @@ class PublicMapFacilitiesView(APIView):
         operation_id="publicMapFacilitiesList",
         tags=["Public Discovery"],
         summary="List compact map markers inside a viewport",
-        description="Capped at 500 markers. Facilities without coordinates are omitted.",
-        parameters=[*SCOPE_PARAMS, _q("categoryId", "Optional category filter.")],
+        description=(
+            "Capped at 500 markers. Facilities without coordinates are omitted. openNow and "
+            "dutyNow filter on the availability the backend computes, exactly as the list "
+            "endpoint does, so a map and a list asked the same question answer the same."
+        ),
+        parameters=[
+            *SCOPE_PARAMS,
+            _q("categoryId", "Optional category filter."),
+            _q("openNow", "Pass true to keep only facilities currently open."),
+            _q("dutyNow", "Pass true to keep only facilities currently on duty."),
+        ],
         responses={200: MapMarkerListSerializer, 400: VALIDATION_400},
     )
     def get(self, request):
         queryset = _base_from_params(request.query_params, request.user)
         if not request.query_params.get("bbox"):
             raise ValidationError({"bbox": "Required for map queries."})
+        if request.query_params.get("openNow") == "true":
+            queryset = filter_for_availability_state(queryset, AvailabilityState.OPEN)
+        if request.query_params.get("dutyNow") == "true":
+            queryset = filter_for_availability_state(queryset, AvailabilityState.DUTY)
         markers = []
         for facility in queryset[:500]:
             if not facility.location:

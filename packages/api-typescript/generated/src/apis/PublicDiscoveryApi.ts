@@ -73,9 +73,11 @@ export interface PublicMapFacilitiesListRequest {
     bbox?: string;
     categoryId?: string;
     cityId?: string;
+    dutyNow?: string;
     latitude?: string;
     longitude?: string;
     neighborhoodId?: string;
+    openNow?: string;
     search?: string;
     serviceId?: string;
     specialtyId?: string;
@@ -338,7 +340,7 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
     }
 
     /**
-     * Capped at 500 markers. Facilities without coordinates are omitted.
+     * Capped at 500 markers. Facilities without coordinates are omitted. openNow and dutyNow filter on the availability the backend computes, exactly as the list endpoint does, so a map and a list asked the same question answer the same.
      * List compact map markers inside a viewport
      */
     async publicMapFacilitiesListRaw(requestParameters: PublicMapFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MapMarkerList>> {
@@ -363,6 +365,10 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
             queryParameters['cityId'] = requestParameters['cityId'];
         }
 
+        if (requestParameters['dutyNow'] != null) {
+            queryParameters['dutyNow'] = requestParameters['dutyNow'];
+        }
+
         if (requestParameters['latitude'] != null) {
             queryParameters['latitude'] = requestParameters['latitude'];
         }
@@ -373,6 +379,10 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
 
         if (requestParameters['neighborhoodId'] != null) {
             queryParameters['neighborhoodId'] = requestParameters['neighborhoodId'];
+        }
+
+        if (requestParameters['openNow'] != null) {
+            queryParameters['openNow'] = requestParameters['openNow'];
         }
 
         if (requestParameters['provinceId'] != null) {
@@ -415,7 +425,7 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
     }
 
     /**
-     * Capped at 500 markers. Facilities without coordinates are omitted.
+     * Capped at 500 markers. Facilities without coordinates are omitted. openNow and dutyNow filter on the availability the backend computes, exactly as the list endpoint does, so a map and a list asked the same question answer the same.
      * List compact map markers inside a viewport
      */
     async publicMapFacilitiesList(requestParameters: PublicMapFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MapMarkerList> {
