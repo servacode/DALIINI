@@ -27,6 +27,7 @@ No product copy has been approved. The splash words live in one place,
 
 ## Typeface
 
-The token font is Tajawal (`FONT-POLICY.md`). The Android app does not bundle it yet, so every
-screen, the splash included, uses the platform sans-serif through the design-system styles.
-Bundling Tajawal changes every screen at once and belongs to its own step.
+The token font is Tajawal (`FONT-POLICY.md`), and the Android app now bundles it: three weights
+in `apps/android/core/designsystem/src/main/res/font/`, under the Open Font Licence kept beside
+them at `docs/design/fonts/Tajawal-OFL.txt`. It is set once, in `DirectoryTheme`, and every text
+style in the app is built from it. No screen names a font of its own.

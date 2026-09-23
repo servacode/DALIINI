@@ -667,6 +667,20 @@ The authoritative source for admin authorization remains the project RBAC. `user
 
 **Boundaries:** Background location stays forbidden (`15-SECURITY-PRIVACY.md`); nothing here asks twice, and a refusal keeps the province and the whole directory, costing only distances and nearest-first order. Home's own location offer, the province picker and every route after Home are unchanged. The copy is provisional until product copy is approved.
 
+## DECISION-045 — One design system, and screens that draw only what the API has
+
+**Date:** 2026-09-23
+
+**Subject:** The UI redesign of the whole Android app against the approved references in `docs/design/ui-reference/`.
+
+**Decision:** `core:designsystem` owns the visual language: Tajawal bundled and set once in `DirectoryTheme`, every measurement and colour from the generated design tokens, the app's own 31-icon vector set, and the components every screen is assembled from — page frame, top bar, bottom bar, cards, buttons, fields, chips, facility rows and cards, category and action circles, photo pager, star row and picker, status pill, step indicator, and one shape each for loading, empty, error, offline, permission and confirmation. No screen names a font, a colour, a corner or a spacing of its own; the qualifier already forbids a hardcoded colour anywhere in Android source.
+
+**Reason:** A reference shows a look; only one place can hold it. Screens that style themselves drift apart within a release, and the approved references are a single visual language, not twenty-eight of them.
+
+**Boundaries — what the references show and the product does not have:** saved facilities (Screen 16), a notification inbox (Screen 17), written reviews and other people's ratings (Screen 09), owner metrics (Screen 18), a distance filter (Screen 07), a picture on a list row, and an account picture (INT-017). None of these exist in the API, so none of them is drawn: the bottom bar carries three destinations rather than four, the ratings screen is the user's own stars, and the owner's dashboard shows no counts. Mock names, photos, distances and figures in the references are not product truth and none were copied into the app. The account screens ask for the phone and password the auth contract defines, not the email and "remember me" the reference sketches. Nothing in this batch changed a ViewModel's contract, a repository, a use case or a route's meaning; the one behaviour added is a dial intent from a facility's published phone number, which asks the system dialer and calls nothing itself.
+
+---
+
 ---
 
 # Technical Debt Register
