@@ -29,6 +29,8 @@ class PreferencesRepository @Inject constructor(
                 ?: LocationPreference.ASK,
             onboardingHintsSeen = prefs[ONBOARDING_HINTS] ?: false,
             welcomeCompleted = prefs[WELCOME_COMPLETED] ?: false,
+            placeLabel = prefs[PLACE_LABEL],
+            placeProvinceId = prefs[PLACE_PROVINCE],
         )
     }
 
@@ -44,11 +46,20 @@ class PreferencesRepository @Inject constructor(
         context.directoryDataStore.edit { it[WELCOME_COMPLETED] = true }
     }
 
+    override suspend fun rememberPlace(label: String, provinceId: String?) {
+        context.directoryDataStore.edit { prefs ->
+            prefs[PLACE_LABEL] = label
+            if (provinceId == null) prefs.remove(PLACE_PROVINCE) else prefs[PLACE_PROVINCE] = provinceId
+        }
+    }
+
     private companion object {
         val SELECTED_PROVINCE = stringPreferencesKey("selected_province_id")
         val LOCATION_PREFERENCE = stringPreferencesKey("location_preference")
         val ONBOARDING_HINTS = booleanPreferencesKey("onboarding_hints_seen")
         val WELCOME_COMPLETED = booleanPreferencesKey("welcome_completed")
+        val PLACE_LABEL = stringPreferencesKey("place_label")
+        val PLACE_PROVINCE = stringPreferencesKey("place_province_id")
     }
 }
 

@@ -108,7 +108,7 @@ class PublicFacilityListView(APIView):
     @extend_schema(
         operation_id="publicFacilitiesList",
         tags=["Public Discovery"],
-        summary="List publicly visible facilities in a province and category",
+        summary="List publicly visible facilities in a province, optionally in one category",
         description=(
             "Ordered nearest-first when coordinates are supplied, otherwise by Arabic "
             "name. Availability is computed by the backend; openNow and dutyNow filter "
@@ -116,7 +116,7 @@ class PublicFacilityListView(APIView):
         ),
         parameters=[
             *SCOPE_PARAMS,
-            _q("categoryId", "Category to list. Required.", required=True),
+            _q("categoryId", "Optional category to list. Absent means the whole province."),
             _q("openNow", "Pass true to keep only facilities currently open."),
             _q("dutyNow", "Pass true to keep only facilities currently on duty."),
             *PAGE_PARAMS,
@@ -124,8 +124,6 @@ class PublicFacilityListView(APIView):
         responses={200: FacilityCursorPageSerializer, 400: VALIDATION_400},
     )
     def get(self, request):
-        if not request.query_params.get("categoryId"):
-            raise ValidationError({"categoryId": "Required."})
         queryset = _base_from_params(request.query_params, request.user)
         if request.query_params.get("openNow") == "true":
             queryset = filter_for_availability_state(queryset, AvailabilityState.OPEN)

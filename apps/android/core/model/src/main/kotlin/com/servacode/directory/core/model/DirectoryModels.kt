@@ -71,6 +71,14 @@ data class HomeAd(
     val titleAr: String? = null,
     val subtitleAr: String? = null,
     val slideDurationMs: Int = 5000,
+    /**
+     * The facility this advertisement is about, when it is about one.
+     *
+     * The backend restricts what an advertisement may carry; of those, a facility is the only
+     * destination this app follows, because it is the only one that stays inside the app and
+     * means something the user already understands.
+     */
+    val facilityId: String? = null,
 )
 
 @Serializable

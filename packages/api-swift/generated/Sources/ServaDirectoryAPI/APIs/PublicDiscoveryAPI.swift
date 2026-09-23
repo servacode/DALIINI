@@ -13,11 +13,11 @@ import AnyCodable
 open class PublicDiscoveryAPI {
 
     /**
-     List publicly visible facilities in a province and category
+     List publicly visible facilities in a province, optionally in one category
      
-     - parameter categoryId: (query) Category to list. Required. 
      - parameter provinceId: (query) Province to scope the query to. 
      - parameter bbox: (query) Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
+     - parameter categoryId: (query) Optional category to list. Absent means the whole province. (optional)
      - parameter cityId: (query) Optional city filter. (optional)
      - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
      - parameter dutyNow: (query) Pass true to keep only facilities currently on duty. (optional)
@@ -32,20 +32,20 @@ open class PublicDiscoveryAPI {
      - returns: FacilityCursorPage
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func publicFacilitiesList(categoryId: String, provinceId: String, bbox: String? = nil, cityId: String? = nil, cursor: String? = nil, dutyNow: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil) async throws -> FacilityCursorPage {
-        return try await publicFacilitiesListWithRequestBuilder(categoryId: categoryId, provinceId: provinceId, bbox: bbox, cityId: cityId, cursor: cursor, dutyNow: dutyNow, latitude: latitude, limit: limit, longitude: longitude, neighborhoodId: neighborhoodId, openNow: openNow, search: search, serviceId: serviceId, specialtyId: specialtyId).execute().body
+    open class func publicFacilitiesList(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, cursor: String? = nil, dutyNow: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil) async throws -> FacilityCursorPage {
+        return try await publicFacilitiesListWithRequestBuilder(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, cursor: cursor, dutyNow: dutyNow, latitude: latitude, limit: limit, longitude: longitude, neighborhoodId: neighborhoodId, openNow: openNow, search: search, serviceId: serviceId, specialtyId: specialtyId).execute().body
     }
 
     /**
-     List publicly visible facilities in a province and category
+     List publicly visible facilities in a province, optionally in one category
      - GET /api/v1/public/facilities/
      - Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend; openNow and dutyNow filter on that computed state rather than on a stored flag.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken
-     - parameter categoryId: (query) Category to list. Required. 
      - parameter provinceId: (query) Province to scope the query to. 
      - parameter bbox: (query) Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
+     - parameter categoryId: (query) Optional category to list. Absent means the whole province. (optional)
      - parameter cityId: (query) Optional city filter. (optional)
      - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
      - parameter dutyNow: (query) Pass true to keep only facilities currently on duty. (optional)
@@ -59,7 +59,7 @@ open class PublicDiscoveryAPI {
      - parameter specialtyId: (query) Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
      - returns: RequestBuilder<FacilityCursorPage> 
      */
-    open class func publicFacilitiesListWithRequestBuilder(categoryId: String, provinceId: String, bbox: String? = nil, cityId: String? = nil, cursor: String? = nil, dutyNow: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil) -> RequestBuilder<FacilityCursorPage> {
+    open class func publicFacilitiesListWithRequestBuilder(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, cursor: String? = nil, dutyNow: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil) -> RequestBuilder<FacilityCursorPage> {
         let localVariablePath = "/api/v1/public/facilities/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -67,7 +67,7 @@ open class PublicDiscoveryAPI {
         var localVariableUrlComponents = URLComponents(string: localVariableURLString)
         localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
             "bbox": (wrappedValue: bbox?.encodeToJSON(), isExplode: true),
-            "categoryId": (wrappedValue: categoryId.encodeToJSON(), isExplode: true),
+            "categoryId": (wrappedValue: categoryId?.encodeToJSON(), isExplode: true),
             "cityId": (wrappedValue: cityId?.encodeToJSON(), isExplode: true),
             "cursor": (wrappedValue: cursor?.encodeToJSON(), isExplode: true),
             "dutyNow": (wrappedValue: dutyNow?.encodeToJSON(), isExplode: true),

@@ -16,7 +16,8 @@ import com.servacode.directory.core.model.PublicMapFacility
 /** What a directory listing asks the backend for. Filtering and ordering happen there. */
 data class DirectoryQuery(
     val provinceId: String,
-    val categoryId: String,
+    /** Null lists the whole province, which is what Home's quick filters ask for. */
+    val categoryId: String? = null,
     val openNow: Boolean = false,
     val dutyNow: Boolean = false,
     val search: String? = null,

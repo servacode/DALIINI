@@ -9,9 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
@@ -28,16 +26,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.designsystem.AdSlider
 import com.servacode.directory.core.designsystem.CategoryCircle
 import com.servacode.directory.core.designsystem.DirectoryCard
+import com.servacode.directory.core.designsystem.DirectoryChipRow
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIcons
-import com.servacode.directory.core.designsystem.DirectoryImage
 import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
 import com.servacode.directory.core.designsystem.DirectoryPage
@@ -45,8 +43,8 @@ import com.servacode.directory.core.designsystem.DirectorySearchEntry
 import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.FacilityRow
+import com.servacode.directory.core.designsystem.LoadMoreRow
 import com.servacode.directory.core.designsystem.SectionHeader
-import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.location.FOREGROUND_LOCATION_PERMISSIONS
 import com.servacode.directory.core.model.FacilitySummary
@@ -70,6 +68,9 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val place by viewModel.place.collectAsStateWithLifecycle()
+    val quickFilter by viewModel.quickFilter.collectAsStateWithLifecycle()
+    val hasLocation by viewModel.hasLocation.collectAsStateWithLifecycle()
     val context = LocalContext.current
     // The offer to use the location, and only while there is nothing to offer: a device that
     // already allowed it is never asked again from here.
@@ -84,10 +85,15 @@ fun HomeScreen(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { result ->
         offerLocation = result.values.none { it }
+        // A new answer changes where the app thinks the user is, so both are asked again.
+        viewModel.resolvePlace()
         viewModel.refresh()
     }
 
-    val province = (state as? HomeUiState.Content)?.snapshot?.province?.nameAr
+    // What the header says: the place the platform resolved, else the province the lists are
+    // scoped by. The user can still change it, but they are never made to choose it first.
+    val province = place?.label
+        ?: (state as? HomeUiState.Content)?.snapshot?.province?.nameAr
 
     DirectoryPage(
         topBar = {
@@ -122,6 +128,10 @@ fun HomeScreen(
                 value = value,
                 padding = padding,
                 offerLocation = offerLocation,
+                quickFilter = quickFilter,
+                hasLocation = hasLocation,
+                onQuickFilter = viewModel::select,
+                onLoadMore = viewModel::loadMore,
                 onUseLocation = { askLocation.launch(FOREGROUND_LOCATION_PERMISSIONS.toTypedArray()) },
                 onRefresh = viewModel::refresh,
                 onSearch = onSearch,
@@ -137,6 +147,10 @@ private fun HomeContent(
     value: HomeUiState.Content,
     padding: PaddingValues,
     offerLocation: Boolean,
+    quickFilter: QuickFilterState?,
+    hasLocation: Boolean,
+    onQuickFilter: (HomeQuickFilter?) -> Unit,
+    onLoadMore: () -> Unit,
     onUseLocation: () -> Unit,
     onRefresh: () -> Unit,
     onSearch: () -> Unit,
@@ -172,7 +186,24 @@ private fun HomeContent(
             }
         }
         if (snapshot.ads.isNotEmpty()) {
-            item(key = "ads") { AdRow(snapshot.ads) }
+            item(key = "ads") {
+                AdSlider(
+                    ads = snapshot.ads,
+                    onAd = { ad -> ad.destination()?.let(onFacility) },
+                    modifier = Modifier.padding(vertical = Space.sm),
+                )
+            }
+        }
+        item(key = "quick-filters") {
+            QuickFilterRow(
+                selected = quickFilter?.filter,
+                hasLocation = hasLocation,
+                onSelect = onQuickFilter,
+            )
+        }
+        if (quickFilter != null) {
+            quickFilterBody(quickFilter, onFacility, onLoadMore)
+            return@LazyColumn
         }
         if (snapshot.categories.isNotEmpty()) {
             item(key = "categories") {
@@ -271,44 +302,85 @@ private fun LocationOffer(onUseLocation: () -> Unit, modifier: Modifier = Modifi
     }
 }
 
-/** What the province wants seen first, as the backend ordered it. */
+/**
+ * The three questions people arrive with. A chosen chip replaces the sections below with the
+ * backend's own answer to that question; choosing it again puts the sections back.
+ */
 @Composable
-private fun AdRow(ads: List<HomeAd>) {
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = Space.screen),
-        horizontalArrangement = Arrangement.spacedBy(Space.md),
-        modifier = Modifier.padding(vertical = Space.sm),
+private fun QuickFilterRow(
+    selected: HomeQuickFilter?,
+    hasLocation: Boolean,
+    onSelect: (HomeQuickFilter?) -> Unit,
+) {
+    DirectoryChipRow(
+        modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.xs),
     ) {
-        items(ads, key = { it.id }) { ad ->
-            DirectoryCard(modifier = Modifier.width(Sizes.banner)) {
-                DirectoryImage(
-                    url = ad.imageUrl,
-                    modifier = Modifier.fillMaxWidth().height(Sizes.bannerImage),
-                    contentDescription = ad.titleAr,
-                )
-                ad.titleAr?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = Space.sm),
-                    )
-                }
-                ad.subtitleAr?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-            }
+        HomeQuickFilter.entries.forEach { filter ->
+            // Nearest is not offered without a position: it would promise an order the app
+            // cannot produce, and the backend is the only thing that computes distance.
+            if (!filter.isAvailable(hasLocation)) return@forEach
+            DirectoryFilterChip(
+                text = HomeCopy.quickFilter(filter),
+                selected = filter == selected,
+                onClick = { onSelect(if (filter == selected) null else filter) },
+            )
         }
     }
 }
+
+/** What one chip is showing: the backend's list, its own loading, and its own way to go on. */
+private fun LazyListScope.quickFilterBody(
+    state: QuickFilterState,
+    onFacility: (String) -> Unit,
+    onLoadMore: () -> Unit,
+) {
+    if (state.loading) {
+        item(key = "filter-loading") { DirectoryLoading(Modifier.padding(top = Space.xxl)) }
+        return
+    }
+    if (state.error != null && state.items.isEmpty()) {
+        item(key = "filter-error") {
+            DirectoryErrorState(
+                title = HomeCopy.ERROR,
+                body = state.error,
+                modifier = Modifier.padding(top = Space.xxl),
+            )
+        }
+        return
+    }
+    if (state.items.isEmpty()) {
+        item(key = "filter-empty") {
+            DirectoryEmptyState(
+                title = HomeCopy.quickFilterEmpty(state.filter),
+                body = HomeCopy.EMPTY_BODY,
+                modifier = Modifier.padding(top = Space.xxl),
+            )
+        }
+        return
+    }
+    itemsIndexed(state.items, key = { _, facility -> "filter-${facility.id}" }) { index, facility ->
+        Column {
+            FacilityRow(facility = facility, onClick = { onFacility(facility.id) })
+            if (index < state.items.lastIndex) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = Space.screen),
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                )
+            }
+        }
+    }
+    if (state.hasMore || state.error != null) {
+        item(key = "filter-more") {
+            LoadMoreRow(loading = state.loadingMore, onLoadMore = onLoadMore, error = state.error)
+        }
+    }
+}
+
+/**
+ * Where an advertisement leads. Only a facility is followed: it is the one destination this app
+ * can honour without leaving itself, and the backend already restricts what an ad may carry.
+ */
+private fun HomeAd.destination(): String? = facilityId
 
 /** The words of Home, in one place, provisional until product copy is approved. */
 object HomeCopy {
@@ -326,4 +398,16 @@ object HomeCopy {
     const val LOCATION_TITLE = "الترتيب بالأقرب إليك"
     const val LOCATION_BODY = "فعّل الموقع لعرض المسافة وترتيب المنشآت بالأقرب."
     const val LOCATION_ACTION = "تفعيل"
+
+    fun quickFilter(filter: HomeQuickFilter): String = when (filter) {
+        HomeQuickFilter.NEAREST -> "الأقرب إليك"
+        HomeQuickFilter.OPEN_NOW -> "مفتوح الآن"
+        HomeQuickFilter.DUTY_NOW -> "مناوب الآن"
+    }
+
+    fun quickFilterEmpty(filter: HomeQuickFilter): String = when (filter) {
+        HomeQuickFilter.NEAREST -> "لا توجد منشآت قريبة"
+        HomeQuickFilter.OPEN_NOW -> "لا توجد منشأة مفتوحة الآن"
+        HomeQuickFilter.DUTY_NOW -> "لا توجد منشأة مناوبة الآن"
+    }
 }

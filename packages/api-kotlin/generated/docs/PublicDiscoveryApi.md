@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 | ------------- | ------------- | ------------- |
-| [**publicFacilitiesList**](PublicDiscoveryApi.md#publicFacilitiesList) | **GET** api/v1/public/facilities/ | List publicly visible facilities in a province and category |
+| [**publicFacilitiesList**](PublicDiscoveryApi.md#publicFacilitiesList) | **GET** api/v1/public/facilities/ | List publicly visible facilities in a province, optionally in one category |
 | [**publicFacilityRetrieve**](PublicDiscoveryApi.md#publicFacilityRetrieve) | **GET** api/v1/public/facilities/{facility_id}/ | Retrieve one publicly visible facility |
 | [**publicHomeRetrieve**](PublicDiscoveryApi.md#publicHomeRetrieve) | **GET** api/v1/public/home/ | Retrieve the home composition for a province |
 | [**publicMapFacilitiesList**](PublicDiscoveryApi.md#publicMapFacilitiesList) | **GET** api/v1/public/map/facilities/ | List compact map markers inside a viewport |
@@ -12,7 +12,7 @@ All URIs are relative to *http://localhost*
 
 
 
-List publicly visible facilities in a province and category
+List publicly visible facilities in a province, optionally in one category
 
 Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend; openNow and dutyNow filter on that computed state rather than on a stored flag.
 
@@ -26,9 +26,9 @@ Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. A
 val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(PublicDiscoveryApi::class.java)
-val categoryId : kotlin.String = categoryId_example // kotlin.String | Category to list. Required.
 val provinceId : kotlin.String = provinceId_example // kotlin.String | Province to scope the query to.
 val bbox : kotlin.String = bbox_example // kotlin.String | Viewport as west,south,east,north in WGS84 decimal degrees.
+val categoryId : kotlin.String = categoryId_example // kotlin.String | Optional category to list. Absent means the whole province.
 val cityId : kotlin.String = cityId_example // kotlin.String | Optional city filter.
 val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
 val dutyNow : kotlin.String = dutyNow_example // kotlin.String | Pass true to keep only facilities currently on duty.
@@ -42,14 +42,14 @@ val serviceId : kotlin.String = serviceId_example // kotlin.String | Optional se
 val specialtyId : kotlin.String = specialtyId_example // kotlin.String | Optional specialty filter; only meaningful when the category declares specialtyFilter.
 
 launch(Dispatchers.IO) {
-    val result : FacilityCursorPage = webService.publicFacilitiesList(categoryId, provinceId, bbox, cityId, cursor, dutyNow, latitude, limit, longitude, neighborhoodId, openNow, search, serviceId, specialtyId)
+    val result : FacilityCursorPage = webService.publicFacilitiesList(provinceId, bbox, categoryId, cityId, cursor, dutyNow, latitude, limit, longitude, neighborhoodId, openNow, search, serviceId, specialtyId)
 }
 ```
 
 ### Parameters
-| **categoryId** | **kotlin.String**| Category to list. Required. | |
 | **provinceId** | **kotlin.String**| Province to scope the query to. | |
 | **bbox** | **kotlin.String**| Viewport as west,south,east,north in WGS84 decimal degrees. | [optional] |
+| **categoryId** | **kotlin.String**| Optional category to list. Absent means the whole province. | [optional] |
 | **cityId** | **kotlin.String**| Optional city filter. | [optional] |
 | **cursor** | **kotlin.String**| Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] |
 | **dutyNow** | **kotlin.String**| Pass true to keep only facilities currently on duty. | [optional] |

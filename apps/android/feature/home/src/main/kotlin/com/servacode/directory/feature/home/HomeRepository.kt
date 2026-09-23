@@ -8,8 +8,11 @@ import com.servacode.directory.core.location.LocationProvider
 import com.servacode.directory.core.location.LocationResult
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.AppException
+import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.HomeSnapshot
+import com.servacode.directory.core.model.Page
 import com.servacode.directory.core.model.Province
+import com.servacode.directory.core.network.LocationNameResolver
 import com.servacode.directory.core.network.PublicApiBoundary
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
@@ -23,12 +26,68 @@ sealed interface HomeLoad {
     data class Snapshot(val loaded: Loaded<HomeSnapshot>) : HomeLoad
 }
 
+/**
+ * Where the app believes the user is, and which province its lists are therefore scoped by.
+ *
+ * The province comes first from what the platform resolved for the device's own position, and
+ * only then from what the user once chose. That is what keeps a normal user from ever meeting
+ * a province picker: the app knows where they are, says so, and they can still change it.
+ */
+data class HomePlace(
+    val label: String?,
+    val provinceId: String?,
+    /** True when the province was resolved from a position rather than read from storage. */
+    val fromLocation: Boolean = false,
+)
+
 class HomeRepository @Inject constructor(
     private val cache: PublicCache,
     private val api: PublicApiBoundary,
     private val preferences: DirectoryPreferencesStore,
     private val locationProvider: LocationProvider,
+    private val places: LocationNameResolver,
 ) {
+    /**
+     * The place the header shows, resolved in the order the product requires: the device's own
+     * position when it is allowed and known, then the last place resolved for this device, then
+     * the province the user chose. Only when none of those exists does the app have to ask.
+     *
+     * A refusal of the location permission is not a dead end here — it simply means the second
+     * and third answers are the ones that apply.
+     */
+    suspend fun place(): HomePlace {
+        val stored = preferences.values.first()
+        val fix = locationProvider.lastKnown()
+            ?: (locationProvider.current() as? LocationResult.Available)?.fix
+        if (fix != null) {
+            val resolved = places.resolve(fix.latitude, fix.longitude)
+            val label = resolved?.label
+            if (label != null) {
+                val provinceId = resolved.province?.id
+                preferences.rememberPlace(label, provinceId)
+                return HomePlace(label = label, provinceId = provinceId, fromLocation = true)
+            }
+        }
+        if (stored.placeLabel != null) {
+            return HomePlace(label = stored.placeLabel, provinceId = stored.placeProvinceId)
+        }
+        return HomePlace(label = null, provinceId = stored.selectedProvinceId)
+    }
+
+    /**
+     * One quick filter's list, from the backend's own directory query.
+     *
+     * Never cached: a list of what is open right now is a view of the moment, exactly as the
+     * category list already treats its own filtered views.
+     */
+    suspend fun filtered(filter: HomeQuickFilter, cursor: String? = null): Page<FacilitySummary>? {
+        val provinceId = preferences.values.first().selectedProvinceId ?: return null
+        val fix = locationProvider.lastKnown()
+        return api.directory(filter.query(provinceId, fix), cursor)
+    }
+
+    /** Whether a position is known at all, which is what decides if "nearest" can be offered. */
+    fun hasLocation(): Boolean = locationProvider.lastKnown() != null
     /**
      * The cached snapshot first, then the backend's. Location is resolved only after the cache
      * is on screen, and only if the user allowed it; without it the home is province-wide.

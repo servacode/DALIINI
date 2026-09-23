@@ -119,7 +119,7 @@ Class | Method | HTTP request | Description
 *OwnerAPI* | [**ownerFacilityRetrieve**](docs/OwnerAPI.md#ownerfacilityretrieve) | **GET** /api/v1/owner/facilities/{facility_id}/ | Retrieve one facility the caller belongs to
 *OwnerAPI* | [**ownerFacilitySubmit**](docs/OwnerAPI.md#ownerfacilitysubmit) | **POST** /api/v1/owner/facilities/{facility_id}/submit/ | Submit a facility for review
 *OwnerAPI* | [**ownerFacilityUpdate**](docs/OwnerAPI.md#ownerfacilityupdate) | **PATCH** /api/v1/owner/facilities/{facility_id}/ | Update the core fields of a facility
-*PublicDiscoveryAPI* | [**publicFacilitiesList**](docs/PublicDiscoveryAPI.md#publicfacilitieslist) | **GET** /api/v1/public/facilities/ | List publicly visible facilities in a province and category
+*PublicDiscoveryAPI* | [**publicFacilitiesList**](docs/PublicDiscoveryAPI.md#publicfacilitieslist) | **GET** /api/v1/public/facilities/ | List publicly visible facilities in a province, optionally in one category
 *PublicDiscoveryAPI* | [**publicFacilityRetrieve**](docs/PublicDiscoveryAPI.md#publicfacilityretrieve) | **GET** /api/v1/public/facilities/{facility_id}/ | Retrieve one publicly visible facility
 *PublicDiscoveryAPI* | [**publicHomeRetrieve**](docs/PublicDiscoveryAPI.md#publichomeretrieve) | **GET** /api/v1/public/home/ | Retrieve the home composition for a province
 *PublicDiscoveryAPI* | [**publicMapFacilitiesList**](docs/PublicDiscoveryAPI.md#publicmapfacilitieslist) | **GET** /api/v1/public/map/facilities/ | List compact map markers inside a viewport

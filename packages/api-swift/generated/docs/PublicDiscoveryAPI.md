@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**publicFacilitiesList**](PublicDiscoveryAPI.md#publicfacilitieslist) | **GET** /api/v1/public/facilities/ | List publicly visible facilities in a province and category
+[**publicFacilitiesList**](PublicDiscoveryAPI.md#publicfacilitieslist) | **GET** /api/v1/public/facilities/ | List publicly visible facilities in a province, optionally in one category
 [**publicFacilityRetrieve**](PublicDiscoveryAPI.md#publicfacilityretrieve) | **GET** /api/v1/public/facilities/{facility_id}/ | Retrieve one publicly visible facility
 [**publicHomeRetrieve**](PublicDiscoveryAPI.md#publichomeretrieve) | **GET** /api/v1/public/home/ | Retrieve the home composition for a province
 [**publicMapFacilitiesList**](PublicDiscoveryAPI.md#publicmapfacilitieslist) | **GET** /api/v1/public/map/facilities/ | List compact map markers inside a viewport
@@ -13,10 +13,10 @@ Method | HTTP request | Description
 
 # **publicFacilitiesList**
 ```swift
-    open class func publicFacilitiesList(categoryId: String, provinceId: String, bbox: String? = nil, cityId: String? = nil, cursor: String? = nil, dutyNow: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil, completion: @escaping (_ data: FacilityCursorPage?, _ error: Error?) -> Void)
+    open class func publicFacilitiesList(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, cursor: String? = nil, dutyNow: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil, completion: @escaping (_ data: FacilityCursorPage?, _ error: Error?) -> Void)
 ```
 
-List publicly visible facilities in a province and category
+List publicly visible facilities in a province, optionally in one category
 
 Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend; openNow and dutyNow filter on that computed state rather than on a stored flag.
 
@@ -25,9 +25,9 @@ Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. A
 // The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
 import ServaDirectoryAPI
 
-let categoryId = "categoryId_example" // String | Category to list. Required.
 let provinceId = "provinceId_example" // String | Province to scope the query to.
 let bbox = "bbox_example" // String | Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
+let categoryId = "categoryId_example" // String | Optional category to list. Absent means the whole province. (optional)
 let cityId = "cityId_example" // String | Optional city filter. (optional)
 let cursor = "cursor_example" // String | Opaque token returned as `nextCursor` by the previous page. (optional)
 let dutyNow = "dutyNow_example" // String | Pass true to keep only facilities currently on duty. (optional)
@@ -40,8 +40,8 @@ let search = "search_example" // String | Free-text term matched against facilit
 let serviceId = "serviceId_example" // String | Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
 let specialtyId = "specialtyId_example" // String | Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
 
-// List publicly visible facilities in a province and category
-PublicDiscoveryAPI.publicFacilitiesList(categoryId: categoryId, provinceId: provinceId, bbox: bbox, cityId: cityId, cursor: cursor, dutyNow: dutyNow, latitude: latitude, limit: limit, longitude: longitude, neighborhoodId: neighborhoodId, openNow: openNow, search: search, serviceId: serviceId, specialtyId: specialtyId) { (response, error) in
+// List publicly visible facilities in a province, optionally in one category
+PublicDiscoveryAPI.publicFacilitiesList(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, cursor: cursor, dutyNow: dutyNow, latitude: latitude, limit: limit, longitude: longitude, neighborhoodId: neighborhoodId, openNow: openNow, search: search, serviceId: serviceId, specialtyId: specialtyId) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -57,9 +57,9 @@ PublicDiscoveryAPI.publicFacilitiesList(categoryId: categoryId, provinceId: prov
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **categoryId** | **String** | Category to list. Required. | 
  **provinceId** | **String** | Province to scope the query to. | 
  **bbox** | **String** | Viewport as west,south,east,north in WGS84 decimal degrees. | [optional] 
+ **categoryId** | **String** | Optional category to list. Absent means the whole province. | [optional] 
  **cityId** | **String** | Optional city filter. | [optional] 
  **cursor** | **String** | Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] 
  **dutyNow** | **String** | Pass true to keep only facilities currently on duty. | [optional] 

@@ -9,6 +9,7 @@ import com.servacode.directory.core.testing.FakePreferences
 import com.servacode.directory.core.testing.FakePublicCache
 import com.servacode.directory.core.testing.ScriptedPublicApi
 import com.servacode.directory.core.testing.facility
+import com.servacode.directory.core.network.BackendLocationNameResolver
 import com.servacode.directory.core.testing.fix
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
@@ -24,8 +25,11 @@ class HomeRepositoryTest {
     private fun snapshot(vararg ids: String) =
         HomeSnapshot(raqqa, emptyList(), ids.map { facility(it) }, refreshedAtEpochMillis = 1)
 
-    private fun repository(province: String? = "raqqa", location: FakeLocation = FakeLocation()) =
-        HomeRepository(cache, api, FakePreferences(province), location)
+    private fun repository(
+        province: String? = "raqqa",
+        location: FakeLocation = FakeLocation(),
+        preferences: FakePreferences = FakePreferences(province),
+    ) = HomeRepository(cache, api, preferences, location, BackendLocationNameResolver(api))
 
     @Test fun `shows the cache first, then the backend's answer, and stores it`() = runTest {
         cache.provinces = listOf(raqqa)

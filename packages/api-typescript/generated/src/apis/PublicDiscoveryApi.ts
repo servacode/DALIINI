@@ -35,9 +35,9 @@ import {
 } from '../models/index';
 
 export interface PublicFacilitiesListRequest {
-    categoryId: string;
     provinceId: string;
     bbox?: string;
+    categoryId?: string;
     cityId?: string;
     cursor?: string;
     dutyNow?: string;
@@ -104,16 +104,9 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
 
     /**
      * Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend; openNow and dutyNow filter on that computed state rather than on a stored flag.
-     * List publicly visible facilities in a province and category
+     * List publicly visible facilities in a province, optionally in one category
      */
     async publicFacilitiesListRaw(requestParameters: PublicFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FacilityCursorPage>> {
-        if (requestParameters['categoryId'] == null) {
-            throw new runtime.RequiredError(
-                'categoryId',
-                'Required parameter "categoryId" was null or undefined when calling publicFacilitiesList().'
-            );
-        }
-
         if (requestParameters['provinceId'] == null) {
             throw new runtime.RequiredError(
                 'provinceId',
@@ -204,7 +197,7 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
 
     /**
      * Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend; openNow and dutyNow filter on that computed state rather than on a stored flag.
-     * List publicly visible facilities in a province and category
+     * List publicly visible facilities in a province, optionally in one category
      */
     async publicFacilitiesList(requestParameters: PublicFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FacilityCursorPage> {
         const response = await this.publicFacilitiesListRaw(requestParameters, initOverrides);

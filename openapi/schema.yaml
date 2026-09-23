@@ -4247,7 +4247,7 @@ paths:
       description: Ordered nearest-first when coordinates are supplied, otherwise
         by Arabic name. Availability is computed by the backend; openNow and dutyNow
         filter on that computed state rather than on a stored flag.
-      summary: List publicly visible facilities in a province and category
+      summary: List publicly visible facilities in a province, optionally in one category
       parameters:
       - in: query
         name: bbox
@@ -4258,8 +4258,7 @@ paths:
         name: categoryId
         schema:
           type: string
-        description: Category to list. Required.
-        required: true
+        description: Optional category to list. Absent means the whole province.
       - in: query
         name: cityId
         schema:

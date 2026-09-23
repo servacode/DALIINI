@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -19,6 +21,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,11 +32,16 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import coil3.compose.AsyncImage
+import kotlinx.coroutines.delay
 import com.servacode.directory.core.model.AvailabilityLabel
 import com.servacode.directory.core.model.AvailabilityState
 import com.servacode.directory.core.model.DistanceText
 import com.servacode.directory.core.model.FacilitySummary
+import com.servacode.directory.core.model.HomeAd
 
 /**
  * A picture from the backend, on the app's own placeholder until it arrives. Decorative by
@@ -520,3 +528,87 @@ fun StatusPill(text: String, tone: StatusTone, modifier: Modifier = Modifier) {
             .padding(horizontal = Space.md, vertical = Space.xs),
     )
 }
+
+/**
+ * The advertisements a province wants seen first.
+ *
+ * One at a time, at one fixed shape, so the page under it never jumps when an image arrives
+ * late or not at all. It advances by itself at the pace the backend set for each slide, and it
+ * stops doing that the moment the user touches it or the app leaves the foreground — an
+ * advertisement that moves while someone is reading it is worse than one that does not move.
+ */
+@Composable
+fun AdSlider(
+    ads: List<HomeAd>,
+    onAd: (HomeAd) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (ads.isEmpty()) return
+    val pages = rememberPagerState(pageCount = { ads.size })
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+
+    if (ads.size > 1) {
+        LaunchedEffect(pages, ads) {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                while (true) {
+                    val slide = ads[pages.currentPage].slideDurationMs.toLong()
+                    delay(slide.coerceIn(MIN_SLIDE_MS, MAX_SLIDE_MS))
+                    if (!pages.isScrollInProgress) {
+                        pages.animateScrollToPage((pages.currentPage + 1) % ads.size)
+                    }
+                }
+            }
+        }
+    }
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        HorizontalPager(
+            state = pages,
+            contentPadding = PaddingValues(horizontal = Space.screen),
+            pageSpacing = Space.md,
+            modifier = Modifier.fillMaxWidth(),
+        ) { page ->
+            val ad = ads[page]
+            DirectoryImage(
+                url = ad.imageUrl,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(AD_RATIO)
+                    .clip(RoundedCornerShape(Radius.large))
+                    .clickable { onAd(ad) },
+                contentDescription = ad.titleAr,
+                shape = RoundedCornerShape(Radius.large),
+            )
+        }
+        if (ads.size > 1) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = Space.sm)
+                    .clearAndSetSemantics { },
+                horizontalArrangement = Arrangement.spacedBy(Space.xs),
+            ) {
+                ads.indices.forEach { index ->
+                    val here = index == pages.currentPage
+                    Box(
+                        modifier = Modifier
+                            .size(width = if (here) Space.lg else Space.sm, height = Space.sm)
+                            .clip(RoundedCornerShape(Radius.pill))
+                            .background(
+                                if (here) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.outlineVariant
+                                },
+                            ),
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Sixteen by nine: the shape every advertisement is laid out at, filled or not. */
+private const val AD_RATIO = 16f / 9f
+private const val MIN_SLIDE_MS = 2_000L
+private const val MAX_SLIDE_MS = 30_000L

@@ -76,9 +76,16 @@ class FakePublicCache : PublicCache {
 class FakePreferences(
     selectedProvinceId: String? = null,
     welcomeCompleted: Boolean = false,
+    placeLabel: String? = null,
+    placeProvinceId: String? = null,
 ) : DirectoryPreferencesStore {
     private val state = MutableStateFlow(
-        DirectoryPreferences(selectedProvinceId = selectedProvinceId, welcomeCompleted = welcomeCompleted),
+        DirectoryPreferences(
+            selectedProvinceId = selectedProvinceId,
+            welcomeCompleted = welcomeCompleted,
+            placeLabel = placeLabel,
+            placeProvinceId = placeProvinceId,
+        ),
     )
     override val values: Flow<DirectoryPreferences> = state
 
@@ -92,6 +99,10 @@ class FakePreferences(
 
     override suspend fun setWelcomeCompleted() {
         state.value = state.value.copy(welcomeCompleted = true)
+    }
+
+    override suspend fun rememberPlace(label: String, provinceId: String?) {
+        state.value = state.value.copy(placeLabel = label, placeProvinceId = provinceId)
     }
 }
 

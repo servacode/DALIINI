@@ -33,9 +33,9 @@ class PublicDiscoveryApiTest : ShouldSpec() {
         // to test publicFacilitiesList
         should("test publicFacilitiesList") {
             // uncomment below to test publicFacilitiesList
-            //val categoryId : kotlin.String = categoryId_example // kotlin.String | Category to list. Required.
             //val provinceId : kotlin.String = provinceId_example // kotlin.String | Province to scope the query to.
             //val bbox : kotlin.String = bbox_example // kotlin.String | Viewport as west,south,east,north in WGS84 decimal degrees.
+            //val categoryId : kotlin.String = categoryId_example // kotlin.String | Optional category to list. Absent means the whole province.
             //val cityId : kotlin.String = cityId_example // kotlin.String | Optional city filter.
             //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
             //val dutyNow : kotlin.String = dutyNow_example // kotlin.String | Pass true to keep only facilities currently on duty.
@@ -47,7 +47,7 @@ class PublicDiscoveryApiTest : ShouldSpec() {
             //val search : kotlin.String = search_example // kotlin.String | Free-text term matched against facility text.
             //val serviceId : kotlin.String = serviceId_example // kotlin.String | Optional service-tag filter; only meaningful when the category declares serviceFilter.
             //val specialtyId : kotlin.String = specialtyId_example // kotlin.String | Optional specialty filter; only meaningful when the category declares specialtyFilter.
-            //val result : FacilityCursorPage = apiInstance.publicFacilitiesList(categoryId, provinceId, bbox, cityId, cursor, dutyNow, latitude, limit, longitude, neighborhoodId, openNow, search, serviceId, specialtyId)
+            //val result : FacilityCursorPage = apiInstance.publicFacilitiesList(provinceId, bbox, categoryId, cityId, cursor, dutyNow, latitude, limit, longitude, neighborhoodId, openNow, search, serviceId, specialtyId)
             //result shouldBe ("TODO")
         }
 

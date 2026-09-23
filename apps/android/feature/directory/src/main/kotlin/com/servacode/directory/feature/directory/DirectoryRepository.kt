@@ -78,9 +78,12 @@ class DirectoryRepository @Inject constructor(
      */
     suspend fun nextPage(query: DirectoryQuery, cursor: String, loadedCount: Int): Page<FacilitySummary> {
         val page = api.directory(query, cursor)
-        val cacheable = !query.openNow && !query.dutyNow && query.search == null
+        // Only a category's own unfiltered list is cached: the cache is keyed by category, and
+        // a province-wide or filtered view is a view of the moment.
+        val categoryId = query.categoryId
+        val cacheable = categoryId != null && !query.openNow && !query.dutyNow && query.search == null
         if (cacheable) {
-            runCatching { cache.putDirectoryPage(page.items, query.provinceId, query.categoryId, loadedCount) }
+            runCatching { cache.putDirectoryPage(page.items, query.provinceId, categoryId, loadedCount) }
         }
         return page
     }

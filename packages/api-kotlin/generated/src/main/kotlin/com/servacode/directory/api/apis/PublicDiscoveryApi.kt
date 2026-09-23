@@ -16,15 +16,15 @@ import com.servacode.directory.api.models.PublicHome
 interface PublicDiscoveryApi {
     /**
      * GET api/v1/public/facilities/
-     * List publicly visible facilities in a province and category
+     * List publicly visible facilities in a province, optionally in one category
      * Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend; openNow and dutyNow filter on that computed state rather than on a stored flag.
      * Responses:
      *  - 200: 
      *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *
-     * @param categoryId Category to list. Required.
      * @param provinceId Province to scope the query to.
      * @param bbox Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
+     * @param categoryId Optional category to list. Absent means the whole province. (optional)
      * @param cityId Optional city filter. (optional)
      * @param cursor Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
      * @param dutyNow Pass true to keep only facilities currently on duty. (optional)
@@ -39,7 +39,7 @@ interface PublicDiscoveryApi {
      * @return [FacilityCursorPage]
      */
     @GET("api/v1/public/facilities/")
-    suspend fun publicFacilitiesList(@Query("categoryId") categoryId: kotlin.String, @Query("provinceId") provinceId: kotlin.String, @Query("bbox") bbox: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("cursor") cursor: kotlin.String? = null, @Query("dutyNow") dutyNow: kotlin.String? = null, @Query("latitude") latitude: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null, @Query("longitude") longitude: kotlin.String? = null, @Query("neighborhoodId") neighborhoodId: kotlin.String? = null, @Query("openNow") openNow: kotlin.String? = null, @Query("search") search: kotlin.String? = null, @Query("serviceId") serviceId: kotlin.String? = null, @Query("specialtyId") specialtyId: kotlin.String? = null): Response<FacilityCursorPage>
+    suspend fun publicFacilitiesList(@Query("provinceId") provinceId: kotlin.String, @Query("bbox") bbox: kotlin.String? = null, @Query("categoryId") categoryId: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("cursor") cursor: kotlin.String? = null, @Query("dutyNow") dutyNow: kotlin.String? = null, @Query("latitude") latitude: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null, @Query("longitude") longitude: kotlin.String? = null, @Query("neighborhoodId") neighborhoodId: kotlin.String? = null, @Query("openNow") openNow: kotlin.String? = null, @Query("search") search: kotlin.String? = null, @Query("serviceId") serviceId: kotlin.String? = null, @Query("specialtyId") specialtyId: kotlin.String? = null): Response<FacilityCursorPage>
 
     /**
      * GET api/v1/public/facilities/{facility_id}/

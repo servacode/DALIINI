@@ -1,6 +1,8 @@
 package com.servacode.directory.core.network.api
 
 import com.servacode.directory.api.models.AccountRating
+import com.servacode.directory.api.models.AdvertisementAction
+import com.servacode.directory.api.models.AdvertisementActionTypeEnum
 import com.servacode.directory.api.models.AvailabilityStateEnum
 import com.servacode.directory.api.models.BilingualRef
 import com.servacode.directory.api.models.BusinessHour as WireBusinessHour
@@ -62,6 +64,8 @@ import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.GeoPoint
 import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.HomeSnapshot
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 import com.servacode.directory.core.model.InboxMessage
 import com.servacode.directory.core.model.InboxPage
 import com.servacode.directory.core.model.LegalPage
@@ -311,7 +315,20 @@ internal fun PublicAdvertisement.toDomain() = HomeAd(
     titleAr = titleAr,
     subtitleAr = subtitleAr,
     slideDurationMs = slideDurationMs,
+    facilityId = action.facilityId(),
 )
+
+/**
+ * The facility an advertisement points at, or null.
+ *
+ * Only a FACILITY action is read. The contract also allows a category, an in-app route and an
+ * external URL; this app follows none of them yet, and reading a payload it would not act on
+ * would only invite it to act on one later by accident.
+ */
+private fun AdvertisementAction.facilityId(): String? {
+    if (type != AdvertisementActionTypeEnum.FACILITY) return null
+    return (payload["facilityId"] as? JsonPrimitive)?.contentOrNull
+}
 
 internal fun PublicHome.toDomain(province: Province) = HomeSnapshot(
     province = province,

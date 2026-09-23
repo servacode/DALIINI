@@ -45,6 +45,7 @@ class BootstrapRepositoryTest {
             override suspend fun selectProvince(id: String) = Unit
             override suspend fun setLocationPreference(value: LocationPreference) = Unit
             override suspend fun setWelcomeCompleted() = Unit
+            override suspend fun rememberPlace(label: String, provinceId: String?) = Unit
         }
 
         assertEquals(BootstrapResult.Failed("BOOTSTRAP_STORAGE_UNAVAILABLE"), DefaultBootstrapRepository(broken).initialize())
