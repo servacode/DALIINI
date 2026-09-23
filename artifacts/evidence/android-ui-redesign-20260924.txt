@@ -6,7 +6,7 @@ docs/design/ui-reference/. No device work: nothing here was installed, run or ph
 phone. What follows is what CI proved.
 
 Branch: android-build-verification-20260919
-HEAD at the final build: 4ed72ae38d8892c1733cabce1c10aff0bdfb515e
+HEAD at the final build: 76bce27af6665b7306022740c80c84abbfc2de3f
 
 CI RUNS (workflow "Android Build Verification")
 -----------------------------------------------
@@ -16,13 +16,14 @@ CI RUNS (workflow "Android Build Verification")
                       declared nullable type surviving an elvis (feature/onboarding)
 35917868344  FAILURE  same two errors, same file
 35918447746  success  the fix
-35919756080  success  FINAL — HEAD 4ed72ae
+35919756080  success  the navigation map filling its frame
+35920986431  success  FINAL — HEAD 76bce27
 
-FINAL BUILD (run 35919756080)
+FINAL BUILD (run 35920986431)
 ------------------------------
 Gate 1  assembleLocalDebug              PASS
         APK metadata + certificate      PASS
-Gate 2  unit tests                      PASS — 179 tests, 0 failures
+Gate 2  unit tests                      PASS — 183 tests, 0 failures
 Gate 3  lint                            PASS — 0 errors, 25 warnings
 Gate 4  source qualifiers               PASS — qualify-source.py, qualify-play-rc-source.py
 
