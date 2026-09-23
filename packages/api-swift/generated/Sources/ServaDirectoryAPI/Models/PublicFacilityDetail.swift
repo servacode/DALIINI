@@ -22,6 +22,8 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
     public var ratingAverage: Double?
     public var ratingCount: Int
     public var availability: Availability
+    /** Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery. */
+    public var isFavorite: Bool
     public var descriptionAr: String?
     public var descriptionEn: String?
     public var phone: String?
@@ -34,7 +36,7 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
     public var services: [NamedRef]
     public var hours: [PublicHoursEntry]
 
-    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, descriptionAr: String?, descriptionEn: String?, phone: String?, addressAr: String?, addressEn: String?, neighborhood: NamedRef?, location: Coordinates?, images: [FacilityImage], specialties: [NamedRef], services: [NamedRef], hours: [PublicHoursEntry]) {
+    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, isFavorite: Bool, descriptionAr: String?, descriptionEn: String?, phone: String?, addressAr: String?, addressEn: String?, neighborhood: NamedRef?, location: Coordinates?, images: [FacilityImage], specialties: [NamedRef], services: [NamedRef], hours: [PublicHoursEntry]) {
         self.id = id
         self.nameAr = nameAr
         self.nameEn = nameEn
@@ -44,6 +46,7 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
         self.ratingAverage = ratingAverage
         self.ratingCount = ratingCount
         self.availability = availability
+        self.isFavorite = isFavorite
         self.descriptionAr = descriptionAr
         self.descriptionEn = descriptionEn
         self.phone = phone
@@ -67,6 +70,7 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
         case ratingAverage
         case ratingCount
         case availability
+        case isFavorite
         case descriptionAr
         case descriptionEn
         case phone
@@ -93,6 +97,7 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
         try container.encode(ratingAverage, forKey: .ratingAverage)
         try container.encode(ratingCount, forKey: .ratingCount)
         try container.encode(availability, forKey: .availability)
+        try container.encode(isFavorite, forKey: .isFavorite)
         try container.encode(descriptionAr, forKey: .descriptionAr)
         try container.encode(descriptionEn, forKey: .descriptionEn)
         try container.encode(phone, forKey: .phone)

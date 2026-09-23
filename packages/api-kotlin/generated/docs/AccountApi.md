@@ -161,14 +161,19 @@ Newest first, cursor-paginated. A saved facility that is no longer public — cl
 val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AccountApi::class.java)
+val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
+val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 100, default 30.
 
 launch(Dispatchers.IO) {
-    val result : FavoriteList = webService.accountFavoritesList()
+    val result : FavoriteList = webService.accountFavoritesList(cursor, limit)
 }
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+| **cursor** | **kotlin.String**| Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] |
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **limit** | **kotlin.Int**| Page size, maximum 100, default 30. | [optional] |
 
 ### Return type
 
@@ -242,14 +247,19 @@ The account&#39;s own inbox.  Every message the platform has sent this account i
 val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AccountApi::class.java)
+val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
+val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 100, default 30.
 
 launch(Dispatchers.IO) {
-    val result : NotificationPage = webService.accountNotificationsList()
+    val result : NotificationPage = webService.accountNotificationsList(cursor, limit)
 }
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+| **cursor** | **kotlin.String**| Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] |
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **limit** | **kotlin.Int**| Page size, maximum 100, default 30. | [optional] |
 
 ### Return type
 

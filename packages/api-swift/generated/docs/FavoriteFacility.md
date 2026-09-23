@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **ratingAverage** | **Double** |  | 
 **ratingCount** | **Int** |  | 
 **availability** | [**Availability**](Availability.md) |  | 
+**isFavorite** | **Bool** | Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery. | 
 **favoritedAt** | **Date** | When the caller saved this facility. | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

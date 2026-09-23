@@ -1,6 +1,10 @@
 package com.servacode.directory.core.network
 
 import com.servacode.directory.core.model.AccountProfile
+import com.servacode.directory.core.model.InboxPage
+import com.servacode.directory.core.model.LegalPage
+import com.servacode.directory.core.model.LegalPageKey
+import com.servacode.directory.core.model.ResolvedPlace
 import com.servacode.directory.core.model.Category
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.FacilitySummary
@@ -60,4 +64,25 @@ interface PublicApiBoundary {
     /** Returns the stars the backend stored. */
     suspend fun upsertRating(facilityId: String, stars: Int): Int
     suspend fun deleteRating(facilityId: String)
+
+    /** Where a coordinate is, in the platform's own taxonomy. Never stores the coordinate. */
+    suspend fun resolvePlace(latitude: Double, longitude: Double): ResolvedPlace
+
+    suspend fun favorites(cursor: String? = null): Page<FacilitySummary>
+
+    /** Idempotent in both directions; returns the state the backend now holds. */
+    suspend fun addFavorite(facilityId: String): Boolean
+    suspend fun removeFavorite(facilityId: String): Boolean
+
+    suspend fun inbox(cursor: String? = null): InboxPage
+    suspend fun unreadMessageCount(): Int
+    suspend fun markMessageRead(messageId: String): Int
+    suspend fun markAllMessagesRead()
+
+    /** The published pages, titles and versions only. */
+    suspend fun legalPages(): List<LegalPage>
+    suspend fun legalPage(key: LegalPageKey): LegalPage
+
+    /** Replaces the password and ends every session, this one included. */
+    suspend fun changePassword(currentPassword: String, newPassword: String)
 }

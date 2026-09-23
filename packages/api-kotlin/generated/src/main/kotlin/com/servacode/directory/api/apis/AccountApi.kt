@@ -80,10 +80,12 @@ interface AccountApi {
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *
+     * @param cursor Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     * @param limit Page size, maximum 100, default 30. (optional)
      * @return [FavoriteList]
      */
     @GET("api/v1/account/favorites/")
-    suspend fun accountFavoritesList(): Response<FavoriteList>
+    suspend fun accountFavoritesList(@Query("cursor") cursor: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null): Response<FavoriteList>
 
     /**
      * POST api/v1/account/notifications/{notification_id}/read/
@@ -110,10 +112,12 @@ interface AccountApi {
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *
+     * @param cursor Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     * @param limit Page size, maximum 100, default 30. (optional)
      * @return [NotificationPage]
      */
     @GET("api/v1/account/notifications/")
-    suspend fun accountNotificationsList(): Response<NotificationPage>
+    suspend fun accountNotificationsList(@Query("cursor") cursor: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null): Response<NotificationPage>
 
     /**
      * POST api/v1/account/notifications/read-all/

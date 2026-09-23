@@ -44,6 +44,8 @@ data class FacilitySummary(
     /** When a closed facility next opens, as the backend computed it. */
     val nextOpenAtEpochMillis: Long? = null,
     val cityNameAr: String? = null,
+    /** Whether the signed-in account saved this facility; false for anyone not signed in. */
+    val isFavorite: Boolean = false,
 )
 
 @Serializable
@@ -288,3 +290,68 @@ data class AccountSession(
     val lastSeenAtEpochMillis: Long?,
     val revoked: Boolean,
 )
+
+
+/**
+ * Where the app decided the user is, and how sure it is of that.
+ *
+ * The platform resolves a coordinate against its own city and neighbourhood boundaries, so the
+ * name shown is the same name the lists and filters are scoped by.
+ */
+@Serializable
+data class ResolvedPlace(
+    val province: Province?,
+    val cityNameAr: String? = null,
+    val neighborhoodNameAr: String? = null,
+    /** What to show the user, already assembled: "الرقة" or "الرقة — المشلب". */
+    val label: String? = null,
+    val resolvedBy: PlaceResolution = PlaceResolution.NONE,
+)
+
+@Serializable
+enum class PlaceResolution {
+    /** The point fell inside a seeded city or neighbourhood. */
+    BOUNDARY,
+
+    /** Only the closest province centre could be used. */
+    NEAREST_PROVINCE,
+
+    /** The point is outside every province the platform serves. */
+    NONE,
+}
+
+/** One message in the account's own inbox. */
+@Serializable
+data class InboxMessage(
+    val id: String,
+    val type: String,
+    val titleAr: String,
+    val bodyAr: String,
+    val destination: MessageDestination,
+    val facilityId: String? = null,
+    val isRead: Boolean,
+    val createdAtEpochMillis: Long,
+)
+
+@Serializable
+enum class MessageDestination { NONE, FACILITY, OWNER_FACILITIES }
+
+/** A page of the inbox, with the unread total for the whole of it. */
+data class InboxPage(
+    val items: List<InboxMessage>,
+    val nextCursor: String?,
+    val hasMore: Boolean,
+    val unreadCount: Int,
+)
+
+/** One of the platform's own published pages. */
+@Serializable
+data class LegalPage(
+    val key: LegalPageKey,
+    val titleAr: String,
+    val version: Int,
+    val bodyAr: String? = null,
+)
+
+@Serializable
+enum class LegalPageKey { ABOUT, PRIVACY, TERMS, INSTRUCTIONS, FAQ, CONTACT }

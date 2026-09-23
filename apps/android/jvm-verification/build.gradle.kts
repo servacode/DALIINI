@@ -63,8 +63,10 @@ sourceSets {
         for (feature in features) {
             kotlin.srcDir(android.resolve("feature/$feature/src/test/kotlin"))
         }
-        // ViewModels are not compiled here (androidOnly), so neither are their tests.
-        kotlin.exclude("**/*ViewModelTest.kt")
+        // ViewModels are not compiled here (androidOnly), so neither are their tests. The same
+        // goes for anything that reaches into the design system: it is a Compose library and
+        // this harness has no Android framework. Those tests run in the Android unit suite.
+        kotlin.exclude("**/*ViewModelTest.kt", "**/OwnerStatusToneTest.kt")
     }
 }
 

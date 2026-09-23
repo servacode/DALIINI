@@ -16,6 +16,7 @@ from rest_framework.views import APIView
 
 from core.openapi import NOT_FOUND_404, VALIDATION_400, protected
 from core.pagination import CursorPage
+from search.views import PAGE_PARAMS
 from sessions.models import UserSession
 
 from .models import Notification
@@ -108,6 +109,7 @@ class NotificationsView(APIView):
         operation_id="accountNotificationsList",
         tags=["Account"],
         summary="List the caller's notifications, newest first",
+        parameters=PAGE_PARAMS,
         responses={200: NotificationPageSerializer, **protected()},
     )
     def get(self, request: Request) -> Response:

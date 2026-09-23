@@ -13,6 +13,7 @@
 | **ratingAverage** | **kotlin.Double** |  |  |
 | **ratingCount** | **kotlin.Int** |  |  |
 | **availability** | [**Availability**](Availability.md) |  |  |
+| **isFavorite** | **kotlin.Boolean** | Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery. |  |
 | **descriptionAr** | **kotlin.String** |  |  |
 | **descriptionEn** | **kotlin.String** |  |  |
 | **phone** | **kotlin.String** |  |  |

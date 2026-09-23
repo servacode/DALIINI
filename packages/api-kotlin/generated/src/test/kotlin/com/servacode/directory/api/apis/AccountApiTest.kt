@@ -66,7 +66,9 @@ class AccountApiTest : ShouldSpec() {
         // to test accountFavoritesList
         should("test accountFavoritesList") {
             // uncomment below to test accountFavoritesList
-            //val result : FavoriteList = apiInstance.accountFavoritesList()
+            //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
+            //val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 100, default 30.
+            //val result : FavoriteList = apiInstance.accountFavoritesList(cursor, limit)
             //result shouldBe ("TODO")
         }
 
@@ -81,7 +83,9 @@ class AccountApiTest : ShouldSpec() {
         // to test accountNotificationsList
         should("test accountNotificationsList") {
             // uncomment below to test accountNotificationsList
-            //val result : NotificationPage = apiInstance.accountNotificationsList()
+            //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
+            //val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 100, default 30.
+            //val result : NotificationPage = apiInstance.accountNotificationsList(cursor, limit)
             //result shouldBe ("TODO")
         }
 

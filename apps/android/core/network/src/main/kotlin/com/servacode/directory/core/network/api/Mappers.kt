@@ -7,6 +7,16 @@ import com.servacode.directory.api.models.BusinessHour as WireBusinessHour
 import com.servacode.directory.api.models.CategoryCapabilities
 import com.servacode.directory.api.models.ChallengeAccepted
 import com.servacode.directory.api.models.CompactFacility
+import com.servacode.directory.api.models.DestinationEnum
+import com.servacode.directory.api.models.FavoriteFacility
+import com.servacode.directory.api.models.FavoriteList
+import com.servacode.directory.api.models.KeyEnum
+import com.servacode.directory.api.models.LegalDocument
+import com.servacode.directory.api.models.LegalDocumentSummary
+import com.servacode.directory.api.models.Notification
+import com.servacode.directory.api.models.NotificationPage
+import com.servacode.directory.api.models.PublicLocationResolve
+import com.servacode.directory.api.models.ResolvedByEnum
 import com.servacode.directory.api.models.Coordinates
 import com.servacode.directory.api.models.DutyShift as WireDutyShift
 import com.servacode.directory.api.models.FacilityCursorPage
@@ -52,6 +62,13 @@ import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.GeoPoint
 import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.HomeSnapshot
+import com.servacode.directory.core.model.InboxMessage
+import com.servacode.directory.core.model.InboxPage
+import com.servacode.directory.core.model.LegalPage
+import com.servacode.directory.core.model.LegalPageKey
+import com.servacode.directory.core.model.MessageDestination
+import com.servacode.directory.core.model.PlaceResolution
+import com.servacode.directory.core.model.ResolvedPlace
 import com.servacode.directory.core.model.OwnerApplication
 import com.servacode.directory.core.model.OwnerCategoryConfig
 import com.servacode.directory.core.model.OwnerConfig
@@ -172,6 +189,84 @@ internal fun CompactFacility.toDomain() = FacilitySummary(
     availability = availability.state.toDomain(),
     nextOpenAtEpochMillis = availability.nextOpenAt?.toEpochMillis(),
     cityNameAr = city?.nameAr,
+    isFavorite = isFavorite,
+)
+
+internal fun FavoriteFacility.toDomain() = FacilitySummary(
+    id = id.toString(),
+    nameAr = nameAr,
+    nameEn = nameEn,
+    category = category.toCategory(),
+    distanceMeters = distanceMeters,
+    ratingAverage = ratingAverage,
+    ratingCount = ratingCount,
+    availability = availability.state.toDomain(),
+    nextOpenAtEpochMillis = availability.nextOpenAt?.toEpochMillis(),
+    cityNameAr = city?.nameAr,
+    // Everything in this list is saved by definition, whatever the row says.
+    isFavorite = true,
+)
+
+internal fun FavoriteList.toDomain() = Page(
+    items = items.map { it.toDomain() },
+    nextCursor = nextCursor,
+    hasMore = hasMore,
+)
+
+internal fun PublicLocationResolve.toDomain() = ResolvedPlace(
+    province = province?.toDomain(),
+    cityNameAr = city?.nameAr,
+    neighborhoodNameAr = neighborhood?.nameAr,
+    label = label,
+    resolvedBy = when (resolvedBy) {
+        ResolvedByEnum.BOUNDARY -> PlaceResolution.BOUNDARY
+        ResolvedByEnum.NEAREST_PROVINCE -> PlaceResolution.NEAREST_PROVINCE
+        ResolvedByEnum.NONE -> PlaceResolution.NONE
+    },
+)
+
+internal fun Notification.toDomain() = InboxMessage(
+    id = id.toString(),
+    type = type,
+    titleAr = titleAr,
+    bodyAr = bodyAr,
+    destination = when (destination) {
+        DestinationEnum.FACILITY -> MessageDestination.FACILITY
+        DestinationEnum.OWNER_FACILITIES -> MessageDestination.OWNER_FACILITIES
+        DestinationEnum.NONE -> MessageDestination.NONE
+    },
+    facilityId = facilityId?.toString(),
+    isRead = isRead,
+    createdAtEpochMillis = createdAt.toEpochMillis(),
+)
+
+internal fun NotificationPage.toDomain() = InboxPage(
+    items = items.map { it.toDomain() },
+    nextCursor = nextCursor,
+    hasMore = hasMore,
+    unreadCount = unreadCount,
+)
+
+internal fun KeyEnum.toDomain(): LegalPageKey = when (this) {
+    KeyEnum.ABOUT -> LegalPageKey.ABOUT
+    KeyEnum.PRIVACY -> LegalPageKey.PRIVACY
+    KeyEnum.TERMS -> LegalPageKey.TERMS
+    KeyEnum.INSTRUCTIONS -> LegalPageKey.INSTRUCTIONS
+    KeyEnum.FAQ -> LegalPageKey.FAQ
+    KeyEnum.CONTACT -> LegalPageKey.CONTACT
+}
+
+internal fun LegalDocumentSummary.toDomain() = LegalPage(
+    key = key.toDomain(),
+    titleAr = titleAr,
+    version = version,
+)
+
+internal fun LegalDocument.toDomain() = LegalPage(
+    key = key.toDomain(),
+    titleAr = titleAr,
+    version = version,
+    bodyAr = bodyAr,
 )
 
 internal fun FacilityCursorPage.toDomain() = Page(

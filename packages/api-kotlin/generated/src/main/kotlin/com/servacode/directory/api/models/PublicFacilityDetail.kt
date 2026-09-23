@@ -38,6 +38,7 @@ import kotlinx.serialization.Contextual
  * @param ratingAverage 
  * @param ratingCount 
  * @param availability 
+ * @param isFavorite Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery.
  * @param descriptionAr 
  * @param descriptionEn 
  * @param phone 
@@ -81,6 +82,10 @@ data class PublicFacilityDetail (
 
     @SerialName(value = "availability")
     val availability: Availability,
+
+    /* Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery. */
+    @SerialName(value = "isFavorite")
+    val isFavorite: kotlin.Boolean,
 
     @SerialName(value = "descriptionAr")
     val descriptionAr: kotlin.String?,

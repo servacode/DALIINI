@@ -95,6 +95,12 @@ export interface CompactFacility {
      * @memberof CompactFacility
      */
     availability: Availability;
+    /**
+     * Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery.
+     * @type {boolean}
+     * @memberof CompactFacility
+     */
+    isFavorite: boolean;
 }
 
 /**
@@ -110,6 +116,7 @@ export function instanceOfCompactFacility(value: object): value is CompactFacili
     if (!('ratingAverage' in value) || value['ratingAverage'] === undefined) return false;
     if (!('ratingCount' in value) || value['ratingCount'] === undefined) return false;
     if (!('availability' in value) || value['availability'] === undefined) return false;
+    if (!('isFavorite' in value) || value['isFavorite'] === undefined) return false;
     return true;
 }
 
@@ -132,6 +139,7 @@ export function CompactFacilityFromJSONTyped(json: any, ignoreDiscriminator: boo
         'ratingAverage': json['ratingAverage'],
         'ratingCount': json['ratingCount'],
         'availability': AvailabilityFromJSON(json['availability']),
+        'isFavorite': json['isFavorite'],
     };
 }
 
@@ -155,6 +163,7 @@ export function CompactFacilityToJSONTyped(value?: CompactFacility | null, ignor
         'ratingAverage': value['ratingAverage'],
         'ratingCount': value['ratingCount'],
         'availability': AvailabilityToJSON(value['availability']),
+        'isFavorite': value['isFavorite'],
     };
 }
 

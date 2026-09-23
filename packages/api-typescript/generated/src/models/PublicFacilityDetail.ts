@@ -117,6 +117,12 @@ export interface PublicFacilityDetail {
      */
     availability: Availability;
     /**
+     * Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery.
+     * @type {boolean}
+     * @memberof PublicFacilityDetail
+     */
+    isFavorite: boolean;
+    /**
      * 
      * @type {string}
      * @memberof PublicFacilityDetail
@@ -197,6 +203,7 @@ export function instanceOfPublicFacilityDetail(value: object): value is PublicFa
     if (!('ratingAverage' in value) || value['ratingAverage'] === undefined) return false;
     if (!('ratingCount' in value) || value['ratingCount'] === undefined) return false;
     if (!('availability' in value) || value['availability'] === undefined) return false;
+    if (!('isFavorite' in value) || value['isFavorite'] === undefined) return false;
     if (!('descriptionAr' in value) || value['descriptionAr'] === undefined) return false;
     if (!('descriptionEn' in value) || value['descriptionEn'] === undefined) return false;
     if (!('phone' in value) || value['phone'] === undefined) return false;
@@ -230,6 +237,7 @@ export function PublicFacilityDetailFromJSONTyped(json: any, ignoreDiscriminator
         'ratingAverage': json['ratingAverage'],
         'ratingCount': json['ratingCount'],
         'availability': AvailabilityFromJSON(json['availability']),
+        'isFavorite': json['isFavorite'],
         'descriptionAr': json['descriptionAr'],
         'descriptionEn': json['descriptionEn'],
         'phone': json['phone'],
@@ -264,6 +272,7 @@ export function PublicFacilityDetailToJSONTyped(value?: PublicFacilityDetail | n
         'ratingAverage': value['ratingAverage'],
         'ratingCount': value['ratingCount'],
         'availability': AvailabilityToJSON(value['availability']),
+        'isFavorite': value['isFavorite'],
         'descriptionAr': value['descriptionAr'],
         'descriptionEn': value['descriptionEn'],
         'phone': value['phone'],

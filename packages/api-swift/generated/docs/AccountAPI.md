@@ -172,7 +172,7 @@ Name | Type | Description  | Notes
 
 # **accountFavoritesList**
 ```swift
-    open class func accountFavoritesList(completion: @escaping (_ data: FavoriteList?, _ error: Error?) -> Void)
+    open class func accountFavoritesList(cursor: String? = nil, limit: Int? = nil, completion: @escaping (_ data: FavoriteList?, _ error: Error?) -> Void)
 ```
 
 List the facilities the caller has saved
@@ -184,9 +184,11 @@ Newest first, cursor-paginated. A saved facility that is no longer public — cl
 // The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
 import ServaDirectoryAPI
 
+let cursor = "cursor_example" // String | Opaque token returned as `nextCursor` by the previous page. (optional)
+let limit = 987 // Int | Page size, maximum 100, default 30. (optional)
 
 // List the facilities the caller has saved
-AccountAPI.accountFavoritesList() { (response, error) in
+AccountAPI.accountFavoritesList(cursor: cursor, limit: limit) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -199,7 +201,11 @@ AccountAPI.accountFavoritesList() { (response, error) in
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **cursor** | **String** | Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] 
+ **limit** | **Int** | Page size, maximum 100, default 30. | [optional] 
 
 ### Return type
 
@@ -268,7 +274,7 @@ Name | Type | Description  | Notes
 
 # **accountNotificationsList**
 ```swift
-    open class func accountNotificationsList(completion: @escaping (_ data: NotificationPage?, _ error: Error?) -> Void)
+    open class func accountNotificationsList(cursor: String? = nil, limit: Int? = nil, completion: @escaping (_ data: NotificationPage?, _ error: Error?) -> Void)
 ```
 
 List the caller's notifications, newest first
@@ -280,9 +286,11 @@ The account's own inbox.  Every message the platform has sent this account is he
 // The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
 import ServaDirectoryAPI
 
+let cursor = "cursor_example" // String | Opaque token returned as `nextCursor` by the previous page. (optional)
+let limit = 987 // Int | Page size, maximum 100, default 30. (optional)
 
 // List the caller's notifications, newest first
-AccountAPI.accountNotificationsList() { (response, error) in
+AccountAPI.accountNotificationsList(cursor: cursor, limit: limit) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -295,7 +303,11 @@ AccountAPI.accountNotificationsList() { (response, error) in
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **cursor** | **String** | Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] 
+ **limit** | **Int** | Page size, maximum 100, default 30. | [optional] 
 
 ### Return type
 

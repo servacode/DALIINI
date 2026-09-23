@@ -135,11 +135,13 @@ open class AccountAPI {
     /**
      List the facilities the caller has saved
      
+     - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     - parameter limit: (query) Page size, maximum 100, default 30. (optional)
      - returns: FavoriteList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func accountFavoritesList() async throws -> FavoriteList {
-        return try await accountFavoritesListWithRequestBuilder().execute().body
+    open class func accountFavoritesList(cursor: String? = nil, limit: Int? = nil) async throws -> FavoriteList {
+        return try await accountFavoritesListWithRequestBuilder(cursor: cursor, limit: limit).execute().body
     }
 
     /**
@@ -149,14 +151,20 @@ open class AccountAPI {
      - Bearer Token:
        - type: http
        - name: bearerAccessToken
+     - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     - parameter limit: (query) Page size, maximum 100, default 30. (optional)
      - returns: RequestBuilder<FavoriteList> 
      */
-    open class func accountFavoritesListWithRequestBuilder() -> RequestBuilder<FavoriteList> {
+    open class func accountFavoritesListWithRequestBuilder(cursor: String? = nil, limit: Int? = nil) -> RequestBuilder<FavoriteList> {
         let localVariablePath = "/api/v1/account/favorites/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
 
-        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "cursor": (wrappedValue: cursor?.encodeToJSON(), isExplode: true),
+            "limit": (wrappedValue: limit?.encodeToJSON(), isExplode: true),
+        ])
 
         let localVariableNillableHeaders: [String: Any?] = [
             :
@@ -214,11 +222,13 @@ open class AccountAPI {
     /**
      List the caller's notifications, newest first
      
+     - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     - parameter limit: (query) Page size, maximum 100, default 30. (optional)
      - returns: NotificationPage
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func accountNotificationsList() async throws -> NotificationPage {
-        return try await accountNotificationsListWithRequestBuilder().execute().body
+    open class func accountNotificationsList(cursor: String? = nil, limit: Int? = nil) async throws -> NotificationPage {
+        return try await accountNotificationsListWithRequestBuilder(cursor: cursor, limit: limit).execute().body
     }
 
     /**
@@ -228,14 +238,20 @@ open class AccountAPI {
      - Bearer Token:
        - type: http
        - name: bearerAccessToken
+     - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     - parameter limit: (query) Page size, maximum 100, default 30. (optional)
      - returns: RequestBuilder<NotificationPage> 
      */
-    open class func accountNotificationsListWithRequestBuilder() -> RequestBuilder<NotificationPage> {
+    open class func accountNotificationsListWithRequestBuilder(cursor: String? = nil, limit: Int? = nil) -> RequestBuilder<NotificationPage> {
         let localVariablePath = "/api/v1/account/notifications/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
 
-        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "cursor": (wrappedValue: cursor?.encodeToJSON(), isExplode: true),
+            "limit": (wrappedValue: limit?.encodeToJSON(), isExplode: true),
+        ])
 
         let localVariableNillableHeaders: [String: Any?] = [
             :

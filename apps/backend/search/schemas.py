@@ -19,7 +19,6 @@ class AvailabilitySerializer(serializers.Serializer):
 
 
 class CompactFacilitySerializer(serializers.Serializer):
-    # Declared first so it reads beside the identity fields in the generated clients.
     id = serializers.UUIDField()
     nameAr = serializers.CharField()
     nameEn = serializers.CharField(allow_null=True)
@@ -33,6 +32,12 @@ class CompactFacilitySerializer(serializers.Serializer):
     ratingAverage = serializers.FloatField(allow_null=True)
     ratingCount = serializers.IntegerField()
     availability = AvailabilitySerializer()
+    isFavorite = serializers.BooleanField(
+        help_text=(
+            "Whether the caller has saved this facility. False for anonymous callers; "
+            "resolved for a whole page in one subquery."
+        ),
+    )
 
 
 class FacilityImageSerializer(serializers.Serializer):

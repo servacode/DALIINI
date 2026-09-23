@@ -82,6 +82,12 @@ class FavoriteFacilityTest : ShouldSpec() {
             //modelInstance.availability shouldBe ("TODO")
         }
 
+        // to test the property `isFavorite` - Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery.
+        should("test isFavorite") {
+            // uncomment below to test the property
+            //modelInstance.isFavorite shouldBe ("TODO")
+        }
+
         // to test the property `favoritedAt` - When the caller saved this facility.
         should("test favoritedAt") {
             // uncomment below to test the property

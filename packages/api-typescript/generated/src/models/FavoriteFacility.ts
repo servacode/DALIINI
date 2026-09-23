@@ -96,6 +96,12 @@ export interface FavoriteFacility {
      */
     availability: Availability;
     /**
+     * Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery.
+     * @type {boolean}
+     * @memberof FavoriteFacility
+     */
+    isFavorite: boolean;
+    /**
      * When the caller saved this facility.
      * @type {Date}
      * @memberof FavoriteFacility
@@ -116,6 +122,7 @@ export function instanceOfFavoriteFacility(value: object): value is FavoriteFaci
     if (!('ratingAverage' in value) || value['ratingAverage'] === undefined) return false;
     if (!('ratingCount' in value) || value['ratingCount'] === undefined) return false;
     if (!('availability' in value) || value['availability'] === undefined) return false;
+    if (!('isFavorite' in value) || value['isFavorite'] === undefined) return false;
     if (!('favoritedAt' in value) || value['favoritedAt'] === undefined) return false;
     return true;
 }
@@ -139,6 +146,7 @@ export function FavoriteFacilityFromJSONTyped(json: any, ignoreDiscriminator: bo
         'ratingAverage': json['ratingAverage'],
         'ratingCount': json['ratingCount'],
         'availability': AvailabilityFromJSON(json['availability']),
+        'isFavorite': json['isFavorite'],
         'favoritedAt': (new Date(json['favoritedAt'])),
     };
 }
@@ -163,6 +171,7 @@ export function FavoriteFacilityToJSONTyped(value?: FavoriteFacility | null, ign
         'ratingAverage': value['ratingAverage'],
         'ratingCount': value['ratingCount'],
         'availability': AvailabilityToJSON(value['availability']),
+        'isFavorite': value['isFavorite'],
         'favoritedAt': ((value['favoritedAt']).toISOString()),
     };
 }

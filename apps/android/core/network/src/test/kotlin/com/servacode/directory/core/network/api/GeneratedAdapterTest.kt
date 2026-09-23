@@ -62,6 +62,7 @@ class GeneratedAdapterTest {
         {"id":"$id","nameAr":"صيدلية","nameEn":null,
          "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":"Pharmacy"},
          "city":null,"distanceMeters":120.5,"ratingAverage":4.5,"ratingCount":2,
+         "isFavorite":false,
          "availability":{"state":"$state","nextOpenAt":null}}
     """
 
@@ -151,7 +152,7 @@ class GeneratedAdapterTest {
         respond(
             """{"id":"$FACILITY","nameAr":"صيدلية","nameEn":null,
             "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":null},"city":{"id":"$PROVINCE","nameAr":"الرقة"},
-            "distanceMeters":null,"ratingAverage":null,"ratingCount":0,
+            "distanceMeters":null,"ratingAverage":null,"ratingCount":0,"isFavorite":true,
             "availability":{"state":"CLOSED","nextOpenAt":"2026-09-20T08:00:00+03:00"},
             "descriptionAr":null,"descriptionEn":null,"phone":"+963900000000","addressAr":"شارع","addressEn":null,
             "neighborhood":null,"location":{"latitude":35.95,"longitude":39.01},

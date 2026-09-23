@@ -64,6 +64,17 @@ paths:
         — is not returned, because this list is served by the same public query every
         other list uses.
       summary: List the facilities the caller has saved
+      parameters:
+      - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque token returned as `nextCursor` by the previous page.
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Page size, maximum 100, default 30.
       tags:
       - Account
       security:
@@ -188,6 +199,17 @@ paths:
         reached the device, which is what makes the inbox the record and the push only an
         announcement.
       summary: List the caller's notifications, newest first
+      parameters:
+      - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque token returned as `nextCursor` by the previous page.
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Page size, maximum 100, default 30.
       tags:
       - Account
       security:
@@ -6193,12 +6215,17 @@ components:
           type: integer
         availability:
           $ref: '#/components/schemas/Availability'
+        isFavorite:
+          type: boolean
+          description: Whether the caller has saved this facility. False for anonymous
+            callers; resolved for a whole page in one subquery.
       required:
       - availability
       - category
       - city
       - distanceMeters
       - id
+      - isFavorite
       - nameAr
       - nameEn
       - ratingAverage
@@ -6471,6 +6498,10 @@ components:
           type: integer
         availability:
           $ref: '#/components/schemas/Availability'
+        isFavorite:
+          type: boolean
+          description: Whether the caller has saved this facility. False for anonymous
+            callers; resolved for a whole page in one subquery.
         favoritedAt:
           type: string
           format: date-time
@@ -6482,6 +6513,7 @@ components:
       - distanceMeters
       - favoritedAt
       - id
+      - isFavorite
       - nameAr
       - nameEn
       - ratingAverage
@@ -7408,6 +7440,10 @@ components:
           type: integer
         availability:
           $ref: '#/components/schemas/Availability'
+        isFavorite:
+          type: boolean
+          description: Whether the caller has saved this facility. False for anonymous
+            callers; resolved for a whole page in one subquery.
         descriptionAr:
           type: string
           nullable: true
@@ -7459,6 +7495,7 @@ components:
       - hours
       - id
       - images
+      - isFavorite
       - location
       - nameAr
       - nameEn

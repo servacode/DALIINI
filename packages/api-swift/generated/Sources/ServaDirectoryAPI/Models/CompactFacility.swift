@@ -22,8 +22,10 @@ public struct CompactFacility: Codable, JSONEncodable, Hashable {
     public var ratingAverage: Double?
     public var ratingCount: Int
     public var availability: Availability
+    /** Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery. */
+    public var isFavorite: Bool
 
-    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability) {
+    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, isFavorite: Bool) {
         self.id = id
         self.nameAr = nameAr
         self.nameEn = nameEn
@@ -33,6 +35,7 @@ public struct CompactFacility: Codable, JSONEncodable, Hashable {
         self.ratingAverage = ratingAverage
         self.ratingCount = ratingCount
         self.availability = availability
+        self.isFavorite = isFavorite
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
@@ -45,6 +48,7 @@ public struct CompactFacility: Codable, JSONEncodable, Hashable {
         case ratingAverage
         case ratingCount
         case availability
+        case isFavorite
     }
 
     // Encodable protocol methods
@@ -60,6 +64,7 @@ public struct CompactFacility: Codable, JSONEncodable, Hashable {
         try container.encode(ratingAverage, forKey: .ratingAverage)
         try container.encode(ratingCount, forKey: .ratingCount)
         try container.encode(availability, forKey: .availability)
+        try container.encode(isFavorite, forKey: .isFavorite)
     }
 }
 

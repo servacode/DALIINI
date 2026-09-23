@@ -19,6 +19,10 @@ import com.servacode.directory.core.model.Province
 import com.servacode.directory.core.model.PublicMapFacility
 import com.servacode.directory.core.model.UserRating
 import com.servacode.directory.core.network.DirectoryQuery
+import com.servacode.directory.core.model.InboxPage
+import com.servacode.directory.core.model.LegalPage
+import com.servacode.directory.core.model.LegalPageKey
+import com.servacode.directory.core.model.ResolvedPlace
 import com.servacode.directory.core.network.PublicApiBoundary
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -173,5 +177,68 @@ class ScriptedPublicApi : PublicApiBoundary {
 
     override suspend fun deleteRating(facilityId: String) {
         calls += "unrate:$facilityId"
+    }
+
+    var placeAnswer: (Double, Double) -> ResolvedPlace = { _, _ -> throw offline }
+    var favoritesAnswer: (String?) -> Page<FacilitySummary> = { throw offline }
+    var inboxAnswer: (String?) -> InboxPage = { throw offline }
+    var legalPagesAnswer: () -> List<LegalPage> = { throw offline }
+    var legalPageAnswer: (LegalPageKey) -> LegalPage = { throw offline }
+
+    /** What the fake has been told to save, so a test can assert the round trip. */
+    val saved = mutableSetOf<String>()
+    var unreadCount: Int = 0
+
+    override suspend fun resolvePlace(latitude: Double, longitude: Double): ResolvedPlace {
+        calls += "resolve:$latitude:$longitude"
+        return placeAnswer(latitude, longitude)
+    }
+
+    override suspend fun favorites(cursor: String?): Page<FacilitySummary> {
+        calls += "favorites:$cursor"
+        return favoritesAnswer(cursor)
+    }
+
+    override suspend fun addFavorite(facilityId: String): Boolean {
+        calls += "save:$facilityId"
+        saved += facilityId
+        return true
+    }
+
+    override suspend fun removeFavorite(facilityId: String): Boolean {
+        calls += "unsave:$facilityId"
+        saved -= facilityId
+        return false
+    }
+
+    override suspend fun inbox(cursor: String?): InboxPage {
+        calls += "inbox:$cursor"
+        return inboxAnswer(cursor)
+    }
+
+    override suspend fun unreadMessageCount(): Int {
+        calls += "unread"
+        return unreadCount
+    }
+
+    override suspend fun markMessageRead(messageId: String): Int {
+        calls += "read:$messageId"
+        unreadCount = (unreadCount - 1).coerceAtLeast(0)
+        return unreadCount
+    }
+
+    override suspend fun markAllMessagesRead() {
+        calls += "read-all"
+        unreadCount = 0
+    }
+
+    override suspend fun legalPages(): List<LegalPage> = legalPagesAnswer().also { calls += "legal" }
+
+    override suspend fun legalPage(key: LegalPageKey): LegalPage =
+        legalPageAnswer(key).also { calls += "legal:$key" }
+
+    override suspend fun changePassword(currentPassword: String, newPassword: String) {
+        // The words themselves are never recorded, here or anywhere else.
+        calls += "password-change"
     }
 }

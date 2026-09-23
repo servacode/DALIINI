@@ -73,8 +73,18 @@ export interface AccountFavoriteRemoveRequest {
     facilityId: string;
 }
 
+export interface AccountFavoritesListRequest {
+    cursor?: string;
+    limit?: number;
+}
+
 export interface AccountNotificationMarkReadRequest {
     notificationId: string;
+}
+
+export interface AccountNotificationsListRequest {
+    cursor?: string;
+    limit?: number;
 }
 
 export interface AccountPasswordChangeRequest {
@@ -247,8 +257,16 @@ export class AccountApi extends runtime.BaseAPI {
      * Newest first, cursor-paginated. A saved facility that is no longer public — closed, suspended, or in a category the province stopped serving — is not returned, because this list is served by the same public query every other list uses.
      * List the facilities the caller has saved
      */
-    async accountFavoritesListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoriteList>> {
+    async accountFavoritesListRaw(requestParameters: AccountFavoritesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoriteList>> {
         const queryParameters: any = {};
+
+        if (requestParameters['cursor'] != null) {
+            queryParameters['cursor'] = requestParameters['cursor'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -277,8 +295,8 @@ export class AccountApi extends runtime.BaseAPI {
      * Newest first, cursor-paginated. A saved facility that is no longer public — closed, suspended, or in a category the province stopped serving — is not returned, because this list is served by the same public query every other list uses.
      * List the facilities the caller has saved
      */
-    async accountFavoritesList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FavoriteList> {
-        const response = await this.accountFavoritesListRaw(initOverrides);
+    async accountFavoritesList(requestParameters: AccountFavoritesListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FavoriteList> {
+        const response = await this.accountFavoritesListRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -333,8 +351,16 @@ export class AccountApi extends runtime.BaseAPI {
      * The account\'s own inbox.  Every message the platform has sent this account is here whether or not a push ever reached the device, which is what makes the inbox the record and the push only an announcement.
      * List the caller\'s notifications, newest first
      */
-    async accountNotificationsListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationPage>> {
+    async accountNotificationsListRaw(requestParameters: AccountNotificationsListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationPage>> {
         const queryParameters: any = {};
+
+        if (requestParameters['cursor'] != null) {
+            queryParameters['cursor'] = requestParameters['cursor'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -363,8 +389,8 @@ export class AccountApi extends runtime.BaseAPI {
      * The account\'s own inbox.  Every message the platform has sent this account is here whether or not a push ever reached the device, which is what makes the inbox the record and the push only an announcement.
      * List the caller\'s notifications, newest first
      */
-    async accountNotificationsList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationPage> {
-        const response = await this.accountNotificationsListRaw(initOverrides);
+    async accountNotificationsList(requestParameters: AccountNotificationsListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationPage> {
+        const response = await this.accountNotificationsListRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

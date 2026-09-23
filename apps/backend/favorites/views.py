@@ -7,7 +7,7 @@ without producing an error the user did not cause.
 """
 
 from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -15,6 +15,7 @@ from rest_framework.views import APIView
 
 from core.openapi import NOT_FOUND_404, VALIDATION_400, protected
 from search.pagination import FacilityCursorPagination
+from search.views import PAGE_PARAMS
 from search.selectors import public_facilities, with_rating_summary
 from search.serializers import compact_facility
 
@@ -45,6 +46,7 @@ class AccountFavoritesView(APIView):
             "returned, because this list is served by the same public query every other "
             "list uses."
         ),
+        parameters=PAGE_PARAMS,
         responses={200: FavoriteListSerializer, **protected()},
     )
     def get(self, request: Request) -> Response:

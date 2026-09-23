@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **ratingAverage** | **Double** |  | 
 **ratingCount** | **Int** |  | 
 **availability** | [**Availability**](Availability.md) |  | 
+**isFavorite** | **Bool** | Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery. | 
 **descriptionAr** | **String** |  | 
 **descriptionEn** | **String** |  | 
 **phone** | **String** |  | 
