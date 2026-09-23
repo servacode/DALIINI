@@ -134,11 +134,15 @@ fun OnboardingScreen(
             OnboardingUiState.Error -> DirectoryErrorState(
                 title = OnboardingCopy.CONFIG_ERROR,
                 modifier = Modifier.padding(padding),
-                onRetry = null,
+                body = OnboardingCopy.CONFIG_ERROR_BODY,
             )
             is OnboardingUiState.Content -> LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(horizontal = Space.screen, bottom = Space.xl),
+                contentPadding = PaddingValues(
+                    start = Space.screen,
+                    end = Space.screen,
+                    bottom = Space.xl,
+                ),
                 verticalArrangement = Arrangement.spacedBy(Space.md),
             ) {
                 item(key = "phase") {
@@ -462,7 +466,7 @@ private fun StepAction(
     onSubmit: () -> Unit,
     onDone: () -> Unit,
 ) {
-    val action: Pair<String, () -> Unit>? = when (value.step) {
+    val action = when (value.step) {
         OnboardingStep.PROVINCE_CATEGORY -> null
         OnboardingStep.BASIC_INFO -> OnboardingCopy.NEXT to onSaveBasic
         OnboardingStep.MAP_POINT -> null
@@ -602,6 +606,7 @@ object OnboardingCopy {
     const val PROVINCE_REQUIRED = "اختر المحافظة قبل إضافة منشأة"
     const val PROVINCE_CHOOSE = "اختيار المحافظة"
     const val CONFIG_ERROR = "تعذر تحميل إعدادات التسجيل"
+    const val CONFIG_ERROR_BODY = "أعد المحاولة بعد قليل."
     const val NAME_AR = "اسم المنشأة"
     const val NAME_EN = "الاسم بالإنكليزية - اختياري"
     const val DESCRIPTION = "الوصف"
