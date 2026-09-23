@@ -84,7 +84,10 @@ class NavigationViewModel @Inject constructor(
         locationJob = viewModelScope.launch {
             locationProvider.updates().collectLatest { result ->
                 when (result) {
-                    is LocationResult.Available -> handleLocation(result.fix.toPoint())
+                    is LocationResult.Available ->
+                        // The reading's own accuracy travels with it: the engine weighs a vague
+                        // fix differently from a sharp one rather than believing both exactly.
+                        handleLocation(result.fix.toPoint(), result.fix.accuracyMeters)
                     LocationResult.PermissionDenied -> {
                         engine.fail("LOCATION_PERMISSION_REQUIRED")
                         _state.value = NavigationUiState(engine.currentState())
@@ -97,13 +100,13 @@ class NavigationViewModel @Inject constructor(
         }
     }
 
-    private suspend fun handleLocation(point: MapPoint) {
-        val update = engine.update(point, System.currentTimeMillis())
+    private suspend fun handleLocation(point: MapPoint, accuracyMeters: Float = 0f) {
+        val update = engine.update(point, System.currentTimeMillis(), accuracyMeters)
         publish(update)
         if (!update.rerouteRequired) return
         runCatching { routingProvider.route(point, destination) }
             .onSuccess { rerouted ->
-                publish(engine.applyReroute(rerouted, point, System.currentTimeMillis()))
+                publish(engine.applyReroute(rerouted, point, System.currentTimeMillis(), accuracyMeters))
             }
             .onFailure {
                 val fallback = engine.rerouteFailed(System.currentTimeMillis())

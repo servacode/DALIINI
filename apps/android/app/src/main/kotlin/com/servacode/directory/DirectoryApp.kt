@@ -46,6 +46,7 @@ import com.servacode.directory.feature.facility.FacilityScreen
 import com.servacode.directory.feature.home.HomeScreen
 import com.servacode.directory.feature.map.MapScreen
 import com.servacode.directory.feature.navigation.BuiltInNavigationScreen
+import com.servacode.directory.feature.navigation.RoutePreviewScreen
 import com.servacode.directory.feature.province.ProvinceScreen
 import com.servacode.directory.feature.ratings.RatingsScreen
 import com.servacode.directory.feature.search.SearchScreen
@@ -157,7 +158,11 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                     }
                 },
                 onDirections = { latitude, longitude ->
-                    navController.navigate(DirectoryRoute.BuiltInNavigation(latitude, longitude))
+                    // The way there is shown before it is followed; starting is the user's own
+                    // decision, on the next screen.
+                    navController.navigate(
+                        DirectoryRoute.RoutePreview(facilityId, latitude, longitude),
+                    )
                 },
                 onRatings = { navController.navigate(DirectoryRoute.MyRatings) },
                 onSignIn = { navController.navigate(DirectoryRoute.Login) },
@@ -188,6 +193,16 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                         navController.navigate(DirectoryRoute.FacilityDetailRoute(id)) { launchSingleTop = true }
                     }
                 },
+            )
+        }
+        composable<DirectoryRoute.RoutePreview> {
+            RoutePreviewScreen(
+                styleUrl = BuildConfig.MAP_STYLE_URL,
+                onStart = { latitude, longitude ->
+                    navController.navigate(DirectoryRoute.BuiltInNavigation(latitude, longitude))
+                },
+                onBack = { navController.popBackStack() },
+                destinationName = null,
             )
         }
         composable<DirectoryRoute.BuiltInNavigation> { backStackEntry ->

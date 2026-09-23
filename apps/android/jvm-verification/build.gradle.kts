@@ -32,14 +32,17 @@ val androidOnly = listOf(
     "**/*ViewModel.kt",
     "**/*ViewModels.kt",
     "**/feature/bootstrap/BootstrapModule.kt",
+    "**/feature/navigation/NavigationMap.kt",
+    "**/feature/navigation/AndroidNavigationVoice.kt",
+    "**/feature/navigation/NavigationVoice.kt",
     "**/feature/onboarding/OwnerUploadReader.kt",
     "**/feature/onboarding/OnboardingMapPicker.kt",
 )
 
 // Feature modules whose repositories and use cases are platform-free.
 val features = listOf(
-    "account", "auth", "bootstrap", "directory", "duty", "facility", "home", "map", "onboarding",
-    "owner", "province", "ratings", "search",
+    "account", "auth", "bootstrap", "directory", "duty", "facility", "home", "map", "navigation",
+    "onboarding", "owner", "province", "ratings", "search",
 )
 
 sourceSets {
