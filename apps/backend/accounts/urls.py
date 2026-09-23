@@ -16,5 +16,6 @@ urlpatterns = [
     path("auth/recovery/verify/", views.RecoveryVerifyView.as_view()),
     path("auth/recovery/reset/", views.RecoveryResetView.as_view()),
     path("account/profile/", views.ProfileView.as_view()),
+    path("account/password/", views.PasswordChangeView.as_view()),
     path("account/deletion-request/", views.AccountDeletionRequestView.as_view()),
 ]

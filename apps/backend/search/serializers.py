@@ -35,6 +35,8 @@ def compact_facility(facility):
         ),
         "ratingCount": getattr(facility, "rating_count", 0),
         "availability": _availability_payload(facility),
+        # False for anonymous callers and for anyone who has not saved it (INT-097).
+        "isFavorite": bool(getattr(facility, "is_favorite", False)),
     }
 
 

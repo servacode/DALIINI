@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "business_hours",
     "pharmacy_duty",
     "ratings",
+    "favorites",
     "search",
     "realtime",
     "content_services",

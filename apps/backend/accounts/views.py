@@ -23,6 +23,7 @@ from .serializers import (
     ChallengeVerifySerializer,
     DeletionRequestSerializer,
     LoginSerializer,
+    PasswordChangeSerializer,
     ProfilePatchSerializer,
     RecoveryResetSerializer,
     RecoveryStartSerializer,
@@ -31,6 +32,7 @@ from .serializers import (
     RegisterStartSerializer,
 )
 from .services import (
+    change_password,
     complete_registration,
     login,
     request_account_deletion,
@@ -386,3 +388,30 @@ class AccountDeletionRequestView(APIView):
             {"id": str(deletion.pk), "status": deletion.status},
             status=status.HTTP_202_ACCEPTED,
         )
+
+
+class PasswordChangeView(APIView):
+    """Replace the caller's password, and end every session while doing so."""
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="accountPasswordChange",
+        tags=["Account"],
+        summary="Change the caller's password",
+        description=(
+            "The caller proves the current password first. A successful change revokes every "
+            "session, including this one, so the caller signs in again with the new password."
+        ),
+        request=PasswordChangeSerializer,
+        responses={204: None, 400: VALIDATION_400, **protected()},
+    )
+    def post(self, request):
+        serializer = PasswordChangeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        change_password(
+            user=request.user,
+            current_password=serializer.validated_data["currentPassword"],
+            new_password=serializer.validated_data["newPassword"],
+        )
+        return Response(status=204)

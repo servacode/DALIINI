@@ -56,6 +56,308 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+  /api/v1/account/favorites/:
+    get:
+      operationId: accountFavoritesList
+      description: Newest first, cursor-paginated. A saved facility that is no longer
+        public — closed, suspended, or in a category the province stopped serving
+        — is not returned, because this list is served by the same public query every
+        other list uses.
+      summary: List the facilities the caller has saved
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoriteList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+    post:
+      operationId: accountFavoriteAdd
+      description: 'Idempotent: saving a facility that is already saved changes nothing.'
+      summary: Save a facility
+      tags:
+      - Account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FavoriteWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FavoriteWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FavoriteWrite'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoriteState'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+  /api/v1/account/favorites/{facility_id}/:
+    delete:
+      operationId: accountFavoriteRemove
+      description: 'Idempotent: removing what was not saved is not an error.'
+      summary: Remove a facility the caller had saved
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoriteState'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/account/notifications/:
+    get:
+      operationId: accountNotificationsList
+      description: |-
+        The account's own inbox.
+
+        Every message the platform has sent this account is here whether or not a push ever
+        reached the device, which is what makes the inbox the record and the push only an
+        announcement.
+      summary: List the caller's notifications, newest first
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPage'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/account/notifications/{notification_id}/read/:
+    post:
+      operationId: accountNotificationMarkRead
+      description: 'Idempotent: a message that was already read keeps the time it
+        was read.'
+      summary: Mark one notification as read
+      parameters:
+      - in: path
+        name: notification_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnreadCount'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+  /api/v1/account/notifications/read-all/:
+    post:
+      operationId: accountNotificationsMarkAllRead
+      summary: Mark every unread notification as read
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnreadCount'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/account/notifications/unread-count/:
+    get:
+      operationId: accountNotificationsUnreadCount
+      summary: How many of the caller's notifications are unread
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnreadCount'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/account/password/:
+    post:
+      operationId: accountPasswordChange
+      description: The caller proves the current password first. A successful change
+        revokes every session, including this one, so the caller signs in again with
+        the new password.
+      summary: Change the caller's password
+      tags:
+      - Account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/account/profile/:
     get:
       operationId: accountProfileRetrieve
@@ -4139,6 +4441,42 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/public/locations/resolve/:
+    get:
+      operationId: publicLocationResolve
+      description: Point-in-polygon against the seeded city and neighbourhood boundaries,
+        then the nearest active province centre within 200 km. No external geocoder
+        is called and the coordinate is not stored.
+      summary: Resolve a coordinate to a province, city and neighbourhood
+      parameters:
+      - in: query
+        name: latitude
+        schema:
+          type: number
+          format: double
+        required: true
+      - in: query
+        name: longitude
+        schema:
+          type: number
+          format: double
+        required: true
+      tags:
+      - Public Taxonomy
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicLocationResolve'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
   /api/v1/public/map/facilities/:
     get:
       operationId: publicMapFacilitiesList
@@ -5863,6 +6201,16 @@ components:
       description: |-
         * `configured` - configured
         * `unconfigured` - unconfigured
+    DestinationEnum:
+      enum:
+      - NONE
+      - FACILITY
+      - OWNER_FACILITIES
+      type: string
+      description: |-
+        * `NONE` - NONE
+        * `FACILITY` - FACILITY
+        * `OWNER_FACILITIES` - OWNER_FACILITIES
     DutyShift:
       type: object
       properties:
@@ -6050,6 +6398,89 @@ components:
         * `REVERIFICATION_REQUIRED` - Reverification required
         * `SUSPENDED` - Suspended
         * `CLOSED` - Closed
+    FavoriteFacility:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+          nullable: true
+        category:
+          $ref: '#/components/schemas/BilingualRef'
+        city:
+          allOf:
+          - $ref: '#/components/schemas/NamedRef'
+          nullable: true
+        distanceMeters:
+          type: number
+          format: double
+          nullable: true
+          description: Great-circle distance in metres from the supplied coordinates.
+            Null when no coordinates were supplied; clients never compute it locally.
+        ratingAverage:
+          type: number
+          format: double
+          nullable: true
+        ratingCount:
+          type: integer
+        availability:
+          $ref: '#/components/schemas/Availability'
+        favoritedAt:
+          type: string
+          format: date-time
+          description: When the caller saved this facility.
+      required:
+      - availability
+      - category
+      - city
+      - distanceMeters
+      - favoritedAt
+      - id
+      - nameAr
+      - nameEn
+      - ratingAverage
+      - ratingCount
+    FavoriteList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FavoriteFacility'
+        nextCursor:
+          type: string
+          nullable: true
+        hasMore:
+          type: boolean
+      required:
+      - hasMore
+      - items
+      - nextCursor
+    FavoriteState:
+      type: object
+      properties:
+        facilityId:
+          type: string
+          format: uuid
+        isFavorite:
+          type: boolean
+      required:
+      - facilityId
+      - isFavorite
+    FavoriteWrite:
+      type: object
+      description: Which facility to save. The caller is whoever the token says it
+        is.
+      properties:
+        facilityId:
+          type: string
+          format: uuid
+      required:
+      - facilityId
     HomeCategory:
       type: object
       properties:
@@ -6164,6 +6595,68 @@ components:
       required:
       - id
       - nameAr
+    Notification:
+      type: object
+      description: One message in the account's inbox, as the app reads it.
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          description: What happened, as a stable code.
+        titleAr:
+          type: string
+        bodyAr:
+          type: string
+        destination:
+          allOf:
+          - $ref: '#/components/schemas/DestinationEnum'
+          description: |-
+            Where opening this message takes the reader. The set is closed on purpose: a notification can never carry an arbitrary link.
+
+            * `NONE` - NONE
+            * `FACILITY` - FACILITY
+            * `OWNER_FACILITIES` - OWNER_FACILITIES
+        facilityId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Set only when the destination is FACILITY.
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+      - bodyAr
+      - createdAt
+      - destination
+      - facilityId
+      - id
+      - isRead
+      - titleAr
+      - type
+    NotificationPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+        nextCursor:
+          type: string
+          nullable: true
+        hasMore:
+          type: boolean
+        unreadCount:
+          type: integer
+          description: Unread messages in the whole inbox, not only on this page.
+      required:
+      - hasMore
+      - items
+      - nextCursor
+      - unreadCount
     OwnerApplication:
       type: object
       properties:
@@ -6572,6 +7065,22 @@ components:
       - maxFiles
       - minFiles
       - required
+    PasswordChange:
+      type: object
+      description: |-
+        What the caller must supply to replace their password.
+
+        Neither value is ever echoed back, logged, or put in an audit record.
+      properties:
+        currentPassword:
+          type: string
+          writeOnly: true
+        newPassword:
+          type: string
+          writeOnly: true
+      required:
+      - currentPassword
+      - newPassword
     PatchedDutyShiftInput:
       type: object
       description: A duty shift as the client sends it. The server assigns the id.
@@ -6920,6 +7429,56 @@ components:
           format: binary
       required:
       - file
+    PublicLocationResolve:
+      type: object
+      properties:
+        province:
+          allOf:
+          - $ref: '#/components/schemas/PublicProvince'
+          nullable: true
+        city:
+          allOf:
+          - $ref: '#/components/schemas/PublicPlace'
+          nullable: true
+        neighborhood:
+          allOf:
+          - $ref: '#/components/schemas/PublicPlace'
+          nullable: true
+        label:
+          type: string
+          nullable: true
+          description: 'What the app shows the user: the province, and the finer place
+            when known.'
+        resolvedBy:
+          allOf:
+          - $ref: '#/components/schemas/ResolvedByEnum'
+          description: |-
+            BOUNDARY when the point falls inside a seeded city or neighbourhood, NEAREST_PROVINCE when only the closest province centre could be used, NONE when the point is outside every province this platform serves.
+
+            * `BOUNDARY` - BOUNDARY
+            * `NEAREST_PROVINCE` - NEAREST_PROVINCE
+            * `NONE` - NONE
+      required:
+      - city
+      - label
+      - neighborhood
+      - province
+      - resolvedBy
+    PublicPlace:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+          nullable: true
+      required:
+      - id
+      - nameAr
+      - nameEn
     PublicProvince:
       type: object
       properties:
@@ -7054,6 +7613,16 @@ components:
       - displayName
       - phone
       - provinceId
+    ResolvedByEnum:
+      enum:
+      - BOUNDARY
+      - NEAREST_PROVINCE
+      - NONE
+      type: string
+      description: |-
+        * `BOUNDARY` - BOUNDARY
+        * `NEAREST_PROVINCE` - NEAREST_PROVINCE
+        * `NONE` - NONE
     SessionCredentials:
       type: object
       description: Issued on registration, login and refresh.
@@ -7123,6 +7692,13 @@ components:
             $ref: '#/components/schemas/TemporaryClosure'
       required:
       - items
+    UnreadCount:
+      type: object
+      properties:
+        unreadCount:
+          type: integer
+      required:
+      - unreadCount
     UserSession:
       type: object
       properties:

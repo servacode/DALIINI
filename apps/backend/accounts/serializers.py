@@ -85,3 +85,17 @@ class DeletionRequestSerializer(serializers.Serializer):
         if value is not True:
             raise serializers.ValidationError("Explicit confirmation is required.")
         return value
+
+
+class PasswordChangeSerializer(serializers.Serializer):  # type: ignore[type-arg]
+    """What the caller must supply to replace their password.
+
+    Neither value is ever echoed back, logged, or put in an audit record.
+    """
+
+    currentPassword = serializers.CharField(write_only=True, trim_whitespace=False)
+    newPassword = serializers.CharField(write_only=True, trim_whitespace=False)
+
+    def validate_newPassword(self, value):  # noqa: N802 - the wire name is camelCase
+        validate_password(value)
+        return value

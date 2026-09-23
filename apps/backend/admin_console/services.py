@@ -7,6 +7,8 @@ from django.utils import timezone
 from accounts.models import UserAdminRole
 from audit.services import record_audit
 from facilities.models import Facility, FacilityApplication, VerificationEvidence
+from notifications.models import Notification
+from notifications.services import create_notification
 from sessions.models import UserSession
 
 
@@ -81,7 +83,35 @@ def decide_application(*, request, application_id, approve, reason=""):
         metadata={"reason": reason.strip() if not approve else ""},
         request_id=_request_id(request),
     )
+    _tell_the_owners(facility, approve=approve, reason=reason.strip())
     return application
+
+
+def _tell_the_owners(facility, *, approve: bool, reason: str) -> None:
+    """A review decision reaches the people responsible for the facility.
+
+    The message goes to the account's own inbox, which is the record; whether a push also
+    reaches a device depends on a permission the owner may never have granted. The rejection
+    reason is the reviewer's own words and is shown to the owner, who is the one asked to act
+    on it.
+    """
+    title = "تمت الموافقة على منشأتك" if approve else "طلب منشأتك يحتاج تعديلاً"
+    body = (
+        f"{facility.name_ar} صارت ظاهرة في الدليل."
+        if approve
+        else f"سبب الرفض: {reason}" if reason else f"راجِع طلب {facility.name_ar} وأعد إرساله."
+    )
+    for membership in facility.memberships.select_related("user"):
+        create_notification(
+            user=membership.user,
+            type=(
+                "facility.application.approved" if approve else "facility.application.rejected"
+            ),
+            title_ar=title,
+            body_ar=body[:400],
+            destination=Notification.Destination.FACILITY,
+            payload={"facilityId": str(facility.id)},
+        )
 
 
 @transaction.atomic

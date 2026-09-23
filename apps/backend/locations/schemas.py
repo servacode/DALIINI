@@ -36,3 +36,27 @@ class PublicCitySerializer(serializers.Serializer):
 
 class PublicCityListSerializer(serializers.Serializer):
     items = PublicCitySerializer(many=True)
+
+
+class PublicPlaceSerializer(serializers.Serializer):  # type: ignore[type-arg]
+    id = serializers.UUIDField()
+    nameAr = serializers.CharField()
+    nameEn = serializers.CharField(allow_null=True)
+
+
+class PublicLocationResolveSerializer(serializers.Serializer):  # type: ignore[type-arg]
+    province = PublicProvinceSerializer(allow_null=True)
+    city = PublicPlaceSerializer(allow_null=True)
+    neighborhood = PublicPlaceSerializer(allow_null=True)
+    label = serializers.CharField(
+        allow_null=True,
+        help_text="What the app shows the user: the province, and the finer place when known.",
+    )
+    resolvedBy = serializers.ChoiceField(
+        choices=["BOUNDARY", "NEAREST_PROVINCE", "NONE"],
+        help_text=(
+            "BOUNDARY when the point falls inside a seeded city or neighbourhood, "
+            "NEAREST_PROVINCE when only the closest province centre could be used, "
+            "NONE when the point is outside every province this platform serves."
+        ),
+    )

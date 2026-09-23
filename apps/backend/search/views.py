@@ -26,6 +26,7 @@ from .selectors import (
     apply_text_search,
     public_facilities,
     with_distance,
+    with_favorite_state,
     with_rating_summary,
     within_bbox,
 )
@@ -67,7 +68,7 @@ def _parse_float(value, name):
         raise ValidationError({name: "Invalid number."}) from exc
 
 
-def _base_from_params(params):
+def _base_from_params(params, user=None):
     province_id = params.get("provinceId")
     category_id = params.get("categoryId")
     if not province_id:
@@ -125,7 +126,7 @@ class PublicFacilityListView(APIView):
     def get(self, request):
         if not request.query_params.get("categoryId"):
             raise ValidationError({"categoryId": "Required."})
-        queryset = _base_from_params(request.query_params)
+        queryset = _base_from_params(request.query_params, request.user)
         if request.query_params.get("openNow") == "true":
             queryset = filter_for_availability_state(queryset, AvailabilityState.OPEN)
         if request.query_params.get("dutyNow") == "true":
@@ -149,7 +150,7 @@ class PublicFacilityDetailView(APIView):
         responses={200: PublicFacilityDetailSerializer, 404: NOT_FOUND_404},
     )
     def get(self, request, facility_id):
-        queryset = with_rating_summary(public_facilities())
+        queryset = with_favorite_state(with_rating_summary(public_facilities()), request.user)
         facility = get_object_or_404(queryset, pk=facility_id)
         return Response(facility_detail(facility))
 
@@ -164,7 +165,7 @@ class PublicMapFacilitiesView(APIView):
         responses={200: MapMarkerListSerializer, 400: VALIDATION_400},
     )
     def get(self, request):
-        queryset = _base_from_params(request.query_params)
+        queryset = _base_from_params(request.query_params, request.user)
         if not request.query_params.get("bbox"):
             raise ValidationError({"bbox": "Required for map queries."})
         markers = []
@@ -200,7 +201,7 @@ class PublicSearchView(APIView):
         term = (request.query_params.get("q") or "").strip()
         if len(term) < 2:
             raise ValidationError({"q": "At least 2 characters are required."})
-        queryset = _base_from_params(request.query_params)
+        queryset = _base_from_params(request.query_params, request.user)
         queryset = apply_text_search(queryset, term)
         paginator = FacilityCursorPagination()
         page = paginator.paginate_queryset(queryset, request)
@@ -235,7 +236,7 @@ class PublicHomeView(APIView):
         )
         base_params = request.query_params.copy()
         base_params["provinceId"] = province_id
-        base = _base_from_params(base_params)
+        base = _base_from_params(base_params, request.user)
         nearby = list(base[:10])
         open_nearby = list(filter_for_availability_state(base, AvailabilityState.OPEN)[:10])
         duty_now = list(filter_for_availability_state(base, AvailabilityState.DUTY)[:10])

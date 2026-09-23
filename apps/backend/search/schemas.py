@@ -19,6 +19,7 @@ class AvailabilitySerializer(serializers.Serializer):
 
 
 class CompactFacilitySerializer(serializers.Serializer):
+    # Declared first so it reads beside the identity fields in the generated clients.
     id = serializers.UUIDField()
     nameAr = serializers.CharField()
     nameEn = serializers.CharField(allow_null=True)

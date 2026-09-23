@@ -57,10 +57,29 @@ def deactivate_push_token(*, user, token: str) -> int:
 
 
 @transaction.atomic
-def create_notification(*, user, type: str, payload: dict) -> Notification:
+def create_notification(
+    *,
+    user,
+    type: str,
+    payload: dict,
+    title_ar: str = "",
+    body_ar: str = "",
+    destination: str = Notification.Destination.NONE,
+) -> Notification:
+    """Put a message in an account's inbox, and tell the account's open sessions about it.
+
+    The words are stored with the message rather than assembled by whoever reads it, so the
+    inbox says the same thing the push said, and a client that has never seen this type
+    still has something to show.
+    """
+    if destination not in Notification.Destination.values:
+        raise ValueError(f"Unsupported notification destination: {destination}")
     notification = Notification.objects.create(
         user=user,
         type=type,
+        title_ar=title_ar,
+        body_ar=body_ar,
+        destination=destination,
         payload=safe_notification_payload(payload),
     )
     publish_after_commit(
@@ -72,6 +91,17 @@ def create_notification(*, user, type: str, payload: dict) -> Notification:
         )
     )
     return notification
+
+
+def mark_all_notifications_read(*, user) -> int:
+    """Everything unread becomes read at one moment. Returns how many changed."""
+    return Notification.objects.filter(user=user, read_at__isnull=True).update(
+        read_at=timezone.now()
+    )
+
+
+def unread_notification_count(*, user) -> int:
+    return Notification.objects.filter(user=user, read_at__isnull=True).count()
 
 
 def mark_notification_read(*, user, notification_id) -> Notification:

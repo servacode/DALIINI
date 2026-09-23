@@ -39,6 +39,8 @@ MUTATING = {"post", "put", "patch"}
 
 # Endpoints that legitimately take no request body.
 BODYLESS_MUTATIONS = {
+    ("/api/v1/account/notifications/read-all/", "post"),
+    ("/api/v1/account/notifications/{notification_id}/read/", "post"),
     ("/api/v1/admin/users/{user_id}/block/", "post"),
     ("/api/v1/admin/users/{user_id}/unblock/", "post"),
     ("/api/v1/auth/logout-all/", "post"),
@@ -47,6 +49,7 @@ BODYLESS_MUTATIONS = {
 
 # Endpoints that legitimately answer 204 with no body.
 NO_CONTENT_OPERATIONS = {
+    ("/api/v1/account/password/", "post"),
     ("/api/v1/account/push-token/", "put"),
     ("/api/v1/account/push-token/unregister/", "post"),
     ("/api/v1/admin/ads/{advertisement_id}/", "delete"),

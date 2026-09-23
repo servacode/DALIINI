@@ -253,6 +253,24 @@ def reset_password(*, challenge_id, password: str) -> None:
     challenge.save(update_fields=["consumed_at"])
 
 
+@transaction.atomic
+def change_password(*, user: User, current_password: str, new_password: str) -> None:
+    """Replace a password the caller can prove they already know.
+
+    Every session ends, this one included: `02-BASELINE-DECISIONS.md` makes a password change
+    a revocation, because the reason to change a password is usually that someone else may
+    have had it. The caller signs in again with the new one.
+    """
+    locked = User.objects.select_for_update().get(pk=user.pk)
+    if not locked.check_password(current_password):
+        raise ValidationError({"currentPassword": "Current password is incorrect."})
+    if current_password == new_password:
+        raise ValidationError({"newPassword": "The new password must differ from the old one."})
+    locked.set_password(new_password)
+    locked.save(update_fields=["password", "updated_at"])
+    revoke_all_sessions(user=locked)
+
+
 def _identity_digest(phone: str) -> str:
     key = settings.RECOVERY_HMAC_SECRET.encode("utf-8")
     return hmac.new(key, f"deletion:{phone}".encode(), hashlib.sha256).hexdigest()

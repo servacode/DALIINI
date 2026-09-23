@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point, Polygon
-from django.db.models import Avg, Count, ExpressionWrapper, FloatField, Q
+from django.db.models import Avg, Count, Exists, ExpressionWrapper, FloatField, OuterRef, Q
 
 from facilities.models import Facility
 
@@ -27,6 +27,20 @@ def models_f(name):
     from django.db.models import F
 
     return F(name)
+
+
+def with_favorite_state(queryset, user):
+    """Whether the caller has saved each facility, as one subquery for the whole page.
+
+    Anonymous callers get nothing annotated and the presenter reads false, so a public
+    response never depends on who is asking beyond this one flag.
+    """
+    if user is None or not getattr(user, "is_authenticated", False):
+        return queryset
+    from favorites.models import Favorite
+
+    saved = Favorite.objects.filter(user=user, facility=OuterRef("pk"))
+    return queryset.annotate(is_favorite=Exists(saved))
 
 
 def with_rating_summary(queryset):
