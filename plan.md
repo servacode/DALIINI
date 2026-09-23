@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Updated: 2026-09-19 (Android golden path)
+Updated: 2026-09-24 (complete product batch)
 
 ## Verification baseline
 
@@ -10,6 +10,44 @@ own, and a schema is not qualified by reading its YAML: a representative sample 
 operations must be exercised against the running service and validated against the
 document. A web screen is not qualified until it has run in a real browser — the Admin's
 CSP fault (INT-045) was invisible to every HTTP-level check.
+
+## In flight — complete product batch (2026-09-24)
+
+One batch, no device dependency, ending in a single local-debug APK for the morning's review.
+
+**A — Home, Map and motion.** The advertisement slider on Home (the `Advertisement` model,
+its targeting and schedule already exist and the public endpoint already serves them), quick
+filters for nearest / open now / on duty that use the directory query the backend already
+takes, a map quick-filter bar and a vertical category rail fed by the province's real
+taxonomy, an automatic location header that resolves the user's province and area instead of
+making them choose, and one central navigation transition to replace the window animation
+that shrinks a screen into a square.
+
+**B — Map and navigation from RahalGo.** Audit `/d/RahalGo`'s mature map stack, classify
+every part as REUSE_AS_IS / ADAPT / DO_NOT_REUSE, and bring across what serves this app:
+route preview before live navigation, route progress, rerouting, and guidance. Directory's
+own camera policy, persistence, facility focus and single map destination survive unchanged,
+and the tests must keep INT-096's accumulation fixed.
+
+**C — What the product was missing.** Favourites and a notification inbox, both end to end
+from migration to Android; the account's own screens: edit profile, change password, account
+verification as far as the specification defines it, and account deletion.
+
+**D — Legal, help and settings.** Versioned legal and help content served from the backend
+rather than frozen into the APK, a settings screen of only what exists, and the contact
+channels that are actually configured.
+
+**E — Qualification.** Backend tests, migrations, ruff, mypy, OpenAPI with zero errors and
+zero warnings, regenerated TypeScript, Kotlin and Swift clients, Admin checks, Android unit
+and JVM tests, lint, `assembleLocalDebug`, the qualifiers, and one APK signed by the stable
+debug key `21e9ff5c…`.
+
+Rules for the batch: the source of truth in `docs/spec` decides every product question; no
+invented policy, no fake data, no workaround where the backend is the right place; the
+verified functional baseline (sessions, province, permissions, ordering, distance,
+pagination, media separation, camera, focus, evidence privacy, generated clients, error
+envelope) does not regress; INT-089, INT-096, FCM delivery and `LAUNCH_POLICY_PENDING` keep
+their current status until real device and provider evidence exists.
 
 ## Completed
 
