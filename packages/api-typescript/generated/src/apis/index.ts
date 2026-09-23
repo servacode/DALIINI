@@ -16,6 +16,7 @@ export * from './AdsApi';
 export * from './AnalyticsApi';
 export * from './AuthApi';
 export * from './AvailabilityApi';
+export * from './ContentApi';
 export * from './DutyApi';
 export * from './MediaApi';
 export * from './OwnerApi';

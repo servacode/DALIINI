@@ -4441,6 +4441,48 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/public/legal/:
+    get:
+      operationId: publicLegalDocumentsList
+      description: Titles and versions only. A client compares the version it cached
+        with the one here and fetches a page's words only when they have changed.
+      summary: List the published pages
+      tags:
+      - Content
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegalDocumentList'
+          description: ''
+  /api/v1/public/legal/{key}/:
+    get:
+      operationId: publicLegalDocumentRetrieve
+      description: One published page, in full.
+      summary: Retrieve one published page
+      parameters:
+      - in: path
+        name: key
+        schema:
+          type: string
+        required: true
+      tags:
+      - Content
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegalDocument'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
   /api/v1/public/locations/resolve/:
     get:
       operationId: publicLocationResolve
@@ -6524,6 +6566,70 @@ components:
       - ratings
       - serviceFilter
       - specialtyFilter
+    KeyEnum:
+      enum:
+      - ABOUT
+      - PRIVACY
+      - TERMS
+      - INSTRUCTIONS
+      - FAQ
+      - CONTACT
+      type: string
+      description: |-
+        * `ABOUT` - ABOUT
+        * `PRIVACY` - PRIVACY
+        * `TERMS` - TERMS
+        * `INSTRUCTIONS` - INSTRUCTIONS
+        * `FAQ` - FAQ
+        * `CONTACT` - CONTACT
+    LegalDocument:
+      type: object
+      properties:
+        key:
+          $ref: '#/components/schemas/KeyEnum'
+        titleAr:
+          type: string
+        version:
+          type: integer
+        publishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        bodyAr:
+          type: string
+      required:
+      - bodyAr
+      - key
+      - publishedAt
+      - titleAr
+      - version
+    LegalDocumentList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LegalDocumentSummary'
+      required:
+      - items
+    LegalDocumentSummary:
+      type: object
+      properties:
+        key:
+          $ref: '#/components/schemas/KeyEnum'
+        titleAr:
+          type: string
+        version:
+          type: integer
+        publishedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - key
+      - publishedAt
+      - titleAr
+      - version
     Login:
       type: object
       properties:

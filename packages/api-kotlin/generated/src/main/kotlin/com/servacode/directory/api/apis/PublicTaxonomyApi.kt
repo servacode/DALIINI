@@ -10,9 +10,25 @@ import kotlinx.serialization.Serializable
 import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.PublicCategoryList
 import com.servacode.directory.api.models.PublicCityList
+import com.servacode.directory.api.models.PublicLocationResolve
 import com.servacode.directory.api.models.PublicProvinceList
 
 interface PublicTaxonomyApi {
+    /**
+     * GET api/v1/public/locations/resolve/
+     * Resolve a coordinate to a province, city and neighbourhood
+     * Point-in-polygon against the seeded city and neighbourhood boundaries, then the nearest active province centre within 200 km. No external geocoder is called and the coordinate is not stored.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *
+     * @param latitude 
+     * @param longitude 
+     * @return [PublicLocationResolve]
+     */
+    @GET("api/v1/public/locations/resolve/")
+    suspend fun publicLocationResolve(@Query("latitude") latitude: kotlin.Double, @Query("longitude") longitude: kotlin.Double): Response<PublicLocationResolve>
+
     /**
      * GET api/v1/public/provinces/{province_id}/categories/
      * List categories publicly enabled for a province

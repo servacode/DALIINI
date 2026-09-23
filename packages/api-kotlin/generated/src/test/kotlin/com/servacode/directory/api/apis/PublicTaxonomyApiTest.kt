@@ -22,12 +22,22 @@ import com.servacode.directory.api.apis.PublicTaxonomyApi
 import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.PublicCategoryList
 import com.servacode.directory.api.models.PublicCityList
+import com.servacode.directory.api.models.PublicLocationResolve
 import com.servacode.directory.api.models.PublicProvinceList
 
 class PublicTaxonomyApiTest : ShouldSpec() {
     init {
         // uncomment below to create an instance of PublicTaxonomyApi
         //val apiInstance = PublicTaxonomyApi()
+
+        // to test publicLocationResolve
+        should("test publicLocationResolve") {
+            // uncomment below to test publicLocationResolve
+            //val latitude : kotlin.Double = 1.2 // kotlin.Double | 
+            //val longitude : kotlin.Double = 1.2 // kotlin.Double | 
+            //val result : PublicLocationResolve = apiInstance.publicLocationResolve(latitude, longitude)
+            //result shouldBe ("TODO")
+        }
 
         // to test publicProvinceCategoriesList
         should("test publicProvinceCategoriesList") {

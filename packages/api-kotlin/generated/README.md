@@ -46,6 +46,14 @@ All URIs are relative to *http://localhost*
 | Class | Method | HTTP request | Description |
 | ------------ | ------------- | ------------- | ------------- |
 | *AccountApi* | [**accountDeletionRequestCreate**](docs/AccountApi.md#accountdeletionrequestcreate) | **POST** api/v1/account/deletion-request/ | Request deletion of the account of the caller |
+| *AccountApi* | [**accountFavoriteAdd**](docs/AccountApi.md#accountfavoriteadd) | **POST** api/v1/account/favorites/ | Save a facility |
+| *AccountApi* | [**accountFavoriteRemove**](docs/AccountApi.md#accountfavoriteremove) | **DELETE** api/v1/account/favorites/{facility_id}/ | Remove a facility the caller had saved |
+| *AccountApi* | [**accountFavoritesList**](docs/AccountApi.md#accountfavoriteslist) | **GET** api/v1/account/favorites/ | List the facilities the caller has saved |
+| *AccountApi* | [**accountNotificationMarkRead**](docs/AccountApi.md#accountnotificationmarkread) | **POST** api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read |
+| *AccountApi* | [**accountNotificationsList**](docs/AccountApi.md#accountnotificationslist) | **GET** api/v1/account/notifications/ | List the caller's notifications, newest first |
+| *AccountApi* | [**accountNotificationsMarkAllRead**](docs/AccountApi.md#accountnotificationsmarkallread) | **POST** api/v1/account/notifications/read-all/ | Mark every unread notification as read |
+| *AccountApi* | [**accountNotificationsUnreadCount**](docs/AccountApi.md#accountnotificationsunreadcount) | **GET** api/v1/account/notifications/unread-count/ | How many of the caller's notifications are unread |
+| *AccountApi* | [**accountPasswordChange**](docs/AccountApi.md#accountpasswordchange) | **POST** api/v1/account/password/ | Change the caller's password |
 | *AccountApi* | [**accountProfileRetrieve**](docs/AccountApi.md#accountprofileretrieve) | **GET** api/v1/account/profile/ | Retrieve the profile of the caller |
 | *AccountApi* | [**accountProfileUpdate**](docs/AccountApi.md#accountprofileupdate) | **PATCH** api/v1/account/profile/ | Update the display name or profile province of the caller |
 | *AccountApi* | [**accountPushTokenRegister**](docs/AccountApi.md#accountpushtokenregister) | **PUT** api/v1/account/push-token/ | Register or refresh this device's push token |
@@ -109,6 +117,8 @@ All URIs are relative to *http://localhost*
 | *AvailabilityApi* | [**ownerFacilityTemporaryClosureCancel**](docs/AvailabilityApi.md#ownerfacilitytemporaryclosurecancel) | **DELETE** api/v1/owner/facilities/{facility_id}/temporary-closures/{closure_id}/ | Cancel a temporary closure |
 | *AvailabilityApi* | [**ownerFacilityTemporaryClosureCreate**](docs/AvailabilityApi.md#ownerfacilitytemporaryclosurecreate) | **POST** api/v1/owner/facilities/{facility_id}/temporary-closures/ | Open a temporary closure window |
 | *AvailabilityApi* | [**ownerFacilityTemporaryClosuresList**](docs/AvailabilityApi.md#ownerfacilitytemporaryclosureslist) | **GET** api/v1/owner/facilities/{facility_id}/temporary-closures/ | List temporary closures of a facility |
+| *ContentApi* | [**publicLegalDocumentRetrieve**](docs/ContentApi.md#publiclegaldocumentretrieve) | **GET** api/v1/public/legal/{key}/ | Retrieve one published page |
+| *ContentApi* | [**publicLegalDocumentsList**](docs/ContentApi.md#publiclegaldocumentslist) | **GET** api/v1/public/legal/ | List the published pages |
 | *DutyApi* | [**ownerFacilityDutyCreate**](docs/DutyApi.md#ownerfacilitydutycreate) | **POST** api/v1/owner/facilities/{facility_id}/duty/ | Schedule a duty shift |
 | *DutyApi* | [**ownerFacilityDutyDelete**](docs/DutyApi.md#ownerfacilitydutydelete) | **DELETE** api/v1/owner/facilities/{facility_id}/duty/{shift_id}/ | Remove a duty shift |
 | *DutyApi* | [**ownerFacilityDutyList**](docs/DutyApi.md#ownerfacilitydutylist) | **GET** api/v1/owner/facilities/{facility_id}/duty/ | List duty shifts of a facility |
@@ -133,6 +143,7 @@ All URIs are relative to *http://localhost*
 | *PublicDiscoveryApi* | [**publicHomeRetrieve**](docs/PublicDiscoveryApi.md#publichomeretrieve) | **GET** api/v1/public/home/ | Retrieve the home composition for a province |
 | *PublicDiscoveryApi* | [**publicMapFacilitiesList**](docs/PublicDiscoveryApi.md#publicmapfacilitieslist) | **GET** api/v1/public/map/facilities/ | List compact map markers inside a viewport |
 | *PublicDiscoveryApi* | [**publicSearchList**](docs/PublicDiscoveryApi.md#publicsearchlist) | **GET** api/v1/public/search/ | Search facilities within a province |
+| *PublicTaxonomyApi* | [**publicLocationResolve**](docs/PublicTaxonomyApi.md#publiclocationresolve) | **GET** api/v1/public/locations/resolve/ | Resolve a coordinate to a province, city and neighbourhood |
 | *PublicTaxonomyApi* | [**publicProvinceCategoriesList**](docs/PublicTaxonomyApi.md#publicprovincecategorieslist) | **GET** api/v1/public/provinces/{province_id}/categories/ | List categories publicly enabled for a province |
 | *PublicTaxonomyApi* | [**publicProvinceCitiesList**](docs/PublicTaxonomyApi.md#publicprovincecitieslist) | **GET** api/v1/public/provinces/{province_id}/cities/ | List active cities in a province |
 | *PublicTaxonomyApi* | [**publicProvincesList**](docs/PublicTaxonomyApi.md#publicprovinceslist) | **GET** api/v1/public/provinces/ | List active provinces |
@@ -219,6 +230,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.DatabaseHealthEnum](docs/DatabaseHealthEnum.md)
  - [com.servacode.directory.api.models.DeletionRequest](docs/DeletionRequest.md)
  - [com.servacode.directory.api.models.DependencyConfiguredEnum](docs/DependencyConfiguredEnum.md)
+ - [com.servacode.directory.api.models.DestinationEnum](docs/DestinationEnum.md)
  - [com.servacode.directory.api.models.DutyShift](docs/DutyShift.md)
  - [com.servacode.directory.api.models.DutyShiftInput](docs/DutyShiftInput.md)
  - [com.servacode.directory.api.models.DutyShiftList](docs/DutyShiftList.md)
@@ -232,13 +244,23 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.FacilityMemberRoleEnum](docs/FacilityMemberRoleEnum.md)
  - [com.servacode.directory.api.models.FacilityRating](docs/FacilityRating.md)
  - [com.servacode.directory.api.models.FacilityStatusEnum](docs/FacilityStatusEnum.md)
+ - [com.servacode.directory.api.models.FavoriteFacility](docs/FavoriteFacility.md)
+ - [com.servacode.directory.api.models.FavoriteList](docs/FavoriteList.md)
+ - [com.servacode.directory.api.models.FavoriteState](docs/FavoriteState.md)
+ - [com.servacode.directory.api.models.FavoriteWrite](docs/FavoriteWrite.md)
  - [com.servacode.directory.api.models.HomeCategory](docs/HomeCategory.md)
  - [com.servacode.directory.api.models.HomeCategoryCapabilities](docs/HomeCategoryCapabilities.md)
+ - [com.servacode.directory.api.models.KeyEnum](docs/KeyEnum.md)
+ - [com.servacode.directory.api.models.LegalDocument](docs/LegalDocument.md)
+ - [com.servacode.directory.api.models.LegalDocumentList](docs/LegalDocumentList.md)
+ - [com.servacode.directory.api.models.LegalDocumentSummary](docs/LegalDocumentSummary.md)
  - [com.servacode.directory.api.models.Login](docs/Login.md)
  - [com.servacode.directory.api.models.LogoutRequest](docs/LogoutRequest.md)
  - [com.servacode.directory.api.models.MapMarker](docs/MapMarker.md)
  - [com.servacode.directory.api.models.MapMarkerList](docs/MapMarkerList.md)
  - [com.servacode.directory.api.models.NamedRef](docs/NamedRef.md)
+ - [com.servacode.directory.api.models.Notification](docs/Notification.md)
+ - [com.servacode.directory.api.models.NotificationPage](docs/NotificationPage.md)
  - [com.servacode.directory.api.models.OwnerApplication](docs/OwnerApplication.md)
  - [com.servacode.directory.api.models.OwnerCategory](docs/OwnerCategory.md)
  - [com.servacode.directory.api.models.OwnerConfig](docs/OwnerConfig.md)
@@ -258,6 +280,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.OwnerRequiredActionEnum](docs/OwnerRequiredActionEnum.md)
  - [com.servacode.directory.api.models.OwnerSubmitResult](docs/OwnerSubmitResult.md)
  - [com.servacode.directory.api.models.OwnerVerificationRequirement](docs/OwnerVerificationRequirement.md)
+ - [com.servacode.directory.api.models.PasswordChange](docs/PasswordChange.md)
  - [com.servacode.directory.api.models.PatchedDutyShiftInput](docs/PatchedDutyShiftInput.md)
  - [com.servacode.directory.api.models.PatchedFacilityPatch](docs/PatchedFacilityPatch.md)
  - [com.servacode.directory.api.models.PatchedProfilePatch](docs/PatchedProfilePatch.md)
@@ -271,6 +294,8 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.PublicFacilityDetail](docs/PublicFacilityDetail.md)
  - [com.servacode.directory.api.models.PublicHome](docs/PublicHome.md)
  - [com.servacode.directory.api.models.PublicHoursEntry](docs/PublicHoursEntry.md)
+ - [com.servacode.directory.api.models.PublicLocationResolve](docs/PublicLocationResolve.md)
+ - [com.servacode.directory.api.models.PublicPlace](docs/PublicPlace.md)
  - [com.servacode.directory.api.models.PublicProvince](docs/PublicProvince.md)
  - [com.servacode.directory.api.models.PublicProvinceList](docs/PublicProvinceList.md)
  - [com.servacode.directory.api.models.PushPlatformEnum](docs/PushPlatformEnum.md)
@@ -282,10 +307,12 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.Refresh](docs/Refresh.md)
  - [com.servacode.directory.api.models.RegisterComplete](docs/RegisterComplete.md)
  - [com.servacode.directory.api.models.RegisterStart](docs/RegisterStart.md)
+ - [com.servacode.directory.api.models.ResolvedByEnum](docs/ResolvedByEnum.md)
  - [com.servacode.directory.api.models.SessionCredentials](docs/SessionCredentials.md)
  - [com.servacode.directory.api.models.TemporaryClosure](docs/TemporaryClosure.md)
  - [com.servacode.directory.api.models.TemporaryClosureInput](docs/TemporaryClosureInput.md)
  - [com.servacode.directory.api.models.TemporaryClosureList](docs/TemporaryClosureList.md)
+ - [com.servacode.directory.api.models.UnreadCount](docs/UnreadCount.md)
  - [com.servacode.directory.api.models.UserSession](docs/UserSession.md)
  - [com.servacode.directory.api.models.UserSessionList](docs/UserSessionList.md)
 

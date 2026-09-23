@@ -11,10 +11,16 @@ import com.servacode.directory.api.models.AccountDeletionRequested
 import com.servacode.directory.api.models.AccountRatingList
 import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.DeletionRequest
+import com.servacode.directory.api.models.FavoriteList
+import com.servacode.directory.api.models.FavoriteState
+import com.servacode.directory.api.models.FavoriteWrite
+import com.servacode.directory.api.models.NotificationPage
+import com.servacode.directory.api.models.PasswordChange
 import com.servacode.directory.api.models.PatchedProfilePatch
 import com.servacode.directory.api.models.Profile
 import com.servacode.directory.api.models.PushToken
 import com.servacode.directory.api.models.PushTokenRegister
+import com.servacode.directory.api.models.UnreadCount
 
 interface AccountApi {
     /**
@@ -32,6 +38,126 @@ interface AccountApi {
      */
     @POST("api/v1/account/deletion-request/")
     suspend fun accountDeletionRequestCreate(@Body deletionRequest: DeletionRequest): Response<AccountDeletionRequested>
+
+    /**
+     * POST api/v1/account/favorites/
+     * Save a facility
+     * Idempotent: saving a facility that is already saved changes nothing.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param favoriteWrite 
+     * @return [FavoriteState]
+     */
+    @POST("api/v1/account/favorites/")
+    suspend fun accountFavoriteAdd(@Body favoriteWrite: FavoriteWrite): Response<FavoriteState>
+
+    /**
+     * DELETE api/v1/account/favorites/{facility_id}/
+     * Remove a facility the caller had saved
+     * Idempotent: removing what was not saved is not an error.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param facilityId 
+     * @return [FavoriteState]
+     */
+    @DELETE("api/v1/account/favorites/{facility_id}/")
+    suspend fun accountFavoriteRemove(@Path("facility_id") facilityId: java.util.UUID): Response<FavoriteState>
+
+    /**
+     * GET api/v1/account/favorites/
+     * List the facilities the caller has saved
+     * Newest first, cursor-paginated. A saved facility that is no longer public — closed, suspended, or in a category the province stopped serving — is not returned, because this list is served by the same public query every other list uses.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @return [FavoriteList]
+     */
+    @GET("api/v1/account/favorites/")
+    suspend fun accountFavoritesList(): Response<FavoriteList>
+
+    /**
+     * POST api/v1/account/notifications/{notification_id}/read/
+     * Mark one notification as read
+     * Idempotent: a message that was already read keeps the time it was read.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param notificationId 
+     * @return [UnreadCount]
+     */
+    @POST("api/v1/account/notifications/{notification_id}/read/")
+    suspend fun accountNotificationMarkRead(@Path("notification_id") notificationId: java.util.UUID): Response<UnreadCount>
+
+    /**
+     * GET api/v1/account/notifications/
+     * List the caller&#39;s notifications, newest first
+     * The account&#39;s own inbox.  Every message the platform has sent this account is here whether or not a push ever reached the device, which is what makes the inbox the record and the push only an announcement.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @return [NotificationPage]
+     */
+    @GET("api/v1/account/notifications/")
+    suspend fun accountNotificationsList(): Response<NotificationPage>
+
+    /**
+     * POST api/v1/account/notifications/read-all/
+     * Mark every unread notification as read
+     * 
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @return [UnreadCount]
+     */
+    @POST("api/v1/account/notifications/read-all/")
+    suspend fun accountNotificationsMarkAllRead(): Response<UnreadCount>
+
+    /**
+     * GET api/v1/account/notifications/unread-count/
+     * How many of the caller&#39;s notifications are unread
+     * 
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @return [UnreadCount]
+     */
+    @GET("api/v1/account/notifications/unread-count/")
+    suspend fun accountNotificationsUnreadCount(): Response<UnreadCount>
+
+    /**
+     * POST api/v1/account/password/
+     * Change the caller&#39;s password
+     * The caller proves the current password first. A successful change revokes every session, including this one, so the caller signs in again with the new password.
+     * Responses:
+     *  - 204: No response body
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param passwordChange 
+     * @return [Unit]
+     */
+    @POST("api/v1/account/password/")
+    suspend fun accountPasswordChange(@Body passwordChange: PasswordChange): Response<Unit>
 
     /**
      * GET api/v1/account/profile/

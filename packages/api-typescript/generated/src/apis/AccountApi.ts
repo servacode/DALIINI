@@ -19,10 +19,16 @@ import type {
   AccountRatingList,
   ApiError,
   DeletionRequest,
+  FavoriteList,
+  FavoriteState,
+  FavoriteWrite,
+  NotificationPage,
+  PasswordChange,
   PatchedProfilePatch,
   Profile,
   PushToken,
   PushTokenRegister,
+  UnreadCount,
 } from '../models/index';
 import {
     AccountDeletionRequestedFromJSON,
@@ -33,6 +39,16 @@ import {
     ApiErrorToJSON,
     DeletionRequestFromJSON,
     DeletionRequestToJSON,
+    FavoriteListFromJSON,
+    FavoriteListToJSON,
+    FavoriteStateFromJSON,
+    FavoriteStateToJSON,
+    FavoriteWriteFromJSON,
+    FavoriteWriteToJSON,
+    NotificationPageFromJSON,
+    NotificationPageToJSON,
+    PasswordChangeFromJSON,
+    PasswordChangeToJSON,
     PatchedProfilePatchFromJSON,
     PatchedProfilePatchToJSON,
     ProfileFromJSON,
@@ -41,10 +57,28 @@ import {
     PushTokenToJSON,
     PushTokenRegisterFromJSON,
     PushTokenRegisterToJSON,
+    UnreadCountFromJSON,
+    UnreadCountToJSON,
 } from '../models/index';
 
 export interface AccountDeletionRequestCreateRequest {
     deletionRequest: DeletionRequest;
+}
+
+export interface AccountFavoriteAddRequest {
+    favoriteWrite: FavoriteWrite;
+}
+
+export interface AccountFavoriteRemoveRequest {
+    facilityId: string;
+}
+
+export interface AccountNotificationMarkReadRequest {
+    notificationId: string;
+}
+
+export interface AccountPasswordChangeRequest {
+    passwordChange: PasswordChange;
 }
 
 export interface AccountProfileUpdateRequest {
@@ -111,6 +145,349 @@ export class AccountApi extends runtime.BaseAPI {
     async accountDeletionRequestCreate(requestParameters: AccountDeletionRequestCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AccountDeletionRequested> {
         const response = await this.accountDeletionRequestCreateRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     * Idempotent: saving a facility that is already saved changes nothing.
+     * Save a facility
+     */
+    async accountFavoriteAddRaw(requestParameters: AccountFavoriteAddRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoriteState>> {
+        if (requestParameters['favoriteWrite'] == null) {
+            throw new runtime.RequiredError(
+                'favoriteWrite',
+                'Required parameter "favoriteWrite" was null or undefined when calling accountFavoriteAdd().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/favorites/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: FavoriteWriteToJSON(requestParameters['favoriteWrite']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FavoriteStateFromJSON(jsonValue));
+    }
+
+    /**
+     * Idempotent: saving a facility that is already saved changes nothing.
+     * Save a facility
+     */
+    async accountFavoriteAdd(requestParameters: AccountFavoriteAddRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FavoriteState> {
+        const response = await this.accountFavoriteAddRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Idempotent: removing what was not saved is not an error.
+     * Remove a facility the caller had saved
+     */
+    async accountFavoriteRemoveRaw(requestParameters: AccountFavoriteRemoveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoriteState>> {
+        if (requestParameters['facilityId'] == null) {
+            throw new runtime.RequiredError(
+                'facilityId',
+                'Required parameter "facilityId" was null or undefined when calling accountFavoriteRemove().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/favorites/{facility_id}/`;
+        urlPath = urlPath.replace(`{${"facility_id"}}`, encodeURIComponent(String(requestParameters['facilityId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FavoriteStateFromJSON(jsonValue));
+    }
+
+    /**
+     * Idempotent: removing what was not saved is not an error.
+     * Remove a facility the caller had saved
+     */
+    async accountFavoriteRemove(requestParameters: AccountFavoriteRemoveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FavoriteState> {
+        const response = await this.accountFavoriteRemoveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Newest first, cursor-paginated. A saved facility that is no longer public — closed, suspended, or in a category the province stopped serving — is not returned, because this list is served by the same public query every other list uses.
+     * List the facilities the caller has saved
+     */
+    async accountFavoritesListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoriteList>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/favorites/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FavoriteListFromJSON(jsonValue));
+    }
+
+    /**
+     * Newest first, cursor-paginated. A saved facility that is no longer public — closed, suspended, or in a category the province stopped serving — is not returned, because this list is served by the same public query every other list uses.
+     * List the facilities the caller has saved
+     */
+    async accountFavoritesList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FavoriteList> {
+        const response = await this.accountFavoritesListRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Idempotent: a message that was already read keeps the time it was read.
+     * Mark one notification as read
+     */
+    async accountNotificationMarkReadRaw(requestParameters: AccountNotificationMarkReadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UnreadCount>> {
+        if (requestParameters['notificationId'] == null) {
+            throw new runtime.RequiredError(
+                'notificationId',
+                'Required parameter "notificationId" was null or undefined when calling accountNotificationMarkRead().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/notifications/{notification_id}/read/`;
+        urlPath = urlPath.replace(`{${"notification_id"}}`, encodeURIComponent(String(requestParameters['notificationId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UnreadCountFromJSON(jsonValue));
+    }
+
+    /**
+     * Idempotent: a message that was already read keeps the time it was read.
+     * Mark one notification as read
+     */
+    async accountNotificationMarkRead(requestParameters: AccountNotificationMarkReadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UnreadCount> {
+        const response = await this.accountNotificationMarkReadRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * The account\'s own inbox.  Every message the platform has sent this account is here whether or not a push ever reached the device, which is what makes the inbox the record and the push only an announcement.
+     * List the caller\'s notifications, newest first
+     */
+    async accountNotificationsListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationPage>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/notifications/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationPageFromJSON(jsonValue));
+    }
+
+    /**
+     * The account\'s own inbox.  Every message the platform has sent this account is here whether or not a push ever reached the device, which is what makes the inbox the record and the push only an announcement.
+     * List the caller\'s notifications, newest first
+     */
+    async accountNotificationsList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationPage> {
+        const response = await this.accountNotificationsListRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Mark every unread notification as read
+     */
+    async accountNotificationsMarkAllReadRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UnreadCount>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/notifications/read-all/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UnreadCountFromJSON(jsonValue));
+    }
+
+    /**
+     * Mark every unread notification as read
+     */
+    async accountNotificationsMarkAllRead(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UnreadCount> {
+        const response = await this.accountNotificationsMarkAllReadRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * How many of the caller\'s notifications are unread
+     */
+    async accountNotificationsUnreadCountRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UnreadCount>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/notifications/unread-count/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UnreadCountFromJSON(jsonValue));
+    }
+
+    /**
+     * How many of the caller\'s notifications are unread
+     */
+    async accountNotificationsUnreadCount(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UnreadCount> {
+        const response = await this.accountNotificationsUnreadCountRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * The caller proves the current password first. A successful change revokes every session, including this one, so the caller signs in again with the new password.
+     * Change the caller\'s password
+     */
+    async accountPasswordChangeRaw(requestParameters: AccountPasswordChangeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['passwordChange'] == null) {
+            throw new runtime.RequiredError(
+                'passwordChange',
+                'Required parameter "passwordChange" was null or undefined when calling accountPasswordChange().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/password/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PasswordChangeToJSON(requestParameters['passwordChange']),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * The caller proves the current password first. A successful change revokes every session, including this one, so the caller signs in again with the new password.
+     * Change the caller\'s password
+     */
+    async accountPasswordChange(requestParameters: AccountPasswordChangeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.accountPasswordChangeRaw(requestParameters, initOverrides);
     }
 
     /**

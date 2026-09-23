@@ -27,6 +27,14 @@ All URIs are relative to *http://localhost*
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *AccountAPI* | [**accountDeletionRequestCreate**](docs/AccountAPI.md#accountdeletionrequestcreate) | **POST** /api/v1/account/deletion-request/ | Request deletion of the account of the caller
+*AccountAPI* | [**accountFavoriteAdd**](docs/AccountAPI.md#accountfavoriteadd) | **POST** /api/v1/account/favorites/ | Save a facility
+*AccountAPI* | [**accountFavoriteRemove**](docs/AccountAPI.md#accountfavoriteremove) | **DELETE** /api/v1/account/favorites/{facility_id}/ | Remove a facility the caller had saved
+*AccountAPI* | [**accountFavoritesList**](docs/AccountAPI.md#accountfavoriteslist) | **GET** /api/v1/account/favorites/ | List the facilities the caller has saved
+*AccountAPI* | [**accountNotificationMarkRead**](docs/AccountAPI.md#accountnotificationmarkread) | **POST** /api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read
+*AccountAPI* | [**accountNotificationsList**](docs/AccountAPI.md#accountnotificationslist) | **GET** /api/v1/account/notifications/ | List the caller&#39;s notifications, newest first
+*AccountAPI* | [**accountNotificationsMarkAllRead**](docs/AccountAPI.md#accountnotificationsmarkallread) | **POST** /api/v1/account/notifications/read-all/ | Mark every unread notification as read
+*AccountAPI* | [**accountNotificationsUnreadCount**](docs/AccountAPI.md#accountnotificationsunreadcount) | **GET** /api/v1/account/notifications/unread-count/ | How many of the caller&#39;s notifications are unread
+*AccountAPI* | [**accountPasswordChange**](docs/AccountAPI.md#accountpasswordchange) | **POST** /api/v1/account/password/ | Change the caller&#39;s password
 *AccountAPI* | [**accountProfileRetrieve**](docs/AccountAPI.md#accountprofileretrieve) | **GET** /api/v1/account/profile/ | Retrieve the profile of the caller
 *AccountAPI* | [**accountProfileUpdate**](docs/AccountAPI.md#accountprofileupdate) | **PATCH** /api/v1/account/profile/ | Update the display name or profile province of the caller
 *AccountAPI* | [**accountPushTokenRegister**](docs/AccountAPI.md#accountpushtokenregister) | **PUT** /api/v1/account/push-token/ | Register or refresh this device&#39;s push token
@@ -90,6 +98,8 @@ Class | Method | HTTP request | Description
 *AvailabilityAPI* | [**ownerFacilityTemporaryClosureCancel**](docs/AvailabilityAPI.md#ownerfacilitytemporaryclosurecancel) | **DELETE** /api/v1/owner/facilities/{facility_id}/temporary-closures/{closure_id}/ | Cancel a temporary closure
 *AvailabilityAPI* | [**ownerFacilityTemporaryClosureCreate**](docs/AvailabilityAPI.md#ownerfacilitytemporaryclosurecreate) | **POST** /api/v1/owner/facilities/{facility_id}/temporary-closures/ | Open a temporary closure window
 *AvailabilityAPI* | [**ownerFacilityTemporaryClosuresList**](docs/AvailabilityAPI.md#ownerfacilitytemporaryclosureslist) | **GET** /api/v1/owner/facilities/{facility_id}/temporary-closures/ | List temporary closures of a facility
+*ContentAPI* | [**publicLegalDocumentRetrieve**](docs/ContentAPI.md#publiclegaldocumentretrieve) | **GET** /api/v1/public/legal/{key}/ | Retrieve one published page
+*ContentAPI* | [**publicLegalDocumentsList**](docs/ContentAPI.md#publiclegaldocumentslist) | **GET** /api/v1/public/legal/ | List the published pages
 *DutyAPI* | [**ownerFacilityDutyCreate**](docs/DutyAPI.md#ownerfacilitydutycreate) | **POST** /api/v1/owner/facilities/{facility_id}/duty/ | Schedule a duty shift
 *DutyAPI* | [**ownerFacilityDutyDelete**](docs/DutyAPI.md#ownerfacilitydutydelete) | **DELETE** /api/v1/owner/facilities/{facility_id}/duty/{shift_id}/ | Remove a duty shift
 *DutyAPI* | [**ownerFacilityDutyList**](docs/DutyAPI.md#ownerfacilitydutylist) | **GET** /api/v1/owner/facilities/{facility_id}/duty/ | List duty shifts of a facility
@@ -114,6 +124,7 @@ Class | Method | HTTP request | Description
 *PublicDiscoveryAPI* | [**publicHomeRetrieve**](docs/PublicDiscoveryAPI.md#publichomeretrieve) | **GET** /api/v1/public/home/ | Retrieve the home composition for a province
 *PublicDiscoveryAPI* | [**publicMapFacilitiesList**](docs/PublicDiscoveryAPI.md#publicmapfacilitieslist) | **GET** /api/v1/public/map/facilities/ | List compact map markers inside a viewport
 *PublicDiscoveryAPI* | [**publicSearchList**](docs/PublicDiscoveryAPI.md#publicsearchlist) | **GET** /api/v1/public/search/ | Search facilities within a province
+*PublicTaxonomyAPI* | [**publicLocationResolve**](docs/PublicTaxonomyAPI.md#publiclocationresolve) | **GET** /api/v1/public/locations/resolve/ | Resolve a coordinate to a province, city and neighbourhood
 *PublicTaxonomyAPI* | [**publicProvinceCategoriesList**](docs/PublicTaxonomyAPI.md#publicprovincecategorieslist) | **GET** /api/v1/public/provinces/{province_id}/categories/ | List categories publicly enabled for a province
 *PublicTaxonomyAPI* | [**publicProvinceCitiesList**](docs/PublicTaxonomyAPI.md#publicprovincecitieslist) | **GET** /api/v1/public/provinces/{province_id}/cities/ | List active cities in a province
 *PublicTaxonomyAPI* | [**publicProvincesList**](docs/PublicTaxonomyAPI.md#publicprovinceslist) | **GET** /api/v1/public/provinces/ | List active provinces
@@ -199,6 +210,7 @@ Class | Method | HTTP request | Description
  - [DatabaseHealthEnum](docs/DatabaseHealthEnum.md)
  - [DeletionRequest](docs/DeletionRequest.md)
  - [DependencyConfiguredEnum](docs/DependencyConfiguredEnum.md)
+ - [DestinationEnum](docs/DestinationEnum.md)
  - [DutyShift](docs/DutyShift.md)
  - [DutyShiftInput](docs/DutyShiftInput.md)
  - [DutyShiftList](docs/DutyShiftList.md)
@@ -212,13 +224,23 @@ Class | Method | HTTP request | Description
  - [FacilityMemberRoleEnum](docs/FacilityMemberRoleEnum.md)
  - [FacilityRating](docs/FacilityRating.md)
  - [FacilityStatusEnum](docs/FacilityStatusEnum.md)
+ - [FavoriteFacility](docs/FavoriteFacility.md)
+ - [FavoriteList](docs/FavoriteList.md)
+ - [FavoriteState](docs/FavoriteState.md)
+ - [FavoriteWrite](docs/FavoriteWrite.md)
  - [HomeCategory](docs/HomeCategory.md)
  - [HomeCategoryCapabilities](docs/HomeCategoryCapabilities.md)
+ - [KeyEnum](docs/KeyEnum.md)
+ - [LegalDocument](docs/LegalDocument.md)
+ - [LegalDocumentList](docs/LegalDocumentList.md)
+ - [LegalDocumentSummary](docs/LegalDocumentSummary.md)
  - [Login](docs/Login.md)
  - [LogoutRequest](docs/LogoutRequest.md)
  - [MapMarker](docs/MapMarker.md)
  - [MapMarkerList](docs/MapMarkerList.md)
  - [NamedRef](docs/NamedRef.md)
+ - [Notification](docs/Notification.md)
+ - [NotificationPage](docs/NotificationPage.md)
  - [OwnerApplication](docs/OwnerApplication.md)
  - [OwnerCategory](docs/OwnerCategory.md)
  - [OwnerConfig](docs/OwnerConfig.md)
@@ -238,6 +260,7 @@ Class | Method | HTTP request | Description
  - [OwnerRequiredActionEnum](docs/OwnerRequiredActionEnum.md)
  - [OwnerSubmitResult](docs/OwnerSubmitResult.md)
  - [OwnerVerificationRequirement](docs/OwnerVerificationRequirement.md)
+ - [PasswordChange](docs/PasswordChange.md)
  - [PatchedDutyShiftInput](docs/PatchedDutyShiftInput.md)
  - [PatchedFacilityPatch](docs/PatchedFacilityPatch.md)
  - [PatchedProfilePatch](docs/PatchedProfilePatch.md)
@@ -251,6 +274,8 @@ Class | Method | HTTP request | Description
  - [PublicFacilityDetail](docs/PublicFacilityDetail.md)
  - [PublicHome](docs/PublicHome.md)
  - [PublicHoursEntry](docs/PublicHoursEntry.md)
+ - [PublicLocationResolve](docs/PublicLocationResolve.md)
+ - [PublicPlace](docs/PublicPlace.md)
  - [PublicProvince](docs/PublicProvince.md)
  - [PublicProvinceList](docs/PublicProvinceList.md)
  - [PushPlatformEnum](docs/PushPlatformEnum.md)
@@ -262,10 +287,12 @@ Class | Method | HTTP request | Description
  - [Refresh](docs/Refresh.md)
  - [RegisterComplete](docs/RegisterComplete.md)
  - [RegisterStart](docs/RegisterStart.md)
+ - [ResolvedByEnum](docs/ResolvedByEnum.md)
  - [SessionCredentials](docs/SessionCredentials.md)
  - [TemporaryClosure](docs/TemporaryClosure.md)
  - [TemporaryClosureInput](docs/TemporaryClosureInput.md)
  - [TemporaryClosureList](docs/TemporaryClosureList.md)
+ - [UnreadCount](docs/UnreadCount.md)
  - [UserSession](docs/UserSession.md)
  - [UserSessionList](docs/UserSessionList.md)
 

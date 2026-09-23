@@ -4,10 +4,52 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 | ------------- | ------------- | ------------- |
+| [**publicLocationResolve**](PublicTaxonomyApi.md#publicLocationResolve) | **GET** api/v1/public/locations/resolve/ | Resolve a coordinate to a province, city and neighbourhood |
 | [**publicProvinceCategoriesList**](PublicTaxonomyApi.md#publicProvinceCategoriesList) | **GET** api/v1/public/provinces/{province_id}/categories/ | List categories publicly enabled for a province |
 | [**publicProvinceCitiesList**](PublicTaxonomyApi.md#publicProvinceCitiesList) | **GET** api/v1/public/provinces/{province_id}/cities/ | List active cities in a province |
 | [**publicProvincesList**](PublicTaxonomyApi.md#publicProvincesList) | **GET** api/v1/public/provinces/ | List active provinces |
 
+
+
+Resolve a coordinate to a province, city and neighbourhood
+
+Point-in-polygon against the seeded city and neighbourhood boundaries, then the nearest active province centre within 200 km. No external geocoder is called and the coordinate is not stored.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+val webService = apiClient.createWebservice(PublicTaxonomyApi::class.java)
+val latitude : kotlin.Double = 1.2 // kotlin.Double | 
+val longitude : kotlin.Double = 1.2 // kotlin.Double | 
+
+launch(Dispatchers.IO) {
+    val result : PublicLocationResolve = webService.publicLocationResolve(latitude, longitude)
+}
+```
+
+### Parameters
+| **latitude** | **kotlin.Double**|  | |
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **longitude** | **kotlin.Double**|  | |
+
+### Return type
+
+[**PublicLocationResolve**](PublicLocationResolve.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
 
 
 List categories publicly enabled for a province

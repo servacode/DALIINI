@@ -97,3 +97,51 @@ def _validate_action(action_type: str, payload: dict) -> dict:
         if not route.startswith("/") or route.startswith("//"):
             return {"action_payload": "In-app route must be an absolute app route."}
     return {}
+
+
+class LegalDocument(models.Model):
+    """A page of words the platform owes its users: who it is, what it does with their data,
+    the terms, how to use it, the common questions, and how to reach someone.
+
+    These change for legal and product reasons long after an APK is signed, so they are not
+    frozen into one. Each key keeps its history: a new version is a new row, and exactly one
+    row per key is active at a time. A client caches what it last read and shows that when it
+    is offline.
+    """
+
+    class Key(models.TextChoices):
+        ABOUT = "ABOUT", "About us"
+        PRIVACY = "PRIVACY", "Privacy policy"
+        TERMS = "TERMS", "Terms and conditions"
+        INSTRUCTIONS = "INSTRUCTIONS", "How to use the app"
+        FAQ = "FAQ", "Frequently asked questions"
+        CONTACT = "CONTACT", "Contact us"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    key = models.CharField(max_length=24, choices=Key.choices)
+    title_ar = models.CharField(max_length=180)
+    body_ar = models.TextField()
+    version = models.PositiveIntegerField(default=1)
+    active = models.BooleanField(default=False)
+    published_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["key", "version"], name="uniq_legal_key_version"),
+            # One published version per key: the app asks for a key and gets one answer.
+            models.UniqueConstraint(
+                fields=["key"],
+                condition=models.Q(active=True),
+                name="uniq_active_legal_document_per_key",
+            ),
+        ]
+        indexes = [models.Index(fields=["key", "active"], name="content_legal_key_idx")]
+
+    def __str__(self) -> str:
+        return f"{self.key} v{self.version}"
+
+    def clean(self):
+        if self.active and self.published_at is None:
+            raise ValidationError({"published_at": "An active document needs a publication time."})
