@@ -2,6 +2,7 @@ package com.servacode.directory.feature.navigation
 
 import android.content.Intent
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -72,11 +73,7 @@ fun BuiltInNavigationScreen(
                 modifier = Modifier.padding(padding),
                 secondaryAction = NavigationCopy.EXTERNAL_MAPS,
                 onSecondaryAction = {
-                    val uri = Uri.parse(
-                        "geo:${destination.latitude},${destination.longitude}?q=" +
-                            "${destination.latitude},${destination.longitude}",
-                    )
-                    context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                    context.startActivity(Intent(Intent.ACTION_VIEW, geoUri(destination)))
                 },
             )
             return@DirectoryPage
@@ -148,11 +145,7 @@ fun BuiltInNavigationScreen(
                             DirectorySecondaryButton(
                                 text = NavigationCopy.EXTERNAL_MAPS,
                                 onClick = {
-                                    val uri = Uri.parse(
-                                        "geo:${destination.latitude},${destination.longitude}?q=" +
-                                            "${destination.latitude},${destination.longitude}",
-                                    )
-                                    context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, geoUri(destination)))
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                             )
@@ -196,6 +189,11 @@ private fun NavigationProgressPanel(progress: NavigationProgress) {
         }
     }
 }
+
+/** The destination as another maps app would take it. */
+private fun geoUri(destination: MapPoint): Uri =
+    ("geo:${destination.latitude},${destination.longitude}?q=" +
+        "${destination.latitude},${destination.longitude}").toUri()
 
 private fun progressOf(state: NavigationState): NavigationProgress? = when (state) {
     is NavigationState.Navigating -> state.progress

@@ -1,8 +1,8 @@
 package com.servacode.directory.feature.navigation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,7 +13,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.servacode.directory.core.maps.MapCamera
 import com.servacode.directory.core.maps.MapLibreController
@@ -27,9 +26,9 @@ internal fun NavigationMap(
     styleUrl: String,
     route: NavigationRoute?,
     location: MapPoint?,
-    modifier: Modifier = Modifier.fillMaxWidth().height(DefaultMapHeight),
+    modifier: Modifier = Modifier,
 ) {
-    Box(modifier) {
+    Box(modifier.fillMaxWidth()) {
         if (MapStyle.isConfigured(styleUrl)) {
             RouteMap(styleUrl, route, location)
         } else {
@@ -42,8 +41,6 @@ internal fun NavigationMap(
     }
 }
 
-/** What the map is given when the screen around it does not say. */
-private val DefaultMapHeight = 320.dp
 
 @Composable
 private fun RouteMap(
@@ -66,7 +63,7 @@ private fun RouteMap(
                 }
             }
         },
-        modifier = Modifier.fillMaxWidth().height(320.dp),
+        modifier = Modifier.fillMaxSize(),
     )
 
     LaunchedEffect(controller, route) {

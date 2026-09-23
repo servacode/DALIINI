@@ -10,6 +10,7 @@ dependencies {
     implementation(project(":core:location"))
     implementation(project(":core:maps"))
     implementation(project(":core:network"))
+    implementation(libs.androidx.core)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
