@@ -37,14 +37,18 @@ fun LocationAnswer.preference(): LocationPreference = when (this) {
 object WelcomeCopy {
     const val TITLE = "دليل الخدمات الصحية في محافظتك"
     const val BODY = "اعرف الصيدليات والعيادات القريبة منك، ومَن منها مفتوح أو مناوب الآن."
-    const val CONTINUE = "لنبدأ"
+    const val CONTINUE = "ابدأ الآن"
 }
 
 /** The words of the location question, provisional until product copy is approved. */
 object LocationCopy {
-    const val TITLE = "اسمح بالموقع لنعرض الأقرب إليك"
-    const val REASONS = "ترتيب المنشآت حسب الأقرب إليك\nعرض المسافة إلى كل منشأة\nفتح الخريطة على منطقتك"
-    const val NOTE = "يمكنك المتابعة بدون الموقع، وستبقى منشآت محافظتك كاملة."
+    const val TITLE = "السماح بالموقع"
+    const val NOTE = "الموقع اختياري، ويمكنك المتابعة بدونه ضمن محافظتك."
+    val REASONS = listOf(
+        "معرفة أقرب الخدمات إليك",
+        "عرض المسافة التقريبية",
+        "تحسين نتائج الخريطة",
+    )
     const val ALLOW = "السماح بالموقع"
     const val LATER = "ليس الآن"
 }
