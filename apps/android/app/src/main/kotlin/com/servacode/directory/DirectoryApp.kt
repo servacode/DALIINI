@@ -221,6 +221,7 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onAdd = { navController.navigate(DirectoryRoute.Onboarding()) },
                 onManage = { navController.navigate(DirectoryRoute.ManageFacility(it)) },
                 onDuty = { navController.navigate(DirectoryRoute.Duty(it)) },
+                onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Onboarding> {
@@ -232,16 +233,18 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                         popUpTo<DirectoryRoute.MyFacilities> { inclusive = true }
                     }
                 },
+                onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.ManageFacility> {
             ManageFacilityScreen(
                 onEdit = { navController.navigate(DirectoryRoute.Onboarding(it)) },
                 onDuty = { navController.navigate(DirectoryRoute.Duty(it)) },
+                onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Duty> {
-            DutyScreen()
+            DutyScreen(onBack = { navController.popBackStack() })
         }
     }
 }

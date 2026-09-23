@@ -22,6 +22,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -236,5 +237,89 @@ fun DirectoryCard(
         ) {
             Column(Modifier.padding(Space.base)) { content() }
         }
+    }
+}
+
+/**
+ * Where the user is in a form that takes more than one page: the phases as circles, the one
+ * they are on filled, the ones behind it marked done.
+ */
+@Composable
+fun StepIndicator(
+    labels: List<String>,
+    current: Int,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth().padding(vertical = Space.sm),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.xs),
+    ) {
+        labels.forEachIndexed { index, label ->
+            val done = index < current
+            val here = index == current
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Space.xs),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(Sizes.touchTarget)
+                        .background(
+                            color = when {
+                                here -> MaterialTheme.colorScheme.primary
+                                done -> MaterialTheme.colorScheme.primaryContainer
+                                else -> MaterialTheme.colorScheme.surfaceVariant
+                            },
+                            shape = RoundedCornerShape(Radius.pill),
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (done) {
+                        DirectoryIcon(
+                            icon = DirectoryIcons.check,
+                            contentDescription = null,
+                            size = IconSize.small,
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    } else {
+                        Text(
+                            text = "${index + 1}",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = if (here) {
+                                MaterialTheme.colorScheme.onPrimary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                        )
+                    }
+                }
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (here) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+}
+
+/** What a screen's one action sits on when it stays in view: a surface, the app's gutter, the button. */
+@Composable
+fun DirectoryActionBar(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = Elevation.none,
+        shadowElevation = Elevation.low,
+    ) {
+        Column(Modifier.padding(horizontal = Space.screen, vertical = Space.md)) { content() }
     }
 }

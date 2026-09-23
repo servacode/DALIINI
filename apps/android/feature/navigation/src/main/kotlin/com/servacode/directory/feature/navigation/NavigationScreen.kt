@@ -24,6 +24,7 @@ import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryInlineLoading
 import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
 import com.servacode.directory.core.designsystem.DirectoryPage
+import com.servacode.directory.core.designsystem.DirectoryPermissionState
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
 import com.servacode.directory.core.designsystem.DirectorySecondaryButton
 import com.servacode.directory.core.designsystem.DirectoryTopBar
@@ -58,6 +59,28 @@ fun BuiltInNavigationScreen(
     DirectoryPage(
         topBar = { DirectoryTopBar(title = NavigationCopy.TITLE, onBack = onClose) },
     ) { padding ->
+        val permissionRequired = (state.navigation as? NavigationState.Error)
+            ?.reason == "LOCATION_PERMISSION_REQUIRED"
+        if (permissionRequired) {
+            // Nothing can be drawn on the map until the user's position is known, so the whole
+            // screen is the ask rather than a card over an empty map.
+            DirectoryPermissionState(
+                title = NavigationCopy.PERMISSION_TITLE,
+                body = errorMessage("LOCATION_PERMISSION_REQUIRED"),
+                action = NavigationCopy.ALLOW_LOCATION,
+                onAction = { permissionLauncher.launch(FOREGROUND_LOCATION_PERMISSIONS.toTypedArray()) },
+                modifier = Modifier.padding(padding),
+                secondaryAction = NavigationCopy.EXTERNAL_MAPS,
+                onSecondaryAction = {
+                    val uri = Uri.parse(
+                        "geo:${destination.latitude},${destination.longitude}?q=" +
+                            "${destination.latitude},${destination.longitude}",
+                    )
+                    context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                },
+            )
+            return@DirectoryPage
+        }
         Box(Modifier.fillMaxSize().padding(padding)) {
             val progress = progressOf(state.navigation)
             NavigationMap(
@@ -207,5 +230,6 @@ object NavigationCopy {
     const val ALLOW_LOCATION = "السماح بالموقع"
     const val RETRY = "إعادة المحاولة"
     const val EXTERNAL_MAPS = "فتح تطبيق خرائط خارجي"
+    const val PERMISSION_TITLE = "الملاحة تحتاج موقعك"
     const val END = "إنهاء الملاحة"
 }

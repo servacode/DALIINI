@@ -494,3 +494,29 @@ fun averageText(average: Double): String {
 }
 
 const val MAX_STARS = 5
+
+/** How a state reads: settled, waiting, wrong, or merely a fact. */
+enum class StatusTone { POSITIVE, PENDING, DANGER, NEUTRAL }
+
+/**
+ * A state in one word, in the colour that agrees with it: what an owner's facility is going
+ * through, or where a submission stands. The word comes from the backend's own labels.
+ */
+@Composable
+fun StatusPill(text: String, tone: StatusTone, modifier: Modifier = Modifier) {
+    val colour = when (tone) {
+        StatusTone.POSITIVE -> BrandColors.success
+        StatusTone.PENDING -> BrandColors.warning
+        StatusTone.DANGER -> BrandColors.danger
+        StatusTone.NEUTRAL -> BrandColors.contentMuted
+    }
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelMedium,
+        color = colour,
+        maxLines = 1,
+        modifier = modifier
+            .background(colour.copy(alpha = 0.12f), RoundedCornerShape(Radius.pill))
+            .padding(horizontal = Space.md, vertical = Space.xs),
+    )
+}
