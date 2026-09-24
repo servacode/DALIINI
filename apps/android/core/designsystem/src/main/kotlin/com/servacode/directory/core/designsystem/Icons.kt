@@ -44,6 +44,9 @@ object DirectoryIcons {
     @DrawableRes val hospital = R.drawable.ic_hospital
     @DrawableRes val pharmacy = R.drawable.ic_pharmacy
     @DrawableRes val clinic = R.drawable.ic_clinic
+    @DrawableRes val laboratory = R.drawable.ic_laboratory
+    @DrawableRes val nursing = R.drawable.ic_nursing
+    @DrawableRes val supplies = R.drawable.ic_supplies
     @DrawableRes val grid = R.drawable.ic_grid
     @DrawableRes val logout = R.drawable.ic_logout
     @DrawableRes val document = R.drawable.ic_document
@@ -54,11 +57,20 @@ object DirectoryIcons {
      * app's own mark rather than to nothing, and the category's name is always written beside it.
      */
     @DrawableRes
+    /**
+     * The mark a category wears, by the key the backend gives it.
+     *
+     * Every category the platform serves has a shape of its own. A rail where two sections
+     * share an icon — or fall back to the same generic grid — makes the reader read the labels
+     * one by one, which is the work the icons were there to save.
+     */
     fun category(iconKey: String?): Int = when (iconKey) {
         "pharmacy" -> pharmacy
         "hospital" -> hospital
         "clinic", "medical-clinic" -> clinic
-        "laboratory", "medical-laboratory" -> document
+        "laboratory", "medical-laboratory" -> laboratory
+        "nursing", "nursing-center" -> nursing
+        "supplies", "medical-supplies" -> supplies
         else -> grid
     }
 }

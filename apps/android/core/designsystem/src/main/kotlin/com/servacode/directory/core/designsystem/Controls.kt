@@ -293,6 +293,7 @@ fun DirectoryCompactFilterChip(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    @DrawableRes icon: Int? = null,
 ) {
     val shape = RoundedCornerShape(Radius.pill)
     Surface(
@@ -309,18 +310,25 @@ fun DirectoryCompactFilterChip(
             color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
         ),
     ) {
-        Box(
+        val content = if (selected) {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        }
+        Row(
             modifier = Modifier.padding(horizontal = Space.md, vertical = Space.sm),
-            contentAlignment = Alignment.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Space.xs),
         ) {
+            // The icon repeats what the word says rather than replacing it: the filters are
+            // read at a glance once they are known, and read as words the first time.
+            icon?.let {
+                DirectoryIcon(icon = it, contentDescription = null, size = IconSize.small, tint = content)
+            }
             Text(
                 text = text,
                 style = MaterialTheme.typography.labelLarge,
-                color = if (selected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
+                color = content,
                 maxLines = 1,
                 softWrap = false,
             )

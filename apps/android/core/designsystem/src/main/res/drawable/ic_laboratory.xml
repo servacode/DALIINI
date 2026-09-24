@@ -6,31 +6,19 @@
     android:viewportWidth="24"
     android:viewportHeight="24">
     <path
-        android:pathData="M7,4 L7,10 C7,13.2 9.2,15.4 12,15.4 C14.8,15.4 17,13.2 17,10 L17,4"
+        android:pathData="M10,3.5 L14,3.5"
         android:strokeColor="@color/token_semantic_content_primary"
         android:strokeWidth="2.0"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
     <path
-        android:pathData="M5.5,4 L8.5,4"
+        android:pathData="M10,3.5 L10,9.5 L5.3,18.4 C4.9,19.2 5.5,20.2 6.4,20.2 L17.6,20.2 C18.5,20.2 19.1,19.2 18.7,18.4 L14,9.5 L14,3.5"
         android:strokeColor="@color/token_semantic_content_primary"
         android:strokeWidth="2.0"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
     <path
-        android:pathData="M15.5,4 L18.5,4"
-        android:strokeColor="@color/token_semantic_content_primary"
-        android:strokeWidth="2.0"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
-    <path
-        android:pathData="M12,15.4 L12,16.6"
-        android:strokeColor="@color/token_semantic_content_primary"
-        android:strokeWidth="2.0"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
-    <path
-        android:pathData="M14.2,18.8 A2.2,2.2 0 1,1 9.8,18.8 A2.2,2.2 0 1,1 14.2,18.8"
+        android:pathData="M7.5,15 L16.5,15"
         android:strokeColor="@color/token_semantic_content_primary"
         android:strokeWidth="2.0"
         android:strokeLineCap="round"

@@ -14,6 +14,7 @@ object HomeCopy {
     const val MANY = "99+"
     const val SEARCH = "ابحث عن صيدلية، طبيب أو خدمة صحية…"
     const val FILTERS = "تصفية"
+    const val LOADING_MORE = "جارٍ تحميل المزيد…"
 
     const val ERROR = "تعذر تحميل الصفحة"
     const val PROVINCE_REQUIRED = "اختر محافظتك"
@@ -30,6 +31,7 @@ object HomeCopy {
         HomeChip.OPEN_NOW -> "مفتوح الآن"
         HomeChip.DUTY_TODAY -> "مناوبة اليوم"
     }
+
 
     /**
      * Why the list is empty, in terms of what was asked.

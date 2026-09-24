@@ -1,6 +1,7 @@
 package com.servacode.directory.feature.home
 
 import android.content.pm.PackageManager
+import androidx.annotation.DrawableRes
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -26,6 +27,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +48,7 @@ import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryCompactFilterChip
+import com.servacode.directory.core.designsystem.DirectoryInlineLoading
 import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIconButton
 import com.servacode.directory.core.designsystem.DirectoryIcons
@@ -442,6 +445,7 @@ private fun FilterBar(
                     text = HomeCopy.chip(chip),
                     selected = filters.isOn(chip),
                     onClick = { onChip(chip) },
+                    icon = chipIcon(chip),
                 )
             }
         }
@@ -487,6 +491,13 @@ private fun LazyListScope.facilityList(
         return
     }
     itemsIndexed(list.items, key = { _, facility -> "row-${facility.id}" }) { index, facility ->
+        // The next page is asked for by reading, not by pressing. A button at the foot of an
+        // endless list is a toll gate: the reader has already said what they want by scrolling
+        // towards it. Asking a few rows early means the page is usually there before they
+        // arrive, and asking on first composition of that row means it is asked exactly once.
+        LaunchedEffect(index, list.items.size) {
+            if (index >= list.items.size - LOAD_AHEAD) onLoadMore()
+        }
         Column {
             FacilityRow(facility = facility, onClick = { onFacility(facility.id) })
             if (index < list.items.lastIndex) {
@@ -497,12 +508,40 @@ private fun LazyListScope.facilityList(
             }
         }
     }
-    if (list.hasMore || list.error != null) {
-        item(key = "list-more") {
-            LoadMoreRow(loading = list.loadingMore, onLoadMore = onLoadMore, error = list.error)
+    if (list.loadingMore) {
+        item(key = "list-loading-more") {
+            DirectoryInlineLoading(
+                message = HomeCopy.LOADING_MORE,
+                modifier = Modifier.padding(Space.base),
+            )
+        }
+    }
+    // A failure is the one case that still needs a press: retrying by itself would spin
+    // against a backend that is already refusing, and say nothing while it did.
+    if (list.error != null) {
+        item(key = "list-more-failed") {
+            LoadMoreRow(loading = false, onLoadMore = onLoadMore, error = list.error)
         }
     }
 }
+
+/**
+ * The mark beside each filter.
+ *
+ * A heading arrow for distance, a clock for the hour, a day on a calendar for the roster: each
+ * says what its word says, so the chips can be picked out at a glance once they are familiar,
+ * without the word ever being replaced.
+ */
+@DrawableRes
+private fun chipIcon(chip: HomeChip): Int = when (chip) {
+    HomeChip.ALL -> DirectoryIcons.grid
+    HomeChip.NEAREST -> DirectoryIcons.route
+    HomeChip.OPEN_NOW -> DirectoryIcons.clock
+    HomeChip.DUTY_TODAY -> DirectoryIcons.schedule
+}
+
+/** How many rows from the end to ask for the next page. */
+private const val LOAD_AHEAD = 4
 
 @Composable
 private fun LocationOffer(onUseLocation: () -> Unit, modifier: Modifier = Modifier) {

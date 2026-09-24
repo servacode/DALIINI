@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.annotation.DrawableRes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -243,18 +245,39 @@ private fun RowScope.FacilityRowContent(facility: FacilitySummary) {
             RatingBadge(facility.ratingAverage, facility.ratingCount)
         }
         StatusBadges(facility)
-        // Words rather than a chevron: an arrow at the edge of a row is a convention people
-        // have to have learnt, and it says nothing about where it leads. This sits at the end
-        // of the facility's own details, where someone who has finished reading them looks
-        // next, and it costs a line instead of a column of width.
+        OpenDetailsButton(Modifier.align(Alignment.End))
+    }
+}
+
+/**
+ * The card's own call to action, drawn as something that is obviously pressed.
+ *
+ * Words alone in the brand colour can read as a caption; a bordered, tinted shape cannot. The
+ * whole row still opens the facility, so this is the row's label rather than a second target
+ * inside it — one thing to press, and the screen reader announces it once.
+ */
+@Composable
+private fun OpenDetailsButton(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(Radius.pill))
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .padding(horizontal = Space.md, vertical = Space.xs)
+            .clearAndSetSemantics { },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.xs),
+    ) {
         Text(
             text = ContentText.OPEN_DETAILS,
             style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
             maxLines = 1,
-            // The whole row already opens the facility, so this is the row's own label rather
-            // than a second target inside it — one thing to press, announced once.
-            modifier = Modifier.align(Alignment.End).clearAndSetSemantics { },
+        )
+        DirectoryIcon(
+            icon = DirectoryIcons.chevron,
+            contentDescription = null,
+            size = IconSize.small,
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
         )
     }
 }
@@ -349,8 +372,16 @@ fun CategoryCircle(
 ) {
     Column(
         modifier = modifier
-            .width(Sizes.categoryCircle + Space.xl)
-            .clickable(onClick = onClick)
+            .width(Sizes.categoryLabel)
+            // No ripple. The press used to paint a hard square across the whole column, which
+            // is the one rectangle on this screen with no rounded corner and reads as a glitch.
+            // A category answers by becoming selected — the circle fills and the label turns —
+            // and that is both faster and clearer than a flash under the finger.
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            )
             .padding(vertical = Space.xs),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Space.sm),
@@ -378,7 +409,10 @@ fun CategoryCircle(
             } else {
                 MaterialTheme.colorScheme.onSurfaceVariant
             },
-            maxLines = 1,
+            // Two lines, because "مستلزمات طبية" does not fit on one under a 56dp circle, and
+            // a category whose name is cut in half is a category the reader has to guess at.
+            textAlign = TextAlign.Center,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis,
         )
     }

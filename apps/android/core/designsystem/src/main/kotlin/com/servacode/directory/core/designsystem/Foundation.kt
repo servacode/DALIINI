@@ -52,6 +52,9 @@ object Sizes {
     val thumbnail = 72.dp
     val categoryCircle = 56.dp
 
+    /** Wide enough for the longest category name the taxonomy holds, over two lines. */
+    val categoryLabel = 92.dp
+
     /** A filter chip that has to share a phone's width with three others. */
     val compactChip = 40.dp
     val avatar = 64.dp
