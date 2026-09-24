@@ -278,6 +278,58 @@ fun DirectorySearchEntry(
 /** The filters a list carries at its head. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+/**
+ * A filter chip narrow enough that a whole set of them fits across a phone.
+ *
+ * Material's own `FilterChip` reserves sixteen density-independent pixels on each side of its
+ * label and offers no way to ask for less. Four Arabic filters plus that padding overflow a
+ * 360dp screen, and the only ways out of it are a scrolling row — which hides the last chip —
+ * or type small enough to be hard to read. This keeps the type and takes the padding instead.
+ *
+ * Everything else is the same chip: pill, the same selected and unselected colours, the same
+ * border, and a touch target that still meets the minimum.
+ */
+@Composable
+fun DirectoryCompactFilterChip(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val shape = RoundedCornerShape(Radius.pill)
+    Surface(
+        onClick = onClick,
+        modifier = modifier.heightIn(min = Sizes.compactChip),
+        shape = shape,
+        color = if (selected) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.surface
+        },
+        border = BorderStroke(
+            width = 1.dp,
+            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+        ),
+    ) {
+        Box(
+            modifier = Modifier.padding(horizontal = Space.md, vertical = Space.sm),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelLarge,
+                color = if (selected) {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                maxLines = 1,
+                softWrap = false,
+            )
+        }
+    }
+}
+
 fun DirectoryFilterChip(
     text: String,
     selected: Boolean,

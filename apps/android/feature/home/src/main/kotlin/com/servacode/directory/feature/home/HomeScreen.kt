@@ -45,7 +45,7 @@ import com.servacode.directory.core.designsystem.CategoryCircle
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
 import com.servacode.directory.core.designsystem.DirectoryErrorState
-import com.servacode.directory.core.designsystem.DirectoryFilterChip
+import com.servacode.directory.core.designsystem.DirectoryCompactFilterChip
 import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIconButton
 import com.servacode.directory.core.designsystem.DirectoryIcons
@@ -350,7 +350,9 @@ private fun HomeContent(
                 filters = filters,
                 chips = homeChips(hasLocation, category),
                 onChip = onChip,
-                modifier = Modifier.padding(horizontal = Space.base),
+                // A narrower margin than the rest of the page: this container has to hold
+                // four filters across, and every point given to the margin is taken from them.
+                modifier = Modifier.padding(horizontal = Space.md),
             )
         }
         facilityList(list, filters, onFacility, onLoadMore)
@@ -404,7 +406,7 @@ private fun FilterBar(
                 shape = RoundedCornerShape(Radius.large),
             )
             .padding(vertical = Space.sm),
-        verticalArrangement = Arrangement.spacedBy(Space.sm),
+        verticalArrangement = Arrangement.spacedBy(Space.xs),
     ) {
         // Its own row, so the chips below start at the container's edge and keep the full
         // width to scroll through. Start, not right, so it mirrors itself for Arabic.
@@ -426,14 +428,17 @@ private fun FilterBar(
                 maxLines = 1,
             )
         }
-        // One line, always: a chip that wrapped would change the container's height as the
-        // category changed how many there are. What does not fit is scrolled to.
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = Space.md),
-            horizontalArrangement = Arrangement.spacedBy(Space.sm),
+        // Every filter on screen at once, and none of them scrolled to. A row that scrolls
+        // hides its last chip behind an edge, and the last chip here is the one a pharmacy
+        // reader came for. The chips keep their natural widths so the long name is not padded
+        // out to match the short one, and the compact chip is what buys the room.
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = Space.sm),
+            horizontalArrangement = Arrangement.spacedBy(Space.xs),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            items(chips, key = { it.name }) { chip ->
-                DirectoryFilterChip(
+            chips.forEach { chip ->
+                DirectoryCompactFilterChip(
                     text = HomeCopy.chip(chip),
                     selected = filters.isOn(chip),
                     onClick = { onChip(chip) },

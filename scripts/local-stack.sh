@@ -143,7 +143,8 @@ up() {
   docker run --rm --network "$NETWORK" "${MOUNTS[@]}" "${ENVIRONMENT[@]}" "$IMAGE" sh -c \
     "uv run python manage.py migrate --noinput >/dev/null \
      && uv run python manage.py seed_e2e_fixtures \
-     && uv run python manage.py seed_e2e_mobile_fixtures" \
+     && uv run python manage.py seed_e2e_mobile_fixtures \
+     && uv run python manage.py seed_local_directory" \
     || { echo "FAIL: migrations or fixtures"; exit 1; }
 
   echo "== Django (HTTP and WebSocket) =="

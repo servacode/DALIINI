@@ -51,6 +51,9 @@ object Sizes {
     val touchTarget = 48.dp
     val thumbnail = 72.dp
     val categoryCircle = 56.dp
+
+    /** A filter chip that has to share a phone's width with three others. */
+    val compactChip = 40.dp
     val avatar = 64.dp
 
     /** A card the user swipes sideways through, and the picture inside it. */

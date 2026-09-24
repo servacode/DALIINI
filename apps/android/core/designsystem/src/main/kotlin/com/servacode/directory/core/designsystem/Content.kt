@@ -243,13 +243,25 @@ private fun RowScope.FacilityRowContent(facility: FacilitySummary) {
             RatingBadge(facility.ratingAverage, facility.ratingCount)
         }
         StatusBadges(facility)
+        // Words rather than a chevron: an arrow at the edge of a row is a convention people
+        // have to have learnt, and it says nothing about where it leads. This sits at the end
+        // of the facility's own details, where someone who has finished reading them looks
+        // next, and it costs a line instead of a column of width.
+        Text(
+            text = ContentText.OPEN_DETAILS,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            maxLines = 1,
+            // The whole row already opens the facility, so this is the row's own label rather
+            // than a second target inside it — one thing to press, announced once.
+            modifier = Modifier.align(Alignment.End).clearAndSetSemantics { },
+        )
     }
-    DirectoryIcon(
-        icon = DirectoryIcons.chevron,
-        contentDescription = null,
-        modifier = Modifier.clearAndSetSemantics { },
-        tint = MaterialTheme.colorScheme.outlineVariant,
-    )
+}
+
+/** Provisional until product copy is approved. */
+object ContentText {
+    const val OPEN_DETAILS = "عرض التفاصيل"
 }
 
 /**
