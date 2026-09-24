@@ -9,7 +9,11 @@ Branch: android-build-verification-20260919
 
 BACKEND (run in the project's own container against PostGIS)
 -------------------------------------------------------------
-pytest                        PASS — 287 tests, 0 failures
+pytest                        PASS — 291 tests, 0 failures
+makemigrations --check        PASS — no changes detected
+manage.py check               PASS — no issues
+Admin typecheck / unit tests  PASS — tsc clean, 71 tests in 8 files
+governance + design tokens    PASS — spec checksums recorded, generated outputs current
 migrations                    PASS — applied to the device database, non-destructive re-runs
 OpenAPI                       regenerated; zero errors, zero warnings; hash committed
 generated clients             TypeScript, Kotlin and Swift regenerated from that document
@@ -34,17 +38,18 @@ Every public facility payload now carries isFavorite, resolved for a whole page 
 
 ANDROID
 --------
-CI run 35937791094 — success, commit ee4bca5
+CI run 35938942916 — success, commit bf34238 (FINAL)
   Gate 1  assembleLocalDebug              PASS
           APK metadata + certificate      PASS
   Gate 2  Android unit tests              PASS — 388 tests, 0 failures
   Gate 2b platform-free JVM harness       PASS — 191 tests, 0 failures   (new gate)
-  Gate 3  lint                            PASS — 0 errors, 26 warnings
+  Gate 3  lint                            PASS — 0 errors, 25 warnings
   Gate 4  source qualifiers               PASS — all six  (four newly repaired and added)
 
-APK from that run
+APK from that run — the one to install in the morning
+  path               artifacts/apk/app-local-debug.apk   (downloaded from the run, verified here)
   filename           app-local-debug.apk
-  sha256             9628f00c69638fb7738431af6c20c1a1cc47e0fe17cf01ff274eeaa1ec49adea
+  sha256             4ac993b3600247c63a411629f3d876b7e19204e1925bcc9da4c5d6de9cb5bdf5
   size               67285177 bytes
   applicationId      com.servacode.directory.local
   versionName        0.1.0-local        versionCode 1
@@ -56,7 +61,7 @@ LINT WARNINGS THAT REMAIN (all pre-existing, none an error)
 11  NewerVersionAvailable       dependency updates lint offers
  5  GradleDependency            the same, on Gradle coordinates
  3  AndroidGradlePluginVersion  a newer AGP exists
- 3  UseKtx                      core/auth AndroidKeyStoreRefreshTokenVault (2), and one more
+ 2  UseKtx                      core/auth AndroidKeyStoreRefreshTokenVault
  1  UnusedAttribute             manifest enableOnBackInvokedCallback, API 33+ with minSdk 24
  1  DataExtractionRules         manifest allowBackup, deprecated from Android 12
  1  MissingApplicationIcon      no launcher icon yet (BRAND-ASSETS.md)
