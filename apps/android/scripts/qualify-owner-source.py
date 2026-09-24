@@ -14,12 +14,12 @@ def require(condition: bool, message: str) -> None:
 
 
 def read(relative: str) -> str:
-    return (ROOT / relative).read_text()
+    return (ROOT / relative).read_text(encoding="utf-8")
 
 
 def feature_text(name: str) -> str:
     base = ROOT / "feature" / name / "src"
-    return "\n".join(path.read_text() for path in base.rglob("*.kt"))
+    return "\n".join(path.read_text(encoding="utf-8") for path in base.rglob("*.kt") if "build" not in path.parts)
 
 
 def check_feature_architecture() -> None:
@@ -63,7 +63,9 @@ def check_onboarding() -> None:
     require("ACCESS_BACKGROUND_LOCATION" not in screen, "background location is forbidden")
     require("ACCESS_COARSE_LOCATION" in screen and "ACCESS_FINE_LOCATION" in screen, "foreground location permissions missing")
     require("OnboardingMapPicker" in screen, "native map point picker missing")
-    require("mutableStateListOf<HourDraft>" in screen, "per-day hours editor missing")
+    # The hours editor holds one list of spans per weekday. The type was renamed from
+    # HourDraft to HourSpan during the UI redesign; the requirement is the editor, not the name.
+    require("mutableStateListOf<List<HourSpan>>" in screen, "per-day hours editor missing")
     require("verificationRequirements" in screen, "verification requirement-driven upload missing")
 
 
@@ -71,8 +73,17 @@ def check_generated_boundary() -> None:
     boundary = read(
         "core/network/src/main/kotlin/com/servacode/directory/core/network/OwnerApiBoundary.kt"
     )
-    require("UnboundGeneratedOwnerApi" in boundary, "fail-closed generated owner API missing")
-    require("GeneratedClientRequiredException" in boundary, "owner API must fail closed before P10")
+    # Before P10 this boundary failed closed because no generated client existed. One exists
+    # now, so what has to hold is that the boundary stays a domain interface: no transport type
+    # crosses it, and the generated adapter is the only implementation.
+    adapter = read(
+        "core/network/src/main/kotlin/com/servacode/directory/core/network/api/GeneratedOwnerApi.kt"
+    )
+    require("interface OwnerApiBoundary" in boundary, "owner boundary interface missing")
+    require(
+        "OwnerApiBoundary" in adapter and "com.servacode.directory.api" in adapter,
+        "owner boundary must be implemented over the generated client",
+    )
     require("Dto" not in boundary, "hand-authored owner transport DTO detected")
     require("storageKey" not in boundary, "storage keys must not enter Android owner contract")
 
@@ -112,7 +123,7 @@ def check_hygiene() -> None:
         *(ROOT / "core/network").rglob("*.kt"),
     ]
     for path in sources:
-        text = path.read_text()
+        text = path.read_text(encoding="utf-8")
         require("storage_key" not in text, f"raw storage key reference found: {path}")
         require("ACCESS_BACKGROUND_LOCATION" not in text, f"background location found: {path}")
         if path.name != "DirectoryTokens.kt":

@@ -360,5 +360,6 @@ object OwnerCopy {
     const val MANAGER_ID = "معرف حساب المدير"
     const val MANAGER_ID_HINT = "معرف الحساب كما يظهر للمستخدم"
     const val MANAGER_ADD = "إضافة مدير"
-    const val MANAGER_NOTE = "تتم الإضافة بمعرف الحساب فقط؛ لا يوفر الخادم بحثًا برقم الهاتف."
+    const val MANAGER_NOTE = "تتم الإضافة بمعرف الحساب فقط؛ " +
+        "لا يوفر الخادم بحثًا برقم الهاتف."
 }

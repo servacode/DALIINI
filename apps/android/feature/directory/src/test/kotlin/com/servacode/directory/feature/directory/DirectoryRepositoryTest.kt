@@ -78,6 +78,7 @@ class DirectoryRepositoryTest {
     @Test fun `without a province there is nothing to list`() = runTest {
         val noProvince = DirectoryRepository(cache, api, FakePreferences(null), FakeLocation())
 
-        assertEquals(listOf(DirectoryLoad.ProvinceRequired), noProvince.firstPage("pharmacy", DirectoryFilter()).toList())
+        assertEquals(listOf(DirectoryLoad.ProvinceRequired), noProvince.firstPage("pharmacy",
+            DirectoryFilter()).toList())
     }
 }

@@ -58,7 +58,8 @@ class Device {
     val session: SessionCoordinator = NetworkModule.provideSessionCoordinator(access, vault, anonymous)
     private val authorized = NetworkModule.provideAuthorizedClient(
         environment,
-        NetworkModule.provideAuthorizedHttpClient(base, RequestIdInterceptor(), AccessTokenInterceptor(access), session),
+        NetworkModule.provideAuthorizedHttpClient(base, RequestIdInterceptor(), AccessTokenInterceptor(access),
+            session),
     )
     val public: PublicApiBoundary = NetworkModule.providePublicApiBoundary(anonymous, authorized)
     val owner: OwnerApiBoundary = GeneratedOwnerApi(authorized)
@@ -120,7 +121,8 @@ private fun manage(vararg args: String): String {
         .redirectErrorStream(true)
         .start()
     val output = process.inputStream.bufferedReader().readText()
-    check(process.waitFor(60, TimeUnit.SECONDS) && process.exitValue() == 0) { "manage.py ${args.first()} failed: $output" }
+    check(process.waitFor(60,
+        TimeUnit.SECONDS) && process.exitValue() == 0) { "manage.py ${args.first()} failed: $output" }
     return output
 }
 

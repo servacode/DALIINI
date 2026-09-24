@@ -4,7 +4,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class DistanceTextTest {
-    private fun assertShown(expected: String, meters: Double) = assertEquals("$meters m", expected, DistanceText.of(meters))
+    private fun assertShown(expected: String, meters: Double) = assertEquals("$meters m", expected,
+        DistanceText.of(meters))
 
     @Test fun `below a kilometre, whole metres rounded half up`() {
         assertShown("0 م", 0.0)

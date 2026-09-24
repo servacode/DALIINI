@@ -9,7 +9,8 @@ class SplashGeometryTest {
 
     @Test fun `below the status bar, the mark sits lower in the splash by the bars' difference`() {
         // Galaxy A52: a 2400 px window, content from 88 px (status bar) to 2274 px (navigation bar).
-        val centre = SplashGeometry.markCentreY(windowHeight = 2400, contentTop = 88, contentHeight = 2186, markHeight = mark)
+        val centre = SplashGeometry.markCentreY(windowHeight = 2400, contentTop = 88, contentHeight = 2186,
+            markHeight = mark)
 
         assertEquals(1112, centre)
         assertEquals("the window's centre", 1200, 88 + centre)
@@ -24,7 +25,9 @@ class SplashGeometryTest {
     }
 
     @Test fun `the mark never leaves the splash`() {
-        assertEquals(mark / 2, SplashGeometry.markCentreY(400, contentTop = 900, contentHeight = 800, markHeight = mark))
-        assertEquals(800 - mark / 2, SplashGeometry.markCentreY(4000, contentTop = 0, contentHeight = 800, markHeight = mark))
+        assertEquals(mark / 2, SplashGeometry.markCentreY(400, contentTop = 900, contentHeight = 800,
+            markHeight = mark))
+        assertEquals(800 - mark / 2, SplashGeometry.markCentreY(4000, contentTop = 0, contentHeight = 800,
+            markHeight = mark))
     }
 }

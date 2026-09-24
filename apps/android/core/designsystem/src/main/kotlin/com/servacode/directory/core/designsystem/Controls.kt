@@ -266,7 +266,11 @@ fun DirectorySearchEntry(
             horizontalArrangement = Arrangement.spacedBy(Space.md),
         ) {
             DirectoryIcon(DirectoryIcons.search, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(placeholder, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                text = placeholder,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

@@ -72,7 +72,8 @@ class DirectoryViewModel @Inject constructor(
                         query = load.query
                         _state.value = when (val loaded = load.loaded) {
                             is Loaded.Cached -> content(loaded.value.items, stale = false, cursor = null)
-                            is Loaded.Fresh -> content(loaded.value.items, stale = false, cursor = loaded.value.nextCursor)
+                            is Loaded.Fresh -> content(loaded.value.items, stale = false,
+                                cursor = loaded.value.nextCursor)
                             is Loaded.Stale -> content(loaded.value.items, stale = true, cursor = null)
                             is Loaded.Failed -> DirectoryUiState.Error(AppErrorText.of(loaded.error))
                         }

@@ -48,6 +48,7 @@ class BootstrapRepositoryTest {
             override suspend fun rememberPlace(label: String, provinceId: String?) = Unit
         }
 
-        assertEquals(BootstrapResult.Failed("BOOTSTRAP_STORAGE_UNAVAILABLE"), DefaultBootstrapRepository(broken).initialize())
+        assertEquals(BootstrapResult.Failed("BOOTSTRAP_STORAGE_UNAVAILABLE"),
+            DefaultBootstrapRepository(broken).initialize())
     }
 }

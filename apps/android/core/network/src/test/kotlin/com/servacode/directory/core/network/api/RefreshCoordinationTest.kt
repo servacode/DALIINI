@@ -161,7 +161,9 @@ class RefreshCoordinationTest {
     @Test fun `a wrong password is a wrong password, not a refresh`() = runBlocking {
         signedInWithExpiredToken()
 
-        val error = withContext(Dispatchers.IO) { runCatching { auth.login("+963900000001", "wrong") }.exceptionOrNull() }
+        val error = withContext(Dispatchers.IO) {
+            runCatching { auth.login("+963900000001", "wrong") }.exceptionOrNull()
+        }
 
         assertEquals("AUTHENTICATION_FAILED", (error as AppException).error.code)
         assertEquals(0, refreshes.get())

@@ -602,7 +602,9 @@ private fun stepLabel(step: OnboardingStep): String = when (step) {
 object OnboardingCopy {
     const val TITLE = "إضافة / تعديل منشأة"
     val PHASES = listOf("المنشأة", "الإثباتات", "المراجعة")
-    val DAY_NAMES = listOf("الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد")
+    val DAY_NAMES = listOf(
+        "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد",
+    )
     const val PROVINCE_REQUIRED = "اختر المحافظة قبل إضافة منشأة"
     const val PROVINCE_CHOOSE = "اختيار المحافظة"
     const val CONFIG_ERROR = "تعذر تحميل إعدادات التسجيل"

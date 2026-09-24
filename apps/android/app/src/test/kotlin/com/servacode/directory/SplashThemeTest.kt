@@ -50,7 +50,10 @@ class SplashThemeTest {
     }
 
     @Test fun `both splashes have the one background colour, the token the app's splash paints`() {
-        assertEquals("@color/brand_splash_background", style("Theme.Directory.Starting").item("windowSplashScreenBackground"))
+        assertEquals(
+            "@color/brand_splash_background",
+            style("Theme.Directory.Starting").item("windowSplashScreenBackground"),
+        )
         val alias = colour("../core/designsystem/src/main/res/values/brand.xml", "brand_splash_background")
         assertEquals("@color/token_semantic_surface_default", alias)
         val value = colour(

@@ -54,7 +54,13 @@ class GeneratedAdapterTest {
     @After fun stop() = server.close()
 
     private fun respond(body: String, code: Int = 200) =
-        server.enqueue(MockResponse.Builder().code(code).addHeader("Content-Type", "application/json").body(body).build())
+        server.enqueue(
+            MockResponse.Builder()
+                .code(code)
+                .addHeader("Content-Type", "application/json")
+                .body(body)
+                .build(),
+        )
 
     private fun taken(): RecordedRequest = server.takeRequest()
 
@@ -266,10 +272,14 @@ class GeneratedAdapterTest {
         respond(
             """{"items":[{"id":"$FACILITY","nameAr":"صيدلية","category":{"id":"$PHARMACY","nameAr":"صيدلية"},
             "province":{"id":"$PROVINCE","nameAr":"الرقة"},"status":"SUBMITTED",
-            "lastUpdate":"2026-09-19T10:00:00Z","requiredAction":null,"capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,"serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true}},
+            "lastUpdate":"2026-09-19T10:00:00Z","requiredAction":null,
+            "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,
+            "serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true}},
             {"id":"$REQUIREMENT","nameAr":"أخرى","category":{"id":"$PHARMACY","nameAr":"صيدلية"},
             "province":{"id":"$PROVINCE","nameAr":"الرقة"},"status":"DRAFT",
-            "lastUpdate":"2026-09-19T10:00:00Z","requiredAction":"COMPLETE_AND_SUBMIT","capabilities":{"hours":true,"photos":true,"ratings":true,"duty":false,"specialtyFilter":true,"serviceFilter":false,"temporaryClosure":false,"ownerOnboarding":true}}]}""",
+            "lastUpdate":"2026-09-19T10:00:00Z","requiredAction":"COMPLETE_AND_SUBMIT",
+            "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":false,"specialtyFilter":true,
+            "serviceFilter":false,"temporaryClosure":false,"ownerOnboarding":true}}]}""",
         )
 
         val facilities = ownerApi.facilities()
@@ -357,7 +367,10 @@ class GeneratedAdapterTest {
     private fun ownerDetail() = """
         {"id":"$FACILITY","nameAr":"صيدلية","category":{"id":"$PHARMACY","nameAr":"صيدلية"},
          "province":{"id":"$PROVINCE","nameAr":"الرقة"},"status":"DRAFT","lastUpdate":"2026-09-19T10:00:00Z",
-         "requiredAction":"COMPLETE_AND_SUBMIT","capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,"serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true},"nameEn":null,"descriptionAr":null,"descriptionEn":null,
+         "requiredAction":"COMPLETE_AND_SUBMIT",
+         "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,
+         "serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true},"nameEn":null,"descriptionAr":null,
+         "descriptionEn":null,
          "phone":"+963900000001","addressAr":null,"addressEn":null,"cityId":null,"neighborhoodId":null,
          "location":null,"specialtyIds":[],"serviceTagIds":[],"evidence":[],"hours":[],"application":null}
     """

@@ -10,8 +10,10 @@ class DamascusTimeTest {
     private fun instant(value: String) = Instant.parse(value).toEpochMilli()
 
     @Test fun `a Damascus time today is UTC plus three, summer and winter alike`() {
-        assertEquals(instant("2026-09-20T05:00:00Z"), DamascusTime.toEpochMillis(LocalDate.of(2026, 9, 20), LocalTime.of(8, 0)))
-        assertEquals(instant("2026-01-15T05:00:00Z"), DamascusTime.toEpochMillis(LocalDate.of(2026, 1, 15), LocalTime.of(8, 0)))
+        assertEquals(instant("2026-09-20T05:00:00Z"), DamascusTime.toEpochMillis(LocalDate.of(2026, 9, 20),
+            LocalTime.of(8, 0)))
+        assertEquals(instant("2026-01-15T05:00:00Z"), DamascusTime.toEpochMillis(LocalDate.of(2026, 1, 15),
+            LocalTime.of(8, 0)))
     }
 
     @Test fun `a picked date and time survive the round trip`() {
@@ -22,18 +24,22 @@ class DamascusTimeTest {
     }
 
     @Test fun `the zone rules decide, not a fixed offset, so winter 2021 was UTC plus two`() {
-        assertEquals(instant("2021-01-15T10:00:00Z"), DamascusTime.toEpochMillis(LocalDate.of(2021, 1, 15), LocalTime.NOON))
-        assertEquals(instant("2021-07-01T09:00:00Z"), DamascusTime.toEpochMillis(LocalDate.of(2021, 7, 1), LocalTime.NOON))
+        assertEquals(instant("2021-01-15T10:00:00Z"), DamascusTime.toEpochMillis(LocalDate.of(2021, 1, 15),
+            LocalTime.NOON))
+        assertEquals(instant("2021-07-01T09:00:00Z"), DamascusTime.toEpochMillis(LocalDate.of(2021, 7, 1),
+            LocalTime.NOON))
     }
 
     @Test fun `a time skipped by the spring change moves forward by the gap`() {
         // 26 March 2021: clocks went from 00:00 straight to 01:00, so 00:30 never happened.
-        assertEquals(instant("2021-03-25T22:30:00Z"), DamascusTime.toEpochMillis(LocalDate.of(2021, 3, 26), LocalTime.of(0, 30)))
+        assertEquals(instant("2021-03-25T22:30:00Z"), DamascusTime.toEpochMillis(LocalDate.of(2021, 3, 26),
+            LocalTime.of(0, 30)))
     }
 
     @Test fun `a time repeated by the autumn change means its first occurrence`() {
         // 28 October 2021: 23:00 to 00:00 happened twice, first at UTC+3.
-        assertEquals(instant("2021-10-28T20:30:00Z"), DamascusTime.toEpochMillis(LocalDate.of(2021, 10, 28), LocalTime.of(23, 30)))
+        assertEquals(instant("2021-10-28T20:30:00Z"), DamascusTime.toEpochMillis(LocalDate.of(2021, 10, 28),
+            LocalTime.of(23, 30)))
     }
 
     @Test fun `display is the Damascus clock with Latin digits`() {

@@ -145,6 +145,11 @@ jobs:
         if: steps.assemble.outcome == 'success'
         run: ./gradlew testDebugUnitTest :app:testLocalDebugUnitTest --continue --stacktrace
 
+      - name: Gate 2b — platform-free JVM harness
+        if: always() && steps.assemble.outcome == 'success'
+        working-directory: apps/android/jvm-verification
+        run: ../gradlew -p . test --continue --stacktrace
+
       - name: Gate 3 — Android lint
         id: lint
         if: always() && steps.assemble.outcome == 'success'
@@ -158,6 +163,10 @@ jobs:
         run: |
           python3 scripts/qualify-source.py
           python3 scripts/qualify-play-rc-source.py
+          python3 scripts/qualify-public-source.py
+          python3 scripts/qualify-owner-source.py
+          python3 scripts/qualify-live-data-source.py
+          python3 scripts/qualify-navigation-source.py
 
       - name: Upload test and lint reports
         if: always()

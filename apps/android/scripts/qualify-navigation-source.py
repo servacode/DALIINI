@@ -13,12 +13,12 @@ def require(condition: bool, message: str) -> None:
 
 
 def read(relative: str) -> str:
-    return (ROOT / relative).read_text()
+    return (ROOT / relative).read_text(encoding="utf-8")
 
 
 def nav_text() -> str:
     base = ROOT / "feature/navigation/src"
-    return "\n".join(path.read_text() for path in base.rglob("*.kt"))
+    return "\n".join(path.read_text(encoding="utf-8") for path in base.rglob("*.kt") if "build" not in path.parts)
 
 
 def check_provider_configuration() -> None:
@@ -98,7 +98,10 @@ def check_product_integration() -> None:
     )
     require("BuiltInNavigationScreen" in app, "built-in navigation destination not wired")
     require("DirectoryRoute.BuiltInNavigation" in app, "navigation route not wired")
-    require("onDirections" in facility and 'Text("الاتجاهات")' in facility, "facility directions action missing")
+    # The wording and the widget belong to the design system; what must hold is that a facility
+    # can start the way there, and that it goes through the route preview first.
+    require("onDirections" in facility, "facility directions action missing")
+    require("DirectoryRoute.RoutePreview" in app, "route preview not wired before live navigation")
 
 
 def check_tests() -> None:
@@ -124,15 +127,15 @@ def check_hygiene() -> None:
         path for path in sources
         if path != policy and "/src/test/" not in path.as_posix()
     ]
-    combined = "\n".join(path.read_text() for path in runtime_sources)
+    combined = "\n".join(path.read_text(encoding="utf-8") for path in runtime_sources)
     require("demotiles.maplibre.org" not in combined, "MapLibre demo tiles runtime reference found")
     require("router.project-osrm.org" not in combined, "public OSRM demo endpoint hardcoded")
     require("ACCESS_BACKGROUND_LOCATION" not in combined, "background location reference found")
     for path in sources:
-        for line_no, line in enumerate(path.read_text().splitlines(), 1):
+        for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
             require(len(line) <= 120, f"line >120: {path.relative_to(ROOT)}:{line_no}")
         if path.name != "DirectoryTokens.kt":
-            require(not re.search(r"#[0-9A-Fa-f]{6,8}", path.read_text()), f"hardcoded color: {path}")
+            require(not re.search(r"#[0-9A-Fa-f]{6,8}", path.read_text(encoding="utf-8")), f"hardcoded color: {path}")
 
 
 def main() -> int:
