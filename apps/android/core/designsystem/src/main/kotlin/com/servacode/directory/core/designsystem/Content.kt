@@ -188,7 +188,16 @@ fun FacilityRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            // No ripple, for the same reason the category circles have none: a press painted a
+            // hard grey rectangle the full width of the row, and a flat rectangle held over a
+            // white list is read as a still image rather than as a touch. Nothing is lost by
+            // removing it — the facility's page now opens with no transition at all, so the
+            // screen changing is itself the acknowledgement, and it arrives sooner.
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            )
             .padding(vertical = Space.md, horizontal = Space.base),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Space.md),
