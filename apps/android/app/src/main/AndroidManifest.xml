@@ -8,7 +8,21 @@
     <application
         android:name=".DirectoryApplication"
         android:allowBackup="false"
-        android:enableOnBackInvokedCallback="true"
+        <!--
+          Predictive back off, on the product's decision and with evidence behind it.
+
+          With it on, Navigation Compose shrinks the screen being left into a rounded card and
+          dims the screen behind it. Photographed on an A52: leaving a facility's page, the page
+          became a small card floating over a greyed Home. That is what was reported three times
+          as "a square, like a screenshot", and it is not something the graph's own transitions
+          can turn off — they are already None in all four directions.
+
+          The gesture preview goes with it. That is the cost, and it was accepted: this device
+          has no back gesture at all (navigation_mode 0) and the system's own back animation is
+          already disabled on it (enable_back_animation 0), so what the flag was buying here was
+          the artefact and nothing else.
+        -->
+        android:enableOnBackInvokedCallback="false"
         android:fullBackupContent="false"
         android:label="الدليل"
         android:supportsRtl="true"
