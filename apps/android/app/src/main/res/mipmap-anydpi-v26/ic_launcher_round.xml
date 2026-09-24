@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The launcher icon from Android 8 onwards, where the launcher, not the app, decides the
+     shape. The background is a token colour rather than a picture, so the icon is one flat
+     field with the mark on it, and the mark is cut by scripts/build-brand-assets.py at the size
+     no mask reaches into. Android draws the same two layers for the round icon. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/brand_launcher_background" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+</adaptive-icon>

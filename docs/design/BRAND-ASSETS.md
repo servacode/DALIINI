@@ -5,15 +5,22 @@ listed as a placeholder may be shipped to a store as if it were approved.
 
 ## Mark
 
-| Asset | Status | Where | Replace by |
-|---|---|---|---|
-| Brand symbol: the road and the pin inside the letter | **APPROVED** (2026-09-24, supplied by the owner) | `apps/android/core/designsystem/src/main/res/drawable-nodpi/brand_symbol.webp`, drawn by `BrandSymbol`. Everything the app itself draws uses this. The artwork is a raster with gradients and bevels that no vector reproduces, and the wordmark under it was left out on purpose: a name baked into a picture cannot be set in the app's typeface, read aloud by a screen reader, or corrected without an image editor | — |
-| Splash vector: a location pin carrying a heart | **PLACEHOLDER** (2026-09-19, Screen 01) | `apps/android/core/designsystem/src/main/res/drawable/brand_mark.xml` | Replacing this one vector. The system splash and the app's splash (`BrandMark`) both draw it. Keep its layout: a 288-unit canvas with the mark in the middle 120 units, the margin inside the drawable, because Android 12+ scales a splash icon into a 288 dp box. `SplashThemeTest` fails if the canvas, the mark size or the centring drift. |
-| Launcher icon | **MISSING** | — | Not part of Screen 01. Lint reports it (MissingApplicationIcon); the store listing needs a 512 × 512 icon (`20-GOOGLE-PLAY-RELEASE.md`). The approved symbol is square and 512 px, so it is what the icon should be cut from. |
+| Asset | Status | Where |
+|---|---|---|
+| The artwork | **APPROVED** (2026-09-25, supplied by the owner) | `docs/design/brand/dalini-logo.png`. Every raster the app ships is cut from this one file by `apps/android/scripts/build-brand-assets.py`; none is drawn by hand. Replace the file, run the script, commit what it writes |
+| Brand symbol: the road and the pin inside the letter | **APPROVED** | `apps/android/core/designsystem/src/main/res/drawable-nodpi/brand_symbol.webp`, drawn by `BrandSymbol`. The artwork is a raster with gradients and bevels that no vector reproduces, and the wordmark under it is left out on purpose: a name baked into a picture cannot be set in the app's typeface, read aloud by a screen reader, or corrected without an image editor. `BrandLockup` writes the name instead |
+| Splash mark | **APPROVED** | `apps/android/core/designsystem/src/main/res/drawable/brand_mark.xml` draws the symbol at 120 dp in a 288 dp canvas, which is what the app's own splash draws, so one hands over to the other without the mark moving. Android 12+ scales a splash icon into a 288 dp box, so the margin is inside the drawable; `SplashThemeTest` fails if either number drifts |
+| Launcher icon | **APPROVED** | `apps/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml` from Android 8, over `drawable-nodpi/ic_launcher_foreground.webp` on `brand_launcher_background` (token `colors.primarySoft`); five densities of whole icons, square and round, for older launchers. The mark is scaled until the circle enclosing its ink is 66 of the 108-unit canvas — the part no launcher's mask cuts into, whatever shape it prefers |
+| Store icon | **APPROVED** | `docs/design/brand/play-store-icon.png`, 512 × 512 and opaque, as Play requires (`20-GOOGLE-PLAY-RELEASE.md`) |
 
-The placeholder uses only design-token colours (`colors.primary`, `colors.primarySoft`,
-`semantic.surface.default`), through the colour resources the token generator emits for
-Android (`packages/design-tokens/generated/android/`).
+There is no monochrome layer, so Android 13's themed icons fall back to the icon above. The
+mark's identity is the road and the pin inside the letter, and a silhouette of it is a solid
+blob: the tinting those icons apply would take away the only thing that makes it ours.
+
+The colours around the mark are token colours through the resources the token generator emits
+for Android (`packages/design-tokens/generated/android/`): the splash sits on
+`semantic.surface.default` and the launcher icon on `colors.primarySoft`. The mark itself is a
+photograph of sorts and carries its own greens.
 
 ## Copy
 

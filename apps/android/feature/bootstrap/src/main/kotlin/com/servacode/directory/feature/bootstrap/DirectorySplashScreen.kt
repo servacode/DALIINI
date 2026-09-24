@@ -151,7 +151,7 @@ private fun SplashPing(markCentreY: MutableFloatState, appear: () -> Float) {
     )
     Canvas(Modifier.fillMaxSize()) {
         val centreY = markCentreY.floatValue.takeUnless { it.isNaN() } ?: (size.height / 2)
-        drawPing(Offset(size.width / 2, centreY + PIN_TIP_BELOW_CENTRE.toPx()), progress, appear())
+        drawPing(Offset(size.width / 2, centreY + MARK_BASE_BELOW_CENTRE.toPx()), progress, appear())
     }
 }
 
@@ -193,8 +193,9 @@ private const val PING_ALPHA = 0.22f
 private val PING_FROM = 28.dp
 private val PING_TO = 76.dp
 
-// The pin's tip sits 51 dp below the mark's centre: y 195 of brand_mark.xml's 288-unit canvas.
-private val PIN_TIP_BELOW_CENTRE = 51.dp
+// The letter's base sits 52 dp below the mark's centre at BrandMarkSize, measured from the
+// symbol's own ink (scripts/build-brand-assets.py): the ping spreads from where it stands.
+private val MARK_BASE_BELOW_CENTRE = 52.dp
 private val TITLE_GAP = 20.dp
 private val FOOTER_GAP = 28.dp
 private val SIDE = 24.dp

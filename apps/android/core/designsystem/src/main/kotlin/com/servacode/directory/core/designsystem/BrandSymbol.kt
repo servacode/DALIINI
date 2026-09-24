@@ -15,14 +15,24 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.servacode.directory.core.model.DirectoryBrand
+
+/** The size of the mark itself on the splash: the middle 120 units of brand_mark.xml. */
+val BrandMarkSize = 120.dp
+
+/**
+ * The size brand_mark.xml's whole 288-unit canvas is drawn at, so the mark is BrandMarkSize:
+ * the box Android 12+ draws a splash icon without a background in, so both splashes match.
+ */
+val BrandMarkCanvas = 288.dp
 
 /**
  * The symbol: the road and the pin inside the letter.
  *
- * Taken from the approved artwork, which is a raster with gradients and bevels that no vector
- * reproduces. `brand_mark.xml` stays as it is for the system splash, which Android draws from a
- * vector and which `SplashThemeTest` measures.
+ * Cut from the approved artwork by scripts/build-brand-assets.py, which is a raster with
+ * gradients and bevels that no vector reproduces. The system splash draws the same file
+ * through `brand_mark.xml`, at the same size; `SplashThemeTest` holds the two together.
  */
 @Composable
 fun BrandSymbol(modifier: Modifier = Modifier, size: Dp = BrandMarkSize) {
