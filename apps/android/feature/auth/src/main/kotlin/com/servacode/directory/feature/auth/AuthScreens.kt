@@ -226,54 +226,34 @@ fun RegisterScreen(
     viewModel: RegisterViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    var name by rememberSaveable { mutableStateOf("") }
     var phone by rememberSaveable { mutableStateOf("") }
     var code by remember { mutableStateOf("") }
+    var name by rememberSaveable { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmation by remember { mutableStateOf("") }
     LaunchedEffect(state.step) { if (state.step == ChallengeStep.DONE) onRegistered() }
 
     AuthPage(title = AuthCopy.CREATE_ACCOUNT, onBack = onBack) {
         when (state.step) {
+            // The number, and nothing else. Nothing is asked about the person before they have
+            // shown they can receive on it, and the province is taken from where they are
+            // standing — one less question for an answer the app already has.
             ChallengeStep.DETAILS -> {
-                DirectoryTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = AuthCopy.NAME,
-                    leadingIcon = DirectoryIcons.person,
-                    error = fieldError(state.failure, "displayName"),
+                Text(
+                    text = AuthCopy.PHONE_FIRST,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
                 )
                 PhoneField(phone, state.failure) { phone = it }
-                // Already decided from where the person is standing. It is shown because the
-                // permission may have been refused, and because someone registering away from
-                // home would otherwise have their account bound silently to the wrong directory.
-                Text(
-                    text = AuthCopy.PROVINCE,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Text(
-                    text = AuthCopy.PROVINCE_NOTE,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                DirectoryChipRow {
-                    state.provinces.forEach { province ->
-                        DirectoryFilterChip(
-                            text = province.nameAr,
-                            selected = province.id == state.provinceId,
-                            onClick = { viewModel.chooseProvince(province.id) },
-                        )
-                    }
-                }
                 fieldError(state.failure, "provinceId")?.let { ErrorText(it) }
                 FailureText(state.failure)
                 DirectoryPrimaryButton(
                     text = AuthCopy.SEND_CODE,
-                    onClick = { viewModel.start(name, phone) },
+                    onClick = { viewModel.start(phone) },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = name.isNotBlank() && phone.isNotBlank() && state.provinceId != null,
+                    enabled = phone.isNotBlank() && state.provinceId != null,
                     loading = state.busy,
                 )
             }
@@ -284,19 +264,32 @@ fun RegisterScreen(
                 busy = state.busy,
                 onVerify = { viewModel.verify(code) },
             )
+            // The number is proved; now the person.
             ChallengeStep.PASSWORD -> {
+                DirectoryTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = AuthCopy.FULL_NAME,
+                    leadingIcon = DirectoryIcons.person,
+                    error = fieldError(state.failure, "displayName"),
+                )
                 DirectoryPasswordField(
                     value = password,
                     onValueChange = { password = it },
                     label = AuthCopy.PASSWORD,
                     error = fieldError(state.failure, "password"),
                 )
+                ConfirmationField(
+                    value = confirmation,
+                    password = password,
+                    onValueChange = { confirmation = it },
+                )
                 FailureText(state.failure)
                 DirectoryPrimaryButton(
                     text = AuthCopy.CREATE_ACCOUNT,
-                    onClick = { viewModel.complete(password) },
+                    onClick = { viewModel.complete(name, password) },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = password.isNotEmpty(),
+                    enabled = name.isNotBlank() && password.isNotEmpty() && confirmation == password,
                     loading = state.busy,
                 )
             }
@@ -310,7 +303,26 @@ fun RegisterScreen(
     }
 }
 
+/**
+ * The second time, to catch a typo before it locks someone out.
+ *
+ * It says so while they are typing rather than when they press the button: a mismatch found on
+ * submit means retyping both, and the field that is wrong is the one that should say so.
+ */
 @Composable
+private fun ConfirmationField(
+    value: String,
+    password: String,
+    onValueChange: (String) -> Unit,
+) {
+    DirectoryPasswordField(
+        value = value,
+        onValueChange = onValueChange,
+        label = AuthCopy.CONFIRM_PASSWORD,
+        error = if (value.isNotEmpty() && value != password) AuthCopy.MISMATCH else null,
+    )
+}
+
 fun RecoveryScreen(
     onDone: () -> Unit,
     onBack: () -> Unit,
@@ -320,6 +332,7 @@ fun RecoveryScreen(
     var phone by rememberSaveable { mutableStateOf("") }
     var code by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmation by remember { mutableStateOf("") }
 
     AuthPage(title = AuthCopy.RECOVERY, onBack = onBack) {
         when (state.step) {
@@ -355,12 +368,17 @@ fun RecoveryScreen(
                     label = AuthCopy.NEW_PASSWORD,
                     error = fieldError(state.failure, "password"),
                 )
+                ConfirmationField(
+                    value = confirmation,
+                    password = password,
+                    onValueChange = { confirmation = it },
+                )
                 FailureText(state.failure)
                 DirectoryPrimaryButton(
-                    text = AuthCopy.SAVE,
+                    text = AuthCopy.RESET_PASSWORD,
                     onClick = { viewModel.reset(password) },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = password.isNotEmpty(),
+                    enabled = password.isNotEmpty() && confirmation == password,
                     loading = state.busy,
                 )
             }
@@ -533,6 +551,10 @@ object AuthCopy {
     const val RECOVERY_NOTE = "أدخل رقم هاتفك وسنرسل إليك رمز تحقق."
     const val PHONE = "رقم الهاتف"
     const val NAME = "الاسم"
+    const val FULL_NAME = "الاسم الكامل"
+    const val CONFIRM_PASSWORD = "تأكيد كلمة المرور"
+    const val RESET_PASSWORD = "إعادة تعيين كلمة المرور"
+    const val PHONE_FIRST = "أدخل رقم هاتفك وسنرسل إليك رمز تحقق."
     const val PROVINCE = "المحافظة"
     const val PASSWORD = "كلمة المرور"
     const val NEW_PASSWORD = "كلمة المرور الجديدة"

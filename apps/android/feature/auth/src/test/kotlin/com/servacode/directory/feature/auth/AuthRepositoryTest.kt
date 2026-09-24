@@ -68,14 +68,17 @@ class AuthRepositoryTest {
     }
 
     @Test fun `registration is start, verify, complete, and only completion signs in`() = runTest {
-        val challenge = repository.startRegistration(" مالك ", "+963900000009", "raqqa").getOrThrow()
+        // The number goes first and alone: nothing about the person is sent until the code has
+        // been proved, so the name travels with the password rather than with the request.
+        val challenge = repository.startRegistration("+963900000009", "raqqa").getOrThrow()
         repository.verifyRegistration(challenge.id, " 123456 ").getOrThrow()
         assertEquals(SessionState.SIGNED_OUT, repository.state.value)
 
-        repository.completeRegistration(challenge.id, "StrongPass123!").getOrThrow()
+        repository.completeRegistration(challenge.id, " مالك ", "StrongPass123!").getOrThrow()
 
         assertEquals(SessionState.SIGNED_IN, repository.state.value)
-        assertTrue("verify:challenge-1:123456" in api.calls)
+        assertTrue("start:+963900000009:raqqa" in api.calls)
+        assertTrue("complete:challenge-1:مالك" in api.calls)
     }
 }
 
@@ -91,8 +94,8 @@ private class RecordingAuthApi : AuthApiBoundary {
         return tokens
     }
 
-    override suspend fun registerStart(displayName: String, phone: String, provinceId: String): AuthChallenge {
-        calls += "start:$displayName:$phone:$provinceId"
+    override suspend fun registerStart(phone: String, provinceId: String): AuthChallenge {
+        calls += "start:$phone:$provinceId"
         return AuthChallenge("challenge-1", 0)
     }
 
@@ -100,8 +103,12 @@ private class RecordingAuthApi : AuthApiBoundary {
         calls += "verify:$challengeId:$code"
     }
 
-    override suspend fun registerComplete(challengeId: String, password: String): SessionTokens {
-        calls += "complete:$challengeId"
+    override suspend fun registerComplete(
+        challengeId: String,
+        displayName: String,
+        password: String,
+    ): SessionTokens {
+        calls += "complete:$challengeId:$displayName"
         return tokens
     }
 

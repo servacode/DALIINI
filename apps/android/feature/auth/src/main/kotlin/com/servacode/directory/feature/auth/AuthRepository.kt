@@ -26,14 +26,19 @@ class AuthRepository @Inject constructor(
         session.establish(api.login(phone.trim(), password))
     }
 
-    suspend fun startRegistration(displayName: String, phone: String, provinceId: String): Result<AuthChallenge> =
-        runCatching { api.registerStart(displayName.trim(), phone.trim(), provinceId) }
+    /** The number and where the account will live. The name comes after the code is proved. */
+    suspend fun startRegistration(phone: String, provinceId: String): Result<AuthChallenge> =
+        runCatching { api.registerStart(phone.trim(), provinceId) }
 
     suspend fun verifyRegistration(challengeId: String, code: String): Result<Unit> =
         runCatching { api.registerVerify(challengeId, code.trim()) }
 
-    suspend fun completeRegistration(challengeId: String, password: String): Result<Unit> = runCatching {
-        session.establish(api.registerComplete(challengeId, password))
+    suspend fun completeRegistration(
+        challengeId: String,
+        displayName: String,
+        password: String,
+    ): Result<Unit> = runCatching {
+        session.establish(api.registerComplete(challengeId, displayName.trim(), password))
     }
 
     suspend fun startRecovery(phone: String): Result<AuthChallenge> = runCatching { api.recoveryStart(phone.trim()) }

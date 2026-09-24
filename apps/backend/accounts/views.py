@@ -108,10 +108,7 @@ class RegisterStartView(APIView):
         challenge = start_challenge(
             phone=data["phone"],
             purpose=OTPChallenge.Purpose.REGISTER,
-            metadata={
-                "displayName": data["displayName"],
-                "provinceId": str(data["provinceId"]),
-            },
+            metadata={"provinceId": str(data["provinceId"])},
         )
         return _challenge_response(challenge)
 

@@ -3,7 +3,6 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**displayName** | **String** |  | 
 **phone** | **String** |  | 
 **provinceId** | **UUID** |  | 
 

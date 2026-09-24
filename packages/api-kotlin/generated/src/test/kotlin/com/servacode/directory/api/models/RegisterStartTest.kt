@@ -25,12 +25,6 @@ class RegisterStartTest : ShouldSpec() {
         // uncomment below to create an instance of RegisterStart
         //val modelInstance = RegisterStart()
 
-        // to test the property `displayName`
-        should("test displayName") {
-            // uncomment below to test the property
-            //modelInstance.displayName shouldBe ("TODO")
-        }
-
         // to test the property `phone`
         should("test phone") {
             // uncomment below to test the property

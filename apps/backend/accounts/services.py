@@ -115,7 +115,19 @@ def _verified_challenge(*, challenge_id, purpose: str) -> OTPChallenge:
 
 
 @transaction.atomic
-def complete_registration(*, challenge_id, password: str, platform: str, device_name: str) -> dict:
+def complete_registration(
+    *,
+    challenge_id,
+    display_name: str,
+    password: str,
+    platform: str,
+    device_name: str,
+) -> dict:
+    """Open the account, now that the number has been shown to be theirs.
+
+    The name arrives here rather than with the code, so nothing about a person is
+    written down until they have proved the number and chosen a password.
+    """
     challenge = _verified_challenge(
         challenge_id=challenge_id,
         purpose=OTPChallenge.Purpose.REGISTER,
@@ -131,7 +143,7 @@ def complete_registration(*, challenge_id, password: str, platform: str, device_
     user = User.objects.create_user(
         phone=challenge.phone,
         password=password,
-        name=challenge.metadata.get("displayName", "")[:120],
+        name=display_name[:120],
         province=province,
         phone_verified_at=timezone.now(),
     )

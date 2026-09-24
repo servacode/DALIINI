@@ -366,7 +366,7 @@ Set the password and open the first session
 // The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
 import ServaDirectoryAPI
 
-let registerComplete = RegisterComplete(challengeId: 123, password: "password_example", platform: "platform_example", deviceName: "deviceName_example") // RegisterComplete | 
+let registerComplete = RegisterComplete(challengeId: 123, displayName: "displayName_example", password: "password_example", platform: "platform_example", deviceName: "deviceName_example") // RegisterComplete | 
 
 // Set the password and open the first session
 AuthAPI.authRegisterComplete(registerComplete: registerComplete) { (response, error) in
@@ -416,7 +416,7 @@ Accepts 09XXXXXXXX, +9639XXXXXXXX or 009639XXXXXXXX and normalises to the canoni
 // The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
 import ServaDirectoryAPI
 
-let registerStart = RegisterStart(displayName: "displayName_example", phone: "phone_example", provinceId: 123) // RegisterStart | 
+let registerStart = RegisterStart(phone: "phone_example", provinceId: 123) // RegisterStart | 
 
 // Start registration by requesting an OTP challenge
 AuthAPI.authRegisterStart(registerStart: registerStart) { (response, error) in

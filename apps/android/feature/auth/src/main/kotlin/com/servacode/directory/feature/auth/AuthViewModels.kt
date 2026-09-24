@@ -106,10 +106,10 @@ class RegisterViewModel @Inject constructor(
         _state.value = _state.value.copy(provinceId = id)
     }
 
-    fun start(displayName: String, phone: String) {
+    fun start(phone: String) {
         val provinceId = _state.value.provinceId ?: return
         step(ChallengeStep.CODE) {
-            auth.startRegistration(displayName, phone, provinceId).map { challengeId = it.id }
+            auth.startRegistration(phone, provinceId).map { challengeId = it.id }
         }
     }
 
@@ -118,9 +118,9 @@ class RegisterViewModel @Inject constructor(
         step(ChallengeStep.PASSWORD) { auth.verifyRegistration(id, code) }
     }
 
-    fun complete(password: String) {
+    fun complete(displayName: String, password: String) {
         val id = challengeId ?: return
-        step(ChallengeStep.DONE) { auth.completeRegistration(id, password) }
+        step(ChallengeStep.DONE) { auth.completeRegistration(id, displayName, password) }
     }
 
     private fun step(next: ChallengeStep, action: suspend () -> Result<*>) {

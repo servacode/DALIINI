@@ -14,17 +14,15 @@
 
 import { mapValues } from '../runtime';
 /**
+ * What is needed to send a code: a number, and where the account will live.
  * 
+ * The name is not asked for here. Nothing should be collected about a person before
+ * they have shown the number is theirs, and a name given to a challenge that is never
+ * completed is a name stored for nothing.
  * @export
  * @interface RegisterStart
  */
 export interface RegisterStart {
-    /**
-     * 
-     * @type {string}
-     * @memberof RegisterStart
-     */
-    displayName: string;
     /**
      * 
      * @type {string}
@@ -43,7 +41,6 @@ export interface RegisterStart {
  * Check if a given object implements the RegisterStart interface.
  */
 export function instanceOfRegisterStart(value: object): value is RegisterStart {
-    if (!('displayName' in value) || value['displayName'] === undefined) return false;
     if (!('phone' in value) || value['phone'] === undefined) return false;
     if (!('provinceId' in value) || value['provinceId'] === undefined) return false;
     return true;
@@ -59,7 +56,6 @@ export function RegisterStartFromJSONTyped(json: any, ignoreDiscriminator: boole
     }
     return {
         
-        'displayName': json['displayName'],
         'phone': json['phone'],
         'provinceId': json['provinceId'],
     };
@@ -76,7 +72,6 @@ export function RegisterStartToJSONTyped(value?: RegisterStart | null, ignoreDis
 
     return {
         
-        'displayName': value['displayName'],
         'phone': value['phone'],
         'provinceId': value['provinceId'],
     };

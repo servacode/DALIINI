@@ -16,7 +16,13 @@ class PhoneField(serializers.CharField):
 
 
 class RegisterStartSerializer(serializers.Serializer):
-    displayName = serializers.CharField(max_length=120)
+    """What is needed to send a code: a number, and where the account will live.
+
+    The name is not asked for here. Nothing should be collected about a person before
+    they have shown the number is theirs, and a name given to a challenge that is never
+    completed is a name stored for nothing.
+    """
+
     phone = PhoneField()
     provinceId = serializers.UUIDField()
 
@@ -30,6 +36,7 @@ class RegisterCompleteSerializer(serializers.Serializer):
     # The wire names stay camelCase; `source` maps them to the snake_case keyword
     # arguments of complete_registration, which receives **validated_data.
     challengeId = serializers.UUIDField(source="challenge_id")
+    displayName = serializers.CharField(source="display_name", max_length=120)
     password = serializers.CharField(write_only=True, trim_whitespace=False)
     platform = serializers.CharField(max_length=32, required=False, default="UNKNOWN")
     deviceName = serializers.CharField(

@@ -8017,6 +8017,9 @@ components:
         challengeId:
           type: string
           format: uuid
+        displayName:
+          type: string
+          maxLength: 120
         password:
           type: string
           writeOnly: true
@@ -8030,20 +8033,23 @@ components:
           maxLength: 120
       required:
       - challengeId
+      - displayName
       - password
     RegisterStart:
       type: object
+      description: |-
+        What is needed to send a code: a number, and where the account will live.
+
+        The name is not asked for here. Nothing should be collected about a person before
+        they have shown the number is theirs, and a name given to a challenge that is never
+        completed is a name stored for nothing.
       properties:
-        displayName:
-          type: string
-          maxLength: 120
         phone:
           type: string
         provinceId:
           type: string
           format: uuid
       required:
-      - displayName
       - phone
       - provinceId
     ResolvedByEnum:

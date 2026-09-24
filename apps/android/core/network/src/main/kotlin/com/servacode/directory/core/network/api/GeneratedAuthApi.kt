@@ -41,10 +41,10 @@ class GeneratedAuthApi(
         open.authLogin(Login(phone = phone, password = password, platform = PLATFORM, deviceName = deviceName))
     }.toDomain()
 
-    override suspend fun registerStart(displayName: String, phone: String, provinceId: String): AuthChallenge =
+    override suspend fun registerStart(phone: String, provinceId: String): AuthChallenge =
         call {
             open.authRegisterStart(
-                RegisterStart(displayName = displayName, phone = phone, provinceId = UUID.fromString(provinceId)),
+                RegisterStart(phone = phone, provinceId = UUID.fromString(provinceId)),
             )
         }.toDomain()
 
@@ -55,10 +55,15 @@ class GeneratedAuthApi(
         if (!verified.verified) throw AppException(AppError(AppError.Kind.VALIDATION, code = "VALIDATION_ERROR"))
     }
 
-    override suspend fun registerComplete(challengeId: String, password: String): SessionTokens = call {
+    override suspend fun registerComplete(
+        challengeId: String,
+        displayName: String,
+        password: String,
+    ): SessionTokens = call {
         open.authRegisterComplete(
             RegisterComplete(
                 challengeId = UUID.fromString(challengeId),
+                displayName = displayName,
                 password = password,
                 platform = PLATFORM,
                 deviceName = deviceName,

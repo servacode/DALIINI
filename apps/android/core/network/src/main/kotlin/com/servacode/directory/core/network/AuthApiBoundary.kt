@@ -12,9 +12,13 @@ import com.servacode.directory.core.model.AuthChallenge
  */
 interface AuthApiBoundary {
     suspend fun login(phone: String, password: String): SessionTokens
-    suspend fun registerStart(displayName: String, phone: String, provinceId: String): AuthChallenge
+    suspend fun registerStart(phone: String, provinceId: String): AuthChallenge
     suspend fun registerVerify(challengeId: String, code: String)
-    suspend fun registerComplete(challengeId: String, password: String): SessionTokens
+    suspend fun registerComplete(
+        challengeId: String,
+        displayName: String,
+        password: String,
+    ): SessionTokens
     suspend fun recoveryStart(phone: String): AuthChallenge
     suspend fun recoveryVerify(challengeId: String, code: String)
     suspend fun recoveryReset(challengeId: String, password: String)
