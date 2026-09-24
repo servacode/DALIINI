@@ -22,6 +22,8 @@ import com.servacode.directory.api.apis.AccountApi
 import com.servacode.directory.api.models.AccountDeletionRequested
 import com.servacode.directory.api.models.AccountRatingList
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.ChallengeAccepted
+import com.servacode.directory.api.models.ChallengeVerify
 import com.servacode.directory.api.models.DeletionRequest
 import com.servacode.directory.api.models.FavoriteList
 import com.servacode.directory.api.models.FavoriteState
@@ -29,6 +31,7 @@ import com.servacode.directory.api.models.FavoriteWrite
 import com.servacode.directory.api.models.NotificationPage
 import com.servacode.directory.api.models.PasswordChange
 import com.servacode.directory.api.models.PatchedProfilePatch
+import com.servacode.directory.api.models.PhoneChangeStart
 import com.servacode.directory.api.models.Profile
 import com.servacode.directory.api.models.PushToken
 import com.servacode.directory.api.models.PushTokenRegister
@@ -108,6 +111,37 @@ class AccountApiTest : ShouldSpec() {
             // uncomment below to test accountPasswordChange
             //val passwordChange : PasswordChange =  // PasswordChange | 
             //apiInstance.accountPasswordChange(passwordChange)
+        }
+
+        // to test accountPhoneChangeConfirm
+        should("test accountPhoneChangeConfirm") {
+            // uncomment below to test accountPhoneChangeConfirm
+            //val challengeVerify : ChallengeVerify =  // ChallengeVerify | 
+            //val result : Profile = apiInstance.accountPhoneChangeConfirm(challengeVerify)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountPhoneChangeStart
+        should("test accountPhoneChangeStart") {
+            // uncomment below to test accountPhoneChangeStart
+            //val phoneChangeStart : PhoneChangeStart =  // PhoneChangeStart | 
+            //val result : ChallengeAccepted = apiInstance.accountPhoneChangeStart(phoneChangeStart)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountProfileImageDelete
+        should("test accountProfileImageDelete") {
+            // uncomment below to test accountProfileImageDelete
+            //val result : Profile = apiInstance.accountProfileImageDelete()
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountProfileImageUpdate
+        should("test accountProfileImageUpdate") {
+            // uncomment below to test accountProfileImageUpdate
+            //val file : java.io.File = BINARY_DATA_HERE // java.io.File | 
+            //val result : Profile = apiInstance.accountProfileImageUpdate(file)
+            //result shouldBe ("TODO")
         }
 
         // to test accountProfileRetrieve

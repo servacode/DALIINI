@@ -28,6 +28,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     phone_verified_at=models.DateTimeField(null=True, blank=True)
     profile_image_key=models.CharField(max_length=500, blank=True)
+    # Where the person is, in their own words. Free text on purpose: an address in Syria
+    # is a neighbourhood and a landmark far more often than it is a numbered street, and
+    # a structured form would refuse the way people actually say it.
+    address=models.CharField(max_length=240, blank=True)
     is_active=models.BooleanField(default=True)
     is_staff=models.BooleanField(default=False)
     created_at=models.DateTimeField(auto_now_add=True)
@@ -78,6 +82,7 @@ class OTPChallenge(models.Model):
     class Purpose(models.TextChoices):
         REGISTER = "REGISTER", "Register"
         RECOVERY = "RECOVERY", "Recovery"
+        PHONE_CHANGE = "PHONE_CHANGE", "Phone change"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     phone = models.CharField(max_length=16, db_index=True)

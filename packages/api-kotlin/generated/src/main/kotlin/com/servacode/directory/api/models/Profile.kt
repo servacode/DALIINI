@@ -28,6 +28,8 @@ import kotlinx.serialization.Contextual
  * @param phone Canonical +9639XXXXXXXX form.
  * @param provinceId 
  * @param phoneVerifiedAt 
+ * @param address Free text, as the person writes it. Empty when they have not given one.
+ * @param profileImageUrl Public URL of the profile picture, or null when there is none.
  */
 @Serializable
 
@@ -47,7 +49,15 @@ data class Profile (
     val provinceId: java.util.UUID?,
 
     @Contextual @SerialName(value = "phoneVerifiedAt")
-    val phoneVerifiedAt: java.time.OffsetDateTime?
+    val phoneVerifiedAt: java.time.OffsetDateTime?,
+
+    /* Free text, as the person writes it. Empty when they have not given one. */
+    @SerialName(value = "address")
+    val address: kotlin.String,
+
+    /* Public URL of the profile picture, or null when there is none. */
+    @Contextual @SerialName(value = "profileImageUrl")
+    val profileImageUrl: java.net.URI?
 
 ) {
 

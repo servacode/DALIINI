@@ -380,6 +380,118 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+  /api/v1/account/phone/confirm/:
+    post:
+      operationId: accountPhoneChangeConfirm
+      description: 'Every session ends, this one included: the phone is how this account
+        signs in, so a session issued to the old identity does not outlive it.'
+      summary: Confirm the code and move the account to the new number
+      tags:
+      - Account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChallengeVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChallengeVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChallengeVerify'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Rate limit exceeded for this endpoint; see the `Retry-After`
+            header.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/account/phone/start/:
+    post:
+      operationId: accountPhoneChangeStart
+      description: The code is sent to the new number, which is what proves the caller
+        can receive on it. The account is not changed until the code is confirmed.
+      summary: Start moving the account to another phone number
+      tags:
+      - Account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhoneChangeStart'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PhoneChangeStart'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PhoneChangeStart'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChallengeAccepted'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Rate limit exceeded for this endpoint; see the `Retry-After`
+            header.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/account/profile/:
     get:
       operationId: accountProfileRetrieve
@@ -440,6 +552,78 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Request validation failed; `code` is VALIDATION_ERROR and `details`
             is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/account/profile/image/:
+    put:
+      operationId: accountProfileImageUpdate
+      description: Sent as multipart/form-data. The server decodes the file, enforces
+        byte and pixel limits, re-encodes to JPEG and strips metadata — a photograph
+        carries where it was taken. The declared extension and MIME type are not trusted.
+      summary: Upload or replace the profile picture of the caller
+      tags:
+      - Account
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProfileImageUpload'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+    delete:
+      operationId: accountProfileImageDelete
+      description: 'The picture on the account: one at a time, replaced or removed.'
+      summary: Remove the profile picture of the caller
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
         '401':
           content:
             application/json:
@@ -7340,6 +7524,17 @@ components:
           type: string
           format: uuid
           nullable: true
+        address:
+          type: string
+          maxLength: 240
+    PhoneChangeStart:
+      type: object
+      description: The number the account is to move to, in any Syrian form.
+      properties:
+        phone:
+          type: string
+      required:
+      - phone
     Profile:
       type: object
       properties:
@@ -7359,12 +7554,32 @@ components:
           type: string
           format: date-time
           nullable: true
+        address:
+          type: string
+          description: Free text, as the person writes it. Empty when they have not
+            given one.
+        profileImageUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: Public URL of the profile picture, or null when there is none.
       required:
+      - address
       - displayName
       - id
       - phone
       - phoneVerifiedAt
+      - profileImageUrl
       - provinceId
+    ProfileImageUpload:
+      type: object
+      description: One picture, sent as multipart. The declared type is not trusted.
+      properties:
+        file:
+          type: string
+          format: binary
+      required:
+      - file
     PublicAdvertisement:
       type: object
       properties:

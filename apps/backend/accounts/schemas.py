@@ -62,6 +62,14 @@ class ProfileSerializer(serializers.Serializer):
     phone = serializers.CharField(help_text="Canonical +9639XXXXXXXX form.")
     provinceId = serializers.UUIDField(allow_null=True)
     phoneVerifiedAt = serializers.DateTimeField(allow_null=True)
+    address = serializers.CharField(
+        allow_blank=True,
+        help_text="Free text, as the person writes it. Empty when they have not given one.",
+    )
+    profileImageUrl = serializers.URLField(
+        allow_null=True,
+        help_text="Public URL of the profile picture, or null when there is none.",
+    )
 
 
 class AccountDeletionRequestedSerializer(serializers.Serializer):

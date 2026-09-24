@@ -13,6 +13,10 @@ Method | HTTP request | Description
 [**accountNotificationsMarkAllRead**](AccountAPI.md#accountnotificationsmarkallread) | **POST** /api/v1/account/notifications/read-all/ | Mark every unread notification as read
 [**accountNotificationsUnreadCount**](AccountAPI.md#accountnotificationsunreadcount) | **GET** /api/v1/account/notifications/unread-count/ | How many of the caller&#39;s notifications are unread
 [**accountPasswordChange**](AccountAPI.md#accountpasswordchange) | **POST** /api/v1/account/password/ | Change the caller&#39;s password
+[**accountPhoneChangeConfirm**](AccountAPI.md#accountphonechangeconfirm) | **POST** /api/v1/account/phone/confirm/ | Confirm the code and move the account to the new number
+[**accountPhoneChangeStart**](AccountAPI.md#accountphonechangestart) | **POST** /api/v1/account/phone/start/ | Start moving the account to another phone number
+[**accountProfileImageDelete**](AccountAPI.md#accountprofileimagedelete) | **DELETE** /api/v1/account/profile/image/ | Remove the profile picture of the caller
+[**accountProfileImageUpdate**](AccountAPI.md#accountprofileimageupdate) | **PUT** /api/v1/account/profile/image/ | Upload or replace the profile picture of the caller
 [**accountProfileRetrieve**](AccountAPI.md#accountprofileretrieve) | **GET** /api/v1/account/profile/ | Retrieve the profile of the caller
 [**accountProfileUpdate**](AccountAPI.md#accountprofileupdate) | **PATCH** /api/v1/account/profile/ | Update the display name or profile province of the caller
 [**accountPushTokenRegister**](AccountAPI.md#accountpushtokenregister) | **PUT** /api/v1/account/push-token/ | Register or refresh this device&#39;s push token
@@ -462,6 +466,202 @@ Void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **accountPhoneChangeConfirm**
+```swift
+    open class func accountPhoneChangeConfirm(challengeVerify: ChallengeVerify, completion: @escaping (_ data: Profile?, _ error: Error?) -> Void)
+```
+
+Confirm the code and move the account to the new number
+
+Every session ends, this one included: the phone is how this account signs in, so a session issued to the old identity does not outlive it.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let challengeVerify = ChallengeVerify(challengeId: 123, code: "code_example") // ChallengeVerify | 
+
+// Confirm the code and move the account to the new number
+AccountAPI.accountPhoneChangeConfirm(challengeVerify: challengeVerify) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **challengeVerify** | [**ChallengeVerify**](ChallengeVerify.md) |  | 
+
+### Return type
+
+[**Profile**](Profile.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **accountPhoneChangeStart**
+```swift
+    open class func accountPhoneChangeStart(phoneChangeStart: PhoneChangeStart, completion: @escaping (_ data: ChallengeAccepted?, _ error: Error?) -> Void)
+```
+
+Start moving the account to another phone number
+
+The code is sent to the new number, which is what proves the caller can receive on it. The account is not changed until the code is confirmed.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let phoneChangeStart = PhoneChangeStart(phone: "phone_example") // PhoneChangeStart | 
+
+// Start moving the account to another phone number
+AccountAPI.accountPhoneChangeStart(phoneChangeStart: phoneChangeStart) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **phoneChangeStart** | [**PhoneChangeStart**](PhoneChangeStart.md) |  | 
+
+### Return type
+
+[**ChallengeAccepted**](ChallengeAccepted.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **accountProfileImageDelete**
+```swift
+    open class func accountProfileImageDelete(completion: @escaping (_ data: Profile?, _ error: Error?) -> Void)
+```
+
+Remove the profile picture of the caller
+
+The picture on the account: one at a time, replaced or removed.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+
+// Remove the profile picture of the caller
+AccountAPI.accountProfileImageDelete() { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**Profile**](Profile.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **accountProfileImageUpdate**
+```swift
+    open class func accountProfileImageUpdate(file: URL, completion: @escaping (_ data: Profile?, _ error: Error?) -> Void)
+```
+
+Upload or replace the profile picture of the caller
+
+Sent as multipart/form-data. The server decodes the file, enforces byte and pixel limits, re-encodes to JPEG and strips metadata — a photograph carries where it was taken. The declared extension and MIME type are not trusted.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let file = URL(string: "https://example.com")! // URL | 
+
+// Upload or replace the profile picture of the caller
+AccountAPI.accountProfileImageUpdate(file: file) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **file** | **URL** |  | 
+
+### Return type
+
+[**Profile**](Profile.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **accountProfileRetrieve**
 ```swift
     open class func accountProfileRetrieve(completion: @escaping (_ data: Profile?, _ error: Error?) -> Void)
@@ -518,7 +718,7 @@ Update the display name or profile province of the caller
 // The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
 import ServaDirectoryAPI
 
-let patchedProfilePatch = PatchedProfilePatch(displayName: "displayName_example", provinceId: 123) // PatchedProfilePatch |  (optional)
+let patchedProfilePatch = PatchedProfilePatch(displayName: "displayName_example", provinceId: 123, address: "address_example") // PatchedProfilePatch |  (optional)
 
 // Update the display name or profile province of the caller
 AccountAPI.accountProfileUpdate(patchedProfilePatch: patchedProfilePatch) { (response, error) in

@@ -54,6 +54,10 @@ All URIs are relative to *http://localhost*
 | *AccountApi* | [**accountNotificationsMarkAllRead**](docs/AccountApi.md#accountnotificationsmarkallread) | **POST** api/v1/account/notifications/read-all/ | Mark every unread notification as read |
 | *AccountApi* | [**accountNotificationsUnreadCount**](docs/AccountApi.md#accountnotificationsunreadcount) | **GET** api/v1/account/notifications/unread-count/ | How many of the caller's notifications are unread |
 | *AccountApi* | [**accountPasswordChange**](docs/AccountApi.md#accountpasswordchange) | **POST** api/v1/account/password/ | Change the caller's password |
+| *AccountApi* | [**accountPhoneChangeConfirm**](docs/AccountApi.md#accountphonechangeconfirm) | **POST** api/v1/account/phone/confirm/ | Confirm the code and move the account to the new number |
+| *AccountApi* | [**accountPhoneChangeStart**](docs/AccountApi.md#accountphonechangestart) | **POST** api/v1/account/phone/start/ | Start moving the account to another phone number |
+| *AccountApi* | [**accountProfileImageDelete**](docs/AccountApi.md#accountprofileimagedelete) | **DELETE** api/v1/account/profile/image/ | Remove the profile picture of the caller |
+| *AccountApi* | [**accountProfileImageUpdate**](docs/AccountApi.md#accountprofileimageupdate) | **PUT** api/v1/account/profile/image/ | Upload or replace the profile picture of the caller |
 | *AccountApi* | [**accountProfileRetrieve**](docs/AccountApi.md#accountprofileretrieve) | **GET** api/v1/account/profile/ | Retrieve the profile of the caller |
 | *AccountApi* | [**accountProfileUpdate**](docs/AccountApi.md#accountprofileupdate) | **PATCH** api/v1/account/profile/ | Update the display name or profile province of the caller |
 | *AccountApi* | [**accountPushTokenRegister**](docs/AccountApi.md#accountpushtokenregister) | **PUT** api/v1/account/push-token/ | Register or refresh this device's push token |
@@ -284,6 +288,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.PatchedDutyShiftInput](docs/PatchedDutyShiftInput.md)
  - [com.servacode.directory.api.models.PatchedFacilityPatch](docs/PatchedFacilityPatch.md)
  - [com.servacode.directory.api.models.PatchedProfilePatch](docs/PatchedProfilePatch.md)
+ - [com.servacode.directory.api.models.PhoneChangeStart](docs/PhoneChangeStart.md)
  - [com.servacode.directory.api.models.Profile](docs/Profile.md)
  - [com.servacode.directory.api.models.PublicAdvertisement](docs/PublicAdvertisement.md)
  - [com.servacode.directory.api.models.PublicAdvertisementList](docs/PublicAdvertisementList.md)

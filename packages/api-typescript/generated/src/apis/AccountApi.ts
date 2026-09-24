@@ -18,6 +18,8 @@ import type {
   AccountDeletionRequested,
   AccountRatingList,
   ApiError,
+  ChallengeAccepted,
+  ChallengeVerify,
   DeletionRequest,
   FavoriteList,
   FavoriteState,
@@ -25,6 +27,7 @@ import type {
   NotificationPage,
   PasswordChange,
   PatchedProfilePatch,
+  PhoneChangeStart,
   Profile,
   PushToken,
   PushTokenRegister,
@@ -37,6 +40,10 @@ import {
     AccountRatingListToJSON,
     ApiErrorFromJSON,
     ApiErrorToJSON,
+    ChallengeAcceptedFromJSON,
+    ChallengeAcceptedToJSON,
+    ChallengeVerifyFromJSON,
+    ChallengeVerifyToJSON,
     DeletionRequestFromJSON,
     DeletionRequestToJSON,
     FavoriteListFromJSON,
@@ -51,6 +58,8 @@ import {
     PasswordChangeToJSON,
     PatchedProfilePatchFromJSON,
     PatchedProfilePatchToJSON,
+    PhoneChangeStartFromJSON,
+    PhoneChangeStartToJSON,
     ProfileFromJSON,
     ProfileToJSON,
     PushTokenFromJSON,
@@ -89,6 +98,18 @@ export interface AccountNotificationsListRequest {
 
 export interface AccountPasswordChangeRequest {
     passwordChange: PasswordChange;
+}
+
+export interface AccountPhoneChangeConfirmRequest {
+    challengeVerify: ChallengeVerify;
+}
+
+export interface AccountPhoneChangeStartRequest {
+    phoneChangeStart: PhoneChangeStart;
+}
+
+export interface AccountProfileImageUpdateRequest {
+    file: Blob;
 }
 
 export interface AccountProfileUpdateRequest {
@@ -514,6 +535,210 @@ export class AccountApi extends runtime.BaseAPI {
      */
     async accountPasswordChange(requestParameters: AccountPasswordChangeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.accountPasswordChangeRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Every session ends, this one included: the phone is how this account signs in, so a session issued to the old identity does not outlive it.
+     * Confirm the code and move the account to the new number
+     */
+    async accountPhoneChangeConfirmRaw(requestParameters: AccountPhoneChangeConfirmRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Profile>> {
+        if (requestParameters['challengeVerify'] == null) {
+            throw new runtime.RequiredError(
+                'challengeVerify',
+                'Required parameter "challengeVerify" was null or undefined when calling accountPhoneChangeConfirm().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/phone/confirm/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ChallengeVerifyToJSON(requestParameters['challengeVerify']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ProfileFromJSON(jsonValue));
+    }
+
+    /**
+     * Every session ends, this one included: the phone is how this account signs in, so a session issued to the old identity does not outlive it.
+     * Confirm the code and move the account to the new number
+     */
+    async accountPhoneChangeConfirm(requestParameters: AccountPhoneChangeConfirmRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Profile> {
+        const response = await this.accountPhoneChangeConfirmRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * The code is sent to the new number, which is what proves the caller can receive on it. The account is not changed until the code is confirmed.
+     * Start moving the account to another phone number
+     */
+    async accountPhoneChangeStartRaw(requestParameters: AccountPhoneChangeStartRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ChallengeAccepted>> {
+        if (requestParameters['phoneChangeStart'] == null) {
+            throw new runtime.RequiredError(
+                'phoneChangeStart',
+                'Required parameter "phoneChangeStart" was null or undefined when calling accountPhoneChangeStart().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/phone/start/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PhoneChangeStartToJSON(requestParameters['phoneChangeStart']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ChallengeAcceptedFromJSON(jsonValue));
+    }
+
+    /**
+     * The code is sent to the new number, which is what proves the caller can receive on it. The account is not changed until the code is confirmed.
+     * Start moving the account to another phone number
+     */
+    async accountPhoneChangeStart(requestParameters: AccountPhoneChangeStartRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ChallengeAccepted> {
+        const response = await this.accountPhoneChangeStartRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * The picture on the account: one at a time, replaced or removed.
+     * Remove the profile picture of the caller
+     */
+    async accountProfileImageDeleteRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Profile>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/profile/image/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ProfileFromJSON(jsonValue));
+    }
+
+    /**
+     * The picture on the account: one at a time, replaced or removed.
+     * Remove the profile picture of the caller
+     */
+    async accountProfileImageDelete(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Profile> {
+        const response = await this.accountProfileImageDeleteRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Sent as multipart/form-data. The server decodes the file, enforces byte and pixel limits, re-encodes to JPEG and strips metadata — a photograph carries where it was taken. The declared extension and MIME type are not trusted.
+     * Upload or replace the profile picture of the caller
+     */
+    async accountProfileImageUpdateRaw(requestParameters: AccountProfileImageUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Profile>> {
+        if (requestParameters['file'] == null) {
+            throw new runtime.RequiredError(
+                'file',
+                'Required parameter "file" was null or undefined when calling accountProfileImageUpdate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters['file'] != null) {
+            formParams.append('file', requestParameters['file'] as any);
+        }
+
+
+        let urlPath = `/api/v1/account/profile/image/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ProfileFromJSON(jsonValue));
+    }
+
+    /**
+     * Sent as multipart/form-data. The server decodes the file, enforces byte and pixel limits, re-encodes to JPEG and strips metadata — a photograph carries where it was taken. The declared extension and MIME type are not trusted.
+     * Upload or replace the profile picture of the caller
+     */
+    async accountProfileImageUpdate(requestParameters: AccountProfileImageUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Profile> {
+        const response = await this.accountProfileImageUpdateRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

@@ -271,6 +271,58 @@ def change_password(*, user: User, current_password: str, new_password: str) -> 
     revoke_all_sessions(user=locked)
 
 
+@transaction.atomic
+def start_phone_change(*, user: User, phone: str) -> OTPChallenge:
+    """Send a code to the number the account is to move to.
+
+    The code goes to the *new* number, not the old one: that is what proves the caller can
+    receive on it, which is the only thing worth proving here. The account it belongs to is
+    written into the challenge so that a code sent for one person cannot be spent by another.
+    """
+    if phone == user.phone:
+        raise ValidationError({"phone": "This is already the number of this account."})
+    if User.objects.filter(phone=phone).exclude(pk=user.pk).exists():
+        raise ValidationError({"phone": "This number belongs to another account."})
+    return start_challenge(
+        phone=phone,
+        purpose=OTPChallenge.Purpose.PHONE_CHANGE,
+        metadata={"userId": str(user.pk)},
+    )
+
+
+@transaction.atomic
+def complete_phone_change(*, user: User, challenge_id, code: str) -> User:
+    """Move the account to the number whose code has just been proved.
+
+    Every session ends, this one included. The phone is how this account signs in, so
+    changing it changes the identity — and a session issued to the old identity should not
+    outlive it. This is the same rule a password change follows, for the same reason.
+    """
+    challenge = verify_challenge(
+        challenge_id=challenge_id,
+        code=code,
+        purpose=OTPChallenge.Purpose.PHONE_CHANGE,
+    )
+    # A verified code is only good for the account it was started for.
+    if challenge.metadata.get("userId") != str(user.pk):
+        raise ValidationError({"challengeId": "Invalid or expired challenge."})
+    locked = User.objects.select_for_update().get(pk=user.pk)
+    if User.objects.filter(phone=challenge.phone).exclude(pk=locked.pk).exists():
+        raise ValidationError({"phone": "This number belongs to another account."})
+    now = timezone.now()
+    locked.phone = challenge.phone
+    locked.phone_verified_at = now
+    locked.updated_at = now
+    locked.save(update_fields=["phone", "phone_verified_at", "updated_at"])
+    challenge.consumed_at = now
+    challenge.save(update_fields=["consumed_at"])
+    revoke_all_sessions(user=locked)
+    # The number itself is not recorded: an audit trail of who moved to which number is a
+    # directory of people, and this one only needs to know that it happened.
+    record_audit(actor=locked, action="account.phone.changed", target=locked)
+    return locked
+
+
 def _identity_digest(phone: str) -> str:
     key = settings.RECOVERY_HMAC_SECRET.encode("utf-8")
     return hmac.new(key, f"deletion:{phone}".encode(), hashlib.sha256).hexdigest()

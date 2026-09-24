@@ -10,6 +10,8 @@ import kotlinx.serialization.Serializable
 import com.servacode.directory.api.models.AccountDeletionRequested
 import com.servacode.directory.api.models.AccountRatingList
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.ChallengeAccepted
+import com.servacode.directory.api.models.ChallengeVerify
 import com.servacode.directory.api.models.DeletionRequest
 import com.servacode.directory.api.models.FavoriteList
 import com.servacode.directory.api.models.FavoriteState
@@ -17,10 +19,13 @@ import com.servacode.directory.api.models.FavoriteWrite
 import com.servacode.directory.api.models.NotificationPage
 import com.servacode.directory.api.models.PasswordChange
 import com.servacode.directory.api.models.PatchedProfilePatch
+import com.servacode.directory.api.models.PhoneChangeStart
 import com.servacode.directory.api.models.Profile
 import com.servacode.directory.api.models.PushToken
 import com.servacode.directory.api.models.PushTokenRegister
 import com.servacode.directory.api.models.UnreadCount
+
+import okhttp3.MultipartBody
 
 interface AccountApi {
     /**
@@ -162,6 +167,71 @@ interface AccountApi {
      */
     @POST("api/v1/account/password/")
     suspend fun accountPasswordChange(@Body passwordChange: PasswordChange): Response<Unit>
+
+    /**
+     * POST api/v1/account/phone/confirm/
+     * Confirm the code and move the account to the new number
+     * Every session ends, this one included: the phone is how this account signs in, so a session issued to the old identity does not outlive it.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 429: Rate limit exceeded for this endpoint; see the `Retry-After` header.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param challengeVerify 
+     * @return [Profile]
+     */
+    @POST("api/v1/account/phone/confirm/")
+    suspend fun accountPhoneChangeConfirm(@Body challengeVerify: ChallengeVerify): Response<Profile>
+
+    /**
+     * POST api/v1/account/phone/start/
+     * Start moving the account to another phone number
+     * The code is sent to the new number, which is what proves the caller can receive on it. The account is not changed until the code is confirmed.
+     * Responses:
+     *  - 202: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 429: Rate limit exceeded for this endpoint; see the `Retry-After` header.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param phoneChangeStart 
+     * @return [ChallengeAccepted]
+     */
+    @POST("api/v1/account/phone/start/")
+    suspend fun accountPhoneChangeStart(@Body phoneChangeStart: PhoneChangeStart): Response<ChallengeAccepted>
+
+    /**
+     * DELETE api/v1/account/profile/image/
+     * Remove the profile picture of the caller
+     * The picture on the account: one at a time, replaced or removed.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @return [Profile]
+     */
+    @DELETE("api/v1/account/profile/image/")
+    suspend fun accountProfileImageDelete(): Response<Profile>
+
+    /**
+     * PUT api/v1/account/profile/image/
+     * Upload or replace the profile picture of the caller
+     * Sent as multipart/form-data. The server decodes the file, enforces byte and pixel limits, re-encodes to JPEG and strips metadata — a photograph carries where it was taken. The declared extension and MIME type are not trusted.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param file 
+     * @return [Profile]
+     */
+    @Multipart
+    @PUT("api/v1/account/profile/image/")
+    suspend fun accountProfileImageUpdate(@Part file: MultipartBody.Part): Response<Profile>
 
     /**
      * GET api/v1/account/profile/

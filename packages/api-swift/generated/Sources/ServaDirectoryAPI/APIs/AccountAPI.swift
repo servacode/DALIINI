@@ -376,6 +376,165 @@ open class AccountAPI {
     }
 
     /**
+     Confirm the code and move the account to the new number
+     
+     - parameter challengeVerify: (body)  
+     - returns: Profile
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountPhoneChangeConfirm(challengeVerify: ChallengeVerify) async throws -> Profile {
+        return try await accountPhoneChangeConfirmWithRequestBuilder(challengeVerify: challengeVerify).execute().body
+    }
+
+    /**
+     Confirm the code and move the account to the new number
+     - POST /api/v1/account/phone/confirm/
+     - Every session ends, this one included: the phone is how this account signs in, so a session issued to the old identity does not outlive it.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter challengeVerify: (body)  
+     - returns: RequestBuilder<Profile> 
+     */
+    open class func accountPhoneChangeConfirmWithRequestBuilder(challengeVerify: ChallengeVerify) -> RequestBuilder<Profile> {
+        let localVariablePath = "/api/v1/account/phone/confirm/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: challengeVerify)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Profile>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Start moving the account to another phone number
+     
+     - parameter phoneChangeStart: (body)  
+     - returns: ChallengeAccepted
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountPhoneChangeStart(phoneChangeStart: PhoneChangeStart) async throws -> ChallengeAccepted {
+        return try await accountPhoneChangeStartWithRequestBuilder(phoneChangeStart: phoneChangeStart).execute().body
+    }
+
+    /**
+     Start moving the account to another phone number
+     - POST /api/v1/account/phone/start/
+     - The code is sent to the new number, which is what proves the caller can receive on it. The account is not changed until the code is confirmed.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter phoneChangeStart: (body)  
+     - returns: RequestBuilder<ChallengeAccepted> 
+     */
+    open class func accountPhoneChangeStartWithRequestBuilder(phoneChangeStart: PhoneChangeStart) -> RequestBuilder<ChallengeAccepted> {
+        let localVariablePath = "/api/v1/account/phone/start/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: phoneChangeStart)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<ChallengeAccepted>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Remove the profile picture of the caller
+     
+     - returns: Profile
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountProfileImageDelete() async throws -> Profile {
+        return try await accountProfileImageDeleteWithRequestBuilder().execute().body
+    }
+
+    /**
+     Remove the profile picture of the caller
+     - DELETE /api/v1/account/profile/image/
+     - The picture on the account: one at a time, replaced or removed.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<Profile> 
+     */
+    open class func accountProfileImageDeleteWithRequestBuilder() -> RequestBuilder<Profile> {
+        let localVariablePath = "/api/v1/account/profile/image/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Profile>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "DELETE", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Upload or replace the profile picture of the caller
+     
+     - parameter file: (form)  
+     - returns: Profile
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountProfileImageUpdate(file: URL) async throws -> Profile {
+        return try await accountProfileImageUpdateWithRequestBuilder(file: file).execute().body
+    }
+
+    /**
+     Upload or replace the profile picture of the caller
+     - PUT /api/v1/account/profile/image/
+     - Sent as multipart/form-data. The server decodes the file, enforces byte and pixel limits, re-encodes to JPEG and strips metadata — a photograph carries where it was taken. The declared extension and MIME type are not trusted.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter file: (form)  
+     - returns: RequestBuilder<Profile> 
+     */
+    open class func accountProfileImageUpdateWithRequestBuilder(file: URL) -> RequestBuilder<Profile> {
+        let localVariablePath = "/api/v1/account/profile/image/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableFormParams: [String: Any?] = [
+            "file": file.encodeToJSON(),
+        ]
+
+        let localVariableNonNullParameters = APIHelper.rejectNil(localVariableFormParams)
+        let localVariableParameters = APIHelper.convertBoolToString(localVariableNonNullParameters)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "multipart/form-data",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Profile>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Retrieve the profile of the caller
      
      - returns: Profile

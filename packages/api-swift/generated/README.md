@@ -35,6 +35,10 @@ Class | Method | HTTP request | Description
 *AccountAPI* | [**accountNotificationsMarkAllRead**](docs/AccountAPI.md#accountnotificationsmarkallread) | **POST** /api/v1/account/notifications/read-all/ | Mark every unread notification as read
 *AccountAPI* | [**accountNotificationsUnreadCount**](docs/AccountAPI.md#accountnotificationsunreadcount) | **GET** /api/v1/account/notifications/unread-count/ | How many of the caller&#39;s notifications are unread
 *AccountAPI* | [**accountPasswordChange**](docs/AccountAPI.md#accountpasswordchange) | **POST** /api/v1/account/password/ | Change the caller&#39;s password
+*AccountAPI* | [**accountPhoneChangeConfirm**](docs/AccountAPI.md#accountphonechangeconfirm) | **POST** /api/v1/account/phone/confirm/ | Confirm the code and move the account to the new number
+*AccountAPI* | [**accountPhoneChangeStart**](docs/AccountAPI.md#accountphonechangestart) | **POST** /api/v1/account/phone/start/ | Start moving the account to another phone number
+*AccountAPI* | [**accountProfileImageDelete**](docs/AccountAPI.md#accountprofileimagedelete) | **DELETE** /api/v1/account/profile/image/ | Remove the profile picture of the caller
+*AccountAPI* | [**accountProfileImageUpdate**](docs/AccountAPI.md#accountprofileimageupdate) | **PUT** /api/v1/account/profile/image/ | Upload or replace the profile picture of the caller
 *AccountAPI* | [**accountProfileRetrieve**](docs/AccountAPI.md#accountprofileretrieve) | **GET** /api/v1/account/profile/ | Retrieve the profile of the caller
 *AccountAPI* | [**accountProfileUpdate**](docs/AccountAPI.md#accountprofileupdate) | **PATCH** /api/v1/account/profile/ | Update the display name or profile province of the caller
 *AccountAPI* | [**accountPushTokenRegister**](docs/AccountAPI.md#accountpushtokenregister) | **PUT** /api/v1/account/push-token/ | Register or refresh this device&#39;s push token
@@ -264,6 +268,7 @@ Class | Method | HTTP request | Description
  - [PatchedDutyShiftInput](docs/PatchedDutyShiftInput.md)
  - [PatchedFacilityPatch](docs/PatchedFacilityPatch.md)
  - [PatchedProfilePatch](docs/PatchedProfilePatch.md)
+ - [PhoneChangeStart](docs/PhoneChangeStart.md)
  - [Profile](docs/Profile.md)
  - [PublicAdvertisement](docs/PublicAdvertisement.md)
  - [PublicAdvertisementList](docs/PublicAdvertisementList.md)

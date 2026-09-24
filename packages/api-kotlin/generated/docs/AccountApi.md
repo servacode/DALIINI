@@ -13,6 +13,10 @@ All URIs are relative to *http://localhost*
 | [**accountNotificationsMarkAllRead**](AccountApi.md#accountNotificationsMarkAllRead) | **POST** api/v1/account/notifications/read-all/ | Mark every unread notification as read |
 | [**accountNotificationsUnreadCount**](AccountApi.md#accountNotificationsUnreadCount) | **GET** api/v1/account/notifications/unread-count/ | How many of the caller&#39;s notifications are unread |
 | [**accountPasswordChange**](AccountApi.md#accountPasswordChange) | **POST** api/v1/account/password/ | Change the caller&#39;s password |
+| [**accountPhoneChangeConfirm**](AccountApi.md#accountPhoneChangeConfirm) | **POST** api/v1/account/phone/confirm/ | Confirm the code and move the account to the new number |
+| [**accountPhoneChangeStart**](AccountApi.md#accountPhoneChangeStart) | **POST** api/v1/account/phone/start/ | Start moving the account to another phone number |
+| [**accountProfileImageDelete**](AccountApi.md#accountProfileImageDelete) | **DELETE** api/v1/account/profile/image/ | Remove the profile picture of the caller |
+| [**accountProfileImageUpdate**](AccountApi.md#accountProfileImageUpdate) | **PUT** api/v1/account/profile/image/ | Upload or replace the profile picture of the caller |
 | [**accountProfileRetrieve**](AccountApi.md#accountProfileRetrieve) | **GET** api/v1/account/profile/ | Retrieve the profile of the caller |
 | [**accountProfileUpdate**](AccountApi.md#accountProfileUpdate) | **PATCH** api/v1/account/profile/ | Update the display name or profile province of the caller |
 | [**accountPushTokenRegister**](AccountApi.md#accountPushTokenRegister) | **PUT** api/v1/account/push-token/ | Register or refresh this device&#39;s push token |
@@ -390,6 +394,171 @@ Configure bearerAccessToken:
 ### HTTP request headers
 
  - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+Confirm the code and move the account to the new number
+
+Every session ends, this one included: the phone is how this account signs in, so a session issued to the old identity does not outlive it.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+val challengeVerify : ChallengeVerify =  // ChallengeVerify | 
+
+launch(Dispatchers.IO) {
+    val result : Profile = webService.accountPhoneChangeConfirm(challengeVerify)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **challengeVerify** | [**ChallengeVerify**](ChallengeVerify.md)|  | |
+
+### Return type
+
+[**Profile**](Profile.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+Start moving the account to another phone number
+
+The code is sent to the new number, which is what proves the caller can receive on it. The account is not changed until the code is confirmed.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+val phoneChangeStart : PhoneChangeStart =  // PhoneChangeStart | 
+
+launch(Dispatchers.IO) {
+    val result : ChallengeAccepted = webService.accountPhoneChangeStart(phoneChangeStart)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **phoneChangeStart** | [**PhoneChangeStart**](PhoneChangeStart.md)|  | |
+
+### Return type
+
+[**ChallengeAccepted**](ChallengeAccepted.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+Remove the profile picture of the caller
+
+The picture on the account: one at a time, replaced or removed.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+
+launch(Dispatchers.IO) {
+    val result : Profile = webService.accountProfileImageDelete()
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**Profile**](Profile.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Upload or replace the profile picture of the caller
+
+Sent as multipart/form-data. The server decodes the file, enforces byte and pixel limits, re-encodes to JPEG and strips metadata — a photograph carries where it was taken. The declared extension and MIME type are not trusted.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+val file : java.io.File = BINARY_DATA_HERE // java.io.File | 
+
+launch(Dispatchers.IO) {
+    val result : Profile = webService.accountProfileImageUpdate(file)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **file** | **java.io.File**|  | |
+
+### Return type
+
+[**Profile**](Profile.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
  - **Accept**: application/json
 
 

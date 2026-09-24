@@ -1,6 +1,8 @@
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
+from facilities.serializers import UploadedFileField
+
 from .phone import normalize_syrian_phone
 
 
@@ -76,6 +78,24 @@ class RecoveryResetSerializer(serializers.Serializer):
 class ProfilePatchSerializer(serializers.Serializer):
     displayName = serializers.CharField(max_length=120, required=False)
     provinceId = serializers.UUIDField(required=False, allow_null=True)
+    address = serializers.CharField(
+        max_length=240,
+        required=False,
+        allow_blank=True,
+        trim_whitespace=True,
+    )
+
+
+class ProfileImageUploadSerializer(serializers.Serializer):
+    """One picture, sent as multipart. The declared type is not trusted."""
+
+    file = UploadedFileField()
+
+
+class PhoneChangeStartSerializer(serializers.Serializer):
+    """The number the account is to move to, in any Syrian form."""
+
+    phone = PhoneField()
 
 
 class DeletionRequestSerializer(serializers.Serializer):

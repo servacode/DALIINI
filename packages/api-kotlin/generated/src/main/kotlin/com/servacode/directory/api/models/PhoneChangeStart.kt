@@ -21,24 +21,16 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * 
+ * The number the account is to move to, in any Syrian form.
  *
- * @param displayName 
- * @param provinceId 
- * @param address 
+ * @param phone 
  */
 @Serializable
 
-data class PatchedProfilePatch (
+data class PhoneChangeStart (
 
-    @SerialName(value = "displayName")
-    val displayName: kotlin.String? = null,
-
-    @Contextual @SerialName(value = "provinceId")
-    val provinceId: java.util.UUID? = null,
-
-    @SerialName(value = "address")
-    val address: kotlin.String? = null
+    @SerialName(value = "phone")
+    val phone: kotlin.String
 
 ) {
 

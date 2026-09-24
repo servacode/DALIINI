@@ -130,6 +130,7 @@ export * from './PasswordChange';
 export * from './PatchedDutyShiftInput';
 export * from './PatchedFacilityPatch';
 export * from './PatchedProfilePatch';
+export * from './PhoneChangeStart';
 export * from './Profile';
 export * from './PublicAdvertisement';
 export * from './PublicAdvertisementList';

@@ -2,13 +2,16 @@ from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.openapi import THROTTLED_429, VALIDATION_400, protected
+from django.core.exceptions import ValidationError as DjangoValidationError
 from locations.models import Province
 
+from .media import delete_profile_image, profile_image_url, save_profile_image
 from .models import OTPChallenge
 from .schemas import (
     AccountDeletionRequestedSerializer,
@@ -24,6 +27,8 @@ from .serializers import (
     DeletionRequestSerializer,
     LoginSerializer,
     PasswordChangeSerializer,
+    PhoneChangeStartSerializer,
+    ProfileImageUploadSerializer,
     ProfilePatchSerializer,
     RecoveryResetSerializer,
     RecoveryStartSerializer,
@@ -33,6 +38,7 @@ from .serializers import (
 )
 from .services import (
     change_password,
+    complete_phone_change,
     complete_registration,
     login,
     request_account_deletion,
@@ -41,9 +47,29 @@ from .services import (
     revoke_session,
     rotate_refresh,
     start_challenge,
+    start_phone_change,
     verify_challenge,
 )
 from .throttles import LoginThrottle, OtpStartThrottle, OtpVerifyThrottle, RecoveryThrottle
+
+
+def _profile_payload(user) -> dict:
+    """Everything the app is told about its own account, in one place.
+
+    One function rather than one per view, so a field added here cannot appear in the answer
+    to a read and go missing from the answer to a write.
+    """
+    return {
+        "id": str(user.pk),
+        "displayName": user.name,
+        "phone": user.phone,
+        "provinceId": str(user.province_id) if user.province_id else None,
+        "phoneVerifiedAt": (
+            user.phone_verified_at.isoformat() if user.phone_verified_at else None
+        ),
+        "address": user.address,
+        "profileImageUrl": profile_image_url(user.profile_image_key),
+    }
 
 
 def _challenge_response(challenge):
@@ -320,18 +346,7 @@ class ProfileView(APIView):
         responses={200: ProfileSerializer, **protected()},
     )
     def get(self, request):
-        user = request.user
-        return Response(
-            {
-                "id": str(user.pk),
-                "displayName": user.name,
-                "phone": user.phone,
-                "provinceId": str(user.province_id) if user.province_id else None,
-                "phoneVerifiedAt": (
-                    user.phone_verified_at.isoformat() if user.phone_verified_at else None
-                ),
-            }
-        )
+        return Response(_profile_payload(request.user))
 
     @extend_schema(
         operation_id="accountProfileUpdate",
@@ -358,9 +373,125 @@ class ProfileView(APIView):
                         {"provinceId": ["Province is unavailable."]}
                     )
                 user.province = province
+        if "address" in data:
+            user.address = data["address"]
         user.updated_at = timezone.now()
         user.save()
         return self.get(request)
+
+
+class ProfileImageView(APIView):
+    """The picture on the account: one at a time, replaced or removed."""
+
+    parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="accountProfileImageUpdate",
+        tags=["Account"],
+        summary="Upload or replace the profile picture of the caller",
+        description=(
+            "Sent as multipart/form-data. The server decodes the file, enforces byte and "
+            "pixel limits, re-encodes to JPEG and strips metadata — a photograph carries "
+            "where it was taken. The declared extension and MIME type are not trusted."
+        ),
+        request={"multipart/form-data": ProfileImageUploadSerializer},
+        responses={200: ProfileSerializer, 400: VALIDATION_400, **protected()},
+    )
+    def put(self, request):
+        serializer = ProfileImageUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = request.user
+        previous = user.profile_image_key
+        try:
+            _storage, key = save_profile_image(
+                user_id=user.pk,
+                upload=serializer.validated_data["file"],
+            )
+        except DjangoValidationError as exc:
+            raise ValidationError({"file": list(exc.messages)}) from exc
+        user.profile_image_key = key
+        user.updated_at = timezone.now()
+        user.save(update_fields=["profile_image_key", "updated_at"])
+        # Only once the new one is the account's: a failure above leaves the old picture
+        # in place rather than leaving the account with none.
+        delete_profile_image(previous)
+        return Response(_profile_payload(user))
+
+    @extend_schema(
+        operation_id="accountProfileImageDelete",
+        tags=["Account"],
+        summary="Remove the profile picture of the caller",
+        responses={200: ProfileSerializer, **protected()},
+    )
+    def delete(self, request):
+        user = request.user
+        previous = user.profile_image_key
+        user.profile_image_key = ""
+        user.updated_at = timezone.now()
+        user.save(update_fields=["profile_image_key", "updated_at"])
+        delete_profile_image(previous)
+        return Response(_profile_payload(user))
+
+
+class PhoneChangeStartView(APIView):
+    """Ask for a code on the number the account is to move to."""
+
+    throttle_classes = [RecoveryThrottle]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="accountPhoneChangeStart",
+        tags=["Account"],
+        summary="Start moving the account to another phone number",
+        description=(
+            "The code is sent to the new number, which is what proves the caller can "
+            "receive on it. The account is not changed until the code is confirmed."
+        ),
+        request=PhoneChangeStartSerializer,
+        responses={
+            202: ChallengeAcceptedSerializer,
+            400: VALIDATION_400,
+            429: THROTTLED_429,
+            **protected(),
+        },
+    )
+    def post(self, request):
+        serializer = PhoneChangeStartSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        challenge = start_phone_change(
+            user=request.user,
+            phone=serializer.validated_data["phone"],
+        )
+        return _challenge_response(challenge)
+
+
+class PhoneChangeConfirmView(APIView):
+    """Prove the code, and the account answers to the new number from now on."""
+
+    throttle_classes = [OtpVerifyThrottle]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="accountPhoneChangeConfirm",
+        tags=["Account"],
+        summary="Confirm the code and move the account to the new number",
+        description=(
+            "Every session ends, this one included: the phone is how this account signs "
+            "in, so a session issued to the old identity does not outlive it."
+        ),
+        request=ChallengeVerifySerializer,
+        responses={200: ProfileSerializer, 400: VALIDATION_400, 429: THROTTLED_429, **protected()},
+    )
+    def post(self, request):
+        serializer = ChallengeVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = complete_phone_change(
+            user=request.user,
+            challenge_id=serializer.validated_data["challengeId"],
+            code=serializer.validated_data["code"],
+        )
+        return Response(_profile_payload(user))
 
 
 class AccountDeletionRequestView(APIView):
