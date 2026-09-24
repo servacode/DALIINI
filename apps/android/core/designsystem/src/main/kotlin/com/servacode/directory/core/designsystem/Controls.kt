@@ -146,6 +146,8 @@ fun DirectoryTextField(
     minLines: Int = 1,
     error: String? = null,
     enabled: Boolean = true,
+    /** Filled rather than outlined, for a field that sits on a white card. */
+    filled: Boolean = false,
 ) {
     OutlinedTextField(
         value = value,
@@ -161,11 +163,30 @@ fun DirectoryTextField(
         singleLine = singleLine,
         minLines = minLines,
         shape = RoundedCornerShape(Radius.medium),
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surface,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-        ),
+        colors = fieldColors(filled),
+    )
+}
+
+/**
+ * The colours a field wears.
+ *
+ * Filled, its edge is the fill itself and the outline disappears until it is focused — one line
+ * of brand green then, which is the only thing on the page that needs to say "here".
+ */
+@Composable
+private fun fieldColors(filled: Boolean) = if (!filled) {
+    TextFieldDefaults.colors(
+        focusedContainerColor = MaterialTheme.colorScheme.surface,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+    )
+} else {
+    TextFieldDefaults.colors(
+        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+        unfocusedIndicatorColor = Color.Transparent,
+        disabledIndicatorColor = Color.Transparent,
     )
 }
 
@@ -181,6 +202,8 @@ fun DirectoryPasswordField(
     numeric: Boolean = false,
     showLabel: String = "إظهار كلمة المرور",
     hideLabel: String = "إخفاء كلمة المرور",
+    /** Filled rather than outlined, for a field that sits on a white card. */
+    filled: Boolean = false,
 ) {
     var visible by remember { mutableStateOf(false) }
     OutlinedTextField(
@@ -212,7 +235,7 @@ fun DirectoryPasswordField(
         supportingText = error?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
         singleLine = true,
         shape = RoundedCornerShape(Radius.medium),
-        colors = TextFieldDefaults.colors(
+        colors = if (filled) fieldColors(true) else TextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surface,
             unfocusedContainerColor = MaterialTheme.colorScheme.surface,
         ),

@@ -31,6 +31,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -166,47 +167,53 @@ data class DirectoryDestination(
 /** The bar along the bottom, for the app's few main places and nothing else. */
 @Composable
 fun DirectoryBottomBar(destinations: List<DirectoryDestination>, modifier: Modifier = Modifier) {
-    NavigationBar(
-        // Shorter than Material's eighty points, and rounded where it meets the page, so the
-        // white above appears to run over it rather than stopping against a slab. The system's
-        // own bar sits below this one, and two full-width bands stacked on each other is what
-        // made it read as heavy.
-        modifier = modifier
-            .clip(RoundedCornerShape(topStart = Radius.xl, topEnd = Radius.xl))
-            .height(Sizes.bottomBar),
-        containerColor = BrandColors.bar,
-        tonalElevation = Elevation.none,
-        // The height above is the bar itself; the gesture or button area below it is the
-        // system's, and the scaffold already leaves room for it.
-        windowInsets = WindowInsets(0),
+    // A white bar on a near-white page needs a lift, not a line: the shadow under the rounded
+    // top edge is what separates it, and it separates without drawing anything.
+    Surface(
+        modifier = modifier.clip(RoundedCornerShape(topStart = Radius.xl, topEnd = Radius.xl)),
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = Elevation.medium,
     ) {
-        destinations.forEach { destination ->
-            NavigationBarItem(
-                selected = destination.selected,
-                onClick = destination.onSelect,
-                // The mark alone, and larger for it. Three places do not need naming twice —
-                // a house, a map and a person are read faster than they are read aloud — and
-                // the words were taking the room the marks needed to be legible. The name is
-                // still there for a screen reader, which is who the words were for.
-                icon = {
-                    DirectoryIcon(
-                        icon = destination.icon,
-                        contentDescription = destination.label,
-                        size = IconSize.large,
-                    )
-                },
-                alwaysShowLabel = false,
-                // The indicator is a pale pill and the icon inside it goes as dark as the bar,
-                // which is the strongest mark this bar can carry. Everything unchosen is the
-                // muted tone: quieter than white, and still well clear of the contrast floor.
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = BrandColors.bar,
-                    selectedTextColor = BrandColors.onBar,
-                    indicatorColor = BrandColors.soft,
-                    unselectedIconColor = BrandColors.onBarMuted,
-                    unselectedTextColor = BrandColors.onBarMuted,
-                ),
-            )
+        NavigationBar(
+            // Shorter than Material's eighty points, and rounded where it meets the page, so the
+            // page above appears to run over it rather than stopping against a slab.
+            //
+            // It used to be the deep bar green, dark enough to read as black and a colour that
+            // appears nowhere else in this app. Two near-black bands around a light page framed
+            // it like a photograph and matched nothing inside it. The bar is the app's own
+            // surface now, and the one green on it is the brand's, on the place being looked at.
+            modifier = Modifier.height(Sizes.bottomBar),
+            containerColor = Color.Transparent,
+            tonalElevation = Elevation.none,
+            // The height above is the bar itself; the gesture or button area below it is the
+            // system's, and the scaffold already leaves room for it.
+            windowInsets = WindowInsets(0),
+        ) {
+            destinations.forEach { destination ->
+                NavigationBarItem(
+                    selected = destination.selected,
+                    onClick = destination.onSelect,
+                    // The mark alone, and larger for it. Three places do not need naming twice —
+                    // a house, a map and a person are read faster than they are read aloud — and
+                    // the words were taking the room the marks needed to be legible. The name is
+                    // still there for a screen reader, which is who the words were for.
+                    icon = {
+                        DirectoryIcon(
+                            icon = destination.icon,
+                            contentDescription = destination.label,
+                            size = IconSize.large,
+                        )
+                    },
+                    alwaysShowLabel = false,
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = BrandColors.soft,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
+                )
+            }
         }
     }
 }

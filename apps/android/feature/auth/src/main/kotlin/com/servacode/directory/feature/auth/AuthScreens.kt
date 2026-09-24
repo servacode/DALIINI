@@ -9,6 +9,13 @@ import com.servacode.directory.core.designsystem.BrandColors
 import com.servacode.directory.core.designsystem.BrandMark
 import com.servacode.directory.core.designsystem.DirectoryIconButton
 import com.servacode.directory.core.designsystem.Sizes
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.draw.clip
+import com.servacode.directory.core.designsystem.DirectoryCard
+import com.servacode.directory.core.designsystem.Radius
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -74,14 +81,24 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     LaunchedEffect(state.signedIn) { if (state.signedIn) onSignedIn() }
 
-    AuthPage(title = AuthCopy.SIGN_IN, onBack = onBack, bottomBar = bottomBar, mark = true) {
-        PhoneField(phone, state.failure) { phone = it }
+    SignInPage(
+        onBack = onBack,
+        onRegister = onRegister,
+        bottomBar = bottomBar,
+    ) {
+        PhoneField(phone, state.failure, filled = true) { phone = it }
         DirectoryPasswordField(
             value = password,
             onValueChange = { password = it },
             label = AuthCopy.PASSWORD,
             error = fieldError(state.failure, "password"),
+            filled = true,
         )
+        // Where it belongs: under the field it is about, not as a full-width button competing
+        // with the one thing this page is for.
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+            DirectoryTextButton(AuthCopy.FORGOT, onRecovery)
+        }
         FailureText(state.failure)
         DirectoryPrimaryButton(
             text = AuthCopy.SIGN_IN,
@@ -90,8 +107,114 @@ fun LoginScreen(
             enabled = phone.isNotBlank() && password.isNotEmpty(),
             loading = state.busy,
         )
-        DirectoryTextButton(AuthCopy.FORGOT, onRecovery, Modifier.fillMaxWidth())
-        DirectoryTextButton(AuthCopy.CREATE, onRegister, Modifier.fillMaxWidth())
+    }
+}
+
+/**
+ * The page a person meets before they have an account here.
+ *
+ * It had a near-black band across the top with nothing in it, two outlined white boxes on a
+ * white page, and three full-width buttons of equal weight — so nothing led and the heaviest
+ * thing on the screen was a disabled grey slab.
+ *
+ * What it is now: a soft green field at the top carrying the mark and the app's name, the form
+ * on a white card that overlaps it, and one green button. The green is the brand's own
+ * (`action.primary`), which is the green of the mark and of every button in the app; the band
+ * that was there used a near-black that appears nowhere else, which is why it never belonged.
+ */
+@Composable
+private fun SignInPage(
+    onBack: (() -> Unit)?,
+    onRegister: () -> Unit,
+    bottomBar: @Composable () -> Unit,
+    form: @Composable ColumnScope.() -> Unit,
+) {
+    DirectoryPage(
+        background = MaterialTheme.colorScheme.background,
+        bottomBar = bottomBar,
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = padding.calculateBottomPadding())
+                .verticalScroll(rememberScrollState()),
+        ) {
+            Welcome(onBack = onBack)
+            DirectoryCard(
+                modifier = Modifier
+                    .padding(horizontal = Space.base)
+                    // Lifted into the panel above it, so the two read as one shape rather than
+                    // as a coloured band with a page under it.
+                    .offset(y = -Space.xl),
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(Space.sm),
+                    content = form,
+                )
+            }
+            CreateAccountLine(onRegister = onRegister)
+            Spacer(Modifier.height(Space.xxl))
+        }
+    }
+}
+
+/** The soft green field the page opens with: the mark, the app's name, and one line of welcome. */
+@Composable
+private fun Welcome(onBack: (() -> Unit)?) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(bottomStart = Radius.xl, bottomEnd = Radius.xl))
+            .background(BrandColors.softer)
+            .windowInsetsPadding(WindowInsets.statusBars),
+    ) {
+        if (onBack != null) {
+            DirectoryIconButton(
+                icon = DirectoryIcons.back,
+                label = AuthCopy.BACK,
+                onClick = onBack,
+                modifier = Modifier.align(Alignment.TopStart).padding(Space.sm),
+            )
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Space.xl)
+                .padding(top = Space.xxl, bottom = Space.huge),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Space.sm),
+        ) {
+            BrandMark(size = Sizes.actionCircle + Space.lg)
+            Text(
+                text = AuthCopy.APP_NAME,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.semantics { heading() },
+            )
+            Text(
+                text = AuthCopy.WELCOME,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+/** One sentence, with the action in it, instead of a third full-width button. */
+@Composable
+private fun CreateAccountLine(onRegister: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = AuthCopy.NO_ACCOUNT,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        DirectoryTextButton(AuthCopy.CREATE, onRegister)
     }
 }
 
@@ -294,13 +417,13 @@ private fun AuthPage(
     }
 }
 
-/** A band of the app's own green, with a way back only where there is one. */
+/** A quiet band in the brand's soft tint, with a way back only where there is one. */
 @Composable
 private fun AuthTopBar(onBack: (() -> Unit)?) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(BrandColors.bar)
+            .background(BrandColors.softer)
             .windowInsetsPadding(WindowInsets.statusBars)
             .height(Sizes.touchTarget),
         contentAlignment = Alignment.CenterStart,
@@ -310,7 +433,6 @@ private fun AuthTopBar(onBack: (() -> Unit)?) {
                 icon = DirectoryIcons.back,
                 label = AuthCopy.BACK,
                 onClick = onBack,
-                tint = BrandColors.onBar,
             )
         }
     }
@@ -350,7 +472,12 @@ private fun CodeStep(
 }
 
 @Composable
-private fun PhoneField(value: String, failure: FormFailure?, onChange: (String) -> Unit) {
+private fun PhoneField(
+    value: String,
+    failure: FormFailure?,
+    filled: Boolean = false,
+    onChange: (String) -> Unit,
+) {
     DirectoryTextField(
         value = value,
         onValueChange = onChange,
@@ -358,6 +485,7 @@ private fun PhoneField(value: String, failure: FormFailure?, onChange: (String) 
         leadingIcon = DirectoryIcons.phone,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
         error = fieldError(failure, "phone"),
+        filled = filled,
     )
 }
 
@@ -385,6 +513,9 @@ private fun ErrorText(message: String) {
 object AuthCopy {
     const val SIGN_IN = "تسجيل الدخول"
     const val BACK = "رجوع"
+    const val APP_NAME = "دليلك"
+    const val WELCOME = "دليل المنشآت الصحية في محافظتك"
+    const val NO_ACCOUNT = "ليس لديك حساب؟"
     const val CREATE = "إنشاء حساب جديد"
     const val CREATE_ACCOUNT = "إنشاء حساب"
     const val RECOVERY = "استعادة كلمة المرور"
