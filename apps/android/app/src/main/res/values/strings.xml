@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The manifest cannot read a Kotlin constant, so the name exists twice: here for the launcher
+     and in DirectoryBrand.NAME for everything the app draws. BrandNameTest fails if the two ever
+     disagree, which is how the name came to be written five ways before. -->
+<resources>
+    <string name="app_name">دليني</string>
+</resources>

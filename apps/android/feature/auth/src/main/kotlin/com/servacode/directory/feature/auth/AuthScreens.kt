@@ -6,7 +6,8 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import com.servacode.directory.core.designsystem.BrandColors
-import com.servacode.directory.core.designsystem.BrandMark
+import com.servacode.directory.core.model.DirectoryBrand
+import com.servacode.directory.core.designsystem.BrandSymbol
 import com.servacode.directory.core.designsystem.DirectoryIconButton
 import com.servacode.directory.core.designsystem.Sizes
 import androidx.compose.foundation.layout.ColumnScope
@@ -184,7 +185,7 @@ private fun Welcome(onBack: (() -> Unit)?) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Space.sm),
         ) {
-            BrandMark(size = Sizes.actionCircle + Space.lg)
+            BrandSymbol(size = Sizes.actionCircle + Space.lg)
             Text(
                 text = AuthCopy.APP_NAME,
                 style = MaterialTheme.typography.headlineSmall,
@@ -408,7 +409,7 @@ private fun AuthPage(
         ) {
             if (mark) {
                 Spacer(Modifier.height(Space.xl))
-                BrandMark(size = Sizes.hero / 3)
+                BrandSymbol(size = Sizes.hero / 3)
             } else {
                 Spacer(Modifier.height(Space.lg))
             }
@@ -522,8 +523,8 @@ private fun ErrorText(message: String) {
 object AuthCopy {
     const val SIGN_IN = "تسجيل الدخول"
     const val BACK = "رجوع"
-    const val APP_NAME = "دليلك"
-    const val WELCOME = "دليل المنشآت الصحية في محافظتك"
+    const val APP_NAME = DirectoryBrand.NAME
+    const val WELCOME = DirectoryBrand.TAGLINE
     const val NO_ACCOUNT = "ليس لديك حساب؟"
     const val PROVINCE_NOTE = "حُدِّدت من موقعك. غيّرها إن لم تكن صحيحة."
     const val CREATE = "إنشاء حساب جديد"

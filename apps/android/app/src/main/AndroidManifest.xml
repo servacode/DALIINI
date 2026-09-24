@@ -24,7 +24,7 @@
         android:allowBackup="false"
         android:enableOnBackInvokedCallback="false"
         android:fullBackupContent="false"
-        android:label="الدليل"
+        android:label="@string/app_name"
         android:supportsRtl="true"
         android:usesCleartextTraffic="false"
         android:theme="@style/Theme.Directory">

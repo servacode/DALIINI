@@ -1,5 +1,7 @@
 package com.servacode.directory
 
+import com.servacode.directory.core.model.DirectoryBrand
+
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.Manifest
@@ -62,7 +64,7 @@ class DirectoryMessagingService : FirebaseMessagingService() {
         )
         val notice = NotificationCompat.Builder(this, CHANNEL)
             .setSmallIcon(android.R.drawable.stat_notify_more)
-            .setContentTitle("الدليل")
+            .setContentTitle(DirectoryBrand.NAME)
             .setContentText("لديك تحديث جديد")
             .setContentIntent(open)
             .setAutoCancel(true)

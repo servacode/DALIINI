@@ -32,7 +32,7 @@ fun TownIllustration(
 ) {
     Box(modifier.fillMaxWidth().height(height), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) { drawTown() }
-        BrandMark(size = mark)
+        BrandSymbol(size = mark)
     }
 }
 
@@ -122,6 +122,6 @@ fun LocationIllustration(
                 )
             }
         }
-        BrandMark(size = mark)
+        BrandSymbol(size = mark)
     }
 }

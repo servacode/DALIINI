@@ -40,7 +40,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import com.servacode.directory.core.designsystem.BrandColors
-import com.servacode.directory.core.designsystem.BrandMark
+import com.servacode.directory.core.designsystem.BrandSymbol
 import com.servacode.directory.core.designsystem.DirectoryTextStyles
 import com.servacode.directory.core.designsystem.SystemBarsColor
 import com.servacode.directory.designsystem.generated.DirectoryTokens
@@ -74,7 +74,7 @@ fun DirectorySplashScreen(modifier: Modifier = Modifier) {
     Layout(
         modifier = modifier.fillMaxSize().background(BrandColors.splashBackground),
         content = {
-            BrandMark()
+            BrandSymbol()
             if (details) {
                 // Drawn once and faded as a layer, not redrawn on every frame of the fade.
                 Canvas(Modifier.fillMaxSize().graphicsLayer { alpha = appear }) { drawBackdrop() }

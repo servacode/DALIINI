@@ -1,5 +1,7 @@
 package com.servacode.directory.feature.bootstrap
 
+import com.servacode.directory.core.model.DirectoryBrand
+
 /** Where the splash draws the mark: where the system splash drew it, so the hand-over does not jump. */
 object SplashGeometry {
     /**
@@ -24,7 +26,7 @@ object SplashGeometry {
  * footer names the launch province as secondary text, and goes when more provinces open.
  */
 object SplashCopy {
-    const val NAME = "الدليل"
-    const val TAGLINE = "أقرب الخدمات الصحية إليك"
+    const val NAME = DirectoryBrand.NAME
+    const val TAGLINE = DirectoryBrand.TAGLINE
     const val FOOTER = "محافظة الرقة"
 }

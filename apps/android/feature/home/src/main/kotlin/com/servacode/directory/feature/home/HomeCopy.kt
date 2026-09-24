@@ -1,5 +1,7 @@
 package com.servacode.directory.feature.home
 
+import com.servacode.directory.core.model.DirectoryBrand
+
 /**
  * Everything Home says, in one place.
  *
@@ -8,7 +10,8 @@ package com.servacode.directory.feature.home
  * a composable.
  */
 object HomeCopy {
-    const val TITLE = "دليلك"
+    /** The app names itself in one place; this is that place read back. */
+    const val TITLE = DirectoryBrand.NAME
     const val YOU_ARE_IN = "أنت الآن في"
     const val NOTIFICATIONS = "الإشعارات"
     const val MANY = "99+"
