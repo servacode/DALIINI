@@ -1,6 +1,8 @@
 package com.servacode.directory
 
 import android.content.Intent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -76,9 +78,23 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
     NavHost(
         navController = navController,
         startDestination = DirectoryRoute.Bootstrap,
-        // No transitions are declared anywhere in this graph. Navigation Compose's own
-        // defaults are what the platform and the library agree on, and overriding them is how
-        // one screen ends up moving differently from the next.
+        // One screen at a time, and no animation between them.
+        //
+        // Leaving these out does not mean no animation: navigation-compose fills them with a
+        // long cross-fade of its own, and a cross-fade is the one shape of motion that reads as
+        // a fault. Nothing moves during it — both screens sit still at full size while one
+        // becomes transparent — so the eye sees the page it just left frozen over the page it
+        // is returning to, which is exactly the "it took a screenshot" complaint. Measured on
+        // an A52, the outgoing screen was still a visible ghost more than a second after Back.
+        //
+        // The answer is to draw one screen, not to pick a different animation: with None the
+        // two are never composited together and there is nothing to mistake for a still image.
+        // Predictive back is untouched; the system gesture still runs, this only says the app
+        // does not cross-fade its own content while it does.
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = { ExitTransition.None },
     ) {
         composable<DirectoryRoute.Bootstrap> {
             BootstrapScreen(
