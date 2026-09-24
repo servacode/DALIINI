@@ -317,6 +317,7 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
         composable<DirectoryRoute.Settings> {
             SettingsScreen(
                 onChangePassword = { navController.navigate(DirectoryRoute.ChangePassword) },
+                onChangePhone = { navController.navigate(DirectoryRoute.ChangePhone) },
                 onHelp = { navController.navigate(DirectoryRoute.Help) },
                 onBack = { navController.popBackStack() },
                 appVersion = BuildConfig.VERSION_NAME,

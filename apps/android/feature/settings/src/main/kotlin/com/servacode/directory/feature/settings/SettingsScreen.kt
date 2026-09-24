@@ -45,6 +45,7 @@ import com.servacode.directory.core.designsystem.Space
 @Composable
 fun SettingsScreen(
     onChangePassword: () -> Unit,
+    onChangePhone: () -> Unit,
     onHelp: () -> Unit,
     onBack: () -> Unit,
     appVersion: String,
@@ -75,6 +76,14 @@ fun SettingsScreen(
                     title = SettingsCopy.CHANGE_PASSWORD,
                     onClick = onChangePassword,
                     icon = DirectoryIcons.verified,
+                )
+                // The number the account signs in with, changed on the one screen that can do
+                // it. Personal information offers the same row, because it is also one of the
+                // person's own details; both open this, so there is one way to change it.
+                DirectorySettingRow(
+                    title = SettingsCopy.CHANGE_PHONE,
+                    onClick = onChangePhone,
+                    icon = DirectoryIcons.phone,
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             }
@@ -154,6 +163,7 @@ object SettingsCopy {
     const val TITLE = "الإعدادات"
     const val SECURITY = "الحساب والأمان"
     const val CHANGE_PASSWORD = "تغيير كلمة المرور"
+    const val CHANGE_PHONE = "تغيير رقم الهاتف"
     const val NOTIFICATIONS = "الإشعارات"
     const val ALLOW_NOTIFICATIONS = "السماح بالإشعارات"
     const val ALLOWED = "مسموح"

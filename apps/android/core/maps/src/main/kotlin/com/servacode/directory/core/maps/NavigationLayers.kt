@@ -33,7 +33,13 @@ enum class UserMark {
     /** A triangle that points the way they are facing. */
     ARROW,
 
-    /** A dot, for when they are walking and a heading means less. */
+    /**
+     * A walking figure, for someone on foot.
+     *
+     * It does not turn. A heading on foot is the shoulders, not the way: a person crossing a
+     * square reads as facing four directions in ten seconds, and an arrow that spins is worse
+     * than a mark that simply stands where they are.
+     */
     WALKER,
 }
 
@@ -169,9 +175,9 @@ internal class NavigationLayers(private val map: MapLibreMap) {
             return bitmap
         }
 
-        /** A dot for walking: a heading on foot turns with the shoulders, not with the way. */
+        /** A walking figure inside the same disc the arrow wears, so the two read as a pair. */
         fun walkerBitmap(): Bitmap {
-            val size = 48
+            val size = 72
             val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
             val centre = size / 2f
@@ -180,6 +186,29 @@ internal class NavigationLayers(private val map: MapLibreMap) {
             canvas.drawCircle(centre, centre, centre - 2f, paint)
             paint.color = ACCENT
             canvas.drawCircle(centre, centre, centre - 7f, paint)
+
+            // Drawn rather than shipped, so it takes the same colours as everything else here.
+            paint.color = Color.WHITE
+            paint.strokeCap = Paint.Cap.ROUND
+            paint.strokeJoin = Paint.Join.ROUND
+            canvas.drawCircle(centre + 2f, centre - 13f, 4.5f, paint)
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = 5f
+            // Body to hip, then the leading leg; then the trailing leg and the swinging arm.
+            val stride = Path().apply {
+                moveTo(centre + 1f, centre - 7f)
+                lineTo(centre - 3f, centre + 3f)
+                lineTo(centre + 5f, centre + 9f)
+                lineTo(centre + 7f, centre + 20f)
+            }
+            canvas.drawPath(stride, paint)
+            val trailing = Path().apply {
+                moveTo(centre - 3f, centre + 3f)
+                lineTo(centre - 10f, centre + 12f)
+                lineTo(centre - 11f, centre + 20f)
+            }
+            canvas.drawPath(trailing, paint)
+            canvas.drawLine(centre + 1f, centre - 4f, centre + 10f, centre + 1f, paint)
             return bitmap
         }
 

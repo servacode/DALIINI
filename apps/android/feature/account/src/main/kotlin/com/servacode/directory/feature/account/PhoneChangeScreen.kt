@@ -66,7 +66,7 @@ fun PhoneChangeScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                state.error?.let(::ErrorLine)
+                state.error?.let { ErrorLine(it) }
                 DirectoryPrimaryButton(
                     text = PhoneChangeCopy.SEND,
                     onClick = viewModel::send,
@@ -88,7 +88,7 @@ fun PhoneChangeScreen(
                     leadingIcon = DirectoryIcons.verified,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
-                state.error?.let(::ErrorLine)
+                state.error?.let { ErrorLine(it) }
                 DirectoryPrimaryButton(
                     text = PhoneChangeCopy.CONFIRM,
                     onClick = viewModel::confirm,
