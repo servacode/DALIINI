@@ -94,6 +94,9 @@ fun BuiltInNavigationScreen(
                 verticalArrangement = Arrangement.spacedBy(Space.sm),
             ) {
                 state.warning?.let { DirectoryOfflineNotice(text = warningMessage(it)) }
+                // A made-up trip says so for as long as it runs. Guidance that looks identical
+                // to the real thing and is not is the one thing this screen must never be.
+                if (state.simulated) DirectoryOfflineNotice(text = NavigationCopy.SIMULATED)
                 when (val navigation = state.navigation) {
                     NavigationState.Idle,
                     NavigationState.Routing,
@@ -230,4 +233,5 @@ object NavigationCopy {
     const val EXTERNAL_MAPS = "فتح تطبيق خرائط خارجي"
     const val PERMISSION_TITLE = "الملاحة تحتاج موقعك"
     const val END = "إنهاء الملاحة"
+    const val SIMULATED = "رحلة تجريبية — الموقع مُحاكى ولست تتحرك فعلًا"
 }

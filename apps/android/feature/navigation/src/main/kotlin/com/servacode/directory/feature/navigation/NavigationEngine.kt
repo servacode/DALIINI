@@ -39,6 +39,14 @@ internal data class NavigationProgress(
     val remainingDistanceMeters: Double,
     val remainingDurationSeconds: Double,
     val offRouteDistanceMeters: Double,
+    /**
+     * How far the next turn still is.
+     *
+     * Straight-line to its point rather than measured along the road: it is the same figure the
+     * engine already advances the maneuver by, it is never longer than the road, and voice
+     * guidance that speaks a little early is kinder than voice guidance that speaks late.
+     */
+    val distanceToManeuverMeters: Double = 0.0,
 ) {
     val maneuver: RouteManeuver? = route.maneuvers.getOrNull(maneuverIndex)
 }
@@ -176,6 +184,9 @@ internal class NavigationEngine(
             remainingDistanceMeters = remainingDistance(route, maneuverIndex),
             remainingDurationSeconds = remainingDuration(route, maneuverIndex),
             offRouteDistanceMeters = offRoute,
+            distanceToManeuverMeters = route.maneuvers.getOrNull(maneuverIndex)
+                ?.let { GeoMath.distanceMeters(location, it.point) }
+                ?: 0.0,
         )
         val cooldownElapsed = lastRerouteAtMillis == Long.MIN_VALUE ||
             nowMillis - lastRerouteAtMillis >= thresholds.rerouteCooldownMillis

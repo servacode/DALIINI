@@ -202,11 +202,30 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
         composable<DirectoryRoute.RoutePreview> {
             RoutePreviewScreen(
                 styleUrl = BuildConfig.MAP_STYLE_URL,
-                onStart = { latitude, longitude ->
-                    navController.navigate(DirectoryRoute.BuiltInNavigation(latitude, longitude))
+                onStart = { latitude, longitude, profile ->
+                    navController.navigate(
+                        DirectoryRoute.BuiltInNavigation(latitude, longitude, profile.name),
+                    )
                 },
                 onBack = { navController.popBackStack() },
                 destinationName = null,
+                // A trip driven by made-up readings, so that guidance and its voice can be
+                // watched without a car. The gate is here and nowhere else: a release build is
+                // not given the function, so the button does not exist in it.
+                onSimulate = if (BuildConfig.DEBUG) {
+                    { latitude, longitude, profile ->
+                        navController.navigate(
+                            DirectoryRoute.BuiltInNavigation(
+                                latitude = latitude,
+                                longitude = longitude,
+                                profile = profile.name,
+                                simulated = true,
+                            ),
+                        )
+                    }
+                } else {
+                    null
+                },
             )
         }
         composable<DirectoryRoute.BuiltInNavigation> { backStackEntry ->

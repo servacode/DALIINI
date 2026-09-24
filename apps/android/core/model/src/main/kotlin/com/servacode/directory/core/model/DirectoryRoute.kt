@@ -14,7 +14,20 @@ sealed interface DirectoryRoute {
     @Serializable data class FacilityDetailRoute(val id: String) : DirectoryRoute
     /** The public map; opened for one facility, it centres on it and shows it selected. */
     @Serializable data class Map(val focusFacilityId: String? = null) : DirectoryRoute
-    @Serializable data class BuiltInNavigation(val latitude: Double, val longitude: Double) : DirectoryRoute
+    /**
+     * Live guidance to a point.
+     *
+     * [profile] is the travel mode the route was previewed in, so guidance follows the same
+     * streets the preview drew rather than quietly reverting to driving. [simulated] drives the
+     * trip from made-up readings instead of the receiver — a demonstration a debug build offers
+     * so guidance can be watched without anyone getting into a car.
+     */
+    @Serializable data class BuiltInNavigation(
+        val latitude: Double,
+        val longitude: Double,
+        val profile: String = "DRIVING",
+        val simulated: Boolean = false,
+    ) : DirectoryRoute
     @Serializable data object Login : DirectoryRoute
     @Serializable data object Register : DirectoryRoute
     @Serializable data object Recovery : DirectoryRoute

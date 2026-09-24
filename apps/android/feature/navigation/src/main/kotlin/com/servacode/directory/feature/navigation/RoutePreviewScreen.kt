@@ -48,9 +48,15 @@ import kotlin.math.roundToInt
 @Composable
 fun RoutePreviewScreen(
     styleUrl: String,
-    onStart: (Double, Double) -> Unit,
+    onStart: (Double, Double, RoutingProfile) -> Unit,
     onBack: () -> Unit,
     destinationName: String?,
+    /**
+     * Offered only where a build offers it: a trip driven by made-up readings, so guidance and
+     * its voice can be watched without anyone getting into a car. Null in a release build, and
+     * then no such button exists at all.
+     */
+    onSimulate: ((Double, Double, RoutingProfile) -> Unit)? = null,
     viewModel: RoutePreviewViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -137,9 +143,30 @@ fun RoutePreviewScreen(
                 if (state.canStart) {
                     DirectoryPrimaryButton(
                         text = RoutePreviewCopy.START,
-                        onClick = { onStart(viewModel.destination.latitude, viewModel.destination.longitude) },
+                        onClick = {
+                            onStart(
+                                viewModel.destination.latitude,
+                                viewModel.destination.longitude,
+                                state.profile,
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth(),
                     )
+                    // The same trip, driven by the app rather than by the road. It exists only
+                    // where the build puts it there, and the screen it opens says so throughout.
+                    onSimulate?.let { simulate ->
+                        DirectorySecondaryButton(
+                            text = RoutePreviewCopy.SIMULATE,
+                            onClick = {
+                                simulate(
+                                    viewModel.destination.latitude,
+                                    viewModel.destination.longitude,
+                                    state.profile,
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 } else if (!state.loading) {
                     DirectoryPrimaryButton(
                         text = RoutePreviewCopy.RETRY,
@@ -205,6 +232,7 @@ object RoutePreviewCopy {
     const val TITLE = "الطريق"
     const val COMPUTING = "جارٍ حساب المسار…"
     const val START = "ابدأ الملاحة"
+    const val SIMULATE = "رحلة تجريبية"
     const val RETRY = "إعادة المحاولة"
     const val EXTERNAL_MAPS = "فتح تطبيق خرائط خارجي"
     const val PERMISSION_TITLE = "حساب الطريق يحتاج موقعك"
