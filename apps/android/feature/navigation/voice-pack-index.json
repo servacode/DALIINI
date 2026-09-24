@@ -1,0 +1,1541 @@
+{
+  "pack": "rahalgo-navigation-ar-elevenlabs",
+  "language": "ar",
+  "clips": [
+    {
+      "id": "turn_left",
+      "file": "nav_turn_left.mp3",
+      "text": "انعطف يسارًا."
+    },
+    {
+      "id": "turn_left_now",
+      "file": "nav_turn_left_now.mp3",
+      "text": "انعطف يسارًا الآن."
+    },
+    {
+      "id": "turn_left_in_50m",
+      "file": "nav_turn_left_in_50m.mp3",
+      "text": "بعد خمسين مترا، انعطف يسارًا."
+    },
+    {
+      "id": "turn_left_in_100m",
+      "file": "nav_turn_left_in_100m.mp3",
+      "text": "بعد مئة متر، انعطف يسارًا."
+    },
+    {
+      "id": "turn_left_in_150m",
+      "file": "nav_turn_left_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، انعطف يسارًا."
+    },
+    {
+      "id": "turn_left_in_200m",
+      "file": "nav_turn_left_in_200m.mp3",
+      "text": "بعد مئتي متر، انعطف يسارًا."
+    },
+    {
+      "id": "turn_left_in_250m",
+      "file": "nav_turn_left_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، انعطف يسارًا."
+    },
+    {
+      "id": "turn_left_in_300m",
+      "file": "nav_turn_left_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، انعطف يسارًا."
+    },
+    {
+      "id": "turn_left_in_400m",
+      "file": "nav_turn_left_in_400m.mp3",
+      "text": "بعد أربعمئة متر، انعطف يسارًا."
+    },
+    {
+      "id": "turn_left_in_500m",
+      "file": "nav_turn_left_in_500m.mp3",
+      "text": "بعد خمسمئة متر، انعطف يسارًا."
+    },
+    {
+      "id": "turn_left_in_700m",
+      "file": "nav_turn_left_in_700m.mp3",
+      "text": "بعد سبعمئة متر، انعطف يسارًا."
+    },
+    {
+      "id": "turn_right",
+      "file": "nav_turn_right.mp3",
+      "text": "انعطف يمينًا."
+    },
+    {
+      "id": "turn_right_now",
+      "file": "nav_turn_right_now.mp3",
+      "text": "انعطف يمينًا الآن."
+    },
+    {
+      "id": "turn_right_in_50m",
+      "file": "nav_turn_right_in_50m.mp3",
+      "text": "بعد خمسين مترا، انعطف يمينًا."
+    },
+    {
+      "id": "turn_right_in_100m",
+      "file": "nav_turn_right_in_100m.mp3",
+      "text": "بعد مئة متر، انعطف يمينًا."
+    },
+    {
+      "id": "turn_right_in_150m",
+      "file": "nav_turn_right_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، انعطف يمينًا."
+    },
+    {
+      "id": "turn_right_in_200m",
+      "file": "nav_turn_right_in_200m.mp3",
+      "text": "بعد مئتي متر، انعطف يمينًا."
+    },
+    {
+      "id": "turn_right_in_250m",
+      "file": "nav_turn_right_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، انعطف يمينًا."
+    },
+    {
+      "id": "turn_right_in_300m",
+      "file": "nav_turn_right_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، انعطف يمينًا."
+    },
+    {
+      "id": "turn_right_in_400m",
+      "file": "nav_turn_right_in_400m.mp3",
+      "text": "بعد أربعمئة متر، انعطف يمينًا."
+    },
+    {
+      "id": "turn_right_in_500m",
+      "file": "nav_turn_right_in_500m.mp3",
+      "text": "بعد خمسمئة متر، انعطف يمينًا."
+    },
+    {
+      "id": "turn_right_in_700m",
+      "file": "nav_turn_right_in_700m.mp3",
+      "text": "بعد سبعمئة متر، انعطف يمينًا."
+    },
+    {
+      "id": "slight_left",
+      "file": "nav_slight_left.mp3",
+      "text": "انعطف قليلًا إلى اليسار."
+    },
+    {
+      "id": "slight_left_now",
+      "file": "nav_slight_left_now.mp3",
+      "text": "انعطف قليلًا إلى اليسار الآن."
+    },
+    {
+      "id": "slight_left_in_50m",
+      "file": "nav_slight_left_in_50m.mp3",
+      "text": "بعد خمسين مترا، انعطف قليلًا إلى اليسار."
+    },
+    {
+      "id": "slight_left_in_100m",
+      "file": "nav_slight_left_in_100m.mp3",
+      "text": "بعد مئة متر، انعطف قليلًا إلى اليسار."
+    },
+    {
+      "id": "slight_left_in_150m",
+      "file": "nav_slight_left_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، انعطف قليلًا إلى اليسار."
+    },
+    {
+      "id": "slight_left_in_200m",
+      "file": "nav_slight_left_in_200m.mp3",
+      "text": "بعد مئتي متر، انعطف قليلًا إلى اليسار."
+    },
+    {
+      "id": "slight_left_in_250m",
+      "file": "nav_slight_left_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، انعطف قليلًا إلى اليسار."
+    },
+    {
+      "id": "slight_left_in_300m",
+      "file": "nav_slight_left_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، انعطف قليلًا إلى اليسار."
+    },
+    {
+      "id": "slight_left_in_400m",
+      "file": "nav_slight_left_in_400m.mp3",
+      "text": "بعد أربعمئة متر، انعطف قليلًا إلى اليسار."
+    },
+    {
+      "id": "slight_left_in_500m",
+      "file": "nav_slight_left_in_500m.mp3",
+      "text": "بعد خمسمئة متر، انعطف قليلًا إلى اليسار."
+    },
+    {
+      "id": "slight_left_in_700m",
+      "file": "nav_slight_left_in_700m.mp3",
+      "text": "بعد سبعمئة متر، انعطف قليلًا إلى اليسار."
+    },
+    {
+      "id": "slight_right",
+      "file": "nav_slight_right.mp3",
+      "text": "انعطف قليلًا إلى اليمين."
+    },
+    {
+      "id": "slight_right_now",
+      "file": "nav_slight_right_now.mp3",
+      "text": "انعطف قليلًا إلى اليمين الآن."
+    },
+    {
+      "id": "slight_right_in_50m",
+      "file": "nav_slight_right_in_50m.mp3",
+      "text": "بعد خمسين مترا، انعطف قليلًا إلى اليمين."
+    },
+    {
+      "id": "slight_right_in_100m",
+      "file": "nav_slight_right_in_100m.mp3",
+      "text": "بعد مئة متر، انعطف قليلًا إلى اليمين."
+    },
+    {
+      "id": "slight_right_in_150m",
+      "file": "nav_slight_right_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، انعطف قليلًا إلى اليمين."
+    },
+    {
+      "id": "slight_right_in_200m",
+      "file": "nav_slight_right_in_200m.mp3",
+      "text": "بعد مئتي متر، انعطف قليلًا إلى اليمين."
+    },
+    {
+      "id": "slight_right_in_250m",
+      "file": "nav_slight_right_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، انعطف قليلًا إلى اليمين."
+    },
+    {
+      "id": "slight_right_in_300m",
+      "file": "nav_slight_right_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، انعطف قليلًا إلى اليمين."
+    },
+    {
+      "id": "slight_right_in_400m",
+      "file": "nav_slight_right_in_400m.mp3",
+      "text": "بعد أربعمئة متر، انعطف قليلًا إلى اليمين."
+    },
+    {
+      "id": "slight_right_in_500m",
+      "file": "nav_slight_right_in_500m.mp3",
+      "text": "بعد خمسمئة متر، انعطف قليلًا إلى اليمين."
+    },
+    {
+      "id": "slight_right_in_700m",
+      "file": "nav_slight_right_in_700m.mp3",
+      "text": "بعد سبعمئة متر، انعطف قليلًا إلى اليمين."
+    },
+    {
+      "id": "sharp_left",
+      "file": "nav_sharp_left.mp3",
+      "text": "انعطف بحدّة إلى اليسار."
+    },
+    {
+      "id": "sharp_left_now",
+      "file": "nav_sharp_left_now.mp3",
+      "text": "انعطف بحدّة إلى اليسار الآن."
+    },
+    {
+      "id": "sharp_left_in_50m",
+      "file": "nav_sharp_left_in_50m.mp3",
+      "text": "بعد خمسين مترا، انعطف بحدّة إلى اليسار."
+    },
+    {
+      "id": "sharp_left_in_100m",
+      "file": "nav_sharp_left_in_100m.mp3",
+      "text": "بعد مئة متر، انعطف بحدّة إلى اليسار."
+    },
+    {
+      "id": "sharp_left_in_150m",
+      "file": "nav_sharp_left_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، انعطف بحدّة إلى اليسار."
+    },
+    {
+      "id": "sharp_left_in_200m",
+      "file": "nav_sharp_left_in_200m.mp3",
+      "text": "بعد مئتي متر، انعطف بحدّة إلى اليسار."
+    },
+    {
+      "id": "sharp_left_in_250m",
+      "file": "nav_sharp_left_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، انعطف بحدّة إلى اليسار."
+    },
+    {
+      "id": "sharp_left_in_300m",
+      "file": "nav_sharp_left_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، انعطف بحدّة إلى اليسار."
+    },
+    {
+      "id": "sharp_left_in_400m",
+      "file": "nav_sharp_left_in_400m.mp3",
+      "text": "بعد أربعمئة متر، انعطف بحدّة إلى اليسار."
+    },
+    {
+      "id": "sharp_left_in_500m",
+      "file": "nav_sharp_left_in_500m.mp3",
+      "text": "بعد خمسمئة متر، انعطف بحدّة إلى اليسار."
+    },
+    {
+      "id": "sharp_left_in_700m",
+      "file": "nav_sharp_left_in_700m.mp3",
+      "text": "بعد سبعمئة متر، انعطف بحدّة إلى اليسار."
+    },
+    {
+      "id": "sharp_right",
+      "file": "nav_sharp_right.mp3",
+      "text": "انعطف بحدّة إلى اليمين."
+    },
+    {
+      "id": "sharp_right_now",
+      "file": "nav_sharp_right_now.mp3",
+      "text": "انعطف بحدّة إلى اليمين الآن."
+    },
+    {
+      "id": "sharp_right_in_50m",
+      "file": "nav_sharp_right_in_50m.mp3",
+      "text": "بعد خمسين مترا، انعطف بحدّة إلى اليمين."
+    },
+    {
+      "id": "sharp_right_in_100m",
+      "file": "nav_sharp_right_in_100m.mp3",
+      "text": "بعد مئة متر، انعطف بحدّة إلى اليمين."
+    },
+    {
+      "id": "sharp_right_in_150m",
+      "file": "nav_sharp_right_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، انعطف بحدّة إلى اليمين."
+    },
+    {
+      "id": "sharp_right_in_200m",
+      "file": "nav_sharp_right_in_200m.mp3",
+      "text": "بعد مئتي متر، انعطف بحدّة إلى اليمين."
+    },
+    {
+      "id": "sharp_right_in_250m",
+      "file": "nav_sharp_right_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، انعطف بحدّة إلى اليمين."
+    },
+    {
+      "id": "sharp_right_in_300m",
+      "file": "nav_sharp_right_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، انعطف بحدّة إلى اليمين."
+    },
+    {
+      "id": "sharp_right_in_400m",
+      "file": "nav_sharp_right_in_400m.mp3",
+      "text": "بعد أربعمئة متر، انعطف بحدّة إلى اليمين."
+    },
+    {
+      "id": "sharp_right_in_500m",
+      "file": "nav_sharp_right_in_500m.mp3",
+      "text": "بعد خمسمئة متر، انعطف بحدّة إلى اليمين."
+    },
+    {
+      "id": "sharp_right_in_700m",
+      "file": "nav_sharp_right_in_700m.mp3",
+      "text": "بعد سبعمئة متر، انعطف بحدّة إلى اليمين."
+    },
+    {
+      "id": "uturn",
+      "file": "nav_uturn.mp3",
+      "text": "در للخلف."
+    },
+    {
+      "id": "uturn_now",
+      "file": "nav_uturn_now.mp3",
+      "text": "در للخلف الآن."
+    },
+    {
+      "id": "uturn_in_50m",
+      "file": "nav_uturn_in_50m.mp3",
+      "text": "بعد خمسين مترا، در للخلف."
+    },
+    {
+      "id": "uturn_in_100m",
+      "file": "nav_uturn_in_100m.mp3",
+      "text": "بعد مئة متر، در للخلف."
+    },
+    {
+      "id": "uturn_in_150m",
+      "file": "nav_uturn_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، در للخلف."
+    },
+    {
+      "id": "uturn_in_200m",
+      "file": "nav_uturn_in_200m.mp3",
+      "text": "بعد مئتي متر، در للخلف."
+    },
+    {
+      "id": "uturn_in_250m",
+      "file": "nav_uturn_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، در للخلف."
+    },
+    {
+      "id": "uturn_in_300m",
+      "file": "nav_uturn_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، در للخلف."
+    },
+    {
+      "id": "uturn_in_400m",
+      "file": "nav_uturn_in_400m.mp3",
+      "text": "بعد أربعمئة متر، در للخلف."
+    },
+    {
+      "id": "uturn_in_500m",
+      "file": "nav_uturn_in_500m.mp3",
+      "text": "بعد خمسمئة متر، در للخلف."
+    },
+    {
+      "id": "uturn_in_700m",
+      "file": "nav_uturn_in_700m.mp3",
+      "text": "بعد سبعمئة متر، در للخلف."
+    },
+    {
+      "id": "continue_straight",
+      "file": "nav_continue_straight.mp3",
+      "text": "تابع السير."
+    },
+    {
+      "id": "continue_straight_now",
+      "file": "nav_continue_straight_now.mp3",
+      "text": "تابع السير الآن."
+    },
+    {
+      "id": "continue_straight_in_50m",
+      "file": "nav_continue_straight_in_50m.mp3",
+      "text": "بعد خمسين مترا، تابع السير."
+    },
+    {
+      "id": "continue_straight_in_100m",
+      "file": "nav_continue_straight_in_100m.mp3",
+      "text": "بعد مئة متر، تابع السير."
+    },
+    {
+      "id": "continue_straight_in_150m",
+      "file": "nav_continue_straight_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، تابع السير."
+    },
+    {
+      "id": "continue_straight_in_200m",
+      "file": "nav_continue_straight_in_200m.mp3",
+      "text": "بعد مئتي متر، تابع السير."
+    },
+    {
+      "id": "continue_straight_in_250m",
+      "file": "nav_continue_straight_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، تابع السير."
+    },
+    {
+      "id": "continue_straight_in_300m",
+      "file": "nav_continue_straight_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، تابع السير."
+    },
+    {
+      "id": "continue_straight_in_400m",
+      "file": "nav_continue_straight_in_400m.mp3",
+      "text": "بعد أربعمئة متر، تابع السير."
+    },
+    {
+      "id": "continue_straight_in_500m",
+      "file": "nav_continue_straight_in_500m.mp3",
+      "text": "بعد خمسمئة متر، تابع السير."
+    },
+    {
+      "id": "continue_straight_in_700m",
+      "file": "nav_continue_straight_in_700m.mp3",
+      "text": "بعد سبعمئة متر، تابع السير."
+    },
+    {
+      "id": "merge",
+      "file": "nav_merge.mp3",
+      "text": "اندمج مع الطريق."
+    },
+    {
+      "id": "merge_now",
+      "file": "nav_merge_now.mp3",
+      "text": "اندمج مع الطريق الآن."
+    },
+    {
+      "id": "merge_in_50m",
+      "file": "nav_merge_in_50m.mp3",
+      "text": "بعد خمسين مترا، اندمج مع الطريق."
+    },
+    {
+      "id": "merge_in_100m",
+      "file": "nav_merge_in_100m.mp3",
+      "text": "بعد مئة متر، اندمج مع الطريق."
+    },
+    {
+      "id": "merge_in_150m",
+      "file": "nav_merge_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، اندمج مع الطريق."
+    },
+    {
+      "id": "merge_in_200m",
+      "file": "nav_merge_in_200m.mp3",
+      "text": "بعد مئتي متر، اندمج مع الطريق."
+    },
+    {
+      "id": "merge_in_250m",
+      "file": "nav_merge_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، اندمج مع الطريق."
+    },
+    {
+      "id": "merge_in_300m",
+      "file": "nav_merge_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، اندمج مع الطريق."
+    },
+    {
+      "id": "merge_in_400m",
+      "file": "nav_merge_in_400m.mp3",
+      "text": "بعد أربعمئة متر، اندمج مع الطريق."
+    },
+    {
+      "id": "merge_in_500m",
+      "file": "nav_merge_in_500m.mp3",
+      "text": "بعد خمسمئة متر، اندمج مع الطريق."
+    },
+    {
+      "id": "merge_in_700m",
+      "file": "nav_merge_in_700m.mp3",
+      "text": "بعد سبعمئة متر، اندمج مع الطريق."
+    },
+    {
+      "id": "merge_left",
+      "file": "nav_merge_left.mp3",
+      "text": "اندمج يسارًا."
+    },
+    {
+      "id": "merge_left_now",
+      "file": "nav_merge_left_now.mp3",
+      "text": "اندمج يسارًا الآن."
+    },
+    {
+      "id": "merge_left_in_50m",
+      "file": "nav_merge_left_in_50m.mp3",
+      "text": "بعد خمسين مترا، اندمج يسارًا."
+    },
+    {
+      "id": "merge_left_in_100m",
+      "file": "nav_merge_left_in_100m.mp3",
+      "text": "بعد مئة متر، اندمج يسارًا."
+    },
+    {
+      "id": "merge_left_in_150m",
+      "file": "nav_merge_left_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، اندمج يسارًا."
+    },
+    {
+      "id": "merge_left_in_200m",
+      "file": "nav_merge_left_in_200m.mp3",
+      "text": "بعد مئتي متر، اندمج يسارًا."
+    },
+    {
+      "id": "merge_left_in_250m",
+      "file": "nav_merge_left_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، اندمج يسارًا."
+    },
+    {
+      "id": "merge_left_in_300m",
+      "file": "nav_merge_left_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، اندمج يسارًا."
+    },
+    {
+      "id": "merge_left_in_400m",
+      "file": "nav_merge_left_in_400m.mp3",
+      "text": "بعد أربعمئة متر، اندمج يسارًا."
+    },
+    {
+      "id": "merge_left_in_500m",
+      "file": "nav_merge_left_in_500m.mp3",
+      "text": "بعد خمسمئة متر، اندمج يسارًا."
+    },
+    {
+      "id": "merge_left_in_700m",
+      "file": "nav_merge_left_in_700m.mp3",
+      "text": "بعد سبعمئة متر، اندمج يسارًا."
+    },
+    {
+      "id": "merge_right",
+      "file": "nav_merge_right.mp3",
+      "text": "اندمج يمينًا."
+    },
+    {
+      "id": "merge_right_now",
+      "file": "nav_merge_right_now.mp3",
+      "text": "اندمج يمينًا الآن."
+    },
+    {
+      "id": "merge_right_in_50m",
+      "file": "nav_merge_right_in_50m.mp3",
+      "text": "بعد خمسين مترا، اندمج يمينًا."
+    },
+    {
+      "id": "merge_right_in_100m",
+      "file": "nav_merge_right_in_100m.mp3",
+      "text": "بعد مئة متر، اندمج يمينًا."
+    },
+    {
+      "id": "merge_right_in_150m",
+      "file": "nav_merge_right_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، اندمج يمينًا."
+    },
+    {
+      "id": "merge_right_in_200m",
+      "file": "nav_merge_right_in_200m.mp3",
+      "text": "بعد مئتي متر، اندمج يمينًا."
+    },
+    {
+      "id": "merge_right_in_250m",
+      "file": "nav_merge_right_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، اندمج يمينًا."
+    },
+    {
+      "id": "merge_right_in_300m",
+      "file": "nav_merge_right_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، اندمج يمينًا."
+    },
+    {
+      "id": "merge_right_in_400m",
+      "file": "nav_merge_right_in_400m.mp3",
+      "text": "بعد أربعمئة متر، اندمج يمينًا."
+    },
+    {
+      "id": "merge_right_in_500m",
+      "file": "nav_merge_right_in_500m.mp3",
+      "text": "بعد خمسمئة متر، اندمج يمينًا."
+    },
+    {
+      "id": "merge_right_in_700m",
+      "file": "nav_merge_right_in_700m.mp3",
+      "text": "بعد سبعمئة متر، اندمج يمينًا."
+    },
+    {
+      "id": "fork",
+      "file": "nav_fork.mp3",
+      "text": "انتبه، الطريق يتفرّع."
+    },
+    {
+      "id": "fork_now",
+      "file": "nav_fork_now.mp3",
+      "text": "انتبه، الطريق يتفرّع الآن."
+    },
+    {
+      "id": "fork_in_50m",
+      "file": "nav_fork_in_50m.mp3",
+      "text": "بعد خمسين مترا، انتبه، الطريق يتفرّع."
+    },
+    {
+      "id": "fork_in_100m",
+      "file": "nav_fork_in_100m.mp3",
+      "text": "بعد مئة متر، انتبه، الطريق يتفرّع."
+    },
+    {
+      "id": "fork_in_150m",
+      "file": "nav_fork_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، انتبه، الطريق يتفرّع."
+    },
+    {
+      "id": "fork_in_200m",
+      "file": "nav_fork_in_200m.mp3",
+      "text": "بعد مئتي متر، انتبه، الطريق يتفرّع."
+    },
+    {
+      "id": "fork_in_250m",
+      "file": "nav_fork_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، انتبه، الطريق يتفرّع."
+    },
+    {
+      "id": "fork_in_300m",
+      "file": "nav_fork_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، انتبه، الطريق يتفرّع."
+    },
+    {
+      "id": "fork_in_400m",
+      "file": "nav_fork_in_400m.mp3",
+      "text": "بعد أربعمئة متر، انتبه، الطريق يتفرّع."
+    },
+    {
+      "id": "fork_in_500m",
+      "file": "nav_fork_in_500m.mp3",
+      "text": "بعد خمسمئة متر، انتبه، الطريق يتفرّع."
+    },
+    {
+      "id": "fork_in_700m",
+      "file": "nav_fork_in_700m.mp3",
+      "text": "بعد سبعمئة متر، انتبه، الطريق يتفرّع."
+    },
+    {
+      "id": "fork_left",
+      "file": "nav_fork_left.mp3",
+      "text": "عند التفرّع، ابق على اليسار."
+    },
+    {
+      "id": "fork_left_now",
+      "file": "nav_fork_left_now.mp3",
+      "text": "عند التفرّع، ابق على اليسار الآن."
+    },
+    {
+      "id": "fork_left_in_50m",
+      "file": "nav_fork_left_in_50m.mp3",
+      "text": "بعد خمسين مترا، عند التفرّع، ابق على اليسار."
+    },
+    {
+      "id": "fork_left_in_100m",
+      "file": "nav_fork_left_in_100m.mp3",
+      "text": "بعد مئة متر، عند التفرّع، ابق على اليسار."
+    },
+    {
+      "id": "fork_left_in_150m",
+      "file": "nav_fork_left_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، عند التفرّع، ابق على اليسار."
+    },
+    {
+      "id": "fork_left_in_200m",
+      "file": "nav_fork_left_in_200m.mp3",
+      "text": "بعد مئتي متر، عند التفرّع، ابق على اليسار."
+    },
+    {
+      "id": "fork_left_in_250m",
+      "file": "nav_fork_left_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، عند التفرّع، ابق على اليسار."
+    },
+    {
+      "id": "fork_left_in_300m",
+      "file": "nav_fork_left_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، عند التفرّع، ابق على اليسار."
+    },
+    {
+      "id": "fork_left_in_400m",
+      "file": "nav_fork_left_in_400m.mp3",
+      "text": "بعد أربعمئة متر، عند التفرّع، ابق على اليسار."
+    },
+    {
+      "id": "fork_left_in_500m",
+      "file": "nav_fork_left_in_500m.mp3",
+      "text": "بعد خمسمئة متر، عند التفرّع، ابق على اليسار."
+    },
+    {
+      "id": "fork_left_in_700m",
+      "file": "nav_fork_left_in_700m.mp3",
+      "text": "بعد سبعمئة متر، عند التفرّع، ابق على اليسار."
+    },
+    {
+      "id": "fork_right",
+      "file": "nav_fork_right.mp3",
+      "text": "عند التفرّع، ابق على اليمين."
+    },
+    {
+      "id": "fork_right_now",
+      "file": "nav_fork_right_now.mp3",
+      "text": "عند التفرّع، ابق على اليمين الآن."
+    },
+    {
+      "id": "fork_right_in_50m",
+      "file": "nav_fork_right_in_50m.mp3",
+      "text": "بعد خمسين مترا، عند التفرّع، ابق على اليمين."
+    },
+    {
+      "id": "fork_right_in_100m",
+      "file": "nav_fork_right_in_100m.mp3",
+      "text": "بعد مئة متر، عند التفرّع، ابق على اليمين."
+    },
+    {
+      "id": "fork_right_in_150m",
+      "file": "nav_fork_right_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، عند التفرّع، ابق على اليمين."
+    },
+    {
+      "id": "fork_right_in_200m",
+      "file": "nav_fork_right_in_200m.mp3",
+      "text": "بعد مئتي متر، عند التفرّع، ابق على اليمين."
+    },
+    {
+      "id": "fork_right_in_250m",
+      "file": "nav_fork_right_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، عند التفرّع، ابق على اليمين."
+    },
+    {
+      "id": "fork_right_in_300m",
+      "file": "nav_fork_right_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، عند التفرّع، ابق على اليمين."
+    },
+    {
+      "id": "fork_right_in_400m",
+      "file": "nav_fork_right_in_400m.mp3",
+      "text": "بعد أربعمئة متر، عند التفرّع، ابق على اليمين."
+    },
+    {
+      "id": "fork_right_in_500m",
+      "file": "nav_fork_right_in_500m.mp3",
+      "text": "بعد خمسمئة متر، عند التفرّع، ابق على اليمين."
+    },
+    {
+      "id": "fork_right_in_700m",
+      "file": "nav_fork_right_in_700m.mp3",
+      "text": "بعد سبعمئة متر، عند التفرّع، ابق على اليمين."
+    },
+    {
+      "id": "roundabout_continue",
+      "file": "nav_roundabout_continue.mp3",
+      "text": "عند الدوّار، تابع الاتّجاه."
+    },
+    {
+      "id": "roundabout_continue_now",
+      "file": "nav_roundabout_continue_now.mp3",
+      "text": "عند الدوّار، تابع الاتّجاه الآن."
+    },
+    {
+      "id": "roundabout_continue_in_50m",
+      "file": "nav_roundabout_continue_in_50m.mp3",
+      "text": "بعد خمسين مترا، عند الدوّار، تابع الاتّجاه."
+    },
+    {
+      "id": "roundabout_continue_in_100m",
+      "file": "nav_roundabout_continue_in_100m.mp3",
+      "text": "بعد مئة متر، عند الدوّار، تابع الاتّجاه."
+    },
+    {
+      "id": "roundabout_continue_in_150m",
+      "file": "nav_roundabout_continue_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، عند الدوّار، تابع الاتّجاه."
+    },
+    {
+      "id": "roundabout_continue_in_200m",
+      "file": "nav_roundabout_continue_in_200m.mp3",
+      "text": "بعد مئتي متر، عند الدوّار، تابع الاتّجاه."
+    },
+    {
+      "id": "roundabout_continue_in_250m",
+      "file": "nav_roundabout_continue_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، عند الدوّار، تابع الاتّجاه."
+    },
+    {
+      "id": "roundabout_continue_in_300m",
+      "file": "nav_roundabout_continue_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، عند الدوّار، تابع الاتّجاه."
+    },
+    {
+      "id": "roundabout_continue_in_400m",
+      "file": "nav_roundabout_continue_in_400m.mp3",
+      "text": "بعد أربعمئة متر، عند الدوّار، تابع الاتّجاه."
+    },
+    {
+      "id": "roundabout_continue_in_500m",
+      "file": "nav_roundabout_continue_in_500m.mp3",
+      "text": "بعد خمسمئة متر، عند الدوّار، تابع الاتّجاه."
+    },
+    {
+      "id": "roundabout_continue_in_700m",
+      "file": "nav_roundabout_continue_in_700m.mp3",
+      "text": "بعد سبعمئة متر، عند الدوّار، تابع الاتّجاه."
+    },
+    {
+      "id": "roundabout_exit_1",
+      "file": "nav_roundabout_exit_1.mp3",
+      "text": "عند الدوّار، اسلك المخرج الأول."
+    },
+    {
+      "id": "roundabout_exit_1_now",
+      "file": "nav_roundabout_exit_1_now.mp3",
+      "text": "عند الدوّار، اسلك المخرج الأول الآن."
+    },
+    {
+      "id": "roundabout_exit_1_in_50m",
+      "file": "nav_roundabout_exit_1_in_50m.mp3",
+      "text": "بعد خمسين مترا، عند الدوّار، اسلك المخرج الأول."
+    },
+    {
+      "id": "roundabout_exit_1_in_100m",
+      "file": "nav_roundabout_exit_1_in_100m.mp3",
+      "text": "بعد مئة متر، عند الدوّار، اسلك المخرج الأول."
+    },
+    {
+      "id": "roundabout_exit_1_in_150m",
+      "file": "nav_roundabout_exit_1_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، عند الدوّار، اسلك المخرج الأول."
+    },
+    {
+      "id": "roundabout_exit_1_in_200m",
+      "file": "nav_roundabout_exit_1_in_200m.mp3",
+      "text": "بعد مئتي متر، عند الدوّار، اسلك المخرج الأول."
+    },
+    {
+      "id": "roundabout_exit_1_in_250m",
+      "file": "nav_roundabout_exit_1_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، عند الدوّار، اسلك المخرج الأول."
+    },
+    {
+      "id": "roundabout_exit_1_in_300m",
+      "file": "nav_roundabout_exit_1_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، عند الدوّار، اسلك المخرج الأول."
+    },
+    {
+      "id": "roundabout_exit_1_in_400m",
+      "file": "nav_roundabout_exit_1_in_400m.mp3",
+      "text": "بعد أربعمئة متر، عند الدوّار، اسلك المخرج الأول."
+    },
+    {
+      "id": "roundabout_exit_1_in_500m",
+      "file": "nav_roundabout_exit_1_in_500m.mp3",
+      "text": "بعد خمسمئة متر، عند الدوّار، اسلك المخرج الأول."
+    },
+    {
+      "id": "roundabout_exit_1_in_700m",
+      "file": "nav_roundabout_exit_1_in_700m.mp3",
+      "text": "بعد سبعمئة متر، عند الدوّار، اسلك المخرج الأول."
+    },
+    {
+      "id": "roundabout_exit_2",
+      "file": "nav_roundabout_exit_2.mp3",
+      "text": "عند الدوّار، اسلك المخرج الثاني."
+    },
+    {
+      "id": "roundabout_exit_2_now",
+      "file": "nav_roundabout_exit_2_now.mp3",
+      "text": "عند الدوّار، اسلك المخرج الثاني الآن."
+    },
+    {
+      "id": "roundabout_exit_2_in_50m",
+      "file": "nav_roundabout_exit_2_in_50m.mp3",
+      "text": "بعد خمسين مترا، عند الدوّار، اسلك المخرج الثاني."
+    },
+    {
+      "id": "roundabout_exit_2_in_100m",
+      "file": "nav_roundabout_exit_2_in_100m.mp3",
+      "text": "بعد مئة متر، عند الدوّار، اسلك المخرج الثاني."
+    },
+    {
+      "id": "roundabout_exit_2_in_150m",
+      "file": "nav_roundabout_exit_2_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، عند الدوّار، اسلك المخرج الثاني."
+    },
+    {
+      "id": "roundabout_exit_2_in_200m",
+      "file": "nav_roundabout_exit_2_in_200m.mp3",
+      "text": "بعد مئتي متر، عند الدوّار، اسلك المخرج الثاني."
+    },
+    {
+      "id": "roundabout_exit_2_in_250m",
+      "file": "nav_roundabout_exit_2_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، عند الدوّار، اسلك المخرج الثاني."
+    },
+    {
+      "id": "roundabout_exit_2_in_300m",
+      "file": "nav_roundabout_exit_2_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، عند الدوّار، اسلك المخرج الثاني."
+    },
+    {
+      "id": "roundabout_exit_2_in_400m",
+      "file": "nav_roundabout_exit_2_in_400m.mp3",
+      "text": "بعد أربعمئة متر، عند الدوّار، اسلك المخرج الثاني."
+    },
+    {
+      "id": "roundabout_exit_2_in_500m",
+      "file": "nav_roundabout_exit_2_in_500m.mp3",
+      "text": "بعد خمسمئة متر، عند الدوّار، اسلك المخرج الثاني."
+    },
+    {
+      "id": "roundabout_exit_2_in_700m",
+      "file": "nav_roundabout_exit_2_in_700m.mp3",
+      "text": "بعد سبعمئة متر، عند الدوّار، اسلك المخرج الثاني."
+    },
+    {
+      "id": "roundabout_exit_3",
+      "file": "nav_roundabout_exit_3.mp3",
+      "text": "عند الدوّار، اسلك المخرج الثالث."
+    },
+    {
+      "id": "roundabout_exit_3_now",
+      "file": "nav_roundabout_exit_3_now.mp3",
+      "text": "عند الدوّار، اسلك المخرج الثالث الآن."
+    },
+    {
+      "id": "roundabout_exit_3_in_50m",
+      "file": "nav_roundabout_exit_3_in_50m.mp3",
+      "text": "بعد خمسين مترا، عند الدوّار، اسلك المخرج الثالث."
+    },
+    {
+      "id": "roundabout_exit_3_in_100m",
+      "file": "nav_roundabout_exit_3_in_100m.mp3",
+      "text": "بعد مئة متر، عند الدوّار، اسلك المخرج الثالث."
+    },
+    {
+      "id": "roundabout_exit_3_in_150m",
+      "file": "nav_roundabout_exit_3_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، عند الدوّار، اسلك المخرج الثالث."
+    },
+    {
+      "id": "roundabout_exit_3_in_200m",
+      "file": "nav_roundabout_exit_3_in_200m.mp3",
+      "text": "بعد مئتي متر، عند الدوّار، اسلك المخرج الثالث."
+    },
+    {
+      "id": "roundabout_exit_3_in_250m",
+      "file": "nav_roundabout_exit_3_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، عند الدوّار، اسلك المخرج الثالث."
+    },
+    {
+      "id": "roundabout_exit_3_in_300m",
+      "file": "nav_roundabout_exit_3_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، عند الدوّار، اسلك المخرج الثالث."
+    },
+    {
+      "id": "roundabout_exit_3_in_400m",
+      "file": "nav_roundabout_exit_3_in_400m.mp3",
+      "text": "بعد أربعمئة متر، عند الدوّار، اسلك المخرج الثالث."
+    },
+    {
+      "id": "roundabout_exit_3_in_500m",
+      "file": "nav_roundabout_exit_3_in_500m.mp3",
+      "text": "بعد خمسمئة متر، عند الدوّار، اسلك المخرج الثالث."
+    },
+    {
+      "id": "roundabout_exit_3_in_700m",
+      "file": "nav_roundabout_exit_3_in_700m.mp3",
+      "text": "بعد سبعمئة متر، عند الدوّار، اسلك المخرج الثالث."
+    },
+    {
+      "id": "roundabout_exit_4",
+      "file": "nav_roundabout_exit_4.mp3",
+      "text": "عند الدوّار، اسلك المخرج الرابع."
+    },
+    {
+      "id": "roundabout_exit_4_now",
+      "file": "nav_roundabout_exit_4_now.mp3",
+      "text": "عند الدوّار، اسلك المخرج الرابع الآن."
+    },
+    {
+      "id": "roundabout_exit_4_in_50m",
+      "file": "nav_roundabout_exit_4_in_50m.mp3",
+      "text": "بعد خمسين مترا، عند الدوّار، اسلك المخرج الرابع."
+    },
+    {
+      "id": "roundabout_exit_4_in_100m",
+      "file": "nav_roundabout_exit_4_in_100m.mp3",
+      "text": "بعد مئة متر، عند الدوّار، اسلك المخرج الرابع."
+    },
+    {
+      "id": "roundabout_exit_4_in_150m",
+      "file": "nav_roundabout_exit_4_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، عند الدوّار، اسلك المخرج الرابع."
+    },
+    {
+      "id": "roundabout_exit_4_in_200m",
+      "file": "nav_roundabout_exit_4_in_200m.mp3",
+      "text": "بعد مئتي متر، عند الدوّار، اسلك المخرج الرابع."
+    },
+    {
+      "id": "roundabout_exit_4_in_250m",
+      "file": "nav_roundabout_exit_4_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، عند الدوّار، اسلك المخرج الرابع."
+    },
+    {
+      "id": "roundabout_exit_4_in_300m",
+      "file": "nav_roundabout_exit_4_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، عند الدوّار، اسلك المخرج الرابع."
+    },
+    {
+      "id": "roundabout_exit_4_in_400m",
+      "file": "nav_roundabout_exit_4_in_400m.mp3",
+      "text": "بعد أربعمئة متر، عند الدوّار، اسلك المخرج الرابع."
+    },
+    {
+      "id": "roundabout_exit_4_in_500m",
+      "file": "nav_roundabout_exit_4_in_500m.mp3",
+      "text": "بعد خمسمئة متر، عند الدوّار، اسلك المخرج الرابع."
+    },
+    {
+      "id": "roundabout_exit_4_in_700m",
+      "file": "nav_roundabout_exit_4_in_700m.mp3",
+      "text": "بعد سبعمئة متر، عند الدوّار، اسلك المخرج الرابع."
+    },
+    {
+      "id": "roundabout_exit_5",
+      "file": "nav_roundabout_exit_5.mp3",
+      "text": "عند الدوّار، اسلك المخرج الخامس."
+    },
+    {
+      "id": "roundabout_exit_5_now",
+      "file": "nav_roundabout_exit_5_now.mp3",
+      "text": "عند الدوّار، اسلك المخرج الخامس الآن."
+    },
+    {
+      "id": "roundabout_exit_5_in_50m",
+      "file": "nav_roundabout_exit_5_in_50m.mp3",
+      "text": "بعد خمسين مترا، عند الدوّار، اسلك المخرج الخامس."
+    },
+    {
+      "id": "roundabout_exit_5_in_100m",
+      "file": "nav_roundabout_exit_5_in_100m.mp3",
+      "text": "بعد مئة متر، عند الدوّار، اسلك المخرج الخامس."
+    },
+    {
+      "id": "roundabout_exit_5_in_150m",
+      "file": "nav_roundabout_exit_5_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، عند الدوّار، اسلك المخرج الخامس."
+    },
+    {
+      "id": "roundabout_exit_5_in_200m",
+      "file": "nav_roundabout_exit_5_in_200m.mp3",
+      "text": "بعد مئتي متر، عند الدوّار، اسلك المخرج الخامس."
+    },
+    {
+      "id": "roundabout_exit_5_in_250m",
+      "file": "nav_roundabout_exit_5_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، عند الدوّار، اسلك المخرج الخامس."
+    },
+    {
+      "id": "roundabout_exit_5_in_300m",
+      "file": "nav_roundabout_exit_5_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، عند الدوّار، اسلك المخرج الخامس."
+    },
+    {
+      "id": "roundabout_exit_5_in_400m",
+      "file": "nav_roundabout_exit_5_in_400m.mp3",
+      "text": "بعد أربعمئة متر، عند الدوّار، اسلك المخرج الخامس."
+    },
+    {
+      "id": "roundabout_exit_5_in_500m",
+      "file": "nav_roundabout_exit_5_in_500m.mp3",
+      "text": "بعد خمسمئة متر، عند الدوّار، اسلك المخرج الخامس."
+    },
+    {
+      "id": "roundabout_exit_5_in_700m",
+      "file": "nav_roundabout_exit_5_in_700m.mp3",
+      "text": "بعد سبعمئة متر، عند الدوّار، اسلك المخرج الخامس."
+    },
+    {
+      "id": "roundabout_exit_6",
+      "file": "nav_roundabout_exit_6.mp3",
+      "text": "عند الدوّار، اسلك المخرج السادس."
+    },
+    {
+      "id": "roundabout_exit_6_now",
+      "file": "nav_roundabout_exit_6_now.mp3",
+      "text": "عند الدوّار، اسلك المخرج السادس الآن."
+    },
+    {
+      "id": "roundabout_exit_6_in_50m",
+      "file": "nav_roundabout_exit_6_in_50m.mp3",
+      "text": "بعد خمسين مترا، عند الدوّار، اسلك المخرج السادس."
+    },
+    {
+      "id": "roundabout_exit_6_in_100m",
+      "file": "nav_roundabout_exit_6_in_100m.mp3",
+      "text": "بعد مئة متر، عند الدوّار، اسلك المخرج السادس."
+    },
+    {
+      "id": "roundabout_exit_6_in_150m",
+      "file": "nav_roundabout_exit_6_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، عند الدوّار، اسلك المخرج السادس."
+    },
+    {
+      "id": "roundabout_exit_6_in_200m",
+      "file": "nav_roundabout_exit_6_in_200m.mp3",
+      "text": "بعد مئتي متر، عند الدوّار، اسلك المخرج السادس."
+    },
+    {
+      "id": "roundabout_exit_6_in_250m",
+      "file": "nav_roundabout_exit_6_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، عند الدوّار، اسلك المخرج السادس."
+    },
+    {
+      "id": "roundabout_exit_6_in_300m",
+      "file": "nav_roundabout_exit_6_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، عند الدوّار، اسلك المخرج السادس."
+    },
+    {
+      "id": "roundabout_exit_6_in_400m",
+      "file": "nav_roundabout_exit_6_in_400m.mp3",
+      "text": "بعد أربعمئة متر، عند الدوّار، اسلك المخرج السادس."
+    },
+    {
+      "id": "roundabout_exit_6_in_500m",
+      "file": "nav_roundabout_exit_6_in_500m.mp3",
+      "text": "بعد خمسمئة متر، عند الدوّار، اسلك المخرج السادس."
+    },
+    {
+      "id": "roundabout_exit_6_in_700m",
+      "file": "nav_roundabout_exit_6_in_700m.mp3",
+      "text": "بعد سبعمئة متر، عند الدوّار، اسلك المخرج السادس."
+    },
+    {
+      "id": "roundabout_exit_7",
+      "file": "nav_roundabout_exit_7.mp3",
+      "text": "عند الدوّار، اسلك المخرج السابع."
+    },
+    {
+      "id": "roundabout_exit_7_now",
+      "file": "nav_roundabout_exit_7_now.mp3",
+      "text": "عند الدوّار، اسلك المخرج السابع الآن."
+    },
+    {
+      "id": "roundabout_exit_7_in_50m",
+      "file": "nav_roundabout_exit_7_in_50m.mp3",
+      "text": "بعد خمسين مترا، عند الدوّار، اسلك المخرج السابع."
+    },
+    {
+      "id": "roundabout_exit_7_in_100m",
+      "file": "nav_roundabout_exit_7_in_100m.mp3",
+      "text": "بعد مئة متر، عند الدوّار، اسلك المخرج السابع."
+    },
+    {
+      "id": "roundabout_exit_7_in_150m",
+      "file": "nav_roundabout_exit_7_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، عند الدوّار، اسلك المخرج السابع."
+    },
+    {
+      "id": "roundabout_exit_7_in_200m",
+      "file": "nav_roundabout_exit_7_in_200m.mp3",
+      "text": "بعد مئتي متر، عند الدوّار، اسلك المخرج السابع."
+    },
+    {
+      "id": "roundabout_exit_7_in_250m",
+      "file": "nav_roundabout_exit_7_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، عند الدوّار، اسلك المخرج السابع."
+    },
+    {
+      "id": "roundabout_exit_7_in_300m",
+      "file": "nav_roundabout_exit_7_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، عند الدوّار، اسلك المخرج السابع."
+    },
+    {
+      "id": "roundabout_exit_7_in_400m",
+      "file": "nav_roundabout_exit_7_in_400m.mp3",
+      "text": "بعد أربعمئة متر، عند الدوّار، اسلك المخرج السابع."
+    },
+    {
+      "id": "roundabout_exit_7_in_500m",
+      "file": "nav_roundabout_exit_7_in_500m.mp3",
+      "text": "بعد خمسمئة متر، عند الدوّار، اسلك المخرج السابع."
+    },
+    {
+      "id": "roundabout_exit_7_in_700m",
+      "file": "nav_roundabout_exit_7_in_700m.mp3",
+      "text": "بعد سبعمئة متر، عند الدوّار، اسلك المخرج السابع."
+    },
+    {
+      "id": "roundabout_exit_8",
+      "file": "nav_roundabout_exit_8.mp3",
+      "text": "عند الدوّار، اسلك المخرج الثامن."
+    },
+    {
+      "id": "roundabout_exit_8_now",
+      "file": "nav_roundabout_exit_8_now.mp3",
+      "text": "عند الدوّار، اسلك المخرج الثامن الآن."
+    },
+    {
+      "id": "roundabout_exit_8_in_50m",
+      "file": "nav_roundabout_exit_8_in_50m.mp3",
+      "text": "بعد خمسين مترا، عند الدوّار، اسلك المخرج الثامن."
+    },
+    {
+      "id": "roundabout_exit_8_in_100m",
+      "file": "nav_roundabout_exit_8_in_100m.mp3",
+      "text": "بعد مئة متر، عند الدوّار، اسلك المخرج الثامن."
+    },
+    {
+      "id": "roundabout_exit_8_in_150m",
+      "file": "nav_roundabout_exit_8_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، عند الدوّار، اسلك المخرج الثامن."
+    },
+    {
+      "id": "roundabout_exit_8_in_200m",
+      "file": "nav_roundabout_exit_8_in_200m.mp3",
+      "text": "بعد مئتي متر، عند الدوّار، اسلك المخرج الثامن."
+    },
+    {
+      "id": "roundabout_exit_8_in_250m",
+      "file": "nav_roundabout_exit_8_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، عند الدوّار، اسلك المخرج الثامن."
+    },
+    {
+      "id": "roundabout_exit_8_in_300m",
+      "file": "nav_roundabout_exit_8_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، عند الدوّار، اسلك المخرج الثامن."
+    },
+    {
+      "id": "roundabout_exit_8_in_400m",
+      "file": "nav_roundabout_exit_8_in_400m.mp3",
+      "text": "بعد أربعمئة متر، عند الدوّار، اسلك المخرج الثامن."
+    },
+    {
+      "id": "roundabout_exit_8_in_500m",
+      "file": "nav_roundabout_exit_8_in_500m.mp3",
+      "text": "بعد خمسمئة متر، عند الدوّار، اسلك المخرج الثامن."
+    },
+    {
+      "id": "roundabout_exit_8_in_700m",
+      "file": "nav_roundabout_exit_8_in_700m.mp3",
+      "text": "بعد سبعمئة متر، عند الدوّار، اسلك المخرج الثامن."
+    },
+    {
+      "id": "roundabout_exit_9",
+      "file": "nav_roundabout_exit_9.mp3",
+      "text": "عند الدوّار، اسلك المخرج التاسع."
+    },
+    {
+      "id": "roundabout_exit_9_now",
+      "file": "nav_roundabout_exit_9_now.mp3",
+      "text": "عند الدوّار، اسلك المخرج التاسع الآن."
+    },
+    {
+      "id": "roundabout_exit_9_in_50m",
+      "file": "nav_roundabout_exit_9_in_50m.mp3",
+      "text": "بعد خمسين مترا، عند الدوّار، اسلك المخرج التاسع."
+    },
+    {
+      "id": "roundabout_exit_9_in_100m",
+      "file": "nav_roundabout_exit_9_in_100m.mp3",
+      "text": "بعد مئة متر، عند الدوّار، اسلك المخرج التاسع."
+    },
+    {
+      "id": "roundabout_exit_9_in_150m",
+      "file": "nav_roundabout_exit_9_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، عند الدوّار، اسلك المخرج التاسع."
+    },
+    {
+      "id": "roundabout_exit_9_in_200m",
+      "file": "nav_roundabout_exit_9_in_200m.mp3",
+      "text": "بعد مئتي متر، عند الدوّار، اسلك المخرج التاسع."
+    },
+    {
+      "id": "roundabout_exit_9_in_250m",
+      "file": "nav_roundabout_exit_9_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، عند الدوّار، اسلك المخرج التاسع."
+    },
+    {
+      "id": "roundabout_exit_9_in_300m",
+      "file": "nav_roundabout_exit_9_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، عند الدوّار، اسلك المخرج التاسع."
+    },
+    {
+      "id": "roundabout_exit_9_in_400m",
+      "file": "nav_roundabout_exit_9_in_400m.mp3",
+      "text": "بعد أربعمئة متر، عند الدوّار، اسلك المخرج التاسع."
+    },
+    {
+      "id": "roundabout_exit_9_in_500m",
+      "file": "nav_roundabout_exit_9_in_500m.mp3",
+      "text": "بعد خمسمئة متر، عند الدوّار، اسلك المخرج التاسع."
+    },
+    {
+      "id": "roundabout_exit_9_in_700m",
+      "file": "nav_roundabout_exit_9_in_700m.mp3",
+      "text": "بعد سبعمئة متر، عند الدوّار، اسلك المخرج التاسع."
+    },
+    {
+      "id": "roundabout_exit_10",
+      "file": "nav_roundabout_exit_10.mp3",
+      "text": "عند الدوّار، اسلك المخرج العاشر."
+    },
+    {
+      "id": "roundabout_exit_10_now",
+      "file": "nav_roundabout_exit_10_now.mp3",
+      "text": "عند الدوّار، اسلك المخرج العاشر الآن."
+    },
+    {
+      "id": "roundabout_exit_10_in_50m",
+      "file": "nav_roundabout_exit_10_in_50m.mp3",
+      "text": "بعد خمسين مترا، عند الدوّار، اسلك المخرج العاشر."
+    },
+    {
+      "id": "roundabout_exit_10_in_100m",
+      "file": "nav_roundabout_exit_10_in_100m.mp3",
+      "text": "بعد مئة متر، عند الدوّار، اسلك المخرج العاشر."
+    },
+    {
+      "id": "roundabout_exit_10_in_150m",
+      "file": "nav_roundabout_exit_10_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، عند الدوّار، اسلك المخرج العاشر."
+    },
+    {
+      "id": "roundabout_exit_10_in_200m",
+      "file": "nav_roundabout_exit_10_in_200m.mp3",
+      "text": "بعد مئتي متر، عند الدوّار، اسلك المخرج العاشر."
+    },
+    {
+      "id": "roundabout_exit_10_in_250m",
+      "file": "nav_roundabout_exit_10_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، عند الدوّار، اسلك المخرج العاشر."
+    },
+    {
+      "id": "roundabout_exit_10_in_300m",
+      "file": "nav_roundabout_exit_10_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، عند الدوّار، اسلك المخرج العاشر."
+    },
+    {
+      "id": "roundabout_exit_10_in_400m",
+      "file": "nav_roundabout_exit_10_in_400m.mp3",
+      "text": "بعد أربعمئة متر، عند الدوّار، اسلك المخرج العاشر."
+    },
+    {
+      "id": "roundabout_exit_10_in_500m",
+      "file": "nav_roundabout_exit_10_in_500m.mp3",
+      "text": "بعد خمسمئة متر، عند الدوّار، اسلك المخرج العاشر."
+    },
+    {
+      "id": "roundabout_exit_10_in_700m",
+      "file": "nav_roundabout_exit_10_in_700m.mp3",
+      "text": "بعد سبعمئة متر، عند الدوّار، اسلك المخرج العاشر."
+    },
+    {
+      "id": "roundabout_exit_11",
+      "file": "nav_roundabout_exit_11.mp3",
+      "text": "عند الدوّار، اسلك المخرج الحادي عشر."
+    },
+    {
+      "id": "roundabout_exit_11_now",
+      "file": "nav_roundabout_exit_11_now.mp3",
+      "text": "عند الدوّار، اسلك المخرج الحادي عشر الآن."
+    },
+    {
+      "id": "roundabout_exit_11_in_50m",
+      "file": "nav_roundabout_exit_11_in_50m.mp3",
+      "text": "بعد خمسين مترا، عند الدوّار، اسلك المخرج الحادي عشر."
+    },
+    {
+      "id": "roundabout_exit_11_in_100m",
+      "file": "nav_roundabout_exit_11_in_100m.mp3",
+      "text": "بعد مئة متر، عند الدوّار، اسلك المخرج الحادي عشر."
+    },
+    {
+      "id": "roundabout_exit_11_in_150m",
+      "file": "nav_roundabout_exit_11_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، عند الدوّار، اسلك المخرج الحادي عشر."
+    },
+    {
+      "id": "roundabout_exit_11_in_200m",
+      "file": "nav_roundabout_exit_11_in_200m.mp3",
+      "text": "بعد مئتي متر، عند الدوّار، اسلك المخرج الحادي عشر."
+    },
+    {
+      "id": "roundabout_exit_11_in_250m",
+      "file": "nav_roundabout_exit_11_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، عند الدوّار، اسلك المخرج الحادي عشر."
+    },
+    {
+      "id": "roundabout_exit_11_in_300m",
+      "file": "nav_roundabout_exit_11_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، عند الدوّار، اسلك المخرج الحادي عشر."
+    },
+    {
+      "id": "roundabout_exit_11_in_400m",
+      "file": "nav_roundabout_exit_11_in_400m.mp3",
+      "text": "بعد أربعمئة متر، عند الدوّار، اسلك المخرج الحادي عشر."
+    },
+    {
+      "id": "roundabout_exit_11_in_500m",
+      "file": "nav_roundabout_exit_11_in_500m.mp3",
+      "text": "بعد خمسمئة متر، عند الدوّار، اسلك المخرج الحادي عشر."
+    },
+    {
+      "id": "roundabout_exit_11_in_700m",
+      "file": "nav_roundabout_exit_11_in_700m.mp3",
+      "text": "بعد سبعمئة متر، عند الدوّار، اسلك المخرج الحادي عشر."
+    },
+    {
+      "id": "roundabout_exit_12",
+      "file": "nav_roundabout_exit_12.mp3",
+      "text": "عند الدوّار، اسلك المخرج الثاني عشر."
+    },
+    {
+      "id": "roundabout_exit_12_now",
+      "file": "nav_roundabout_exit_12_now.mp3",
+      "text": "عند الدوّار، اسلك المخرج الثاني عشر الآن."
+    },
+    {
+      "id": "roundabout_exit_12_in_50m",
+      "file": "nav_roundabout_exit_12_in_50m.mp3",
+      "text": "بعد خمسين مترا، عند الدوّار، اسلك المخرج الثاني عشر."
+    },
+    {
+      "id": "roundabout_exit_12_in_100m",
+      "file": "nav_roundabout_exit_12_in_100m.mp3",
+      "text": "بعد مئة متر، عند الدوّار، اسلك المخرج الثاني عشر."
+    },
+    {
+      "id": "roundabout_exit_12_in_150m",
+      "file": "nav_roundabout_exit_12_in_150m.mp3",
+      "text": "بعد مئة وخمسين مترا، عند الدوّار، اسلك المخرج الثاني عشر."
+    },
+    {
+      "id": "roundabout_exit_12_in_200m",
+      "file": "nav_roundabout_exit_12_in_200m.mp3",
+      "text": "بعد مئتي متر، عند الدوّار، اسلك المخرج الثاني عشر."
+    },
+    {
+      "id": "roundabout_exit_12_in_250m",
+      "file": "nav_roundabout_exit_12_in_250m.mp3",
+      "text": "بعد مئتين وخمسين مترا، عند الدوّار، اسلك المخرج الثاني عشر."
+    },
+    {
+      "id": "roundabout_exit_12_in_300m",
+      "file": "nav_roundabout_exit_12_in_300m.mp3",
+      "text": "بعد ثلاثمئة متر، عند الدوّار، اسلك المخرج الثاني عشر."
+    },
+    {
+      "id": "roundabout_exit_12_in_400m",
+      "file": "nav_roundabout_exit_12_in_400m.mp3",
+      "text": "بعد أربعمئة متر، عند الدوّار، اسلك المخرج الثاني عشر."
+    },
+    {
+      "id": "roundabout_exit_12_in_500m",
+      "file": "nav_roundabout_exit_12_in_500m.mp3",
+      "text": "بعد خمسمئة متر، عند الدوّار، اسلك المخرج الثاني عشر."
+    },
+    {
+      "id": "roundabout_exit_12_in_700m",
+      "file": "nav_roundabout_exit_12_in_700m.mp3",
+      "text": "بعد سبعمئة متر، عند الدوّار، اسلك المخرج الثاني عشر."
+    },
+    {
+      "id": "depart",
+      "file": "nav_depart.mp3",
+      "text": "ابدأ السير."
+    },
+    {
+      "id": "arrived",
+      "file": "nav_arrived.mp3",
+      "text": "لقد وصلت إلى وجهتك."
+    },
+    {
+      "id": "recalculating_route",
+      "file": "nav_recalculating_route.mp3",
+      "text": "يعاد حساب المسار."
+    },
+    {
+      "id": "reroute_failed",
+      "file": "nav_reroute_failed.mp3",
+      "text": "تعذّرت إعادة حساب المسار."
+    },
+    {
+      "id": "route_end",
+      "file": "nav_route_end.mp3",
+      "text": "انتهى المسار المرسوم، تابع نحو الموقع."
+    },
+    {
+      "id": "navigation_started",
+      "file": "nav_navigation_started.mp3",
+      "text": "بدأت الملاحة."
+    },
+    {
+      "id": "gps_weak",
+      "file": "nav_gps_weak.mp3",
+      "text": "إشارة تحديد الموقع ضعيفة."
+    },
+    {
+      "id": "gps_lost",
+      "file": "nav_gps_lost.mp3",
+      "text": "انقطعت إشارة تحديد الموقع."
+    },
+    {
+      "id": "gps_restored",
+      "file": "nav_gps_restored.mp3",
+      "text": "عادت إشارة تحديد الموقع."
+    },
+    {
+      "id": "wrong_way",
+      "file": "nav_wrong_way.mp3",
+      "text": "أنت تسير بعكس اتّجاه المسار."
+    }
+  ]
+}
