@@ -55,6 +55,9 @@ object Sizes {
     /** The app's own bottom bar, without the system's own strip beneath it. */
     val bottomBar = 64.dp
 
+    /** How far the map's own controls sit above the card that names a chosen marker. */
+    val mapCardClearance = 148.dp
+
     /** Wide enough for the longest category name the taxonomy holds, over two lines. */
     val categoryLabel = 92.dp
 

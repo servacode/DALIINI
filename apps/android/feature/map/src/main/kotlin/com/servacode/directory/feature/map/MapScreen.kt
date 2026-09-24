@@ -1,5 +1,8 @@
 package com.servacode.directory.feature.map
 
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +29,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -36,16 +40,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.AvailabilityPill
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryIcon
+import com.servacode.directory.core.designsystem.DirectoryIconButton
+import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryMessageState
 import com.servacode.directory.core.designsystem.DirectoryPage
-import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.Elevation
 import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.Radius
 import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
+import com.servacode.directory.core.location.FOREGROUND_LOCATION_PERMISSIONS
+import com.servacode.directory.core.maps.MapCamera
 import com.servacode.directory.core.maps.FacilityMapPin
 import com.servacode.directory.core.maps.MapLibreController
 import com.servacode.directory.core.maps.MapPoint
@@ -58,22 +65,28 @@ import com.servacode.directory.core.model.PublicMapFacility
  * Screen 05. The province's facilities where they stand.
  *
  * The map itself is unchanged: the camera it opens on, what it keeps while its view comes and
- * goes, and what a marker does when it is pressed all stay as they were. What is new is the
- * frame around it — a bar that says where the user is and a way back — and the card that names
- * the facility the map is holding onto.
+ * goes, and which markers it draws all stay as they were. What changed is what a marker does:
+ * it names its facility at the foot of the map, and the page opens from those words rather
+ * than from the pin. Nothing frames the map — a title reading "map" above a map says nothing —
+ * and a control in the corner points at the user when they ask.
  */
 @Composable
 fun MapScreen(
     styleUrl: String,
     onFacility: (String) -> Unit,
-    onBack: () -> Unit,
     bottomBar: @Composable () -> Unit = {},
     viewModel: MapViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val askLocation = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions(),
+    ) { granted -> if (granted.values.any { it }) viewModel.locate() }
+    val context = LocalContext.current
 
+    // No bar over the map. A title that says "map" above a map tells the reader nothing they
+    // cannot see, and a back arrow on one of the app's three main places leads nowhere the
+    // bottom bar does not already go. The height goes to the map instead.
     DirectoryPage(
-        topBar = { DirectoryTopBar(title = MapCopy.TITLE, onBack = onBack) },
         bottomBar = bottomBar,
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
@@ -104,10 +117,35 @@ fun MapScreen(
                 )
             }
             val selected = state.facilities.firstOrNull { it.id == state.selectedFacilityId }
+            if (state.cameraResolved) {
+                LocateButton(
+                    working = state.locating,
+                    onClick = {
+                        val granted = FOREGROUND_LOCATION_PERMISSIONS.any {
+                            context.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED
+                        }
+                        if (granted) {
+                            viewModel.locate()
+                        } else {
+                            askLocation.launch(FOREGROUND_LOCATION_PERMISSIONS.toTypedArray())
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        // Clear of the card that names a marker, so one never covers the other.
+                        .padding(
+                            start = Space.base,
+                            top = Space.base,
+                            end = Space.base,
+                            bottom = if (selected != null) Sizes.mapCardClearance else Space.base,
+                        ),
+                )
+            }
             if (selected != null && state.cameraResolved) {
                 SelectedFacilityCard(
                     facility = selected,
-                    onClick = { onFacility(selected.id) },
+                    onDetails = { onFacility(selected.id) },
+                    onDismiss = viewModel::facilityDismissed,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(Space.base),
@@ -158,6 +196,37 @@ private fun MapFilterChip(text: String, selected: Boolean, onClick: () -> Unit) 
             },
             modifier = Modifier.padding(horizontal = Space.base, vertical = Space.sm),
         )
+    }
+}
+
+/**
+ * "Where am I", as a button and not as a habit.
+ *
+ * A map that follows a person is a different product from one that points at them when asked,
+ * and the difference is the whole of the privacy argument. This asks once per press, draws the
+ * answer, and forgets about it.
+ */
+@Composable
+private fun LocateButton(working: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier.size(Sizes.button),
+        shape = RoundedCornerShape(Radius.pill),
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = Elevation.low,
+        enabled = !working,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            DirectoryIcon(
+                icon = DirectoryIcons.pin,
+                contentDescription = MapCopy.MY_LOCATION,
+                tint = if (working) {
+                    MaterialTheme.colorScheme.outline
+                } else {
+                    MaterialTheme.colorScheme.primary
+                },
+            )
+        }
     }
 }
 
@@ -237,10 +306,13 @@ private fun MapCategoryRail(
 @Composable
 private fun SelectedFacilityCard(
     facility: PublicMapFacility,
-    onClick: () -> Unit,
+    onDetails: () -> Unit,
+    onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    DirectoryCard(modifier = modifier, onClick = onClick) {
+    // Not itself a button. Pressing a marker is how one reads a name off the map, and reading
+    // a name should not cost the map: the page opens from the words below, and nowhere else.
+    DirectoryCard(modifier = modifier) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -273,13 +345,18 @@ private fun SelectedFacilityCard(
                 )
                 AvailabilityPill(facility.availability)
             }
-            DirectoryIcon(
-                icon = DirectoryIcons.chevron,
-                contentDescription = null,
-                modifier = Modifier.clearAndSetSemantics { },
-                tint = MaterialTheme.colorScheme.outlineVariant,
+            DirectoryIconButton(
+                icon = DirectoryIcons.close,
+                label = MapCopy.DISMISS,
+                onClick = onDismiss,
+                tint = MaterialTheme.colorScheme.outline,
             )
         }
+        DirectoryPrimaryButton(
+            text = MapCopy.OPEN_DETAILS,
+            onClick = onDetails,
+            modifier = Modifier.fillMaxWidth().padding(top = Space.md),
+        )
     }
 }
 
@@ -314,10 +391,10 @@ private fun FacilityMap(
                             ),
                         )
                     }
-                    mapController.setOnFacilitySelected { id ->
-                        viewModel.facilityChosen(id)
-                        openFacility(id)
-                    }
+                    // A marker names its facility at the foot of the map and stops there. The
+                    // page is a place one chooses to go, from the card, rather than somewhere
+                    // a finger lands by touching a pin the size of a fingertip.
+                    mapController.setOnFacilitySelected { id -> viewModel.facilityChosen(id) }
                     map.setStyle(styleUrl) { controller = mapController }
                 }
             }
@@ -333,13 +410,27 @@ private fun FacilityMap(
             state.selectedFacilityId,
         )
     }
+
+    // The user's own position, marked and brought into view — once, when they asked for it.
+    LaunchedEffect(controller, state.userPoint) {
+        val map = controller ?: return@LaunchedEffect
+        val point = state.userPoint ?: return@LaunchedEffect
+        val here = MapPoint(point.latitude, point.longitude)
+        map.showNavigationLocation(here)
+        map.moveCamera(MapCamera(here.latitude, here.longitude, MY_LOCATION_ZOOM), animated = true)
+    }
 }
+
+/** Close enough to read the streets around someone without losing the pins near them. */
+private const val MY_LOCATION_ZOOM = 15.0
 
 /** The words of the map, provisional until product copy is approved. */
 object MapCopy {
-    const val TITLE = "الخريطة"
     const val OPEN_NOW = "مفتوح الآن"
     const val DUTY_NOW = "مناوب الآن"
+    const val MY_LOCATION = "موقعي"
+    const val OPEN_DETAILS = "عرض التفاصيل"
+    const val DISMISS = "إغلاق"
     const val UNCONFIGURED = "الخريطة غير متاحة"
     const val UNCONFIGURED_BODY = "يجب ضبط مزود خرائط الإنتاج قبل عرض الخريطة"
 }

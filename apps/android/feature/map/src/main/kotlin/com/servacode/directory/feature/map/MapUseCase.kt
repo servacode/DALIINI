@@ -16,6 +16,9 @@ class MapUseCase @Inject constructor(
 
     /** The province's own categories, for the rail beside the map. */
     suspend fun categories() = repository.categories()
+
+    /** Where the user is, when the app may already read it. Never asks for the permission. */
+    suspend fun userPoint() = repository.userPoint()
 }
 
 /** Where the map opens, by [MapCameraPolicy]: each source is read only if the ones before it have nothing. */

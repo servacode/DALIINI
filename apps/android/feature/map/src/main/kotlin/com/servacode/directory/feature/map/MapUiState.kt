@@ -3,6 +3,7 @@ package com.servacode.directory.feature.map
 import com.servacode.directory.core.maps.MapCamera
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.model.Category
+import com.servacode.directory.core.model.GeoPoint
 import com.servacode.directory.core.model.PublicMapFacility
 
 /**
@@ -40,6 +41,15 @@ data class MapUiState(
     val filters: MapFilters = MapFilters(),
     /** The province's own categories, for the rail; empty until they are known. */
     val categories: List<Category> = emptyList(),
+    /**
+     * Where the user is, once they have asked to be shown.
+     *
+     * Null until then, and never fetched on the map's own initiative: a map that quietly
+     * follows someone is a different product from one that points at them when asked.
+     */
+    val userPoint: GeoPoint? = null,
+    /** True while the position is being looked for, so the control can say it is working. */
+    val locating: Boolean = false,
 ) {
     /**
      * False when [viewport]'s markers are already here, as after coming back to the map.

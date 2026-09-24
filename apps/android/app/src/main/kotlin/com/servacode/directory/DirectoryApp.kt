@@ -183,7 +183,6 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
         composable<DirectoryRoute.Map> {
             MapScreen(
                 styleUrl = BuildConfig.MAP_STYLE_URL,
-                onBack = { navController.popBackStack() },
                 bottomBar = { DirectoryTabs(DirectoryTab.MAP, navController) },
                 onFacility = { id ->
                     val below = navController.previousBackStackEntry

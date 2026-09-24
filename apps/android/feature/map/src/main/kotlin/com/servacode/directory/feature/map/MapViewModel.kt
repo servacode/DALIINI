@@ -75,10 +75,32 @@ class MapViewModel @Inject constructor(
         }
     }
 
-    /** The user opened a facility from the map; it stays selected when they come back. */
+    /** A marker was pressed: the facility is named at the foot of the map, and nothing else. */
     fun facilityChosen(id: String) {
         savedStateHandle[SELECTED] = id
         _state.update { it.copy(selectedFacilityId = id) }
+    }
+
+    /** The marker's card was dismissed, or the map was pressed away from any marker. */
+    fun facilityDismissed() {
+        savedStateHandle[SELECTED] = null
+        _state.update { it.copy(selectedFacilityId = null) }
+    }
+
+    /**
+     * Point at the user, because they asked.
+     *
+     * Asked for once per press and never on a timer: the map shows where someone is when they
+     * press for it, and does not follow them. A refusal leaves the map exactly as it was —
+     * there is nothing useful to say beyond what the permission dialog already said.
+     */
+    fun locate() {
+        if (_state.value.locating) return
+        _state.update { it.copy(locating = true) }
+        viewModelScope.launch {
+            val point = runCatching { loadMap.userPoint() }.getOrNull()
+            _state.update { it.copy(locating = false, userPoint = point ?: it.userPoint) }
+        }
     }
 
     private companion object {
