@@ -20,7 +20,7 @@ import kotlin.math.roundToInt
  * Taken from what RahalGo's driver navigation learned over real roads, in this app's own types
  * and vocabulary; see `docs/design/RAHALGO-NAVIGATION-AUDIT.md`.
  */
-internal enum class VoiceStage {
+enum class VoiceStage {
     /** Far enough ahead to change lane. */
     PREPARE,
 
@@ -35,9 +35,9 @@ internal enum class VoiceStage {
 }
 
 /** What a cue is about, which is what decides which recording says it. */
-internal enum class VoiceCueKind { MANEUVER, REROUTE, REROUTE_FAILED, ARRIVE, STARTED }
+enum class VoiceCueKind { MANEUVER, REROUTE, REROUTE_FAILED, ARRIVE, STARTED }
 
-internal data class VoiceCue(
+data class VoiceCue(
     val stage: VoiceStage,
     val text: String,
     /** What makes this cue this cue, so the same one is never said twice. */

@@ -99,5 +99,5 @@ class AndroidNavigationVoice @Inject constructor(
 abstract class NavigationVoiceModule {
     @Binds
     @Singleton
-    internal abstract fun bindNavigationVoice(impl: AndroidNavigationVoice): NavigationVoice
+    abstract fun bindNavigationVoice(impl: AndroidNavigationVoice): NavigationVoice
 }

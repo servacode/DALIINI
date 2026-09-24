@@ -12,10 +12,6 @@ import org.maplibre.android.style.layers.Property
 import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.layers.SymbolLayer
 import org.maplibre.android.style.sources.GeoJsonSource
-import org.maplibre.geojson.Feature
-import org.maplibre.geojson.FeatureCollection
-import org.maplibre.geojson.LineString
-import org.maplibre.geojson.Point
 
 /** How the way there is drawn, which is not the same for someone walking it. */
 enum class RouteStroke {
@@ -100,14 +96,10 @@ internal class NavigationLayers(private val map: MapLibreMap) {
         val style = style() ?: return
         val source = style.getSourceAs<GeoJsonSource>(ROUTE_SOURCE) ?: return
         if (points.size < 2) {
-            source.setGeoJson(Feature.fromGeometry(LineString.fromLngLats(emptyList())))
+            source.setGeoJson(GeoJson.EMPTY)
             return
         }
-        source.setGeoJson(
-            Feature.fromGeometry(
-                LineString.fromLngLats(points.map { Point.fromLngLat(it.longitude, it.latitude) }),
-            ),
-        )
+        source.setGeoJson(GeoJson.lineString(points))
         val layer = style.getLayer(ROUTE_LAYER) as? LineLayer ?: return
         layer.setProperties(
             PropertyFactory.lineColor(colorArgb),
@@ -121,7 +113,7 @@ internal class NavigationLayers(private val map: MapLibreMap) {
     fun showUser(point: MapPoint, bearingDegrees: Float, mark: UserMark) {
         val style = style() ?: return
         val source = style.getSourceAs<GeoJsonSource>(USER_SOURCE) ?: return
-        source.setGeoJson(Feature.fromGeometry(Point.fromLngLat(point.longitude, point.latitude)))
+        source.setGeoJson(GeoJson.point(point))
         val layer = style.getLayer(USER_LAYER) as? SymbolLayer ?: return
         layer.setProperties(
             PropertyFactory.iconImage(if (mark == UserMark.WALKER) WALKER_IMAGE else ARROW_IMAGE),
@@ -132,10 +124,8 @@ internal class NavigationLayers(private val map: MapLibreMap) {
     fun clear() {
         val style = installedStyle ?: return
         runCatching {
-            style.getSourceAs<GeoJsonSource>(ROUTE_SOURCE)
-                ?.setGeoJson(Feature.fromGeometry(LineString.fromLngLats(emptyList())))
-            style.getSourceAs<GeoJsonSource>(USER_SOURCE)
-                ?.setGeoJson(FeatureCollection.fromFeatures(emptyList()))
+            style.getSourceAs<GeoJsonSource>(ROUTE_SOURCE)?.setGeoJson(GeoJson.EMPTY)
+            style.getSourceAs<GeoJsonSource>(USER_SOURCE)?.setGeoJson(GeoJson.EMPTY)
         }
     }
 
