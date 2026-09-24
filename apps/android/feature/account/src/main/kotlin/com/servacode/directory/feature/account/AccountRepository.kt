@@ -5,6 +5,7 @@ import com.servacode.directory.core.auth.SessionState
 import com.servacode.directory.core.datastore.DirectoryPreferencesStore
 import com.servacode.directory.core.model.AccountProfile
 import com.servacode.directory.core.model.Province
+import com.servacode.directory.core.network.OwnerApiBoundary
 import com.servacode.directory.core.network.PublicApiBoundary
 import com.servacode.directory.core.network.SignOut
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +17,7 @@ import javax.inject.Inject
  */
 class AccountRepository @Inject constructor(
     private val api: PublicApiBoundary,
+    private val owner: OwnerApiBoundary,
     private val session: SessionCoordinator,
     private val preferences: DirectoryPreferencesStore,
     private val signOut: SignOut,
@@ -26,12 +28,18 @@ class AccountRepository @Inject constructor(
 
     suspend fun provinces(): Result<List<Province>> = runCatching { api.provinces() }
 
-    suspend fun logout() = signOut()
+    /**
+     * Whether this account has joined as an owner yet.
+     *
+     * Asked of the owner list rather than of a flag, because the list is the fact: an account
+     * that owns a facility has one, and one that has never joined has none. A failure is read
+     * as "not yet", which shows the invitation — offering to join to someone who already has
+     * is a smaller wrong than hiding their own facilities behind a network hiccup would be.
+     */
+    suspend fun ownsFacility(): Boolean =
+        runCatching { owner.facilities().isNotEmpty() }.getOrDefault(false)
 
-    /** Moves the account to another province and browses it from now on. */
-    suspend fun changeProvince(provinceId: String): Result<AccountProfile> = runCatching {
-        api.updateProfile(provinceId = provinceId).also { preferences.selectProvince(provinceId) }
-    }
+    suspend fun logout() = signOut()
 
     /**
      * The profile fields the backend accepts. A province chosen here is also what this device

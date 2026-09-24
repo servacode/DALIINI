@@ -12,7 +12,9 @@ class AccountUseCase @Inject constructor(
     val session: StateFlow<SessionState> get() = repository.state
     suspend operator fun invoke(): Result<AccountProfile> = repository.profile()
     suspend fun provinces(): Result<List<Province>> = repository.provinces()
-    suspend fun changeProvince(provinceId: String): Result<AccountProfile> = repository.changeProvince(provinceId)
+
+    /** Whether the profile shows "منشآتي" or the invitation to join. */
+    suspend fun ownsFacility(): Boolean = repository.ownsFacility()
 
     /** The fields the backend accepts, and no others: a display name and a province. */
     suspend fun update(displayName: String, provinceId: String?): Result<AccountProfile> =

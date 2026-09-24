@@ -1,17 +1,13 @@
 package com.servacode.directory.feature.account
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -45,28 +41,37 @@ import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.Radius
 import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
-import com.servacode.directory.core.model.Province
 
 /**
  * Screen 15. Who the user is to this app, and the few things they can do about it.
  *
- * Nothing is offered here that the account API does not have: there is no avatar to upload
- * (INT-017), no saved facilities and no notification inbox, so no such rows are drawn.
+ * The menu is short on purpose, and each row appears in exactly one place in the app:
+ *
+ *  - **The province is not a row.** It is one of the person's own details, and it is edited
+ *    where the rest of them are. Two places to change one field is two places to disagree.
+ *  - **Ratings are not a row.** A rating is left on a facility and changed or removed on that
+ *    same facility, which is where the person is looking when they think about it. A list of
+ *    one's own ratings is a filing cabinet nobody opens.
+ *  - **The password and the app's own switches are not rows.** They are settings, and settings
+ *    is one screen. This one used to offer both, and so did that one.
+ *  - **Owning is one row, not two.** Someone who has never joined is invited to; someone who
+ *    has sees what they have. Never both.
+ *
+ * Nothing is offered that the account API does not have: the contract stores a display name and
+ * a province and nothing else, so there is no address to edit and no picture to upload.
  */
 @Composable
 fun AccountScreen(
-    onRatings: () -> Unit,
     onFacilities: () -> Unit,
+    onJoinAsOwner: () -> Unit,
     onAccountDeleted: () -> Unit,
     onSignIn: () -> Unit,
     onRegister: () -> Unit,
     onBack: () -> Unit,
     onEditProfile: () -> Unit,
-    onChangePassword: () -> Unit,
     onFavorites: () -> Unit,
     onNotifications: () -> Unit,
     onSettings: () -> Unit,
-    onHelp: () -> Unit,
     bottomBar: @Composable () -> Unit = {},
     viewModel: AccountViewModel = hiltViewModel(),
 ) {
@@ -74,25 +79,9 @@ fun AccountScreen(
     val deletion by viewModel.deletionState.collectAsStateWithLifecycle()
     var confirmDelete by remember { mutableStateOf(false) }
     var confirmSignOut by remember { mutableStateOf(false) }
-    var provincesOpen by remember { mutableStateOf(false) }
-    BackHandler(enabled = provincesOpen) { provincesOpen = false }
 
     LaunchedEffect(deletion) {
         if (deletion == DeletionUiState.Deleted) onAccountDeleted()
-    }
-
-    val content = state as? AccountUiState.Content
-    if (provincesOpen && content != null) {
-        ProvincesPage(
-            provinces = content.provinces,
-            selectedId = content.profile.provinceId,
-            onSelect = {
-                viewModel.changeProvince(it)
-                provincesOpen = false
-            },
-            onBack = { provincesOpen = false },
-        )
-        return
     }
 
     DirectoryPage(
@@ -112,11 +101,12 @@ fun AccountScreen(
                     secondaryAction = AccountCopy.REGISTER,
                     onSecondaryAction = onRegister,
                 )
-                // The platform's own pages belong to everyone, signed in or not.
+                // The platform's own pages belong to everyone, signed in or not, and they
+                // live in settings — so settings is what a signed-out reader is offered.
                 DirectorySettingRow(
-                    title = AccountCopy.HELP,
-                    onClick = onHelp,
-                    icon = DirectoryIcons.info,
+                    title = AccountCopy.SETTINGS,
+                    onClick = onSettings,
+                    icon = DirectoryIcons.grid,
                 )
             }
             is AccountUiState.Error -> DirectoryErrorState(
@@ -141,21 +131,13 @@ fun AccountScreen(
                     )
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                // Everything about the person.
                 DirectorySettingRow(
                     title = AccountCopy.EDIT_PROFILE,
                     onClick = onEditProfile,
                     icon = DirectoryIcons.person,
-                )
-                DirectorySettingRow(
-                    title = AccountCopy.PROVINCE,
-                    onClick = { provincesOpen = true },
                     value = value.provinces.firstOrNull { it.id == value.profile.provinceId }?.nameAr,
-                    icon = DirectoryIcons.pin,
-                )
-                DirectorySettingRow(
-                    title = AccountCopy.RATINGS,
-                    onClick = onRatings,
-                    icon = DirectoryIcons.star,
                 )
                 DirectorySettingRow(
                     title = AccountCopy.FAVORITES,
@@ -167,39 +149,45 @@ fun AccountScreen(
                     onClick = onNotifications,
                     icon = DirectoryIcons.bell,
                 )
-                DirectorySettingRow(
-                    title = AccountCopy.FACILITIES,
-                    onClick = onFacilities,
-                    icon = DirectoryIcons.hospital,
-                )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                DirectorySettingRow(
-                    title = AccountCopy.SECURITY,
-                    onClick = onChangePassword,
-                    icon = DirectoryIcons.verified,
-                )
+
+                // One row, not two: the invitation until they have joined, their own after.
+                if (value.ownsFacility) {
+                    DirectorySettingRow(
+                        title = AccountCopy.FACILITIES,
+                        onClick = onFacilities,
+                        icon = DirectoryIcons.hospital,
+                    )
+                } else {
+                    DirectorySettingRow(
+                        title = AccountCopy.JOIN_AS_OWNER,
+                        onClick = onJoinAsOwner,
+                        icon = DirectoryIcons.hospital,
+                        value = AccountCopy.JOIN_AS_OWNER_HINT,
+                    )
+                }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                // Everything about the app, in one place — the password and the switches with it.
                 DirectorySettingRow(
                     title = AccountCopy.SETTINGS,
                     onClick = onSettings,
                     icon = DirectoryIcons.grid,
                 )
-                DirectorySettingRow(
-                    title = AccountCopy.HELP,
-                    onClick = onHelp,
-                    icon = DirectoryIcons.info,
-                )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                DirectorySettingRow(
-                    title = AccountCopy.SIGN_OUT,
-                    onClick = { confirmSignOut = true },
-                    icon = DirectoryIcons.logout,
-                    danger = true,
-                    trailing = false,
-                )
+
+                // The two that end something, last and marked.
                 DirectorySettingRow(
                     title = AccountCopy.DELETE,
                     onClick = { confirmDelete = true },
                     icon = DirectoryIcons.close,
+                    danger = true,
+                    trailing = false,
+                )
+                DirectorySettingRow(
+                    title = AccountCopy.SIGN_OUT,
+                    onClick = { confirmSignOut = true },
+                    icon = DirectoryIcons.logout,
                     danger = true,
                     trailing = false,
                 )
@@ -292,57 +280,24 @@ private fun Identity(name: String, phone: String) {
     }
 }
 
-/** The account's own province, which is the backend's, not the device's browsing choice. */
-@Composable
-private fun ProvincesPage(
-    provinces: List<Province>,
-    selectedId: String?,
-    onSelect: (String) -> Unit,
-    onBack: () -> Unit,
-) {
-    DirectoryPage(
-        topBar = { DirectoryTopBar(title = AccountCopy.PROVINCE, onBack = onBack) },
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(bottom = Space.xxl),
-        ) {
-            items(provinces, key = { it.id }) { province ->
-                DirectorySettingRow(
-                    title = province.nameAr,
-                    onClick = { onSelect(province.id) },
-                    icon = if (province.id == selectedId) DirectoryIcons.check else DirectoryIcons.pin,
-                    trailing = false,
-                )
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = Space.screen),
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                )
-            }
-        }
-    }
-}
-
 /** The words of the account, provisional until product copy is approved. */
 object AccountCopy {
     const val TITLE = "الملف الشخصي"
     const val ERROR = "تعذر تحميل الحساب"
     const val SIGNED_OUT = "حسابي"
-    const val SIGNED_OUT_BODY = "سجّل الدخول لإدارة تقييماتك ومنشآتك."
+    const val SIGNED_OUT_BODY = "سجّل الدخول لإدارة معلوماتك ومفضّلتك ومنشآتك."
     const val SIGN_IN = "تسجيل الدخول"
     const val REGISTER = "إنشاء حساب"
     const val EDIT_PROFILE = "المعلومات الشخصية"
-    const val PROVINCE = "المحافظة"
     const val FAVORITES = "المفضلة"
     const val NOTIFICATIONS = "الإشعارات"
-    const val SECURITY = "تغيير كلمة المرور"
     const val SETTINGS = "الإعدادات"
-    const val HELP = "المساعدة والمعلومات"
-    const val RATINGS = "تقييماتي"
     const val FACILITIES = "منشآتي"
+    const val JOIN_AS_OWNER = "انضم كصاحب منشأة"
+    const val JOIN_AS_OWNER_HINT = "أضف منشأتك"
     const val SIGN_OUT = "تسجيل الخروج"
     const val SIGN_OUT_TITLE = "تسجيل الخروج؟"
-    const val SIGN_OUT_BODY = "ستحتاج إلى تسجيل الدخول مرة أخرى لإدارة تقييماتك ومنشآتك."
+    const val SIGN_OUT_BODY = "ستحتاج إلى تسجيل الدخول مرة أخرى لإدارة معلوماتك ومنشآتك."
     const val DELETE = "حذف الحساب"
     const val DELETE_TITLE = "حذف الحساب نهائيًا؟"
     const val DELETE_BODY = "سيتم إلغاء جلساتك وإزالة بيانات الحساب الشخصية. " +

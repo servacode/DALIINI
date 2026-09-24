@@ -28,6 +28,14 @@ sealed interface AccountUiState {
         val profile: AccountProfile,
         val provinces: List<Province> = emptyList(),
         val message: String? = null,
+        /**
+         * Whether this account has joined as an owner.
+         *
+         * It decides which of two rows the profile shows: the invitation to join, or the
+         * facilities they already have. Never both, because both at once is a menu that has not
+         * decided what the reader is.
+         */
+        val ownsFacility: Boolean = false,
     ) : AccountUiState
     data class Error(val message: String) : AccountUiState
 }
@@ -60,19 +68,13 @@ class AccountViewModel @Inject constructor(
             _state.value = AccountUiState.Loading
             _state.value = account().fold(
                 onSuccess = { profile ->
-                    AccountUiState.Content(profile, account.provinces().getOrDefault(emptyList()))
+                    AccountUiState.Content(
+                        profile = profile,
+                        provinces = account.provinces().getOrDefault(emptyList()),
+                        ownsFacility = account.ownsFacility(),
+                    )
                 },
                 onFailure = { AccountUiState.Error(AppErrorText.of(it.toAppError())) },
-            )
-        }
-    }
-
-    fun changeProvince(provinceId: String) {
-        val current = _state.value as? AccountUiState.Content ?: return
-        viewModelScope.launch {
-            _state.value = account.changeProvince(provinceId).fold(
-                onSuccess = { current.copy(profile = it, message = "تم تغيير المحافظة") },
-                onFailure = { current.copy(message = AppErrorText.of(it.toAppError())) },
             )
         }
     }

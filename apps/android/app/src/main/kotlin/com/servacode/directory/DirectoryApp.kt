@@ -228,8 +228,9 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
         }
         composable<DirectoryRoute.Account> {
             AccountScreen(
-                onRatings = { navController.navigate(DirectoryRoute.MyRatings) },
                 onFacilities = { navController.navigate(DirectoryRoute.MyFacilities) },
+                // Joining is adding the first facility; there is nothing else to join.
+                onJoinAsOwner = { navController.navigate(DirectoryRoute.Onboarding()) },
                 onAccountDeleted = {
                     navController.navigate(DirectoryRoute.Home) {
                         popUpTo(navController.graph.id) { inclusive = true }
@@ -239,11 +240,9 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onRegister = { navController.navigate(DirectoryRoute.Register) },
                 onBack = { navController.popBackStack() },
                 onEditProfile = { navController.navigate(DirectoryRoute.EditProfile) },
-                onChangePassword = { navController.navigate(DirectoryRoute.ChangePassword) },
                 onFavorites = { navController.navigate(DirectoryRoute.Favorites) },
                 onNotifications = { navController.navigate(DirectoryRoute.Notifications) },
                 onSettings = { navController.navigate(DirectoryRoute.Settings) },
-                onHelp = { navController.navigate(DirectoryRoute.Help) },
                 bottomBar = { DirectoryTabs(DirectoryTab.ACCOUNT, navController) },
             )
         }
@@ -304,7 +303,6 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
         composable<DirectoryRoute.Settings> {
             SettingsScreen(
                 onChangePassword = { navController.navigate(DirectoryRoute.ChangePassword) },
-                onNotifications = { navController.navigate(DirectoryRoute.Notifications) },
                 onHelp = { navController.navigate(DirectoryRoute.Help) },
                 onBack = { navController.popBackStack() },
                 appVersion = BuildConfig.VERSION_NAME,

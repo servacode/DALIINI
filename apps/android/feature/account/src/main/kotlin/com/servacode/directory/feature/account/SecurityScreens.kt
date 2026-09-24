@@ -20,6 +20,7 @@ import com.servacode.directory.core.designsystem.DirectoryFilterChip
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryPasswordField
+import com.servacode.directory.core.designsystem.DirectorySettingRow
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
 import com.servacode.directory.core.designsystem.DirectoryTextField
 import com.servacode.directory.core.designsystem.DirectoryTopBar
@@ -27,11 +28,15 @@ import com.servacode.directory.core.designsystem.SectionHeader
 import com.servacode.directory.core.designsystem.Space
 
 /**
- * Editing the account.
+ * Everything the app knows about the person, in the one place it is edited.
  *
- * Two fields, because two fields are what the backend stores and accepts. The phone number is
- * the account's identity and is not edited here; changing it would be a different operation
- * with its own verification, and the API has none.
+ * Two fields, because two fields are what the backend stores and accepts: a display name and a
+ * province. There is no address and no picture — `PATCH /api/v1/account/profile/` takes
+ * `displayName` and `provinceId` and nothing else, so neither exists to show.
+ *
+ * The phone number is shown and not edited. It is the account's identity, and changing it is a
+ * different operation with its own verification that the contract does not have; a row that
+ * opened a screen which could not do it would be worse than saying so.
  */
 @Composable
 fun ProfileEditScreen(
@@ -62,6 +67,16 @@ fun ProfileEditScreen(
                 leadingIcon = DirectoryIcons.person,
                 modifier = Modifier.padding(top = Space.base),
             )
+            // Read, not edited: the account is known by it.
+            (account as? AccountUiState.Content)?.profile?.phone?.let { phone ->
+                DirectorySettingRow(
+                    title = SecurityCopy.PHONE,
+                    value = phone,
+                    onClick = {},
+                    icon = DirectoryIcons.phone,
+                    trailing = false,
+                )
+            }
             val provinces = (account as? AccountUiState.Content)?.provinces.orEmpty()
             if (provinces.isNotEmpty()) {
                 SectionHeader(SecurityCopy.PROVINCE)
@@ -171,7 +186,8 @@ object SecurityCopy {
     const val NAME = "الاسم"
     const val PROVINCE = "المحافظة"
     const val SAVE = "حفظ"
-    const val PHONE_NOTE = "رقم الهاتف هو معرّف حسابك ولا يُعدَّل من هنا."
+    const val PHONE = "رقم الهاتف"
+    const val PHONE_NOTE = "رقم الهاتف هو معرّف حسابك، وتغييره يحتاج تحققًا جديدًا غير متاح بعد."
     const val CHANGE_PASSWORD = "تغيير كلمة المرور"
     const val CURRENT_PASSWORD = "كلمة المرور الحالية"
     const val NEW_PASSWORD = "كلمة المرور الجديدة"
