@@ -54,7 +54,6 @@ data class ChallengeUiState(
     val step: ChallengeStep = ChallengeStep.DETAILS,
     val busy: Boolean = false,
     val failure: FormFailure? = null,
-    val provinces: List<Province> = emptyList(),
     val provinceId: String? = null,
 )
 
@@ -76,7 +75,7 @@ class RegisterViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val provinces = runCatching { publicApi.provinces() }.getOrDefault(emptyList())
-            _state.value = _state.value.copy(provinces = provinces, provinceId = chosen(provinces))
+            _state.value = _state.value.copy(provinceId = chosen(provinces))
         }
     }
 
@@ -100,10 +99,6 @@ class RegisterViewModel @Inject constructor(
         return known(here)
             ?: known(preferences.values.first().selectedProvinceId)
             ?: provinces.firstOrNull()?.id
-    }
-
-    fun chooseProvince(id: String) {
-        _state.value = _state.value.copy(provinceId = id)
     }
 
     fun start(phone: String) {

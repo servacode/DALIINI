@@ -323,6 +323,7 @@ private fun ConfirmationField(
     )
 }
 
+@Composable
 fun RecoveryScreen(
     onDone: () -> Unit,
     onBack: () -> Unit,
@@ -544,25 +545,22 @@ object AuthCopy {
     const val APP_NAME = DirectoryBrand.NAME
     const val WELCOME = DirectoryBrand.TAGLINE
     const val NO_ACCOUNT = "ليس لديك حساب؟"
-    const val PROVINCE_NOTE = "حُدِّدت من موقعك. غيّرها إن لم تكن صحيحة."
     const val CREATE = "إنشاء حساب جديد"
     const val CREATE_ACCOUNT = "إنشاء حساب"
     const val RECOVERY = "استعادة كلمة المرور"
     const val RECOVERY_NOTE = "أدخل رقم هاتفك وسنرسل إليك رمز تحقق."
     const val PHONE = "رقم الهاتف"
-    const val NAME = "الاسم"
     const val FULL_NAME = "الاسم الكامل"
     const val CONFIRM_PASSWORD = "تأكيد كلمة المرور"
+    const val MISMATCH = "الكلمتان غير متطابقتين"
     const val RESET_PASSWORD = "إعادة تعيين كلمة المرور"
     const val PHONE_FIRST = "أدخل رقم هاتفك وسنرسل إليك رمز تحقق."
-    const val PROVINCE = "المحافظة"
     const val PASSWORD = "كلمة المرور"
     const val NEW_PASSWORD = "كلمة المرور الجديدة"
     const val CODE = "رمز التحقق"
     const val CODE_SENT = "أدخل الرمز المرسل إلى هاتفك"
     const val SEND_CODE = "إرسال رمز التحقق"
     const val VERIFY = "تحقق"
-    const val SAVE = "حفظ"
     const val FORGOT = "نسيت كلمة المرور؟"
     const val RECOVERED = "تم تغيير كلمة المرور. سجّل الدخول بها الآن."
     const val FIELD_ERROR = "تحقق من هذا الحقل"
