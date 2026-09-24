@@ -1,6 +1,22 @@
 from business_hours.serializers import serialize_hours
-from business_hours.services import get_facility_availability
+from business_hours.services import (
+    get_facility_availability,
+    is_on_duty_today,
+    is_open_now,
+)
 from storage.backends import PublicS3Storage
+
+_UNSET = object()
+
+
+def _flag(facility, annotation, fallback):
+    """Prefer what the query already worked out; compute only when it did not.
+
+    Views that page a list annotate these, so the common path costs nothing. The fallback
+    keeps a single serialised facility correct wherever the annotation was not asked for.
+    """
+    value = getattr(facility, annotation, _UNSET)
+    return bool(value) if value is not _UNSET else bool(fallback(facility))
 
 
 def _availability_payload(facility):
@@ -8,7 +24,32 @@ def _availability_payload(facility):
     return {
         "state": result.state.value,
         "nextOpenAt": result.next_open_at.isoformat() if result.next_open_at else None,
+        # Independent of each other and of `state`, which collapses both into one value and
+        # lets duty win. A pharmacy can be open and on duty, shut and on duty, or open and not
+        # on duty, and the three have to be tellable apart on a list row.
+        "isOpenNow": _open_now(facility),
+        "isOnDutyToday": _flag(facility, "_availability_duty_today", is_on_duty_today),
     }
+
+
+def _open_now(facility):
+    closed = getattr(facility, "_availability_closed", _UNSET)
+    scheduled = getattr(facility, "_availability_scheduled", _UNSET)
+    if closed is not _UNSET and scheduled is not _UNSET:
+        return bool(scheduled) and not bool(closed)
+    return bool(is_open_now(facility))
+
+
+def _first_image_url(facility):
+    """The one picture a list row shows, or nothing at all.
+
+    `images` is prefetched in the ordering the owner chose, so this reads the list already in
+    memory rather than asking the database once per row.
+    """
+    images = list(facility.images.all())
+    if not images:
+        return None
+    return PublicS3Storage().url(images[0].storage_key)
 
 
 def compact_facility(facility):
@@ -37,6 +78,9 @@ def compact_facility(facility):
         "availability": _availability_payload(facility),
         # False for anonymous callers and for anyone who has not saved it (INT-097).
         "isFavorite": bool(getattr(facility, "is_favorite", False)),
+        # The owner's own first photograph, or null. A list row shows the brand mark when it
+        # is null; nothing stands in for a picture the facility never uploaded.
+        "imageUrl": _first_image_url(facility),
     }
 
 

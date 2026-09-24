@@ -7,6 +7,7 @@ import com.servacode.directory.core.model.GeoPoint
 import com.servacode.directory.core.model.OwnerFacilityStatus
 import com.servacode.directory.core.model.Province
 import com.servacode.directory.core.network.DirectoryQuery
+import com.servacode.directory.core.network.DirectorySort
 import com.servacode.directory.core.network.DutyShiftInput
 import com.servacode.directory.core.network.OwnerFacilityPatch
 import com.servacode.directory.core.network.OwnerUploadPayload
@@ -68,8 +69,9 @@ class GeneratedAdapterTest {
         {"id":"$id","nameAr":"صيدلية","nameEn":null,
          "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":"Pharmacy"},
          "city":null,"distanceMeters":120.5,"ratingAverage":4.5,"ratingCount":2,
-         "isFavorite":false,
-         "availability":{"state":"$state","nextOpenAt":null}}
+         "isFavorite":false,"imageUrl":"https://cdn.example.test/shop.jpg",
+         "availability":{"state":"$state","nextOpenAt":null,
+                         "isOpenNow":true,"isOnDutyToday":false}}
     """
 
     @Test fun `provinces come from the backend unchanged`() = runTest {
@@ -140,6 +142,50 @@ class GeneratedAdapterTest {
         assertEquals("cD0x+/=", taken().url.queryParameter("cursor"))
     }
 
+    @Test fun `open now and on duty today are sent as separate parameters, and combine`() = runTest {
+        respond("""{"items":[${compact(FACILITY, "DUTY")}],"nextCursor":null,"hasMore":false}""")
+
+        val page = publicApi.directory(
+            DirectoryQuery(
+                provinceId = PROVINCE,
+                openNow = true,
+                dutyToday = true,
+                sort = DirectorySort.NEAREST,
+                latitude = 35.95,
+                longitude = 39.01,
+            ),
+        )
+
+        // The row says both things at once, which the single legacy state cannot express.
+        val facility = page.items.single()
+        assertTrue(facility.isOpenNow)
+        assertFalse(facility.isOnDutyToday)
+        assertEquals("https://cdn.example.test/shop.jpg", facility.imageUrl)
+        val url = taken().url
+        assertEquals("true", url.queryParameter("openNow"))
+        assertEquals("true", url.queryParameter("dutyToday"))
+        assertEquals("nearest", url.queryParameter("sort"))
+        // Never confused with a shift that happens to be running at this second.
+        assertNull(url.queryParameter("dutyNow"))
+    }
+
+    @Test fun `ordering by name still measures the distance`() = runTest {
+        respond("""{"items":[${compact(FACILITY, "OPEN")}],"nextCursor":null,"hasMore":false}""")
+
+        publicApi.directory(
+            DirectoryQuery(
+                provinceId = PROVINCE,
+                sort = DirectorySort.NAME,
+                latitude = 35.95,
+                longitude = 39.01,
+            ),
+        )
+
+        val url = taken().url
+        assertEquals("name", url.queryParameter("sort"))
+        assertEquals("35.95", url.queryParameter("latitude"))
+    }
+
     @Test fun `an invalid cursor is a validation error on the cursor field`() = runTest {
         respond(
             """{"code":"VALIDATION_ERROR","message":"Invalid input.",
@@ -158,8 +204,9 @@ class GeneratedAdapterTest {
         respond(
             """{"id":"$FACILITY","nameAr":"صيدلية","nameEn":null,
             "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":null},"city":{"id":"$PROVINCE","nameAr":"الرقة"},
-            "distanceMeters":null,"ratingAverage":null,"ratingCount":0,"isFavorite":true,
-            "availability":{"state":"CLOSED","nextOpenAt":"2026-09-20T08:00:00+03:00"},
+            "distanceMeters":null,"ratingAverage":null,"ratingCount":0,"isFavorite":true,"imageUrl":null,
+            "availability":{"state":"CLOSED","nextOpenAt":"2026-09-20T08:00:00+03:00",
+                            "isOpenNow":false,"isOnDutyToday":true},
             "descriptionAr":null,"descriptionEn":null,"phone":"+963900000000","addressAr":"شارع","addressEn":null,
             "neighborhood":null,"location":{"latitude":35.95,"longitude":39.01},
             "images":[{"id":"$REQUIREMENT","url":"https://cdn.example.test/a.jpg"}],

@@ -123,6 +123,12 @@ export interface PublicFacilityDetail {
      */
     isFavorite: boolean;
     /**
+     * The facility's first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one.
+     * @type {string}
+     * @memberof PublicFacilityDetail
+     */
+    imageUrl: string | null;
+    /**
      * 
      * @type {string}
      * @memberof PublicFacilityDetail
@@ -204,6 +210,7 @@ export function instanceOfPublicFacilityDetail(value: object): value is PublicFa
     if (!('ratingCount' in value) || value['ratingCount'] === undefined) return false;
     if (!('availability' in value) || value['availability'] === undefined) return false;
     if (!('isFavorite' in value) || value['isFavorite'] === undefined) return false;
+    if (!('imageUrl' in value) || value['imageUrl'] === undefined) return false;
     if (!('descriptionAr' in value) || value['descriptionAr'] === undefined) return false;
     if (!('descriptionEn' in value) || value['descriptionEn'] === undefined) return false;
     if (!('phone' in value) || value['phone'] === undefined) return false;
@@ -238,6 +245,7 @@ export function PublicFacilityDetailFromJSONTyped(json: any, ignoreDiscriminator
         'ratingCount': json['ratingCount'],
         'availability': AvailabilityFromJSON(json['availability']),
         'isFavorite': json['isFavorite'],
+        'imageUrl': json['imageUrl'],
         'descriptionAr': json['descriptionAr'],
         'descriptionEn': json['descriptionEn'],
         'phone': json['phone'],
@@ -273,6 +281,7 @@ export function PublicFacilityDetailToJSONTyped(value?: PublicFacilityDetail | n
         'ratingCount': value['ratingCount'],
         'availability': AvailabilityToJSON(value['availability']),
         'isFavorite': value['isFavorite'],
+        'imageUrl': value['imageUrl'],
         'descriptionAr': value['descriptionAr'],
         'descriptionEn': value['descriptionEn'],
         'phone': value['phone'],

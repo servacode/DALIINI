@@ -119,8 +119,8 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
             HomeScreen(
                 onProvince = { navController.navigate(DirectoryRoute.ProvincePicker) },
                 onSearch = { navController.navigate(DirectoryRoute.Search) },
-                onCategory = { navController.navigate(DirectoryRoute.Directory(it)) },
                 onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
+                onNotifications = { navController.navigate(DirectoryRoute.Notifications) },
                 bottomBar = { DirectoryTabs(DirectoryTab.HOME, navController) },
             )
         }

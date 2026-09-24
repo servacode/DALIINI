@@ -14,7 +14,7 @@ All URIs are relative to *http://localhost*
 
 List publicly visible facilities in a province, optionally in one category
 
-Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend; openNow and dutyNow filter on that computed state rather than on a stored flag.
+Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend. The filters combine: openNow and dutyToday together mean facilities that are both, which is a different question from either alone.
 
 ### Example
 ```kotlin
@@ -31,18 +31,20 @@ val bbox : kotlin.String = bbox_example // kotlin.String | Viewport as west,sout
 val categoryId : kotlin.String = categoryId_example // kotlin.String | Optional category to list. Absent means the whole province.
 val cityId : kotlin.String = cityId_example // kotlin.String | Optional city filter.
 val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
-val dutyNow : kotlin.String = dutyNow_example // kotlin.String | Pass true to keep only facilities currently on duty.
+val dutyNow : kotlin.String = dutyNow_example // kotlin.String | Pass true to keep only facilities whose duty shift is running.
+val dutyToday : kotlin.String = dutyToday_example // kotlin.String | Pass true to keep only facilities on today's duty roster.
 val latitude : kotlin.String = latitude_example // kotlin.String | Caller latitude in WGS84 decimal degrees. Must be sent with longitude.
 val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 100, default 30.
 val longitude : kotlin.String = longitude_example // kotlin.String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude.
 val neighborhoodId : kotlin.String = neighborhoodId_example // kotlin.String | Optional neighbourhood filter.
-val openNow : kotlin.String = openNow_example // kotlin.String | Pass true to keep only facilities currently open.
+val openNow : kotlin.String = openNow_example // kotlin.String | Pass true to keep only facilities open at this moment.
 val search : kotlin.String = search_example // kotlin.String | Free-text term matched against facility text.
 val serviceId : kotlin.String = serviceId_example // kotlin.String | Optional service-tag filter; only meaningful when the category declares serviceFilter.
+val sort : kotlin.String = sort_example // kotlin.String | nearest orders by distance and needs coordinates; name orders by Arabic name. Omitted keeps the historical behaviour: nearest whenever coordinates are supplied, name otherwise. Distances are returned whenever coordinates are supplied, whichever ordering is asked for.
 val specialtyId : kotlin.String = specialtyId_example // kotlin.String | Optional specialty filter; only meaningful when the category declares specialtyFilter.
 
 launch(Dispatchers.IO) {
-    val result : FacilityCursorPage = webService.publicFacilitiesList(provinceId, bbox, categoryId, cityId, cursor, dutyNow, latitude, limit, longitude, neighborhoodId, openNow, search, serviceId, specialtyId)
+    val result : FacilityCursorPage = webService.publicFacilitiesList(provinceId, bbox, categoryId, cityId, cursor, dutyNow, dutyToday, latitude, limit, longitude, neighborhoodId, openNow, search, serviceId, sort, specialtyId)
 }
 ```
 
@@ -52,14 +54,16 @@ launch(Dispatchers.IO) {
 | **categoryId** | **kotlin.String**| Optional category to list. Absent means the whole province. | [optional] |
 | **cityId** | **kotlin.String**| Optional city filter. | [optional] |
 | **cursor** | **kotlin.String**| Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] |
-| **dutyNow** | **kotlin.String**| Pass true to keep only facilities currently on duty. | [optional] |
+| **dutyNow** | **kotlin.String**| Pass true to keep only facilities whose duty shift is running. | [optional] |
+| **dutyToday** | **kotlin.String**| Pass true to keep only facilities on today&#39;s duty roster. | [optional] |
 | **latitude** | **kotlin.String**| Caller latitude in WGS84 decimal degrees. Must be sent with longitude. | [optional] |
 | **limit** | **kotlin.Int**| Page size, maximum 100, default 30. | [optional] |
 | **longitude** | **kotlin.String**| Caller longitude in WGS84 decimal degrees. Must be sent with latitude. | [optional] |
 | **neighborhoodId** | **kotlin.String**| Optional neighbourhood filter. | [optional] |
-| **openNow** | **kotlin.String**| Pass true to keep only facilities currently open. | [optional] |
+| **openNow** | **kotlin.String**| Pass true to keep only facilities open at this moment. | [optional] |
 | **search** | **kotlin.String**| Free-text term matched against facility text. | [optional] |
 | **serviceId** | **kotlin.String**| Optional service-tag filter; only meaningful when the category declares serviceFilter. | [optional] |
+| **sort** | **kotlin.String**| nearest orders by distance and needs coordinates; name orders by Arabic name. Omitted keeps the historical behaviour: nearest whenever coordinates are supplied, name otherwise. Distances are returned whenever coordinates are supplied, whichever ordering is asked for. | [optional] |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
 | **specialtyId** | **kotlin.String**| Optional specialty filter; only meaningful when the category declares specialtyFilter. | [optional] |
@@ -184,7 +188,7 @@ Configure bearerAccessToken:
 
 List compact map markers inside a viewport
 
-Capped at 500 markers. Facilities without coordinates are omitted. openNow and dutyNow filter on the availability the backend computes, exactly as the list endpoint does, so a map and a list asked the same question answer the same.
+Capped at 500 markers. Facilities without coordinates are omitted. The filters behave exactly as they do on the list endpoint and combine the same way, so a map and a list asked the same question answer the same.
 
 ### Example
 ```kotlin
@@ -200,17 +204,18 @@ val provinceId : kotlin.String = provinceId_example // kotlin.String | Province 
 val bbox : kotlin.String = bbox_example // kotlin.String | Viewport as west,south,east,north in WGS84 decimal degrees.
 val categoryId : kotlin.String = categoryId_example // kotlin.String | Optional category filter.
 val cityId : kotlin.String = cityId_example // kotlin.String | Optional city filter.
-val dutyNow : kotlin.String = dutyNow_example // kotlin.String | Pass true to keep only facilities currently on duty.
+val dutyNow : kotlin.String = dutyNow_example // kotlin.String | Pass true to keep only facilities whose duty shift is running.
+val dutyToday : kotlin.String = dutyToday_example // kotlin.String | Pass true to keep only facilities on today's duty roster.
 val latitude : kotlin.String = latitude_example // kotlin.String | Caller latitude in WGS84 decimal degrees. Must be sent with longitude.
 val longitude : kotlin.String = longitude_example // kotlin.String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude.
 val neighborhoodId : kotlin.String = neighborhoodId_example // kotlin.String | Optional neighbourhood filter.
-val openNow : kotlin.String = openNow_example // kotlin.String | Pass true to keep only facilities currently open.
+val openNow : kotlin.String = openNow_example // kotlin.String | Pass true to keep only facilities open at this moment.
 val search : kotlin.String = search_example // kotlin.String | Free-text term matched against facility text.
 val serviceId : kotlin.String = serviceId_example // kotlin.String | Optional service-tag filter; only meaningful when the category declares serviceFilter.
 val specialtyId : kotlin.String = specialtyId_example // kotlin.String | Optional specialty filter; only meaningful when the category declares specialtyFilter.
 
 launch(Dispatchers.IO) {
-    val result : MapMarkerList = webService.publicMapFacilitiesList(provinceId, bbox, categoryId, cityId, dutyNow, latitude, longitude, neighborhoodId, openNow, search, serviceId, specialtyId)
+    val result : MapMarkerList = webService.publicMapFacilitiesList(provinceId, bbox, categoryId, cityId, dutyNow, dutyToday, latitude, longitude, neighborhoodId, openNow, search, serviceId, specialtyId)
 }
 ```
 
@@ -219,11 +224,12 @@ launch(Dispatchers.IO) {
 | **bbox** | **kotlin.String**| Viewport as west,south,east,north in WGS84 decimal degrees. | [optional] |
 | **categoryId** | **kotlin.String**| Optional category filter. | [optional] |
 | **cityId** | **kotlin.String**| Optional city filter. | [optional] |
-| **dutyNow** | **kotlin.String**| Pass true to keep only facilities currently on duty. | [optional] |
+| **dutyNow** | **kotlin.String**| Pass true to keep only facilities whose duty shift is running. | [optional] |
+| **dutyToday** | **kotlin.String**| Pass true to keep only facilities on today&#39;s duty roster. | [optional] |
 | **latitude** | **kotlin.String**| Caller latitude in WGS84 decimal degrees. Must be sent with longitude. | [optional] |
 | **longitude** | **kotlin.String**| Caller longitude in WGS84 decimal degrees. Must be sent with latitude. | [optional] |
 | **neighborhoodId** | **kotlin.String**| Optional neighbourhood filter. | [optional] |
-| **openNow** | **kotlin.String**| Pass true to keep only facilities currently open. | [optional] |
+| **openNow** | **kotlin.String**| Pass true to keep only facilities open at this moment. | [optional] |
 | **search** | **kotlin.String**| Free-text term matched against facility text. | [optional] |
 | **serviceId** | **kotlin.String**| Optional service-tag filter; only meaningful when the category declares serviceFilter. | [optional] |
 | Name | Type | Description  | Notes |

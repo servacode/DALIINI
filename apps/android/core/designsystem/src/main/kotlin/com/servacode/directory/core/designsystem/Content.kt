@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.annotation.DrawableRes
 import androidx.compose.material3.MaterialTheme
@@ -214,9 +215,8 @@ fun FacilityCard(
 
 @Composable
 private fun RowScope.FacilityRowContent(facility: FacilitySummary) {
-    // The list contract carries no picture for a facility, only the detail does, so a row
-    // shows the brand's own mark rather than an empty frame.
-    FacilityThumbnail(Modifier.size(Sizes.thumbnail))
+    // First child, so it sits on the right in Arabic without the layout naming a side.
+    FacilityThumbnail(facility.imageUrl, Modifier.size(Sizes.thumbnail))
     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
         Text(
             text = facility.nameAr,
@@ -232,14 +232,17 @@ private fun RowScope.FacilityRowContent(facility: FacilitySummary) {
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
+        facility.cityNameAr?.let { city ->
+            MetaRow(icon = DirectoryIcons.pin, text = city)
+        }
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Space.sm),
         ) {
-            AvailabilityPill(facility)
             DistanceLabel(facility.distanceMeters)
             RatingBadge(facility.ratingAverage, facility.ratingCount)
         }
+        StatusBadges(facility)
     }
     DirectoryIcon(
         icon = DirectoryIcons.chevron,
@@ -249,9 +252,67 @@ private fun RowScope.FacilityRowContent(facility: FacilitySummary) {
     )
 }
 
-/** The mark a facility wears in a list, in place of a picture the list contract does not carry. */
+/**
+ * Whether the doors are open, and whether today's roster names this facility.
+ *
+ * Two badges because they are two facts. The first is always shown, because "closed" is as
+ * useful as "open" to someone deciding where to go. The second appears only when it is true:
+ * there is no badge for not being on the roster, since almost nothing is, and saying so of
+ * every facility would drown the one that is.
+ *
+ * Neither badge relies on its colour. The words carry the meaning and the colour agrees with
+ * them, which is what keeps them readable to someone who cannot tell green from red.
+ */
 @Composable
-fun FacilityThumbnail(modifier: Modifier = Modifier) {
+fun StatusBadges(facility: FacilitySummary, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        StatusBadge(
+            text = if (facility.isOpenNow) StatusText.OPEN_NOW else StatusText.CLOSED_NOW,
+            colour = if (facility.isOpenNow) BrandColors.success else BrandColors.danger,
+        )
+        if (facility.isOnDutyToday) {
+            StatusBadge(text = StatusText.ON_DUTY_TODAY, colour = BrandColors.info)
+        }
+    }
+}
+
+@Composable
+private fun StatusBadge(text: String, colour: Color) {
+    Row(
+        modifier = Modifier
+            .background(colour.copy(alpha = 0.10f), RoundedCornerShape(Radius.pill))
+            .padding(horizontal = Space.md, vertical = Space.xs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.xs),
+    ) {
+        Box(Modifier.size(Space.sm).clip(CircleShape).background(colour))
+        Text(text = text, style = MaterialTheme.typography.labelMedium, color = colour)
+    }
+}
+
+/** Provisional until product copy is approved, like every other `…Text`/`…Copy` in the app. */
+object StatusText {
+    const val OPEN_NOW = "مفتوحة الآن"
+    const val CLOSED_NOW = "مغلقة الآن"
+    const val ON_DUTY_TODAY = "مناوبة اليوم"
+}
+
+/**
+ * The picture a facility wears in a list: its own first photograph, or the brand's mark.
+ *
+ * The frame is the same size either way, so a row does not resize when a picture arrives and
+ * nothing stands in for a photograph the owner never uploaded.
+ */
+@Composable
+fun FacilityThumbnail(imageUrl: String? = null, modifier: Modifier = Modifier) {
+    if (imageUrl != null) {
+        DirectoryImage(url = imageUrl, modifier = modifier)
+        return
+    }
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(Radius.medium))
@@ -324,7 +385,7 @@ fun PhotoPager(
     onPhoto: ((Int) -> Unit)? = null,
 ) {
     if (urls.isEmpty()) {
-        FacilityThumbnail(modifier.fillMaxWidth())
+        FacilityThumbnail(modifier = modifier.fillMaxWidth())
         return
     }
     val pages = rememberPagerState(pageCount = { urls.size })

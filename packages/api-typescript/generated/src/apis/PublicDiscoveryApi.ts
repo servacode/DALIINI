@@ -41,6 +41,7 @@ export interface PublicFacilitiesListRequest {
     cityId?: string;
     cursor?: string;
     dutyNow?: string;
+    dutyToday?: string;
     latitude?: string;
     limit?: number;
     longitude?: string;
@@ -48,6 +49,7 @@ export interface PublicFacilitiesListRequest {
     openNow?: string;
     search?: string;
     serviceId?: string;
+    sort?: string;
     specialtyId?: string;
 }
 
@@ -74,6 +76,7 @@ export interface PublicMapFacilitiesListRequest {
     categoryId?: string;
     cityId?: string;
     dutyNow?: string;
+    dutyToday?: string;
     latitude?: string;
     longitude?: string;
     neighborhoodId?: string;
@@ -105,7 +108,7 @@ export interface PublicSearchListRequest {
 export class PublicDiscoveryApi extends runtime.BaseAPI {
 
     /**
-     * Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend; openNow and dutyNow filter on that computed state rather than on a stored flag.
+     * Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend. The filters combine: openNow and dutyToday together mean facilities that are both, which is a different question from either alone.
      * List publicly visible facilities in a province, optionally in one category
      */
     async publicFacilitiesListRaw(requestParameters: PublicFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FacilityCursorPage>> {
@@ -136,6 +139,10 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
 
         if (requestParameters['dutyNow'] != null) {
             queryParameters['dutyNow'] = requestParameters['dutyNow'];
+        }
+
+        if (requestParameters['dutyToday'] != null) {
+            queryParameters['dutyToday'] = requestParameters['dutyToday'];
         }
 
         if (requestParameters['latitude'] != null) {
@@ -170,6 +177,10 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
             queryParameters['serviceId'] = requestParameters['serviceId'];
         }
 
+        if (requestParameters['sort'] != null) {
+            queryParameters['sort'] = requestParameters['sort'];
+        }
+
         if (requestParameters['specialtyId'] != null) {
             queryParameters['specialtyId'] = requestParameters['specialtyId'];
         }
@@ -198,7 +209,7 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
     }
 
     /**
-     * Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend; openNow and dutyNow filter on that computed state rather than on a stored flag.
+     * Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend. The filters combine: openNow and dutyToday together mean facilities that are both, which is a different question from either alone.
      * List publicly visible facilities in a province, optionally in one category
      */
     async publicFacilitiesList(requestParameters: PublicFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FacilityCursorPage> {
@@ -340,7 +351,7 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
     }
 
     /**
-     * Capped at 500 markers. Facilities without coordinates are omitted. openNow and dutyNow filter on the availability the backend computes, exactly as the list endpoint does, so a map and a list asked the same question answer the same.
+     * Capped at 500 markers. Facilities without coordinates are omitted. The filters behave exactly as they do on the list endpoint and combine the same way, so a map and a list asked the same question answer the same.
      * List compact map markers inside a viewport
      */
     async publicMapFacilitiesListRaw(requestParameters: PublicMapFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MapMarkerList>> {
@@ -367,6 +378,10 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
 
         if (requestParameters['dutyNow'] != null) {
             queryParameters['dutyNow'] = requestParameters['dutyNow'];
+        }
+
+        if (requestParameters['dutyToday'] != null) {
+            queryParameters['dutyToday'] = requestParameters['dutyToday'];
         }
 
         if (requestParameters['latitude'] != null) {
@@ -425,7 +440,7 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
     }
 
     /**
-     * Capped at 500 markers. Facilities without coordinates are omitted. openNow and dutyNow filter on the availability the backend computes, exactly as the list endpoint does, so a map and a list asked the same question answer the same.
+     * Capped at 500 markers. Facilities without coordinates are omitted. The filters behave exactly as they do on the list endpoint and combine the same way, so a map and a list asked the same question answer the same.
      * List compact map markers inside a viewport
      */
     async publicMapFacilitiesList(requestParameters: PublicMapFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MapMarkerList> {

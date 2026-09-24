@@ -75,19 +75,31 @@ class HomeRepository @Inject constructor(
     }
 
     /**
-     * One quick filter's list, from the backend's own directory query.
+     * The list under the chips, from the backend's own directory query.
      *
-     * Never cached: a list of what is open right now is a view of the moment, exactly as the
-     * category list already treats its own filtered views.
+     * Never cached: what is open at this minute, or on tonight's roster, is a view of the
+     * moment. The category list already treats its own filtered views the same way.
      */
-    suspend fun filtered(filter: HomeQuickFilter, cursor: String? = null): Page<FacilitySummary>? {
-        val provinceId = preferences.values.first().selectedProvinceId ?: return null
+    suspend fun filtered(
+        provinceId: String,
+        categoryId: String?,
+        filters: HomeFilters,
+        cursor: String? = null,
+    ): Page<FacilitySummary> {
         val fix = locationProvider.lastKnown()
-        return api.directory(filter.query(provinceId, fix), cursor)
+        return api.directory(filters.query(provinceId, categoryId, fix), cursor)
     }
 
     /** Whether a position is known at all, which is what decides if "nearest" can be offered. */
     fun hasLocation(): Boolean = locationProvider.lastKnown() != null
+
+    /**
+     * How many messages the account has not read, or zero when nobody is signed in.
+     *
+     * A failure is zero rather than an error: the badge is an aside, and Home must not refuse
+     * to load because a count could not be fetched.
+     */
+    suspend fun unreadMessages(): Int = runCatching { api.unreadMessageCount() }.getOrDefault(0)
     /**
      * The cached snapshot first, then the backend's. Location is resolved only after the cache
      * is on screen, and only if the user allowed it; without it the home is province-wide.

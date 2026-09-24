@@ -11,10 +11,17 @@ class HomeUseCase @Inject constructor(
     /** Where the user is, for the header. */
     suspend fun place(): HomePlace = repository.place()
 
-    /** One quick filter's page, from the backend's own directory query. */
-    suspend fun filtered(filter: HomeQuickFilter, cursor: String? = null) =
-        repository.filtered(filter, cursor)
+    /** The list under the chips: one page of the backend's own directory query. */
+    suspend fun filtered(
+        provinceId: String,
+        categoryId: String?,
+        filters: HomeFilters,
+        cursor: String? = null,
+    ) = repository.filtered(provinceId, categoryId, filters, cursor)
 
     /** Whether a position is known, which decides whether "nearest" is offered. */
     fun hasLocation(): Boolean = repository.hasLocation()
+
+    /** Unread messages, for the bell. Zero when signed out or when the count cannot be had. */
+    suspend fun unreadMessages(): Int = repository.unreadMessages()
 }

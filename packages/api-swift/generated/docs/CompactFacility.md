@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **ratingCount** | **Int** |  | 
 **availability** | [**Availability**](Availability.md) |  | 
 **isFavorite** | **Bool** | Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery. | 
+**imageUrl** | **String** | The facility&#39;s first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one. | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

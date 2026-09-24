@@ -2,9 +2,18 @@ from __future__ import annotations
 
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point, Polygon
-from django.db.models import Avg, Count, Exists, ExpressionWrapper, FloatField, OuterRef, Q
+from django.db.models import (
+    Avg,
+    Count,
+    Exists,
+    ExpressionWrapper,
+    FloatField,
+    OuterRef,
+    Prefetch,
+    Q,
+)
 
-from facilities.models import Facility
+from facilities.models import Facility, FacilityImage
 
 
 def public_facilities():
@@ -20,6 +29,13 @@ def public_facilities():
         "neighborhood",
         "category",
         "category__capabilities",
+    ).prefetch_related(
+        # A list row shows one photograph. Prefetching in the owner's own order means the
+        # whole page's pictures cost one query instead of one per facility.
+        Prefetch(
+            "images",
+            queryset=FacilityImage.objects.order_by("sort_order", "created_at"),
+        ),
     ).distinct()
 
 

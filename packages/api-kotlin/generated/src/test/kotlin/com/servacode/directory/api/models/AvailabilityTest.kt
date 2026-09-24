@@ -38,5 +38,17 @@ class AvailabilityTest : ShouldSpec() {
             //modelInstance.nextOpenAt shouldBe ("TODO")
         }
 
+        // to test the property `isOpenNow` - Whether the doors are open at this moment, by the facility's own business hours and temporary closures. Independent of duty: unlike `state`, which collapses both into one value and lets DUTY win, this stays true for a facility that is open while its duty shift runs.
+        should("test isOpenNow") {
+            // uncomment below to test the property
+            //modelInstance.isOpenNow shouldBe ("TODO")
+        }
+
+        // to test the property `isOnDutyToday` - Whether the facility appears on today's duty roster, taking today to be the local day in Asia/Damascus. A different question from being open: a pharmacy on tonight's roster is on duty today from midnight, hours before it opens. False simply means it is not on the roster; clients must not render that as a badge of its own.
+        should("test isOnDutyToday") {
+            // uncomment below to test the property
+            //modelInstance.isOnDutyToday shouldBe ("TODO")
+        }
+
     }
 }

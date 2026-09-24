@@ -6,9 +6,10 @@ province is what is always required, because every list in this product is scope
 """
 
 import pytest
+from rest_framework.test import APIClient
+
 from directory.models import CategoryProvince
 from facilities.models import Facility
-from rest_framework.test import APIClient
 
 FACILITIES = "/api/v1/public/facilities/"
 

@@ -36,6 +36,7 @@ import kotlinx.serialization.Contextual
  * @param ratingCount 
  * @param availability 
  * @param isFavorite Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery.
+ * @param imageUrl The facility's first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one.
  */
 @Serializable
 
@@ -71,7 +72,11 @@ data class CompactFacility (
 
     /* Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery. */
     @SerialName(value = "isFavorite")
-    val isFavorite: kotlin.Boolean
+    val isFavorite: kotlin.Boolean,
+
+    /* The facility's first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one. */
+    @Contextual @SerialName(value = "imageUrl")
+    val imageUrl: java.net.URI?
 
 ) {
 

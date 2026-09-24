@@ -7,8 +7,8 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from business_hours.query import filter_for_availability_state
-from business_hours.services import AvailabilityState, get_facility_availability
+from business_hours.query import filter_for_flags, with_availability_flags
+from business_hours.services import get_facility_availability
 from content_services.selectors import active_ads
 from content_services.serializers import public_ad
 from core.openapi import NOT_FOUND_404, VALIDATION_400
@@ -101,6 +101,36 @@ def _base_from_params(params, user=None):
     return with_rating_summary(queryset)
 
 
+def _orders_by_distance(params):
+    """Whether this request wants the nearest first.
+
+    Coordinates alone used to decide it, which left a client no way to ask for the whole
+    province by name while still being told how far each facility is. `sort` separates the two:
+    the coordinates say what to measure, this says what to order by.
+    """
+    located = bool(params.get("latitude") and params.get("longitude"))
+    requested = params.get("sort")
+    if requested == "nearest":
+        return located
+    if requested == "name":
+        return False
+    return located
+
+
+def _with_flags(params, queryset):
+    """Apply the availability filters, and carry the flags on every row either way.
+
+    The annotation is unconditional so that a row can say whether it is open and whether it is
+    on today's roster without the serializer going back to the database once per facility.
+    """
+    return filter_for_flags(
+        with_availability_flags(queryset),
+        open_now=params.get("openNow") == "true",
+        duty_today=params.get("dutyToday") == "true",
+        duty_now=params.get("dutyNow") == "true",
+    )
+
+
 
 
 
@@ -111,26 +141,34 @@ class PublicFacilityListView(APIView):
         summary="List publicly visible facilities in a province, optionally in one category",
         description=(
             "Ordered nearest-first when coordinates are supplied, otherwise by Arabic "
-            "name. Availability is computed by the backend; openNow and dutyNow filter "
-            "on that computed state rather than on a stored flag."
+            "name. Availability is computed by the backend. The filters combine: openNow "
+            "and dutyToday together mean facilities that are both, which is a different "
+            "question from either alone."
         ),
         parameters=[
             *SCOPE_PARAMS,
             _q("categoryId", "Optional category to list. Absent means the whole province."),
-            _q("openNow", "Pass true to keep only facilities currently open."),
-            _q("dutyNow", "Pass true to keep only facilities currently on duty."),
+            _q("openNow", "Pass true to keep only facilities open at this moment."),
+            _q("dutyNow", "Pass true to keep only facilities whose duty shift is running."),
+            _q("dutyToday", "Pass true to keep only facilities on today's duty roster."),
+            _q(
+                "sort",
+                "nearest orders by distance and needs coordinates; name orders by Arabic "
+                "name. Omitted keeps the historical behaviour: nearest whenever "
+                "coordinates are supplied, name otherwise. Distances are returned "
+                "whenever coordinates are supplied, whichever ordering is asked for.",
+            ),
             *PAGE_PARAMS,
         ],
         responses={200: FacilityCursorPageSerializer, 400: VALIDATION_400},
     )
     def get(self, request):
-        queryset = _base_from_params(request.query_params, request.user)
-        if request.query_params.get("openNow") == "true":
-            queryset = filter_for_availability_state(queryset, AvailabilityState.OPEN)
-        if request.query_params.get("dutyNow") == "true":
-            queryset = filter_for_availability_state(queryset, AvailabilityState.DUTY)
+        base = _base_from_params(request.query_params, request.user)
+        queryset = _with_flags(request.query_params, base)
         paginator = FacilityCursorPagination()
-        if request.query_params.get("latitude") and request.query_params.get("longitude"):
+        # The paginator owns the ordering: its cursor is built from it, so setting one on the
+        # queryset as well would only give the two a chance to disagree.
+        if _orders_by_distance(request.query_params):
             paginator.ordering = ("distance_meters", "id")
         page = paginator.paginate_queryset(queryset, request)
         return paginator.get_paginated_response([compact_facility(row) for row in page])
@@ -148,7 +186,9 @@ class PublicFacilityDetailView(APIView):
         responses={200: PublicFacilityDetailSerializer, 404: NOT_FOUND_404},
     )
     def get(self, request, facility_id):
-        queryset = with_favorite_state(with_rating_summary(public_facilities()), request.user)
+        queryset = with_availability_flags(
+            with_favorite_state(with_rating_summary(public_facilities()), request.user)
+        )
         facility = get_object_or_404(queryset, pk=facility_id)
         return Response(facility_detail(facility))
 
@@ -159,26 +199,24 @@ class PublicMapFacilitiesView(APIView):
         tags=["Public Discovery"],
         summary="List compact map markers inside a viewport",
         description=(
-            "Capped at 500 markers. Facilities without coordinates are omitted. openNow and "
-            "dutyNow filter on the availability the backend computes, exactly as the list "
-            "endpoint does, so a map and a list asked the same question answer the same."
+            "Capped at 500 markers. Facilities without coordinates are omitted. The filters "
+            "behave exactly as they do on the list endpoint and combine the same way, so a "
+            "map and a list asked the same question answer the same."
         ),
         parameters=[
             *SCOPE_PARAMS,
             _q("categoryId", "Optional category filter."),
-            _q("openNow", "Pass true to keep only facilities currently open."),
-            _q("dutyNow", "Pass true to keep only facilities currently on duty."),
+            _q("openNow", "Pass true to keep only facilities open at this moment."),
+            _q("dutyNow", "Pass true to keep only facilities whose duty shift is running."),
+            _q("dutyToday", "Pass true to keep only facilities on today's duty roster."),
         ],
         responses={200: MapMarkerListSerializer, 400: VALIDATION_400},
     )
     def get(self, request):
-        queryset = _base_from_params(request.query_params, request.user)
         if not request.query_params.get("bbox"):
             raise ValidationError({"bbox": "Required for map queries."})
-        if request.query_params.get("openNow") == "true":
-            queryset = filter_for_availability_state(queryset, AvailabilityState.OPEN)
-        if request.query_params.get("dutyNow") == "true":
-            queryset = filter_for_availability_state(queryset, AvailabilityState.DUTY)
+        base = _base_from_params(request.query_params, request.user)
+        queryset = _with_flags(request.query_params, base)
         markers = []
         for facility in queryset[:500]:
             if not facility.location:
@@ -247,10 +285,12 @@ class PublicHomeView(APIView):
         )
         base_params = request.query_params.copy()
         base_params["provinceId"] = province_id
-        base = _base_from_params(base_params, request.user)
+        base = with_availability_flags(_base_from_params(base_params, request.user))
         nearby = list(base[:10])
-        open_nearby = list(filter_for_availability_state(base, AvailabilityState.OPEN)[:10])
-        duty_now = list(filter_for_availability_state(base, AvailabilityState.DUTY)[:10])
+        # Open means open, whether or not a duty shift happens to be running: the two are
+        # independent questions and a row now carries both answers.
+        open_nearby = list(filter_for_flags(base, open_now=True)[:10])
+        duty_now = list(filter_for_flags(base, duty_now=True)[:10])
         category_items = []
         for switch in categories:
             category = switch.category

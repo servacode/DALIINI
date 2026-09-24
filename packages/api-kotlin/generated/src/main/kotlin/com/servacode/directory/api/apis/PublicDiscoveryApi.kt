@@ -17,7 +17,7 @@ interface PublicDiscoveryApi {
     /**
      * GET api/v1/public/facilities/
      * List publicly visible facilities in a province, optionally in one category
-     * Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend; openNow and dutyNow filter on that computed state rather than on a stored flag.
+     * Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend. The filters combine: openNow and dutyToday together mean facilities that are both, which is a different question from either alone.
      * Responses:
      *  - 200: 
      *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
@@ -27,19 +27,21 @@ interface PublicDiscoveryApi {
      * @param categoryId Optional category to list. Absent means the whole province. (optional)
      * @param cityId Optional city filter. (optional)
      * @param cursor Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
-     * @param dutyNow Pass true to keep only facilities currently on duty. (optional)
+     * @param dutyNow Pass true to keep only facilities whose duty shift is running. (optional)
+     * @param dutyToday Pass true to keep only facilities on today&#39;s duty roster. (optional)
      * @param latitude Caller latitude in WGS84 decimal degrees. Must be sent with longitude. (optional)
      * @param limit Page size, maximum 100, default 30. (optional)
      * @param longitude Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
      * @param neighborhoodId Optional neighbourhood filter. (optional)
-     * @param openNow Pass true to keep only facilities currently open. (optional)
+     * @param openNow Pass true to keep only facilities open at this moment. (optional)
      * @param search Free-text term matched against facility text. (optional)
      * @param serviceId Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
+     * @param sort nearest orders by distance and needs coordinates; name orders by Arabic name. Omitted keeps the historical behaviour: nearest whenever coordinates are supplied, name otherwise. Distances are returned whenever coordinates are supplied, whichever ordering is asked for. (optional)
      * @param specialtyId Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
      * @return [FacilityCursorPage]
      */
     @GET("api/v1/public/facilities/")
-    suspend fun publicFacilitiesList(@Query("provinceId") provinceId: kotlin.String, @Query("bbox") bbox: kotlin.String? = null, @Query("categoryId") categoryId: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("cursor") cursor: kotlin.String? = null, @Query("dutyNow") dutyNow: kotlin.String? = null, @Query("latitude") latitude: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null, @Query("longitude") longitude: kotlin.String? = null, @Query("neighborhoodId") neighborhoodId: kotlin.String? = null, @Query("openNow") openNow: kotlin.String? = null, @Query("search") search: kotlin.String? = null, @Query("serviceId") serviceId: kotlin.String? = null, @Query("specialtyId") specialtyId: kotlin.String? = null): Response<FacilityCursorPage>
+    suspend fun publicFacilitiesList(@Query("provinceId") provinceId: kotlin.String, @Query("bbox") bbox: kotlin.String? = null, @Query("categoryId") categoryId: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("cursor") cursor: kotlin.String? = null, @Query("dutyNow") dutyNow: kotlin.String? = null, @Query("dutyToday") dutyToday: kotlin.String? = null, @Query("latitude") latitude: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null, @Query("longitude") longitude: kotlin.String? = null, @Query("neighborhoodId") neighborhoodId: kotlin.String? = null, @Query("openNow") openNow: kotlin.String? = null, @Query("search") search: kotlin.String? = null, @Query("serviceId") serviceId: kotlin.String? = null, @Query("sort") sort: kotlin.String? = null, @Query("specialtyId") specialtyId: kotlin.String? = null): Response<FacilityCursorPage>
 
     /**
      * GET api/v1/public/facilities/{facility_id}/
@@ -82,7 +84,7 @@ interface PublicDiscoveryApi {
     /**
      * GET api/v1/public/map/facilities/
      * List compact map markers inside a viewport
-     * Capped at 500 markers. Facilities without coordinates are omitted. openNow and dutyNow filter on the availability the backend computes, exactly as the list endpoint does, so a map and a list asked the same question answer the same.
+     * Capped at 500 markers. Facilities without coordinates are omitted. The filters behave exactly as they do on the list endpoint and combine the same way, so a map and a list asked the same question answer the same.
      * Responses:
      *  - 200: 
      *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
@@ -91,18 +93,19 @@ interface PublicDiscoveryApi {
      * @param bbox Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
      * @param categoryId Optional category filter. (optional)
      * @param cityId Optional city filter. (optional)
-     * @param dutyNow Pass true to keep only facilities currently on duty. (optional)
+     * @param dutyNow Pass true to keep only facilities whose duty shift is running. (optional)
+     * @param dutyToday Pass true to keep only facilities on today&#39;s duty roster. (optional)
      * @param latitude Caller latitude in WGS84 decimal degrees. Must be sent with longitude. (optional)
      * @param longitude Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
      * @param neighborhoodId Optional neighbourhood filter. (optional)
-     * @param openNow Pass true to keep only facilities currently open. (optional)
+     * @param openNow Pass true to keep only facilities open at this moment. (optional)
      * @param search Free-text term matched against facility text. (optional)
      * @param serviceId Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
      * @param specialtyId Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
      * @return [MapMarkerList]
      */
     @GET("api/v1/public/map/facilities/")
-    suspend fun publicMapFacilitiesList(@Query("provinceId") provinceId: kotlin.String, @Query("bbox") bbox: kotlin.String? = null, @Query("categoryId") categoryId: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("dutyNow") dutyNow: kotlin.String? = null, @Query("latitude") latitude: kotlin.String? = null, @Query("longitude") longitude: kotlin.String? = null, @Query("neighborhoodId") neighborhoodId: kotlin.String? = null, @Query("openNow") openNow: kotlin.String? = null, @Query("search") search: kotlin.String? = null, @Query("serviceId") serviceId: kotlin.String? = null, @Query("specialtyId") specialtyId: kotlin.String? = null): Response<MapMarkerList>
+    suspend fun publicMapFacilitiesList(@Query("provinceId") provinceId: kotlin.String, @Query("bbox") bbox: kotlin.String? = null, @Query("categoryId") categoryId: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("dutyNow") dutyNow: kotlin.String? = null, @Query("dutyToday") dutyToday: kotlin.String? = null, @Query("latitude") latitude: kotlin.String? = null, @Query("longitude") longitude: kotlin.String? = null, @Query("neighborhoodId") neighborhoodId: kotlin.String? = null, @Query("openNow") openNow: kotlin.String? = null, @Query("search") search: kotlin.String? = null, @Query("serviceId") serviceId: kotlin.String? = null, @Query("specialtyId") specialtyId: kotlin.String? = null): Response<MapMarkerList>
 
     /**
      * GET api/v1/public/search/

@@ -16,6 +16,23 @@ class AvailabilitySerializer(serializers.Serializer):
 
     state = serializers.ChoiceField(choices=[s.value for s in AvailabilityState])
     nextOpenAt = serializers.DateTimeField(allow_null=True)
+    isOpenNow = serializers.BooleanField(
+        help_text=(
+            "Whether the doors are open at this moment, by the facility's own business "
+            "hours and temporary closures. Independent of duty: unlike `state`, which "
+            "collapses both into one value and lets DUTY win, this stays true for a "
+            "facility that is open while its duty shift runs."
+        ),
+    )
+    isOnDutyToday = serializers.BooleanField(
+        help_text=(
+            "Whether the facility appears on today's duty roster, taking today to be the "
+            "local day in Asia/Damascus. A different question from being open: a pharmacy "
+            "on tonight's roster is on duty today from midnight, hours before it opens. "
+            "False simply means it is not on the roster; clients must not render that as "
+            "a badge of its own."
+        ),
+    )
 
 
 class CompactFacilitySerializer(serializers.Serializer):
@@ -36,6 +53,13 @@ class CompactFacilitySerializer(serializers.Serializer):
         help_text=(
             "Whether the caller has saved this facility. False for anonymous callers; "
             "resolved for a whole page in one subquery."
+        ),
+    )
+    imageUrl = serializers.URLField(
+        allow_null=True,
+        help_text=(
+            "The facility's first photograph, in the order its owner arranged them, or "
+            "null when it has none. A public media URL; clients never build one."
         ),
     )
 

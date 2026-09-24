@@ -13,13 +13,34 @@ import com.servacode.directory.core.model.Page
 import com.servacode.directory.core.model.Province
 import com.servacode.directory.core.model.PublicMapFacility
 
+/**
+ * What a list is ordered by.
+ *
+ * Distance is measured whenever coordinates are supplied, whichever of these is chosen, so
+ * asking for the province by name never costs the reader the distances.
+ */
+enum class DirectorySort { NEAREST, NAME }
+
 /** What a directory listing asks the backend for. Filtering and ordering happen there. */
 data class DirectoryQuery(
     val provinceId: String,
     /** Null lists the whole province, which is what Home's quick filters ask for. */
     val categoryId: String? = null,
+    /** Open at this moment. Combines with the others; it never implies anything about duty. */
     val openNow: Boolean = false,
+    /** A duty shift running right now. */
     val dutyNow: Boolean = false,
+    /**
+     * On today's duty roster, which is a different question from [dutyNow]: a pharmacy on
+     * tonight's roster qualifies all day, including while it is shut.
+     */
+    val dutyToday: Boolean = false,
+    /**
+     * What to order by. Null leaves the choice to the backend, which is nearest whenever
+     * coordinates are supplied — the behaviour every caller had before this existed, and the
+     * reason only a caller with a reason to differ should set it.
+     */
+    val sort: DirectorySort? = null,
     val search: String? = null,
     val latitude: Double? = null,
     val longitude: Double? = null,

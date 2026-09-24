@@ -7,7 +7,7 @@ from django.utils import timezone
 from pharmacy_duty.models import DutyShift
 
 from .models import BusinessHour, TemporaryClosure
-from .services import AvailabilityState
+from .services import AvailabilityState, local_day_bounds
 
 DAMASCUS = ZoneInfo("Asia/Damascus")
 
@@ -32,6 +32,12 @@ def _availability_annotations(now=None):
         starts_at__lte=current_utc,
         ends_at__gt=current_utc,
     )
+    day_start, day_end = local_day_bounds(local)
+    duties_today = DutyShift.objects.filter(
+        facility_id=OuterRef("pk"),
+        starts_at__lt=day_end,
+        ends_at__gt=day_start,
+    )
     schedule = BusinessHour.objects.filter(facility_id=OuterRef("pk")).filter(
         Q(
             weekday=weekday,
@@ -53,8 +59,44 @@ def _availability_annotations(now=None):
     return {
         "_availability_closed": Exists(closures),
         "_availability_duty": Exists(duties),
+        "_availability_duty_today": Exists(duties_today),
         "_availability_scheduled": Exists(schedule),
     }
+
+
+def with_availability_flags(queryset, now=None):
+    """Carry open-now and on-duty-today on the rows themselves.
+
+    Serialising these per facility costs three queries each, so a page of twenty asks sixty
+    times what one annotated query answers once.
+    """
+    return queryset.annotate(**_availability_annotations(now))
+
+
+def filter_for_flags(queryset, open_now=False, duty_today=False, duty_now=False, now=None):
+    """The two questions a directory is actually asked, and they combine.
+
+    `filter_for_availability_state` cannot express this: its states are exclusive, so asking
+    for OPEN silently drops every facility that happens to be on duty. Here each flag narrows
+    the queryset on its own, which is what lets "nearest" + "open now" + "on duty today" mean
+    all three at once rather than the last one written.
+    """
+    if not (open_now or duty_today or duty_now):
+        return queryset
+    queryset = with_availability_flags(queryset, now)
+    if open_now:
+        queryset = queryset.filter(
+            _availability_closed=False,
+            _availability_scheduled=True,
+        )
+    if duty_today:
+        queryset = queryset.filter(_availability_duty_today=True)
+    if duty_now:
+        queryset = queryset.filter(
+            _availability_closed=False,
+            _availability_duty=True,
+        )
+    return queryset
 
 
 def filter_for_availability_state(queryset, state, now=None):

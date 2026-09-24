@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.servacode.directory.core.database.Loaded
 import com.servacode.directory.core.model.AppErrorText
+import com.servacode.directory.core.model.Category
 import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.HomeSnapshot
 import com.servacode.directory.core.model.toAppError
@@ -25,13 +26,13 @@ sealed interface HomeUiState {
 }
 
 /**
- * What a chosen quick filter is showing.
+ * The list under the chips.
  *
- * It sits beside the snapshot rather than replacing it, so leaving a filter puts the user back
- * where they were without another round trip.
+ * One list, always — not a snapshot that a filter sometimes replaces. "All" is simply the
+ * query with nothing narrowed, which keeps one code path for paging, for errors and for the
+ * empty state instead of two that drift apart.
  */
-data class QuickFilterState(
-    val filter: HomeQuickFilter,
+data class HomeListState(
     val items: List<FacilitySummary> = emptyList(),
     val loading: Boolean = true,
     val loadingMore: Boolean = false,
@@ -51,16 +52,26 @@ class HomeViewModel @Inject constructor(
     private val _place = MutableStateFlow<HomePlace?>(null)
     val place: StateFlow<HomePlace?> = _place.asStateFlow()
 
-    /** Null when the user is looking at Home itself rather than at one of the quick filters. */
-    private val _quickFilter = MutableStateFlow<QuickFilterState?>(null)
-    val quickFilter: StateFlow<QuickFilterState?> = _quickFilter.asStateFlow()
+    private val _filters = MutableStateFlow(HomeFilters())
+    val filters: StateFlow<HomeFilters> = _filters.asStateFlow()
 
-    /** Whether "nearest" can be offered at all; the chip is not shown as choosable without it. */
+    /** The chosen category. Null only until the snapshot names the province's categories. */
+    private val _category = MutableStateFlow<Category?>(null)
+    val category: StateFlow<Category?> = _category.asStateFlow()
+
+    private val _list = MutableStateFlow(HomeListState())
+    val list: StateFlow<HomeListState> = _list.asStateFlow()
+
+    /** Whether "nearest" can be offered at all; the chip is not drawn without it. */
     private val _hasLocation = MutableStateFlow(false)
     val hasLocation: StateFlow<Boolean> = _hasLocation.asStateFlow()
 
+    /** Unread messages behind the bell. Zero draws no badge at all. */
+    private val _unread = MutableStateFlow(0)
+    val unread: StateFlow<Int> = _unread.asStateFlow()
+
     private var loading: Job? = null
-    private var filtering: Job? = null
+    private var listing: Job? = null
     private var nextCursor: String? = null
 
     init {
@@ -83,65 +94,88 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _hasLocation.value = loadHome.hasLocation()
             _place.value = runCatching { loadHome.place() }.getOrNull() ?: _place.value
+            _unread.value = loadHome.unreadMessages()
+            // A position arriving after the first list would otherwise leave it ordered by
+            // name with no distances, so the list is asked again once — not on every fix.
+            if (_hasLocation.value && _list.value.items.none { it.distanceMeters != null }) {
+                reload()
+            }
         }
     }
 
-    /** Choose a quick filter, or the same one again to leave it. */
-    fun select(filter: HomeQuickFilter?) {
-        filtering?.cancel()
+    /** Pick a category. Its own capabilities decide which chips remain offered. */
+    fun select(category: Category?) {
+        if (category?.id == _category.value?.id) return
+        _category.value = category
+        _filters.value = _filters.value.withinReach(_hasLocation.value, category)
+        reload()
+    }
+
+    /** Turn one chip on or off. "All" clears the rest. */
+    fun toggle(chip: HomeChip) {
+        _filters.value = _filters.value.toggle(chip).withinReach(_hasLocation.value, _category.value)
+        reload()
+    }
+
+    /**
+     * Start the list again from the backend's first page.
+     *
+     * Every filter or category change comes through here, so a cursor from the previous
+     * question can never be used against the new one, and results never mix.
+     */
+    private fun reload() {
+        listing?.cancel()
         nextCursor = null
-        if (filter == null) {
-            _quickFilter.value = null
-            return
-        }
-        _quickFilter.value = QuickFilterState(filter = filter)
-        filtering = viewModelScope.launch {
-            val page = runCatching { loadHome.filtered(filter) }
-            _quickFilter.value = page.fold(
-                onSuccess = { result ->
-                    nextCursor = result?.nextCursor
-                    QuickFilterState(
-                        filter = filter,
-                        items = result?.items.orEmpty(),
-                        loading = false,
-                        hasMore = result?.hasMore ?: false,
-                    )
-                },
-                onFailure = {
-                    QuickFilterState(
-                        filter = filter,
-                        loading = false,
-                        error = AppErrorText.of(it.toAppError()),
-                    )
-                },
-            )
-        }
-    }
-
-    /** The next page of the chosen filter, with the cursor the backend handed back. */
-    fun loadMore() {
-        val current = _quickFilter.value ?: return
-        val cursor = nextCursor ?: return
-        if (current.loadingMore || current.loading) return
-        _quickFilter.value = current.copy(loadingMore = true, error = null)
-        filtering = viewModelScope.launch {
-            runCatching { loadHome.filtered(current.filter, cursor) }
+        val provinceId = province() ?: return
+        _list.value = HomeListState(loading = true)
+        listing = viewModelScope.launch {
+            runCatching { loadHome.filtered(provinceId, _category.value?.id, _filters.value) }
                 .onSuccess { page ->
-                    nextCursor = page?.nextCursor
-                    _quickFilter.value = current.copy(
-                        items = current.items + page?.items.orEmpty(),
-                        loadingMore = false,
-                        hasMore = page?.hasMore ?: false,
+                    nextCursor = page.nextCursor
+                    _list.value = HomeListState(
+                        items = page.items,
+                        loading = false,
+                        hasMore = page.hasMore,
                     )
                 }
                 .onFailure {
-                    _quickFilter.value = current.copy(
+                    _list.value = HomeListState(
+                        loading = false,
+                        error = AppErrorText.of(it.toAppError()),
+                    )
+                }
+        }
+    }
+
+    /** The next page, with the cursor the backend handed back for this exact question. */
+    fun loadMore() {
+        val current = _list.value
+        val cursor = nextCursor ?: return
+        val provinceId = province() ?: return
+        if (current.loadingMore || current.loading) return
+        _list.value = current.copy(loadingMore = true, error = null)
+        listing = viewModelScope.launch {
+            runCatching {
+                loadHome.filtered(provinceId, _category.value?.id, _filters.value, cursor)
+            }
+                .onSuccess { page ->
+                    nextCursor = page.nextCursor
+                    _list.value = current.copy(
+                        items = current.items + page.items,
+                        loadingMore = false,
+                        hasMore = page.hasMore,
+                    )
+                }
+                .onFailure {
+                    _list.value = current.copy(
                         loadingMore = false,
                         error = AppErrorText.of(it.toAppError()),
                     )
                 }
         }
     }
+
+    private fun province(): String? = (_state.value as? HomeUiState.Content)?.snapshot?.province?.id
 
     fun refresh() {
         loading?.cancel()
@@ -157,7 +191,24 @@ class HomeViewModel @Inject constructor(
                         is Loaded.Failed -> HomeUiState.Error(AppErrorText.of(loaded.error))
                     }
                 }
+                adoptSnapshot()
             }
         }
+    }
+
+    /**
+     * Take the province's own taxonomy from the snapshot the first time it arrives.
+     *
+     * The category is chosen here rather than in the interface so that the list has one before
+     * anything is drawn; the first category the backend lists is the province's own order, not
+     * a name this app decided to look for.
+     */
+    private fun adoptSnapshot() {
+        val snapshot = (_state.value as? HomeUiState.Content)?.snapshot ?: return
+        if (_category.value == null && snapshot.categories.isNotEmpty()) {
+            _category.value = snapshot.categories.first()
+            _filters.value = _filters.value.withinReach(_hasLocation.value, _category.value)
+        }
+        if (_list.value.items.isEmpty() && _list.value.error == null) reload()
     }
 }

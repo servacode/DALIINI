@@ -24,6 +24,7 @@ import com.servacode.directory.core.model.PublicMapFacility
 import com.servacode.directory.core.model.ResolvedPlace
 import com.servacode.directory.core.model.UserRating
 import com.servacode.directory.core.network.DirectoryQuery
+import com.servacode.directory.core.network.DirectorySort
 import com.servacode.directory.core.network.PublicApiBoundary
 import java.util.UUID
 
@@ -81,6 +82,12 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
             // The backend treats only the literal "true" as a filter; absent means no filter.
             openNow = if (query.openNow) "true" else null,
             dutyNow = if (query.dutyNow) "true" else null,
+            dutyToday = if (query.dutyToday) "true" else null,
+            sort = when (query.sort) {
+                DirectorySort.NEAREST -> "nearest"
+                DirectorySort.NAME -> "name"
+                null -> null
+            },
             search = query.search?.takeIf { it.isNotBlank() },
             latitude = query.latitude?.toString(),
             longitude = query.longitude?.toString(),

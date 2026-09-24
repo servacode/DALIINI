@@ -4244,9 +4244,10 @@ paths:
   /api/v1/public/facilities/:
     get:
       operationId: publicFacilitiesList
-      description: Ordered nearest-first when coordinates are supplied, otherwise
-        by Arabic name. Availability is computed by the backend; openNow and dutyNow
-        filter on that computed state rather than on a stored flag.
+      description: 'Ordered nearest-first when coordinates are supplied, otherwise
+        by Arabic name. Availability is computed by the backend. The filters combine:
+        openNow and dutyToday together mean facilities that are both, which is a different
+        question from either alone.'
       summary: List publicly visible facilities in a province, optionally in one category
       parameters:
       - in: query
@@ -4273,7 +4274,12 @@ paths:
         name: dutyNow
         schema:
           type: string
-        description: Pass true to keep only facilities currently on duty.
+        description: Pass true to keep only facilities whose duty shift is running.
+      - in: query
+        name: dutyToday
+        schema:
+          type: string
+        description: Pass true to keep only facilities on today's duty roster.
       - in: query
         name: latitude
         schema:
@@ -4299,7 +4305,7 @@ paths:
         name: openNow
         schema:
           type: string
-        description: Pass true to keep only facilities currently open.
+        description: Pass true to keep only facilities open at this moment.
       - in: query
         name: provinceId
         schema:
@@ -4317,6 +4323,14 @@ paths:
           type: string
         description: Optional service-tag filter; only meaningful when the category
           declares serviceFilter.
+      - in: query
+        name: sort
+        schema:
+          type: string
+        description: 'nearest orders by distance and needs coordinates; name orders
+          by Arabic name. Omitted keeps the historical behaviour: nearest whenever
+          coordinates are supplied, name otherwise. Distances are returned whenever
+          coordinates are supplied, whichever ordering is asked for.'
       - in: query
         name: specialtyId
         schema:
@@ -4544,9 +4558,8 @@ paths:
     get:
       operationId: publicMapFacilitiesList
       description: Capped at 500 markers. Facilities without coordinates are omitted.
-        openNow and dutyNow filter on the availability the backend computes, exactly
-        as the list endpoint does, so a map and a list asked the same question answer
-        the same.
+        The filters behave exactly as they do on the list endpoint and combine the
+        same way, so a map and a list asked the same question answer the same.
       summary: List compact map markers inside a viewport
       parameters:
       - in: query
@@ -4568,7 +4581,12 @@ paths:
         name: dutyNow
         schema:
           type: string
-        description: Pass true to keep only facilities currently on duty.
+        description: Pass true to keep only facilities whose duty shift is running.
+      - in: query
+        name: dutyToday
+        schema:
+          type: string
+        description: Pass true to keep only facilities on today's duty roster.
       - in: query
         name: latitude
         schema:
@@ -4589,7 +4607,7 @@ paths:
         name: openNow
         schema:
           type: string
-        description: Pass true to keep only facilities currently open.
+        description: Pass true to keep only facilities open at this moment.
       - in: query
         name: provinceId
         schema:
@@ -6026,7 +6044,22 @@ components:
           type: string
           format: date-time
           nullable: true
+        isOpenNow:
+          type: boolean
+          description: 'Whether the doors are open at this moment, by the facility''s
+            own business hours and temporary closures. Independent of duty: unlike
+            `state`, which collapses both into one value and lets DUTY win, this stays
+            true for a facility that is open while its duty shift runs.'
+        isOnDutyToday:
+          type: boolean
+          description: 'Whether the facility appears on today''s duty roster, taking
+            today to be the local day in Asia/Damascus. A different question from
+            being open: a pharmacy on tonight''s roster is on duty today from midnight,
+            hours before it opens. False simply means it is not on the roster; clients
+            must not render that as a badge of its own.'
       required:
+      - isOnDutyToday
+      - isOpenNow
       - nextOpenAt
       - state
     AvailabilityStateEnum:
@@ -6231,12 +6264,20 @@ components:
           type: boolean
           description: Whether the caller has saved this facility. False for anonymous
             callers; resolved for a whole page in one subquery.
+        imageUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: The facility's first photograph, in the order its owner arranged
+            them, or null when it has none. A public media URL; clients never build
+            one.
       required:
       - availability
       - category
       - city
       - distanceMeters
       - id
+      - imageUrl
       - isFavorite
       - nameAr
       - nameEn
@@ -6514,6 +6555,13 @@ components:
           type: boolean
           description: Whether the caller has saved this facility. False for anonymous
             callers; resolved for a whole page in one subquery.
+        imageUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: The facility's first photograph, in the order its owner arranged
+            them, or null when it has none. A public media URL; clients never build
+            one.
         favoritedAt:
           type: string
           format: date-time
@@ -6525,6 +6573,7 @@ components:
       - distanceMeters
       - favoritedAt
       - id
+      - imageUrl
       - isFavorite
       - nameAr
       - nameEn
@@ -7456,6 +7505,13 @@ components:
           type: boolean
           description: Whether the caller has saved this facility. False for anonymous
             callers; resolved for a whole page in one subquery.
+        imageUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: The facility's first photograph, in the order its owner arranged
+            them, or null when it has none. A public media URL; clients never build
+            one.
         descriptionAr:
           type: string
           nullable: true
@@ -7506,6 +7562,7 @@ components:
       - distanceMeters
       - hours
       - id
+      - imageUrl
       - images
       - isFavorite
       - location

@@ -101,6 +101,12 @@ export interface CompactFacility {
      * @memberof CompactFacility
      */
     isFavorite: boolean;
+    /**
+     * The facility's first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one.
+     * @type {string}
+     * @memberof CompactFacility
+     */
+    imageUrl: string | null;
 }
 
 /**
@@ -117,6 +123,7 @@ export function instanceOfCompactFacility(value: object): value is CompactFacili
     if (!('ratingCount' in value) || value['ratingCount'] === undefined) return false;
     if (!('availability' in value) || value['availability'] === undefined) return false;
     if (!('isFavorite' in value) || value['isFavorite'] === undefined) return false;
+    if (!('imageUrl' in value) || value['imageUrl'] === undefined) return false;
     return true;
 }
 
@@ -140,6 +147,7 @@ export function CompactFacilityFromJSONTyped(json: any, ignoreDiscriminator: boo
         'ratingCount': json['ratingCount'],
         'availability': AvailabilityFromJSON(json['availability']),
         'isFavorite': json['isFavorite'],
+        'imageUrl': json['imageUrl'],
     };
 }
 
@@ -164,6 +172,7 @@ export function CompactFacilityToJSONTyped(value?: CompactFacility | null, ignor
         'ratingCount': value['ratingCount'],
         'availability': AvailabilityToJSON(value['availability']),
         'isFavorite': value['isFavorite'],
+        'imageUrl': value['imageUrl'],
     };
 }
 

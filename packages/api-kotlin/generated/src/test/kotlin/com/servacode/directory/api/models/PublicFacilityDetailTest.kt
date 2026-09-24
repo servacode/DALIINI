@@ -91,6 +91,12 @@ class PublicFacilityDetailTest : ShouldSpec() {
             //modelInstance.isFavorite shouldBe ("TODO")
         }
 
+        // to test the property `imageUrl` - The facility's first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one.
+        should("test imageUrl") {
+            // uncomment below to test the property
+            //modelInstance.imageUrl shouldBe ("TODO")
+        }
+
         // to test the property `descriptionAr`
         should("test descriptionAr") {
             // uncomment below to test the property

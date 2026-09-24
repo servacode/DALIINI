@@ -46,6 +46,23 @@ data class FacilitySummary(
     val cityNameAr: String? = null,
     /** Whether the signed-in account saved this facility; false for anyone not signed in. */
     val isFavorite: Boolean = false,
+    /**
+     * Whether the doors are open at this moment.
+     *
+     * Read this rather than [availability], which is one value that lets DUTY outrank OPEN and
+     * so cannot say that a pharmacy is both on tonight's roster and serving customers now.
+     */
+    val isOpenNow: Boolean = false,
+    /**
+     * Whether the facility is on today's duty roster, today being the local day in Damascus.
+     *
+     * Independent of [isOpenNow]: a pharmacy on tonight's roster is on duty today from
+     * midnight, hours before it opens. False means only that it is not on the roster, and the
+     * interface says nothing at all in that case.
+     */
+    val isOnDutyToday: Boolean = false,
+    /** The owner's first photograph, or null when the facility has none. */
+    val imageUrl: String? = null,
 )
 
 @Serializable

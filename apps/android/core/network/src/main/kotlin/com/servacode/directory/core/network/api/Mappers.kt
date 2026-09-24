@@ -194,6 +194,9 @@ internal fun CompactFacility.toDomain() = FacilitySummary(
     nextOpenAtEpochMillis = availability.nextOpenAt?.toEpochMillis(),
     cityNameAr = city?.nameAr,
     isFavorite = isFavorite,
+    isOpenNow = availability.isOpenNow,
+    isOnDutyToday = availability.isOnDutyToday,
+    imageUrl = imageUrl?.toString(),
 )
 
 internal fun FavoriteFacility.toDomain() = FacilitySummary(
@@ -209,6 +212,9 @@ internal fun FavoriteFacility.toDomain() = FacilitySummary(
     cityNameAr = city?.nameAr,
     // Everything in this list is saved by definition, whatever the row says.
     isFavorite = true,
+    isOpenNow = availability.isOpenNow,
+    isOnDutyToday = availability.isOnDutyToday,
+    imageUrl = imageUrl?.toString(),
 )
 
 internal fun FavoriteList.toDomain() = Page(
@@ -311,7 +317,7 @@ internal fun PublicFacilityDetail.toDomain() = FacilityDetail(
 
 internal fun PublicAdvertisement.toDomain() = HomeAd(
     id = id.toString(),
-    imageUrl = imageUrl,
+    imageUrl = imageUrl.toString(),
     titleAr = titleAr,
     subtitleAr = subtitleAr,
     slideDurationMs = slideDurationMs,

@@ -24,10 +24,12 @@ public struct FavoriteFacility: Codable, JSONEncodable, Hashable {
     public var availability: Availability
     /** Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery. */
     public var isFavorite: Bool
+    /** The facility's first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one. */
+    public var imageUrl: String?
     /** When the caller saved this facility. */
     public var favoritedAt: Date
 
-    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, isFavorite: Bool, favoritedAt: Date) {
+    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, isFavorite: Bool, imageUrl: String?, favoritedAt: Date) {
         self.id = id
         self.nameAr = nameAr
         self.nameEn = nameEn
@@ -38,6 +40,7 @@ public struct FavoriteFacility: Codable, JSONEncodable, Hashable {
         self.ratingCount = ratingCount
         self.availability = availability
         self.isFavorite = isFavorite
+        self.imageUrl = imageUrl
         self.favoritedAt = favoritedAt
     }
 
@@ -52,6 +55,7 @@ public struct FavoriteFacility: Codable, JSONEncodable, Hashable {
         case ratingCount
         case availability
         case isFavorite
+        case imageUrl
         case favoritedAt
     }
 
@@ -69,6 +73,7 @@ public struct FavoriteFacility: Codable, JSONEncodable, Hashable {
         try container.encode(ratingCount, forKey: .ratingCount)
         try container.encode(availability, forKey: .availability)
         try container.encode(isFavorite, forKey: .isFavorite)
+        try container.encode(imageUrl, forKey: .imageUrl)
         try container.encode(favoritedAt, forKey: .favoritedAt)
     }
 }

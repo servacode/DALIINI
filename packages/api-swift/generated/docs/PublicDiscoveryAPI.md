@@ -13,12 +13,12 @@ Method | HTTP request | Description
 
 # **publicFacilitiesList**
 ```swift
-    open class func publicFacilitiesList(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, cursor: String? = nil, dutyNow: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil, completion: @escaping (_ data: FacilityCursorPage?, _ error: Error?) -> Void)
+    open class func publicFacilitiesList(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, cursor: String? = nil, dutyNow: String? = nil, dutyToday: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: String? = nil, sort: String? = nil, specialtyId: String? = nil, completion: @escaping (_ data: FacilityCursorPage?, _ error: Error?) -> Void)
 ```
 
 List publicly visible facilities in a province, optionally in one category
 
-Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend; openNow and dutyNow filter on that computed state rather than on a stored flag.
+Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend. The filters combine: openNow and dutyToday together mean facilities that are both, which is a different question from either alone.
 
 ### Example
 ```swift
@@ -30,18 +30,20 @@ let bbox = "bbox_example" // String | Viewport as west,south,east,north in WGS84
 let categoryId = "categoryId_example" // String | Optional category to list. Absent means the whole province. (optional)
 let cityId = "cityId_example" // String | Optional city filter. (optional)
 let cursor = "cursor_example" // String | Opaque token returned as `nextCursor` by the previous page. (optional)
-let dutyNow = "dutyNow_example" // String | Pass true to keep only facilities currently on duty. (optional)
+let dutyNow = "dutyNow_example" // String | Pass true to keep only facilities whose duty shift is running. (optional)
+let dutyToday = "dutyToday_example" // String | Pass true to keep only facilities on today's duty roster. (optional)
 let latitude = "latitude_example" // String | Caller latitude in WGS84 decimal degrees. Must be sent with longitude. (optional)
 let limit = 987 // Int | Page size, maximum 100, default 30. (optional)
 let longitude = "longitude_example" // String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
 let neighborhoodId = "neighborhoodId_example" // String | Optional neighbourhood filter. (optional)
-let openNow = "openNow_example" // String | Pass true to keep only facilities currently open. (optional)
+let openNow = "openNow_example" // String | Pass true to keep only facilities open at this moment. (optional)
 let search = "search_example" // String | Free-text term matched against facility text. (optional)
 let serviceId = "serviceId_example" // String | Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
+let sort = "sort_example" // String | nearest orders by distance and needs coordinates; name orders by Arabic name. Omitted keeps the historical behaviour: nearest whenever coordinates are supplied, name otherwise. Distances are returned whenever coordinates are supplied, whichever ordering is asked for. (optional)
 let specialtyId = "specialtyId_example" // String | Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
 
 // List publicly visible facilities in a province, optionally in one category
-PublicDiscoveryAPI.publicFacilitiesList(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, cursor: cursor, dutyNow: dutyNow, latitude: latitude, limit: limit, longitude: longitude, neighborhoodId: neighborhoodId, openNow: openNow, search: search, serviceId: serviceId, specialtyId: specialtyId) { (response, error) in
+PublicDiscoveryAPI.publicFacilitiesList(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, cursor: cursor, dutyNow: dutyNow, dutyToday: dutyToday, latitude: latitude, limit: limit, longitude: longitude, neighborhoodId: neighborhoodId, openNow: openNow, search: search, serviceId: serviceId, sort: sort, specialtyId: specialtyId) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -62,14 +64,16 @@ Name | Type | Description  | Notes
  **categoryId** | **String** | Optional category to list. Absent means the whole province. | [optional] 
  **cityId** | **String** | Optional city filter. | [optional] 
  **cursor** | **String** | Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] 
- **dutyNow** | **String** | Pass true to keep only facilities currently on duty. | [optional] 
+ **dutyNow** | **String** | Pass true to keep only facilities whose duty shift is running. | [optional] 
+ **dutyToday** | **String** | Pass true to keep only facilities on today&#39;s duty roster. | [optional] 
  **latitude** | **String** | Caller latitude in WGS84 decimal degrees. Must be sent with longitude. | [optional] 
  **limit** | **Int** | Page size, maximum 100, default 30. | [optional] 
  **longitude** | **String** | Caller longitude in WGS84 decimal degrees. Must be sent with latitude. | [optional] 
  **neighborhoodId** | **String** | Optional neighbourhood filter. | [optional] 
- **openNow** | **String** | Pass true to keep only facilities currently open. | [optional] 
+ **openNow** | **String** | Pass true to keep only facilities open at this moment. | [optional] 
  **search** | **String** | Free-text term matched against facility text. | [optional] 
  **serviceId** | **String** | Optional service-tag filter; only meaningful when the category declares serviceFilter. | [optional] 
+ **sort** | **String** | nearest orders by distance and needs coordinates; name orders by Arabic name. Omitted keeps the historical behaviour: nearest whenever coordinates are supplied, name otherwise. Distances are returned whenever coordinates are supplied, whichever ordering is asked for. | [optional] 
  **specialtyId** | **String** | Optional specialty filter; only meaningful when the category declares specialtyFilter. | [optional] 
 
 ### Return type
@@ -207,12 +211,12 @@ Name | Type | Description  | Notes
 
 # **publicMapFacilitiesList**
 ```swift
-    open class func publicMapFacilitiesList(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, dutyNow: String? = nil, latitude: String? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil, completion: @escaping (_ data: MapMarkerList?, _ error: Error?) -> Void)
+    open class func publicMapFacilitiesList(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, dutyNow: String? = nil, dutyToday: String? = nil, latitude: String? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil, completion: @escaping (_ data: MapMarkerList?, _ error: Error?) -> Void)
 ```
 
 List compact map markers inside a viewport
 
-Capped at 500 markers. Facilities without coordinates are omitted. openNow and dutyNow filter on the availability the backend computes, exactly as the list endpoint does, so a map and a list asked the same question answer the same.
+Capped at 500 markers. Facilities without coordinates are omitted. The filters behave exactly as they do on the list endpoint and combine the same way, so a map and a list asked the same question answer the same.
 
 ### Example
 ```swift
@@ -223,17 +227,18 @@ let provinceId = "provinceId_example" // String | Province to scope the query to
 let bbox = "bbox_example" // String | Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
 let categoryId = "categoryId_example" // String | Optional category filter. (optional)
 let cityId = "cityId_example" // String | Optional city filter. (optional)
-let dutyNow = "dutyNow_example" // String | Pass true to keep only facilities currently on duty. (optional)
+let dutyNow = "dutyNow_example" // String | Pass true to keep only facilities whose duty shift is running. (optional)
+let dutyToday = "dutyToday_example" // String | Pass true to keep only facilities on today's duty roster. (optional)
 let latitude = "latitude_example" // String | Caller latitude in WGS84 decimal degrees. Must be sent with longitude. (optional)
 let longitude = "longitude_example" // String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
 let neighborhoodId = "neighborhoodId_example" // String | Optional neighbourhood filter. (optional)
-let openNow = "openNow_example" // String | Pass true to keep only facilities currently open. (optional)
+let openNow = "openNow_example" // String | Pass true to keep only facilities open at this moment. (optional)
 let search = "search_example" // String | Free-text term matched against facility text. (optional)
 let serviceId = "serviceId_example" // String | Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
 let specialtyId = "specialtyId_example" // String | Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
 
 // List compact map markers inside a viewport
-PublicDiscoveryAPI.publicMapFacilitiesList(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, dutyNow: dutyNow, latitude: latitude, longitude: longitude, neighborhoodId: neighborhoodId, openNow: openNow, search: search, serviceId: serviceId, specialtyId: specialtyId) { (response, error) in
+PublicDiscoveryAPI.publicMapFacilitiesList(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, dutyNow: dutyNow, dutyToday: dutyToday, latitude: latitude, longitude: longitude, neighborhoodId: neighborhoodId, openNow: openNow, search: search, serviceId: serviceId, specialtyId: specialtyId) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -253,11 +258,12 @@ Name | Type | Description  | Notes
  **bbox** | **String** | Viewport as west,south,east,north in WGS84 decimal degrees. | [optional] 
  **categoryId** | **String** | Optional category filter. | [optional] 
  **cityId** | **String** | Optional city filter. | [optional] 
- **dutyNow** | **String** | Pass true to keep only facilities currently on duty. | [optional] 
+ **dutyNow** | **String** | Pass true to keep only facilities whose duty shift is running. | [optional] 
+ **dutyToday** | **String** | Pass true to keep only facilities on today&#39;s duty roster. | [optional] 
  **latitude** | **String** | Caller latitude in WGS84 decimal degrees. Must be sent with longitude. | [optional] 
  **longitude** | **String** | Caller longitude in WGS84 decimal degrees. Must be sent with latitude. | [optional] 
  **neighborhoodId** | **String** | Optional neighbourhood filter. | [optional] 
- **openNow** | **String** | Pass true to keep only facilities currently open. | [optional] 
+ **openNow** | **String** | Pass true to keep only facilities open at this moment. | [optional] 
  **search** | **String** | Free-text term matched against facility text. | [optional] 
  **serviceId** | **String** | Optional service-tag filter; only meaningful when the category declares serviceFilter. | [optional] 
  **specialtyId** | **String** | Optional specialty filter; only meaningful when the category declares specialtyFilter. | [optional] 
