@@ -1,6 +1,7 @@
 package com.servacode.directory.feature.map
 
 import android.content.pm.PackageManager
+import androidx.annotation.DrawableRes
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -42,6 +43,7 @@ import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIconButton
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
+import com.servacode.directory.core.designsystem.DirectorySecondaryButton
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryMessageState
@@ -74,6 +76,7 @@ import com.servacode.directory.core.model.PublicMapFacility
 fun MapScreen(
     styleUrl: String,
     onFacility: (String) -> Unit,
+    onRoute: (String, Double, Double) -> Unit,
     bottomBar: @Composable () -> Unit = {},
     viewModel: MapViewModel = hiltViewModel(),
 ) {
@@ -104,6 +107,7 @@ fun MapScreen(
             // start edge, both narrow enough to leave the map itself the screen.
             MapQuickFilters(
                 filters = state.filters,
+                offersDuty = state.offersDuty,
                 onOpenNow = { viewModel.filter { current -> current.toggleOpenNow() } },
                 onDutyNow = { viewModel.filter { current -> current.toggleDutyNow() } },
                 modifier = Modifier.align(Alignment.TopCenter),
@@ -145,6 +149,7 @@ fun MapScreen(
                 SelectedFacilityCard(
                     facility = selected,
                     onDetails = { onFacility(selected.id) },
+                    onRoute = { onRoute(selected.id, selected.latitude, selected.longitude) },
                     onDismiss = viewModel::facilityDismissed,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -164,6 +169,7 @@ fun MapScreen(
 @Composable
 private fun MapQuickFilters(
     filters: MapFilters,
+    offersDuty: Boolean,
     onOpenNow: () -> Unit,
     onDutyNow: () -> Unit,
     modifier: Modifier = Modifier,
@@ -173,7 +179,7 @@ private fun MapQuickFilters(
         horizontalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
         MapFilterChip(MapCopy.OPEN_NOW, filters.openNow, onOpenNow)
-        MapFilterChip(MapCopy.DUTY_NOW, filters.dutyNow, onDutyNow)
+        if (offersDuty) MapFilterChip(MapCopy.DUTY_NOW, filters.dutyNow, onDutyNow)
     }
 }
 
@@ -199,6 +205,49 @@ private fun MapFilterChip(text: String, selected: Boolean, onClick: () -> Unit) 
     }
 }
 
+/** Closer and further, a step at a time. */
+@Composable
+private fun ZoomControls(onIn: () -> Unit, onOut: () -> Unit, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        MapRoundButton(DirectoryIcons.plus, MapCopy.ZOOM_IN, onIn)
+        MapRoundButton(DirectoryIcons.close, MapCopy.ZOOM_OUT, onOut)
+    }
+}
+
+/** A control that has to read against a map, so it carries its own surface. */
+@Composable
+private fun MapRoundButton(
+    @DrawableRes icon: Int,
+    label: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier.size(Sizes.button),
+        shape = RoundedCornerShape(Radius.pill),
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = Elevation.low,
+        enabled = enabled,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            DirectoryIcon(
+                icon = icon,
+                contentDescription = label,
+                tint = if (enabled) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.outline
+                },
+            )
+        }
+    }
+}
+
 /**
  * "Where am I", as a button and not as a habit.
  *
@@ -208,27 +257,17 @@ private fun MapFilterChip(text: String, selected: Boolean, onClick: () -> Unit) 
  */
 @Composable
 private fun LocateButton(working: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(
+    MapRoundButton(
+        icon = DirectoryIcons.pin,
+        label = MapCopy.MY_LOCATION,
         onClick = onClick,
-        modifier = modifier.size(Sizes.button),
-        shape = RoundedCornerShape(Radius.pill),
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = Elevation.low,
         enabled = !working,
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            DirectoryIcon(
-                icon = DirectoryIcons.pin,
-                contentDescription = MapCopy.MY_LOCATION,
-                tint = if (working) {
-                    MaterialTheme.colorScheme.outline
-                } else {
-                    MaterialTheme.colorScheme.primary
-                },
-            )
-        }
-    }
+        modifier = modifier,
+    )
 }
+
+/** One step of scale per press: enough to notice, small enough to aim with. */
+private const val ZOOM_STEP = 1.0
 
 /**
  * The province's categories, down the start edge.
@@ -307,6 +346,7 @@ private fun MapCategoryRail(
 private fun SelectedFacilityCard(
     facility: PublicMapFacility,
     onDetails: () -> Unit,
+    onRoute: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -352,11 +392,23 @@ private fun SelectedFacilityCard(
                 tint = MaterialTheme.colorScheme.outline,
             )
         }
-        DirectoryPrimaryButton(
-            text = MapCopy.OPEN_DETAILS,
-            onClick = onDetails,
+        // Two ways on from a marker: read about it, or go to it. Going is the commoner of
+        // the two from a map, so it sits first in the reading order.
+        Row(
             modifier = Modifier.fillMaxWidth().padding(top = Space.md),
-        )
+            horizontalArrangement = Arrangement.spacedBy(Space.sm),
+        ) {
+            DirectoryPrimaryButton(
+                text = MapCopy.ROUTE,
+                onClick = onRoute,
+                modifier = Modifier.weight(1f),
+            )
+            DirectorySecondaryButton(
+                text = MapCopy.OPEN_DETAILS,
+                onClick = onDetails,
+                modifier = Modifier.weight(1f),
+            )
+        }
     }
 }
 
@@ -371,7 +423,8 @@ private fun FacilityMap(
     var controller by remember(mapView) { mutableStateOf<MapLibreController?>(null) }
     val openFacility by rememberUpdatedState(onFacility)
 
-    AndroidView(
+    Box(Modifier.fillMaxSize()) {
+        AndroidView(
         factory = {
             mapView.apply {
                 getMapAsync { map ->
@@ -399,8 +452,16 @@ private fun FacilityMap(
                 }
             }
         },
-        modifier = Modifier.fillMaxSize(),
-    )
+            modifier = Modifier.fillMaxSize(),
+        )
+        // Beside the map rather than on a menu: two taps is how most people change a map's
+        // scale, and pinching with one hand holding a phone is not always available.
+        ZoomControls(
+            onIn = { controller?.zoomBy(ZOOM_STEP) },
+            onOut = { controller?.zoomBy(-ZOOM_STEP) },
+            modifier = Modifier.align(Alignment.CenterEnd).padding(Space.md),
+        )
+    }
 
     // Drawn on every new view from what the ViewModel already holds; nothing is fetched for it.
     LaunchedEffect(controller, state.facilities, state.selectedFacilityId) {
@@ -431,6 +492,9 @@ object MapCopy {
     const val MY_LOCATION = "موقعي"
     const val OPEN_DETAILS = "عرض التفاصيل"
     const val DISMISS = "إغلاق"
+    const val ROUTE = "الطريق"
+    const val ZOOM_IN = "تكبير"
+    const val ZOOM_OUT = "تصغير"
     const val UNCONFIGURED = "الخريطة غير متاحة"
     const val UNCONFIGURED_BODY = "يجب ضبط مزود خرائط الإنتاج قبل عرض الخريطة"
 }

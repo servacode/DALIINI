@@ -184,6 +184,9 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
             MapScreen(
                 styleUrl = BuildConfig.MAP_STYLE_URL,
                 bottomBar = { DirectoryTabs(DirectoryTab.MAP, navController) },
+                onRoute = { id, latitude, longitude ->
+                    navController.navigate(DirectoryRoute.RoutePreview(id, latitude, longitude))
+                },
                 onFacility = { id ->
                     val below = navController.previousBackStackEntry
                         ?.takeIf { it.destination.hasRoute<DirectoryRoute.FacilityDetailRoute>() }

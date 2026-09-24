@@ -26,6 +26,12 @@ class MapLibreController(
             return MapCamera(MapPoint(target.latitude, target.longitude), position.zoom, position.bearing)
         }
 
+    /** A step of scale, about where the map is already looking. */
+    fun zoomBy(steps: Double) {
+        val current = camera ?: return
+        moveCamera(current.copy(zoom = current.zoom + steps), animated = true)
+    }
+
     override fun moveCamera(camera: MapCamera, animated: Boolean) {
         val position = CameraPosition.Builder()
             .target(LatLng(camera.center.latitude, camera.center.longitude))

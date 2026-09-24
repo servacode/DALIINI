@@ -26,8 +26,12 @@ data class MapFilters(
     val dutyNow: Boolean = false,
 ) {
     fun withCategory(id: String?) = copy(categoryId = if (categoryId == id) null else id)
-    fun toggleOpenNow() = copy(openNow = !openNow, dutyNow = false)
-    fun toggleDutyNow() = copy(dutyNow = !dutyNow, openNow = false)
+
+    // The two narrow together, as they do on Home. They were exclusive here, which made the
+    // map answer a different question from the list for the same pair of words — and "open now
+    // and on tonight's roster" is exactly the question someone standing in the street asks.
+    fun toggleOpenNow() = copy(openNow = !openNow)
+    fun toggleDutyNow() = copy(dutyNow = !dutyNow)
 }
 
 data class MapUiState(
@@ -51,6 +55,19 @@ data class MapUiState(
     /** True while the position is being looked for, so the control can say it is working. */
     val locating: Boolean = false,
 ) {
+    /**
+     * Whether a duty filter means anything here.
+     *
+     * Only pharmacies keep a roster, so the chip is offered for a pharmacy category and for the
+     * unnarrowed map, where pharmacies are among what is drawn. Choosing laboratories takes it
+     * away, because a chip that can only ever return nothing is worse than no chip.
+     */
+    val offersDuty: Boolean
+        get() {
+            val chosen = categories.firstOrNull { it.id == filters.categoryId }
+            if (chosen != null) return chosen.capabilities?.supportsDuty == true
+            return categories.any { it.capabilities?.supportsDuty == true }
+        }
     /**
      * False when [viewport]'s markers are already here, as after coming back to the map.
      *
