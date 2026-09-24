@@ -26,6 +26,13 @@ val localMapStyleUrl = providers.gradleProperty("DIRECTORY_LOCAL_MAP_STYLE_URL")
 val routingBaseUrl = providers.gradleProperty("DIRECTORY_ROUTING_BASE_URL")
     .orElse(providers.environmentVariable("DIRECTORY_ROUTING_BASE_URL"))
     .orElse("https://<ROUTING_PROVIDER_HOST>/")
+// Valhalla on this machine, over Syria's extract, started by scripts/valhalla.sh. Reachable
+// from a phone through `adb reverse tcp:8002`, the same way Django and the media store are.
+val localRoutingBaseUrl = providers.gradleProperty("DIRECTORY_LOCAL_ROUTING_BASE_URL")
+    .orElse(providers.environmentVariable("DIRECTORY_LOCAL_ROUTING_BASE_URL"))
+    .orElse(providers.gradleProperty("DIRECTORY_ROUTING_BASE_URL"))
+    .orElse(providers.environmentVariable("DIRECTORY_ROUTING_BASE_URL"))
+    .orElse("http://localhost:8002/")
 val geocodingBaseUrl = providers.gradleProperty("DIRECTORY_GEOCODING_BASE_URL")
     .orElse(providers.environmentVariable("DIRECTORY_GEOCODING_BASE_URL"))
     .orElse("https://<GEOCODING_PROVIDER_HOST>/")
@@ -121,6 +128,7 @@ android {
             versionNameSuffix = "-local"
             buildConfigField("String", "API_BASE_URL", "\"${localApiBaseUrl.get()}\"")
             buildConfigField("String", "MAP_STYLE_URL", "\"${localMapStyleUrl.get()}\"")
+            buildConfigField("String", "ROUTING_BASE_URL", "\"${localRoutingBaseUrl.get()}\"")
             buildConfigField("String", "REALTIME_WS_URL", "\"${localRealtimeWebSocketUrl.get()}\"")
             buildConfigField("boolean", "ALLOW_CLEARTEXT", "true")
         }

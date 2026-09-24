@@ -13,7 +13,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidView
+import com.servacode.directory.core.designsystem.Sizes
+import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.maps.MapCamera
 import com.servacode.directory.core.maps.MapLibreController
 import com.servacode.directory.core.maps.MapPoint
@@ -27,10 +30,19 @@ internal fun NavigationMap(
     route: NavigationRoute?,
     location: MapPoint?,
     modifier: Modifier = Modifier,
+    /**
+     * Whether the camera holds the whole way or follows the person along it.
+     *
+     * The preview frames the route: someone deciding whether to walk needs to see where they
+     * are going. Live navigation does the opposite and stays with them.
+     */
+    frameWholeRoute: Boolean = false,
+    destination: MapPoint? = null,
+    destinationName: String? = null,
 ) {
     Box(modifier.fillMaxWidth()) {
         if (MapStyle.isConfigured(styleUrl)) {
-            RouteMap(styleUrl, route, location)
+            RouteMap(styleUrl, route, location, frameWholeRoute, destination, destinationName)
         } else {
             Text(
                 text = "يجب ضبط مزود خرائط الإنتاج قبل عرض مسار الملاحة",
@@ -47,8 +59,14 @@ private fun RouteMap(
     styleUrl: String,
     route: NavigationRoute?,
     location: MapPoint?,
+    frameWholeRoute: Boolean,
+    destination: MapPoint?,
+    destinationName: String?,
 ) {
     val routeColor = MaterialTheme.colorScheme.primary.toArgb()
+    val density = LocalDensity.current
+    val sidePadding = with(density) { Space.xl.roundToPx() }
+    val bottomPadding = with(density) { Sizes.mapCardClearance.roundToPx() }
     val mapView = rememberMapViewWithLifecycle()
     // One controller per map: it holds the route line and the location marker it replaces on
     // every fix (INT-096).
@@ -66,15 +84,25 @@ private fun RouteMap(
         modifier = Modifier.fillMaxSize(),
     )
 
-    LaunchedEffect(controller, route) {
+    LaunchedEffect(controller, destination, destinationName) {
         val map = controller ?: return@LaunchedEffect
-        route?.let { map.showRoute(it.geometry, routeColor) }
+        destination?.let { map.showDestination(it, destinationName) }
     }
-    LaunchedEffect(controller, location) {
+    LaunchedEffect(controller, route, frameWholeRoute) {
+        val map = controller ?: return@LaunchedEffect
+        val found = route ?: return@LaunchedEffect
+        map.showRoute(found.geometry, routeColor)
+        if (frameWholeRoute) map.frameRoute(found.geometry, sidePadding, bottomPadding)
+    }
+    LaunchedEffect(controller, location, frameWholeRoute) {
         val map = controller ?: return@LaunchedEffect
         location?.let {
             map.showNavigationLocation(it)
-            map.moveCamera(MapCamera(it, zoom = 16.0), animated = true)
+            // While the route is being computed there is nothing to frame, so the map opens
+            // where the person is. Once it arrives the frame takes over and is not fought.
+            if (!frameWholeRoute || route == null) {
+                map.moveCamera(MapCamera(it, zoom = 16.0), animated = true)
+            }
         }
     }
 }

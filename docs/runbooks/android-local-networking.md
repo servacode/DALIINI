@@ -22,13 +22,15 @@ for the host, and anything else is passed to the build as a Gradle property.
 ## Physical phone over USB
 1. Enable USB debugging and connect the phone; `adb devices` must list it.
 2. Forward the phone's own ports to the machine:
-   `adb reverse tcp:8000 tcp:8000` and `adb reverse tcp:9000 tcp:9000`.
+   `adb reverse tcp:8000 tcp:8000`, `adb reverse tcp:9000 tcp:9000` and, when routes
+   are wanted, `adb reverse tcp:8002 tcp:8002` for Valhalla (`scripts/valhalla.sh up`).
 3. Start the stack with `S3_PUBLIC_MEDIA_BASE_URL=http://localhost:9000/directory-public`.
 4. Build and install against `localhost`, which the phone now forwards to the machine:
    ```bash
    ./gradlew :app:installLocalDebug \
      -PDIRECTORY_LOCAL_API_BASE_URL=http://localhost:8000/ \
-     -PDIRECTORY_LOCAL_REALTIME_WS_URL=ws://localhost:8000/ws/v1/directory/
+     -PDIRECTORY_LOCAL_REALTIME_WS_URL=ws://localhost:8000/ws/v1/directory/ \
+     -PDIRECTORY_LOCAL_ROUTING_BASE_URL=http://localhost:8002/
    ```
 5. `adb reverse` does not survive a reconnect; repeat step 2 after the cable is unplugged.
 

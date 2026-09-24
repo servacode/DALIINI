@@ -21,7 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.annotation.DrawableRes
 import com.servacode.directory.core.designsystem.DirectoryCard
+import com.servacode.directory.core.designsystem.DirectoryCompactFilterChip
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryInlineLoading
 import com.servacode.directory.core.designsystem.DirectoryPage
@@ -32,6 +34,7 @@ import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.MetaRow
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.location.FOREGROUND_LOCATION_PERMISSIONS
+import com.servacode.directory.core.maps.RoutingProfile
 import com.servacode.directory.core.model.DistanceText
 import kotlin.math.roundToInt
 
@@ -82,6 +85,9 @@ fun RoutePreviewScreen(
                 route = state.route,
                 location = state.origin,
                 modifier = Modifier.fillMaxSize(),
+                frameWholeRoute = true,
+                destination = viewModel.destination,
+                destinationName = destinationName,
             )
             Column(
                 modifier = Modifier
@@ -99,6 +105,10 @@ fun RoutePreviewScreen(
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                         }
+                        TravelModeRow(
+                            selected = state.profile,
+                            onSelect = viewModel::selectProfile,
+                        )
                         when {
                             state.loading -> DirectoryInlineLoading(RoutePreviewCopy.COMPUTING)
                             state.route != null -> Row(
@@ -151,6 +161,41 @@ fun RoutePreviewScreen(
     }
 }
 
+/**
+ * On foot, on a motorcycle or by car.
+ *
+ * Each of the three is a question put to the routing engine, not a label over the same line:
+ * the walk goes the wrong way up a one-way street quite happily, and the car does not.
+ */
+@Composable
+private fun TravelModeRow(
+    selected: RoutingProfile,
+    onSelect: (RoutingProfile) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        RoutingProfile.entries.forEach { profile ->
+            DirectoryCompactFilterChip(
+                text = RoutePreviewCopy.mode(profile),
+                selected = profile == selected,
+                onClick = { onSelect(profile) },
+                icon = profile.icon(),
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+@DrawableRes
+private fun RoutingProfile.icon(): Int = when (this) {
+    RoutingProfile.WALKING -> DirectoryIcons.walk
+    RoutingProfile.MOTORCYCLE -> DirectoryIcons.motorcycle
+    RoutingProfile.DRIVING -> DirectoryIcons.car
+}
+
 /** The destination as another maps app would take it. */
 private fun com.servacode.directory.core.maps.MapPoint.geoUri(): Uri =
     "geo:$latitude,$longitude?q=$latitude,$longitude".toUri()
@@ -171,9 +216,27 @@ object RoutePreviewCopy {
         return "$value دقيقة"
     }
 
+    fun mode(profile: RoutingProfile): String = when (profile) {
+        RoutingProfile.WALKING -> "مشي"
+        RoutingProfile.MOTORCYCLE -> "موتور"
+        RoutingProfile.DRIVING -> "سيارة"
+    }
+
+    /**
+     * Each refusal in its own words.
+     *
+     * "There is no road near you that a car may use" and "the routing service is not answering"
+     * are different pieces of news, and one of them is the user's to act on.
+     */
     fun failure(code: String?): String = when (code) {
         "LOCATION_UNAVAILABLE" -> "تعذر تحديد موقعك الحالي."
-        "ROUTING_UNAVAILABLE" -> "تعذر حساب المسار من مزود التوجيه."
+        "NO_ROUTE" -> "لا يوجد طريق بين موقعك والمنشأة بهذا النمط."
+        "UNROUTABLE_POINT" -> "لا توجد طريق صالحة لهذا النمط قرب أحد الموقعين."
+        "TOO_FAR" -> "المسافة أبعد من أن تُحسب بهذا النمط."
+        "INVALID_POINTS" -> "أحد الموقعين غير صالح."
+        "UNREACHABLE" -> "خدمة التوجيه لا تستجيب."
+        "NOT_CONFIGURED" -> "خدمة التوجيه غير مهيأة في هذه النسخة."
+        "MALFORMED", "ENGINE_ERROR" -> "تعذر حساب المسار من خدمة التوجيه."
         else -> "تعذر حساب الطريق."
     }
 }

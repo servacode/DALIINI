@@ -40,6 +40,11 @@ object DirectoryIcons {
     @DrawableRes val minus = R.drawable.ic_minus
     @DrawableRes val filter = R.drawable.ic_filter
     @DrawableRes val route = R.drawable.ic_route
+
+    /** The three ways someone gets to a facility, told apart at a glance on the route screen. */
+    @DrawableRes val walk = R.drawable.ic_walk
+    @DrawableRes val motorcycle = R.drawable.ic_motorcycle
+    @DrawableRes val car = R.drawable.ic_car
     @DrawableRes val verified = R.drawable.ic_shield_check
     @DrawableRes val image = R.drawable.ic_image
     @DrawableRes val hospital = R.drawable.ic_hospital

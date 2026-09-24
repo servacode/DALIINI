@@ -320,7 +320,9 @@ fun DirectoryCompactFilterChip(
             // to about 330dp, which clears a 360dp phone with room rather than by a hair.
             modifier = Modifier.padding(horizontal = Space.sm, vertical = Space.sm),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Space.xs),
+            // Centred, which a chip sized to its own words cannot tell apart from packed to the
+            // start, and which a chip stretched to share a row equally needs.
+            horizontalArrangement = Arrangement.spacedBy(Space.xs, Alignment.CenterHorizontally),
         ) {
             // The icon repeats what the word says rather than replacing it: the filters are
             // read at a glance once they are known, and read as words the first time.

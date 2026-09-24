@@ -17,9 +17,14 @@ object MapProviderNetworkModule {
     @MapProviderHttpClient
     fun provideMapProviderHttpClient(): OkHttpClient = OkHttpClient.Builder().build()
 
+    /**
+     * Valhalla is the engine, and [OsrmRoutingProvider] stays where it is as the one we came
+     * from. OSRM compiles one profile into its graph, so walking and riding could only ever be
+     * driving under another name; Valhalla answers all three from the same tiles.
+     */
     @Provides
     @Singleton
-    fun provideRoutingProvider(impl: OsrmRoutingProvider): RoutingProvider = impl
+    fun provideRoutingProvider(impl: ValhallaRoutingProvider): RoutingProvider = impl
 
     @Provides
     @Singleton

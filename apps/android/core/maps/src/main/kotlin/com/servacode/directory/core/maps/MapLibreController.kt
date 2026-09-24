@@ -7,6 +7,7 @@ import org.maplibre.android.annotations.PolylineOptions
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.maps.MapLibreMap
 
 /** One per map: it remembers which marker is which facility. */
@@ -15,6 +16,7 @@ class MapLibreController(
 ) : MapController {
     private var navigationMarker: Marker? = null
     private var routePolyline: Polyline? = null
+    private var destinationMarker: Marker? = null
 
     /** Marker id to facility id. The facility id is not put in the marker, which would show it. */
     private val facilityMarkers = mutableMapOf<Long, String>()
@@ -61,6 +63,7 @@ class MapLibreController(
         facilityMarkers.clear()
         navigationMarker = null
         routePolyline = null
+        destinationMarker = null
     }
 
     override fun setOnFacilitySelected(listener: (String) -> Unit) {
@@ -82,6 +85,7 @@ class MapLibreController(
         facilityMarkers.clear()
         navigationMarker = null
         routePolyline = null
+        destinationMarker = null
         // No title: the pin itself is the answer, and its tip is the exact point.
         map.addMarker(MarkerOptions().position(LatLng(point.latitude, point.longitude)))
     }
@@ -102,6 +106,45 @@ class MapLibreController(
                 .color(colorArgb)
                 .width(6f),
         )
+    }
+
+    /**
+     * The whole way on screen at once, with room left at the bottom for the card over the map.
+     *
+     * A route preview centred on where the person is standing shows them the first street and
+     * hides the rest; what they came to see is how far it is and which way it goes.
+     */
+    fun frameRoute(points: List<MapPoint>, sidePaddingPx: Int, bottomPaddingPx: Int) {
+        if (points.size < 2) return
+        val bounds = LatLngBounds.Builder()
+            .includes(points.map { LatLng(it.latitude, it.longitude) })
+            .build()
+        // The map has to be measured before bounds can be turned into a camera. If it is not
+        // yet, the midpoint keeps both ends roughly in view until the next frame asks again.
+        runCatching {
+            map.animateCamera(
+                CameraUpdateFactory.newLatLngBounds(
+                    bounds,
+                    sidePaddingPx,
+                    sidePaddingPx,
+                    sidePaddingPx,
+                    bottomPaddingPx,
+                ),
+            )
+        }.onFailure {
+            moveCamera(
+                MapCamera(MapPoint(bounds.center.latitude, bounds.center.longitude), zoom = 13.0),
+                animated = false,
+            )
+        }
+    }
+
+    /** Where they are going, marked, so the end of the line is a place and not a line's end. */
+    fun showDestination(point: MapPoint, label: String?) {
+        destinationMarker?.let(map::removeMarker)
+        val options = MarkerOptions().position(LatLng(point.latitude, point.longitude))
+        if (!label.isNullOrBlank()) options.title(label)
+        destinationMarker = map.addMarker(options)
     }
 
     override fun showNavigationLocation(point: MapPoint) {
