@@ -308,7 +308,9 @@ private fun HomeContent(
     val snapshot = value.snapshot
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(padding),
-        contentPadding = PaddingValues(bottom = Space.xxl),
+        // A breath under the bar. Without it the search field starts hard against the dark
+        // edge and the two read as one block, which makes the bar look taller than it is.
+        contentPadding = PaddingValues(top = Space.base, bottom = Space.xxl),
         verticalArrangement = Arrangement.spacedBy(Space.md),
     ) {
         if (value.stale) {
