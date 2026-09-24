@@ -417,7 +417,7 @@ private fun FacilityMap(
         val point = state.userPoint ?: return@LaunchedEffect
         val here = MapPoint(point.latitude, point.longitude)
         map.showNavigationLocation(here)
-        map.moveCamera(MapCamera(here.latitude, here.longitude, MY_LOCATION_ZOOM), animated = true)
+        map.moveCamera(MapCamera(here, MY_LOCATION_ZOOM), animated = true)
     }
 }
 
