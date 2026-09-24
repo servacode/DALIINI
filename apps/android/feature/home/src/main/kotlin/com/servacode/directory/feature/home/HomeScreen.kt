@@ -534,7 +534,6 @@ private fun LazyListScope.facilityList(
  */
 @DrawableRes
 private fun chipIcon(chip: HomeChip): Int = when (chip) {
-    HomeChip.ALL -> DirectoryIcons.grid
     HomeChip.NEAREST -> DirectoryIcons.route
     HomeChip.OPEN_NOW -> DirectoryIcons.clock
     HomeChip.DUTY_TODAY -> DirectoryIcons.schedule

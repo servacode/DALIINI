@@ -26,7 +26,6 @@ object HomeCopy {
     const val LOCATION_ACTION = "السماح بالموقع"
 
     fun chip(chip: HomeChip): String = when (chip) {
-        HomeChip.ALL -> "الكل"
         HomeChip.NEAREST -> "الأقرب إليك"
         HomeChip.OPEN_NOW -> "مفتوح الآن"
         HomeChip.DUTY_TODAY -> "مناوبة اليوم"

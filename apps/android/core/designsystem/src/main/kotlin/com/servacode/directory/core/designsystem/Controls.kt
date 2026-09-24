@@ -316,7 +316,9 @@ fun DirectoryCompactFilterChip(
             MaterialTheme.colorScheme.onSurfaceVariant
         }
         Row(
-            modifier = Modifier.padding(horizontal = Space.md, vertical = Space.sm),
+            // Eight points, not Material's sixteen. Three Arabic filters with their marks come
+            // to about 330dp, which clears a 360dp phone with room rather than by a hair.
+            modifier = Modifier.padding(horizontal = Space.sm, vertical = Space.sm),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Space.xs),
         ) {

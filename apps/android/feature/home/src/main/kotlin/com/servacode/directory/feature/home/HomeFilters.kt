@@ -18,9 +18,6 @@ import com.servacode.directory.core.network.DirectorySort
  * the app.
  */
 enum class HomeChip {
-    /** Not a filter of its own: the absence of all the others. */
-    ALL,
-
     /** Orders by distance. Needs a position, and is offered only when there is one. */
     NEAREST,
 
@@ -39,19 +36,24 @@ data class HomeFilters(
     val openNow: Boolean = false,
     val dutyToday: Boolean = false,
 ) {
-    /** Nothing narrowed and nothing reordered: the whole province, as the backend lists it. */
+    /**
+     * Nothing narrowed and nothing reordered: the whole province, as the backend lists it.
+     *
+     * This is the state Home opens in, and it is why there is no "all" chip. "All" was never a
+     * filter — it was the absence of the other three — so drawing it meant a chip that could
+     * only ever undo the rest, costing a quarter of the row to say what an empty row already
+     * says. Turning the last chip off is how one gets back here.
+     */
     val isAll: Boolean get() = !nearest && !openNow && !dutyToday
 
     fun isOn(chip: HomeChip): Boolean = when (chip) {
-        HomeChip.ALL -> isAll
         HomeChip.NEAREST -> nearest
         HomeChip.OPEN_NOW -> openNow
         HomeChip.DUTY_TODAY -> dutyToday
     }
 
-    /** Tapping "all" clears; tapping any other chip turns just that one on or off. */
+    /** Each chip turns just itself on or off; they narrow together. */
     fun toggle(chip: HomeChip): HomeFilters = when (chip) {
-        HomeChip.ALL -> HomeFilters()
         HomeChip.NEAREST -> copy(nearest = !nearest)
         HomeChip.OPEN_NOW -> copy(openNow = !openNow)
         HomeChip.DUTY_TODAY -> copy(dutyToday = !dutyToday)
@@ -96,7 +98,7 @@ data class HomeFilters(
  * so a category that gains or loses a roster needs no change here.
  */
 fun HomeChip.isOffered(hasLocation: Boolean, category: Category?): Boolean = when (this) {
-    HomeChip.ALL, HomeChip.OPEN_NOW -> true
+    HomeChip.OPEN_NOW -> true
     HomeChip.NEAREST -> hasLocation
     HomeChip.DUTY_TODAY -> category?.capabilities?.supportsDuty == true
 }

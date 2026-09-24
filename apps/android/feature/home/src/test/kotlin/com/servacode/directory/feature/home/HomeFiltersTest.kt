@@ -36,9 +36,17 @@ class HomeFiltersTest {
         val query = HomeFilters().query("province-1", "category-1", null)
 
         assertTrue(HomeFilters().isAll)
-        assertTrue(HomeFilters().isOn(HomeChip.ALL))
         assertFalse(query.openNow)
         assertFalse(query.dutyToday)
+    }
+
+    @Test fun `there is no all chip, because an empty row already says it`() {
+        // "All" was never a filter — it was the absence of the other three — so a chip for it
+        // could only ever undo them, at the price of a quarter of the row.
+        assertEquals(
+            listOf(HomeChip.NEAREST, HomeChip.OPEN_NOW, HomeChip.DUTY_TODAY),
+            HomeChip.entries,
+        )
     }
 
     @Test fun `open now and on duty today are separate flags and travel together`() {
@@ -69,10 +77,10 @@ class HomeFiltersTest {
         assertEquals(DirectorySort.NAME, byName.sort)
     }
 
-    @Test fun `all clears everything else`() {
-        val narrowed = HomeFilters(nearest = true, openNow = true, dutyToday = true)
+    @Test fun `turning the last chip off is how one gets back to everything`() {
+        val narrowed = HomeFilters(openNow = true)
 
-        assertTrue(narrowed.toggle(HomeChip.ALL).isAll)
+        assertTrue(narrowed.toggle(HomeChip.OPEN_NOW).isAll)
     }
 
     @Test fun `tapping a chosen chip again lets it go`() {
@@ -113,11 +121,11 @@ class HomeFiltersTest {
 
     @Test fun `the chips offered are exactly the ones that can do something`() {
         assertEquals(
-            listOf(HomeChip.ALL, HomeChip.NEAREST, HomeChip.OPEN_NOW, HomeChip.DUTY_TODAY),
+            listOf(HomeChip.NEAREST, HomeChip.OPEN_NOW, HomeChip.DUTY_TODAY),
             homeChips(hasLocation = true, category = category(duty = true)),
         )
         assertEquals(
-            listOf(HomeChip.ALL, HomeChip.OPEN_NOW),
+            listOf(HomeChip.OPEN_NOW),
             homeChips(hasLocation = false, category = category(duty = false)),
         )
     }
