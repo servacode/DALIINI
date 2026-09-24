@@ -6951,8 +6951,14 @@ components:
           format: double
         availability:
           $ref: '#/components/schemas/AvailabilityStateEnum'
+        categoryIconKey:
+          type: string
+          nullable: true
+          description: Which mark the pin wears. A map of identical pins cannot be
+            read.
       required:
       - availability
+      - categoryIconKey
       - id
       - latitude
       - longitude

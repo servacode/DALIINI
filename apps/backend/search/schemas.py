@@ -115,6 +115,10 @@ class MapMarkerSerializer(serializers.Serializer):
     latitude = serializers.FloatField()
     longitude = serializers.FloatField()
     availability = serializers.ChoiceField(choices=[s.value for s in AvailabilityState])
+    categoryIconKey = serializers.CharField(
+        allow_null=True,
+        help_text="Which mark the pin wears. A map of identical pins cannot be read.",
+    )
 
 
 class MapMarkerListSerializer(serializers.Serializer):

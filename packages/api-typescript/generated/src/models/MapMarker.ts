@@ -57,6 +57,12 @@ export interface MapMarker {
      * @memberof MapMarker
      */
     availability: AvailabilityStateEnum;
+    /**
+     * Which mark the pin wears. A map of identical pins cannot be read.
+     * @type {string}
+     * @memberof MapMarker
+     */
+    categoryIconKey: string | null;
 }
 
 
@@ -70,6 +76,7 @@ export function instanceOfMapMarker(value: object): value is MapMarker {
     if (!('latitude' in value) || value['latitude'] === undefined) return false;
     if (!('longitude' in value) || value['longitude'] === undefined) return false;
     if (!('availability' in value) || value['availability'] === undefined) return false;
+    if (!('categoryIconKey' in value) || value['categoryIconKey'] === undefined) return false;
     return true;
 }
 
@@ -88,6 +95,7 @@ export function MapMarkerFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'latitude': json['latitude'],
         'longitude': json['longitude'],
         'availability': AvailabilityStateEnumFromJSON(json['availability']),
+        'categoryIconKey': json['categoryIconKey'],
     };
 }
 
@@ -107,6 +115,7 @@ export function MapMarkerToJSONTyped(value?: MapMarker | null, ignoreDiscriminat
         'latitude': value['latitude'],
         'longitude': value['longitude'],
         'availability': AvailabilityStateEnumToJSON(value['availability']),
+        'categoryIconKey': value['categoryIconKey'],
     };
 }
 

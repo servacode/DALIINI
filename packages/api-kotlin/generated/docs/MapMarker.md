@@ -9,6 +9,7 @@
 | **latitude** | **kotlin.Double** |  |  |
 | **longitude** | **kotlin.Double** |  |  |
 | **availability** | [**AvailabilityStateEnum**](AvailabilityStateEnum.md) |  |  |
+| **categoryIconKey** | **kotlin.String** | Which mark the pin wears. A map of identical pins cannot be read. |  |
 
 
 

@@ -352,6 +352,7 @@ internal fun MapMarker.toDomain() = PublicMapFacility(
     latitude = latitude,
     longitude = longitude,
     availability = availability.toDomain(),
+    categoryIconKey = categoryIconKey,
 )
 
 // Account

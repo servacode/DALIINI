@@ -7,6 +7,7 @@ plugins {
 dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:network"))
+    implementation(project(":core:auth"))
     implementation(project(":core:designsystem"))
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

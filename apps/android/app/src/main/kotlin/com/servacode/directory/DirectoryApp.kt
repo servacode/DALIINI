@@ -40,6 +40,8 @@ import com.servacode.directory.feature.bootstrap.LocationPermissionScreen
 import com.servacode.directory.feature.bootstrap.StartDestination
 import com.servacode.directory.feature.bootstrap.WelcomeScreen
 import com.servacode.directory.feature.directory.DirectoryScreen
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.servacode.directory.feature.owner.OwnerPresenceViewModel
 import com.servacode.directory.feature.owner.MyFacilitiesScreen
 import com.servacode.directory.feature.owner.ManageFacilityScreen
 import com.servacode.directory.feature.onboarding.OnboardingScreen
@@ -358,7 +360,9 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onAdd = { navController.navigate(DirectoryRoute.Onboarding()) },
                 onManage = { navController.navigate(DirectoryRoute.ManageFacility(it)) },
                 onDuty = { navController.navigate(DirectoryRoute.Duty(it)) },
-                onBack = { navController.popBackStack() },
+                // A place in the bar, so back leads nowhere the bar does not already go.
+                onBack = null,
+                bottomBar = { DirectoryTabs(DirectoryTab.FACILITIES, navController) },
             )
         }
         composable<DirectoryRoute.Onboarding> {
@@ -387,18 +391,26 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
 }
 
 /** The app's few main places, as the bar along the bottom carries them. */
-private enum class DirectoryTab { HOME, MAP, ACCOUNT }
+private enum class DirectoryTab { HOME, MAP, FACILITIES, ACCOUNT }
 
 /**
  * The bottom bar.
  *
- * It holds the three places the app actually has. The references show a fourth, saved
- * facilities, and nothing in the API stores them, so it is not drawn rather than drawn dead.
+ * Three places for most people. A fourth appears for an account that has facilities of its own:
+ * someone who manages a pharmacy opens its hours, its duty roster and its photographs far more
+ * often than they browse the directory, and for them those facilities are a place rather than a
+ * page inside a menu. For everyone else it is not drawn, because an empty tab is a promise the
+ * app cannot keep.
  */
 @Composable
-private fun DirectoryTabs(current: DirectoryTab, navController: NavHostController) {
+private fun DirectoryTabs(
+    current: DirectoryTab,
+    navController: NavHostController,
+    presence: OwnerPresenceViewModel = hiltViewModel(),
+) {
+    val ownsFacility by presence.ownsFacility.collectAsStateWithLifecycle()
     DirectoryBottomBar(
-        listOf(
+        listOfNotNull(
             DirectoryDestination(
                 label = "الرئيسية",
                 icon = DirectoryIcons.home,
@@ -421,6 +433,23 @@ private fun DirectoryTabs(current: DirectoryTab, navController: NavHostControlle
                     navController.navigate(DirectoryRoute.Map()) {
                         popUpTo<DirectoryRoute.Map> { inclusive = true }
                         launchSingleTop = true
+                    }
+                }
+            },
+            // Only for those who have something to manage.
+            if (!ownsFacility) {
+                null
+            } else {
+                DirectoryDestination(
+                    label = "منشآتي",
+                    icon = DirectoryIcons.hospital,
+                    selected = current == DirectoryTab.FACILITIES,
+                ) {
+                    if (current != DirectoryTab.FACILITIES) {
+                        navController.navigate(DirectoryRoute.MyFacilities) {
+                            popUpTo<DirectoryRoute.MyFacilities> { inclusive = true }
+                            launchSingleTop = true
+                        }
                     }
                 }
             },

@@ -242,10 +242,19 @@ fun RegisterScreen(
                     error = fieldError(state.failure, "displayName"),
                 )
                 PhoneField(phone, state.failure) { phone = it }
+                // Already decided from where the person is standing. It is shown because the
+                // permission may have been refused, and because someone registering away from
+                // home would otherwise have their account bound silently to the wrong directory.
                 Text(
                     text = AuthCopy.PROVINCE,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    text = AuthCopy.PROVINCE_NOTE,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 DirectoryChipRow {
@@ -516,6 +525,7 @@ object AuthCopy {
     const val APP_NAME = "دليلك"
     const val WELCOME = "دليل المنشآت الصحية في محافظتك"
     const val NO_ACCOUNT = "ليس لديك حساب؟"
+    const val PROVINCE_NOTE = "حُدِّدت من موقعك. غيّرها إن لم تكن صحيحة."
     const val CREATE = "إنشاء حساب جديد"
     const val CREATE_ACCOUNT = "إنشاء حساب"
     const val RECOVERY = "استعادة كلمة المرور"

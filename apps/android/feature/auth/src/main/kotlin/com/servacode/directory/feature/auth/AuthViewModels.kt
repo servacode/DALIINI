@@ -7,6 +7,8 @@ import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.AppErrorText
 import com.servacode.directory.core.model.Province
 import com.servacode.directory.core.model.toAppError
+import com.servacode.directory.core.location.LocationProvider
+import com.servacode.directory.core.location.fixWithoutPrompt
 import com.servacode.directory.core.network.PublicApiBoundary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -65,6 +67,7 @@ class RegisterViewModel @Inject constructor(
     private val auth: AuthRepository,
     private val publicApi: PublicApiBoundary,
     private val preferences: DirectoryPreferencesStore,
+    private val location: LocationProvider,
 ) : ViewModel() {
     private val _state = MutableStateFlow(ChallengeUiState())
     val state: StateFlow<ChallengeUiState> = _state.asStateFlow()
@@ -72,13 +75,31 @@ class RegisterViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val selected = preferences.values.first().selectedProvinceId
             val provinces = runCatching { publicApi.provinces() }.getOrDefault(emptyList())
-            _state.value = _state.value.copy(
-                provinces = provinces,
-                provinceId = selected?.takeIf { id -> provinces.any { it.id == id } } ?: provinces.firstOrNull()?.id,
-            )
+            _state.value = _state.value.copy(provinces = provinces, provinceId = chosen(provinces))
         }
+    }
+
+    /**
+     * Which province the account is opened in, decided rather than asked.
+     *
+     * In order: where the person is standing, then what this device is already browsing, then
+     * the first in the list. It is shown rather than hidden and one tap changes it — the
+     * permission may be refused, and someone registering while away from home would otherwise
+     * have their account bound silently to the wrong directory.
+     *
+     * The position is taken only if the app already has it: registration is not the moment to
+     * put a permission dialog in front of someone.
+     */
+    private suspend fun chosen(provinces: List<Province>): String? {
+        val here = location.fixWithoutPrompt()
+            ?.let { fix -> runCatching { publicApi.resolvePlace(fix.latitude, fix.longitude) }.getOrNull() }
+            ?.province
+            ?.id
+        val known = { id: String? -> id?.takeIf { candidate -> provinces.any { it.id == candidate } } }
+        return known(here)
+            ?: known(preferences.values.first().selectedProvinceId)
+            ?: provinces.firstOrNull()?.id
     }
 
     fun chooseProvince(id: String) {

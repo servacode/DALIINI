@@ -17,13 +17,16 @@ public struct MapMarker: Codable, JSONEncodable, Hashable {
     public var latitude: Double
     public var longitude: Double
     public var availability: AvailabilityStateEnum
+    /** Which mark the pin wears. A map of identical pins cannot be read. */
+    public var categoryIconKey: String?
 
-    public init(id: UUID, nameAr: String, latitude: Double, longitude: Double, availability: AvailabilityStateEnum) {
+    public init(id: UUID, nameAr: String, latitude: Double, longitude: Double, availability: AvailabilityStateEnum, categoryIconKey: String?) {
         self.id = id
         self.nameAr = nameAr
         self.latitude = latitude
         self.longitude = longitude
         self.availability = availability
+        self.categoryIconKey = categoryIconKey
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
@@ -32,6 +35,7 @@ public struct MapMarker: Codable, JSONEncodable, Hashable {
         case latitude
         case longitude
         case availability
+        case categoryIconKey
     }
 
     // Encodable protocol methods
@@ -43,6 +47,7 @@ public struct MapMarker: Codable, JSONEncodable, Hashable {
         try container.encode(latitude, forKey: .latitude)
         try container.encode(longitude, forKey: .longitude)
         try container.encode(availability, forKey: .availability)
+        try container.encode(categoryIconKey, forKey: .categoryIconKey)
     }
 }
 

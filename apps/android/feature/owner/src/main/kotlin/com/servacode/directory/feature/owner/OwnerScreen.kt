@@ -60,13 +60,22 @@ fun MyFacilitiesScreen(
     onAdd: () -> Unit,
     onManage: (String) -> Unit,
     onDuty: (String) -> Unit,
-    onBack: () -> Unit,
+    /**
+     * Null where this is a place in the bar rather than a screen on top of one.
+     *
+     * An owner reaches their facilities from the bar, and the root of a tab has nothing behind
+     * it; opened from the profile it still does.
+     */
+    onBack: (() -> Unit)? = null,
+    /** The app's own bar, where the owner has a place in it. */
+    bottomBar: @Composable () -> Unit = {},
     viewModel: MyFacilitiesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     DirectoryPage(
         topBar = { DirectoryTopBar(title = OwnerCopy.TITLE, onBack = onBack) },
+        bottomBar = bottomBar,
     ) { padding ->
         when (val value = state) {
             MyFacilitiesUiState.Loading -> DirectoryLoading(Modifier.padding(padding))

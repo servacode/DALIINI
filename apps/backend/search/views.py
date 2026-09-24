@@ -228,6 +228,10 @@ class PublicMapFacilitiesView(APIView):
                     "latitude": facility.location.y,
                     "longitude": facility.location.x,
                     "availability": get_facility_availability(facility).state.value,
+                    # The pin wears its section's mark: a map of identical pins asks
+                    # the reader to tap each one, and asks someone who does not read
+                    # to give up.
+                    "categoryIconKey": facility.category.icon_key or None,
                 }
             )
         return Response({"items": markers})

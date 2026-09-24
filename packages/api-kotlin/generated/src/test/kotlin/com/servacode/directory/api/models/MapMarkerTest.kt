@@ -56,5 +56,11 @@ class MapMarkerTest : ShouldSpec() {
             //modelInstance.availability shouldBe ("TODO")
         }
 
+        // to test the property `categoryIconKey` - Which mark the pin wears. A map of identical pins cannot be read.
+        should("test categoryIconKey") {
+            // uncomment below to test the property
+            //modelInstance.categoryIconKey shouldBe ("TODO")
+        }
+
     }
 }
