@@ -19,9 +19,18 @@ import java.io.File
  * checked against the resources on disk rather than against a list written beside them.
  */
 class NavigationClipsTest {
-    private val raw = File("../feature/navigation/src/main/res/raw").let {
-        if (it.isDirectory) it else File("feature/navigation/src/main/res/raw")
-    }
+    /**
+     * The recordings on disk.
+     *
+     * These tests are run from two working directories — the module's own, by the Android unit
+     * test task, and `jvm-verification`, by the platform-free harness — so the directory is
+     * looked for from both rather than assumed from one.
+     */
+    private val raw = listOf(
+        "src/main/res/raw",
+        "../feature/navigation/src/main/res/raw",
+        "apps/android/feature/navigation/src/main/res/raw",
+    ).map(::File).firstOrNull { it.isDirectory } ?: File("src/main/res/raw")
 
     private fun maneuver(
         kind: ManeuverKind,
