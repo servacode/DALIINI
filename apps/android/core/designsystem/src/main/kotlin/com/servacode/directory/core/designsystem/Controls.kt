@@ -275,9 +275,6 @@ fun DirectorySearchEntry(
     }
 }
 
-/** The filters a list carries at its head. */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
 /**
  * A filter chip narrow enough that a whole set of them fits across a phone.
  *
@@ -289,6 +286,7 @@ fun DirectorySearchEntry(
  * Everything else is the same chip: pill, the same selected and unselected colours, the same
  * border, and a touch target that still meets the minimum.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DirectoryCompactFilterChip(
     text: String,
@@ -330,6 +328,9 @@ fun DirectoryCompactFilterChip(
     }
 }
 
+/** The filters a list carries at its head, where there is room for Material's own size. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun DirectoryFilterChip(
     text: String,
     selected: Boolean,
