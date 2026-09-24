@@ -18,6 +18,9 @@ class MapLibreController(
     private var routePolyline: Polyline? = null
     private var destinationMarker: Marker? = null
 
+    /** The route and the person, drawn as style layers; see [NavigationLayers]. */
+    private val layers = NavigationLayers(map)
+
     /** Marker id to facility id. The facility id is not put in the marker, which would show it. */
     private val facilityMarkers = mutableMapOf<Long, String>()
 
@@ -137,6 +140,25 @@ class MapLibreController(
                 animated = false,
             )
         }
+    }
+
+    /**
+     * The way there, drawn the way this mode is drawn, and the person on it.
+     *
+     * Replaces [showRoute] for guidance: it can break the line for a walk and turn the mark to a
+     * heading, and it changes two sources in place rather than rebuilding the whole overlay every
+     * second, which is what made the map stutter under real readings.
+     */
+    fun showGuidance(
+        points: List<MapPoint>,
+        colorArgb: Int,
+        stroke: RouteStroke,
+        user: MapPoint?,
+        bearingDegrees: Float,
+        mark: UserMark,
+    ) {
+        layers.showRoute(points, colorArgb, stroke)
+        user?.let { layers.showUser(it, bearingDegrees, mark) }
     }
 
     /** Where they are going, marked, so the end of the line is a place and not a line's end. */

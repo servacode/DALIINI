@@ -34,11 +34,19 @@ internal enum class VoiceStage {
     EVENT,
 }
 
+/** What a cue is about, which is what decides which recording says it. */
+internal enum class VoiceCueKind { MANEUVER, REROUTE, REROUTE_FAILED, ARRIVE, STARTED }
+
 internal data class VoiceCue(
     val stage: VoiceStage,
     val text: String,
     /** What makes this cue this cue, so the same one is never said twice. */
     val key: String,
+    val kind: VoiceCueKind = VoiceCueKind.MANEUVER,
+    /** The turn being announced, for the recording that names it. Null for an event. */
+    val maneuver: RouteManeuver? = null,
+    /** How far it is, as the cue was fired. Null when the stage carries no distance. */
+    val distanceMeters: Double? = null,
 )
 
 /**
@@ -104,7 +112,12 @@ internal class NavigationVoicePlanner(private val tuning: VoiceTuning = VoiceTun
             is NavigationState.Rerouting -> {
                 if (!rerouteAnnounced) {
                     rerouteAnnounced = true
-                    cues += VoiceCue(VoiceStage.EVENT, NavigationVoiceCopy.REROUTING, "reroute")
+                    cues += VoiceCue(
+                        stage = VoiceStage.EVENT,
+                        text = NavigationVoiceCopy.REROUTING,
+                        key = "reroute",
+                        kind = VoiceCueKind.REROUTE,
+                    )
                 }
                 // Nothing about turns while the way itself is in question.
                 forgetManeuver()
@@ -113,7 +126,12 @@ internal class NavigationVoicePlanner(private val tuning: VoiceTuning = VoiceTun
             is NavigationState.Arrived -> {
                 if (!arrivalAnnounced) {
                     arrivalAnnounced = true
-                    cues += VoiceCue(VoiceStage.EVENT, NavigationVoiceCopy.ARRIVED, "arrived")
+                    cues += VoiceCue(
+                        stage = VoiceStage.EVENT,
+                        text = NavigationVoiceCopy.ARRIVED,
+                        key = "arrived",
+                        kind = VoiceCueKind.ARRIVE,
+                    )
                 }
             }
 
@@ -157,6 +175,9 @@ internal class NavigationVoicePlanner(private val tuning: VoiceTuning = VoiceTun
                 stage = stage,
                 text = phrase(stage, maneuver, distance),
                 key = "$key:$stage",
+                kind = VoiceCueKind.MANEUVER,
+                maneuver = maneuver,
+                distanceMeters = if (stage == VoiceStage.NOW) null else distance,
             ),
         )
     }
@@ -208,6 +229,8 @@ internal class NavigationVoicePlanner(private val tuning: VoiceTuning = VoiceTun
 
     private fun phrase(stage: VoiceStage, maneuver: RouteManeuver, distanceMeters: Double): String {
         val instruction = ArabicManeuverPhraseBuilder.phrase(maneuver)
+        // Setting off is not approached from a distance either, so it keeps its own words.
+        if (maneuver.kind == ManeuverKind.DEPART) return instruction
         return when (stage) {
             VoiceStage.NOW -> "$instruction ${NavigationVoiceCopy.NOW}"
             else -> "${NavigationVoiceCopy.after(distanceMeters)} $instruction"

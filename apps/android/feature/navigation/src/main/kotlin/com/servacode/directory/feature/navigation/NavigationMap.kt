@@ -22,6 +22,8 @@ import com.servacode.directory.core.maps.MapLibreController
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.maps.MapStyle
 import com.servacode.directory.core.maps.NavigationRoute
+import com.servacode.directory.core.maps.RouteStroke
+import com.servacode.directory.core.maps.UserMark
 import com.servacode.directory.core.maps.rememberMapViewWithLifecycle
 
 @Composable
@@ -30,19 +32,17 @@ internal fun NavigationMap(
     route: NavigationRoute?,
     location: MapPoint?,
     modifier: Modifier = Modifier,
-    /**
-     * Whether the camera holds the whole way or follows the person along it.
-     *
-     * The preview frames the route: someone deciding whether to walk needs to see where they
-     * are going. Live navigation does the opposite and stays with them.
-     */
-    frameWholeRoute: Boolean = false,
+    /** Broken for a walk, unbroken for a vehicle. */
+    stroke: RouteStroke = RouteStroke.SOLID,
+    /** A turning arrow for a vehicle, a plain dot on foot. */
+    mark: UserMark = UserMark.ARROW,
+    bearingDegrees: Float = 0f,
     destination: MapPoint? = null,
     destinationName: String? = null,
 ) {
     Box(modifier.fillMaxWidth()) {
         if (MapStyle.isConfigured(styleUrl)) {
-            RouteMap(styleUrl, route, location, frameWholeRoute, destination, destinationName)
+            RouteMap(styleUrl, route, location, stroke, mark, bearingDegrees, destination, destinationName)
         } else {
             Text(
                 text = "يجب ضبط مزود خرائط الإنتاج قبل عرض مسار الملاحة",
@@ -53,13 +53,14 @@ internal fun NavigationMap(
     }
 }
 
-
 @Composable
 private fun RouteMap(
     styleUrl: String,
     route: NavigationRoute?,
     location: MapPoint?,
-    frameWholeRoute: Boolean,
+    stroke: RouteStroke,
+    mark: UserMark,
+    bearingDegrees: Float,
     destination: MapPoint?,
     destinationName: String?,
 ) {
@@ -88,21 +89,27 @@ private fun RouteMap(
         val map = controller ?: return@LaunchedEffect
         destination?.let { map.showDestination(it, destinationName) }
     }
-    LaunchedEffect(controller, route, frameWholeRoute) {
+
+    // The line and the mark are one update: they describe the same instant, and drawing them
+    // apart is what makes a map look like it is catching up with itself.
+    LaunchedEffect(controller, route, location, stroke, mark, bearingDegrees) {
         val map = controller ?: return@LaunchedEffect
-        val found = route ?: return@LaunchedEffect
-        map.showRoute(found.geometry, routeColor)
-        if (frameWholeRoute) map.frameRoute(found.geometry, sidePadding, bottomPadding)
+        val geometry = route?.geometry ?: return@LaunchedEffect
+        map.showGuidance(geometry, routeColor, stroke, location, bearingDegrees, mark)
     }
-    LaunchedEffect(controller, location, frameWholeRoute) {
+
+    // The camera is framed once per route, not once per reading. Re-framing on every fix is
+    // what made the map appear to jump about on its own while nobody was touching it.
+    LaunchedEffect(controller, route?.geometry?.size, route?.distanceMeters) {
         val map = controller ?: return@LaunchedEffect
-        location?.let {
-            map.showNavigationLocation(it)
-            // While the route is being computed there is nothing to frame, so the map opens
-            // where the person is. Once it arrives the frame takes over and is not fought.
-            if (!frameWholeRoute || route == null) {
-                map.moveCamera(MapCamera(it, zoom = 16.0), animated = true)
-            }
-        }
+        val geometry = route?.geometry ?: return@LaunchedEffect
+        map.frameRoute(geometry, sidePadding, bottomPadding)
+    }
+
+    // Before there is a route there is still a person, and the map opens where they are.
+    LaunchedEffect(controller, route == null, location != null) {
+        val map = controller ?: return@LaunchedEffect
+        if (route != null) return@LaunchedEffect
+        location?.let { map.moveCamera(MapCamera(it, zoom = 15.0), animated = true) }
     }
 }

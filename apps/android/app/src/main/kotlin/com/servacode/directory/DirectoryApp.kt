@@ -47,7 +47,6 @@ import com.servacode.directory.feature.facility.FacilityScreen
 import com.servacode.directory.feature.home.HomeScreen
 import com.servacode.directory.feature.map.MapScreen
 import com.servacode.directory.feature.navigation.BuiltInNavigationScreen
-import com.servacode.directory.feature.navigation.RoutePreviewScreen
 import com.servacode.directory.feature.province.ProvinceScreen
 import com.servacode.directory.feature.ratings.RatingsScreen
 import com.servacode.directory.feature.search.SearchScreen
@@ -168,7 +167,7 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                     // The way there is shown before it is followed; starting is the user's own
                     // decision, on the next screen.
                     navController.navigate(
-                        DirectoryRoute.RoutePreview(facilityId, latitude, longitude),
+                        DirectoryRoute.BuiltInNavigation(latitude, longitude),
                     )
                 },
                 onRatings = { navController.navigate(DirectoryRoute.MyRatings) },
@@ -185,7 +184,7 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 styleUrl = BuildConfig.MAP_STYLE_URL,
                 bottomBar = { DirectoryTabs(DirectoryTab.MAP, navController) },
                 onRoute = { id, latitude, longitude ->
-                    navController.navigate(DirectoryRoute.RoutePreview(id, latitude, longitude))
+                    navController.navigate(DirectoryRoute.BuiltInNavigation(latitude, longitude))
                 },
                 onFacility = { id ->
                     val below = navController.previousBackStackEntry
@@ -199,35 +198,6 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 },
             )
         }
-        composable<DirectoryRoute.RoutePreview> {
-            RoutePreviewScreen(
-                styleUrl = BuildConfig.MAP_STYLE_URL,
-                onStart = { latitude, longitude, profile ->
-                    navController.navigate(
-                        DirectoryRoute.BuiltInNavigation(latitude, longitude, profile.name),
-                    )
-                },
-                onBack = { navController.popBackStack() },
-                destinationName = null,
-                // A trip driven by made-up readings, so that guidance and its voice can be
-                // watched without a car. The gate is here and nowhere else: a release build is
-                // not given the function, so the button does not exist in it.
-                onSimulate = if (BuildConfig.DEBUG) {
-                    { latitude, longitude, profile ->
-                        navController.navigate(
-                            DirectoryRoute.BuiltInNavigation(
-                                latitude = latitude,
-                                longitude = longitude,
-                                profile = profile.name,
-                                simulated = true,
-                            ),
-                        )
-                    }
-                } else {
-                    null
-                },
-            )
-        }
         composable<DirectoryRoute.BuiltInNavigation> { backStackEntry ->
             val route = backStackEntry.toRoute<DirectoryRoute.BuiltInNavigation>()
             BuiltInNavigationScreen(
@@ -237,6 +207,23 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                     route.longitude,
                 ),
                 onClose = { navController.popBackStack() },
+                // A trip driven by made-up readings, so that guidance and its voice can be
+                // watched without a car. The gate is here and nowhere else: a release build is
+                // not given the function, so the control does not exist in it.
+                onSimulate = if (BuildConfig.DEBUG) {
+                    { profile ->
+                        navController.navigate(
+                            DirectoryRoute.BuiltInNavigation(
+                                latitude = route.latitude,
+                                longitude = route.longitude,
+                                profile = profile.name,
+                                simulated = true,
+                            ),
+                        ) { launchSingleTop = true }
+                    }
+                } else {
+                    null
+                },
             )
         }
         composable<DirectoryRoute.Account> {

@@ -50,11 +50,4 @@ sealed interface DirectoryRoute {
     /** The platform's published pages: the list, and one of them. */
     @Serializable data object Help : DirectoryRoute
     @Serializable data class LegalPageRoute(val key: String) : DirectoryRoute
-
-    /** A route before live navigation: the way there, seen before it is followed. */
-    @Serializable data class RoutePreview(
-        val facilityId: String,
-        val latitude: Double,
-        val longitude: Double,
-    ) : DirectoryRoute
 }

@@ -26,6 +26,7 @@ val androidOnly = listOf(
     "**/core/location/AndroidLocationProvider.kt",
     "**/core/location/LocationModule.kt",
     "**/core/maps/MapLibreController.kt",
+    "**/core/maps/NavigationLayers.kt",
     "**/core/maps/MapViewLifecycle.kt",
     "**/*Screen.kt",
     "**/*Screens.kt",

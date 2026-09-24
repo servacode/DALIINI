@@ -70,11 +70,28 @@ def check_navigation_engine() -> None:
 def check_voice_and_map() -> None:
     source = nav_text()
     require("ArabicManeuverPhraseBuilder" in source, "Arabic maneuver builder missing")
-    require("TextToSpeech" in source and 'Locale("ar")' in source, "Arabic native TTS missing")
+    # Arabic out loud, whichever way the locale is named. The recorded pack says the common
+    # phrases; the synthesiser is the fallback for the ones it has no recording for, and on a
+    # phone with no Arabic voice installed the fallback is silent — which is why both must exist.
+    require(
+        "TextToSpeech" in source
+        and ('Locale("ar")' in source or 'forLanguageTag("ar")' in source),
+        "Arabic native TTS missing",
+    )
+    require("NavigationClips" in source, "the recorded Arabic pack is not wired")
     require("AndroidView" in source and "MapView" in source, "MapLibre native navigation view missing")
     require("WebView" not in source, "WebView navigation is forbidden")
-    require("showRoute" in source, "route rendering missing")
-    require("showNavigationLocation" in source, "navigation location rendering missing")
+    # The route and the person must both be drawn. They used to be two calls on the annotation
+    # API; they are now one call on the style layers, which is what lets a walk be dotted and the
+    # mark be turned to a heading. Either spelling satisfies what the rule is actually for.
+    require(
+        "showGuidance" in source or "showRoute" in source,
+        "route rendering missing",
+    )
+    require(
+        "showGuidance" in source or "showNavigationLocation" in source,
+        "navigation location rendering missing",
+    )
     require(
         "mutableStateOf<MapLibreMap?>" in source or "mutableStateOf<MapLibreController?>" in source,
         "MapLibre async state is not Compose-observable",
@@ -99,9 +116,20 @@ def check_product_integration() -> None:
     require("BuiltInNavigationScreen" in app, "built-in navigation destination not wired")
     require("DirectoryRoute.BuiltInNavigation" in app, "navigation route not wired")
     # The wording and the widget belong to the design system; what must hold is that a facility
-    # can start the way there, and that it goes through the route preview first.
+    # can start the way there, and that the route is seen whole before anyone follows it.
+    #
+    # This used to demand a separate preview screen between the two. The owner removed it on
+    # 2026-09-24 — someone who presses "الطريق" has already decided to go — so what is required
+    # now is that the one screen still frames the whole route and still offers the three ways of
+    # travelling, which is everything the preview existed to show.
     require("onDirections" in facility, "facility directions action missing")
-    require("DirectoryRoute.RoutePreview" in app, "route preview not wired before live navigation")
+    navigation = read(
+        "feature/navigation/src/main/kotlin/com/servacode/directory/feature/navigation/NavigationScreen.kt"
+    )
+    require("frameRoute" in read(
+        "feature/navigation/src/main/kotlin/com/servacode/directory/feature/navigation/NavigationMap.kt"
+    ), "the whole route is no longer framed on opening")
+    require("TravelModeRow" in navigation, "the travel modes are not offered on the navigation screen")
 
 
 def check_tests() -> None:
