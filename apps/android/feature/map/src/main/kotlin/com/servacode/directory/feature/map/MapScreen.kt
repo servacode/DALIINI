@@ -424,13 +424,15 @@ private fun FacilityMap(
     val mapView = rememberMapViewWithLifecycle()
     var controller by remember(mapView) { mutableStateOf<MapLibreController?>(null) }
     val openFacility by rememberUpdatedState(onFacility)
+    // The controller draws each section's mark into its pin, which needs resources.
+    val context = LocalContext.current
 
     Box(Modifier.fillMaxSize()) {
         AndroidView(
         factory = {
             mapView.apply {
                 getMapAsync { map ->
-                    val mapController = MapLibreController(map)
+                    val mapController = MapLibreController(map, context)
                     // The ViewModel's camera: the start, or where the user left this map.
                     viewModel.state.value.camera?.let { mapController.moveCamera(it, animated = false) }
                     map.addOnCameraIdleListener {
@@ -469,7 +471,16 @@ private fun FacilityMap(
     LaunchedEffect(controller, state.facilities, state.selectedFacilityId) {
         val map = controller ?: return@LaunchedEffect
         map.showFacilities(
-            state.facilities.map { FacilityMapPin(it.id, MapPoint(it.latitude, it.longitude), it.label) },
+            state.facilities.map {
+                FacilityMapPin(
+                    facilityId = it.id,
+                    point = MapPoint(it.latitude, it.longitude),
+                    label = it.label,
+                    // The section's own mark, the same one the rail and the cards wear: a map
+                    // of identical teardrops asks someone who does not read to give up.
+                    iconRes = DirectoryIcons.category(it.categoryIconKey),
+                )
+            },
             state.selectedFacilityId,
         )
     }

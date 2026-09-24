@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     implementation(project(":core:model"))
+    implementation(libs.androidx.core)
     implementation(libs.maplibre.android)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.lifecycle.runtime.compose)

@@ -1,5 +1,15 @@
 package com.servacode.directory.core.maps
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Path
+import androidx.annotation.DrawableRes
+import androidx.core.content.ContextCompat
+import org.maplibre.android.annotations.Icon
+import org.maplibre.android.annotations.IconFactory
 import org.maplibre.android.annotations.Marker
 import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.annotations.Polyline
@@ -13,6 +23,11 @@ import org.maplibre.android.maps.MapLibreMap
 /** One per map: it remembers which marker is which facility. */
 class MapLibreController(
     private val map: MapLibreMap,
+    /**
+     * Needed to draw a section's mark into a pin. Null keeps the plain teardrop, which is what
+     * a map of one kind of thing wants anyway.
+     */
+    private val context: Context? = null,
 ) : MapController {
     private var navigationMarker: Marker? = null
     private var routePolyline: Polyline? = null
@@ -30,6 +45,56 @@ class MapLibreController(
             val target = position.target ?: return null
             return MapCamera(MapPoint(target.latitude, target.longitude), position.zoom, position.bearing)
         }
+
+    /**
+     * The pin a section wears, drawn once per section and kept.
+     *
+     * A hundred markers of one kind would otherwise build a hundred identical bitmaps, and the
+     * map stutters while they are made.
+     */
+    private val icons = mutableMapOf<Int, Icon>()
+
+    private fun markerIcon(@DrawableRes iconRes: Int?): Icon? {
+        val resource = iconRes ?: return null
+        val host = context ?: return null
+        return icons.getOrPut(resource) { IconFactory.getInstance(host).fromBitmap(pinBitmap(host, resource)) }
+    }
+
+    /**
+     * A round white pin with the section's mark inside it.
+     *
+     * The mark is what the reader recognises; the disc is what makes it legible against a map
+     * of pale streets and green parks, and the point below it is what says "here, exactly".
+     */
+    private fun pinBitmap(host: Context, @DrawableRes iconRes: Int): Bitmap {
+        val size = PIN_SIZE
+        val bitmap = Bitmap.createBitmap(size, size + PIN_TAIL, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val centre = size / 2f
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        paint.color = Color.WHITE
+        canvas.drawCircle(centre, centre, centre - 2f, paint)
+        // The tip, so the pin points at its own coordinate rather than hovering over it.
+        val tip = Path().apply {
+            moveTo(centre - 14f, centre + 24f)
+            lineTo(centre, (size + PIN_TAIL).toFloat() - 2f)
+            lineTo(centre + 14f, centre + 24f)
+            close()
+        }
+        canvas.drawPath(tip, paint)
+        paint.color = PIN_RING
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = 4f
+        canvas.drawCircle(centre, centre, centre - 4f, paint)
+
+        val drawable = ContextCompat.getDrawable(host, iconRes)
+        if (drawable != null) {
+            val inset = size / 4
+            drawable.setBounds(inset, inset, size - inset, size - inset)
+            drawable.draw(canvas)
+        }
+        return bitmap
+    }
 
     /** A step of scale, about where the map is already looking. */
     fun zoomBy(steps: Double) {
@@ -50,11 +115,11 @@ class MapLibreController(
     override fun showFacilities(pins: List<FacilityMapPin>, selectedFacilityId: String?) {
         clearFacilities()
         pins.forEach { pin ->
-            val marker = map.addMarker(
-                MarkerOptions()
-                    .position(LatLng(pin.point.latitude, pin.point.longitude))
-                    .title(pin.label),
-            )
+            val options = MarkerOptions()
+                .position(LatLng(pin.point.latitude, pin.point.longitude))
+                .title(pin.label)
+            markerIcon(pin.iconRes)?.let(options::icon)
+            val marker = map.addMarker(options)
             facilityMarkers[marker.id] = pin.facilityId
             // Selecting opens the marker's name above it.
             if (pin.facilityId == selectedFacilityId) map.selectMarker(marker)
@@ -179,5 +244,11 @@ class MapLibreController(
         } else {
             existing.position = latLng
         }
+    }
+
+    private companion object {
+        const val PIN_SIZE = 96
+        const val PIN_TAIL = 26
+        val PIN_RING = 0xFF042623.toInt()
     }
 }

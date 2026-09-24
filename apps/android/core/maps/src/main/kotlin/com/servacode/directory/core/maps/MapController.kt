@@ -12,6 +12,17 @@ data class FacilityMapPin(
     val facilityId: String,
     val point: MapPoint,
     val label: String,
+    /**
+     * The mark this facility's section wears, as a drawable this app already has.
+     *
+     * A map full of identical pins asks the reader to tap each one to find out what it is, and
+     * asks someone who does not read to give up. A cross is a hospital, a mortar and pestle is
+     * a pharmacy, and both are understood without a word. Null falls back to the plain pin.
+     *
+     * A drawable id rather than a name, because which drawable a section wears is the design
+     * system's answer and this file is compiled without it — or the Android framework.
+     */
+    val iconRes: Int? = null,
 )
 
 interface MapController {

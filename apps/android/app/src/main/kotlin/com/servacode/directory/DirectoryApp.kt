@@ -172,6 +172,7 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                     )
                 },
                 onRatings = { navController.navigate(DirectoryRoute.MyRatings) },
+                onSignIn = { navController.navigate(DirectoryRoute.Login) },
                 // The dialer opens with the number the backend published; the call is the user's.
                 onCall = { phone ->
                     context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$phone".toUri()))

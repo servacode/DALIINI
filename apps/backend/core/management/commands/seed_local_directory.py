@@ -27,6 +27,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
+from content_services.models import Advertisement
 from business_hours.models import BusinessHour
 from business_hours.services import local_day_bounds
 from directory.models import Category, CategoryProvince
@@ -55,6 +56,21 @@ PHARMACIES = [
     ("ph-nour", "صيدلية النور", "حي المشلب", -0.011, -0.007, SHUT),
     ("ph-rawda", "صيدلية الروضة", "شارع الملعب", 0.014, 0.010, MORNINGS),
 ]
+
+#: The banners Home's slider shows. They exist so that the slider has a place on the screen
+#: during development; nothing here is an advertisement for anything. The images are drawn
+#: by the command itself rather than shipped, so no artwork enters the repository.
+#:
+#: (slug, title, subtitle, background, seconds on screen)
+ADS = [
+    ("ad-one", "مساحة إعلانية", "هنا تظهر إعلانات المنصة", (4, 38, 35), 5),
+    ("ad-two", "مساحة إعلانية", "صورة العرض بعرض الشاشة", (17, 94, 79), 5),
+    ("ad-three", "مساحة إعلانية", "ثلاث شرائح تتبدّل وحدها", (92, 122, 74), 5),
+]
+
+#: The shape Home draws a banner in, so a placeholder is the size of the real thing.
+AD_WIDTH, AD_HEIGHT = 1080, 540
+
 
 CLINICS = [
     ("cl-ibnsina", "عيادة ابن سينا", "شارع تل أبيض", 0.003, -0.002, MORNINGS),
@@ -135,9 +151,70 @@ class Command(BaseCommand):
                 counts[category.name_ar] = counts.get(category.name_ar, 0) + 1
 
         self._duty(now)
+        self._ads(raqqa)
 
         for category_name, total in counts.items():
             self.stdout.write(f"{category_name}: {total}")
+
+    def _ads(self, province):
+        """Three banners, with an image each, so the slider on Home has something to show.
+
+        The picture is generated and written to the public bucket here rather than kept in
+        the repository: it is a coloured rectangle with a line of Arabic on it, and a
+        checked-in binary would outlive the reason for it.
+        """
+        for index, (slug, title, subtitle, colour, seconds) in enumerate(ADS):
+            key = self._ad_image(slug, title, subtitle, colour)
+            Advertisement.objects.update_or_create(
+                id=uuid.uuid5(NAMESPACE, slug),
+                defaults={
+                    "image_key": key,
+                    "title_ar": title,
+                    "subtitle_ar": subtitle,
+                    "action_type": Advertisement.ActionType.NONE,
+                    # Global rather than tied to Raqqa: the banner exists so the slider has a
+                    # place on the screen, and a reviewer whose device is set elsewhere should
+                    # still see it.
+                    "target_scope": Advertisement.TargetScope.GLOBAL,
+                    "province": None,
+                    "enabled": True,
+                    "sort_order": index,
+                    "slide_duration_ms": seconds * 1000,
+                },
+            )
+        self.stdout.write(f"إعلانات: {len(ADS)}")
+
+    def _ad_image(self, slug, title, subtitle, colour):
+        """Draw the banner and store it, returning the key the serializer turns into a URL."""
+        from django.core.files.base import ContentFile
+        from io import BytesIO
+        from PIL import Image, ImageDraw
+        from storage.backends import PublicS3Storage
+
+        image = Image.new("RGB", (AD_WIDTH, AD_HEIGHT), colour)
+        draw = ImageDraw.Draw(image)
+        # No font is bundled, and Arabic would need shaping to be drawn correctly here. Two
+        # bars stand in for the words instead: the point is the banner's size and place.
+        draw.rounded_rectangle(
+            (80, AD_HEIGHT // 2 - 70, AD_WIDTH - 80, AD_HEIGHT // 2 - 20),
+            radius=25,
+            fill=(255, 255, 255),
+        )
+        draw.rounded_rectangle(
+            (80, AD_HEIGHT // 2 + 10, AD_WIDTH // 2, AD_HEIGHT // 2 + 50),
+            radius=20,
+            fill=(255, 255, 255, 160),
+        )
+        buffer = BytesIO()
+        image.save(buffer, format="JPEG", quality=85)
+
+        storage = PublicS3Storage()
+        key = f"ads/{slug}.jpg"
+        # A fixed key, so a second run replaces the picture instead of leaving a new one
+        # beside it; the storage would otherwise rename rather than overwrite.
+        if storage.exists(key):
+            storage.delete(key)
+        return storage.save(key, ContentFile(buffer.getvalue(), name="ad.jpg"))
 
     def _facility(self, slug, category, province, name, address, north, east, now):
         facility, _ = Facility.objects.update_or_create(
