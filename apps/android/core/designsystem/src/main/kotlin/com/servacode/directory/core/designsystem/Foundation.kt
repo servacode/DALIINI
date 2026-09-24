@@ -70,6 +70,12 @@ object Sizes {
     val hero = 260.dp
     val actionCircle = 52.dp
 
-    /** How much of the map's height the category rail may take before it scrolls. */
-    val railMaxHeight = 320.dp
+    /**
+     * How much of the map's height the category rail may take before it scrolls.
+     *
+     * Enough for the five sections a province opens with, now that each carries its name as
+     * well as its mark. Past that it scrolls rather than growing, so a province that adds
+     * sections never takes the map.
+     */
+    val railMaxHeight = 440.dp
 }

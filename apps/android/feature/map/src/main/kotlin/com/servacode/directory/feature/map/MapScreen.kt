@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
@@ -28,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -183,7 +185,7 @@ private fun MapCategoryRail(
             val selected = category.id == selectedId
             Surface(
                 onClick = { onCategory(category.id) },
-                shape = RoundedCornerShape(Radius.pill),
+                shape = RoundedCornerShape(Radius.large),
                 color = if (selected) {
                     MaterialTheme.colorScheme.primary
                 } else {
@@ -191,18 +193,39 @@ private fun MapCategoryRail(
                 },
                 shadowElevation = Elevation.low,
             ) {
-                Box(
-                    modifier = Modifier.size(Sizes.touchTarget),
-                    contentAlignment = Alignment.Center,
+                // The name under the mark, not only in the accessibility tree. An icon alone
+                // is a guess for anyone meeting it the first time, and a rail of five guesses
+                // is a rail nobody uses — the labels are what make it a list of sections
+                // rather than a row of symbols.
+                Column(
+                    modifier = Modifier
+                        .width(Sizes.categoryLabel)
+                        .padding(vertical = Space.sm, horizontal = Space.xs),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Space.xs),
                 ) {
                     DirectoryIcon(
                         icon = DirectoryIcons.category(category.iconKey),
-                        contentDescription = category.nameAr,
+                        // The label beside it already says this; announcing both would read
+                        // the name twice.
+                        contentDescription = null,
                         tint = if (selected) {
                             MaterialTheme.colorScheme.onPrimary
                         } else {
                             MaterialTheme.colorScheme.primary
                         },
+                    )
+                    Text(
+                        text = category.nameAr,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (selected) {
+                            MaterialTheme.colorScheme.onPrimary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
