@@ -37,6 +37,7 @@ object DirectoryIcons {
     @DrawableRes val upload = R.drawable.ic_upload
     @DrawableRes val edit = R.drawable.ic_edit
     @DrawableRes val plus = R.drawable.ic_plus
+    @DrawableRes val minus = R.drawable.ic_minus
     @DrawableRes val filter = R.drawable.ic_filter
     @DrawableRes val route = R.drawable.ic_route
     @DrawableRes val verified = R.drawable.ic_shield_check

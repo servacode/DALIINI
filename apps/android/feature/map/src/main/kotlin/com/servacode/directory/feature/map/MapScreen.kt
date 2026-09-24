@@ -213,7 +213,9 @@ private fun ZoomControls(onIn: () -> Unit, onOut: () -> Unit, modifier: Modifier
         verticalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
         MapRoundButton(DirectoryIcons.plus, MapCopy.ZOOM_IN, onIn)
-        MapRoundButton(DirectoryIcons.close, MapCopy.ZOOM_OUT, onOut)
+        // A minus, not a cross. The pair reads as one scale; a cross beside a plus reads as
+        // "close", and someone pressing it expects the map to go away rather than widen.
+        MapRoundButton(DirectoryIcons.minus, MapCopy.ZOOM_OUT, onOut)
     }
 }
 
