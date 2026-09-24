@@ -52,6 +52,9 @@ object Sizes {
     val thumbnail = 72.dp
     val categoryCircle = 56.dp
 
+    /** The app's own bottom bar, without the system's own strip beneath it. */
+    val bottomBar = 64.dp
+
     /** Wide enough for the longest category name the taxonomy holds, over two lines. */
     val categoryLabel = 92.dp
 

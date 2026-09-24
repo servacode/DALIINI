@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -165,9 +167,18 @@ data class DirectoryDestination(
 @Composable
 fun DirectoryBottomBar(destinations: List<DirectoryDestination>, modifier: Modifier = Modifier) {
     NavigationBar(
-        modifier = modifier,
+        // Shorter than Material's eighty points, and rounded where it meets the page, so the
+        // white above appears to run over it rather than stopping against a slab. The system's
+        // own bar sits below this one, and two full-width bands stacked on each other is what
+        // made it read as heavy.
+        modifier = modifier
+            .clip(RoundedCornerShape(topStart = Radius.xl, topEnd = Radius.xl))
+            .height(Sizes.bottomBar),
         containerColor = BrandColors.bar,
         tonalElevation = Elevation.none,
+        // The height above is the bar itself; the gesture or button area below it is the
+        // system's, and the scaffold already leaves room for it.
+        windowInsets = WindowInsets(0),
     ) {
         destinations.forEach { destination ->
             NavigationBarItem(
