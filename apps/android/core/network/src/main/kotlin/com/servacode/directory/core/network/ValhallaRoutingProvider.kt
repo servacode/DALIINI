@@ -83,7 +83,9 @@ class ValhallaRoutingProvider @Inject constructor(
             val payload = it.body.string()
             if (!it.isSuccessful) throw rejected(it.code, payload, profile)
             val decoded = runCatching { json.decodeFromString(ValhallaResponse.serializer(), payload) }
-                .getOrElse { cause -> throw failure(RoutingFailure.MALFORMED, "route response is not valid JSON", cause) }
+                .getOrElse { cause ->
+                    throw failure(RoutingFailure.MALFORMED, "route response is not JSON", cause)
+                }
             val trip = decoded.trip
                 ?: throw rejected(it.code, payload, profile)
             trip.toDomain()

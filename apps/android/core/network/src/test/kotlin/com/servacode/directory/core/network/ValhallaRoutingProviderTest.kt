@@ -77,7 +77,8 @@ class ValhallaRoutingProviderTest {
         shape: String = this.shape,
         length: Double = 2.5,
         time: Double = 480.0,
-        maneuvers: String = """{"type":1,"street_names":["شارع بغداد"],"length":2.5,"time":480,"begin_shape_index":0}""",
+        maneuvers: String =
+            """{"type":1,"street_names":["شارع بغداد"],"length":2.5,"time":480,"begin_shape_index":0}""",
     ) = """
         {"trip":{"units":"kilometers","summary":{"time":$time,"length":$length},
           "legs":[{"shape":"$shape","maneuvers":[$maneuvers]}]}}
@@ -147,7 +148,8 @@ class ValhallaRoutingProviderTest {
     @Test fun `a maneuver's own length is converted too`() = runTest {
         respond(
             trip(
-                maneuvers = """{"type":15,"street_names":["شارع بغداد"],"length":0.4,"time":60,"begin_shape_index":1}""",
+                maneuvers =
+                    """{"type":15,"street_names":["شارع بغداد"],"length":0.4,"time":60,"begin_shape_index":1}""",
             ),
         )
         val route = provider.route(origin, destination)
