@@ -32,7 +32,27 @@ interface MapController {
 }
 
 object MapStyle {
-    /** A production build ships a placeholder until a map provider is configured. */
-    fun isConfigured(styleUrl: String): Boolean =
-        styleUrl.startsWith("https://") && !styleUrl.contains("<ROOT_DOMAIN>")
+    /**
+     * Whether a real map has been configured, or the build is still carrying the placeholder.
+     *
+     * A shipped build must be served over TLS, and the templated host is not a host at all.
+     * Cleartext is allowed only where the flavor already allows it — the local one, which
+     * serves the style and its tiles from this machine over `adb reverse` and cannot have a
+     * certificate for `localhost`. Nothing but a loopback address qualifies, so this cannot
+     * be used to point a real build at an unprotected server.
+     */
+    fun isConfigured(styleUrl: String): Boolean {
+        if (styleUrl.contains("<ROOT_DOMAIN>")) return false
+        if (styleUrl.startsWith("https://")) return true
+        return LOOPBACK.any { styleUrl.startsWith("http://$it") }
+    }
+
+    /**
+     * This machine, reached from the phone through `adb reverse`, and never anything else.
+     *
+     * Allowing these costs a shipped build nothing: `app/build.gradle.kts` refuses to assemble
+     * a release whose endpoints are not HTTPS or that name any of these hosts, so a real build
+     * can never carry a URL this branch would accept.
+     */
+    private val LOOPBACK = listOf("localhost", "127.0.0.1", "10.0.2.2")
 }

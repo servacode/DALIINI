@@ -17,9 +17,12 @@ val mapStyleUrl = providers.gradleProperty("DIRECTORY_MAP_STYLE_URL")
 val stagingMapStyleUrl = providers.gradleProperty("DIRECTORY_STAGING_MAP_STYLE_URL")
     .orElse(providers.environmentVariable("DIRECTORY_STAGING_MAP_STYLE_URL"))
     .orElse("https://maps.<ROOT_DOMAIN>/style.json")
+// The province's own map, served from this machine: RahalGo's cartography over vector tiles
+// built from the same OpenStreetMap extract, in the local media store beside the photographs.
+// Reachable from a phone through `adb reverse tcp:9000`.
 val localMapStyleUrl = providers.gradleProperty("DIRECTORY_LOCAL_MAP_STYLE_URL")
     .orElse(providers.environmentVariable("DIRECTORY_LOCAL_MAP_STYLE_URL"))
-    .orElse("https://tiles.openfreemap.org/styles/liberty")
+    .orElse("http://localhost:9000/directory-public/map/style.json")
 val routingBaseUrl = providers.gradleProperty("DIRECTORY_ROUTING_BASE_URL")
     .orElse(providers.environmentVariable("DIRECTORY_ROUTING_BASE_URL"))
     .orElse("https://<ROUTING_PROVIDER_HOST>/")
