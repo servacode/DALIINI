@@ -378,24 +378,45 @@ private fun FilterBar(
     onChip: (HomeChip) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .border(
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.outlineVariant,
-                shape = RoundedCornerShape(Radius.pill),
+                // A rounded rectangle now that the container is two rows tall: a pill only
+                // reads as one on a single line, and would cut the corners off the chips.
+                shape = RoundedCornerShape(Radius.large),
             )
-            .padding(horizontal = Space.md, vertical = Space.sm),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Space.sm),
+            .padding(vertical = Space.sm),
+        verticalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
-        DirectoryIcon(
-            icon = DirectoryIcons.filter,
-            contentDescription = HomeCopy.FILTERS,
-            tint = MaterialTheme.colorScheme.primary,
-        )
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+        // Its own row, so the chips below start at the container's edge and keep the full
+        // width to scroll through. Start, not right, so it mirrors itself for Arabic.
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = Space.md),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Space.xs),
+        ) {
+            DirectoryIcon(
+                icon = DirectoryIcons.filter,
+                contentDescription = null,
+                size = IconSize.small,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+            Text(
+                text = HomeCopy.FILTERS,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+            )
+        }
+        // One line, always: a chip that wrapped would change the container's height as the
+        // category changed how many there are. What does not fit is scrolled to.
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = Space.md),
+            horizontalArrangement = Arrangement.spacedBy(Space.sm),
+        ) {
             items(chips, key = { it.name }) { chip ->
                 DirectoryFilterChip(
                     text = HomeCopy.chip(chip),
