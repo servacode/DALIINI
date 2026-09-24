@@ -172,7 +172,6 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                     )
                 },
                 onRatings = { navController.navigate(DirectoryRoute.MyRatings) },
-                onSignIn = { navController.navigate(DirectoryRoute.Login) },
                 // The dialer opens with the number the backend published; the call is the user's.
                 onCall = { phone ->
                     context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$phone".toUri()))
@@ -228,6 +227,19 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
             )
         }
         composable<DirectoryRoute.Account> {
+            // Signed out, the tab is signing in — not a profile with nothing in it. There is no
+            // account to show, so the page that makes one is the page the tab opens.
+            if (session != SessionState.SIGNED_IN) {
+                LoginScreen(
+                    onSignedIn = { },
+                    onRegister = { navController.navigate(DirectoryRoute.Register) },
+                    onRecovery = { navController.navigate(DirectoryRoute.Recovery) },
+                    // The root of a tab has nothing behind it.
+                    onBack = null,
+                    bottomBar = { DirectoryTabs(DirectoryTab.ACCOUNT, navController) },
+                )
+                return@composable
+            }
             AccountScreen(
                 onFacilities = { navController.navigate(DirectoryRoute.MyFacilities) },
                 // Joining is adding the first facility; there is nothing else to join.
@@ -237,8 +249,6 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                         popUpTo(navController.graph.id) { inclusive = true }
                     }
                 },
-                onSignIn = { navController.navigate(DirectoryRoute.Login) },
-                onRegister = { navController.navigate(DirectoryRoute.Register) },
                 onBack = { navController.popBackStack() },
                 onEditProfile = { navController.navigate(DirectoryRoute.EditProfile) },
                 onFavorites = { navController.navigate(DirectoryRoute.Favorites) },

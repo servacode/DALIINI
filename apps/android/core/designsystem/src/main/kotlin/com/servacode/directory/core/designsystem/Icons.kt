@@ -46,6 +46,10 @@ object DirectoryIcons {
     @DrawableRes val motorcycle = R.drawable.ic_motorcycle
     @DrawableRes val car = R.drawable.ic_car
     @DrawableRes val verified = R.drawable.ic_shield_check
+
+    /** Whether a password is being shown; the mark is the control, not a sentence. */
+    @DrawableRes val eye = R.drawable.ic_eye
+    @DrawableRes val eyeOff = R.drawable.ic_eye_off
     @DrawableRes val image = R.drawable.ic_image
     @DrawableRes val hospital = R.drawable.ic_hospital
     @DrawableRes val pharmacy = R.drawable.ic_pharmacy

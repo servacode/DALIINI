@@ -190,13 +190,15 @@ fun DirectoryPasswordField(
         enabled = enabled,
         label = { Text(label) },
         leadingIcon = { DirectoryIcon(DirectoryIcons.verified, null) },
+        // An eye, not a sentence. "إظهار كلمة المرور" is four words of chrome inside a field
+        // that has room for the password itself, and the mark is understood everywhere.
         trailingIcon = {
-            TextButton(onClick = { visible = !visible }) {
-                Text(
-                    text = if (visible) hideLabel else showLabel,
-                    style = MaterialTheme.typography.labelMedium,
-                )
-            }
+            DirectoryIconButton(
+                icon = if (visible) DirectoryIcons.eyeOff else DirectoryIcons.eye,
+                label = if (visible) hideLabel else showLabel,
+                onClick = { visible = !visible },
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         },
         visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(

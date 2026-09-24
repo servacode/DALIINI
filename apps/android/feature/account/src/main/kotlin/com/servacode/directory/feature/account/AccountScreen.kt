@@ -34,7 +34,6 @@ import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
-import com.servacode.directory.core.designsystem.DirectoryMessageState
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectorySettingRow
 import com.servacode.directory.core.designsystem.DirectoryTopBar
@@ -66,8 +65,6 @@ fun AccountScreen(
     onFacilities: () -> Unit,
     onJoinAsOwner: () -> Unit,
     onAccountDeleted: () -> Unit,
-    onSignIn: () -> Unit,
-    onRegister: () -> Unit,
     onBack: () -> Unit,
     onEditProfile: () -> Unit,
     onFavorites: () -> Unit,
@@ -91,25 +88,7 @@ fun AccountScreen(
     ) { padding ->
         when (val value = state) {
             AccountUiState.Loading -> DirectoryLoading(Modifier.padding(padding))
-            AccountUiState.SignedOut -> Column(Modifier.padding(padding)) {
-                DirectoryMessageState(
-                    icon = DirectoryIcons.person,
-                    title = AccountCopy.SIGNED_OUT,
-                    body = AccountCopy.SIGNED_OUT_BODY,
-                    modifier = Modifier.weight(1f),
-                    primaryAction = AccountCopy.SIGN_IN,
-                    onPrimaryAction = onSignIn,
-                    secondaryAction = AccountCopy.REGISTER,
-                    onSecondaryAction = onRegister,
-                )
-                // The platform's own pages belong to everyone, signed in or not, and they
-                // live in settings — so settings is what a signed-out reader is offered.
-                DirectorySettingRow(
-                    title = AccountCopy.SETTINGS,
-                    onClick = onSettings,
-                    icon = DirectoryIcons.grid,
-                )
-            }
+            AccountUiState.SignedOut -> DirectoryLoading(Modifier.padding(padding))
             is AccountUiState.Error -> DirectoryErrorState(
                 title = AccountCopy.ERROR,
                 modifier = Modifier.padding(padding),
@@ -276,10 +255,6 @@ private fun Identity(name: String, phone: String, imageUrl: String?) {
 object AccountCopy {
     const val TITLE = "الملف الشخصي"
     const val ERROR = "تعذر تحميل الحساب"
-    const val SIGNED_OUT = "حسابي"
-    const val SIGNED_OUT_BODY = "سجّل الدخول لإدارة معلوماتك ومفضّلتك ومنشآتك."
-    const val SIGN_IN = "تسجيل الدخول"
-    const val REGISTER = "إنشاء حساب"
     const val EDIT_PROFILE = "المعلومات الشخصية"
     const val FAVORITES = "المفضلة"
     const val NOTIFICATIONS = "الإشعارات"

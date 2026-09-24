@@ -1,5 +1,14 @@
 package com.servacode.directory.feature.auth
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import com.servacode.directory.core.designsystem.BrandColors
+import com.servacode.directory.core.designsystem.BrandMark
+import com.servacode.directory.core.designsystem.DirectoryIconButton
+import com.servacode.directory.core.designsystem.Sizes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -35,7 +44,6 @@ import com.servacode.directory.core.designsystem.DirectoryPasswordField
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
 import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTextField
-import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.Space
 
 /**
@@ -49,7 +57,16 @@ fun LoginScreen(
     onSignedIn: () -> Unit,
     onRegister: () -> Unit,
     onRecovery: () -> Unit,
-    onBack: () -> Unit,
+    /**
+     * Null where signing in is the tab itself.
+     *
+     * Opened from a screen, this page has somewhere to go back to. Standing in for the account
+     * tab it has not: back from the root of a tab is a way out of the app, and an arrow that
+     * promises a previous screen there is a lie.
+     */
+    onBack: (() -> Unit)? = null,
+    /** The app's own bar, where this page is a tab rather than a screen on top of one. */
+    bottomBar: @Composable () -> Unit = {},
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -57,7 +74,7 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     LaunchedEffect(state.signedIn) { if (state.signedIn) onSignedIn() }
 
-    AuthPage(title = AuthCopy.SIGN_IN, onBack = onBack) {
+    AuthPage(title = AuthCopy.SIGN_IN, onBack = onBack, bottomBar = bottomBar, mark = true) {
         PhoneField(phone, state.failure) { phone = it }
         DirectoryPasswordField(
             value = password,
@@ -236,11 +253,17 @@ fun RecoveryScreen(
 @Composable
 private fun AuthPage(
     title: String,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
+    bottomBar: @Composable () -> Unit = {},
+    /** Whether the app's mark opens the page, as it does where signing in is the whole screen. */
+    mark: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     DirectoryPage(
-        topBar = { DirectoryTopBar(title = "", onBack = onBack) },
+        // The same deep green the app wears elsewhere, so the top of this page belongs to the
+        // app rather than to the form.
+        topBar = { AuthTopBar(onBack = onBack) },
+        bottomBar = bottomBar,
     ) { padding ->
         Column(
             modifier = Modifier
@@ -251,7 +274,12 @@ private fun AuthPage(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Space.md),
         ) {
-            Spacer(Modifier.height(Space.lg))
+            if (mark) {
+                Spacer(Modifier.height(Space.xl))
+                BrandMark(size = Sizes.hero / 3)
+            } else {
+                Spacer(Modifier.height(Space.lg))
+            }
             Text(
                 text = title,
                 style = MaterialTheme.typography.headlineMedium,
@@ -262,6 +290,28 @@ private fun AuthPage(
             Spacer(Modifier.height(Space.sm))
             content()
             Spacer(Modifier.height(Space.xxl))
+        }
+    }
+}
+
+/** A band of the app's own green, with a way back only where there is one. */
+@Composable
+private fun AuthTopBar(onBack: (() -> Unit)?) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(BrandColors.bar)
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .height(Sizes.touchTarget),
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        if (onBack != null) {
+            DirectoryIconButton(
+                icon = DirectoryIcons.back,
+                label = AuthCopy.BACK,
+                onClick = onBack,
+                tint = BrandColors.onBar,
+            )
         }
     }
 }
@@ -334,6 +384,7 @@ private fun ErrorText(message: String) {
 /** The words of the account screens, provisional until product copy is approved. */
 object AuthCopy {
     const val SIGN_IN = "تسجيل الدخول"
+    const val BACK = "رجوع"
     const val CREATE = "إنشاء حساب جديد"
     const val CREATE_ACCOUNT = "إنشاء حساب"
     const val RECOVERY = "استعادة كلمة المرور"

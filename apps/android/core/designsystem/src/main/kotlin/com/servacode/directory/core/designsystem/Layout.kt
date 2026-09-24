@@ -184,13 +184,21 @@ fun DirectoryBottomBar(destinations: List<DirectoryDestination>, modifier: Modif
             NavigationBarItem(
                 selected = destination.selected,
                 onClick = destination.onSelect,
-                icon = { DirectoryIcon(destination.icon, null) },
-                label = { Text(destination.label, style = MaterialTheme.typography.labelMedium) },
-                alwaysShowLabel = true,
+                // The mark alone, and larger for it. Three places do not need naming twice —
+                // a house, a map and a person are read faster than they are read aloud — and
+                // the words were taking the room the marks needed to be legible. The name is
+                // still there for a screen reader, which is who the words were for.
+                icon = {
+                    DirectoryIcon(
+                        icon = destination.icon,
+                        contentDescription = destination.label,
+                        size = IconSize.large,
+                    )
+                },
+                alwaysShowLabel = false,
                 // The indicator is a pale pill and the icon inside it goes as dark as the bar,
-                // which is the strongest mark this bar can carry. The label sits below the
-                // pill, on the bar itself, so it stays white. Everything unchosen is the muted
-                // tone: quieter than white, and still well clear of the contrast floor.
+                // which is the strongest mark this bar can carry. Everything unchosen is the
+                // muted tone: quieter than white, and still well clear of the contrast floor.
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = BrandColors.bar,
                     selectedTextColor = BrandColors.onBar,
