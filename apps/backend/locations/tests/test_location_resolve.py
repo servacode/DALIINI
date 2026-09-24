@@ -74,6 +74,45 @@ def test_a_point_in_the_city_but_no_neighbourhood_is_named_by_the_city(geography
 
 
 @pytest.mark.django_db
+def test_a_city_of_its_own_name_is_the_finer_half_of_the_label(geography):
+    """The whole point of the second half: a town that is not the province's own capital."""
+    province, _, _ = geography
+    tell_abyad = City.objects.create(
+        province=province,
+        code="tell-abyad",
+        name_ar="تل أبيض",
+        boundary=_square(38.9500, 36.6900, side=0.1),
+    )
+
+    body = APIClient().get(RESOLVE, {"latitude": 36.6900, "longitude": 38.9500}).json()
+
+    assert body["city"]["id"] == str(tell_abyad.id)
+    assert body["neighborhood"] is None
+    assert body["label"] == "الرقة — تل أبيض"
+
+
+@pytest.mark.django_db
+def test_a_neighbourhood_names_the_place_ahead_of_the_city_it_is_in(geography):
+    """Two halves, never three: the finest place the platform knows, and the province."""
+    province, _, _ = geography
+    outskirts = City.objects.create(
+        province=province,
+        code="outskirts",
+        name_ar="تل أبيض",
+        boundary=_square(38.9500, 36.6900, side=0.1),
+    )
+    Neighborhood.objects.create(
+        city=outskirts,
+        name_ar="الرميلة",
+        boundary=_square(38.9520, 36.6920, side=0.01),
+    )
+
+    body = APIClient().get(RESOLVE, {"latitude": 36.6920, "longitude": 38.9520}).json()
+
+    assert body["label"] == "الرقة — الرميلة"
+
+
+@pytest.mark.django_db
 def test_a_point_outside_every_boundary_falls_back_to_the_nearest_province(geography):
     # Sixty kilometres north-east of the boundaries, inside no city the platform has seeded.
     body = APIClient().get(RESOLVE, {"latitude": 36.5000, "longitude": 39.5000}).json()

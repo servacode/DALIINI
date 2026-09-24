@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -211,7 +212,12 @@ private fun HomeHeader(
 @Composable
 private fun HerePlace(place: String?, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier.padding(end = Space.xxl),
+        modifier = modifier
+            // Capped so a long "province — neighbourhood" ellipsises instead of pushing the
+            // app's name off the middle of the screen.
+            .fillMaxWidth(PLACE_WIDTH_FRACTION)
+            .clickable(onClick = onClick)
+            .padding(vertical = Space.xs),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Space.xs),
     ) {
@@ -228,13 +234,22 @@ private fun HerePlace(place: String?, onClick: () -> Unit, modifier: Modifier = 
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
             )
-            DirectoryTextButton(
+            // The place is the information, so it is the line that is emphasised; the label
+            // above only says what it means. One line, always: the header must not grow a row
+            // taller because the platform happens to know a neighbourhood here and not there.
+            Text(
                 text = place ?: HomeCopy.PROVINCE_CHOOSE,
-                onClick = onClick,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
 }
+
+/** About a third of the width, which leaves the centred name its middle and the bell its end. */
+private const val PLACE_WIDTH_FRACTION = 0.34f
 
 /**
  * The bell, and a count only when there is one.
