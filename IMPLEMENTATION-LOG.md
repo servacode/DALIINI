@@ -1529,3 +1529,24 @@ Not verified: the app has not been launched anywhere. The next step is the owner
 smoke over adb reverse.
 
 Evidence: `artifacts/evidence/android-ci-build-20260919.txt`.
+
+
+## 2026-09-24 — Complete product batch
+
+Backend: `favorites` (model, migration, idempotent save/remove, cursor-paged list, `isFavorite`
+on every public facility payload through one EXISTS subquery); notifications gained the words
+they carry, a closed set of destinations and the inbox endpoints, with the first real producer on
+the review decision; `accounts` gained a password change that revokes every session, as
+`02-BASELINE-DECISIONS.md` requires; `locations` gained a PostGIS resolver from a coordinate to a
+province, city and neighbourhood; `content_services` gained versioned legal pages with the first
+version seeded from what the code actually does. The facilities list accepts a request without a
+category, and the map endpoint accepts the same availability filters as the list.
+
+Android: the location-name resolver (cached, throttled, safe on failure) and the header it feeds;
+Home's quick filters over the backend's own query; the advertisement slider; the map's filter bar
+and category rail; one central navigation motion policy; saved facilities, the inbox, profile
+editing, password change, settings and the help section; the route preview before live
+navigation; and two adapted rules in the navigation engine from the RahalGo audit.
+
+Tooling: four qualifier scripts repaired and all six promoted to CI gates, with the platform-free
+JVM harness alongside them.

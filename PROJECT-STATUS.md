@@ -116,3 +116,38 @@ limitation only.
 ## Status semantics
 
 Only these states are used: `NOT_STARTED`, `IN_PROGRESS`, `BLOCKED`, `SOURCE_IMPLEMENTED`, `CONNECTED_VERIFIED`, `DEVICE_VERIFIED`, `STAGING_VERIFIED`, `CLOSED`.
+
+## Complete product batch — 2026-09-24
+
+The app stopped being a redesigned shell and became the product the specification describes.
+
+**Backend.** Saved facilities, an inbox of one's own, a password that can be changed, the
+platform's own published pages, and a coordinate resolver that turns a position into the place
+this platform calls it — all end to end, with migrations, tests and a regenerated contract. 287
+backend tests pass; the OpenAPI document has zero errors and zero warnings and the three
+generated clients follow it.
+
+**Android.** Home says where the user is instead of making them choose a province, carries the
+advertisement slider the backend was already serving, and answers the three questions people
+arrive with through the backend's own query. The map answers the same two questions and carries
+the province's real taxonomy down its edge. Screens stop shrinking into squares: one motion
+policy for the whole graph. The account area is a product — saved facilities, the inbox, editing,
+a password change that says every session will end, settings and the published pages. A facility
+can be saved, and the way to it is seen before it is followed.
+
+**Navigation.** RahalGo's driver stack was audited rather than copied
+(`docs/design/RAHALGO-NAVIGATION-AUDIT.md`). Two rules it learned on real roads were adapted into
+this app's own engine: one reading never decides that the route was left, and a reading's own
+accuracy is part of what it means.
+
+**Tooling.** Four qualifier scripts had quietly stopped working — platform-codepage reads, walks
+into Gradle's build output, and assertions about pre-P10 placeholders. Repaired and promoted:
+all six run as CI gates, and so does the platform-free JVM harness.
+
+CI run 35937791094 is green on every gate: assemble, APK and certificate, 388 Android unit tests,
+191 harness tests, lint with zero errors, and six qualifiers. Evidence:
+`artifacts/evidence/android-complete-product-20260924.txt`.
+
+Unchanged and still unverified: INT-096 (device), INT-089 (external), INT-084 (open, with the
+safe design recorded in `BLOCKERS.md`), FCM provider delivery, live navigation and voice guidance
+(road test), and `LAUNCH_POLICY_PENDING`.

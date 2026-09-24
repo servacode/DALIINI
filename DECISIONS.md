@@ -681,6 +681,55 @@ The authoritative source for admin authorization remains the project RBAC. `user
 
 ---
 
+## DECISION-046 — The app knows where the user is, and says so
+
+**Date:** 2026-09-24
+
+**Subject:** The province a user browses, and the header that names it.
+
+**Decision:** The app resolves the device's own position against the platform's own geography —
+the city and neighbourhood boundaries already seeded in PostGIS — through one public endpoint,
+`public/locations/resolve`, and shows the answer ("الرقة", or "الرقة — المشلب") as the header.
+The order is: the device's position, then the last place resolved for this device, then the
+province the user once chose, and only then the province picker. No external geocoder is called,
+the coordinate is not stored, and the resolver asks at most once a minute and only when the
+device has actually moved about 500 m.
+
+**Reason:** A first-time user was met by a list of provinces before they had seen anything the
+app is for. The phone already knows where it is, and the platform already knows what it calls
+that place — the same name every list and filter is scoped by. Resolving it server-side keeps
+the name and the data in agreement, which a device-side geocoder could not promise.
+
+**Boundaries:** The location stays optional and foreground-only. A refusal costs the distances,
+the nearest-first order and the automatic header, and nothing else; the province picker remains,
+reachable from the header and from the profile. A point outside every province the platform
+serves resolves to nothing rather than to the nearest guess from across the country.
+
+---
+
+## DECISION-047 — Quick filters are the backend's own query
+
+**Date:** 2026-09-24
+
+**Subject:** "الأقرب إليك", "مفتوح الآن" and "مناوب الآن" on Home and on the map.
+
+**Decision:** Each chip is the directory query the backend already takes, with the flags it
+already understands, for the whole province rather than one category. The map's filter bar and
+the list's chips send the same parameters to the same server-side filters, so a map and a list
+asked the same question give the same answer. Nothing about opening hours or duty shifts is
+computed on the device. "الأقرب إليك" is offered only while a position is known, because
+distance is the backend's to compute.
+
+**Reason:** These three questions are why people open the app, and they were buried in a filters
+screen. Reusing the existing query keeps one ordering rule, one availability rule and one
+pagination contract instead of a second, quietly different implementation on the client.
+
+**Boundaries:** The facilities endpoint now accepts a request without a category — it already
+behaved that way; the contract says so now — while the province remains required, as every list
+in this product is scoped by one.
+
+---
+
 ---
 
 # Technical Debt Register

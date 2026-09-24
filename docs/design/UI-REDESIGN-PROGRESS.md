@@ -21,8 +21,8 @@ as they are: the redesign changes how the app looks and reads, not what it does.
 | 13 | Create account | `screen-13-create-account.png` | built, phone and password |
 | 14 | Password recovery | `screen-14-password-recovery.png` | built |
 | 15 | Profile | `screen-15-profile.png` | built |
-| 16 | Favourites | `screen-16-favorites.png` | **not built — no backend** |
-| 17 | Notifications | `screen-17-*.png` | **not built — no backend** |
+| 16 | Favourites | `screen-16-favorites.png` | built — the backend now has it |
+| 17 | Notifications | `screen-17-*.png` | built — the backend now has an inbox |
 | 18 | Owner dashboard | `screen-18-owner-dashboard.png` | built, minus counts the API does not return |
 | 19 | Add / edit facility | `screen-19-add-edit-facility.png` | built |
 | 20 | Location picker | `screen-20-location-picker.png` | built |
@@ -35,10 +35,12 @@ owner's duty shifts, and the owner's screen for one facility.
 
 ## What the references ask for and the product does not have
 
-* **Favourites.** Nothing in the API stores a saved facility. Screen 16 is not built and the
-  bottom bar carries three destinations rather than four.
-* **Notifications.** There is no inbox in the API; the only real notification is the push
-  permission the owner is asked for after a submission. Screen 17 is not built.
+* **Favourites.** Built end to end on 2026-09-24: a saved facility is a row against the account,
+  so it follows the account to any phone. Reached from the profile; the bottom bar still carries
+  three destinations, because a saved list is not a place one lives in.
+* **Notifications.** Built end to end on 2026-09-24: the inbox is the record, a push is only an
+  announcement of it, and the first real producer is the review decision on an owner's
+  application. FCM provider delivery remains externally unverified.
 * **Written reviews.** A rating is a number of stars. There is no review text, no reviewer and no
   public list of other people's ratings, so Screen 09 is the user's own ratings.
 * **Owner metrics.** The dashboard reference shows views and reviews per facility; the owner API

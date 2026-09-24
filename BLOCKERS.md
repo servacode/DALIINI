@@ -56,3 +56,36 @@ Kept out of this register, as before, because it is for genuine external blocker
 - Kotlin client compilation is blocked by the same local network condition as Google Maven:
   the Gradle distribution download from services.gradle.org resets. Classified
   `ENVIRONMENT_LIMITATION` under "Local execution limitation" in `PROJECT-STATUS.md`.
+
+## Register review — 2026-09-24 (complete product batch)
+
+**No external blocker added, removed or changed.** EXT-001 to EXT-005 stand.
+
+One product decision is recorded here because implementation is genuinely waiting on it, not on
+anything technical:
+
+### INT-084 — adding a manager still takes a raw account id
+
+**State:** OPEN, deliberately, and a workaround was not built.
+
+An owner adds a manager by typing that person's account id, which nobody knows by heart. The
+obvious fix — type their phone number instead — cannot be built as a lookup: an endpoint that
+answers "does an account exist for this number" is account enumeration, and this platform's
+whole identity is phone numbers.
+
+The safe shape is an **invitation**, not a lookup: the owner enters a phone number, the backend
+records a pending membership against that number and answers the same way whether or not an
+account exists, and the membership is granted when someone signs in as that number. Nothing is
+revealed, and the owner gets the flow they expect.
+
+That needs product decisions no specification answers yet:
+
+- May an owner invite someone who has no account, and for how long does the invitation stand?
+- Who can see and revoke a pending invitation, and does the invitee see it before accepting?
+- Does accepting require anything beyond signing in as that number?
+- What does the admin console show, given that a pending invitation is a claim about a person
+  who may never have used the platform?
+
+Until those are answered, the field stays as it is and now says plainly that it takes an account
+id and that the server offers no lookup by phone. The alternative — shipping a search endpoint —
+would trade a UX annoyance for an enumeration vulnerability.

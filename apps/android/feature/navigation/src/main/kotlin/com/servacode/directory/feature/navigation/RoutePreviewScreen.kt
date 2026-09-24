@@ -2,6 +2,7 @@ package com.servacode.directory.feature.navigation
 
 import android.content.Intent
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -152,7 +153,7 @@ fun RoutePreviewScreen(
 
 /** The destination as another maps app would take it. */
 private fun com.servacode.directory.core.maps.MapPoint.geoUri(): Uri =
-    Uri.parse("geo:$latitude,$longitude?q=$latitude,$longitude")
+    "geo:$latitude,$longitude?q=$latitude,$longitude".toUri()
 
 /** The words of the route preview, provisional until product copy is approved. */
 object RoutePreviewCopy {
