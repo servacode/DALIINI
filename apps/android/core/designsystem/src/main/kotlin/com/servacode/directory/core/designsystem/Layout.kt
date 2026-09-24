@@ -166,7 +166,7 @@ data class DirectoryDestination(
 fun DirectoryBottomBar(destinations: List<DirectoryDestination>, modifier: Modifier = Modifier) {
     NavigationBar(
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = BrandColors.bar,
         tonalElevation = Elevation.none,
     ) {
         destinations.forEach { destination ->
@@ -176,12 +176,16 @@ fun DirectoryBottomBar(destinations: List<DirectoryDestination>, modifier: Modif
                 icon = { DirectoryIcon(destination.icon, null) },
                 label = { Text(destination.label, style = MaterialTheme.typography.labelMedium) },
                 alwaysShowLabel = true,
+                // The indicator is a pale pill and the icon inside it goes as dark as the bar,
+                // which is the strongest mark this bar can carry. The label sits below the
+                // pill, on the bar itself, so it stays white. Everything unchosen is the muted
+                // tone: quieter than white, and still well clear of the contrast floor.
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    selectedIconColor = BrandColors.bar,
+                    selectedTextColor = BrandColors.onBar,
+                    indicatorColor = BrandColors.soft,
+                    unselectedIconColor = BrandColors.onBarMuted,
+                    unselectedTextColor = BrandColors.onBarMuted,
                 ),
             )
         }

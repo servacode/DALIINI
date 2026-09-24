@@ -17,7 +17,14 @@ const checks = [
   ['text primary on surface', resolved['semantic.content.primary'], resolved['semantic.surface.default'], 4.5],
   ['text secondary on surface', resolved['semantic.content.secondary'], resolved['semantic.surface.default'], 4.5],
   ['on-primary on primary', resolved['semantic.content.onPrimary'], resolved['semantic.action.primary'], 4.5],
-  ['primary text on canvas', resolved['semantic.content.primary'], resolved['semantic.surface.canvas'], 4.5]
+  ['primary text on canvas', resolved['semantic.content.primary'], resolved['semantic.surface.canvas'], 4.5],
+  // The app's two bars are nearly black, so anything written on them has to be checked here
+  // rather than trusted: the muted tone exists to be quieter than white, and quieter is
+  // exactly the direction that runs out of contrast.
+  ['on-bar on bar', resolved['semantic.content.onBar'], resolved['semantic.surface.bar'], 4.5],
+  ['on-bar muted on bar', resolved['semantic.content.onBarMuted'], resolved['semantic.surface.bar'], 4.5],
+  // The selected tab is a pale pill with the bar's own colour inside it.
+  ['bar on brand-soft', resolved['semantic.surface.bar'], resolved['semantic.surface.brandSoft'], 4.5]
 ];
 for (const [name, fg, bg, min] of checks) {
   const ratio = contrastRatio(fg, bg);

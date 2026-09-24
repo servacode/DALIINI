@@ -4,13 +4,16 @@
     "secondary": "{colors.textSecondary}",
     "muted": "{colors.textMuted}",
     "onPrimary": "{colors.surface}",
-    "danger": "{colors.danger}"
+    "danger": "{colors.danger}",
+    "onBar": "{colors.barContent}",
+    "onBarMuted": "{colors.barContentMuted}"
   },
   "surface": {
     "canvas": "{colors.background}",
     "default": "{colors.surface}",
     "subtle": "{colors.surfaceAlt}",
-    "brandSoft": "{colors.primarySoft}"
+    "brandSoft": "{colors.primarySoft}",
+    "bar": "{colors.barDeep}"
   },
   "action": {
     "primary": "{colors.primary}",

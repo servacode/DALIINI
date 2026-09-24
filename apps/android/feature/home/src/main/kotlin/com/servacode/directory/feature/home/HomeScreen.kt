@@ -177,7 +177,7 @@ private fun HomeHeader(
     onPlace: () -> Unit,
     onNotifications: () -> Unit,
 ) {
-    Surface(color = MaterialTheme.colorScheme.surface) {
+    Surface(color = BrandColors.bar) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -191,7 +191,7 @@ private fun HomeHeader(
             Text(
                 text = HomeCopy.TITLE,
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = BrandColors.onBar,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 modifier = Modifier.align(Alignment.Center),
@@ -228,13 +228,13 @@ private fun HerePlace(place: String?, onClick: () -> Unit, modifier: Modifier = 
             icon = DirectoryIcons.pin,
             contentDescription = null,
             size = IconSize.small,
-            tint = MaterialTheme.colorScheme.primary,
+            tint = BrandColors.onBarMuted,
         )
         Column {
             Text(
                 text = HomeCopy.YOU_ARE_IN,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = BrandColors.onBarMuted,
                 maxLines = 1,
             )
             // The place is the information, so it is the line that is emphasised; the label
@@ -243,7 +243,7 @@ private fun HerePlace(place: String?, onClick: () -> Unit, modifier: Modifier = 
             Text(
                 text = place ?: HomeCopy.PROVINCE_CHOOSE,
                 style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = BrandColors.onBar,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -267,6 +267,7 @@ private fun NotificationBell(unread: Int, onClick: () -> Unit, modifier: Modifie
             icon = DirectoryIcons.bell,
             label = HomeCopy.NOTIFICATIONS,
             onClick = onClick,
+            tint = BrandColors.onBar,
         )
         if (unread > 0) {
             Box(

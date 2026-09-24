@@ -73,6 +73,17 @@ object BrandColors {
     val danger = color(DirectoryTokens.SemanticFeedbackDanger)
     val info = color(DirectoryTokens.SemanticFeedbackInfo)
     val stroke = color(DirectoryTokens.SemanticStrokeDefault)
+
+    /**
+     * The app's two bars, top and bottom, and what may be written on them.
+     *
+     * One token, used in both places, so they cannot drift a shade apart — which is the sort of
+     * difference nobody can name but everybody sees. Defined once in the token set; nothing in
+     * the app writes this value itself.
+     */
+    val bar = color(DirectoryTokens.SemanticSurfaceBar)
+    val onBar = color(DirectoryTokens.SemanticContentOnBar)
+    val onBarMuted = color(DirectoryTokens.SemanticContentOnBarMuted)
 }
 
 private fun tajawal(size: Int, lineHeight: Int, weight: Int) = TextStyle(

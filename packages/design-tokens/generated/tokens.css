@@ -5,6 +5,9 @@
   --sd-colors-primary-deep: #043526;
   --sd-colors-primary-soft: #DCEFE6;
   --sd-colors-primary-softer: #F0F8F4;
+  --sd-colors-bar-deep: #042623;
+  --sd-colors-bar-content: #FFFFFF;
+  --sd-colors-bar-content-muted: #9FBDB6;
   --sd-colors-background: #F7F8F5;
   --sd-colors-surface: #FFFFFF;
   --sd-colors-surface-alt: #F1F4F2;
@@ -22,10 +25,13 @@
   --sd-semantic-content-muted: #7A8780;
   --sd-semantic-content-on-primary: #FFFFFF;
   --sd-semantic-content-danger: #C23B3B;
+  --sd-semantic-content-on-bar: #FFFFFF;
+  --sd-semantic-content-on-bar-muted: #9FBDB6;
   --sd-semantic-surface-canvas: #F7F8F5;
   --sd-semantic-surface-default: #FFFFFF;
   --sd-semantic-surface-subtle: #F1F4F2;
   --sd-semantic-surface-brand-soft: #DCEFE6;
+  --sd-semantic-surface-bar: #042623;
   --sd-semantic-action-primary: #0B6B47;
   --sd-semantic-action-primary-pressed: #06452F;
   --sd-semantic-action-danger: #C23B3B;

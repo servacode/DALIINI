@@ -6,6 +6,9 @@ export const tokens = {
     "primaryDeep": "#043526",
     "primarySoft": "#DCEFE6",
     "primarySofter": "#F0F8F4",
+    "barDeep": "#042623",
+    "barContent": "#FFFFFF",
+    "barContentMuted": "#9FBDB6",
     "background": "#F7F8F5",
     "surface": "#FFFFFF",
     "surfaceAlt": "#F1F4F2",
@@ -25,13 +28,16 @@ export const tokens = {
       "secondary": "{colors.textSecondary}",
       "muted": "{colors.textMuted}",
       "onPrimary": "{colors.surface}",
-      "danger": "{colors.danger}"
+      "danger": "{colors.danger}",
+      "onBar": "{colors.barContent}",
+      "onBarMuted": "{colors.barContentMuted}"
     },
     "surface": {
       "canvas": "{colors.background}",
       "default": "{colors.surface}",
       "subtle": "{colors.surfaceAlt}",
-      "brandSoft": "{colors.primarySoft}"
+      "brandSoft": "{colors.primarySoft}",
+      "bar": "{colors.barDeep}"
     },
     "action": {
       "primary": "{colors.primary}",

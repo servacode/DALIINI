@@ -6,6 +6,9 @@
     <color name="token_colors_primary_deep">#043526</color>
     <color name="token_colors_primary_soft">#DCEFE6</color>
     <color name="token_colors_primary_softer">#F0F8F4</color>
+    <color name="token_colors_bar_deep">#042623</color>
+    <color name="token_colors_bar_content">#FFFFFF</color>
+    <color name="token_colors_bar_content_muted">#9FBDB6</color>
     <color name="token_colors_background">#F7F8F5</color>
     <color name="token_colors_surface">#FFFFFF</color>
     <color name="token_colors_surface_alt">#F1F4F2</color>
@@ -23,10 +26,13 @@
     <color name="token_semantic_content_muted">#7A8780</color>
     <color name="token_semantic_content_on_primary">#FFFFFF</color>
     <color name="token_semantic_content_danger">#C23B3B</color>
+    <color name="token_semantic_content_on_bar">#FFFFFF</color>
+    <color name="token_semantic_content_on_bar_muted">#9FBDB6</color>
     <color name="token_semantic_surface_canvas">#F7F8F5</color>
     <color name="token_semantic_surface_default">#FFFFFF</color>
     <color name="token_semantic_surface_subtle">#F1F4F2</color>
     <color name="token_semantic_surface_brand_soft">#DCEFE6</color>
+    <color name="token_semantic_surface_bar">#042623</color>
     <color name="token_semantic_action_primary">#0B6B47</color>
     <color name="token_semantic_action_primary_pressed">#06452F</color>
     <color name="token_semantic_action_danger">#C23B3B</color>
