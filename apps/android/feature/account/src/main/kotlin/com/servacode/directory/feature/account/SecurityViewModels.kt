@@ -2,8 +2,10 @@ package com.servacode.directory.feature.account
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.servacode.directory.core.model.AccountProfile
 import com.servacode.directory.core.model.AppErrorText
 import com.servacode.directory.core.model.toAppError
+import com.servacode.directory.core.network.OwnerUploadPayload
 import com.servacode.directory.core.network.PublicApiBoundary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,13 +17,19 @@ import javax.inject.Inject
 /**
  * Editing what the account says about itself.
  *
- * Only the fields the backend actually accepts: a display name and the account's province.
+ * Only the fields the backend actually accepts: a name, a province, an address and a picture.
  * Nothing else is offered, because nothing else exists to save.
  */
 data class ProfileEditUiState(
     val displayName: String = "",
     val provinceId: String? = null,
+    val address: String = "",
+    val phone: String = "",
+    /** The picture as it is on the account now, or null when there is none. */
+    val imageUrl: String? = null,
     val saving: Boolean = false,
+    /** True while a picture is on its way up or out; the rest of the form stays usable. */
+    val savingImage: Boolean = false,
     val saved: Boolean = false,
     val error: String? = null,
 )
@@ -35,12 +43,7 @@ class ProfileEditViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            account().onSuccess { profile ->
-                _state.value = _state.value.copy(
-                    displayName = profile.name,
-                    provinceId = profile.provinceId,
-                )
-            }
+            account().onSuccess(::adopt)
         }
     }
 
@@ -52,12 +55,65 @@ class ProfileEditViewModel @Inject constructor(
         _state.value = _state.value.copy(provinceId = id, saved = false, error = null)
     }
 
+    fun updateAddress(value: String) {
+        _state.value = _state.value.copy(address = value, saved = false, error = null)
+    }
+
+    /**
+     * A picture chosen from the phone, sent as it is read.
+     *
+     * It goes up on its own rather than waiting for the form to be saved: a picture is a whole
+     * decision by itself, and someone who changes it and leaves expects it changed.
+     */
+    fun chooseImage(payload: OwnerUploadPayload) {
+        if (_state.value.savingImage) return
+        _state.value = _state.value.copy(savingImage = true, error = null)
+        viewModelScope.launch {
+            account.updateImage(payload)
+                .onSuccess { adopt(it, savingImage = false) }
+                .onFailure { failImage(it) }
+        }
+    }
+
+    fun removeImage() {
+        if (_state.value.savingImage) return
+        _state.value = _state.value.copy(savingImage = true, error = null)
+        viewModelScope.launch {
+            account.removeImage()
+                .onSuccess { adopt(it, savingImage = false) }
+                .onFailure { failImage(it) }
+        }
+    }
+
+    private fun failImage(cause: Throwable) {
+        _state.value = _state.value.copy(
+            savingImage = false,
+            error = AppErrorText.of(cause.toAppError()),
+        )
+    }
+
+    /** What the server says the account is now, which is what the form shows from here on. */
+    private fun adopt(profile: AccountProfile, savingImage: Boolean = false) {
+        _state.value = _state.value.copy(
+            displayName = profile.name,
+            provinceId = profile.provinceId,
+            address = profile.address,
+            phone = profile.phone,
+            imageUrl = profile.imageUrl,
+            savingImage = savingImage,
+        )
+    }
+
     fun save() {
         val current = _state.value
         if (current.displayName.isBlank() || current.saving) return
         _state.value = current.copy(saving = true, error = null)
         viewModelScope.launch {
-            account.update(displayName = current.displayName.trim(), provinceId = current.provinceId)
+            account.update(
+                displayName = current.displayName.trim(),
+                provinceId = current.provinceId,
+                address = current.address.trim(),
+            )
                 .onSuccess { _state.value = _state.value.copy(saving = false, saved = true) }
                 .onFailure {
                     _state.value = _state.value.copy(

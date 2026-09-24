@@ -6,14 +6,17 @@ import com.servacode.directory.core.datastore.DirectoryPreferencesStore
 import com.servacode.directory.core.model.AccountProfile
 import com.servacode.directory.core.model.Province
 import com.servacode.directory.core.network.OwnerApiBoundary
+import com.servacode.directory.core.network.OwnerUploadPayload
 import com.servacode.directory.core.network.PublicApiBoundary
 import com.servacode.directory.core.network.SignOut
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 /**
- * The signed-in account. A profile image is not offered: the contract has no operation to
- * upload one (INT-017), and the app does not invent one.
+ * The signed-in account: what it is, what it may say about itself, and how it moves house.
+ *
+ * A picture is offered now because the contract has an operation for one. It did not when this
+ * class was written, and the app did not invent it then.
  */
 class AccountRepository @Inject constructor(
     private val api: PublicApiBoundary,
@@ -45,11 +48,33 @@ class AccountRepository @Inject constructor(
      * The profile fields the backend accepts. A province chosen here is also what this device
      * browses, so the two never disagree.
      */
-    suspend fun update(displayName: String, provinceId: String?): Result<AccountProfile> = runCatching {
-        api.updateProfile(displayName = displayName, provinceId = provinceId).also {
+    suspend fun update(
+        displayName: String,
+        provinceId: String?,
+        address: String?,
+    ): Result<AccountProfile> = runCatching {
+        api.updateProfile(displayName = displayName, provinceId = provinceId, address = address).also {
             if (provinceId != null) preferences.selectProvince(provinceId)
         }
     }
+
+    /** Replaces the picture on the account, or takes it away. */
+    suspend fun updateImage(payload: OwnerUploadPayload): Result<AccountProfile> =
+        runCatching { api.updateProfileImage(payload) }
+
+    suspend fun removeImage(): Result<AccountProfile> = runCatching { api.removeProfileImage() }
+
+    /**
+     * Moving the account to another number, in two steps.
+     *
+     * The code goes to the number being claimed. Confirming it ends every session, this device's
+     * included, so the app signs in again afterwards — the phone is how the account signs in.
+     */
+    suspend fun startPhoneChange(phone: String): Result<String> =
+        runCatching { api.startPhoneChange(phone) }
+
+    suspend fun confirmPhoneChange(challengeId: String, code: String): Result<AccountProfile> =
+        runCatching { api.confirmPhoneChange(challengeId, code) }
 
     /** The backend revokes every session on deletion, so this device's session ends too. */
     suspend fun deleteAccount(): Result<Unit> = runCatching {

@@ -30,6 +30,7 @@ import com.servacode.directory.feature.account.AccountScreen
 import com.servacode.directory.feature.account.FavoritesScreen
 import com.servacode.directory.feature.account.NotificationsScreen
 import com.servacode.directory.feature.account.PasswordChangeScreen
+import com.servacode.directory.feature.account.PhoneChangeScreen
 import com.servacode.directory.feature.account.ProfileEditScreen
 import com.servacode.directory.feature.settings.HelpScreen
 import com.servacode.directory.feature.settings.LegalPageScreen
@@ -286,6 +287,19 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
         composable<DirectoryRoute.EditProfile> {
             ProfileEditScreen(
                 onDone = { navController.popBackStack() },
+                onBack = { navController.popBackStack() },
+                onChangePhone = { navController.navigate(DirectoryRoute.ChangePhone) },
+            )
+        }
+        composable<DirectoryRoute.ChangePhone> {
+            PhoneChangeScreen(
+                // Every session ended, this one included: the app goes back to signing in, and
+                // the number it signs in with is now the new one.
+                onChanged = {
+                    navController.navigate(DirectoryRoute.Login) {
+                        popUpTo<DirectoryRoute.Home>()
+                    }
+                },
                 onBack = { navController.popBackStack() },
             )
         }

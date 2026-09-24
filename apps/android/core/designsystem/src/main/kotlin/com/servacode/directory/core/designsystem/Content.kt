@@ -368,6 +368,42 @@ fun FacilityThumbnail(imageUrl: String? = null, modifier: Modifier = Modifier) {
 }
 
 /**
+ * The picture on an account: round, or the person mark when there is none.
+ *
+ * It is here rather than in the account screen so that the one module that knows how to fetch a
+ * picture stays the one module that fetches pictures.
+ */
+@Composable
+fun DirectoryAvatar(
+    imageUrl: String?,
+    modifier: Modifier = Modifier,
+    size: Dp = Sizes.avatar,
+) {
+    if (imageUrl != null) {
+        DirectoryImage(
+            url = imageUrl,
+            modifier = modifier.size(size),
+            shape = RoundedCornerShape(Radius.pill),
+        )
+        return
+    }
+    Box(
+        modifier = modifier
+            .size(size)
+            .clip(RoundedCornerShape(Radius.pill))
+            .background(MaterialTheme.colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center,
+    ) {
+        DirectoryIcon(
+            icon = DirectoryIcons.person,
+            contentDescription = null,
+            size = IconSize.large,
+            tint = MaterialTheme.colorScheme.primary,
+        )
+    }
+}
+
+/**
  * A category, as Home shows them: a circle that fills when it is the one being looked at, with
  * its name under it.
  */

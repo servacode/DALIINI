@@ -86,7 +86,24 @@ interface PublicApiBoundary {
 
     suspend fun facility(id: String): FacilityDetail
     suspend fun profile(): AccountProfile
-    suspend fun updateProfile(displayName: String? = null, provinceId: String? = null): AccountProfile
+    suspend fun updateProfile(
+        displayName: String? = null,
+        provinceId: String? = null,
+        address: String? = null,
+    ): AccountProfile
+
+    /** Replaces the picture on the account, or removes it. Returns the profile as it now is. */
+    suspend fun updateProfileImage(payload: OwnerUploadPayload): AccountProfile
+    suspend fun removeProfileImage(): AccountProfile
+
+    /**
+     * Moves the account to another number.
+     *
+     * The code goes to the number being claimed, and confirming it ends every session — the
+     * phone is how this account signs in, so the app signs in again afterwards.
+     */
+    suspend fun startPhoneChange(phone: String): String
+    suspend fun confirmPhoneChange(challengeId: String, code: String): AccountProfile
     suspend fun requestAccountDeletion()
     suspend fun ratings(): List<com.servacode.directory.core.model.UserRating>
 

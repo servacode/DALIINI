@@ -23,6 +23,7 @@ import com.servacode.directory.core.model.InboxPage
 import com.servacode.directory.core.model.LegalPage
 import com.servacode.directory.core.model.LegalPageKey
 import com.servacode.directory.core.model.ResolvedPlace
+import com.servacode.directory.core.network.OwnerUploadPayload
 import com.servacode.directory.core.network.PublicApiBoundary
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -186,7 +187,16 @@ class ScriptedPublicApi : PublicApiBoundary {
 
     override suspend fun facility(id: String): FacilityDetail = facilityAnswer(id).also { calls += "facility:$id" }
     override suspend fun profile(): AccountProfile = throw offline
-    override suspend fun updateProfile(displayName: String?, provinceId: String?): AccountProfile = throw offline
+    override suspend fun updateProfile(
+        displayName: String?,
+        provinceId: String?,
+        address: String?,
+    ): AccountProfile = throw offline
+
+    override suspend fun updateProfileImage(payload: OwnerUploadPayload): AccountProfile = throw offline
+    override suspend fun removeProfileImage(): AccountProfile = throw offline
+    override suspend fun startPhoneChange(phone: String): String = throw offline
+    override suspend fun confirmPhoneChange(challengeId: String, code: String): AccountProfile = throw offline
     override suspend fun requestAccountDeletion() = throw offline
     override suspend fun ratings(): List<UserRating> = ratingsAnswer().also { calls += "ratings" }
     override suspend fun upsertRating(facilityId: String, stars: Int): Int {

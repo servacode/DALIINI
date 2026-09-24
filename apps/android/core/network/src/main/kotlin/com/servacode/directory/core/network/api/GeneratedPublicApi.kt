@@ -5,11 +5,17 @@ import com.servacode.directory.api.apis.ContentApi
 import com.servacode.directory.api.apis.PublicDiscoveryApi
 import com.servacode.directory.api.apis.PublicTaxonomyApi
 import com.servacode.directory.api.apis.RatingsApi
+import com.servacode.directory.api.models.ChallengeVerify
 import com.servacode.directory.api.models.DeletionRequest
 import com.servacode.directory.api.models.FavoriteWrite
 import com.servacode.directory.api.models.PasswordChange
 import com.servacode.directory.api.models.PatchedProfilePatch
+import com.servacode.directory.api.models.PhoneChangeStart
 import com.servacode.directory.api.models.RatingWrite
+import com.servacode.directory.core.network.OwnerUploadPayload
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import com.servacode.directory.core.model.AccountProfile
 import com.servacode.directory.core.model.Category
 import com.servacode.directory.core.model.FacilityDetail
@@ -120,9 +126,32 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
 
     override suspend fun profile(): AccountProfile = call { account.accountProfileRetrieve() }.toDomain()
 
-    override suspend fun updateProfile(displayName: String?, provinceId: String?): AccountProfile = call {
+    override suspend fun updateProfile(
+        displayName: String?,
+        provinceId: String?,
+        address: String?,
+    ): AccountProfile = call {
         account.accountProfileUpdate(
-            PatchedProfilePatch(displayName = displayName, provinceId = provinceId?.let(UUID::fromString)),
+            PatchedProfilePatch(
+                displayName = displayName,
+                provinceId = provinceId?.let(UUID::fromString),
+                address = address,
+            ),
+        )
+    }.toDomain()
+
+    override suspend fun updateProfileImage(payload: OwnerUploadPayload): AccountProfile =
+        call { account.accountProfileImageUpdate(payload.toImagePart()) }.toDomain()
+
+    override suspend fun removeProfileImage(): AccountProfile =
+        call { account.accountProfileImageDelete() }.toDomain()
+
+    override suspend fun startPhoneChange(phone: String): String =
+        call { account.accountPhoneChangeStart(PhoneChangeStart(phone = phone)) }.challengeId.toString()
+
+    override suspend fun confirmPhoneChange(challengeId: String, code: String): AccountProfile = call {
+        account.accountPhoneChangeConfirm(
+            ChallengeVerify(challengeId = UUID.fromString(challengeId), code = code),
         )
     }.toDomain()
 
@@ -179,3 +208,10 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
         }
     }
 }
+
+/** The picture as a multipart part, named `file` the way the endpoint expects it. */
+private fun OwnerUploadPayload.toImagePart(): MultipartBody.Part = MultipartBody.Part.createFormData(
+    name = "file",
+    filename = fileName,
+    body = bytes.toRequestBody(mediaType.toMediaTypeOrNull()),
+)

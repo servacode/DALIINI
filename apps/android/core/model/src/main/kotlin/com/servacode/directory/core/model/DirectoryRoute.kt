@@ -46,6 +46,7 @@ sealed interface DirectoryRoute {
     /** Editing the account, and replacing its password. */
     @Serializable data object EditProfile : DirectoryRoute
     @Serializable data object ChangePassword : DirectoryRoute
+    @Serializable data object ChangePhone : DirectoryRoute
 
     /** The platform's published pages: the list, and one of them. */
     @Serializable data object Help : DirectoryRoute

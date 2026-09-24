@@ -14,6 +14,7 @@ val androidOnly = listOf(
     "**/core/auth/AndroidKeyStoreRefreshTokenVault.kt",
     "**/core/auth/AuthBindings.kt",
     "**/core/network/NetworkMonitor.kt",
+    "**/core/network/UploadReader.kt",
     "**/core/network/NetworkBindings.kt",
     "**/core/network/MapProviderAdapters.kt",
     "**/core/network/MapProviderNetworkModule.kt",
@@ -36,7 +37,6 @@ val androidOnly = listOf(
     "**/feature/navigation/NavigationMap.kt",
     "**/feature/navigation/AndroidNavigationVoice.kt",
     "**/feature/navigation/NavigationVoice.kt",
-    "**/feature/onboarding/OwnerUploadReader.kt",
     "**/feature/onboarding/OnboardingMapPicker.kt",
 )
 

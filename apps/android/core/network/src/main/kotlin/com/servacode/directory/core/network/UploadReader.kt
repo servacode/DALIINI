@@ -1,15 +1,21 @@
-package com.servacode.directory.feature.onboarding
+package com.servacode.directory.core.network
 
 import android.content.Context
 import android.net.Uri
 import android.webkit.MimeTypeMap
-import com.servacode.directory.core.network.OwnerUploadPayload
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 private const val CLIENT_UPLOAD_LIMIT = 10 * 1024 * 1024
 
-class OwnerUploadReader @Inject constructor(
+/**
+ * A file the user picked, read into memory ready to be sent.
+ *
+ * It lives here rather than in one feature because two of them upload now: a facility's
+ * photographs and evidence, and the picture on an account. One reader, so a limit raised in one
+ * place is raised for both.
+ */
+class UploadReader @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
     fun read(uri: Uri): Result<OwnerUploadPayload> = runCatching {

@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 private const val SESSION = "55555555-5555-4555-8555-555555555555"
 private const val PROFILE = """{"id":"$SESSION","displayName":"مالك","phone":"+963900000001",""" +
-    """"provinceId":null,"phoneVerifiedAt":null}"""
+    """"provinceId":null,"phoneVerifiedAt":null,"address":"","profileImageUrl":null}"""
 
 /**
  * Refresh as the app wires it: the clients come from [NetworkModule]'s own providers, so this

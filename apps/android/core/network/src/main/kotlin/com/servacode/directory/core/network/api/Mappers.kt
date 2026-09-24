@@ -361,6 +361,8 @@ internal fun Profile.toDomain() = AccountProfile(
     name = displayName,
     phone = phone,
     provinceId = provinceId?.toString(),
+    address = address,
+    imageUrl = profileImageUrl?.toString(),
 )
 
 internal fun AccountRating.toDomain() = UserRating(

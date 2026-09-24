@@ -84,7 +84,7 @@ class OnboardingViewModel @Inject constructor(
     private val save: SaveOnboardingUseCase,
     private val preferences: DirectoryPreferencesStore,
     private val locationProvider: LocationProvider,
-    private val uploadReader: OwnerUploadReader,
+    private val uploadReader: UploadReader,
     private val push: PushAvailability,
 ) : ViewModel() {
     /** Whether this build can receive push, and so whether a notification permission is of any use. */

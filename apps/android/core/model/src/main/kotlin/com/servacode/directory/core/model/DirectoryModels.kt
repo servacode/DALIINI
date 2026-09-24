@@ -127,6 +127,10 @@ data class AccountProfile(
     val name: String,
     val phone: String,
     val provinceId: String? = null,
+    /** Free text, as the person wrote it. Empty when they have given none. */
+    val address: String = "",
+    /** The picture on the account, or null when there is none. */
+    val imageUrl: String? = null,
 )
 
 @Serializable

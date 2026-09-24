@@ -28,6 +28,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.designsystem.DirectoryAvatar
 import com.servacode.directory.core.designsystem.DirectoryConfirmDialog
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcon
@@ -121,7 +122,11 @@ fun AccountScreen(
                     .padding(padding)
                     .verticalScroll(rememberScrollState()),
             ) {
-                Identity(name = value.profile.name, phone = value.profile.phone)
+                Identity(
+                    name = value.profile.name,
+                    phone = value.profile.phone,
+                    imageUrl = value.profile.imageUrl,
+                )
                 value.message?.let { message ->
                     Text(
                         text = message,
@@ -240,9 +245,9 @@ fun AccountScreen(
     }
 }
 
-/** The account itself: the app has no picture for a user, so it draws the person mark. */
+/** The account itself, with its picture when it has one and the person mark when it does not. */
 @Composable
-private fun Identity(name: String, phone: String) {
+private fun Identity(name: String, phone: String, imageUrl: String?) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -250,20 +255,7 @@ private fun Identity(name: String, phone: String) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
-        Box(
-            modifier = Modifier
-                .size(Sizes.avatar + Space.lg)
-                .clip(RoundedCornerShape(Radius.pill))
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center,
-        ) {
-            DirectoryIcon(
-                icon = DirectoryIcons.person,
-                contentDescription = null,
-                size = IconSize.large,
-                tint = MaterialTheme.colorScheme.primary,
-            )
-        }
+        DirectoryAvatar(imageUrl = imageUrl, size = Sizes.avatar + Space.lg)
         Text(
             text = name,
             style = MaterialTheme.typography.titleLarge,
