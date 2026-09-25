@@ -21,12 +21,13 @@ object SplashGeometry {
 }
 
 /**
- * The splash's words, in one place. No product copy has been approved yet: the tagline and the
- * footer are the wording proposed for the redesign and change here when copy is approved. The
- * footer names the launch province as secondary text, and goes when more provinces open.
+ * The splash's words, in one place. No product copy has been approved yet: the tagline is the
+ * wording proposed for the redesign and changes here when copy is approved.
+ *
+ * A third line named the launch province. It is gone: the app opens in more than one province
+ * and the province a reader is in is written on Home, where it can be changed.
  */
 object SplashCopy {
     const val NAME = DirectoryBrand.NAME
     const val TAGLINE = DirectoryBrand.TAGLINE
-    const val FOOTER = "محافظة الرقة"
 }

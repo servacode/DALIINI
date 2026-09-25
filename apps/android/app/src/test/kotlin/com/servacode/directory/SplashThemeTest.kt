@@ -1,7 +1,6 @@
 package com.servacode.directory
 
-import com.servacode.directory.core.designsystem.BrandMarkCanvas
-import com.servacode.directory.core.designsystem.BrandMarkSize
+import com.servacode.directory.core.designsystem.BrandMarkHandoverSize
 import com.servacode.directory.designsystem.generated.DirectoryTokens
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -65,21 +64,23 @@ class SplashThemeTest {
         assertEquals(DirectoryTokens.SemanticSurfaceDefault.uppercase(), value.uppercase())
     }
 
-    @Test fun `both splashes draw one symbol, the same size on each`() {
+    @Test fun `the system splash draws one picture, and it carries its own margin`() {
         assertEquals("@drawable/brand_mark", style("Theme.Directory.Starting").item("windowSplashScreenAnimatedIcon"))
         val mark = document("../core/designsystem/src/main/res/drawable/brand_mark.xml").documentElement
-        val layers = mark.getElementsByTagName("item")
-        val canvas = (layers.item(0) as Element).getElementsByTagName("size").item(0) as Element
-        val symbol = layers.item(1) as Element
 
-        // The canvas layer is what gives the drawable its size; the system scales that whole box.
-        assertEquals("${BrandMarkCanvas.value.toInt()}dp", canvas.getAttributeNS(android, "width"))
-        assertEquals("${BrandMarkCanvas.value.toInt()}dp", canvas.getAttributeNS(android, "height"))
-        // The symbol inside it is the one the app draws, at the size the app draws it, centred.
-        assertEquals("@drawable/brand_symbol", symbol.getAttributeNS(android, "drawable"))
-        assertEquals("${BrandMarkSize.value.toInt()}dp", symbol.getAttributeNS(android, "width"))
-        assertEquals("${BrandMarkSize.value.toInt()}dp", symbol.getAttributeNS(android, "height"))
-        assertEquals("center", symbol.getAttributeNS(android, "gravity"))
+        // A bitmap rather than a layer list: Android masks a splash icon, and a margin expressed
+        // as a layer is one the system is free to ignore — on the A52 it did, and cut the sides
+        // off the letter. The margin is inside splash_symbol.webp instead.
+        assertEquals("bitmap", mark.tagName)
+        assertEquals("@drawable/splash_symbol", mark.getAttributeNS(android, "src"))
+        assertEquals("center", mark.getAttributeNS(android, "gravity"))
+    }
+
+    @Test fun `the size baked into the picture is the size the app's splash grows from`() {
+        val generator = File("../scripts/build-brand-assets.py").readText()
+        val baked = Regex("""SPLASH_MARK = (\d+)""").find(generator)?.groupValues?.get(1)
+
+        assertEquals(BrandMarkHandoverSize.value.toInt().toString(), baked)
     }
 
     @Test fun `the launcher icon is the same symbol on a token field`() {

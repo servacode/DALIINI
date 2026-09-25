@@ -1,27 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The mark on the system splash: the approved symbol, at the size the app's own splash draws
-     it, so one hands over to the other without the mark moving or changing size.
+<!-- The mark on the system splash.
 
-     The canvas is 288dp with the symbol in its middle 120. Android 12+ draws a splash icon
-     without a background by scaling the whole drawable into a 288 dp box (measured on the A52),
-     so the margin has to be inside the drawable rather than be a fixed inset. The first layer
-     is nothing but that canvas: it is what gives this drawable its 288 dp size, since a layer
-     list is only as big as the largest thing in it. SplashThemeTest holds both numbers.
+     Android scales a splash icon into a 288 dp box and masks it to the launcher's shape, and
+     this letter's ink reaches the corners of its box: drawn edge to edge it came back with its
+     sides cut off, photographed on the A52. So the margin is inside the pixels — the symbol is
+     cut at 90 dp of a 288 dp canvas by scripts/build-brand-assets.py — rather than being a
+     layer the system is free to ignore. The app's own splash then grows it to BrandMarkSize.
 
-     The app draws the same symbol itself, through BrandSymbol, rather than through this file:
-     Compose reads vectors and bitmaps from resources, not layer lists. -->
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item>
-        <shape android:shape="rectangle">
-            <size
-                android:width="288dp"
-                android:height="288dp" />
-            <solid android:color="@android:color/transparent" />
-        </shape>
-    </item>
-    <item
-        android:width="120dp"
-        android:height="120dp"
-        android:drawable="@drawable/brand_symbol"
-        android:gravity="center" />
-</layer-list>
+     A bitmap, not a layer list: whatever a device does to the icon, it does it to one picture
+     that already carries its own margin. -->
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/splash_symbol"
+    android:gravity="center" />

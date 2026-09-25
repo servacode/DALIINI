@@ -40,6 +40,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import com.servacode.directory.core.designsystem.BrandColors
+import com.servacode.directory.core.designsystem.BrandMarkHandoverSize
+import com.servacode.directory.core.designsystem.BrandMarkSize
 import com.servacode.directory.core.designsystem.BrandSymbol
 import com.servacode.directory.core.designsystem.DirectoryTextStyles
 import com.servacode.directory.core.designsystem.SystemBarsColor
@@ -49,10 +51,11 @@ import com.servacode.directory.designsystem.generated.DirectoryTokens
  * The app's splash, shown while the app starts and while it hands over to the first screen.
  *
  * Its first frame is the system splash's last: the same background under the same bars and the
- * brand mark at the same place and size, and nothing else, so the frame that ends the system
- * splash costs no more than before this redesign. The name, the tagline, the footer, the soft
- * shapes and a slow ping under the pin join on the next frame and fade in over the tokens'
- * emphasized duration. It waits for nothing: navigation leaves as soon as the start is known.
+ * mark at the same place and size, and nothing else, so the frame that ends the system splash
+ * costs no more than before this redesign. Then the mark grows from the size the system handed
+ * it over at to its own, and the name, the tagline, the soft shapes and a slow ping
+ * under it join and fade in over the tokens' emphasized duration. It waits for nothing:
+ * navigation leaves as soon as the start is known.
  */
 @Composable
 fun DirectorySplashScreen(modifier: Modifier = Modifier) {
@@ -67,6 +70,12 @@ fun DirectorySplashScreen(modifier: Modifier = Modifier) {
         animationSpec = tween(DirectoryTokens.MotionDurationEmphasized, easing = LinearOutSlowInEasing),
         label = "splash-appear",
     )
+    // The mark arrives at the size the system splash handed it over at, and grows to its own.
+    val grow by animateFloatAsState(
+        targetValue = if (details) 1f else HANDOVER_SCALE,
+        animationSpec = tween(GROW_MILLIS, easing = LinearOutSlowInEasing),
+        label = "splash-grow",
+    )
     val view = LocalView.current
     // Set while placing; the ping reads it to draw under the mark.
     val markCentreY = remember { mutableFloatStateOf(Float.NaN) }
@@ -74,7 +83,12 @@ fun DirectorySplashScreen(modifier: Modifier = Modifier) {
     Layout(
         modifier = modifier.fillMaxSize().background(BrandColors.splashBackground),
         content = {
-            BrandSymbol()
+            BrandSymbol(
+                modifier = Modifier.graphicsLayer {
+                    scaleX = grow
+                    scaleY = grow
+                },
+            )
             if (details) {
                 // Drawn once and faded as a layer, not redrawn on every frame of the fade.
                 Canvas(Modifier.fillMaxSize().graphicsLayer { alpha = appear }) { drawBackdrop() }
@@ -100,12 +114,6 @@ fun DirectorySplashScreen(modifier: Modifier = Modifier) {
                         textAlign = TextAlign.Center,
                     )
                 }
-                Text(
-                    text = SplashCopy.FOOTER,
-                    style = DirectoryTextStyles.labelMedium,
-                    color = BrandColors.contentSecondary,
-                    modifier = Modifier.graphicsLayer { alpha = appear },
-                )
             }
         },
     ) { measurables, constraints ->
@@ -115,11 +123,10 @@ fun DirectorySplashScreen(modifier: Modifier = Modifier) {
         val mark = measurables[0].measure(loose)
         val full = Constraints.fixed(width, height)
         val side = SIDE.roundToPx()
-        // Present from the second frame: backdrop, ping, title, footer.
+        // Present from the second frame: backdrop, ping, title.
         val backdrop = measurables.getOrNull(1)?.measure(full)
         val ping = measurables.getOrNull(2)?.measure(full)
         val title = measurables.getOrNull(3)?.measure(loose.copy(maxWidth = (width - 2 * side).coerceAtLeast(0)))
-        val footer = measurables.getOrNull(4)?.measure(loose)
         layout(width, height) {
             // Placement runs after the window has laid this view out, so its offset is known.
             val location = IntArray(2).also(view::getLocationInWindow)
@@ -135,7 +142,6 @@ fun DirectorySplashScreen(modifier: Modifier = Modifier) {
             ping?.place(0, 0)
             mark.place((width - mark.width) / 2, centreY - mark.height / 2)
             title?.let { it.place((width - it.width) / 2, centreY + mark.height / 2 + TITLE_GAP.roundToPx()) }
-            footer?.let { it.place((width - it.width) / 2, height - it.height - FOOTER_GAP.roundToPx()) }
         }
     }
 }
@@ -193,11 +199,18 @@ private const val PING_ALPHA = 0.22f
 private val PING_FROM = 28.dp
 private val PING_TO = 76.dp
 
-// The letter's base sits 52 dp below the mark's centre at BrandMarkSize, measured from the
-// symbol's own ink (scripts/build-brand-assets.py): the ping spreads from where it stands.
-private val MARK_BASE_BELOW_CENTRE = 52.dp
+// The letter's base sits this far below the mark's centre, measured from the symbol's own ink:
+// the ping spreads from where it stands, at whatever size the mark is drawn.
+private val MARK_BASE_BELOW_CENTRE = BrandMarkSize * 0.435f
+
+// The mark keeps the size it was handed over at for one frame, then grows to its own. The two
+// sizes are read rather than written down here, so neither can move without the other.
+private val HANDOVER_SCALE = BrandMarkHandoverSize / BrandMarkSize
+
+// Longer than the app's other motion: this one is the only chance to read the mark, and the
+// start waits for it (BootstrapViewModel.MINIMUM_ON_SCREEN) rather than cutting it short.
+private const val GROW_MILLIS = 700
 private val TITLE_GAP = 20.dp
-private val FOOTER_GAP = 28.dp
 private val SIDE = 24.dp
 private val RISE = 8.dp
 private val GRID_STEP = 16.dp

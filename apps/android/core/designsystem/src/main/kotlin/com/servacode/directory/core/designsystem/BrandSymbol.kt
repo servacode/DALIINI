@@ -18,14 +18,19 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.servacode.directory.core.model.DirectoryBrand
 
-/** The size of the mark itself on the splash: the middle 120 units of brand_mark.xml. */
-val BrandMarkSize = 120.dp
+/**
+ * The size of the mark on the app's own splash, which is what it grows to.
+ *
+ * The system splash hands it over smaller, at the size baked into `splash_symbol.webp`, because
+ * Android masks a splash icon and this letter's ink reaches the corners of its box.
+ */
+val BrandMarkSize = 168.dp
 
 /**
- * The size brand_mark.xml's whole 288-unit canvas is drawn at, so the mark is BrandMarkSize:
- * the box Android 12+ draws a splash icon without a background in, so both splashes match.
+ * The size the system splash hands the mark over at: what `scripts/build-brand-assets.py` bakes
+ * into `splash_symbol.webp`, as a share of the 288 dp box Android draws a splash icon in.
  */
-val BrandMarkCanvas = 288.dp
+val BrandMarkHandoverSize = 90.dp
 
 /**
  * The symbol: the road and the pin inside the letter.

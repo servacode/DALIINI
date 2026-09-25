@@ -32,6 +32,7 @@ SOURCE = REPO / "docs/design/brand/dalini-logo.png"
 TOKENS = REPO / "packages/design-tokens/tokens/colors.json"
 
 SYMBOL = ANDROID / "core/designsystem/src/main/res/drawable-nodpi/brand_symbol.webp"
+SPLASH = ANDROID / "core/designsystem/src/main/res/drawable-nodpi/splash_symbol.webp"
 APP_RES = ANDROID / "app/src/main/res"
 STORE_ICON = REPO / "docs/design/brand/play-store-icon.png"
 
@@ -42,6 +43,11 @@ VIEWPORT = 72
 SAFE = 66
 DENSITIES = {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}
 FOREGROUND = 432  # 108 units at xxxhdpi, the largest any launcher asks for.
+# The splash: Android scales the icon into a 288 dp box and masks it, so the margin has to be
+# inside the pixels. The mark is handed over at 90 dp and the app's own splash grows it to 120.
+SPLASH_CANVAS = 288
+SPLASH_MARK = 90
+SPLASH_PIXELS = 864  # 288 dp at 3x, so the mark stays sharp where the system draws it largest.
 INK = 24  # Below this the pixel is the artwork's glow fading out, not the mark.
 
 
@@ -141,6 +147,12 @@ def main() -> int:
     ink_side = round(FOREGROUND * units / CANVAS)
     print(f"the adaptive foreground: ink reaches {reach:.2f} boxes, so the mark is {units:.1f} of {CANVAS}")
     write(centred(FOREGROUND, letter, ink_side), APP_RES / "drawable-nodpi/ic_launcher_foreground.webp",
+          format="WEBP", quality=94, method=6)
+
+    # A splash icon is masked, and this letter's ink reaches the corners of its box: a bitmap
+    # drawn edge to edge comes back with its sides cut off, which is what happened on the A52.
+    print("the mark the system splash hands over:")
+    write(centred(SPLASH_PIXELS, letter, round(SPLASH_PIXELS * SPLASH_MARK / SPLASH_CANVAS)), SPLASH,
           format="WEBP", quality=94, method=6)
 
     print("the icon as launchers before Android 8 draw it, whole:")
