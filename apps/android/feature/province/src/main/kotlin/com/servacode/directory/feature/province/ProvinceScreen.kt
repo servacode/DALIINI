@@ -1,15 +1,17 @@
 package com.servacode.directory.feature.province
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DirectoryErrorState
@@ -77,7 +79,7 @@ fun ProvinceScreen(
 
 /** The words of the province picker, provisional until product copy is approved. */
 object ProvinceCopy {
-    const val TITLE = "اختر المحافظة"
-    const val ERROR = "تعذر تحميل المحافظات"
-    const val STALE = "يعرض آخر قائمة محفوظة"
+    val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.province_title)
+    val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.province_error)
+    val STALE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.province_stale)
 }

@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -31,6 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.viewinterop.AndroidView
@@ -440,14 +442,15 @@ private const val MY_LOCATION_ZOOM = 15.0
 
 /** The words of the map, provisional until product copy is approved. */
 object MapCopy {
-    const val OPEN_NOW = "مفتوح الآن"
-    const val DUTY_NOW = "مناوب الآن"
-    const val MY_LOCATION = "موقعي"
-    const val OPEN_DETAILS = "عرض التفاصيل"
-    const val DISMISS = "إغلاق"
-    const val ROUTE = "الطريق"
-    const val ZOOM_IN = "تكبير"
-    const val ZOOM_OUT = "تصغير"
-    const val UNCONFIGURED = "الخريطة غير متاحة"
-    const val UNCONFIGURED_BODY = "يجب ضبط مزود خرائط الإنتاج قبل عرض الخريطة"
+    val OPEN_NOW: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_open_now)
+    val DUTY_NOW: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_duty_now)
+    val MY_LOCATION: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_my_location)
+    val OPEN_DETAILS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_open_details)
+    val DISMISS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_dismiss)
+    val ROUTE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_route)
+    val ZOOM_IN: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_zoom_in)
+    val ZOOM_OUT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_zoom_out)
+    val UNCONFIGURED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_unconfigured)
+    val UNCONFIGURED_BODY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.map_unconfigured_body)
 }

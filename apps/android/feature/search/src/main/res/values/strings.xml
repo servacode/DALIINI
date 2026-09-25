@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What this module says. Here rather than in Kotlin so that a second language is a
+     second file beside this one and the phone's own setting chooses between them. -->
+<resources>
+    <string name="search_title">بحث</string>
+    <string name="search_placeholder">ابحث عن منشأة أو تخصص...</string>
+    <string name="search_idle">ابحث داخل محافظتك</string>
+    <string name="search_idle_body">اكتب اسم المنشأة أو الاختصاص لعرض النتائج.</string>
+    <string name="search_error">تعذر البحث</string>
+    <string name="search_empty">لا توجد نتائج</string>
+    <string name="search_empty_body">جرّب كلمة أخرى أو تحقق من الإملاء.</string>
+</resources>

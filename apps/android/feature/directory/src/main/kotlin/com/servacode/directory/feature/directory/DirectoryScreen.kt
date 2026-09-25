@@ -2,11 +2,11 @@ package com.servacode.directory.feature.directory
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
@@ -15,9 +15,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
@@ -210,15 +212,17 @@ private fun appliedFilters(filter: DirectoryFilter): String = listOfNotNull(
 
 /** The words of the list and its filters, provisional until product copy is approved. */
 object DirectoryCopy {
-    const val TITLE = "المنشآت"
-    const val FILTERS = "الفلاتر"
-    const val RESET = "إعادة ضبط"
-    const val OPEN_NOW = "مفتوح الآن"
-    const val DUTY_NOW = "مناوب الآن"
-    const val PROVINCE = "المحافظة"
-    const val ERROR = "تعذر تحميل المنشآت"
-    const val EMPTY = "لا توجد منشآت"
-    const val EMPTY_BODY = "لا توجد منشآت تطابق ما اخترته."
-    const val PROVINCE_REQUIRED = "اختر المحافظة أولًا"
-    const val PROVINCE_CHOOSE = "اختيار المحافظة"
+    val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_title)
+    val FILTERS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_filters)
+    val RESET: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_reset)
+    val OPEN_NOW: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_open_now)
+    val DUTY_NOW: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_duty_now)
+    val PROVINCE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_province)
+    val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_error)
+    val EMPTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_empty)
+    val EMPTY_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_empty_body)
+    val PROVINCE_REQUIRED: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_province_required)
+    val PROVINCE_CHOOSE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_province_choose)
 }

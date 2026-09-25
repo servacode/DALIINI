@@ -2,19 +2,21 @@ package com.servacode.directory.feature.ratings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DirectoryCard
@@ -125,11 +127,13 @@ private fun RatingCard(
 
 /** The words of the user's own ratings, provisional until product copy is approved. */
 object RatingsCopy {
-    const val TITLE = "تقييماتي"
-    const val ERROR = "تعذر تحميل تقييماتك"
-    const val EMPTY = "لا توجد تقييمات"
-    const val EMPTY_BODY = "قيّم منشأة من صفحتها وستظهر هنا."
-    const val DELETE = "حذف التقييم"
+    val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.ratings_title)
+    val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.ratings_error)
+    val EMPTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.ratings_empty)
+    val EMPTY_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.ratings_empty_body)
+    val DELETE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.ratings_delete)
 
-    fun starLabel(stars: Int): String = "$stars من 5"
+    @Composable
+    @ReadOnlyComposable
+    fun starLabel(stars: Int): String = stringResource(R.string.ratings_star_label, stars)
 }

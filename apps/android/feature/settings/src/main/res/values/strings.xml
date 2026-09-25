@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What this module says. Here rather than in Kotlin so that a second language is a
+     second file beside this one and the phone's own setting chooses between them. -->
+<resources>
+    <string name="settings_title">الإعدادات</string>
+    <string name="settings_security">الحساب والأمان</string>
+    <string name="settings_change_password">تغيير كلمة المرور</string>
+    <string name="settings_change_phone">تغيير رقم الهاتف</string>
+    <string name="settings_notifications">الإشعارات</string>
+    <string name="settings_allow_notifications">السماح بالإشعارات</string>
+    <string name="settings_allowed">مسموح</string>
+    <string name="settings_not_allowed">غير مسموح</string>
+    <string name="settings_permissions">الأذونات</string>
+    <string name="settings_system_settings">إعدادات التطبيق في النظام</string>
+    <string name="settings_system_settings_hint">الموقع والإشعارات والتخزين</string>
+
+    <string name="help_title">المساعدة والمعلومات</string>
+    <string name="help_error">تعذر تحميل المحتوى</string>
+    <string name="help_empty">لا يوجد محتوى منشور</string>
+    <string name="help_empty_body">سيظهر هنا ما تنشره المنصة.</string>
+
+    <!-- %1$s is the app's version name, as the build stamped it. -->
+    <string name="help_version">إصدار التطبيق %1$s</string>
+    <!-- %1$d is which revision of a published page this is. -->
+    <string name="help_page_version">النسخة %1$d</string>
+</resources>

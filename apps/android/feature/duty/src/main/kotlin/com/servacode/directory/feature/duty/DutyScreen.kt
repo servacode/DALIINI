@@ -13,9 +13,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DateTimeField
@@ -64,6 +66,14 @@ fun DutyScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(Space.sm),
             ) {
+                if (value.invalidTimes) {
+                    Text(
+                        text = DutyCopy.INVALID_TIMES,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = Space.sm),
+                    )
+                }
                 value.message?.let {
                     Text(
                         text = it,
@@ -123,15 +133,18 @@ fun DutyScreen(
 
 /** The words of the duty screen, provisional until product copy is approved. */
 object DutyCopy {
-    const val TITLE = "إدارة المناوبة"
-    const val ERROR = "تعذر تحميل المناوبات"
-    const val ERROR_BODY = "قد لا يدعم تصنيف هذه المنشأة المناوبة."
-    const val NEW_SHIFT = "مناوبة جديدة"
-    const val START = "وقت البداية"
-    const val END = "وقت النهاية"
-    const val SCHEDULE = "جدولة"
-    const val START_NOW = "بدء الآن حتى وقت النهاية"
-    const val SHIFTS = "المناوبات"
-    const val END_EARLY = "إنهاء مبكر"
-    const val CANCEL = "إلغاء"
+    val INVALID_TIMES: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_invalid_times)
+
+    val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_title)
+    val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_error)
+    val ERROR_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_error_body)
+    val NEW_SHIFT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_new_shift)
+    val START: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_start)
+    val END: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_end)
+    val SCHEDULE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_schedule)
+    val START_NOW: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_start_now)
+    val SHIFTS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_shifts)
+    val END_EARLY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_end_early)
+    val CANCEL: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_cancel)
 }

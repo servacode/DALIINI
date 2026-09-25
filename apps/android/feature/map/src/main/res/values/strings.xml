@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What this module says. Here rather than in Kotlin so that a second language is a
+     second file beside this one and the phone's own setting chooses between them. -->
+<resources>
+    <string name="map_open_now">مفتوح الآن</string>
+    <string name="map_duty_now">مناوب الآن</string>
+    <string name="map_my_location">موقعي</string>
+    <string name="map_open_details">عرض التفاصيل</string>
+    <string name="map_dismiss">إغلاق</string>
+    <string name="map_route">الطريق</string>
+    <string name="map_zoom_in">تكبير</string>
+    <string name="map_zoom_out">تصغير</string>
+    <string name="map_unconfigured">الخريطة غير متاحة</string>
+    <string name="map_unconfigured_body">يجب ضبط مزود خرائط الإنتاج قبل عرض الخريطة</string>
+</resources>

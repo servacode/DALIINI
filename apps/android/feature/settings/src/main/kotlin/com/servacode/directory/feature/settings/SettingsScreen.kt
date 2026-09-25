@@ -13,10 +13,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.Lifecycle
 import com.servacode.directory.core.designsystem.DirectoryIcons
@@ -144,15 +146,19 @@ private object NotificationSetting {
 
 /** The words of the settings, provisional until product copy is approved. */
 object SettingsCopy {
-    const val TITLE = "الإعدادات"
-    const val SECURITY = "الحساب والأمان"
-    const val CHANGE_PASSWORD = "تغيير كلمة المرور"
-    const val CHANGE_PHONE = "تغيير رقم الهاتف"
-    const val NOTIFICATIONS = "الإشعارات"
-    const val ALLOW_NOTIFICATIONS = "السماح بالإشعارات"
-    const val ALLOWED = "مسموح"
-    const val NOT_ALLOWED = "غير مسموح"
-    const val PERMISSIONS = "الأذونات"
-    const val SYSTEM_SETTINGS = "إعدادات التطبيق في النظام"
-    const val SYSTEM_SETTINGS_HINT = "الموقع والإشعارات والتخزين"
+    val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_title)
+    val SECURITY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_security)
+    val CHANGE_PASSWORD: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_change_password)
+    val CHANGE_PHONE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_change_phone)
+    val NOTIFICATIONS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_notifications)
+    val ALLOW_NOTIFICATIONS: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_allow_notifications)
+    val ALLOWED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_allowed)
+    val NOT_ALLOWED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_not_allowed)
+    val PERMISSIONS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_permissions)
+    val SYSTEM_SETTINGS: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_system_settings)
+    val SYSTEM_SETTINGS_HINT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_system_settings_hint)
 }

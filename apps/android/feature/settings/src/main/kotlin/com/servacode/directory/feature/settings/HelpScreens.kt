@@ -10,17 +10,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
-import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryMenuDivider
 import com.servacode.directory.core.designsystem.DirectoryMenuGroup
 import com.servacode.directory.core.designsystem.DirectoryMenuRow
+import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.model.LegalPage
@@ -153,14 +155,19 @@ private fun LegalPageKey.icon(): Int = when (this) {
 
 /** The words of the help section, provisional until product copy is approved. */
 object HelpCopy {
-    const val TITLE = "المساعدة والمعلومات"
-    const val ERROR = "تعذر تحميل المحتوى"
-    const val EMPTY = "لا يوجد محتوى منشور"
-    const val EMPTY_BODY = "سيظهر هنا ما تنشره المنصة."
+    val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.help_title)
+    val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.help_error)
+    val EMPTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.help_empty)
+    val EMPTY_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.help_empty_body)
 
-    fun version(name: String): String = "إصدار التطبيق $name"
+    @Composable
+    @ReadOnlyComposable
+    fun version(name: String): String = stringResource(R.string.help_version, name)
 
-    fun pageVersion(version: Int): String = "النسخة $version"
+
+    @Composable
+    @ReadOnlyComposable
+    fun pageVersion(version: Int): String = stringResource(R.string.help_page_version, version)
 }
 
 /** Kept so the list and one page can be read from the same repository. */

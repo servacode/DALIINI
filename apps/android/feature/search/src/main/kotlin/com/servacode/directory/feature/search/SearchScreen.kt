@@ -1,13 +1,15 @@
 package com.servacode.directory.feature.search
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
@@ -106,11 +108,11 @@ fun SearchScreen(
 
 /** The words of the search, provisional until product copy is approved. */
 object SearchCopy {
-    const val TITLE = "بحث"
-    const val PLACEHOLDER = "ابحث عن منشأة أو تخصص..."
-    const val IDLE = "ابحث داخل محافظتك"
-    const val IDLE_BODY = "اكتب اسم المنشأة أو الاختصاص لعرض النتائج."
-    const val ERROR = "تعذر البحث"
-    const val EMPTY = "لا توجد نتائج"
-    const val EMPTY_BODY = "جرّب كلمة أخرى أو تحقق من الإملاء."
+    val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.search_title)
+    val PLACEHOLDER: String @Composable @ReadOnlyComposable get() = stringResource(R.string.search_placeholder)
+    val IDLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.search_idle)
+    val IDLE_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.search_idle_body)
+    val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.search_error)
+    val EMPTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.search_empty)
+    val EMPTY_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.search_empty_body)
 }

@@ -18,7 +18,19 @@ import javax.inject.Inject
 
 sealed interface DutyUiState {
     data object Loading : DutyUiState
-    data class Content(val shifts: List<DutyShift>, val message: String? = null) : DutyUiState
+    data class Content(
+        val shifts: List<DutyShift>,
+        /** The backend's own refusal, already in words; the screen shows it as it came. */
+        val message: String? = null,
+        /**
+         * True when the times typed cannot be a shift.
+         *
+         * A flag rather than a sentence: this one is the app's own objection, and the app's
+         * words live in its resources, where a second language can reach them. A view model
+         * that writes prose writes it in one language forever.
+         */
+        val invalidTimes: Boolean = false,
+    ) : DutyUiState
     data object Error : DutyUiState
 }
 
@@ -45,7 +57,7 @@ class DutyViewModel @Inject constructor(
 
     fun schedule(startsAt: Long, endsAt: Long) {
         if (!DutyValidator.isValid(startsAt, endsAt)) {
-            _state.value = DutyUiState.Content(currentShifts(), "وقت المناوبة غير صالح")
+            _state.value = DutyUiState.Content(currentShifts(), invalidTimes = true)
             return
         }
         viewModelScope.launch {

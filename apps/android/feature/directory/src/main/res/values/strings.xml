@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What this module says. Here rather than in Kotlin so that a second language is a
+     second file beside this one and the phone's own setting chooses between them. -->
+<resources>
+    <string name="directory_title">المنشآت</string>
+    <string name="directory_filters">الفلاتر</string>
+    <string name="directory_reset">إعادة ضبط</string>
+    <string name="directory_open_now">مفتوح الآن</string>
+    <string name="directory_duty_now">مناوب الآن</string>
+    <string name="directory_province">المحافظة</string>
+    <string name="directory_error">تعذر تحميل المنشآت</string>
+    <string name="directory_empty">لا توجد منشآت</string>
+    <string name="directory_empty_body">لا توجد منشآت تطابق ما اخترته.</string>
+    <string name="directory_province_required">اختر المحافظة أولًا</string>
+    <string name="directory_province_choose">اختيار المحافظة</string>
+</resources>
