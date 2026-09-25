@@ -12,14 +12,14 @@ Only genuine external blockers are recorded here. Bugs and local toolchain issue
 
 ## Register review — 2026-09-17 (FIX-P0 batch)
 
-Reviewed against the receipt audit (`RECEIPT-AUDIT-2026-09-17.md`) and the FIX-P0 execution results.
+Reviewed against the receipt audit (`artifacts/evidence/RECEIPT-AUDIT-2026-09-17.md`) and the FIX-P0 execution results.
 **No external blocker was added, removed or changed.** EXT-001 to EXT-005 all still stand as written.
 
 Two conditions found during this batch are deliberately **not** recorded here, because this register is
 only for genuine external blockers and not for bugs or local toolchain issues:
 
 - The four P0 defects closed by FIX-P0, and every remaining `INT-*` defect, are internal bugs. They are
-  tracked in `RECEIPT-AUDIT-2026-09-17.md` and `PROJECT-STATUS.md`.
+  tracked in `artifacts/evidence/RECEIPT-AUDIT-2026-09-17.md` and `PROJECT-STATUS.md`.
 - Google Maven (`dl.google.com` / `maven.google.com`) does not serve the current workstation, so Android
   dependency resolution cannot complete and `gradle :app:assembleDebug` is `NOT_VERIFIED`. That is a local
   network limitation, recorded under "Local execution limitation" in `PROJECT-STATUS.md`.
@@ -36,7 +36,7 @@ Two conditions from this batch are deliberately kept out of the register, which 
 blockers only:
 
 - INT-009, INT-028, INT-007 and INT-030 were internal bugs and are now closed. INT-010, INT-029,
-  INT-005, INT-006 and INT-008 remain open internal bugs, tracked in `RECEIPT-AUDIT-2026-09-17.md`.
+  INT-005, INT-006 and INT-008 remain open internal bugs, tracked in `artifacts/evidence/RECEIPT-AUDIT-2026-09-17.md`.
 - Google Maven not serving this workstation is classified `ENVIRONMENT_LIMITATION`, recorded under
   "Local execution limitation" in `PROJECT-STATUS.md`. It does not block the backend or P10.
 
@@ -52,7 +52,7 @@ Kept out of this register, as before, because it is for genuine external blocker
 - INT-031, INT-033, INT-034, INT-010 and INT-016 were internal bugs and are now closed.
   INT-005 is closed by this batch. INT-035, INT-036 and INT-037 are new internal
   divergences between the runtime and the specification, tracked in
-  `RECEIPT-AUDIT-2026-09-17.md`.
+  `artifacts/evidence/RECEIPT-AUDIT-2026-09-17.md`.
 - Kotlin client compilation is blocked by the same local network condition as Google Maven:
   the Gradle distribution download from services.gradle.org resets. Classified
   `ENVIRONMENT_LIMITATION` under "Local execution limitation" in `PROJECT-STATUS.md`.

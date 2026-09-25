@@ -245,7 +245,7 @@ P21 NEXT:
 
 ### Verification baseline changed
 
-`RECEIPT-AUDIT-2026-09-17.md` is the accepted verification baseline for this project. A gate is PASS only
+`artifacts/evidence/RECEIPT-AUDIT-2026-09-17.md` is the accepted verification baseline for this project. A gate is PASS only
 with a real command exit code. Textual source assertions of the form `assert "x" in source` no longer
 qualify a gate on their own. That method is what allowed four P0 defects to pass every gate from P2 to P21.
 
@@ -315,13 +315,13 @@ earlier under known issues. GDAL is absent natively on Windows, so GeoDjango run
 
 ### Open internal defects
 
-The full register with severities, introducing phase and reproduction is in `RECEIPT-AUDIT-2026-09-17.md`.
+The full register with severities, introducing phase and reproduction is in `artifacts/evidence/RECEIPT-AUDIT-2026-09-17.md`.
 The ones that gate the next steps are INT-009 and INT-028 for P2, then INT-005 for P10, and INT-010,
 INT-006, INT-007 and INT-008 behind those.
 
 ### How to continue
 
-Read `RECEIPT-AUDIT-2026-09-17.md` in full, then `plan.md`. Close P2 before anything else, then P10.
+Read `artifacts/evidence/RECEIPT-AUDIT-2026-09-17.md` in full, then `plan.md`. Close P2 before anything else, then P10.
 Do not start iOS. Do not claim any gate without a command exit code.
 
 

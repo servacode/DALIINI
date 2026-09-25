@@ -9,7 +9,7 @@ Last updated: 2026-09-19
 - Launch baseline: Raqqa / Pharmacy / Duty
 - Repository mode: Greenfield
 - Source of truth: `docs/spec/`
-- Verification baseline: `RECEIPT-AUDIT-2026-09-17.md` (accepted 2026-09-17)
+- Verification baseline: `artifacts/evidence/RECEIPT-AUDIT-2026-09-17.md` (accepted 2026-09-17)
 
 ## Qualification rule
 

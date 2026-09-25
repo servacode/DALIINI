@@ -849,7 +849,7 @@ Qualification: P21 is `SOURCE_IMPLEMENTED`; `P21 PLAY RC PASS` is NOT claimed be
 
 ## 2026-09-17T22:15:00+03:00 — FIX-P0: restore backend and Android foundation runtime
 
-Goal: close the four P0 defects found by the receipt audit (`RECEIPT-AUDIT-2026-09-17.md`) so that the backend actually boots and the Android build gets past `build-logic`. Scope was deliberately limited to those defects; no other known issue was touched.
+Goal: close the four P0 defects found by the receipt audit (`artifacts/evidence/RECEIPT-AUDIT-2026-09-17.md`) so that the backend actually boots and the Android build gets past `build-logic`. Scope was deliberately limited to those defects; no other known issue was touched.
 
 ### Why this batch exists
 
@@ -934,7 +934,7 @@ P2 backend runtime is restored end to end. `P2 BACKEND FOUNDATION CONNECTED PASS
 
 Android moved past the P0 compile blocker. `:app:assembleDebug` remains `NOT_VERIFIED` because Google Maven is unreachable from this machine, which is an environment limitation and not a project defect: artifacts that certainly exist, including `androidx.annotation:annotation:1.0.0` and `com.android.tools.build:gradle:9.4.0`, return 404 while Maven Central answers 200. Android status stays below `BUILD_VERIFIED` and `DEVICE_VERIFIED` is not claimed.
 
-Evidence: `artifacts/evidence/fixp0-runtime-20260917.txt`. Audit baseline: `RECEIPT-AUDIT-2026-09-17.md`.
+Evidence: `artifacts/evidence/fixp0-runtime-20260917.txt`. Audit baseline: `artifacts/evidence/RECEIPT-AUDIT-2026-09-17.md`.
 
 
 ## 2026-09-17T23:55:00+03:00 — P2 connected qualification: migration convergence, invariants, test suite
@@ -1082,7 +1082,7 @@ authentication, permission, not-found and throttling, and `DomainError` for doma
 rejections, plus DRF's field-scoped validation map. `08-API-CONTRACT.md` specifies a single
 richer envelope with `code`, `message`, `details` and `requestId` which nothing emits.
 Describing that instead would have produced clients that break on the first error. See
-DECISION-012; the divergence is recorded rather than hidden. It is INT-038 in the canonical register; this paragraph originally cited INT-035 and INT-036, which name the pagination and Admin-casing divergences instead. See the correction notice in `RECEIPT-AUDIT-2026-09-17.md`.
+DECISION-012; the divergence is recorded rather than hidden. It is INT-038 in the canonical register; this paragraph originally cited INT-035 and INT-036, which name the pagination and Admin-casing divergences instead. See the correction notice in `artifacts/evidence/RECEIPT-AUDIT-2026-09-17.md`.
 
 ### Defects found while writing the contract
 

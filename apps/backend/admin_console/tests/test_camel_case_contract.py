@@ -25,7 +25,7 @@ from locations.models import Province
 
 # `AdminCapabilities*` still declares `supports_*` on both the request and the response.
 # It is not a list endpoint, so it is outside this batch; it is registered as INT-039 in
-# RECEIPT-AUDIT-2026-09-17.md rather than silently exempted.
+# artifacts/evidence/RECEIPT-AUDIT-2026-09-17.md rather than silently exempted.
 KNOWN_SNAKE_CASE = {
     "AdminCapabilitiesRequestSerializer",
     "AdminCapabilitiesSerializer",

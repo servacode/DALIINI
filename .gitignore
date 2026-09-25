@@ -61,3 +61,11 @@ apps/admin/tests/e2e/.auth/
 
 # scripts/local-stack.sh: generated photo, logs
 .local-stack/
+
+# What a session leaves behind. The evidence under artifacts/ is the record and is committed;
+# the builds it was taken from, and the bundles and checksums a handover is packed into, are
+# not — they are reproducible from a run id and a tag.
+artifacts/apk/
+artifacts/apk-new/
+artifacts/device-qa/
+artifacts/handoff/

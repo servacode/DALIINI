@@ -4,7 +4,7 @@ Updated: 2026-09-24 (complete product batch)
 
 ## Verification baseline
 
-`RECEIPT-AUDIT-2026-09-17.md` is the accepted verification baseline. A gate is PASS only
+`artifacts/evidence/RECEIPT-AUDIT-2026-09-17.md` is the accepted verification baseline. A gate is PASS only
 with a real command exit code. Textual source assertions no longer qualify a gate on their
 own, and a schema is not qualified by reading its YAML: a representative sample of
 operations must be exercised against the running service and validated against the
@@ -114,7 +114,7 @@ P23 to P26 iOS. `DutyShift` field restoration (INT-008). Category `description_a
 named in `06-DATA-MODEL.md` and absent from the model. `apps/web` HSTS (INT-024) and its
 tsconfig rewrite (INT-023). LAUNCH_POLICY_PENDING — the pharmacy verification policy is a
 production launch gate; the tool to configure it now exists. Every item carries an INT
-identifier in `RECEIPT-AUDIT-2026-09-17.md`.
+identifier in `artifacts/evidence/RECEIPT-AUDIT-2026-09-17.md`.
 
 ## Quality debt
 
