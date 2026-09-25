@@ -351,7 +351,7 @@ object FacilityCopy {
     const val DIRECTIONS = "الطريق"
     const val WHATSAPP = "واتساب"
     const val RATINGS = "التقييمات"
-    const val SAVE = "إضافة للمفضلة"
+    const val SAVE = "المفضلة"
     const val SAVED = "في المفضلة"
     const val ADDRESS = "العنوان"
     const val HOURS = "ساعات العمل"
