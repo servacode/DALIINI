@@ -41,6 +41,9 @@ class FacilityRepository @Inject constructor(
         return runCatching { api.upsertRating(id, stars) }
     }
 
+    /** Take the rating back. The stars are the person's word, and a word can be withdrawn. */
+    suspend fun removeRating(id: String): Result<Unit> = runCatching { api.deleteRating(id) }
+
     /** Save this facility to the account. Idempotent, as the backend's own call is. */
     suspend fun save(id: String): Result<Boolean> = runCatching { api.addFavorite(id) }
 

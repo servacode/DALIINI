@@ -103,6 +103,19 @@ class FacilityViewModel @Inject constructor(
     private fun content(value: FacilityDetail, stale: Boolean, previous: FacilityUiState.Content?) =
         FacilityUiState.Content(value, stale, signedIn(), previous?.myRating)
 
+    fun removeRating() {
+        val current = _state.value as? FacilityUiState.Content ?: return
+        viewModelScope.launch {
+            facility.removeRating(id)
+                .onSuccess {
+                    _state.value = current.copy(myRating = null, ratingMessage = null)
+                    // The average and count are the backend's; fetch them again.
+                    refresh()
+                }
+                .onFailure { _state.value = current.copy(ratingMessage = AppErrorText.of(it.toAppError())) }
+        }
+    }
+
     fun rate(stars: Int) {
         val current = _state.value as? FacilityUiState.Content ?: return
         viewModelScope.launch {

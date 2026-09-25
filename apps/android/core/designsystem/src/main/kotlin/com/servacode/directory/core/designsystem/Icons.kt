@@ -23,6 +23,7 @@ object DirectoryIcons {
     @DrawableRes val clock = R.drawable.ic_clock
     @DrawableRes val phone = R.drawable.ic_phone
     @DrawableRes val check = R.drawable.ic_check
+    @DrawableRes val chat = R.drawable.ic_chat
     @DrawableRes val close = R.drawable.ic_close
     @DrawableRes val chevron = R.drawable.ic_chevron
     @DrawableRes val back = R.drawable.ic_arrow_back

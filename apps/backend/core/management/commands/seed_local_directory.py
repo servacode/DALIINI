@@ -22,7 +22,7 @@ from datetime import datetime, time, timedelta
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
@@ -32,8 +32,25 @@ from business_hours.models import BusinessHour
 from business_hours.services import local_day_bounds
 from directory.models import Category, CategoryProvince
 from facilities.models import Facility
-from locations.models import Province
+from locations.models import City, Neighborhood, Province
 from pharmacy_duty.models import DutyShift
+
+#: The city and the districts a coordinate in Raqqa resolves to.
+#:
+#: Without these the resolver has nothing finer than a province to answer with, so the corner of
+#: Home says only "الرقة" wherever the reader stands. These are boxes, not surveyed boundaries:
+#: they are laid over the city's own extent so that a position falls in one of them and the
+#: label can be read on a device. Real geography belongs in reference data, not in a fixture —
+#: whoever brings it replaces this whole block and nothing else changes.
+CITY = ("raqqa-city", "الرقة", "Raqqa")
+#: name, then the box: south, north, west, east.
+DISTRICTS = [
+    ("المشلب", 35.955, 35.985, 39.000, 39.040),
+    ("الرميلة", 35.955, 35.985, 38.960, 39.000),
+    ("الدرعية", 35.925, 35.955, 39.000, 39.040),
+    ("الفردوس", 35.925, 35.955, 38.960, 39.000),
+    ("هرقلة", 35.895, 35.925, 38.960, 39.040),
+]
 
 #: Stable across runs and machines, so a row's identity comes from its slug and nothing else.
 NAMESPACE = uuid.UUID("6f1b7a2e-3c44-4b0e-9a1d-5f7c8e2b4a10")
@@ -152,9 +169,50 @@ class Command(BaseCommand):
 
         self._duty(now)
         self._ads(raqqa)
+        self._places(raqqa)
 
         for category_name, total in counts.items():
             self.stdout.write(f"{category_name}: {total}")
+
+    def _places(self, province):
+        """The city and its districts, so a position resolves to a place and not to a province.
+
+        The resolver reads boundaries: with none seeded it falls back to the nearest province
+        centre and answers with the province alone, which is what the corner of Home showed.
+        """
+        city, _ = City.objects.update_or_create(
+            id=uuid.uuid5(NAMESPACE, f"city:{CITY[0]}"),
+            defaults={
+                "province": province,
+                "code": CITY[0],
+                "name_ar": CITY[1],
+                "name_en": CITY[2],
+                "boundary": self._box(35.895, 35.985, 38.960, 39.040),
+                "active": True,
+            },
+        )
+        for name, south, north, west, east in DISTRICTS:
+            Neighborhood.objects.update_or_create(
+                id=uuid.uuid5(NAMESPACE, f"neighborhood:{CITY[0]}:{name}"),
+                defaults={
+                    "city": city,
+                    "name_ar": name,
+                    "boundary": self._box(south, north, west, east),
+                    "active": True,
+                },
+            )
+        self.stdout.write(f"{city.name_ar}: {len(DISTRICTS)} أحياء")
+
+    @staticmethod
+    def _box(south: float, north: float, west: float, east: float) -> MultiPolygon:
+        ring = (
+            (west, south),
+            (east, south),
+            (east, north),
+            (west, north),
+            (west, south),
+        )
+        return MultiPolygon(Polygon(ring), srid=4326)
 
     def _ads(self, province):
         """Three banners, with an image each, so the slider on Home has something to show.

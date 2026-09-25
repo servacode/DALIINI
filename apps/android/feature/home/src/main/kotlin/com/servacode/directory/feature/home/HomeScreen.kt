@@ -6,13 +6,14 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,7 +24,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -36,7 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -45,6 +45,8 @@ import com.servacode.directory.core.designsystem.AdSlider
 import com.servacode.directory.core.designsystem.BrandColors
 import com.servacode.directory.core.designsystem.CategoryCircle
 import com.servacode.directory.core.designsystem.DirectoryCard
+import com.servacode.directory.core.designsystem.BrandSymbol
+import com.servacode.directory.core.designsystem.FacilityCard
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryCompactFilterChip
@@ -57,7 +59,6 @@ import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectorySearchEntry
 import com.servacode.directory.core.designsystem.DirectoryTextButton
-import com.servacode.directory.core.designsystem.FacilityRow
 import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.LoadMoreRow
 import com.servacode.directory.core.designsystem.Radius
@@ -122,6 +123,7 @@ fun HomeScreen(
                 unread = unread,
                 onPlace = onProvince,
                 onNotifications = onNotifications,
+                onSearch = onSearch,
             )
         },
         bottomBar = bottomBar,
@@ -163,12 +165,14 @@ fun HomeScreen(
 }
 
 /**
- * Where the user is, what the app is called, and what is waiting for them.
+ * The app, where the reader is, what is waiting for them, and the one thing they came to do.
  *
- * A box rather than a row of three, because the name has to sit in the middle of the screen
- * rather than in the middle of whatever is left over: a long place name on one side would
- * otherwise push it off centre. Start and end place the other two, which mirrors itself for
- * Arabic without naming a side.
+ * It used to be a flat band with a name in the middle and two things pinned to its ends, and it
+ * read as a title bar with a page under it rather than as the top of this page. Now it is a
+ * soft green field with a rounded foot: the mark and the name together on one side — a name
+ * beside its own mark is read as a brand and not as a heading — the bell on the other, the
+ * place under them as something obviously pressed, and the search at its edge, because looking
+ * for a pharmacy is why the page was opened.
  */
 @Composable
 private fun HomeHeader(
@@ -176,83 +180,98 @@ private fun HomeHeader(
     unread: Int,
     onPlace: () -> Unit,
     onNotifications: () -> Unit,
+    onSearch: () -> Unit,
 ) {
-    Surface(color = BrandColors.softer) {
-        Box(
+    Surface(
+        color = BrandColors.softer,
+        shape = RoundedCornerShape(bottomStart = Radius.xl, bottomEnd = Radius.xl),
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = Space.base, vertical = Space.md),
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(horizontal = Space.base)
+                .padding(top = Space.sm, bottom = Space.base),
+            verticalArrangement = Arrangement.spacedBy(Space.sm),
         ) {
-            HerePlace(
-                place = place,
-                onClick = onPlace,
-                modifier = Modifier.align(Alignment.CenterStart),
-            )
-            Text(
-                text = HomeCopy.TITLE,
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                modifier = Modifier.align(Alignment.Center),
-            )
-            NotificationBell(
-                unread = unread,
-                onClick = onNotifications,
-                modifier = Modifier.align(Alignment.CenterEnd),
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Space.sm),
+                ) {
+                    BrandSymbol(size = HEADER_MARK)
+                    Text(
+                        text = HomeCopy.TITLE,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                    )
+                }
+                NotificationBell(unread = unread, onClick = onNotifications)
+            }
+            HerePlace(place = place, onClick = onPlace)
+            DirectorySearchEntry(placeholder = HomeCopy.SEARCH, onClick = onSearch)
         }
     }
 }
 
+/** Beside the name, small enough to be a signature rather than a picture. */
+private val HEADER_MARK = 36.dp
+
 /**
- * "You are now in" and the place itself.
+ * Where the reader is, drawn as something that can be changed.
  *
- * The place is the information, so it is the line that is emphasised; the label above it only
- * says what the line means. A pin sits beside it because the two together read as a location
- * faster than either does alone — but the name is never replaced by the pin.
+ * It was two lines of loose text that looked like a caption, so nobody pressed it. On its own
+ * white pill with a pin at one end and a chevron at the other, it says what it is and that it
+ * opens something, and a long "province — neighbourhood" ellipsises inside it.
  */
 @Composable
 private fun HerePlace(place: String?, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            // Capped so a long "province — neighbourhood" ellipsises instead of pushing the
-            // app's name off the middle of the screen.
-            .fillMaxWidth(PLACE_WIDTH_FRACTION)
-            .clickable(onClick = onClick)
-            .padding(vertical = Space.xs),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Space.xs),
+    Surface(
+        modifier = modifier,
+        onClick = onClick,
+        shape = RoundedCornerShape(Radius.pill),
+        color = MaterialTheme.colorScheme.surface,
     ) {
-        DirectoryIcon(
-            icon = DirectoryIcons.pin,
-            contentDescription = null,
-            size = IconSize.small,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Column {
+        Row(
+            modifier = Modifier.padding(horizontal = Space.md, vertical = Space.sm),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Space.xs),
+        ) {
+            DirectoryIcon(
+                icon = DirectoryIcons.pin,
+                contentDescription = null,
+                size = IconSize.small,
+                tint = MaterialTheme.colorScheme.primary,
+            )
             Text(
                 text = HomeCopy.YOU_ARE_IN,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
             )
-            // The place is the information, so it is the line that is emphasised; the label
-            // above only says what it means. One line, always: the header must not grow a row
-            // taller because the platform happens to know a neighbourhood here and not there.
             Text(
                 text = place ?: HomeCopy.PROVINCE_CHOOSE,
                 style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false),
+            )
+            DirectoryIcon(
+                icon = DirectoryIcons.chevron,
+                contentDescription = null,
+                size = IconSize.small,
+                tint = MaterialTheme.colorScheme.outlineVariant,
             )
         }
     }
 }
-
-/** About a third of the width, which leaves the centred name its middle and the bell its end. */
-private const val PLACE_WIDTH_FRACTION = 0.34f
 
 /**
  * The bell, and a count only when there is one.
@@ -329,13 +348,6 @@ private fun HomeContent(
                     modifier = Modifier.padding(horizontal = Space.base),
                 )
             }
-        }
-        item(key = "search") {
-            DirectorySearchEntry(
-                placeholder = HomeCopy.SEARCH,
-                onClick = onSearch,
-                modifier = Modifier.padding(horizontal = Space.base),
-            )
         }
         if (offerLocation) {
             item(key = "location") {
@@ -501,15 +513,11 @@ private fun LazyListScope.facilityList(
         LaunchedEffect(index, list.items.size) {
             if (index >= list.items.size - LOAD_AHEAD) onLoadMore()
         }
-        Column {
-            FacilityRow(facility = facility, onClick = { onFacility(facility.id) })
-            if (index < list.items.lastIndex) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = Space.base),
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                )
-            }
-        }
+        FacilityCard(
+            facility = facility,
+            onClick = { onFacility(facility.id) },
+            modifier = Modifier.padding(horizontal = Space.base),
+        )
     }
     if (list.loadingMore) {
         item(key = "list-loading-more") {

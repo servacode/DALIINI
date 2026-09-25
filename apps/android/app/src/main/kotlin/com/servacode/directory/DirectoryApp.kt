@@ -156,16 +156,8 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onBack = { navController.popBackStack() },
             )
         }
-        composable<DirectoryRoute.FacilityDetailRoute> { backStackEntry ->
-            val facilityId = backStackEntry.toRoute<DirectoryRoute.FacilityDetailRoute>().id
+        composable<DirectoryRoute.FacilityDetailRoute> {
             FacilityScreen(
-                onMap = {
-                    // One map at most: any map already on the stack gives way to this one.
-                    navController.navigate(MapNavigation.mapFor(facilityId)) {
-                        popUpTo<DirectoryRoute.Map> { inclusive = true }
-                        launchSingleTop = true
-                    }
-                },
                 onDirections = { latitude, longitude ->
                     // The way there is shown before it is followed; starting is the user's own
                     // decision, on the next screen.
@@ -173,11 +165,16 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                         DirectoryRoute.BuiltInNavigation(latitude, longitude),
                     )
                 },
-                onRatings = { navController.navigate(DirectoryRoute.MyRatings) },
                 onSignIn = { navController.navigate(DirectoryRoute.Login) },
                 // The dialer opens with the number the backend published; the call is the user's.
                 onCall = { phone ->
                     context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$phone".toUri()))
+                },
+                // wa.me wants the number as digits alone. With WhatsApp installed it opens
+                // there; without it, its own page opens in the browser and says so.
+                onWhatsApp = { phone ->
+                    val digits = phone.filter(Char::isDigit)
+                    context.startActivity(Intent(Intent.ACTION_VIEW, "https://wa.me/$digits".toUri()))
                 },
                 onBack = { navController.popBackStack() },
             )

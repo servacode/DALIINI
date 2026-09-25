@@ -9,9 +9,7 @@ import com.servacode.directory.core.designsystem.BrandColors
 import com.servacode.directory.core.model.DirectoryBrand
 import com.servacode.directory.core.designsystem.BrandSymbol
 import com.servacode.directory.core.designsystem.DirectoryIconButton
-import com.servacode.directory.core.designsystem.Sizes
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.draw.clip
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.Radius
@@ -41,11 +39,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.servacode.directory.core.designsystem.DirectoryChipRow
-import com.servacode.directory.core.designsystem.DirectoryFilterChip
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryPasswordField
@@ -83,10 +81,10 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     LaunchedEffect(state.signedIn) { if (state.signedIn) onSignedIn() }
 
-    SignInPage(
+    AuthFrame(
         onBack = onBack,
-        onRegister = onRegister,
         bottomBar = bottomBar,
+        footer = { CreateAccountLine(onRegister = onRegister) },
     ) {
         PhoneField(phone, state.failure, filled = true) { phone = it }
         DirectoryPasswordField(
@@ -113,22 +111,29 @@ fun LoginScreen(
 }
 
 /**
- * The page a person meets before they have an account here.
+ * The one frame all three account pages wear.
  *
  * It had a near-black band across the top with nothing in it, two outlined white boxes on a
  * white page, and three full-width buttons of equal weight — so nothing led and the heaviest
  * thing on the screen was a disabled grey slab.
  *
- * What it is now: a soft green field at the top carrying the mark and the app's name, the form
- * on a white card that overlaps it, and one green button. The green is the brand's own
- * (`action.primary`), which is the green of the mark and of every button in the app; the band
- * that was there used a near-black that appears nowhere else, which is why it never belonged.
+ * What it is now: a soft green field at the top carrying the mark and the app's name, and the
+ * form on a white card in the middle of what is left, where the eye lands and the thumb
+ * reaches. The green is the brand's own (`action.primary`), which is the green of the mark and
+ * of every button in the app; the band that was there used a near-black that appears nowhere
+ * else, which is why it never belonged.
+ *
+ * Creating an account and recovering a password wear it too, and carry the mark and the name
+ * for the same reason the first page does: the reader should know whose account they are
+ * opening while they are opening it.
  */
 @Composable
-private fun SignInPage(
+private fun AuthFrame(
     onBack: (() -> Unit)?,
-    onRegister: () -> Unit,
-    bottomBar: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    bottomBar: @Composable () -> Unit = {},
+    footer: @Composable () -> Unit = {},
     form: @Composable ColumnScope.() -> Unit,
 ) {
     DirectoryPage(
@@ -136,26 +141,42 @@ private fun SignInPage(
         bottomBar = bottomBar,
     ) { padding ->
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
-                .padding(bottom = padding.calculateBottomPadding())
-                .verticalScroll(rememberScrollState()),
+                .padding(bottom = padding.calculateBottomPadding()),
         ) {
             Welcome(onBack = onBack)
-            DirectoryCard(
+            // The card takes the middle of what the header leaves, and scrolls from there when
+            // a keyboard or a long form needs the room.
+            Column(
                 modifier = Modifier
-                    .padding(horizontal = Space.base)
-                    // Lifted into the panel above it, so the two read as one shape rather than
-                    // as a coloured band with a page under it.
-                    .offset(y = -Space.xl),
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = Space.base),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
             ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(Space.sm),
-                    content = form,
-                )
+                if (title != null) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .padding(bottom = Space.md)
+                            .semantics { heading() },
+                    )
+                }
+                DirectoryCard {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(Space.sm),
+                        content = form,
+                    )
+                }
+                footer()
+                Spacer(Modifier.height(Space.lg))
             }
-            CreateAccountLine(onRegister = onRegister)
-            Spacer(Modifier.height(Space.xxl))
         }
     }
 }
@@ -182,15 +203,16 @@ private fun Welcome(onBack: (() -> Unit)?) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = Space.xl)
-                .padding(top = Space.xxl, bottom = Space.huge),
+                .padding(top = Space.lg, bottom = Space.xl),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Space.sm),
         ) {
-            BrandSymbol(size = Sizes.actionCircle + Space.lg)
+            BrandSymbol(size = AUTH_MARK)
             Text(
                 text = AuthCopy.APP_NAME,
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.semantics { heading() },
             )
             Text(
@@ -202,6 +224,9 @@ private fun Welcome(onBack: (() -> Unit)?) {
         }
     }
 }
+
+/** Big enough to be the brand rather than a decoration, small enough to leave the form the page. */
+private val AUTH_MARK = 104.dp
 
 /** One sentence, with the action in it, instead of a third full-width button. */
 @Composable
@@ -235,7 +260,7 @@ fun RegisterScreen(
     var confirmation by remember { mutableStateOf("") }
     LaunchedEffect(state.step) { if (state.step == ChallengeStep.DONE) onRegistered() }
 
-    AuthPage(title = AuthCopy.CREATE_ACCOUNT, onBack = onBack) {
+    AuthFrame(onBack = onBack, title = AuthCopy.CREATE_ACCOUNT) {
         when (state.step) {
             // The number, and nothing else. Nothing is asked about the person before they have
             // shown they can receive on it, and the province is taken from where they are
@@ -346,7 +371,7 @@ fun RecoveryScreen(
     var password by remember { mutableStateOf("") }
     var confirmation by remember { mutableStateOf("") }
 
-    AuthPage(title = AuthCopy.RECOVERY, onBack = onBack) {
+    AuthFrame(onBack = onBack, title = AuthCopy.RECOVERY) {
         when (state.step) {
             ChallengeStep.DETAILS -> {
                 Text(
@@ -412,73 +437,6 @@ fun RecoveryScreen(
     }
 }
 
-/** The one frame all three wear: a way back, the name of what is being done, then the form. */
-@Composable
-private fun AuthPage(
-    title: String,
-    onBack: (() -> Unit)?,
-    bottomBar: @Composable () -> Unit = {},
-    /** Whether the app's mark opens the page, as it does where signing in is the whole screen. */
-    mark: Boolean = false,
-    content: @Composable () -> Unit,
-) {
-    DirectoryPage(
-        // The same deep green the app wears elsewhere, so the top of this page belongs to the
-        // app rather than to the form.
-        topBar = { AuthTopBar(onBack = onBack) },
-        bottomBar = bottomBar,
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = Space.xl)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(Space.md),
-        ) {
-            if (mark) {
-                Spacer(Modifier.height(Space.xl))
-                BrandSymbol(size = Sizes.hero / 3)
-            } else {
-                Spacer(Modifier.height(Space.lg))
-            }
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.semantics { heading() },
-            )
-            Spacer(Modifier.height(Space.sm))
-            content()
-            Spacer(Modifier.height(Space.xxl))
-        }
-    }
-}
-
-/** A quiet band in the brand's soft tint, with a way back only where there is one. */
-@Composable
-private fun AuthTopBar(onBack: (() -> Unit)?) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(BrandColors.softer)
-            .windowInsetsPadding(WindowInsets.statusBars)
-            .height(Sizes.touchTarget),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        if (onBack != null) {
-            DirectoryIconButton(
-                icon = DirectoryIcons.back,
-                label = AuthCopy.BACK,
-                onClick = onBack,
-            )
-        }
-    }
-}
-
-/** The code sent to the phone, in both the account and the recovery flows. */
 @Composable
 private fun CodeStep(
     code: String,

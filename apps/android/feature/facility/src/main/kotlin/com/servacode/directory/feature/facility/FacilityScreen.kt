@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,6 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.ActionCircle
 import com.servacode.directory.core.designsystem.AvailabilityPill
 import com.servacode.directory.core.designsystem.DirectoryErrorState
+import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryImage
 import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIconButton
@@ -45,6 +47,7 @@ import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
 import com.servacode.directory.core.designsystem.DirectoryPage
+import com.servacode.directory.core.designsystem.DirectorySectionLabel
 import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.IconSize
@@ -53,7 +56,6 @@ import com.servacode.directory.core.designsystem.PhotoPager
 import com.servacode.directory.core.designsystem.Radius
 import com.servacode.directory.core.designsystem.RatingBadge
 import com.servacode.directory.core.designsystem.RatingSummary
-import com.servacode.directory.core.designsystem.SectionHeader
 import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.designsystem.StarPicker
@@ -67,11 +69,10 @@ import com.servacode.directory.core.model.BusinessHour
  */
 @Composable
 fun FacilityScreen(
-    onMap: () -> Unit,
     onDirections: (Double, Double) -> Unit,
-    onRatings: () -> Unit,
     onSignIn: () -> Unit,
     onCall: (String) -> Unit,
+    onWhatsApp: (String) -> Unit,
     onBack: () -> Unit,
     viewModel: FacilityViewModel = hiltViewModel(),
 ) {
@@ -128,12 +129,12 @@ fun FacilityScreen(
                 }
                 FacilityBody(
                     value = value,
-                    onMap = onMap,
                     onDirections = onDirections,
-                    onRatings = onRatings,
                     onSignIn = onSignIn,
                     onCall = onCall,
+                    onWhatsApp = onWhatsApp,
                     onRate = viewModel::rate,
+                    onRemoveRating = viewModel::removeRating,
                     onToggleFavorite = viewModel::toggleFavorite,
                 )
             }
@@ -144,143 +145,163 @@ fun FacilityScreen(
 @Composable
 private fun FacilityBody(
     value: FacilityUiState.Content,
-    onMap: () -> Unit,
     onDirections: (Double, Double) -> Unit,
-    onRatings: () -> Unit,
     onSignIn: () -> Unit,
     onCall: (String) -> Unit,
+    onWhatsApp: (String) -> Unit,
     onRate: (Int) -> Unit,
+    onRemoveRating: () -> Unit,
     onToggleFavorite: () -> Unit,
 ) {
     val detail = value.value
     val summary = detail.summary
     val placed = detail.latitude != null && detail.longitude != null
+    val address = listOfNotNull(detail.neighborhoodNameAr, detail.addressAr).joinToString("، ")
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(topStart = Radius.xl, topEnd = Radius.xl))
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = Space.screen, vertical = Space.lg),
-        verticalArrangement = Arrangement.spacedBy(Space.md),
+        verticalArrangement = Arrangement.spacedBy(Space.lg),
     ) {
-        Text(
-            text = summary.nameAr,
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.semantics { heading() },
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            RatingBadge(summary.ratingAverage, summary.ratingCount)
-            AvailabilityPill(summary)
-        }
-        Text(
-            text = summary.category.nameAr,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        if (value.stale) DirectoryOfflineNotice()
-
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-        ) {
-            ActionCircle(
-                label = FacilityCopy.CALL,
-                icon = DirectoryIcons.phone,
-                onClick = { detail.phone?.let(onCall) },
-                enabled = detail.phone != null,
-            )
-            ActionCircle(
-                label = FacilityCopy.DIRECTIONS,
-                icon = DirectoryIcons.route,
-                onClick = {
-                    val latitude = detail.latitude ?: return@ActionCircle
-                    val longitude = detail.longitude ?: return@ActionCircle
-                    onDirections(latitude, longitude)
-                },
-                enabled = placed,
-            )
-            ActionCircle(
-                label = FacilityCopy.MAP,
-                icon = DirectoryIcons.map,
-                onClick = onMap,
-                enabled = placed,
-            )
-            ActionCircle(
-                label = if (summary.isFavorite) FacilityCopy.SAVED else FacilityCopy.SAVE,
-                icon = DirectoryIcons.star,
-                onClick = { if (value.signedIn) onToggleFavorite() else onSignIn() },
-            )
-            ActionCircle(
-                label = FacilityCopy.RATINGS,
-                icon = DirectoryIcons.check,
-                onClick = onRatings,
-            )
-        }
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-        val address = listOfNotNull(detail.neighborhoodNameAr, detail.addressAr).joinToString("، ")
-        if (address.isNotEmpty()) {
-            SectionHeader(FacilityCopy.ADDRESS)
-            MetaRow(DirectoryIcons.pin, address)
-        }
-        detail.phone?.let {
-            MetaRow(DirectoryIcons.phone, it)
-        }
-        if (detail.hours.isNotEmpty()) {
-            SectionHeader(FacilityCopy.HOURS)
-            detail.hours.forEach { hour -> HourRow(hour) }
-        }
-        detail.descriptionAr?.let {
-            SectionHeader(FacilityCopy.ABOUT)
-            Text(
-                text = it,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        }
-        if (detail.specialties.isNotEmpty()) {
-            SectionHeader(FacilityCopy.SPECIALTIES)
-            Text(
-                text = detail.specialties.joinToString("، "),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        }
-        if (detail.services.isNotEmpty()) {
-            SectionHeader(FacilityCopy.SERVICES)
-            Text(
-                text = detail.services.joinToString("، "),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        }
-
-        SectionHeader(FacilityCopy.RATINGS)
-        RatingSummary(
-            average = summary.ratingAverage,
-            count = summary.ratingCount,
-            modifier = Modifier.padding(vertical = Space.sm),
-        )
-        SectionHeader(FacilityCopy.YOUR_RATING)
-        if (value.signedIn) {
-            StarPicker(stars = value.myRating, onRate = onRate, label = FacilityCopy::rateLabel)
-            value.ratingMessage?.let {
+        // What it is, and what can be done about it, in one card: the name is read and acted on
+        // in the same breath.
+        DirectoryCard {
+            Column(verticalArrangement = Arrangement.spacedBy(Space.md)) {
                 Text(
-                    text = it,
+                    text = summary.nameAr,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.semantics { heading() },
+                )
+                Text(
+                    text = summary.category.nameAr,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    RatingBadge(summary.ratingAverage, summary.ratingCount)
+                    AvailabilityPill(summary)
+                }
+                if (value.stale) DirectoryOfflineNotice()
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+                // Four, and each of them does something to this facility from here. The map is
+                // not one of them: it shows the same pin this page already stands on, and the
+                // ratings are not one either - they are further down this very page.
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                ) {
+                    ActionCircle(
+                        label = FacilityCopy.CALL,
+                        icon = DirectoryIcons.phone,
+                        onClick = { detail.phone?.let(onCall) },
+                        enabled = detail.phone != null,
+                    )
+                    ActionCircle(
+                        label = FacilityCopy.WHATSAPP,
+                        icon = DirectoryIcons.chat,
+                        onClick = { detail.phone?.let(onWhatsApp) },
+                        enabled = detail.phone != null,
+                    )
+                    ActionCircle(
+                        label = FacilityCopy.DIRECTIONS,
+                        icon = DirectoryIcons.route,
+                        onClick = {
+                            val latitude = detail.latitude ?: return@ActionCircle
+                            val longitude = detail.longitude ?: return@ActionCircle
+                            onDirections(latitude, longitude)
+                        },
+                        enabled = placed,
+                    )
+                    ActionCircle(
+                        label = if (summary.isFavorite) FacilityCopy.SAVED else FacilityCopy.SAVE,
+                        icon = DirectoryIcons.star,
+                        onClick = { if (value.signedIn) onToggleFavorite() else onSignIn() },
+                    )
+                }
             }
-        } else {
-            DirectoryTextButton(FacilityCopy.SIGN_IN_TO_RATE, onSignIn)
+        }
+
+        if (address.isNotEmpty() || detail.phone != null) {
+            Section(FacilityCopy.ADDRESS) {
+                if (address.isNotEmpty()) MetaRow(DirectoryIcons.pin, address)
+                detail.phone?.let { MetaRow(DirectoryIcons.phone, it) }
+            }
+        }
+        if (detail.hours.isNotEmpty()) {
+            Section(FacilityCopy.HOURS) {
+                detail.hours.forEach { hour -> HourRow(hour) }
+            }
+        }
+        detail.descriptionAr?.let { about ->
+            Section(FacilityCopy.ABOUT) { Paragraph(about) }
+        }
+        if (detail.specialties.isNotEmpty()) {
+            Section(FacilityCopy.SPECIALTIES) { Paragraph(detail.specialties.joinToString("، ")) }
+        }
+        if (detail.services.isNotEmpty()) {
+            Section(FacilityCopy.SERVICES) { Paragraph(detail.services.joinToString("، ")) }
+        }
+
+        // The ratings, where they belong: at the end of what is being rated.
+        Section(FacilityCopy.RATINGS) {
+            RatingSummary(average = summary.ratingAverage, count = summary.ratingCount)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+            Text(
+                text = FacilityCopy.YOUR_RATING,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            if (value.signedIn) {
+                StarPicker(stars = value.myRating, onRate = onRate, label = FacilityCopy::rateLabel)
+                // A rating is a sentence one is allowed to take back: another star replaces it,
+                // and this removes it. Before, it could only ever be said once.
+                if (value.myRating != null) {
+                    Text(
+                        text = FacilityCopy.RATING_CHANGE,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    DirectoryTextButton(FacilityCopy.RATING_REMOVE, onRemoveRating)
+                }
+                value.ratingMessage?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                DirectoryTextButton(FacilityCopy.SIGN_IN_TO_RATE, onSignIn)
+            }
         }
     }
+}
+
+/** A label and the card under it, the shape the rest of the app's pages are read in. */
+@Composable
+private fun Section(label: String, content: @Composable ColumnScope.() -> Unit) {
+    Column {
+        DirectorySectionLabel(label)
+        DirectoryCard {
+            Column(verticalArrangement = Arrangement.spacedBy(Space.sm), content = content)
+        }
+    }
+}
+
+@Composable
+private fun Paragraph(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurface,
+    )
 }
 
 @Composable
@@ -328,16 +349,18 @@ object FacilityCopy {
     const val ERROR = "تعذر تحميل المنشأة"
     const val CALL = "اتصال"
     const val DIRECTIONS = "الطريق"
-    const val MAP = "الخريطة"
+    const val WHATSAPP = "واتساب"
     const val RATINGS = "التقييمات"
-    const val SAVE = "حفظ"
-    const val SAVED = "محفوظة"
+    const val SAVE = "إضافة للمفضلة"
+    const val SAVED = "في المفضلة"
     const val ADDRESS = "العنوان"
     const val HOURS = "ساعات العمل"
     const val ABOUT = "نبذة"
     const val SPECIALTIES = "الاختصاصات"
     const val SERVICES = "الخدمات"
     const val YOUR_RATING = "تقييمك"
+    const val RATING_CHANGE = "اضغط نجمة أخرى لتغيير تقييمك."
+    const val RATING_REMOVE = "حذف تقييمي"
     const val SIGN_IN_TO_RATE = "سجّل الدخول لتقييم المنشأة"
     const val PHOTOS = "الصور"
     const val CLOSE = "إغلاق"
