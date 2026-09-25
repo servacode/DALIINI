@@ -128,7 +128,12 @@ class MapPackTest {
     @Test fun `a finished pack is left alone`() {
         assertEquals(
             MapPackAction.NOTHING,
-            mapPackAction(MapPackState.Ready(tiles = 1_000, bytes = 26_000_000), true, wanted = true, startedByApp = true),
+            mapPackAction(
+                MapPackState.Ready(tiles = 1_000, bytes = 26_000_000),
+                unmetered = true,
+                wanted = true,
+                startedByApp = true,
+            ),
         )
         assertEquals(
             MapPackAction.NOTHING,
