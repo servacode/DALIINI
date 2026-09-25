@@ -27,6 +27,7 @@ val androidOnly = listOf(
     "**/core/location/AndroidLocationProvider.kt",
     "**/core/location/LocationModule.kt",
     "**/core/maps/MapLibreController.kt",
+    "**/core/maps/OfflineMapPacks.kt",
     "**/core/maps/NavigationLayers.kt",
     "**/core/maps/MapViewLifecycle.kt",
     // A `…Copy` reads the module's own strings.xml, which is Android and not Kotlin.
