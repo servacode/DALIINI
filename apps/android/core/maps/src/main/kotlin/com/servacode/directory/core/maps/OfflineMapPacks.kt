@@ -136,11 +136,11 @@ class OfflineMapPacks @Inject constructor(
                     mine.setObserver(Progress(wanted))
                     mine.getStatus(
                         object : OfflineRegion.OfflineRegionStatusCallback {
-                            override fun onStatus(status: OfflineRegionStatus) {
-                                if (wanted == _target.value) publish(status)
+                            override fun onStatus(status: OfflineRegionStatus?) {
+                                if (status != null && wanted == _target.value) publish(status)
                             }
 
-                            override fun onError(error: String) {
+                            override fun onError(error: String?) {
                                 if (wanted == _target.value) _state.value = MapPackState.Absent
                             }
                         },
@@ -260,7 +260,7 @@ class OfflineMapPacks @Inject constructor(
         val shape = definition
         if (shape.styleURL != config.styleUrl) return false
         if (shape.minZoom.toInt() != PACK_MIN_ZOOM || shape.maxZoom.toInt() != PACK_MAX_ZOOM) return false
-        val bounds = shape.bounds
+        val bounds = shape.bounds ?: return false
         return wanted.box.sameAs(
             MapPackBox(
                 north = bounds.latitudeNorth,
