@@ -20,7 +20,7 @@ sealed interface DutyUiState {
     data object Loading : DutyUiState
     data class Content(
         val shifts: List<DutyShift>,
-        /** The backend's own refusal, already in words; the screen shows it as it came. */
+        /** The backend's own refusal, as it came; the screen reads its sentence. */
         val failure: AppError? = null,
         /**
          * True when the times typed cannot be a shift.

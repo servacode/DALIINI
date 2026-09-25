@@ -40,7 +40,6 @@ object DirectoryWords {
 
     val LIST_SEPARATOR: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_list_separator)
-}
 
     /** What the app is for. Its name is `DirectoryBrand.NAME`, which is not a translation. */
     val TAGLINE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.ds_tagline)
