@@ -2,17 +2,22 @@ package com.servacode.directory.feature.owner
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,11 +40,12 @@ import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
 import com.servacode.directory.core.designsystem.DirectorySecondaryButton
+import com.servacode.directory.core.designsystem.DirectorySectionLabel
 import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTextField
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.MetaRow
-import com.servacode.directory.core.designsystem.SectionHeader
+import com.servacode.directory.core.designsystem.Radius
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.designsystem.StatusPill
 import com.servacode.directory.core.designsystem.StatusTone
@@ -51,6 +57,11 @@ import com.servacode.directory.core.model.OwnerLabels
 
 /**
  * Screen 18. What the owner has, where each one stands, and what is being asked of them.
+ *
+ * One card per facility, because a facility is one subject: its name and how it stands on the
+ * first line, what it is under that, anything the platform is waiting for after that, and last
+ * the two things its owner does with it. Adding another is a quieter button under the list —
+ * an owner opens this page to tend what they have far more often than to add.
  *
  * The references show counts of views and reviews beside each facility; the owner API returns
  * no such figures, so none are shown rather than invented.
@@ -85,35 +96,40 @@ fun MyFacilitiesScreen(
                 body = value.message,
                 onRetry = viewModel::refresh,
             )
-            is MyFacilitiesUiState.Content -> LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(bottom = Space.xxl),
-            ) {
-                item(key = "add") {
-                    DirectoryPrimaryButton(
-                        text = OwnerCopy.ADD,
-                        onClick = onAdd,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = Space.screen, vertical = Space.sm),
-                    )
-                }
-                if (value.items.isEmpty()) {
-                    item(key = "empty") {
-                        DirectoryEmptyState(
-                            title = OwnerCopy.EMPTY,
-                            body = OwnerCopy.EMPTY_BODY,
-                            icon = DirectoryIcons.hospital,
-                            modifier = Modifier.padding(top = Space.xl),
+            is MyFacilitiesUiState.Content -> if (value.items.isEmpty()) {
+                DirectoryEmptyState(
+                    title = OwnerCopy.EMPTY,
+                    modifier = Modifier.padding(padding),
+                    body = OwnerCopy.EMPTY_BODY,
+                    icon = DirectoryIcons.hospital,
+                    action = OwnerCopy.ADD,
+                    onAction = onAdd,
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                    contentPadding = PaddingValues(
+                        start = Space.screen,
+                        end = Space.screen,
+                        top = Space.base,
+                        bottom = Space.xxl,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(Space.md),
+                ) {
+                    items(value.items, key = { it.id }) { item ->
+                        OwnerFacilityCard(
+                            item = item,
+                            onManage = { onManage(item.id) },
+                            onDuty = { onDuty(item.id) },
                         )
                     }
-                }
-                items(value.items, key = { it.id }) { item ->
-                    OwnerFacilityCard(
-                        item = item,
-                        onManage = { onManage(item.id) },
-                        onDuty = { onDuty(item.id) },
-                    )
+                    item(key = "add") {
+                        DirectorySecondaryButton(
+                            text = OwnerCopy.ADD,
+                            onClick = onAdd,
+                            modifier = Modifier.fillMaxWidth().padding(top = Space.sm),
+                        )
+                    }
                 }
             }
         }
@@ -126,10 +142,8 @@ private fun OwnerFacilityCard(
     onManage: () -> Unit,
     onDuty: () -> Unit,
 ) {
-    DirectoryCard(
-        modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.xs),
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+    DirectoryCard {
+        Column(verticalArrangement = Arrangement.spacedBy(Space.md)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -144,17 +158,41 @@ private fun OwnerFacilityCard(
                 StatusPill(OwnerLabels.status(item.status), item.status.tone())
             }
             Text(
-                text = "${item.category.nameAr} • ${item.province.nameAr}",
+                text = "${item.category.nameAr} - ${item.province.nameAr}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            // What the platform is waiting for, if anything: the one line on this card that is
+            // work rather than description, so it sits apart on the brand's own soft green.
             item.requiredAction?.let { action ->
-                MetaRow(DirectoryIcons.info, OwnerLabels.requiredAction(action))
+                Surface(
+                    shape = RoundedCornerShape(Radius.medium),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                ) {
+                    MetaRow(
+                        icon = DirectoryIcons.info,
+                        text = OwnerLabels.requiredAction(action),
+                        modifier = Modifier.padding(horizontal = Space.md, vertical = Space.sm),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                DirectoryPrimaryButton(OwnerCopy.MANAGE, onManage)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Space.sm),
+            ) {
+                DirectoryPrimaryButton(
+                    text = OwnerCopy.MANAGE,
+                    onClick = onManage,
+                    modifier = Modifier.weight(1f),
+                )
                 if (OwnerCapabilities.supportsDuty(item)) {
-                    DirectorySecondaryButton(OwnerCopy.DUTY, onDuty)
+                    DirectorySecondaryButton(
+                        text = OwnerCopy.DUTY,
+                        onClick = onDuty,
+                        modifier = Modifier.weight(1f),
+                    )
                 }
             }
         }
@@ -164,6 +202,10 @@ private fun OwnerFacilityCard(
 /**
  * The owner's own screen for one facility: what it is going through, its temporary closures,
  * and who else may manage it.
+ *
+ * Three subjects, three labelled cards. It was one long column where a date field, a list of
+ * closures, a list of people and a field for an account id followed each other with nothing
+ * between them, so nothing said where one job ended and the next began.
  */
 @Composable
 fun ManageFacilityScreen(
@@ -194,127 +236,187 @@ fun ManageFacilityScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(horizontal = Space.screen)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(Space.sm),
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = Space.screen, vertical = Space.base),
+                verticalArrangement = Arrangement.spacedBy(Space.lg),
             ) {
                 val summary = value.facility.summary
-                Text(
-                    text = summary.nameAr,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(top = Space.sm).semantics { heading() },
-                )
-                StatusPill(OwnerLabels.status(summary.status), summary.status.tone())
-                Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                    DirectoryPrimaryButton(OwnerCopy.EDIT, { onEdit(summary.id) })
-                    if (OwnerCapabilities.supportsDuty(summary)) {
-                        DirectorySecondaryButton(OwnerCopy.DUTY, { onDuty(summary.id) })
+                DirectoryCard {
+                    Column(verticalArrangement = Arrangement.spacedBy(Space.md)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(Space.md),
+                        ) {
+                            Text(
+                                text = summary.nameAr,
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.weight(1f).semantics { heading() },
+                            )
+                            StatusPill(OwnerLabels.status(summary.status), summary.status.tone())
+                        }
+                        Text(
+                            text = "${summary.category.nameAr} - ${summary.province.nameAr}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        value.message?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(Space.sm),
+                        ) {
+                            DirectoryPrimaryButton(
+                                text = OwnerCopy.EDIT,
+                                onClick = { onEdit(summary.id) },
+                                modifier = Modifier.weight(1f),
+                            )
+                            if (OwnerCapabilities.supportsDuty(summary)) {
+                                DirectorySecondaryButton(
+                                    text = OwnerCopy.DUTY,
+                                    onClick = { onDuty(summary.id) },
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
+                        }
                     }
-                }
-                value.message?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                 }
 
                 if (OwnerCapabilities.supportsTemporaryClosure(summary)) {
-                    SectionHeader(OwnerCopy.CLOSURES)
-                    DateTimeField(OwnerCopy.CLOSURE_START, closureStart, { closureStart = it }, Modifier.fillMaxWidth())
-                    DateTimeField(OwnerCopy.CLOSURE_END, closureEnd, { closureEnd = it }, Modifier.fillMaxWidth())
-                    DirectoryTextField(
-                        value = closureReason,
-                        onValueChange = { closureReason = it },
-                        label = OwnerCopy.CLOSURE_REASON,
-                    )
-                    DirectoryPrimaryButton(
-                        text = OwnerCopy.CLOSURE_ADD,
-                        onClick = {
-                            val start = closureStart ?: return@DirectoryPrimaryButton
-                            val end = closureEnd ?: return@DirectoryPrimaryButton
-                            viewModel.createTemporaryClosure(
-                                start,
-                                end,
-                                closureReason.trim().ifBlank { null },
+                    Section(OwnerCopy.CLOSURES) {
+                        if (value.closures.isEmpty()) {
+                            Text(
+                                text = OwnerCopy.CLOSURES_NONE,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = closureStart != null && closureEnd != null,
-                    )
-                    value.closures.forEach { closure ->
+                        }
+                        value.closures.forEachIndexed { index, closure ->
+                            if (index > 0) {
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    text = ClosureText.of(closure),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                DirectoryTextButton(
+                                    text = OwnerCopy.DELETE,
+                                    onClick = { viewModel.deleteTemporaryClosure(closure.id) },
+                                )
+                            }
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+                        Text(
+                            text = OwnerCopy.CLOSURE_ADD,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        DateTimeField(
+                            OwnerCopy.CLOSURE_START,
+                            closureStart,
+                            { closureStart = it },
+                            Modifier.fillMaxWidth(),
+                        )
+                        DateTimeField(
+                            OwnerCopy.CLOSURE_END,
+                            closureEnd,
+                            { closureEnd = it },
+                            Modifier.fillMaxWidth(),
+                        )
+                        DirectoryTextField(
+                            value = closureReason,
+                            onValueChange = { closureReason = it },
+                            label = OwnerCopy.CLOSURE_REASON,
+                        )
+                        DirectoryPrimaryButton(
+                            text = OwnerCopy.CLOSURE_ADD,
+                            onClick = {
+                                val start = closureStart ?: return@DirectoryPrimaryButton
+                                val end = closureEnd ?: return@DirectoryPrimaryButton
+                                viewModel.createTemporaryClosure(
+                                    start,
+                                    end,
+                                    closureReason.trim().ifBlank { null },
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = closureStart != null && closureEnd != null,
+                        )
+                    }
+                }
+
+                Section(OwnerCopy.MEMBERS) {
+                    value.members.forEachIndexed { index, member ->
+                        if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
-                            Text(
-                                text = ClosureText.of(closure),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.weight(1f),
-                            )
-                            DirectoryTextButton(
-                                text = OwnerCopy.DELETE,
-                                onClick = { viewModel.deleteTemporaryClosure(closure.id) },
-                            )
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    text = member.name,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                Text(
+                                    text = OwnerLabels.role(member.role),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            if (member.role == FacilityMemberRole.MANAGER) {
+                                DirectoryTextButton(
+                                    text = OwnerCopy.REMOVE,
+                                    onClick = { removing = member.userId },
+                                )
+                            }
                         }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }
-                }
-
-                SectionHeader(OwnerCopy.MEMBERS)
-                value.members.forEach { member ->
-                    Row(
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+                    Text(
+                        text = OwnerCopy.MANAGER_ADD,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    // INT-084: a manager is still added by raw account id, because the API has
+                    // no lookup by phone. The field says so rather than pretending otherwise.
+                    DirectoryTextField(
+                        value = managerId,
+                        onValueChange = { managerId = it },
+                        label = OwnerCopy.MANAGER_ID,
+                        placeholder = OwnerCopy.MANAGER_ID_HINT,
+                    )
+                    Text(
+                        text = OwnerCopy.MANAGER_NOTE,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    DirectoryPrimaryButton(
+                        text = OwnerCopy.MANAGER_ADD,
+                        onClick = {
+                            viewModel.addManager(managerId)
+                            managerId = ""
+                        },
                         modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                text = member.name,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                            Text(
-                                text = OwnerLabels.role(member.role),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        if (member.role == FacilityMemberRole.MANAGER) {
-                            DirectoryTextButton(
-                                text = OwnerCopy.REMOVE,
-                                onClick = { removing = member.userId },
-                            )
-                        }
-                    }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        enabled = managerId.isNotBlank(),
+                    )
                 }
-                // INT-084: a manager is still added by raw account id, because the API has no
-                // lookup by phone. The field says so rather than pretending otherwise.
-                DirectoryTextField(
-                    value = managerId,
-                    onValueChange = { managerId = it },
-                    label = OwnerCopy.MANAGER_ID,
-                    placeholder = OwnerCopy.MANAGER_ID_HINT,
-                )
-                DirectoryPrimaryButton(
-                    text = OwnerCopy.MANAGER_ADD,
-                    onClick = {
-                        viewModel.addManager(managerId)
-                        managerId = ""
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = managerId.isNotBlank(),
-                )
-                Text(
-                    text = OwnerCopy.MANAGER_NOTE,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = Space.xxl),
-                )
+                Spacer(Modifier.height(Space.lg))
             }
         }
     }
@@ -331,6 +433,17 @@ fun ManageFacilityScreen(
             onDismiss = { removing = null },
             destructive = true,
         )
+    }
+}
+
+/** A label and the card under it, the shape the rest of the app's pages are read in. */
+@Composable
+private fun Section(label: String, content: @Composable ColumnScope.() -> Unit) {
+    Column {
+        DirectorySectionLabel(label)
+        DirectoryCard {
+            Column(verticalArrangement = Arrangement.spacedBy(Space.sm), content = content)
+        }
     }
 }
 
@@ -357,6 +470,7 @@ object OwnerCopy {
     const val MANAGE_TITLE = "إدارة المنشأة"
     const val MANAGE_ERROR = "تعذر تحميل إدارة المنشأة"
     const val CLOSURES = "الإغلاقات المؤقتة"
+    const val CLOSURES_NONE = "لا يوجد إغلاق مؤقت."
     const val CLOSURE_START = "بداية الإغلاق"
     const val CLOSURE_END = "نهاية الإغلاق"
     const val CLOSURE_REASON = "سبب الإغلاق - اختياري"

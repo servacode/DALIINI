@@ -84,7 +84,13 @@ fun LoginScreen(
     AuthFrame(
         onBack = onBack,
         bottomBar = bottomBar,
-        footer = { CreateAccountLine(onRegister = onRegister) },
+        footer = {
+            // The two ways off this page, one under the other and set alike: a link inside the
+            // card and a sentence under it read as two different kinds of thing, and they are
+            // not — both are "I cannot sign in from here".
+            DirectoryTextButton(AuthCopy.FORGOT, onRecovery)
+            CreateAccountLine(onRegister = onRegister)
+        },
     ) {
         PhoneField(phone, state.failure, filled = true) { phone = it }
         DirectoryPasswordField(
@@ -94,11 +100,6 @@ fun LoginScreen(
             error = fieldError(state.failure, "password"),
             filled = true,
         )
-        // Where it belongs: under the field it is about, not as a full-width button competing
-        // with the one thing this page is for.
-        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-            DirectoryTextButton(AuthCopy.FORGOT, onRecovery)
-        }
         FailureText(state.failure)
         DirectoryPrimaryButton(
             text = AuthCopy.SIGN_IN,
@@ -133,7 +134,7 @@ private fun AuthFrame(
     modifier: Modifier = Modifier,
     title: String? = null,
     bottomBar: @Composable () -> Unit = {},
-    footer: @Composable () -> Unit = {},
+    footer: @Composable ColumnScope.() -> Unit = {},
     form: @Composable ColumnScope.() -> Unit,
 ) {
     DirectoryPage(
@@ -146,16 +147,19 @@ private fun AuthFrame(
                 .padding(bottom = padding.calculateBottomPadding()),
         ) {
             Welcome(onBack = onBack)
-            // The card takes the middle of what the header leaves, and scrolls from there when
-            // a keyboard or a long form needs the room.
+            // The card follows the mark down the page rather than sitting in the middle of
+            // whatever is left: centred, a short form left a band of empty green-to-white
+            // between the two, and the page read as two unrelated halves. Anything under the
+            // card — the links, a keyboard — pushes into the space below it instead.
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = Space.base),
+                    .padding(horizontal = Space.base)
+                    .padding(top = Space.lg),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.spacedBy(Space.md),
             ) {
                 if (title != null) {
                     Text(
@@ -163,9 +167,7 @@ private fun AuthFrame(
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onBackground,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .padding(bottom = Space.md)
-                            .semantics { heading() },
+                        modifier = Modifier.semantics { heading() },
                     )
                 }
                 DirectoryCard {
@@ -174,7 +176,11 @@ private fun AuthFrame(
                         content = form,
                     )
                 }
-                footer()
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Space.xs),
+                    content = { footer() },
+                )
                 Spacer(Modifier.height(Space.lg))
             }
         }
