@@ -14,10 +14,10 @@ Read all docs.
 
 Then create:
 ```text
-plan.md
-PROJECT-STATUS.md
-DECISIONS.md
-EVIDENCE.md
+docs/project/plan.md
+docs/project/PROJECT-STATUS.md
+docs/project/DECISIONS.md
+docs/project/EVIDENCE.md
 ```
 
 Do not replace the Master Spec.

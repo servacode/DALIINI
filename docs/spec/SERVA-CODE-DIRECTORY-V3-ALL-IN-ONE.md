@@ -4441,10 +4441,10 @@ Read all docs.
 
 Then create:
 ```text
-plan.md
-PROJECT-STATUS.md
-DECISIONS.md
-EVIDENCE.md
+docs/project/plan.md
+docs/project/PROJECT-STATUS.md
+docs/project/DECISIONS.md
+docs/project/EVIDENCE.md
 ```
 
 Do not replace the Master Spec.
@@ -4999,6 +4999,8 @@ directory-platform-v3/
 │   ├── scripts/
 │   └── runbooks/
 ├── docs/
+│   ├── project/
+│   ├── spec/
 │   ├── product/
 │   ├── architecture/
 │   ├── security/
@@ -5010,11 +5012,15 @@ directory-platform-v3/
 │   └── evidence/
 ├── .github/
 │   └── workflows/
-├── plan.md
-├── PROJECT-STATUS.md
 ├── README.md
 └── SECURITY.md
 ```
+
+The working papers — `docs/project/plan.md`, `docs/project/PROJECT-STATUS.md`, `docs/project/IMPLEMENTATION-LOG.md`, `docs/project/DECISIONS.md`,
+`docs/project/BLOCKERS.md`, `docs/project/HANDOFF.md` and `docs/project/EVIDENCE.md` — live in `docs/project/`. They were at the root
+until ADR-001 (`docs/adr/ADR-001-repository-root-layout.md`) moved them: the root answers what
+the project is and how it is built, and the diary of building it belongs with the other
+documents. `scripts/check-governance.mjs` requires all nine, at these paths.
 
 ## Monorepo tooling
 
@@ -5048,10 +5054,10 @@ Windows PowerShell equivalents if development primarily Windows.
 
 ## Files
 
-`plan.md`:
+`docs/project/plan.md`:
 current autonomous execution plan.
 
-`PROJECT-STATUS.md`:
+`docs/project/PROJECT-STATUS.md`:
 phase state and evidence.
 
 `docs/adr/`:
@@ -5283,7 +5289,7 @@ Do not use this file as permanent policy truth; it is a dated release reference.
 
 ---
 
-# FILE: plan.md
+# FILE: docs/project/plan.md
 
 # Autonomous Build Plan
 
@@ -5294,7 +5300,7 @@ Agent instruction:
 - Execute `24-IMPLEMENTATION-ROADMAP.md`.
 - Do not ask for confirmation after a successful internal phase.
 - Update this file with detailed tasks for the current phase.
-- Update `PROJECT-STATUS.md` after every gate.
+- Update `docs/project/PROJECT-STATUS.md` after every gate.
 
 Current phase:
 ```text

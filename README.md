@@ -16,6 +16,6 @@ The immutable implementation baseline is copied under `docs/spec/` from `SERVA-C
 
 ## Governance
 
-See `plan.md`, `PROJECT-STATUS.md`, `IMPLEMENTATION-LOG.md`, `DECISIONS.md`, `BLOCKERS.md`, `HANDOFF.md`, and `EVIDENCE.md`.
+See `docs/project/plan.md`, `docs/project/PROJECT-STATUS.md`, `docs/project/IMPLEMENTATION-LOG.md`, `docs/project/DECISIONS.md`, `docs/project/BLOCKERS.md`, `docs/project/HANDOFF.md`, and `docs/project/EVIDENCE.md`.
 
 No production secret belongs in Git.
