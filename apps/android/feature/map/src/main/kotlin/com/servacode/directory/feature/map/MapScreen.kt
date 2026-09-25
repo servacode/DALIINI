@@ -129,11 +129,13 @@ fun MapScreen(
                 modifier = Modifier.align(Alignment.TopCenter),
             )
             if (state.categories.isNotEmpty()) {
+                // The far edge: the near one belongs to the controls, which are pressed far
+                // more often than a section is changed, and a thumb reaches it without moving.
                 MapCategoryRail(
                     categories = state.categories,
                     selectedId = state.filters.categoryId,
                     onCategory = { id -> viewModel.filter { current -> current.withCategory(id) } },
-                    modifier = Modifier.align(Alignment.CenterStart),
+                    modifier = Modifier.align(Alignment.CenterEnd),
                 )
             }
             val selected = state.facilities.firstOrNull { it.id == state.selectedFacilityId }
@@ -401,7 +403,7 @@ private fun FacilityMap(
             onOut = { controller?.zoomBy(-ZOOM_STEP) },
             onLocate = onLocate.takeIf { state.cameraResolved },
             locating = state.locating,
-            modifier = Modifier.align(Alignment.CenterEnd).padding(Space.md),
+            modifier = Modifier.align(Alignment.CenterStart).padding(Space.md),
         )
     }
 

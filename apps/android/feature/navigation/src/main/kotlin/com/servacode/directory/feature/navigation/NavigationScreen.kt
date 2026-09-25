@@ -125,14 +125,28 @@ fun BuiltInNavigationScreen(
                     .padding(Space.base),
                 verticalArrangement = Arrangement.spacedBy(Space.sm),
             ) {
-                // The three ways of travelling, present from the moment the screen opens: the
-                // choice is not something to be waited for, and one of them is already being
-                // computed behind it.
-                TravelModeRow(
-                    selected = state.profile,
-                    onSelect = viewModel::selectProfile,
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                )
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Space.sm),
+                ) {
+                    // The way out stands beside the choices rather than on top of them: as a
+                    // free-floating button it landed squarely on the first travel mode.
+                    DirectoryRoundControl(
+                        icon = DirectoryIcons.closeBox,
+                        label = NavigationCopy.CLOSE,
+                        onClick = onClose,
+                        tinted = false,
+                    )
+                    // The three ways of travelling, present from the moment the screen opens:
+                    // the choice is not something to be waited for, and one of them is already
+                    // being computed behind it.
+                    TravelModeRow(
+                        selected = state.profile,
+                        onSelect = viewModel::selectProfile,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
                 // How far and how long, under the three ways of travelling — the two figures
                 // that change when the choice above them changes, so they are read together.
                 (state.navigation as? NavigationState.Navigating)?.progress?.let { progress ->
@@ -144,8 +158,10 @@ fun BuiltInNavigationScreen(
             // further, back to me, and out to another maps app. The map tab wears the same set
             // in the same place, which is the point of it being a set.
             Column(
+                // Start, not end: the page is read right to left, so this is the right edge —
+                // under the thumb of a hand holding the phone.
                 modifier = Modifier
-                    .align(Alignment.CenterEnd)
+                    .align(Alignment.CenterStart)
                     .padding(Space.base),
                 verticalArrangement = Arrangement.spacedBy(Space.sm),
             ) {
@@ -172,16 +188,7 @@ fun BuiltInNavigationScreen(
                 )
             }
 
-            // The way out, over the map rather than above it.
-            DirectoryRoundControl(
-                icon = DirectoryIcons.closeBox,
-                label = NavigationCopy.CLOSE,
-                onClick = onClose,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(Space.base),
-                tinted = false,
-            )
+
 
             Column(
                 modifier = Modifier
