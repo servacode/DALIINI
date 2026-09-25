@@ -276,6 +276,8 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                     }
                 },
                 onBack = { navController.popBackStack() },
+                // Signing in is the page this one was opened from.
+                onSignIn = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Recovery> {

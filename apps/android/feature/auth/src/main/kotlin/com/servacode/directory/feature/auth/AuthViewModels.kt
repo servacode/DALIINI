@@ -19,9 +19,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /** What a form shows after the backend refused it: one message, and the fields at fault. */
-data class FormFailure(val message: String, val fields: Set<String> = emptySet())
+data class FormFailure(
+    val message: String,
+    val fields: Set<String> = emptySet(),
+    /** The backend's code, for the one or two failures a screen answers rather than states. */
+    val code: String? = null,
+)
 
-internal fun AppError.toFormFailure() = FormFailure(AppErrorText.of(this), fieldErrors.keys)
+internal fun AppError.toFormFailure() = FormFailure(AppErrorText.of(this), fieldErrors.keys, code)
 
 data class LoginUiState(
     val busy: Boolean = false,

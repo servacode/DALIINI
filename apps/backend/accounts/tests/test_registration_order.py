@@ -6,6 +6,7 @@ form before they know whether they can even receive the code.
 """
 
 import pytest
+from django.core.cache import cache
 from rest_framework.test import APIClient
 
 from accounts.models import OTPChallenge, User
@@ -26,6 +27,18 @@ def province(db) -> Province:
 @pytest.fixture
 def client() -> APIClient:
     return APIClient()
+
+
+@pytest.fixture(autouse=True)
+def spent_allowance():
+    """The start throttle is keyed by caller and number and its cache outlives a test.
+
+    These ask for a code on the same number more than once on purpose, which is the thing
+    being tested, so each starts with the allowance a stranger would have.
+    """
+    cache.clear()
+    yield
+    cache.clear()
 
 
 def start(client, province, phone=PHONE):
@@ -121,3 +134,44 @@ def test_a_code_that_was_never_proved_cannot_open_an_account(client, province):
 
     assert response.status_code == 400
     assert not User.objects.filter(phone=PHONE).exists()
+def register(client, province, phone=PHONE, name="اسم كامل"):
+    """The whole flow: a code, the proof of it, then the person."""
+    started = start(client, province, phone)
+    challenge_id = started.data["challengeId"]
+    code = prove(challenge_id)
+    client.post(VERIFY, {"challengeId": challenge_id, "code": code}, format="json")
+    return client.post(
+        COMPLETE,
+        {
+            "challengeId": challenge_id,
+            "displayName": name,
+            "password": "StrongPass123!",
+            "platform": "ANDROID",
+            "deviceName": "qa",
+        },
+        format="json",
+    )
+
+
+@pytest.mark.django_db
+def test_a_number_that_already_has_an_account_is_told_so_by_name(client, province):
+    register(client, province)
+
+    again = register(client, province, name="اسم آخر")
+
+    # Not "check what you typed": nothing they typed is wrong, and the answer they need is to
+    # sign in instead. The app has its own sentence for this code.
+    assert again.status_code == 409
+    assert again.data["code"] == "PHONE_ALREADY_REGISTERED"
+    assert User.objects.filter(phone=PHONE).count() == 1
+    assert User.objects.get(phone=PHONE).name == "اسم كامل"
+
+
+@pytest.mark.django_db
+def test_asking_for_a_code_says_nothing_about_whether_the_number_is_known(client, province):
+    register(client, province)
+
+    # The same 202 a number with no account gets: whether a number is registered is not
+    # something an anonymous caller may learn by asking.
+    assert start(client, province).status_code == 202
+    assert start(client, province, phone="+963900444002").status_code == 202

@@ -56,6 +56,8 @@ object AppErrorText {
         "THROTTLED" to "محاولات كثيرة. حاول بعد قليل.",
         "VALIDATION_ERROR" to "تحقق من البيانات المدخلة.",
         "PROVINCE_REQUIRED" to "اختر المحافظة أولًا.",
+        "PHONE_ALREADY_REGISTERED" to
+            "هذا الرقم له حساب بالفعل. سجّل الدخول أو استعد كلمة المرور.",
         "DUTY_NOT_SUPPORTED" to "هذا القسم لا يدعم المناوبة.",
         "DUTY_OVERLAP_OR_INVALID" to "وقت المناوبة يتداخل مع مناوبة أخرى أو غير صالح.",
         "HOURS_NOT_SUPPORTED" to "هذا القسم لا يدعم ساعات العمل.",

@@ -50,6 +50,7 @@ import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryPasswordField
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
+import com.servacode.directory.core.designsystem.DirectorySecondaryButton
 import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTextField
 import com.servacode.directory.core.designsystem.Space
@@ -223,6 +224,7 @@ private fun CreateAccountLine(onRegister: () -> Unit) {
 fun RegisterScreen(
     onRegistered: () -> Unit,
     onBack: () -> Unit,
+    onSignIn: () -> Unit = onBack,
     viewModel: RegisterViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -292,6 +294,15 @@ fun RegisterScreen(
                     enabled = name.isNotBlank() && password.isNotEmpty() && confirmation == password,
                     loading = state.busy,
                 )
+                // The one refusal here that is not about what they typed: the number is theirs
+                // and already has an account. Saying so without a way to it is a dead end.
+                if (state.failure?.code == TAKEN) {
+                    DirectorySecondaryButton(
+                        text = AuthCopy.SIGN_IN,
+                        onClick = onSignIn,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
             ChallengeStep.DONE -> DirectoryPrimaryButton(
                 text = AuthCopy.CREATE_ACCOUNT,
@@ -537,6 +548,9 @@ private fun ErrorText(message: String) {
         modifier = Modifier.fillMaxWidth(),
     )
 }
+
+/** The backend's code for a number that already has an account (`accounts/services.py`). */
+private const val TAKEN = "PHONE_ALREADY_REGISTERED"
 
 /** The words of the account screens, provisional until product copy is approved. */
 object AuthCopy {

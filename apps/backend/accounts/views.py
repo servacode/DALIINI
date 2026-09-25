@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.openapi import THROTTLED_429, VALIDATION_400, protected
+from core.openapi import CONFLICT_409, THROTTLED_429, VALIDATION_400, protected
 from django.core.exceptions import ValidationError as DjangoValidationError
 from locations.models import Province
 
@@ -145,7 +145,7 @@ class RegisterCompleteView(APIView):
         tags=["Auth"],
         summary="Set the password and open the first session",
         request=RegisterCompleteSerializer,
-        responses={201: SessionCredentialsSerializer, 400: VALIDATION_400},
+        responses={201: SessionCredentialsSerializer, 400: VALIDATION_400, 409: CONFLICT_409},
     )
     def post(self, request):
         serializer = RegisterCompleteSerializer(data=request.data)

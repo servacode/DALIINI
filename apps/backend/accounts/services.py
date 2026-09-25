@@ -10,6 +10,8 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.db import transaction
 from django.utils import timezone
+
+from core.exceptions import ConflictError
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 
 from audit.services import record_audit
@@ -133,7 +135,13 @@ def complete_registration(
         purpose=OTPChallenge.Purpose.REGISTER,
     )
     if User.objects.filter(phone=challenge.phone).exists():
-        raise ValidationError({"challengeId": "Registration cannot be completed."})
+        # Said here rather than when the code was asked for: telling an anonymous caller that a
+        # number has an account is telling them whose numbers are registered. By this point the
+        # caller has proved they receive on it, so the only person this tells is its owner.
+        raise ConflictError(
+            "PHONE_ALREADY_REGISTERED",
+            message="هذا الرقم له حساب بالفعل.",
+        )
     province = Province.objects.filter(
         pk=challenge.metadata.get("provinceId"),
         active=True,
