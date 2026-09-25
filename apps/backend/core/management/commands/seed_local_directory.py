@@ -22,35 +22,31 @@ from datetime import datetime, time, timedelta
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from django.contrib.gis.geos import MultiPolygon, Point, Polygon
+from django.contrib.gis.geos import Point
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
-from content_services.models import Advertisement
 from business_hours.models import BusinessHour
 from business_hours.services import local_day_bounds
+from content_services.models import Advertisement
 from directory.models import Category, CategoryProvince
 from facilities.models import Facility
-from locations.models import City, Neighborhood, Province
+from locations.models import Province
 from pharmacy_duty.models import DutyShift
 
-#: The city and the districts a coordinate in Raqqa resolves to.
+#: The geography a coordinate resolves to is not invented here any more.
 #:
-#: Without these the resolver has nothing finer than a province to answer with, so the corner of
-#: Home says only "الرقة" wherever the reader stands. These are boxes, not surveyed boundaries:
-#: they are laid over the city's own extent so that a position falls in one of them and the
-#: label can be read on a device. Real geography belongs in reference data, not in a fixture —
-#: whoever brings it replaces this whole block and nothing else changes.
-CITY = ("raqqa-city", "الرقة", "Raqqa")
-#: name, then the box: south, north, west, east.
-DISTRICTS = [
-    ("المشلب", 35.955, 35.985, 39.000, 39.040),
-    ("الرميلة", 35.955, 35.985, 38.960, 39.000),
-    ("الدرعية", 35.925, 35.955, 39.000, 39.040),
-    ("الفردوس", 35.925, 35.955, 38.960, 39.000),
-    ("هرقلة", 35.895, 35.925, 38.960, 39.040),
-]
+#: This file used to carry a city-sized rectangle and five district-sized ones, laid over Raqqa so
+#: that a position would resolve to something on a device. They were made up: the corner of Home
+#: read "الرقة — الدرعية" because a box said so. Real boundaries — fourteen governorates,
+#: sixty-seven districts and the surveyed quarters of Damascus, Aleppo, Raqqa and Deir ez-Zor
+#: — now come from
+#: OpenStreetMap through `scripts/osm-boundaries.sh` and `manage.py import_osm_boundaries`, which
+#: `scripts/local-stack.sh` runs when the extract is present.
+#:
+#: The facilities below are still fixtures, and they are placed by coordinate; the import's
+#: `--relink` attaches each of them to the real city and quarter its own point falls in.
 
 #: Stable across runs and machines, so a row's identity comes from its slug and nothing else.
 NAMESPACE = uuid.UUID("6f1b7a2e-3c44-4b0e-9a1d-5f7c8e2b4a10")
@@ -66,11 +62,15 @@ EVENINGS = "evenings"
 SHUT = "shut"
 
 #: (slug, name, address, north offset, east offset, hours)
+#:
+#: The address is a street, never a quarter: which quarter a facility stands in is answered by
+#: the imported boundaries against its own coordinate, and a fixture that also wrote a quarter
+#: into its address line would contradict them on the screen.
 PHARMACIES = [
     ("ph-hayat", "صيدلية الحياة", "شارع تل أبيض", 0.004, 0.003, ALWAYS),
-    ("ph-shifa", "صيدلية الشفاء", "حي الدرعية", -0.006, 0.005, SHUT),
+    ("ph-shifa", "صيدلية الشفاء", "شارع 23 شباط", -0.006, 0.005, SHUT),
     ("ph-amal", "صيدلية الأمل", "شارع القطار", 0.009, -0.004, ALWAYS),
-    ("ph-nour", "صيدلية النور", "حي المشلب", -0.011, -0.007, SHUT),
+    ("ph-nour", "صيدلية النور", "شارع المنصور", -0.011, -0.007, SHUT),
     ("ph-rawda", "صيدلية الروضة", "شارع الملعب", 0.014, 0.010, MORNINGS),
 ]
 
@@ -91,26 +91,26 @@ AD_WIDTH, AD_HEIGHT = 1080, 540
 
 CLINICS = [
     ("cl-ibnsina", "عيادة ابن سينا", "شارع تل أبيض", 0.003, -0.002, MORNINGS),
-    ("cl-rasheed", "عيادة الرشيد التخصصية", "حي الرميلة", -0.005, 0.004, EVENINGS),
+    ("cl-rasheed", "عيادة الرشيد التخصصية", "شارع الكورنيش", -0.005, 0.004, EVENINGS),
     ("cl-farabi", "عيادة الفارابي", "شارع القطار", 0.008, 0.006, ALWAYS),
-    ("cl-yarmouk", "عيادة اليرموك", "حي الفردوس", -0.012, -0.003, MORNINGS),
+    ("cl-yarmouk", "عيادة اليرموك", "شارع السباهي", -0.012, -0.003, MORNINGS),
 ]
 
 LABORATORIES = [
     ("lab-tahlil", "مخبر التحليل الحديث", "شارع تل أبيض", 0.002, 0.007, MORNINGS),
-    ("lab-diqqa", "مخبر الدقة للتحاليل", "حي الدرعية", -0.007, -0.006, ALWAYS),
+    ("lab-diqqa", "مخبر الدقة للتحاليل", "شارع 23 شباط", -0.007, -0.006, ALWAYS),
     ("lab-safa", "مخبر الصفا الطبي", "شارع الملعب", 0.010, 0.002, EVENINGS),
 ]
 
 NURSING = [
-    ("nr-rahma", "مركز الرحمة للتمريض", "حي المشلب", 0.005, 0.009, ALWAYS),
+    ("nr-rahma", "مركز الرحمة للتمريض", "شارع المنصور", 0.005, 0.009, ALWAYS),
     ("nr-anaya", "مركز العناية المنزلية", "شارع القطار", -0.009, 0.001, MORNINGS),
-    ("nr-hayah", "مركز الحياة للخدمات التمريضية", "حي الرميلة", 0.012, -0.008, EVENINGS),
+    ("nr-hayah", "مركز الحياة للخدمات التمريضية", "شارع الكورنيش", 0.012, -0.008, EVENINGS),
 ]
 
 SUPPLIES = [
     ("ms-tibbi", "مستودع المستلزمات الطبية", "شارع تل أبيض", 0.006, -0.010, MORNINGS),
-    ("ms-ajhiza", "مركز الأجهزة الطبية", "حي الدرعية", -0.003, 0.008, MORNINGS),
+    ("ms-ajhiza", "مركز الأجهزة الطبية", "شارع 23 شباط", -0.003, 0.008, MORNINGS),
     ("ms-siha", "بيت الصحة للمستلزمات", "شارع الملعب", 0.015, 0.004, EVENINGS),
 ]
 
@@ -169,50 +169,9 @@ class Command(BaseCommand):
 
         self._duty(now)
         self._ads(raqqa)
-        self._places(raqqa)
 
         for category_name, total in counts.items():
             self.stdout.write(f"{category_name}: {total}")
-
-    def _places(self, province):
-        """The city and its districts, so a position resolves to a place and not to a province.
-
-        The resolver reads boundaries: with none seeded it falls back to the nearest province
-        centre and answers with the province alone, which is what the corner of Home showed.
-        """
-        city, _ = City.objects.update_or_create(
-            id=uuid.uuid5(NAMESPACE, f"city:{CITY[0]}"),
-            defaults={
-                "province": province,
-                "code": CITY[0],
-                "name_ar": CITY[1],
-                "name_en": CITY[2],
-                "boundary": self._box(35.895, 35.985, 38.960, 39.040),
-                "active": True,
-            },
-        )
-        for name, south, north, west, east in DISTRICTS:
-            Neighborhood.objects.update_or_create(
-                id=uuid.uuid5(NAMESPACE, f"neighborhood:{CITY[0]}:{name}"),
-                defaults={
-                    "city": city,
-                    "name_ar": name,
-                    "boundary": self._box(south, north, west, east),
-                    "active": True,
-                },
-            )
-        self.stdout.write(f"{city.name_ar}: {len(DISTRICTS)} أحياء")
-
-    @staticmethod
-    def _box(south: float, north: float, west: float, east: float) -> MultiPolygon:
-        ring = (
-            (west, south),
-            (east, south),
-            (east, north),
-            (west, north),
-            (west, south),
-        )
-        return MultiPolygon(Polygon(ring), srid=4326)
 
     def _ads(self, province):
         """Three banners, with an image each, so the slider on Home has something to show.
@@ -244,9 +203,11 @@ class Command(BaseCommand):
 
     def _ad_image(self, slug, title, subtitle, colour):
         """Draw the banner and store it, returning the key the serializer turns into a URL."""
-        from django.core.files.base import ContentFile
         from io import BytesIO
+
+        from django.core.files.base import ContentFile
         from PIL import Image, ImageDraw
+
         from storage.backends import PublicS3Storage
 
         image = Image.new("RGB", (AD_WIDTH, AD_HEIGHT), colour)

@@ -1584,3 +1584,22 @@ for, which is the question the whole policy turns on.
 
 Not verified on a device: no pack has been downloaded or drawn from. Gate 1 builds it and the
 harness tests the two halves that can be tested without a phone.
+
+## 2026-09-26 — Real geography, and the end of the invented boxes
+
+Backend: the five rectangles that stood for Raqqa's quarters are gone. `scripts/osm-boundaries.sh`
+filters Syria's OpenStreetMap extract with GDAL — in a one-off container from the backend's own
+image, so it needs no running stack — and `manage.py import_osm_boundaries` writes what it finds:
+14 governorates matched to this platform's provinces, 67 districts as cities, 192 surveyed quarters
+placed in the district that contains them. Keys are the OpenStreetMap ids, so the import is
+idempotent; a quarter in no district is skipped rather than guessed into one; `--prune` removed the
+invented rows and `--relink` attached 57 fixture facilities to the places their own coordinates fall
+in.
+
+Verified on this machine, against the running stack: the resolve endpoint answers 35.9528, 39.0085
+with "الرقة — الأمين" and 36.62, 38.95 with "الرقة — تل أبيض", both by boundary. 28 tests cover the
+name matching, what each OpenStreetMap level becomes, and the import end to end; ruff and mypy
+strict are clean on the new modules.
+
+Known and not mine: `core/tests/test_openapi_contract.py` has two failures on this branch before
+this batch — the committed schema and its hash have drifted from the source.

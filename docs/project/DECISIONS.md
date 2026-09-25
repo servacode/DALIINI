@@ -806,6 +806,51 @@ time it is.
 
 ---
 
+## DECISION-050 — The platform's geography is OpenStreetMap's, imported, not invented
+
+**Date:** 2026-09-26
+
+**Subject:** What a coordinate resolves to, and where those boundaries come from.
+
+**Decision:** Syria's administrative boundaries and city quarters are imported from an
+OpenStreetMap extract — the same Geofabrik file the routing engine already builds its graph from.
+`scripts/osm-boundaries.sh` filters it with GDAL into a feature-per-line file;
+`manage.py import_osm_boundaries` matches, places and writes it. `scripts/local-stack.sh` runs the
+import when the machine has the file.
+
+The mapping, decided in `locations/osm.py`:
+
+* `admin_level=4` (محافظة) is matched to the fourteen provinces this platform already has, by a
+  normalised name — no kind word, no diacritics, one spelling per letter — and neither creates nor
+  renames one.
+* `admin_level=5` (منطقة) becomes a **city**: 67 of them, and the name a Syrian actually says —
+  الرقة, تل أبيض, الطبقة.
+* `admin_level=6` (ناحية) is not imported. It would answer "ناحية مركز الرقة" where a reader
+  expects "الرقة".
+* `admin_level=10` and `place` in `neighbourhood`/`suburb`/`quarter` become a **neighbourhood**:
+  192 of them, attached to the district that contains their own point. Damascus's quarters are
+  drawn as boundaries and Aleppo's and Raqqa's as places; to a reader they are the same thing.
+
+Every row's key is the OpenStreetMap id of the boundary it came from, so a second import corrects
+the same rows. A quarter that falls in no district is skipped rather than attached to the nearest
+one: the resolver answering with a city is true, and a quarter on the wrong side of a line is not.
+
+**Reason:** The only geography finer than a province was five rectangles this repository invented
+so that a position would resolve to something on a device. The corner of Home read
+"الرقة — الدرعية" because a box said so. A reader who knows their own city can tell the difference,
+and being confidently wrong about where somebody is standing is worse than saying only "الرقة".
+
+**Boundaries:** Coverage is what contributors have drawn: quarters exist for Damascus (93), Aleppo
+(43), Raqqa (27), Deir ez-Zor (16), Homs (10) and one each in three more provinces. Everywhere else
+a position resolves to its district, which is the honest answer. The extract is not in the
+repository — it is 80 MB of someone else's data — so a machine without it runs exactly as before.
+Province map centres are left alone: where a map opens is a product decision, not a centroid.
+
+The data is © OpenStreetMap contributors under the ODbL, which the app already attributes on the
+map; anything derived from these boundaries carries the same licence.
+
+---
+
 ---
 
 # Technical Debt Register

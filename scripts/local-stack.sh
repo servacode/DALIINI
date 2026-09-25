@@ -125,6 +125,14 @@ up() {
     case "$name" in .venv|.pytest_cache|.ruff_cache) continue ;; esac
     MOUNTS+=(-v "$entry:/app/$name:ro")
   done
+  # The province's real geography, when this machine has it. Built by scripts/osm-boundaries.sh
+  # from the same OpenStreetMap extract the routing engine uses; without it the app still runs and
+  # a position resolves to the province alone, which is what it did before any of this existed.
+  OSM_MOUNT=()
+  if [ -f "$ROOT/.local-stack/osm/boundaries.geojsonl" ]; then
+    OSM_MOUNT=(-v "$ROOT/.local-stack/osm:/osm:ro")
+  fi
+
   ENVIRONMENT=(
     -e UV_NO_SYNC=1
     -e DATABASE_URL="postgresql://directory:directory@$PG:5432/$DB"
@@ -146,6 +154,16 @@ up() {
      && uv run python manage.py seed_e2e_mobile_fixtures \
      && uv run python manage.py seed_local_directory" \
     || { echo "FAIL: migrations or fixtures"; exit 1; }
+
+  if [ ${#OSM_MOUNT[@]} -gt 0 ]; then
+    echo "== Real boundaries, and the fixtures attached to them =="
+    docker run --rm --network "$NETWORK" "${MOUNTS[@]}" "${OSM_MOUNT[@]}" "${ENVIRONMENT[@]}" \
+      "$IMAGE" sh -c \
+      "uv run python manage.py import_osm_boundaries /osm/boundaries.geojsonl --prune --relink" \
+      || { echo "FAIL: boundary import"; exit 1; }
+  else
+    echo "== No OpenStreetMap boundaries here; scripts/osm-boundaries.sh builds them =="
+  fi
 
   echo "== Django (HTTP and WebSocket) =="
   docker run -d --name "$API" --network "$NETWORK" -p 8000:8000 "${MOUNTS[@]}" "${ENVIRONMENT[@]}" \
