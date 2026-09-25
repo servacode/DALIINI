@@ -769,6 +769,43 @@ under test rather than what the app says.
 
 ---
 
+## DECISION-049 — The province's map is kept on the device, and fetched only on a free connection
+
+**Date:** 2026-09-26
+
+**Subject:** What happens to the map and to a trip when the connection goes, which in Syria it does.
+
+**Decision:** The app keeps one offline pack: the province the reader chose, a box of
+`PACK_RADIUS_KM` (25 km) around the point that province's map opens on, zooms `PACK_MIN_ZOOM` to
+`PACK_MAX_ZOOM` (6 to 14). It is written into MapLibre's own offline database, which is the store
+the map already reads from, so a tile kept costs one fetch and is never fetched again.
+
+It is fetched automatically, but only on a connection the system reports as unmetered, and never
+again once the reader has deleted it — a deletion is stored as `offlineMapDeclined` and asking for
+the pack in settings withdraws it. A download the app started stops when that free connection goes;
+one the reader asked for does not. A download that stopped carries on from where it was rather than
+starting over. A connection failure is retried; a server refusal or an oversized pack is not.
+
+The arithmetic (`MapPack.kt`) and the policy (`mapPackAction`) are pure Kotlin the platform-free
+harness compiles and tests. `OfflineMapPacks` is the MapLibre machinery and knows nothing about
+provinces; `OfflineMapCoordinator` in the app module joins the chosen province to it.
+
+**Reason:** A computed route is guided from the phone — the engine walks the line it was given — so
+a cut connection does not end a trip by itself. What it takes away is the map under the line, and a
+navigator over an empty grey field is not a navigator. Twenty-five megabytes fetched once on a
+Wi-Fi is the whole difference, and twenty-five megabytes taken out of a Syrian mobile bundle without
+being asked is not something this app gets to do, which is why both halves of the rule exist.
+
+**Boundaries:** A province whose `mapCenter` the platform has not set gets no pack: a box centred on
+a guess is megabytes of somewhere the reader is not. A trip that leaves the box falls back to
+whatever the ambient cache holds, and above zoom 14 the map draws the zoom-14 tile scaled up, which
+is how every offline map behaves at its edge. Routing itself still needs a network: a trip that is
+already running survives, and a new one cannot be computed offline. The download lives in the app's
+process — there is no background worker — so it advances while the app is open and resumes the next
+time it is.
+
+---
+
 ---
 
 # Technical Debt Register

@@ -1570,3 +1570,17 @@ foundation qualifier keeps it that way.
 
 Not verified on a device: the words were changed under the compiler and the harness, and CI's
 Gate 1 builds the APK. What a reader sees has not been looked at since the move.
+
+## 2026-09-26 — The map a trip can lose the connection with
+
+Android: the province's map is kept on the device. `MapPack.kt` holds the arithmetic — the box in
+kilometres rather than in degrees, the tile count per zoom, what it weighs — and `mapPackAction`
+holds the policy, both pure and both tested by the harness, which is what a download measured in
+somebody's data plan deserves. `OfflineMapPacks` is MapLibre's offline database wrapped for one
+pack at a time, `OfflineMapCoordinator` gives it the chosen province, and settings shows where the
+pack stands with the single action that fits that state: fetch it, stop, carry on, or take the space
+back. `NetworkMonitor` learned to say whether the connection is one anybody pays by the megabyte
+for, which is the question the whole policy turns on.
+
+Not verified on a device: no pack has been downloaded or drawn from. Gate 1 builds it and the
+harness tests the two halves that can be tested without a phone.
