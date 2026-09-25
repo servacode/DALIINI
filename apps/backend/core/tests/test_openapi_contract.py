@@ -271,7 +271,11 @@ def test_schema_does_not_leak_internal_fields() -> None:
 
 
 def test_committed_schema_matches_the_source() -> None:
-    assert CANONICAL_SCHEMA.exists(), "openapi/schema.yaml is not committed"
+    assert CANONICAL_SCHEMA.exists(), (
+        f"no openapi/schema.yaml above {pathlib.Path(__file__).resolve()}: either it is not "
+        "committed, or these tests are running somewhere the repository root is not mounted — "
+        "the backend container mounts apps/backend alone, and openapi/ sits above it"
+    )
     generated = generate_schema()
     committed = CANONICAL_SCHEMA.read_text(encoding="utf-8")
     assert generated == committed, (
@@ -280,7 +284,10 @@ def test_committed_schema_matches_the_source() -> None:
 
 
 def test_committed_hash_matches_the_committed_schema() -> None:
-    assert CANONICAL_HASH.exists(), "openapi/schema.sha256 is not committed"
+    assert CANONICAL_HASH.exists(), (
+        f"no openapi/schema.sha256 above {pathlib.Path(__file__).resolve()}: see the message on "
+        "test_committed_schema_matches_the_source — a missing mount reads as drift otherwise"
+    )
     recorded = CANONICAL_HASH.read_text(encoding="utf-8").split()[0]
     actual = hashlib.sha256(CANONICAL_SCHEMA.read_bytes()).hexdigest()
     assert recorded == actual, "openapi/schema.sha256 does not describe openapi/schema.yaml"
