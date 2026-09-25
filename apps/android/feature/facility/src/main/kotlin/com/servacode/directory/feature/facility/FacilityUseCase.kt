@@ -12,6 +12,9 @@ class FacilityUseCase @Inject constructor(
     suspend fun myRating(id: String): Result<Int?> = repository.myRating(id)
     suspend fun rate(id: String, stars: Int): Result<Int> = repository.rate(id, stars)
 
+    /** Taking the rating back, which the account may do as freely as it gave it. */
+    suspend fun removeRating(id: String): Result<Unit> = repository.removeRating(id)
+
     /** Saving is the account's, not the device's: the backend holds it. */
     suspend fun save(id: String): Result<Boolean> = repository.save(id)
     suspend fun unsave(id: String): Result<Boolean> = repository.unsave(id)
