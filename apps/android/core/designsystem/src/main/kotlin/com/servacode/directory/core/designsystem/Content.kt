@@ -1,50 +1,52 @@
 package com.servacode.directory.core.designsystem
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.annotation.DrawableRes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.lifecycle.Lifecycle
+import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import coil3.compose.AsyncImage
-import kotlinx.coroutines.delay
 import com.servacode.directory.core.model.AvailabilityLabel
 import com.servacode.directory.core.model.AvailabilityState
 import com.servacode.directory.core.model.DistanceText
 import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.HomeAd
+import kotlinx.coroutines.delay
 
 /**
  * A picture from the backend, on the app's own placeholder until it arrives. Decorative by
@@ -291,9 +293,10 @@ private fun OpenDetailsButton(modifier: Modifier = Modifier) {
     }
 }
 
-/** Provisional until product copy is approved. */
+/** What a card's own button says, read from the design system's resources. */
 object ContentText {
-    const val OPEN_DETAILS = "عرض التفاصيل"
+    val OPEN_DETAILS: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.ds_open_details)
 }
 
 /**
@@ -338,11 +341,13 @@ private fun StatusBadge(text: String, colour: Color) {
     }
 }
 
-/** Provisional until product copy is approved, like every other `…Text`/`…Copy` in the app. */
+/** Whether the doors are open, in words, read from the design system's resources. */
 object StatusText {
-    const val OPEN_NOW = "مفتوحة الآن"
-    const val CLOSED_NOW = "مغلقة الآن"
-    const val ON_DUTY_TODAY = "مناوبة اليوم"
+    val OPEN_NOW: String @Composable @ReadOnlyComposable get() = stringResource(R.string.ds_open_now)
+    val CLOSED_NOW: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.ds_closed_now)
+    val ON_DUTY_TODAY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.ds_on_duty_today)
 }
 
 /**
@@ -619,7 +624,7 @@ fun RatingSummary(
     average: Double?,
     count: Int,
     modifier: Modifier = Modifier,
-    emptyText: String = "لا توجد تقييمات بعد",
+    emptyText: String = stringResource(R.string.ds_no_ratings),
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),

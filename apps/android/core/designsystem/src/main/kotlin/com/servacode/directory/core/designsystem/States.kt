@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -139,7 +140,7 @@ fun DirectoryErrorState(
     title: String,
     modifier: Modifier = Modifier,
     body: String? = null,
-    retry: String? = "إعادة المحاولة",
+    retry: String? = stringResource(R.string.ds_retry),
     onRetry: (() -> Unit)? = null,
 ) {
     DirectoryMessageState(
@@ -157,9 +158,9 @@ fun DirectoryErrorState(
 @Composable
 fun DirectoryOfflineNotice(
     modifier: Modifier = Modifier,
-    text: String = "غير متصل — تعرض بيانات محفوظة قد لا تكون محدثة",
+    text: String = stringResource(R.string.ds_offline),
     onRetry: (() -> Unit)? = null,
-    retryLabel: String = "تحديث",
+    retryLabel: String = stringResource(R.string.ds_refresh),
 ) {
     Row(
         modifier = modifier
@@ -212,7 +213,7 @@ fun LoadMoreRow(
     onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
     error: String? = null,
-    label: String = "عرض المزيد",
+    label: String = stringResource(R.string.ds_load_more),
 ) {
     Column(
         modifier = modifier.fillMaxWidth().padding(Space.base),
@@ -233,7 +234,10 @@ fun LoadMoreRow(
                 color = MaterialTheme.colorScheme.primary,
             )
         } else {
-            DirectorySecondaryButton(if (error != null) "إعادة المحاولة" else label, onLoadMore)
+            DirectorySecondaryButton(
+                text = if (error != null) stringResource(R.string.ds_retry) else label,
+                onClick = onLoadMore,
+            )
         }
     }
 }

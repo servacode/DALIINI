@@ -52,7 +52,6 @@ class NavigationClipsTest {
         distance: Double? = 300.0,
     ) = VoiceCue(
         stage = stage,
-        text = "",
         key = "k",
         kind = VoiceCueKind.MANEUVER,
         maneuver = maneuver,
@@ -117,7 +116,7 @@ class NavigationClipsTest {
             VoiceCueKind.REROUTE_FAILED to "nav_reroute_failed",
             VoiceCueKind.STARTED to "nav_navigation_started",
         ).forEach { (kind, expected) ->
-            val clip = NavigationClips.clipFor(VoiceCue(VoiceStage.EVENT, "", "k", kind))
+            val clip = NavigationClips.clipFor(VoiceCue(VoiceStage.EVENT, "k", kind))
             assertEquals(expected, clip)
             assertTrue("$expected.mp3 is not shipped", File(raw, "$expected.mp3").isFile)
         }

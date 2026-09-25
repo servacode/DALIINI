@@ -32,24 +32,3 @@ fun LocationAnswer.preference(): LocationPreference = when (this) {
     LocationAnswer.REFUSED -> LocationPreference.DISABLED
     LocationAnswer.LATER -> LocationPreference.ASK
 }
-
-/** The words of the first run, in one place, provisional until product copy is approved. */
-object WelcomeCopy {
-    const val TITLE = "دليل الخدمات الصحية في محافظتك"
-    const val BODY = "اعرف الصيدليات والعيادات القريبة منك، ومَن منها مفتوح أو مناوب الآن."
-    const val CONTINUE = "ابدأ الآن"
-}
-
-/** The words of the location question, provisional until product copy is approved. */
-object LocationCopy {
-    const val TITLE = "الأذونات المطلوبة"
-    const val NOTE = "كلاهما اختياري، ويمكنك المتابعة بدونهما ضمن محافظتك."
-    val REASONS = listOf(
-        "معرفة أقرب الخدمات إليك",
-        "عرض المسافة التقريبية",
-        "تحسين نتائج الخريطة",
-        "تنبيهك بالمناوبة وبما يخص منشأتك",
-    )
-    const val ALLOW = "السماح"
-    const val LATER = "ليس الآن"
-}

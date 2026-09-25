@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What this module says. Here rather than in Kotlin so that a second language is a
+     second file beside this one, and the phone's own setting chooses between them. -->
+<resources>
+    <string name="account_title">الملف الشخصي</string>
+    <string name="account_error">تعذر تحميل الحساب</string>
+    <string name="account_edit_profile">المعلومات الشخصية</string>
+    <string name="account_favorites">المفضلة</string>
+    <string name="account_notifications">الإشعارات</string>
+    <string name="account_settings">الإعدادات</string>
+    <string name="account_facilities">منشآتي</string>
+    <string name="account_join_as_owner">انضم كصاحب منشأة</string>
+    <string name="account_join_as_owner_hint">أضف منشأتك</string>
+    <string name="account_facilities_hint">المواعيد والمناوبة والصور</string>
+    <string name="account_edit_profile_hint">الاسم والعنوان والصورة والمحافظة</string>
+    <string name="account_settings_hint">كلمة المرور والإشعارات والأذونات</string>
+    <string name="account_help">المساعدة والمعلومات</string>
+    <string name="account_help_hint">عن التطبيق والخصوصية والشروط</string>
+    <string name="account_section_account">حسابي</string>
+    <string name="account_section_facilities">المنشآت</string>
+    <string name="account_section_app">التطبيق</string>
+    <string name="account_sign_out">تسجيل الخروج</string>
+    <string name="account_sign_out_title">تسجيل الخروج؟</string>
+    <string name="account_sign_out_body">ستحتاج إلى تسجيل الدخول مرة أخرى لإدارة معلوماتك ومنشآتك.</string>
+    <string name="account_delete">حذف الحساب</string>
+    <string name="account_delete_title">حذف الحساب نهائيًا؟</string>
+    <string name="account_delete_body">سيتم إلغاء جلساتك وإزالة بيانات الحساب الشخصية. إذا كنت المالك الوحيد لمنشأة غير مغلقة، يجب نقل الملكية أو إغلاقها أولًا.</string>
+    <string name="account_delete_confirm">تأكيد الحذف</string>
+    <string name="account_delete_failed">تعذر طلب حذف الحساب. تحقق من ملكية المنشآت ثم أعد المحاولة.</string>
+    <string name="saved_favorites">المفضلة</string>
+    <string name="saved_favorites_error">تعذر تحميل المفضلة</string>
+    <string name="saved_favorites_empty">لا توجد منشآت محفوظة</string>
+    <string name="saved_favorites_empty_body">احفظ منشأة من صفحتها لتجدها هنا على أي جهاز.</string>
+    <string name="saved_unsave">إزالة من المفضلة</string>
+    <string name="saved_notifications">الإشعارات</string>
+    <string name="saved_notifications_error">تعذر تحميل الإشعارات</string>
+    <string name="saved_notifications_empty">لا توجد إشعارات</string>
+    <string name="saved_notifications_empty_body">سيصلك هنا كل ما ترسله المنصة إلى حسابك.</string>
+    <string name="saved_read_all">تعليم الكل كمقروء</string>
+    <string name="saved_unread">غير مقروء</string>
+    <string name="security_edit_profile">المعلومات الشخصية</string>
+    <string name="security_name">الاسم</string>
+    <string name="security_province">المحافظة</string>
+    <string name="security_save">حفظ</string>
+    <string name="security_phone">رقم الهاتف</string>
+    <string name="security_address">العنوان</string>
+    <string name="security_address_hint">الحي، وأقرب معلم</string>
+    <string name="security_picture">الصورة الشخصية</string>
+    <string name="security_choose_picture">اختيار صورة</string>
+    <string name="security_remove_picture">إزالة الصورة</string>
+    <string name="security_phone_note">رقم الهاتف هو معرّف حسابك، وتغييره يحتاج تحققًا جديدًا غير متاح بعد.</string>
+    <string name="security_change_password">تغيير كلمة المرور</string>
+    <string name="security_current_password">كلمة المرور الحالية</string>
+    <string name="security_new_password">كلمة المرور الجديدة</string>
+    <string name="security_confirm_password">تأكيد كلمة المرور</string>
+    <string name="security_mismatch">كلمتا المرور غير متطابقتين</string>
+    <string name="security_sessions_note">بعد التغيير ستُنهى جميع الجلسات، بما فيها هذا الجهاز، وستحتاج إلى تسجيل الدخول بكلمة المرور الجديدة.</string>
+    <string name="phone_change_title">تغيير رقم الهاتف</string>
+    <string name="phone_change_new_phone">الرقم الجديد</string>
+    <string name="phone_change_code">رمز التحقق</string>
+    <string name="phone_change_send">إرسال الرمز</string>
+    <string name="phone_change_confirm">تأكيد الرقم</string>
+    <string name="phone_change_another_number">رقم آخر</string>
+    <string name="phone_change_sessions_note">سنرسل رمزًا إلى الرقم الجديد للتأكد أنه لك. بعد التأكيد ستُنهى جميع الجلسات، بما فيها هذا الجهاز، وستحتاج إلى تسجيل الدخول بالرقم الجديد.</string>
+    <!-- %1$s is the number the code was sent to, as the reader typed it. -->
+    <string name="phone_change_sent_to">أرسلنا رمزًا مكوّنًا من ٦ أرقام إلى %1$s.</string>
+</resources>

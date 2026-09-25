@@ -69,7 +69,18 @@ def check_navigation_engine() -> None:
 
 def check_voice_and_map() -> None:
     source = nav_text()
-    require("ArabicManeuverPhraseBuilder" in source, "Arabic maneuver builder missing")
+    # A turn is decided in Kotlin and worded in the module's own strings.xml, so both halves
+    # are asserted: the decision, which is what the tests cover, and the Arabic sentences it
+    # is rendered with, which is what a second language replaces.
+    require(
+        "ManeuverPhrases" in source and "NavigationWords" in source,
+        "maneuver phrase builder missing",
+    )
+    words = read("feature/navigation/src/main/res/values/strings.xml")
+    require(
+        "nav_maneuver_turn_right" in words and "انعطف يمينًا" in words,
+        "Arabic maneuver phrases missing",
+    )
     # Arabic out loud, whichever way the locale is named. The recorded pack says the common
     # phrases; the synthesiser is the fallback for the ones it has no recording for, and on a
     # phone with no Arabic voice installed the fallback is silent — which is why both must exist.

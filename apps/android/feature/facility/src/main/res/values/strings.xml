@@ -23,18 +23,4 @@
     <string name="facility_close">إغلاق</string>
     <!-- %1$d is how many stars, out of five. -->
     <string name="facility_rate_label">%1$d من 5</string>
-    <!-- What goes between items of a list. A comma is not the same mark in every language. -->
-    <string name="facility_list_separator">، </string>
-
-    <!-- Monday first, matching the backend's weekday numbering, and read by index. -->
-    <string-array name="facility_weekdays">
-        <item>الاثنين</item>
-        <item>الثلاثاء</item>
-        <item>الأربعاء</item>
-        <item>الخميس</item>
-        <item>الجمعة</item>
-        <item>السبت</item>
-        <item>الأحد</item>
-    </string-array>
-    <string name="facility_weekday_unknown">—</string>
 </resources>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The words the design system says on its own, and the words more than one module needs.
+
+     A control that carries its own label — the eye on a password field, the cross on a search
+     field, the answer on a dialog — says it from here, so the same sentence is not written into
+     fourteen screens. A second language is a second file beside this one. -->
+<resources>
+    <!-- Controls. -->
+    <string name="ds_show_password">إظهار كلمة المرور</string>
+    <string name="ds_hide_password">إخفاء كلمة المرور</string>
+    <string name="ds_clear_search">مسح البحث</string>
+    <string name="ds_cancel">إلغاء</string>
+    <string name="ds_next">التالي</string>
+    <string name="ds_confirm">تأكيد</string>
+    <string name="ds_back">رجوع</string>
+    <string name="ds_retry">إعادة المحاولة</string>
+    <string name="ds_refresh">تحديث</string>
+    <string name="ds_load_more">عرض المزيد</string>
+    <string name="ds_open_details">عرض التفاصيل</string>
+
+    <!-- A field that opens a date and time picker, named by the field it belongs to. -->
+    <string name="ds_pick_datetime">%1$s: اختر التاريخ والوقت</string>
+
+    <!-- What the app is working from when the network is gone. -->
+    <string name="ds_offline">غير متصل — تعرض بيانات محفوظة قد لا تكون محدثة</string>
+
+    <!-- Whether the doors are open, and whether today's roster names this facility. -->
+    <string name="ds_open_now">مفتوحة الآن</string>
+    <string name="ds_closed_now">مغلقة الآن</string>
+    <string name="ds_on_duty_today">مناوبة اليوم</string>
+
+    <string name="ds_no_ratings">لا توجد تقييمات بعد</string>
+
+    <!-- Shared vocabulary: words that belong to no single screen.
+
+         Monday first, matching the backend's weekday numbering, and read by index. Both the
+         facility's opening hours and the owner's hours editor name the days, and they must name
+         them the same way — so they name them from here. -->
+    <string-array name="directory_weekdays">
+        <item>الاثنين</item>
+        <item>الثلاثاء</item>
+        <item>الأربعاء</item>
+        <item>الخميس</item>
+        <item>الجمعة</item>
+        <item>السبت</item>
+        <item>الأحد</item>
+    </string-array>
+    <string name="directory_weekday_unknown">—</string>
+
+    <!-- What goes between items of a list. A comma is not the same mark in every language. -->
+    <string name="directory_list_separator">، </string>
+</resources>

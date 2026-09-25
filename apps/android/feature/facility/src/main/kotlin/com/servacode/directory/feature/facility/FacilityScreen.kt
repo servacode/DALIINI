@@ -31,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -51,6 +50,7 @@ import com.servacode.directory.core.designsystem.DirectoryRoundControl
 import com.servacode.directory.core.designsystem.DirectorySection
 import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTopBar
+import com.servacode.directory.core.designsystem.DirectoryWords
 import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.MetaRow
 import com.servacode.directory.core.designsystem.PhotoPager
@@ -151,7 +151,7 @@ private fun FacilityBody(
     val detail = value.value
     val summary = detail.summary
     val placed = detail.latitude != null && detail.longitude != null
-    val separator = stringResource(R.string.facility_list_separator)
+    val separator = DirectoryWords.LIST_SEPARATOR
     val address = listOfNotNull(detail.neighborhoodNameAr, detail.addressAr).joinToString(separator)
     Column(
         modifier = Modifier
@@ -309,7 +309,7 @@ private fun HourRow(hour: BusinessHour) {
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
-            text = weekdayName(hour.weekday),
+            text = DirectoryWords.weekday(hour.weekday),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f),
@@ -320,14 +320,6 @@ private fun HourRow(hour: BusinessHour) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
-}
-
-/** 0 is Monday, matching the backend's weekday numbering; the names are the module's own. */
-@Composable
-@ReadOnlyComposable
-private fun weekdayName(weekday: Int): String {
-    val days = LocalContext.current.resources.getStringArray(R.array.facility_weekdays)
-    return days.getOrNull(weekday) ?: stringResource(R.string.facility_weekday_unknown)
 }
 
 /** The words of a facility's page, provisional until product copy is approved. */

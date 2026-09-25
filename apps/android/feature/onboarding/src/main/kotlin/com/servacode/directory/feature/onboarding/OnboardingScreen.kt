@@ -22,11 +22,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -47,6 +50,7 @@ import com.servacode.directory.core.designsystem.DirectorySwitchRow
 import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTextField
 import com.servacode.directory.core.designsystem.DirectoryTopBar
+import com.servacode.directory.core.designsystem.DirectoryWords
 import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.MetaRow
 import com.servacode.directory.core.designsystem.Space
@@ -54,6 +58,8 @@ import com.servacode.directory.core.designsystem.StatusPill
 import com.servacode.directory.core.designsystem.StatusTone
 import com.servacode.directory.core.designsystem.StepIndicator
 import com.servacode.directory.core.maps.MapPoint
+import com.servacode.directory.core.model.AppError
+import com.servacode.directory.core.model.AppErrorText
 import com.servacode.directory.core.model.BusinessHour
 import com.servacode.directory.core.model.OwnerFacilityStatus
 import com.servacode.directory.core.model.OwnerLabels
@@ -157,9 +163,9 @@ fun OnboardingScreen(
                             color = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.semantics { heading() },
                         )
-                        value.message?.let {
+                        value.message?.let { message ->
                             Text(
-                                text = it,
+                                text = noticeText(message),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(top = Space.xs),
@@ -506,7 +512,7 @@ private fun HoursEditor(
             DirectoryCard {
                 Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
                     DirectorySwitchRow(
-                        title = OnboardingCopy.DAY_NAMES[weekday],
+                        title = DirectoryWords.weekday(weekday),
                         checked = spans.isNotEmpty(),
                         onCheckedChange = { open ->
                             days[weekday] = if (open) listOf(HourSpan("09:00", "17:00")) else emptyList()
@@ -585,62 +591,143 @@ private val SUBMISSION_STATES = listOf(
     OwnerFacilityStatus.ACTIVE,
 )
 
-private fun stepLabel(step: OnboardingStep): String = when (step) {
-    OnboardingStep.PROVINCE_CATEGORY -> "المحافظة والتصنيف"
-    OnboardingStep.BASIC_INFO -> "البيانات الأساسية"
-    OnboardingStep.MAP_POINT -> "الموقع"
-    OnboardingStep.HOURS -> "ساعات العمل"
-    OnboardingStep.PUBLIC_IMAGES -> "الصور العامة"
-    OnboardingStep.SPECIALIZED_FIELDS -> "الحقول المتخصصة"
-    OnboardingStep.VERIFICATION_EVIDENCE -> "إثباتات التحقق"
-    OnboardingStep.REVIEW -> "المراجعة"
-    OnboardingStep.SUBMIT -> "الإرسال"
-    OnboardingStep.STATUS -> "الحالة"
+@Composable
+@ReadOnlyComposable
+private fun stepLabel(step: OnboardingStep): String = stringResource(
+    when (step) {
+        OnboardingStep.PROVINCE_CATEGORY -> R.string.onboarding_step_province_category
+        OnboardingStep.BASIC_INFO -> R.string.onboarding_step_basic_info
+        OnboardingStep.MAP_POINT -> R.string.onboarding_step_map_point
+        OnboardingStep.HOURS -> R.string.onboarding_step_hours
+        OnboardingStep.PUBLIC_IMAGES -> R.string.onboarding_step_public_images
+        OnboardingStep.SPECIALIZED_FIELDS -> R.string.onboarding_step_specialized_fields
+        OnboardingStep.VERIFICATION_EVIDENCE -> R.string.onboarding_step_verification_evidence
+        OnboardingStep.REVIEW -> R.string.onboarding_step_review
+        OnboardingStep.SUBMIT -> R.string.onboarding_step_submit
+        OnboardingStep.STATUS -> R.string.onboarding_step_status
+    },
+)
+
+/**
+ * What the owner is told, in words.
+ *
+ * The view model named it; this turns the name into the reader's language. A failure carries the
+ * error's own sentence as well, because "could not save" alone does not say what to do next.
+ */
+@Composable
+@ReadOnlyComposable
+private fun noticeText(message: OnboardingMessage): String = when (message.notice) {
+    OnboardingNotice.DRAFT_SAVED -> stringResource(R.string.onboarding_notice_draft_saved)
+    OnboardingNotice.FILE_UPLOADED -> stringResource(R.string.onboarding_notice_file_uploaded)
+    OnboardingNotice.SUBMITTED -> stringResource(R.string.onboarding_notice_submitted)
+    OnboardingNotice.LOCATION_PERMISSION ->
+        stringResource(R.string.onboarding_notice_location_permission)
+    OnboardingNotice.LOCATION_UNAVAILABLE ->
+        stringResource(R.string.onboarding_notice_location_unavailable)
+    OnboardingNotice.IMAGE_UNREADABLE -> stringResource(R.string.onboarding_notice_image_unreadable)
+    OnboardingNotice.DRAFT_SAVE_FAILED ->
+        stringResource(R.string.onboarding_notice_draft_save_failed, message.reason())
+    OnboardingNotice.LOCATION_SAVE_FAILED ->
+        stringResource(R.string.onboarding_notice_location_save_failed, message.reason())
+    OnboardingNotice.HOURS_SAVE_FAILED ->
+        stringResource(R.string.onboarding_notice_hours_save_failed, message.reason())
+    OnboardingNotice.UPLOAD_FAILED ->
+        stringResource(R.string.onboarding_notice_upload_failed, message.reason())
+    OnboardingNotice.SUBMIT_FAILED ->
+        stringResource(R.string.onboarding_notice_submit_failed, message.reason())
 }
 
-/** The words of the owner's registration, provisional until product copy is approved. */
+/** The error's own sentence, or the one for an error nobody named. */
+private fun OnboardingMessage.reason(): String =
+    AppErrorText.of(error ?: AppError(AppError.Kind.UNEXPECTED))
+
+/**
+ * The words of the owner's registration, read from the module's own resources.
+ *
+ * See `HomeCopy` for why each member is read in composition. The days of the week are not here:
+ * they are the app's words rather than this screen's, so they come from `DirectoryWords`.
+ */
 object OnboardingCopy {
-    const val TITLE = "إضافة / تعديل منشأة"
-    val PHASES = listOf("المنشأة", "الإثباتات", "المراجعة")
-    val DAY_NAMES = listOf(
-        "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد",
-    )
-    const val PROVINCE_REQUIRED = "اختر المحافظة قبل إضافة منشأة"
-    const val PROVINCE_CHOOSE = "اختيار المحافظة"
-    const val CONFIG_ERROR = "تعذر تحميل إعدادات التسجيل"
-    const val CONFIG_ERROR_BODY = "أعد المحاولة بعد قليل."
-    const val NAME_AR = "اسم المنشأة"
-    const val NAME_EN = "الاسم بالإنكليزية - اختياري"
-    const val DESCRIPTION = "الوصف"
-    const val PHONE = "الهاتف"
-    const val ADDRESS = "العنوان"
-    const val MAP_NOTE = "حدد نقطة المنشأة على الخريطة أو استخدم موقعك الحالي."
-    const val MAP_WAITING = "جارٍ تجهيز الخريطة…"
-    const val MAP_SAVE = "حفظ هذا الموقع"
-    const val MAP_CURRENT = "استخدام موقعي الحالي"
-    const val HOURS_NOTE = "يمكن إضافة أكثر من فترة في اليوم. إذا كان وقت الإغلاق قبل وقت الفتح " +
-        "فالفترة تمتد بعد منتصف الليل."
-    const val HOURS_SAVE = "حفظ الساعات والمتابعة"
-    const val OPENS_AT = "يفتح HH:mm"
-    const val CLOSES_AT = "يغلق HH:mm"
-    const val SPAN_ADD = "إضافة فترة"
-    const val SPAN_REMOVE = "حذف الفترة"
-    const val IMAGES_NOTE = "هذه الصور تظهر للجميع في صفحة المنشأة."
-    const val IMAGES_PICK = "اختيار صورة"
-    const val SPECIALIZED_NOTE = "الحقول المتخصصة تُعرض حسب إمكانيات التصنيف."
-    const val EVIDENCE_NOTE = "الإثباتات خاصة بالمراجعة ولا تظهر في صفحة المنشأة."
-    const val EVIDENCE_UPLOAD = "رفع ملف"
-    const val REQUIRED = "مطلوب"
-    const val OPTIONAL = "اختياري"
-    const val REVIEW_NOTE = "الإرسال يعيد التحقق من سياسة التسجيل والإثباتات الحالية."
-    const val REJECTION = "سبب الرفض"
-    const val SUBMITTING = "جارٍ الإرسال…"
-    const val NEXT = "التالي"
-    const val TO_REVIEW = "مراجعة الطلب"
-    const val SUBMIT = "إرسال للمراجعة"
-    const val BACK_TO_FACILITIES = "العودة إلى منشآتي"
+    val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_title)
 
-    fun saved(point: MapPoint): String = "الموقع المحفوظ: ${point.latitude}، ${point.longitude}"
+    /** The three phases the steps are grouped into. */
+    val PHASES: List<String>
+        @Composable @ReadOnlyComposable
+        get() = stringArrayResource(R.array.onboarding_phases).toList()
 
-    fun marked(point: MapPoint): String = "النقطة المختارة: ${point.latitude}، ${point.longitude}"
+    val PROVINCE_REQUIRED: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_province_required)
+    val PROVINCE_CHOOSE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_province_choose)
+    val CONFIG_ERROR: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_config_error)
+    val CONFIG_ERROR_BODY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_config_error_body)
+    val NAME_AR: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_name_ar)
+    val NAME_EN: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_name_en)
+    val DESCRIPTION: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_description)
+    val PHONE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_phone)
+    val ADDRESS: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_address)
+    val MAP_NOTE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_map_note)
+    val MAP_WAITING: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_map_waiting)
+    val MAP_SAVE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_map_save)
+    val MAP_CURRENT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_map_current)
+    val HOURS_NOTE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_hours_note)
+    val HOURS_SAVE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_hours_save)
+    val OPENS_AT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_opens_at)
+    val CLOSES_AT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_closes_at)
+    val SPAN_ADD: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_span_add)
+    val SPAN_REMOVE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_span_remove)
+    val IMAGES_NOTE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_images_note)
+    val IMAGES_PICK: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_images_pick)
+    val SPECIALIZED_NOTE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_specialized_note)
+    val EVIDENCE_NOTE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_evidence_note)
+    val EVIDENCE_UPLOAD: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_evidence_upload)
+    val REQUIRED: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_required)
+    val OPTIONAL: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_optional)
+    val REVIEW_NOTE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_review_note)
+    val REJECTION: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_rejection)
+    val SUBMITTING: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_submitting)
+    val NEXT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_next)
+    val TO_REVIEW: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_to_review)
+    val SUBMIT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_submit)
+    val BACK_TO_FACILITIES: String
+        @Composable @ReadOnlyComposable
+        get() = stringResource(R.string.onboarding_back_to_facilities)
+
+    @Composable
+    @ReadOnlyComposable
+    fun saved(point: MapPoint): String =
+        stringResource(R.string.onboarding_saved_point, point.latitude, point.longitude)
+
+    @Composable
+    @ReadOnlyComposable
+    fun marked(point: MapPoint): String =
+        stringResource(R.string.onboarding_marked_point, point.latitude, point.longitude)
 }

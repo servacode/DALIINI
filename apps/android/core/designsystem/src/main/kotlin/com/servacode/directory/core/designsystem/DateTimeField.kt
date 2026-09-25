@@ -5,17 +5,18 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import com.servacode.directory.core.model.DamascusTime
 import java.time.LocalTime
 
@@ -39,7 +40,7 @@ fun DateTimeField(
     OutlinedButton(onClick = { step = PickerStep.DATE }, modifier = modifier) {
         Text(
             if (epochMillis == null) {
-                "$label: اختر التاريخ والوقت"
+                stringResource(R.string.ds_pick_datetime, label)
             } else {
                 "$label: ${DamascusTime.format(epochMillis)}"
             },
@@ -60,9 +61,13 @@ fun DateTimeField(
                             pickedDay = state.selectedDateMillis
                             step = PickerStep.TIME
                         },
-                    ) { Text("التالي") }
+                    ) { Text(stringResource(R.string.ds_next)) }
                 },
-                dismissButton = { TextButton(onClick = { step = PickerStep.CLOSED }) { Text("إلغاء") } },
+                dismissButton = {
+                    TextButton(onClick = { step = PickerStep.CLOSED }) {
+                        Text(stringResource(R.string.ds_cancel))
+                    }
+                },
             ) {
                 DatePicker(state = state)
             }
@@ -88,9 +93,13 @@ fun DateTimeField(
                             }
                             step = PickerStep.CLOSED
                         },
-                    ) { Text("تأكيد") }
+                    ) { Text(stringResource(R.string.ds_confirm)) }
                 },
-                dismissButton = { TextButton(onClick = { step = PickerStep.CLOSED }) { Text("إلغاء") } },
+                dismissButton = {
+                    TextButton(onClick = { step = PickerStep.CLOSED }) {
+                        Text(stringResource(R.string.ds_cancel))
+                    }
+                },
                 text = { TimePicker(state = state) },
             )
         }

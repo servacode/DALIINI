@@ -1,16 +1,19 @@
 package com.servacode.directory.core.designsystem
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -24,12 +27,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,15 +39,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.foundation.selection.toggleable
-import androidx.annotation.DrawableRes
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 /** The one call to action a screen leads with. */
@@ -199,8 +200,8 @@ fun DirectoryPasswordField(
     error: String? = null,
     enabled: Boolean = true,
     numeric: Boolean = false,
-    showLabel: String = "إظهار كلمة المرور",
-    hideLabel: String = "إخفاء كلمة المرور",
+    showLabel: String = stringResource(R.string.ds_show_password),
+    hideLabel: String = stringResource(R.string.ds_hide_password),
     /** Filled rather than outlined, for a field that sits on a white card. */
     filled: Boolean = false,
 ) {
@@ -249,7 +250,7 @@ fun DirectorySearchField(
     placeholder: String,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    clearLabel: String = "مسح البحث",
+    clearLabel: String = stringResource(R.string.ds_clear_search),
 ) {
     OutlinedTextField(
         value = value,
@@ -522,7 +523,7 @@ fun DirectoryConfirmDialog(
     confirm: String,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
-    dismiss: String = "إلغاء",
+    dismiss: String = stringResource(R.string.ds_cancel),
     destructive: Boolean = false,
 ) {
     AlertDialog(

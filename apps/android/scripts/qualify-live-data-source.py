@@ -86,7 +86,17 @@ def check_rest_truth_and_offline() -> None:
     notice = read(
         "core/designsystem/src/main/kotlin/com/servacode/directory/core/designsystem/States.kt"
     )
-    require("قد لا تكون محدثة" in notice, "offline time-sensitive freshness warning missing")
+    require(
+        "R.string.ds_offline" in notice,
+        "the offline notice does not read its sentence from resources",
+    )
+    # The sentence itself is in the design system's strings.xml, so that a second language is
+    # a second file rather than a search through the components.
+    words = read("core/designsystem/src/main/res/values/strings.xml")
+    require(
+        "قد لا تكون محدثة" in words,
+        "offline time-sensitive freshness warning missing",
+    )
 
 
 def check_push_boundary() -> None:

@@ -6,6 +6,7 @@ import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.maps.NavigationRoute
 import com.servacode.directory.core.maps.RouteManeuver
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -103,7 +104,7 @@ class NavigationVoicePlannerTest {
         val rerouting = NavigationState.Rerouting(navigating(200.0).progress)
         val said = (1..4).flatMap { planner.onState(rerouting, 10f) }
         assertEquals(1, said.size)
-        assertEquals(NavigationVoiceCopy.REROUTING, said.single().text)
+        assertEquals(VoiceCueKind.REROUTE, said.single().kind)
     }
 
     @Test
@@ -112,7 +113,7 @@ class NavigationVoicePlannerTest {
         val arrived = NavigationState.Arrived(route)
         val said = (1..3).flatMap { planner.onState(arrived, 0f) }
         assertEquals(1, said.size)
-        assertEquals(NavigationVoiceCopy.ARRIVED, said.single().text)
+        assertEquals(VoiceCueKind.ARRIVE, said.single().kind)
     }
 
     @Test
@@ -138,24 +139,28 @@ class NavigationVoicePlannerTest {
     }
 
     @Test
-    fun `the sentence carries the distance and the street, and the last one does not`() {
+    fun `a cue carries what the sentence needs and the last one carries no distance`() {
         val planner = NavigationVoicePlanner()
         val prepare = planner.onState(navigating(300.0), 10f).single()
-        assertTrue(prepare.text, prepare.text.startsWith("بعد "))
-        assertTrue(prepare.text, prepare.text.contains("انعطف يمينًا"))
-        assertTrue(prepare.text, prepare.text.contains("شارع بغداد"))
+        // The words are chosen by NavigationWords from these three, so these three are the test:
+        // how far, which turn, and which street.
+        assertEquals(300.0, prepare.distanceMeters!!, 0.5)
+        val phrase = ManeuverPhrases.of(prepare.maneuver!!)
+        assertEquals(ManeuverPhraseKind.TURN_RIGHT, phrase.kind)
+        assertEquals("شارع بغداد", phrase.street)
         planner.onState(navigating(120.0), 10f)
         val now = planner.onState(navigating(30.0), 10f).single()
         assertEquals(VoiceStage.NOW, now.stage)
-        assertTrue(now.text, now.text.endsWith(NavigationVoiceCopy.NOW))
+        // At the turn the distance is not said, so it is not carried.
+        assertNull(now.distanceMeters)
     }
 
     @Test
-    fun `a distance is spoken the way it is said, not the way it is measured`() {
-        assertEquals("بعد 500 متر", NavigationVoiceCopy.after(483.0))
-        assertEquals("بعد 50 متر", NavigationVoiceCopy.after(12.0))
-        assertEquals("بعد 1 كم", NavigationVoiceCopy.after(1020.0))
-        assertEquals("بعد 1.5 كم", NavigationVoiceCopy.after(1480.0))
+    fun `a distance is rounded the way it is said, not the way it is measured`() {
+        assertEquals(SpokenDistance.Metres(500), spokenDistance(483.0))
+        assertEquals(SpokenDistance.Metres(50), spokenDistance(12.0))
+        assertEquals(SpokenDistance.Kilometres(halves = 2), spokenDistance(1020.0))
+        assertEquals(SpokenDistance.Kilometres(halves = 3), spokenDistance(1480.0))
     }
 
     @Test

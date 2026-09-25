@@ -3,7 +3,6 @@ package com.servacode.directory.feature.navigation
 import com.servacode.directory.core.maps.ManeuverKind
 import com.servacode.directory.core.maps.RouteManeuver
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 /**
  * When a thing is said, and what — never how it is said.
@@ -37,9 +36,16 @@ enum class VoiceStage {
 /** What a cue is about, which is what decides which recording says it. */
 enum class VoiceCueKind { MANEUVER, REROUTE, REROUTE_FAILED, ARRIVE, STARTED }
 
+/**
+ * One thing to say, named rather than worded.
+ *
+ * A cue carries what it is about — the stage, the kind, the turn, the distance — and not a
+ * sentence: the sentence is chosen from the module's resources by [NavigationWords] at the moment
+ * of speaking, so guidance in a second language needs no change here, and a test can assert that
+ * the right cue fired without asserting prose.
+ */
 data class VoiceCue(
     val stage: VoiceStage,
-    val text: String,
     /** What makes this cue this cue, so the same one is never said twice. */
     val key: String,
     val kind: VoiceCueKind = VoiceCueKind.MANEUVER,
@@ -114,7 +120,6 @@ internal class NavigationVoicePlanner(private val tuning: VoiceTuning = VoiceTun
                     rerouteAnnounced = true
                     cues += VoiceCue(
                         stage = VoiceStage.EVENT,
-                        text = NavigationVoiceCopy.REROUTING,
                         key = "reroute",
                         kind = VoiceCueKind.REROUTE,
                     )
@@ -128,7 +133,6 @@ internal class NavigationVoicePlanner(private val tuning: VoiceTuning = VoiceTun
                     arrivalAnnounced = true
                     cues += VoiceCue(
                         stage = VoiceStage.EVENT,
-                        text = NavigationVoiceCopy.ARRIVED,
                         key = "arrived",
                         kind = VoiceCueKind.ARRIVE,
                     )
@@ -173,7 +177,6 @@ internal class NavigationVoicePlanner(private val tuning: VoiceTuning = VoiceTun
         return listOf(
             VoiceCue(
                 stage = stage,
-                text = phrase(stage, maneuver, distance),
                 key = "$key:$stage",
                 kind = VoiceCueKind.MANEUVER,
                 maneuver = maneuver,
@@ -227,39 +230,6 @@ internal class NavigationVoicePlanner(private val tuning: VoiceTuning = VoiceTun
         lastDistanceMeters = Double.NaN
     }
 
-    private fun phrase(stage: VoiceStage, maneuver: RouteManeuver, distanceMeters: Double): String {
-        val instruction = ArabicManeuverPhraseBuilder.phrase(maneuver)
-        // Setting off is not approached from a distance either, so it keeps its own words.
-        if (maneuver.kind == ManeuverKind.DEPART) return instruction
-        return when (stage) {
-            VoiceStage.NOW -> "$instruction ${NavigationVoiceCopy.NOW}"
-            else -> "${NavigationVoiceCopy.after(distanceMeters)} $instruction"
-        }
-    }
-
     private fun RouteManeuver.key(): String =
         "$kind:$modifier:${point.latitude}:${point.longitude}"
-}
-
-/** The words guidance uses, in one place, provisional until product copy is approved. */
-internal object NavigationVoiceCopy {
-    const val REROUTING = "يُعاد حساب الطريق"
-    const val ARRIVED = "لقد وصلت إلى وجهتك"
-    const val NOW = "الآن"
-
-    /**
-     * A distance as it is spoken, not as it is measured.
-     *
-     * "After 483 metres" is a number nobody drives by. Rounded to fifty below a kilometre and to
-     * a half above it, which is how the distance is said out loud anyway.
-     */
-    fun after(meters: Double): String {
-        if (meters >= 1000) {
-            val kilometres = (meters / 500.0).roundToInt() / 2.0
-            val said = if (kilometres % 1.0 == 0.0) kilometres.toInt().toString() else kilometres.toString()
-            return "بعد $said كم"
-        }
-        val rounded = ((meters / 50.0).roundToInt() * 50).coerceAtLeast(50)
-        return "بعد $rounded متر"
-    }
 }

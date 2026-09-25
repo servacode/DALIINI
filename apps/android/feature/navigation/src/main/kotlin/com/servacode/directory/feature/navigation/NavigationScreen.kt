@@ -17,12 +17,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -343,7 +345,7 @@ private fun ManeuverBanner(progress: NavigationProgress) {
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = ArabicManeuverPhraseBuilder.phrase(maneuver),
+                    text = maneuverSentence(maneuver),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
@@ -380,52 +382,78 @@ private fun geoUri(destination: MapPoint): Uri =
     ("geo:${destination.latitude},${destination.longitude}?q=" +
         "${destination.latitude},${destination.longitude}").toUri()
 
+@Composable
+@ReadOnlyComposable
 private fun formatDuration(seconds: Double): String {
     val minutes = (seconds / 60.0).roundToInt().coerceAtLeast(1)
-    return "$minutes دقيقة"
+    return stringResource(R.string.nav_minutes, minutes)
 }
 
-private fun errorMessage(code: String): String = when (code) {
-    "LOCATION_PERMISSION_REQUIRED" -> "يلزم السماح بالموقع أثناء استخدام التطبيق للملاحة."
-    "LOCATION_UNAVAILABLE" -> "تعذر تحديد موقعك الحالي."
-    "NO_ROUTE" -> "لا يوجد طريق بين موقعك والمنشأة بهذا النمط."
-    "UNROUTABLE_POINT" -> "لا توجد طريق صالحة لهذا النمط قرب أحد الموقعين."
-    "TOO_FAR" -> "المسافة أبعد من أن تُحسب بهذا النمط."
-    "INVALID_POINTS" -> "أحد الموقعين غير صالح."
-    "UNREACHABLE" -> "خدمة التوجيه لا تستجيب."
-    "NOT_CONFIGURED" -> "خدمة التوجيه غير مهيأة في هذه النسخة."
-    "MALFORMED", "ENGINE_ERROR", "ROUTING_UNAVAILABLE" -> "تعذر حساب المسار من خدمة التوجيه."
-    else -> "تعذر بدء الملاحة."
-}
+/** Why the trip could not start, in words, from the routing service's own code. */
+@Composable
+@ReadOnlyComposable
+private fun errorMessage(code: String): String = stringResource(
+    when (code) {
+        "LOCATION_PERMISSION_REQUIRED" -> R.string.nav_error_location_permission
+        "LOCATION_UNAVAILABLE" -> R.string.nav_error_location_unavailable
+        "NO_ROUTE" -> R.string.nav_error_no_route
+        "UNROUTABLE_POINT" -> R.string.nav_error_unroutable_point
+        "TOO_FAR" -> R.string.nav_error_too_far
+        "INVALID_POINTS" -> R.string.nav_error_invalid_points
+        "UNREACHABLE" -> R.string.nav_error_unreachable
+        "NOT_CONFIGURED" -> R.string.nav_error_not_configured
+        "MALFORMED", "ENGINE_ERROR", "ROUTING_UNAVAILABLE" -> R.string.nav_error_engine
+        else -> R.string.nav_error_unknown
+    },
+)
 
+/**
+ * What went wrong without ending the trip.
+ *
+ * A code this build does not know is shown as itself rather than as a reassuring sentence that
+ * hides it: a warning nobody can act on is still better than a warning nobody can see.
+ */
+@Composable
+@ReadOnlyComposable
 private fun warningMessage(code: String): String = when (code) {
-    "REROUTE_NETWORK_FAILED" -> "تعذر إعادة التوجيه الآن؛ سيستمر عرض المسار الحالي."
-    "LOCATION_TEMPORARILY_UNAVAILABLE" -> "إشارة الموقع غير متاحة مؤقتًا."
+    "REROUTE_NETWORK_FAILED" -> stringResource(R.string.nav_warning_reroute_failed)
+    "LOCATION_TEMPORARILY_UNAVAILABLE" -> stringResource(R.string.nav_warning_location_unavailable)
     else -> code
 }
 
-/** The words of the navigation, provisional until product copy is approved. */
+/**
+ * The words of the navigation, read from the module's own resources.
+ *
+ * See `HomeCopy` for why these are read in composition rather than held as constants.
+ */
 object NavigationCopy {
-    const val TITLE = "الطريق"
-    const val ROUTING = "جارٍ حساب المسار…"
-    const val REROUTING = "جارٍ إعادة حساب المسار…"
-    const val ARRIVED = "لقد وصلت إلى وجهتك"
-    const val ALLOW_LOCATION = "السماح بالموقع"
-    const val RETRY = "إعادة المحاولة"
-    const val ZOOM_IN = "تقريب"
-    const val ZOOM_OUT = "تبعيد"
-    const val CLOSE = "إغلاق"
-    const val RECENTRE = "إعادة التوسيط"
-    const val EXTERNAL_MAPS = "فتح تطبيق خرائط خارجي"
-    const val PERMISSION_TITLE = "الملاحة تحتاج موقعك"
-    const val SIMULATE = "رحلة تجريبية"
-    const val SIMULATED = "رحلة تجريبية — الموقع مُحاكى ولست تتحرك فعلًا"
+    val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_title)
+    val ROUTING: String @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_routing)
+    val REROUTING: String @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_rerouting)
+    val ARRIVED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_arrived)
+    val ALLOW_LOCATION: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_allow_location)
+    val RETRY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_retry)
+    val ZOOM_IN: String @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_zoom_in)
+    val ZOOM_OUT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_zoom_out)
+    val CLOSE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_close)
+    val RECENTRE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_recentre)
+    val EXTERNAL_MAPS: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_external_maps)
+    val PERMISSION_TITLE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_permission_title)
+    val SIMULATE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_simulate)
+    val SIMULATED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_simulated)
 
-    internal fun mode(profile: RoutingProfile): String = when (profile) {
-        RoutingProfile.WALKING -> "مشي"
-        RoutingProfile.MOTORCYCLE -> "موتور"
-        RoutingProfile.DRIVING -> "سيارة"
-    }
+    @Composable
+    @ReadOnlyComposable
+    internal fun mode(profile: RoutingProfile): String = stringResource(
+        when (profile) {
+            RoutingProfile.WALKING -> R.string.nav_mode_walking
+            RoutingProfile.MOTORCYCLE -> R.string.nav_mode_motorcycle
+            RoutingProfile.DRIVING -> R.string.nav_mode_driving
+        },
+    )
 }
 
 /** One step of scale per press: enough to notice, small enough to aim with. */

@@ -18,9 +18,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -302,15 +304,19 @@ fun UnreadBadge(count: Int, modifier: Modifier = Modifier) {
 
 /** The words of the saved facilities and the inbox, provisional until product copy is approved. */
 object SavedCopy {
-    const val FAVORITES = "المفضلة"
-    const val FAVORITES_ERROR = "تعذر تحميل المفضلة"
-    const val FAVORITES_EMPTY = "لا توجد منشآت محفوظة"
-    const val FAVORITES_EMPTY_BODY = "احفظ منشأة من صفحتها لتجدها هنا على أي جهاز."
-    const val UNSAVE = "إزالة من المفضلة"
-    const val NOTIFICATIONS = "الإشعارات"
-    const val NOTIFICATIONS_ERROR = "تعذر تحميل الإشعارات"
-    const val NOTIFICATIONS_EMPTY = "لا توجد إشعارات"
-    const val NOTIFICATIONS_EMPTY_BODY = "سيصلك هنا كل ما ترسله المنصة إلى حسابك."
-    const val READ_ALL = "تعليم الكل كمقروء"
-    const val UNREAD = "غير مقروء"
+    val FAVORITES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.saved_favorites)
+    val FAVORITES_ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.saved_favorites_error)
+    val FAVORITES_EMPTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.saved_favorites_empty)
+    val FAVORITES_EMPTY_BODY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.saved_favorites_empty_body)
+    val UNSAVE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.saved_unsave)
+    val NOTIFICATIONS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.saved_notifications)
+    val NOTIFICATIONS_ERROR: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.saved_notifications_error)
+    val NOTIFICATIONS_EMPTY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.saved_notifications_empty)
+    val NOTIFICATIONS_EMPTY_BODY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.saved_notifications_empty_body)
+    val READ_ALL: String @Composable @ReadOnlyComposable get() = stringResource(R.string.saved_read_all)
+    val UNREAD: String @Composable @ReadOnlyComposable get() = stringResource(R.string.saved_unread)
 }

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What this module says. Here rather than in Kotlin so that a second language is a
+     second file beside this one, and the phone's own setting chooses between them. -->
+<resources>
+    <string name="bootstrap_error">تعذر بدء التطبيق</string>
+    <string name="bootstrap_error_body">أغلق التطبيق وافتحه مرة أخرى.</string>
+
+    <string name="welcome_title">دليل الخدمات الصحية في محافظتك</string>
+    <string name="welcome_body">اعرف الصيدليات والعيادات القريبة منك، ومَن منها مفتوح أو مناوب الآن.</string>
+    <string name="welcome_continue">ابدأ الآن</string>
+
+    <string name="location_title">الأذونات المطلوبة</string>
+    <string name="location_note">كلاهما اختياري، ويمكنك المتابعة بدونهما ضمن محافظتك.</string>
+
+    <!-- Why the app is asking, one line each, read in order. -->
+    <string-array name="location_reasons">
+        <item>معرفة أقرب الخدمات إليك</item>
+        <item>عرض المسافة التقريبية</item>
+        <item>تحسين نتائج الخريطة</item>
+        <item>تنبيهك بالمناوبة وبما يخص منشأتك</item>
+    </string-array>
+
+    <string name="location_allow">السماح</string>
+    <string name="location_later">ليس الآن</string>
+</resources>

@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
@@ -65,7 +66,7 @@ internal fun NavigationMap(
             )
         } else {
             Text(
-                text = "يجب ضبط مزود خرائط الإنتاج قبل عرض مسار الملاحة",
+                text = stringResource(R.string.nav_map_not_configured),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

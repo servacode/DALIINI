@@ -17,9 +17,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -293,30 +295,34 @@ private fun Identity(name: String, phone: String, imageUrl: String?, province: S
 
 /** The words of the account, provisional until product copy is approved. */
 object AccountCopy {
-    const val TITLE = "الملف الشخصي"
-    const val ERROR = "تعذر تحميل الحساب"
-    const val EDIT_PROFILE = "المعلومات الشخصية"
-    const val FAVORITES = "المفضلة"
-    const val NOTIFICATIONS = "الإشعارات"
-    const val SETTINGS = "الإعدادات"
-    const val FACILITIES = "منشآتي"
-    const val JOIN_AS_OWNER = "انضم كصاحب منشأة"
-    const val JOIN_AS_OWNER_HINT = "أضف منشأتك"
-    const val FACILITIES_HINT = "المواعيد والمناوبة والصور"
-    const val EDIT_PROFILE_HINT = "الاسم والعنوان والصورة والمحافظة"
-    const val SETTINGS_HINT = "كلمة المرور والإشعارات والأذونات"
-    const val HELP = "المساعدة والمعلومات"
-    const val HELP_HINT = "عن التطبيق والخصوصية والشروط"
-    const val SECTION_ACCOUNT = "حسابي"
-    const val SECTION_FACILITIES = "المنشآت"
-    const val SECTION_APP = "التطبيق"
-    const val SIGN_OUT = "تسجيل الخروج"
-    const val SIGN_OUT_TITLE = "تسجيل الخروج؟"
-    const val SIGN_OUT_BODY = "ستحتاج إلى تسجيل الدخول مرة أخرى لإدارة معلوماتك ومنشآتك."
-    const val DELETE = "حذف الحساب"
-    const val DELETE_TITLE = "حذف الحساب نهائيًا؟"
-    const val DELETE_BODY = "سيتم إلغاء جلساتك وإزالة بيانات الحساب الشخصية. " +
-        "إذا كنت المالك الوحيد لمنشأة غير مغلقة، يجب نقل الملكية أو إغلاقها أولًا."
-    const val DELETE_CONFIRM = "تأكيد الحذف"
-    const val DELETE_FAILED = "تعذر طلب حذف الحساب. تحقق من ملكية المنشآت ثم أعد المحاولة."
+    val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_title)
+    val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_error)
+    val EDIT_PROFILE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_edit_profile)
+    val FAVORITES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_favorites)
+    val NOTIFICATIONS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_notifications)
+    val SETTINGS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_settings)
+    val FACILITIES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_facilities)
+    val JOIN_AS_OWNER: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_join_as_owner)
+    val JOIN_AS_OWNER_HINT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.account_join_as_owner_hint)
+    val FACILITIES_HINT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.account_facilities_hint)
+    val EDIT_PROFILE_HINT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.account_edit_profile_hint)
+    val SETTINGS_HINT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_settings_hint)
+    val HELP: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_help)
+    val HELP_HINT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_help_hint)
+    val SECTION_ACCOUNT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.account_section_account)
+    val SECTION_FACILITIES: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.account_section_facilities)
+    val SECTION_APP: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_section_app)
+    val SIGN_OUT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_sign_out)
+    val SIGN_OUT_TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_sign_out_title)
+    val SIGN_OUT_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_sign_out_body)
+    val DELETE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_delete)
+    val DELETE_TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_delete_title)
+    val DELETE_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_delete_body)
+    val DELETE_CONFIRM: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_delete_confirm)
+    val DELETE_FAILED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_delete_failed)
 }

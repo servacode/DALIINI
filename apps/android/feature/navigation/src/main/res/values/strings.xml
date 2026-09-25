@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What this module says. Here rather than in Kotlin so that a second language is a
+     second file beside this one, and the phone's own setting chooses between them.
+
+     Guidance is the one module whose words are also said out loud, so the spoken sentences are
+     here too: the shape of a sentence — where the distance goes, where the street name goes — is
+     a property of the language and not of the route. -->
+<resources>
+    <string name="nav_title">الطريق</string>
+    <string name="nav_routing">جارٍ حساب المسار…</string>
+    <string name="nav_rerouting">جارٍ إعادة حساب المسار…</string>
+    <string name="nav_arrived">لقد وصلت إلى وجهتك</string>
+    <string name="nav_allow_location">السماح بالموقع</string>
+    <string name="nav_retry">إعادة المحاولة</string>
+    <string name="nav_zoom_in">تقريب</string>
+    <string name="nav_zoom_out">تبعيد</string>
+    <string name="nav_close">إغلاق</string>
+    <string name="nav_recentre">إعادة التوسيط</string>
+    <string name="nav_external_maps">فتح تطبيق خرائط خارجي</string>
+    <string name="nav_permission_title">الملاحة تحتاج موقعك</string>
+    <string name="nav_simulate">رحلة تجريبية</string>
+    <string name="nav_simulated">رحلة تجريبية — الموقع مُحاكى ولست تتحرك فعلًا</string>
+    <string name="nav_map_not_configured">يجب ضبط مزود خرائط الإنتاج قبل عرض مسار الملاحة</string>
+
+    <!-- How you are travelling. -->
+    <string name="nav_mode_walking">مشي</string>
+    <string name="nav_mode_motorcycle">موتور</string>
+    <string name="nav_mode_driving">سيارة</string>
+
+    <!-- How long is left. The number is rounded up to a whole minute before it gets here. -->
+    <string name="nav_minutes">%1$d دقيقة</string>
+
+    <!-- Why the trip could not start. The reasons are the routing service's own codes. -->
+    <string name="nav_error_location_permission">يلزم السماح بالموقع أثناء استخدام التطبيق للملاحة.</string>
+    <string name="nav_error_location_unavailable">تعذر تحديد موقعك الحالي.</string>
+    <string name="nav_error_no_route">لا يوجد طريق بين موقعك والمنشأة بهذا النمط.</string>
+    <string name="nav_error_unroutable_point">لا توجد طريق صالحة لهذا النمط قرب أحد الموقعين.</string>
+    <string name="nav_error_too_far">المسافة أبعد من أن تُحسب بهذا النمط.</string>
+    <string name="nav_error_invalid_points">أحد الموقعين غير صالح.</string>
+    <string name="nav_error_unreachable">خدمة التوجيه لا تستجيب.</string>
+    <string name="nav_error_not_configured">خدمة التوجيه غير مهيأة في هذه النسخة.</string>
+    <string name="nav_error_engine">تعذر حساب المسار من خدمة التوجيه.</string>
+    <string name="nav_error_unknown">تعذر بدء الملاحة.</string>
+
+    <!-- What went wrong without ending the trip. -->
+    <string name="nav_warning_reroute_failed">تعذر إعادة التوجيه الآن؛ سيستمر عرض المسار الحالي.</string>
+    <string name="nav_warning_location_unavailable">إشارة الموقع غير متاحة مؤقتًا.</string>
+
+    <!-- A turn, in words. One per shape of turn, chosen by ManeuverPhrases. -->
+    <string name="nav_maneuver_depart">ابدأ المسار</string>
+    <string name="nav_maneuver_arrive">لقد وصلت إلى وجهتك</string>
+    <string name="nav_maneuver_uturn">قم بالاستدارة والعودة</string>
+    <string name="nav_maneuver_merge">اندمج مع الطريق</string>
+    <string name="nav_maneuver_continue">تابع السير</string>
+    <string name="nav_maneuver_unknown">تابع المسار</string>
+    <string name="nav_maneuver_turn_left">انعطف يسارًا</string>
+    <string name="nav_maneuver_turn_right">انعطف يمينًا</string>
+    <string name="nav_maneuver_slight_left">اتجه قليلًا إلى اليسار</string>
+    <string name="nav_maneuver_slight_right">اتجه قليلًا إلى اليمين</string>
+    <string name="nav_maneuver_sharp_left">انعطف بحدة إلى اليسار</string>
+    <string name="nav_maneuver_sharp_right">انعطف بحدة إلى اليمين</string>
+    <string name="nav_maneuver_straight">تابع مباشرة</string>
+    <string name="nav_maneuver_fork_left">خذ التفرع الأيسر</string>
+    <string name="nav_maneuver_fork_right">خذ التفرع الأيمن</string>
+    <string name="nav_maneuver_fork">تابع عبر التفرع</string>
+    <string name="nav_maneuver_roundabout">ادخل الدوار واتبع المسار</string>
+    <string name="nav_maneuver_roundabout_exit">ادخل الدوار واخرج من المخرج رقم %1$d</string>
+
+    <!-- A turn and the street it leads to. Which of the two comes first is the language's own
+         business, which is why the whole sentence is here rather than a word joining two halves
+         in Kotlin. -->
+    <string name="nav_maneuver_to">%1$s إلى %2$s</string>
+
+    <!-- The same turn as it is said out loud: at the turn, and from a distance. The distance is
+         already rounded to how it is spoken. -->
+    <string name="nav_voice_now">%1$s الآن</string>
+    <string name="nav_voice_after_metres">بعد %1$d متر %2$s</string>
+    <string name="nav_voice_after_kilometres">بعد %1$s كم %2$s</string>
+    <string name="nav_voice_rerouting">يُعاد حساب الطريق</string>
+    <string name="nav_voice_arrived">لقد وصلت إلى وجهتك</string>
+</resources>

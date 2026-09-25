@@ -163,7 +163,7 @@ fun LocationPermissionScreen(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(Modifier.height(Space.lg))
-                LocationCopy.REASONS.forEach { reason ->
+                LocationCopy.reasons().forEach { reason ->
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(vertical = Space.sm),
                         verticalAlignment = Alignment.CenterVertically,

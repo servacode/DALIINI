@@ -42,10 +42,13 @@ class AndroidNavigationVoice @Inject constructor(
         }
     }
 
+    /** The words of a cue, for the synthesiser: the recordings say them in their own voice. */
+    private val words = NavigationWords(context.resources)
+
     override fun say(cue: VoiceCue) {
         val clip = NavigationClips.clipFor(cue)
         if (clip != null && playClip(clip)) return
-        speak(cue.text)
+        speak(words.spoken(cue))
     }
 
     /** True when the recording was found and started; false when there is none to play. */

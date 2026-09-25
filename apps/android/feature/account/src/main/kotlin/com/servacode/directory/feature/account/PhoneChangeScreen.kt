@@ -6,14 +6,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -117,14 +119,18 @@ private fun ErrorLine(message: String) {
 
 /** The words of the phone change, provisional until product copy is approved. */
 object PhoneChangeCopy {
-    const val TITLE = "تغيير رقم الهاتف"
-    const val NEW_PHONE = "الرقم الجديد"
-    const val CODE = "رمز التحقق"
-    const val SEND = "إرسال الرمز"
-    const val CONFIRM = "تأكيد الرقم"
-    const val ANOTHER_NUMBER = "رقم آخر"
-    const val SESSIONS_NOTE = "سنرسل رمزًا إلى الرقم الجديد للتأكد أنه لك. بعد التأكيد " +
-        "ستُنهى جميع الجلسات، بما فيها هذا الجهاز، وستحتاج إلى تسجيل الدخول بالرقم الجديد."
+    val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.phone_change_title)
+    val NEW_PHONE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.phone_change_new_phone)
+    val CODE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.phone_change_code)
+    val SEND: String @Composable @ReadOnlyComposable get() = stringResource(R.string.phone_change_send)
+    val CONFIRM: String @Composable @ReadOnlyComposable get() = stringResource(R.string.phone_change_confirm)
+    val ANOTHER_NUMBER: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.phone_change_another_number)
+    val SESSIONS_NOTE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.phone_change_sessions_note)
 
-    fun sentTo(phone: String): String = "أرسلنا رمزًا مكوّنًا من ٦ أرقام إلى $phone."
+
+    @Composable
+    @ReadOnlyComposable
+    fun sentTo(phone: String): String = stringResource(R.string.phone_change_sent_to, phone)
 }

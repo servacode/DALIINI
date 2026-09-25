@@ -16,10 +16,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DirectoryAvatar
@@ -249,22 +251,26 @@ fun PasswordChangeScreen(
 
 /** The words of the account's own screens, provisional until product copy is approved. */
 object SecurityCopy {
-    const val EDIT_PROFILE = "المعلومات الشخصية"
-    const val NAME = "الاسم"
-    const val PROVINCE = "المحافظة"
-    const val SAVE = "حفظ"
-    const val PHONE = "رقم الهاتف"
-    const val ADDRESS = "العنوان"
-    const val ADDRESS_HINT = "الحي، وأقرب معلم"
-    const val PICTURE = "الصورة الشخصية"
-    const val CHOOSE_PICTURE = "اختيار صورة"
-    const val REMOVE_PICTURE = "إزالة الصورة"
-    const val PHONE_NOTE = "رقم الهاتف هو معرّف حسابك، وتغييره يحتاج تحققًا جديدًا غير متاح بعد."
-    const val CHANGE_PASSWORD = "تغيير كلمة المرور"
-    const val CURRENT_PASSWORD = "كلمة المرور الحالية"
-    const val NEW_PASSWORD = "كلمة المرور الجديدة"
-    const val CONFIRM_PASSWORD = "تأكيد كلمة المرور"
-    const val MISMATCH = "كلمتا المرور غير متطابقتين"
-    const val SESSIONS_NOTE = "بعد التغيير ستُنهى جميع الجلسات، بما فيها هذا الجهاز، وستحتاج " +
-        "إلى تسجيل الدخول بكلمة المرور الجديدة."
+    val EDIT_PROFILE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_edit_profile)
+    val NAME: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_name)
+    val PROVINCE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_province)
+    val SAVE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_save)
+    val PHONE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_phone)
+    val ADDRESS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_address)
+    val ADDRESS_HINT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_address_hint)
+    val PICTURE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_picture)
+    val CHOOSE_PICTURE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.security_choose_picture)
+    val REMOVE_PICTURE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.security_remove_picture)
+    val PHONE_NOTE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_phone_note)
+    val CHANGE_PASSWORD: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.security_change_password)
+    val CURRENT_PASSWORD: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.security_current_password)
+    val NEW_PASSWORD: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_new_password)
+    val CONFIRM_PASSWORD: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.security_confirm_password)
+    val MISMATCH: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_mismatch)
+    val SESSIONS_NOTE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_sessions_note)
 }

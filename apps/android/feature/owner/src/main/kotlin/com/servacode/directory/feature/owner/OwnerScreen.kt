@@ -19,10 +19,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -444,30 +446,29 @@ internal fun OwnerFacilityStatus.tone(): StatusTone = when (this) {
 
 /** The words of the owner's screens, provisional until product copy is approved. */
 object OwnerCopy {
-    const val TITLE = "منشآتي"
-    const val ADD = "إضافة منشأة جديدة"
-    const val MANAGE = "إدارة"
-    const val DUTY = "المناوبة"
-    const val EDIT = "تعديل البيانات"
-    const val LIST_ERROR = "تعذر تحميل المنشآت"
-    const val EMPTY = "لا توجد منشآت"
-    const val EMPTY_BODY = "أضف منشأتك لتظهر في الدليل بعد المراجعة."
-    const val MANAGE_TITLE = "إدارة المنشأة"
-    const val MANAGE_ERROR = "تعذر تحميل إدارة المنشأة"
-    const val CLOSURES = "الإغلاقات المؤقتة"
-    const val CLOSURES_NONE = "لا يوجد إغلاق مؤقت."
-    const val CLOSURE_START = "بداية الإغلاق"
-    const val CLOSURE_END = "نهاية الإغلاق"
-    const val CLOSURE_REASON = "سبب الإغلاق - اختياري"
-    const val CLOSURE_ADD = "إضافة إغلاق مؤقت"
-    const val DELETE = "حذف"
-    const val MEMBERS = "المدراء"
-    const val REMOVE = "إزالة"
-    const val REMOVE_TITLE = "إزالة المدير؟"
-    const val REMOVE_BODY = "لن يعود بإمكانه إدارة هذه المنشأة."
-    const val MANAGER_ID = "معرف حساب المدير"
-    const val MANAGER_ID_HINT = "معرف الحساب كما يظهر للمستخدم"
-    const val MANAGER_ADD = "إضافة مدير"
-    const val MANAGER_NOTE = "تتم الإضافة بمعرف الحساب فقط؛ " +
-        "لا يوفر الخادم بحثًا برقم الهاتف."
+    val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_title)
+    val ADD: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_add)
+    val MANAGE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_manage)
+    val DUTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_duty)
+    val EDIT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_edit)
+    val LIST_ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_list_error)
+    val EMPTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_empty)
+    val EMPTY_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_empty_body)
+    val MANAGE_TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_manage_title)
+    val MANAGE_ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_manage_error)
+    val CLOSURES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_closures)
+    val CLOSURES_NONE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_closures_none)
+    val CLOSURE_START: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_closure_start)
+    val CLOSURE_END: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_closure_end)
+    val CLOSURE_REASON: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_closure_reason)
+    val CLOSURE_ADD: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_closure_add)
+    val DELETE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_delete)
+    val MEMBERS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_members)
+    val REMOVE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_remove)
+    val REMOVE_TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_remove_title)
+    val REMOVE_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_remove_body)
+    val MANAGER_ID: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_manager_id)
+    val MANAGER_ID_HINT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_manager_id_hint)
+    val MANAGER_ADD: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_manager_add)
+    val MANAGER_NOTE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_manager_note)
 }

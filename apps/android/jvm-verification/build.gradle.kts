@@ -37,6 +37,7 @@ val androidOnly = listOf(
     "**/*ViewModels.kt",
     "**/feature/bootstrap/BootstrapModule.kt",
     "**/feature/navigation/NavigationMap.kt",
+    "**/feature/navigation/NavigationWords.kt",
     "**/feature/navigation/AndroidNavigationVoice.kt",
     "**/feature/navigation/NavigationVoice.kt",
     "**/feature/onboarding/OnboardingMapPicker.kt",

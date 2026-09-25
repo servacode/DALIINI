@@ -6,14 +6,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.servacode.directory.core.datastore.DirectoryPreferencesStore
+import com.servacode.directory.core.location.fixWithoutPrompt
 import com.servacode.directory.core.location.LocationProvider
 import com.servacode.directory.core.location.LocationResult
-import com.servacode.directory.core.location.fixWithoutPrompt
 import com.servacode.directory.core.maps.MapCamera
 import com.servacode.directory.core.maps.MapCameraPolicy
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.maps.toMapPoint
-import com.servacode.directory.core.model.AppErrorText
 import com.servacode.directory.core.model.BusinessHour
 import com.servacode.directory.core.model.DirectoryRoute
 import com.servacode.directory.core.model.OwnerCategoryConfig
@@ -25,14 +24,14 @@ import com.servacode.directory.core.network.OwnerFacilityPatch
 import com.servacode.directory.core.network.PushAvailability
 import com.servacode.directory.core.network.UploadReader
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
+import javax.inject.Inject
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 enum class OnboardingStep {
     PROVINCE_CATEGORY,
@@ -66,7 +65,7 @@ sealed interface OnboardingUiState {
         val draft: OwnerFacilityDetail?,
         val form: OnboardingForm,
         val busy: Boolean = false,
-        val message: String? = null,
+        val message: OnboardingMessage? = null,
         /** Set once, on the submission that just succeeded; the screen may then ask for notifications. */
         val justSubmitted: Boolean = false,
         /** Where the location picker looks; null until known, and the picker waits for it. */
@@ -199,11 +198,18 @@ class OnboardingViewModel @Inject constructor(
                 it.copy(
                     draft = draft,
                     step = if (advance) OnboardingStep.MAP_POINT else it.step,
-                    message = if (advance) null else "تم حفظ المسودة تلقائيًا",
+                    message = if (advance) null else OnboardingMessage(OnboardingNotice.DRAFT_SAVED),
                 )
             }
         }.onFailure { failure ->
-                mutate { it.copy(message = "تعذر حفظ المسودة: " + AppErrorText.of(failure.toAppError())) }
+                mutate {
+                    it.copy(
+                        message = OnboardingMessage(
+                            OnboardingNotice.DRAFT_SAVE_FAILED,
+                            failure.toAppError(),
+                        ),
+                    )
+                }
             }
     }
 
@@ -221,7 +227,14 @@ class OnboardingViewModel @Inject constructor(
                     it.copy(draft = updated, pendingPoint = null, step = OnboardingStep.HOURS, message = null)
                 }
             }.onFailure { failure ->
-                mutate { it.copy(message = "تعذر حفظ الموقع: " + AppErrorText.of(failure.toAppError())) }
+                mutate {
+                    it.copy(
+                        message = OnboardingMessage(
+                            OnboardingNotice.LOCATION_SAVE_FAILED,
+                            failure.toAppError(),
+                        ),
+                    )
+                }
             }
         }
     }
@@ -240,8 +253,10 @@ class OnboardingViewModel @Inject constructor(
                         )
                     }
                 }
-                LocationResult.PermissionDenied -> mutate { it.copy(message = "يلزم السماح بالموقع") }
-                LocationResult.Unavailable -> mutate { it.copy(message = "تعذر تحديد الموقع") }
+                LocationResult.PermissionDenied ->
+                    mutate { it.copy(message = OnboardingMessage(OnboardingNotice.LOCATION_PERMISSION)) }
+                LocationResult.Unavailable ->
+                    mutate { it.copy(message = OnboardingMessage(OnboardingNotice.LOCATION_UNAVAILABLE)) }
             }
         }
     }
@@ -253,7 +268,14 @@ class OnboardingViewModel @Inject constructor(
             save.hours(id, rows).onSuccess {
                 mutate { it.copy(step = OnboardingStep.PUBLIC_IMAGES, message = null) }
             }.onFailure { failure ->
-                mutate { it.copy(message = "تعذر حفظ ساعات العمل: " + AppErrorText.of(failure.toAppError())) }
+                mutate {
+                    it.copy(
+                        message = OnboardingMessage(
+                            OnboardingNotice.HOURS_SAVE_FAILED,
+                            failure.toAppError(),
+                        ),
+                    )
+                }
             }
         }
     }
@@ -267,7 +289,7 @@ class OnboardingViewModel @Inject constructor(
         val id = content.draft?.summary?.id ?: return
         viewModelScope.launch {
             val payload = uploadReader.read(uri).getOrElse {
-                mutate { it.copy(message = "تعذر قراءة الصورة") }
+                mutate { it.copy(message = OnboardingMessage(OnboardingNotice.IMAGE_UNREADABLE)) }
                 return@launch
             }
             val result = if (requirementId == null) {
@@ -280,7 +302,7 @@ class OnboardingViewModel @Inject constructor(
                     mutate {
                         it.copy(
                             draft = updated,
-                            message = "تم رفع الملف",
+                            message = OnboardingMessage(OnboardingNotice.FILE_UPLOADED),
                             step = if (requirementId == null) {
                                 OnboardingStep.SPECIALIZED_FIELDS
                             } else it.step,
@@ -288,7 +310,14 @@ class OnboardingViewModel @Inject constructor(
                     }
                 }
             }.onFailure { failure ->
-                mutate { it.copy(message = "تعذر رفع الملف: " + AppErrorText.of(failure.toAppError())) }
+                mutate {
+                    it.copy(
+                        message = OnboardingMessage(
+                            OnboardingNotice.UPLOAD_FAILED,
+                            failure.toAppError(),
+                        ),
+                    )
+                }
             }
         }
     }
@@ -315,7 +344,7 @@ class OnboardingViewModel @Inject constructor(
                             draft = updated,
                             step = OnboardingStep.STATUS,
                             busy = false,
-                            message = "تم إرسال الطلب للمراجعة",
+                            message = OnboardingMessage(OnboardingNotice.SUBMITTED),
                             justSubmitted = true,
                         )
                     }
@@ -325,7 +354,10 @@ class OnboardingViewModel @Inject constructor(
                     it.copy(
                         step = OnboardingStep.REVIEW,
                         busy = false,
-                        message = "تعذر الإرسال: " + AppErrorText.of(failure.toAppError()),
+                        message = OnboardingMessage(
+                            OnboardingNotice.SUBMIT_FAILED,
+                            failure.toAppError(),
+                        ),
                     )
                 }
             }

@@ -2,9 +2,11 @@ package com.servacode.directory.feature.bootstrap
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DirectoryErrorState
@@ -37,6 +39,6 @@ fun BootstrapScreen(
 
 /** The words of the start, provisional until product copy is approved. */
 object BootstrapCopy {
-    const val ERROR = "تعذر بدء التطبيق"
-    const val ERROR_BODY = "أغلق التطبيق وافتحه مرة أخرى."
+    val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.bootstrap_error)
+    val ERROR_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.bootstrap_error_body)
 }

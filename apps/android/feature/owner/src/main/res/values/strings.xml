@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What this module says. Here rather than in Kotlin so that a second language is a
+     second file beside this one, and the phone's own setting chooses between them. -->
+<resources>
+    <string name="owner_title">منشآتي</string>
+    <string name="owner_add">إضافة منشأة جديدة</string>
+    <string name="owner_manage">إدارة</string>
+    <string name="owner_duty">المناوبة</string>
+    <string name="owner_edit">تعديل البيانات</string>
+    <string name="owner_list_error">تعذر تحميل المنشآت</string>
+    <string name="owner_empty">لا توجد منشآت</string>
+    <string name="owner_empty_body">أضف منشأتك لتظهر في الدليل بعد المراجعة.</string>
+    <string name="owner_manage_title">إدارة المنشأة</string>
+    <string name="owner_manage_error">تعذر تحميل إدارة المنشأة</string>
+    <string name="owner_closures">الإغلاقات المؤقتة</string>
+    <string name="owner_closures_none">لا يوجد إغلاق مؤقت.</string>
+    <string name="owner_closure_start">بداية الإغلاق</string>
+    <string name="owner_closure_end">نهاية الإغلاق</string>
+    <string name="owner_closure_reason">سبب الإغلاق - اختياري</string>
+    <string name="owner_closure_add">إضافة إغلاق مؤقت</string>
+    <string name="owner_delete">حذف</string>
+    <string name="owner_members">المدراء</string>
+    <string name="owner_remove">إزالة</string>
+    <string name="owner_remove_title">إزالة المدير؟</string>
+    <string name="owner_remove_body">لن يعود بإمكانه إدارة هذه المنشأة.</string>
+    <string name="owner_manager_id">معرف حساب المدير</string>
+    <string name="owner_manager_id_hint">معرف الحساب كما يظهر للمستخدم</string>
+    <string name="owner_manager_add">إضافة مدير</string>
+    <string name="owner_manager_note">تتم الإضافة بمعرف الحساب فقط؛ لا يوفر الخادم بحثًا برقم الهاتف.</string>
+</resources>
