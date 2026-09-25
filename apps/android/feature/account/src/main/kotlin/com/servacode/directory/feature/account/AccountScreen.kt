@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DirectoryAvatar
+import com.servacode.directory.core.designsystem.DirectoryBrandPanel
 import com.servacode.directory.core.designsystem.DirectoryConfirmDialog
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcons

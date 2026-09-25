@@ -42,6 +42,7 @@ import com.servacode.directory.core.designsystem.DirectoryIconButton
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryMessageState
+import com.servacode.directory.core.designsystem.DirectoryOverlayChip
 import com.servacode.directory.core.designsystem.DirectoryOverlayTile
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
