@@ -30,7 +30,8 @@ import com.servacode.directory.core.designsystem.DirectoryInlineLoading
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryPasswordField
 import com.servacode.directory.core.designsystem.DirectorySecondaryButton
-import com.servacode.directory.core.designsystem.DirectorySettingRow
+import com.servacode.directory.core.designsystem.DirectoryMenuGroup
+import com.servacode.directory.core.designsystem.DirectoryMenuRow
 import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
 import com.servacode.directory.core.designsystem.DirectoryTextField
@@ -103,15 +104,18 @@ fun ProfileEditScreen(
                 singleLine = false,
                 minLines = 2,
             )
-            // The one detail that is changed somewhere else, because changing it is not a field.
-            DirectorySettingRow(
-                title = SecurityCopy.PHONE,
-                value = state.phone.ifBlank {
-                    (account as? AccountUiState.Content)?.profile?.phone.orEmpty()
-                },
-                onClick = onChangePhone,
-                icon = DirectoryIcons.phone,
-            )
+            // The one detail that is changed somewhere else, because changing it is not a
+            // field: it is drawn as what it is, a way onwards, in the shape the menus use.
+            DirectoryMenuGroup {
+                DirectoryMenuRow(
+                    title = SecurityCopy.PHONE,
+                    subtitle = state.phone.ifBlank {
+                        (account as? AccountUiState.Content)?.profile?.phone.orEmpty()
+                    },
+                    onClick = onChangePhone,
+                    icon = DirectoryIcons.phone,
+                )
+            }
             val provinces = (account as? AccountUiState.Content)?.provinces.orEmpty()
             if (provinces.isNotEmpty()) {
                 SectionHeader(SecurityCopy.PROVINCE)

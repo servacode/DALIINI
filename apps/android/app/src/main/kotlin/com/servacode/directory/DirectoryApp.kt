@@ -258,6 +258,7 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onFavorites = { navController.navigate(DirectoryRoute.Favorites) },
                 onNotifications = { navController.navigate(DirectoryRoute.Notifications) },
                 onSettings = { navController.navigate(DirectoryRoute.Settings) },
+                onHelp = { navController.navigate(DirectoryRoute.Help) },
                 bottomBar = { DirectoryTabs(DirectoryTab.ACCOUNT, navController) },
             )
         }
@@ -334,9 +335,7 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
             SettingsScreen(
                 onChangePassword = { navController.navigate(DirectoryRoute.ChangePassword) },
                 onChangePhone = { navController.navigate(DirectoryRoute.ChangePhone) },
-                onHelp = { navController.navigate(DirectoryRoute.Help) },
                 onBack = { navController.popBackStack() },
-                appVersion = BuildConfig.VERSION_NAME,
                 signedIn = session == SessionState.SIGNED_IN,
             )
         }

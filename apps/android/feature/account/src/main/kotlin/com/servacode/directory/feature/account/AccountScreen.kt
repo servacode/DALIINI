@@ -75,6 +75,7 @@ fun AccountScreen(
     onFavorites: () -> Unit,
     onNotifications: () -> Unit,
     onSettings: () -> Unit,
+    onHelp: () -> Unit,
     bottomBar: @Composable () -> Unit = {},
     viewModel: AccountViewModel = hiltViewModel(),
 ) {
@@ -170,6 +171,15 @@ fun AccountScreen(
                         onClick = onSettings,
                         icon = DirectoryIcons.grid,
                         subtitle = AccountCopy.SETTINGS_HINT,
+                    )
+                    DirectoryMenuDivider()
+                    // Not inside settings: what the platform publishes about itself is read,
+                    // not changed, and burying a thing people look for is how it is not found.
+                    DirectoryMenuRow(
+                        title = AccountCopy.HELP,
+                        onClick = onHelp,
+                        icon = DirectoryIcons.info,
+                        subtitle = AccountCopy.HELP_HINT,
                     )
                 }
 
@@ -321,6 +331,8 @@ object AccountCopy {
     const val FACILITIES_HINT = "المواعيد والمناوبة والصور"
     const val EDIT_PROFILE_HINT = "الاسم والعنوان والصورة والمحافظة"
     const val SETTINGS_HINT = "كلمة المرور والإشعارات والأذونات"
+    const val HELP = "المساعدة والمعلومات"
+    const val HELP_HINT = "عن التطبيق والخصوصية والشروط"
     const val SECTION_ACCOUNT = "حسابي"
     const val SECTION_FACILITIES = "المنشآت"
     const val SECTION_APP = "التطبيق"

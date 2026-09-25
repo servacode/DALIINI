@@ -4,14 +4,13 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,10 +21,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.servacode.directory.core.designsystem.DirectoryIcons
+import com.servacode.directory.core.designsystem.DirectoryMenuDivider
+import com.servacode.directory.core.designsystem.DirectoryMenuGroup
+import com.servacode.directory.core.designsystem.DirectoryMenuRow
 import com.servacode.directory.core.designsystem.DirectoryPage
-import com.servacode.directory.core.designsystem.DirectorySettingRow
+import com.servacode.directory.core.designsystem.DirectorySectionLabel
 import com.servacode.directory.core.designsystem.DirectoryTopBar
-import com.servacode.directory.core.designsystem.SectionHeader
 import com.servacode.directory.core.designsystem.Space
 
 /**
@@ -38,17 +39,23 @@ import com.servacode.directory.core.designsystem.Space
  * to offer both as well, so a reader who wanted to change a password had two rows that did the
  * same thing and no way to know they were the same.
  *
+ * **Help and information are not here.** They are about the platform, not about this app's
+ * behaviour, and they are read once rather than changed; they sit in the profile, one tap from
+ * where a reader is rather than two.
+ *
  * Whether notices are allowed is Android's answer, not ours: the app reads the system's switch
  * and opens the system's screen rather than keeping a copy of a decision the user can change
  * behind its back.
+ *
+ * The page wears the profile's own shape — a label, then a card of rows — because it is the
+ * same kind of menu one tap deeper, and two shapes for one thing is what made the profile hard
+ * to read before it was redrawn.
  */
 @Composable
 fun SettingsScreen(
     onChangePassword: () -> Unit,
     onChangePhone: () -> Unit,
-    onHelp: () -> Unit,
     onBack: () -> Unit,
-    appVersion: String,
     signedIn: Boolean,
 ) {
     val context = LocalContext.current
@@ -65,77 +72,65 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = Space.screen),
+            verticalArrangement = Arrangement.spacedBy(Space.lg),
         ) {
             if (signedIn) {
-                SectionHeader(
-                    title = SettingsCopy.SECURITY,
-                    modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.xs),
-                )
-                DirectorySettingRow(
-                    title = SettingsCopy.CHANGE_PASSWORD,
-                    onClick = onChangePassword,
-                    icon = DirectoryIcons.verified,
-                )
-                // The number the account signs in with, changed on the one screen that can do
-                // it. Personal information offers the same row, because it is also one of the
-                // person's own details; both open this, so there is one way to change it.
-                DirectorySettingRow(
-                    title = SettingsCopy.CHANGE_PHONE,
-                    onClick = onChangePhone,
-                    icon = DirectoryIcons.phone,
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Section(SettingsCopy.SECURITY) {
+                    DirectoryMenuRow(
+                        title = SettingsCopy.CHANGE_PASSWORD,
+                        onClick = onChangePassword,
+                        icon = DirectoryIcons.verified,
+                    )
+                    DirectoryMenuDivider()
+                    // The number the account signs in with, changed on the one screen that can
+                    // do it. Personal information offers the same row, because it is also one
+                    // of the person's own details; both open this, so there is one way to it.
+                    DirectoryMenuRow(
+                        title = SettingsCopy.CHANGE_PHONE,
+                        onClick = onChangePhone,
+                        icon = DirectoryIcons.phone,
+                    )
+                }
             }
 
-            SectionHeader(
-                title = SettingsCopy.NOTIFICATIONS,
-                modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.xs),
-            )
-            DirectorySettingRow(
-                title = SettingsCopy.ALLOW_NOTIFICATIONS,
-                value = if (notificationsAllowed) SettingsCopy.ALLOWED else SettingsCopy.NOT_ALLOWED,
-                onClick = { context.startActivity(NotificationSetting.systemScreen(context)) },
-                icon = DirectoryIcons.bell,
-            )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            Section(SettingsCopy.NOTIFICATIONS) {
+                DirectoryMenuRow(
+                    title = SettingsCopy.ALLOW_NOTIFICATIONS,
+                    onClick = { context.startActivity(NotificationSetting.systemScreen(context)) },
+                    icon = DirectoryIcons.bell,
+                    subtitle = if (notificationsAllowed) SettingsCopy.ALLOWED else SettingsCopy.NOT_ALLOWED,
+                )
+            }
 
-            SectionHeader(
-                title = SettingsCopy.PERMISSIONS,
-                modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.xs),
-            )
             // Android owns these switches; the app sends the user to them rather than keeping a
             // copy of an answer the system can change behind its back.
-            DirectorySettingRow(
-                title = SettingsCopy.SYSTEM_SETTINGS,
-                onClick = {
-                    context.startActivity(
-                        Intent(
-                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                            Uri.fromParts("package", context.packageName, null),
-                        ),
-                    )
-                },
-                icon = DirectoryIcons.pin,
-            )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-            SectionHeader(
-                title = SettingsCopy.ABOUT,
-                modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.xs),
-            )
-            DirectorySettingRow(
-                title = SettingsCopy.HELP,
-                onClick = onHelp,
-                icon = DirectoryIcons.info,
-            )
-            Text(
-                text = SettingsCopy.version(appVersion),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(Space.screen),
-            )
+            Section(SettingsCopy.PERMISSIONS) {
+                DirectoryMenuRow(
+                    title = SettingsCopy.SYSTEM_SETTINGS,
+                    onClick = {
+                        context.startActivity(
+                            Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.fromParts("package", context.packageName, null),
+                            ),
+                        )
+                    },
+                    icon = DirectoryIcons.pin,
+                    subtitle = SettingsCopy.SYSTEM_SETTINGS_HINT,
+                )
+            }
         }
+    }
+}
+
+/** A label and the card under it: one subject, drawn as one thing. */
+@Composable
+private fun Section(label: String, content: @Composable ColumnScope.() -> Unit) {
+    Column {
+        DirectorySectionLabel(label)
+        DirectoryMenuGroup(content = content)
     }
 }
 
@@ -170,8 +165,5 @@ object SettingsCopy {
     const val NOT_ALLOWED = "غير مسموح"
     const val PERMISSIONS = "الأذونات"
     const val SYSTEM_SETTINGS = "إعدادات التطبيق في النظام"
-    const val ABOUT = "المساعدة والمعلومات"
-    const val HELP = "المساعدة والمعلومات"
-
-    fun version(name: String): String = "إصدار التطبيق $name"
+    const val SYSTEM_SETTINGS_HINT = "الموقع والإشعارات والتخزين"
 }

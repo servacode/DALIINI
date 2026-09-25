@@ -1,14 +1,11 @@
 package com.servacode.directory.feature.settings
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,7 +18,9 @@ import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryPage
-import com.servacode.directory.core.designsystem.DirectorySettingRow
+import com.servacode.directory.core.designsystem.DirectoryMenuDivider
+import com.servacode.directory.core.designsystem.DirectoryMenuGroup
+import com.servacode.directory.core.designsystem.DirectoryMenuRow
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.model.LegalPage
@@ -61,29 +60,32 @@ fun HelpScreen(
                     icon = DirectoryIcons.document,
                 )
             } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize().padding(padding),
-                    contentPadding = PaddingValues(bottom = Space.xxl),
+                // Few enough pages to draw at once, and one card reads as one subject — which
+                // is what this is: everything the platform publishes about itself.
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = Space.screen),
+                    verticalArrangement = Arrangement.spacedBy(Space.base),
                 ) {
-                    items(value.pages, key = { it.key.name }) { page ->
-                        DirectorySettingRow(
-                            title = page.titleAr,
-                            onClick = { onPage(page.key) },
-                            icon = page.key.icon(),
-                        )
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = Space.screen),
-                            color = MaterialTheme.colorScheme.outlineVariant,
-                        )
+                    DirectoryMenuGroup {
+                        value.pages.forEachIndexed { index, page ->
+                            if (index > 0) DirectoryMenuDivider()
+                            DirectoryMenuRow(
+                                title = page.titleAr,
+                                onClick = { onPage(page.key) },
+                                icon = page.key.icon(),
+                            )
+                        }
                     }
-                    item(key = "version") {
-                        Text(
-                            text = HelpCopy.version(appVersion),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(Space.screen),
-                        )
-                    }
+                    Text(
+                        text = HelpCopy.version(appVersion),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = Space.xxl),
+                    )
                 }
             }
         }
