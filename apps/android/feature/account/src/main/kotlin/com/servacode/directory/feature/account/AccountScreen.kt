@@ -4,15 +4,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,22 +24,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DirectoryAvatar
 import com.servacode.directory.core.designsystem.DirectoryConfirmDialog
 import com.servacode.directory.core.designsystem.DirectoryErrorState
-import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
+import com.servacode.directory.core.designsystem.DirectoryMenuDivider
+import com.servacode.directory.core.designsystem.DirectoryMenuGroup
+import com.servacode.directory.core.designsystem.DirectoryMenuRow
 import com.servacode.directory.core.designsystem.DirectoryPage
-import com.servacode.directory.core.designsystem.DirectorySettingRow
+import com.servacode.directory.core.designsystem.DirectorySectionLabel
 import com.servacode.directory.core.designsystem.DirectoryTopBar
-import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.Radius
 import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
@@ -57,15 +60,17 @@ import com.servacode.directory.core.designsystem.Space
  *  - **Owning is one row, not two.** Someone who has never joined is invited to; someone who
  *    has sees what they have. Never both.
  *
- * Nothing is offered that the account API does not have: the contract stores a display name and
- * a province and nothing else, so there is no address to edit and no picture to upload.
+ * The page is read in three passes rather than one: who this is, then what can be done about
+ * the account, then the two things that end it. Each group is a card under a label of its own,
+ * and what a row knows about itself is written under its title rather than beside it — a value
+ * and a heading on one line are two headings, which is how this page used to read.
  */
 @Composable
 fun AccountScreen(
     onFacilities: () -> Unit,
     onJoinAsOwner: () -> Unit,
     onAccountDeleted: () -> Unit,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)? = null,
     onEditProfile: () -> Unit,
     onFavorites: () -> Unit,
     onNotifications: () -> Unit,
@@ -99,87 +104,95 @@ fun AccountScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = Space.screen),
+                verticalArrangement = Arrangement.spacedBy(Space.lg),
             ) {
                 Identity(
                     name = value.profile.name,
                     phone = value.profile.phone,
                     imageUrl = value.profile.imageUrl,
+                    province = value.provinces.firstOrNull { it.id == value.profile.provinceId }?.nameAr,
                 )
                 value.message?.let { message ->
                     Text(
                         text = message,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.sm),
                     )
                 }
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
                 // Everything about the person.
-                DirectorySettingRow(
-                    title = AccountCopy.EDIT_PROFILE,
-                    onClick = onEditProfile,
-                    icon = DirectoryIcons.person,
-                    value = value.provinces.firstOrNull { it.id == value.profile.provinceId }?.nameAr,
-                )
-                DirectorySettingRow(
-                    title = AccountCopy.FAVORITES,
-                    onClick = onFavorites,
-                    icon = DirectoryIcons.star,
-                )
-                DirectorySettingRow(
-                    title = AccountCopy.NOTIFICATIONS,
-                    onClick = onNotifications,
-                    icon = DirectoryIcons.bell,
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-                // One row, not two: the invitation until they have joined, their own after.
-                if (value.ownsFacility) {
-                    DirectorySettingRow(
-                        title = AccountCopy.FACILITIES,
-                        onClick = onFacilities,
-                        icon = DirectoryIcons.hospital,
+                Section(AccountCopy.SECTION_ACCOUNT) {
+                    DirectoryMenuRow(
+                        title = AccountCopy.EDIT_PROFILE,
+                        onClick = onEditProfile,
+                        icon = DirectoryIcons.person,
+                        subtitle = AccountCopy.EDIT_PROFILE_HINT,
                     )
-                } else {
-                    DirectorySettingRow(
-                        title = AccountCopy.JOIN_AS_OWNER,
-                        onClick = onJoinAsOwner,
-                        icon = DirectoryIcons.hospital,
-                        value = AccountCopy.JOIN_AS_OWNER_HINT,
+                    DirectoryMenuDivider()
+                    DirectoryMenuRow(
+                        title = AccountCopy.FAVORITES,
+                        onClick = onFavorites,
+                        icon = DirectoryIcons.star,
+                    )
+                    DirectoryMenuDivider()
+                    DirectoryMenuRow(
+                        title = AccountCopy.NOTIFICATIONS,
+                        onClick = onNotifications,
+                        icon = DirectoryIcons.bell,
                     )
                 }
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                // One row, not two: the invitation until they have joined, their own after.
+                Section(AccountCopy.SECTION_FACILITIES) {
+                    if (value.ownsFacility) {
+                        DirectoryMenuRow(
+                            title = AccountCopy.FACILITIES,
+                            onClick = onFacilities,
+                            icon = DirectoryIcons.hospital,
+                            subtitle = AccountCopy.FACILITIES_HINT,
+                        )
+                    } else {
+                        DirectoryMenuRow(
+                            title = AccountCopy.JOIN_AS_OWNER,
+                            onClick = onJoinAsOwner,
+                            icon = DirectoryIcons.hospital,
+                            subtitle = AccountCopy.JOIN_AS_OWNER_HINT,
+                        )
+                    }
+                }
 
                 // Everything about the app, in one place — the password and the switches with it.
-                DirectorySettingRow(
-                    title = AccountCopy.SETTINGS,
-                    onClick = onSettings,
-                    icon = DirectoryIcons.grid,
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Section(AccountCopy.SECTION_APP) {
+                    DirectoryMenuRow(
+                        title = AccountCopy.SETTINGS,
+                        onClick = onSettings,
+                        icon = DirectoryIcons.grid,
+                        subtitle = AccountCopy.SETTINGS_HINT,
+                    )
+                }
 
-                // The two that end something, last and marked.
-                DirectorySettingRow(
-                    title = AccountCopy.DELETE,
-                    onClick = { confirmDelete = true },
-                    icon = DirectoryIcons.close,
-                    danger = true,
-                    trailing = false,
-                )
-                DirectorySettingRow(
-                    title = AccountCopy.SIGN_OUT,
-                    onClick = { confirmSignOut = true },
-                    icon = DirectoryIcons.logout,
-                    danger = true,
-                    trailing = false,
-                )
+                // The two that end something, last, apart, and marked.
+                DirectoryMenuGroup {
+                    DirectoryMenuRow(
+                        title = AccountCopy.DELETE,
+                        onClick = { confirmDelete = true },
+                        icon = DirectoryIcons.close,
+                        danger = true,
+                        trailing = false,
+                    )
+                    DirectoryMenuDivider()
+                    DirectoryMenuRow(
+                        title = AccountCopy.SIGN_OUT,
+                        onClick = { confirmSignOut = true },
+                        icon = DirectoryIcons.logout,
+                        danger = true,
+                        trailing = false,
+                    )
+                }
                 (deletion as? DeletionUiState.Error)?.let { failure ->
-                    Column(
-                        modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.sm),
-                        verticalArrangement = Arrangement.spacedBy(Space.xs),
-                    ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
                         Text(
                             text = AccountCopy.DELETE_FAILED,
                             style = MaterialTheme.typography.bodyMedium,
@@ -192,6 +205,7 @@ fun AccountScreen(
                         )
                     }
                 }
+                Spacer(Modifier.height(Space.lg))
             }
         }
     }
@@ -224,30 +238,72 @@ fun AccountScreen(
     }
 }
 
-/** The account itself, with its picture when it has one and the person mark when it does not. */
+/** A label and the card under it: one subject, drawn as one thing. */
 @Composable
-private fun Identity(name: String, phone: String, imageUrl: String?) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = Space.xl),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Space.sm),
+private fun Section(label: String, content: @Composable ColumnScope.() -> Unit) {
+    Column {
+        DirectorySectionLabel(label)
+        DirectoryMenuGroup(content = content)
+    }
+}
+
+/**
+ * Who this account is: the picture, the name, the number, and where it lives.
+ *
+ * It is a card of its own rather than three lines floating above the menu, because it is not
+ * something to go to — it is the answer to "whose account is this", and the menu below it is
+ * what can be done about it. The number is the account's name to the backend, so it is shown
+ * as it was proved, in the Latin digits it was sent in.
+ */
+@Composable
+private fun Identity(name: String, phone: String, imageUrl: String?, province: String?) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(Radius.xl),
+        color = MaterialTheme.colorScheme.primaryContainer,
     ) {
-        DirectoryAvatar(imageUrl = imageUrl, size = Sizes.avatar + Space.lg)
-        Text(
-            text = name,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.semantics { heading() },
-        )
-        Text(
-            text = phone,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = Space.lg, horizontal = Space.base),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Space.sm),
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(Radius.pill))
+                    .padding(Space.xs),
+            ) {
+                DirectoryAvatar(imageUrl = imageUrl, size = Sizes.avatar + Space.lg)
+            }
+            Text(
+                text = name,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.semantics { heading() },
+            )
+            Text(
+                text = phone,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+            if (province != null) {
+                Surface(
+                    shape = RoundedCornerShape(Radius.pill),
+                    color = MaterialTheme.colorScheme.surface,
+                ) {
+                    Text(
+                        text = province,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = Space.md, vertical = Space.xs),
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -262,6 +318,12 @@ object AccountCopy {
     const val FACILITIES = "منشآتي"
     const val JOIN_AS_OWNER = "انضم كصاحب منشأة"
     const val JOIN_AS_OWNER_HINT = "أضف منشأتك"
+    const val FACILITIES_HINT = "المواعيد والمناوبة والصور"
+    const val EDIT_PROFILE_HINT = "الاسم والعنوان والصورة والمحافظة"
+    const val SETTINGS_HINT = "كلمة المرور والإشعارات والأذونات"
+    const val SECTION_ACCOUNT = "حسابي"
+    const val SECTION_FACILITIES = "المنشآت"
+    const val SECTION_APP = "التطبيق"
     const val SIGN_OUT = "تسجيل الخروج"
     const val SIGN_OUT_TITLE = "تسجيل الخروج؟"
     const val SIGN_OUT_BODY = "ستحتاج إلى تسجيل الدخول مرة أخرى لإدارة معلوماتك ومنشآتك."

@@ -252,7 +252,8 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                         popUpTo(navController.graph.id) { inclusive = true }
                     }
                 },
-                onBack = { navController.popBackStack() },
+                // The root of a tab has nothing behind it, signed in as well as signed out.
+                onBack = null,
                 onEditProfile = { navController.navigate(DirectoryRoute.EditProfile) },
                 onFavorites = { navController.navigate(DirectoryRoute.Favorites) },
                 onNotifications = { navController.navigate(DirectoryRoute.Notifications) },
