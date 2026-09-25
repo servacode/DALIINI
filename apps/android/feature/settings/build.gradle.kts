@@ -8,6 +8,9 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:network"))
+    // The province's offline map pack, and the preference that remembers a refusal.
+    implementation(project(":core:maps"))
+    implementation(project(":core:datastore"))
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     ksp(libs.hilt.compiler)

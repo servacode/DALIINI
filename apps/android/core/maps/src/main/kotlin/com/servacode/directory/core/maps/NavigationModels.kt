@@ -155,6 +155,14 @@ data class MapProviderConfig(
     val routingBaseUrl: String,
     val geocodingBaseUrl: String,
     val geocodingUserAgent: String,
+    /**
+     * The style the map draws, and the one an offline pack is fetched from.
+     *
+     * The screens are handed this by the app as a parameter, which is how it has always reached
+     * them; it is here as well because a pack is created against a style URL and kept against it,
+     * and the thing that creates one has no screen to be handed anything by.
+     */
+    val styleUrl: String = "",
 )
 
 class ProviderConfigurationException(message: String) : IllegalStateException(message)

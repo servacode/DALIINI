@@ -46,6 +46,7 @@ class BootstrapRepositoryTest {
             override suspend fun setLocationPreference(value: LocationPreference) = Unit
             override suspend fun setWelcomeCompleted() = Unit
             override suspend fun rememberPlace(label: String, provinceId: String?) = Unit
+            override suspend fun setOfflineMapDeclined(value: Boolean) = Unit
         }
 
         assertEquals(BootstrapResult.Failed("BOOTSTRAP_STORAGE_UNAVAILABLE"),

@@ -14,6 +14,7 @@ import javax.inject.Inject
 class DirectoryApplication : Application() {
     @Inject lateinit var realtimeCoordinator: RealtimeCoordinator
     @Inject lateinit var pushSetup: PushSetup
+    @Inject lateinit var offlineMaps: OfflineMapCoordinator
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -33,5 +34,8 @@ class DirectoryApplication : Application() {
         MapLibre.getInstance(this)
         ProcessLifecycleOwner.get().lifecycle.addObserver(realtimeCoordinator)
         pushSetup.start(this, scope)
+        // The province's map, fetched once on a connection nobody pays for. It watches rather than
+        // acts: nothing is downloaded until there is a province, a Wi-Fi and no refusal on file.
+        offlineMaps.start(scope)
     }
 }

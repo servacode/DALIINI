@@ -105,6 +105,10 @@ class FakePreferences(
     override suspend fun rememberPlace(label: String, provinceId: String?) {
         state.value = state.value.copy(placeLabel = label, placeProvinceId = provinceId)
     }
+
+    override suspend fun setOfflineMapDeclined(value: Boolean) {
+        state.value = state.value.copy(offlineMapDeclined = value)
+    }
 }
 
 /** Location as the user left it: [fix] when they allowed it, nothing otherwise. */

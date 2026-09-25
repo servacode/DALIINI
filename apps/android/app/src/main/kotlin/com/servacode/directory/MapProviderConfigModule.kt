@@ -16,5 +16,6 @@ object MapProviderConfigModule {
         routingBaseUrl = BuildConfig.ROUTING_BASE_URL,
         geocodingBaseUrl = BuildConfig.GEOCODING_BASE_URL,
         geocodingUserAgent = BuildConfig.GEOCODING_USER_AGENT,
+        styleUrl = BuildConfig.MAP_STYLE_URL,
     )
 }

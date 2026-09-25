@@ -19,6 +19,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.Lifecycle
 import com.servacode.directory.core.designsystem.DirectoryIcons
@@ -28,6 +30,11 @@ import com.servacode.directory.core.designsystem.DirectoryMenuSection
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.Space
+import com.servacode.directory.core.maps.MapPackFailure
+import com.servacode.directory.core.maps.MapPackState
+import com.servacode.directory.core.maps.MapPackTarget
+import com.servacode.directory.core.maps.packEstimatedBytes
+import kotlin.math.roundToInt
 
 /**
  * Settings: everything about the app, and only what this app actually has.
@@ -104,6 +111,9 @@ fun SettingsScreen(
                 )
             }
 
+            // What a trip needs when the connection goes, which in this country it does.
+            OfflineMapSection()
+
             // Android owns these switches; the app sends the user to them rather than keeping a
             // copy of an answer the system can change behind its back.
             DirectoryMenuSection(SettingsCopy.PERMISSIONS) {
@@ -124,6 +134,108 @@ fun SettingsScreen(
         }
     }
 }
+
+/**
+ * The province's map, kept on the device.
+ *
+ * One row that says where the pack stands, and one action that fits that state: fetch it, stop
+ * fetching it, carry on, or give the space back. The app does this by itself on a connection
+ * nobody pays by the megabyte for; this is for the reader who wants it now, or not at all.
+ */
+@Composable
+private fun OfflineMapSection(viewModel: OfflineMapViewModel = hiltViewModel()) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val target by viewModel.target.collectAsStateWithLifecycle()
+
+    DirectoryMenuSection(SettingsCopy.OFFLINE_MAP) {
+        DirectoryMenuRow(
+            title = packTitle(state),
+            onClick = {
+                when (state) {
+                    is MapPackState.Downloading -> if ((state as MapPackState.Downloading).running) {
+                        viewModel.pause()
+                    } else {
+                        viewModel.download()
+                    }
+                    is MapPackState.Ready, MapPackState.Unknown -> Unit
+                    else -> viewModel.download()
+                }
+            },
+            icon = DirectoryIcons.map,
+            subtitle = packDetail(state, target),
+            trailing = state !is MapPackState.Ready && state != MapPackState.Unknown,
+        )
+        if (state is MapPackState.Ready) {
+            DirectoryMenuDivider()
+            DirectoryMenuRow(
+                title = SettingsCopy.OFFLINE_DELETE,
+                onClick = viewModel::remove,
+                icon = DirectoryIcons.close,
+                danger = true,
+                trailing = false,
+            )
+        }
+    }
+}
+
+/** What the row says it is offering, which is different in each state. */
+@Composable
+@ReadOnlyComposable
+private fun packTitle(state: MapPackState): String = when (state) {
+    MapPackState.Unknown -> SettingsCopy.OFFLINE_MAP
+    MapPackState.Absent -> SettingsCopy.OFFLINE_DOWNLOAD
+    is MapPackState.Downloading ->
+        if (state.running) SettingsCopy.OFFLINE_DOWNLOADING else SettingsCopy.OFFLINE_PAUSED
+    is MapPackState.Ready -> SettingsCopy.OFFLINE_READY
+    is MapPackState.Failed -> SettingsCopy.OFFLINE_FAILED
+}
+
+/**
+ * The cost, the progress or the reason, under the title.
+ *
+ * Before a download there is only an estimate, computed from the box and the zooms; once one is
+ * running the engine's own byte count replaces it, because an estimate shown next to a real figure
+ * is the one that will be wrong.
+ */
+@Composable
+@ReadOnlyComposable
+private fun packDetail(state: MapPackState, target: MapPackTarget?): String = when (state) {
+    MapPackState.Unknown -> SettingsCopy.OFFLINE_NO_PROVINCE
+    MapPackState.Absent -> when (target) {
+        null -> SettingsCopy.OFFLINE_HINT
+        else -> stringResource(
+            R.string.settings_offline_estimate,
+            megabytes(packEstimatedBytes(target.box)),
+        )
+    }
+    is MapPackState.Downloading -> when (val fraction = state.fraction) {
+        null -> SettingsCopy.OFFLINE_COUNTING
+        else -> when {
+            state.running -> stringResource(
+                R.string.settings_offline_progress,
+                (fraction * 100).roundToInt(),
+                megabytes(state.bytes),
+            )
+            else -> stringResource(R.string.settings_offline_paused_at, (fraction * 100).roundToInt())
+        }
+    }
+    is MapPackState.Ready -> stringResource(R.string.settings_offline_size, megabytes(state.bytes))
+    is MapPackState.Failed -> stringResource(
+        when (state.reason) {
+            MapPackFailure.CONNECTION -> R.string.settings_offline_failed_connection
+            MapPackFailure.SERVER -> R.string.settings_offline_failed_server
+            MapPackFailure.TILE_LIMIT -> R.string.settings_offline_failed_limit
+            MapPackFailure.OTHER -> R.string.settings_offline_failed_other
+        },
+    )
+}
+
+/** Bytes as a reader counts them, rounded to the nearest megabyte and never below one. */
+private fun megabytes(bytes: Long): Int =
+    ((bytes + HALF_MEGABYTE) / MEGABYTE).toInt().coerceAtLeast(1)
+
+private const val MEGABYTE = 1_000_000L
+private const val HALF_MEGABYTE = 500_000L
 
 /** Whether the system lets this app show a notice, and the screen where that is decided. */
 private object NotificationSetting {
@@ -157,6 +269,26 @@ object SettingsCopy {
     val ALLOWED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_allowed)
     val NOT_ALLOWED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_not_allowed)
     val PERMISSIONS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_permissions)
+    val OFFLINE_MAP: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_offline_map)
+    val OFFLINE_HINT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_offline_map_hint)
+    val OFFLINE_NO_PROVINCE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_offline_no_province)
+    val OFFLINE_DOWNLOAD: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_offline_download)
+    val OFFLINE_DOWNLOADING: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_offline_downloading)
+    val OFFLINE_COUNTING: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_offline_counting)
+    val OFFLINE_PAUSED: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_offline_paused)
+    val OFFLINE_READY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_offline_ready)
+    val OFFLINE_DELETE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_offline_delete)
+    val OFFLINE_FAILED: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_offline_failed)
     val SYSTEM_SETTINGS: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_system_settings)
     val SYSTEM_SETTINGS_HINT: String

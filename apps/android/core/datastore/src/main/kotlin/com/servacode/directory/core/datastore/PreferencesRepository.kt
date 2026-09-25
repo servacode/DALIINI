@@ -31,6 +31,7 @@ class PreferencesRepository @Inject constructor(
             welcomeCompleted = prefs[WELCOME_COMPLETED] ?: false,
             placeLabel = prefs[PLACE_LABEL],
             placeProvinceId = prefs[PLACE_PROVINCE],
+            offlineMapDeclined = prefs[OFFLINE_MAP_DECLINED] ?: false,
         )
     }
 
@@ -53,6 +54,10 @@ class PreferencesRepository @Inject constructor(
         }
     }
 
+    override suspend fun setOfflineMapDeclined(value: Boolean) {
+        context.directoryDataStore.edit { it[OFFLINE_MAP_DECLINED] = value }
+    }
+
     private companion object {
         val SELECTED_PROVINCE = stringPreferencesKey("selected_province_id")
         val LOCATION_PREFERENCE = stringPreferencesKey("location_preference")
@@ -60,6 +65,7 @@ class PreferencesRepository @Inject constructor(
         val WELCOME_COMPLETED = booleanPreferencesKey("welcome_completed")
         val PLACE_LABEL = stringPreferencesKey("place_label")
         val PLACE_PROVINCE = stringPreferencesKey("place_province_id")
+        val OFFLINE_MAP_DECLINED = booleanPreferencesKey("offline_map_declined")
     }
 }
 

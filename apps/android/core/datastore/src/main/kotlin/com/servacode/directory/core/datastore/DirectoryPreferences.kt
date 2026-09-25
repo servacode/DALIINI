@@ -17,6 +17,14 @@ data class DirectoryPreferences(
      */
     val placeLabel: String? = null,
     val placeProvinceId: String? = null,
+    /**
+     * Whether the reader has said they do not want the province's map kept on the device.
+     *
+     * Stored as a refusal rather than a wish so that the default — keep it, when the connection is
+     * one nobody pays for — needs nothing written. A reader who deletes the pack has said no, and
+     * the app does not fetch it again behind their back; asking for it in settings says yes again.
+     */
+    val offlineMapDeclined: Boolean = false,
 )
 
 enum class LocationPreference { ASK, ENABLED, DISABLED }
@@ -33,4 +41,7 @@ interface DirectoryPreferencesStore {
 
     /** Remember the place the backend resolved, so the next start opens with the same name. */
     suspend fun rememberPlace(label: String, provinceId: String?)
+
+    /** Remember that the reader does, or does not, want the province's map kept. */
+    suspend fun setOfflineMapDeclined(value: Boolean)
 }
