@@ -1,25 +1,25 @@
 package com.servacode.directory.feature.onboarding
 
-import android.Manifest
 import android.content.pm.PackageManager
+import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,17 +42,17 @@ import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
 import com.servacode.directory.core.designsystem.DirectorySecondaryButton
+import com.servacode.directory.core.designsystem.DirectorySectionLabel
+import com.servacode.directory.core.designsystem.DirectorySwitchRow
 import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTextField
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.MetaRow
-import com.servacode.directory.core.designsystem.SectionHeader
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.designsystem.StatusPill
 import com.servacode.directory.core.designsystem.StatusTone
 import com.servacode.directory.core.designsystem.StepIndicator
-import com.servacode.directory.core.designsystem.DirectorySwitchRow
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.model.BusinessHour
 import com.servacode.directory.core.model.OwnerFacilityStatus
@@ -442,7 +442,7 @@ private fun StatusStep(value: OnboardingUiState.Content) {
             }
         }
         value.draft?.application?.rejectionReason?.let { reason ->
-            SectionHeader(OnboardingCopy.REJECTION)
+            DirectorySectionLabel(OnboardingCopy.REJECTION)
             Text(
                 text = reason,
                 style = MaterialTheme.typography.bodyLarge,

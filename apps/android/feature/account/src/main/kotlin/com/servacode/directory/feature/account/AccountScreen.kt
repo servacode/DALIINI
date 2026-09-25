@@ -4,25 +4,21 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -38,8 +34,9 @@ import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryMenuDivider
 import com.servacode.directory.core.designsystem.DirectoryMenuGroup
 import com.servacode.directory.core.designsystem.DirectoryMenuRow
+import com.servacode.directory.core.designsystem.DirectoryMenuSection
 import com.servacode.directory.core.designsystem.DirectoryPage
-import com.servacode.directory.core.designsystem.DirectorySectionLabel
+import com.servacode.directory.core.designsystem.DirectoryPill
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.Radius
 import com.servacode.directory.core.designsystem.Sizes
@@ -124,7 +121,7 @@ fun AccountScreen(
                 }
 
                 // Everything about the person.
-                Section(AccountCopy.SECTION_ACCOUNT) {
+                DirectoryMenuSection(AccountCopy.SECTION_ACCOUNT) {
                     DirectoryMenuRow(
                         title = AccountCopy.EDIT_PROFILE,
                         onClick = onEditProfile,
@@ -146,7 +143,7 @@ fun AccountScreen(
                 }
 
                 // One row, not two: the invitation until they have joined, their own after.
-                Section(AccountCopy.SECTION_FACILITIES) {
+                DirectoryMenuSection(AccountCopy.SECTION_FACILITIES) {
                     if (value.ownsFacility) {
                         DirectoryMenuRow(
                             title = AccountCopy.FACILITIES,
@@ -165,7 +162,7 @@ fun AccountScreen(
                 }
 
                 // Everything about the app, in one place — the password and the switches with it.
-                Section(AccountCopy.SECTION_APP) {
+                DirectoryMenuSection(AccountCopy.SECTION_APP) {
                     DirectoryMenuRow(
                         title = AccountCopy.SETTINGS,
                         onClick = onSettings,
@@ -248,15 +245,6 @@ fun AccountScreen(
     }
 }
 
-/** A label and the card under it: one subject, drawn as one thing. */
-@Composable
-private fun Section(label: String, content: @Composable ColumnScope.() -> Unit) {
-    Column {
-        DirectorySectionLabel(label)
-        DirectoryMenuGroup(content = content)
-    }
-}
-
 /**
  * Who this account is: the picture, the name, the number, and where it lives.
  *
@@ -267,51 +255,36 @@ private fun Section(label: String, content: @Composable ColumnScope.() -> Unit) 
  */
 @Composable
 private fun Identity(name: String, phone: String, imageUrl: String?, province: String?) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(Radius.xl),
-        color = MaterialTheme.colorScheme.primaryContainer,
-    ) {
-        Column(
+    DirectoryBrandPanel {
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = Space.lg, horizontal = Space.base),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(Space.sm),
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(Radius.pill))
+                .padding(Space.xs),
         ) {
-            Box(
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(Radius.pill))
-                    .padding(Space.xs),
-            ) {
-                DirectoryAvatar(imageUrl = imageUrl, size = Sizes.avatar + Space.lg)
-            }
-            Text(
-                text = name,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.semantics { heading() },
-            )
-            Text(
-                text = phone,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
-            if (province != null) {
-                Surface(
-                    shape = RoundedCornerShape(Radius.pill),
-                    color = MaterialTheme.colorScheme.surface,
-                ) {
-                    Text(
-                        text = province,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(horizontal = Space.md, vertical = Space.xs),
-                    )
-                }
+            DirectoryAvatar(imageUrl = imageUrl, size = Sizes.avatar + Space.lg)
+        }
+        Text(
+            text = name,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { heading() },
+        )
+        Text(
+            text = phone,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+        if (province != null) {
+            DirectoryPill {
+                Text(
+                    text = province,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = Space.md, vertical = Space.xs),
+                )
             }
         }
     }

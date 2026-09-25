@@ -2,10 +2,10 @@ package com.servacode.directory.feature.duty
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -25,9 +25,9 @@ import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
 import com.servacode.directory.core.designsystem.DirectorySecondaryButton
+import com.servacode.directory.core.designsystem.DirectorySectionLabel
 import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTopBar
-import com.servacode.directory.core.designsystem.SectionHeader
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.model.DamascusTime
 
@@ -72,7 +72,7 @@ fun DutyScreen(
                         modifier = Modifier.padding(top = Space.sm),
                     )
                 }
-                SectionHeader(DutyCopy.NEW_SHIFT)
+                DirectorySectionLabel(DutyCopy.NEW_SHIFT)
                 DateTimeField(DutyCopy.START, start, { start = it }, Modifier.fillMaxWidth())
                 DateTimeField(DutyCopy.END, end, { end = it }, Modifier.fillMaxWidth())
                 DirectoryPrimaryButton(
@@ -93,7 +93,7 @@ fun DutyScreen(
                     enabled = end != null,
                 )
 
-                if (value.shifts.isNotEmpty()) SectionHeader(DutyCopy.SHIFTS)
+                if (value.shifts.isNotEmpty()) DirectorySectionLabel(DutyCopy.SHIFTS)
                 value.shifts.forEach { shift ->
                     DirectoryCard(modifier = Modifier.padding(vertical = Space.xs)) {
                         Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {

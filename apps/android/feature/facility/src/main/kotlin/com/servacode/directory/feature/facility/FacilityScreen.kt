@@ -4,25 +4,23 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,24 +28,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.ActionCircle
 import com.servacode.directory.core.designsystem.AvailabilityPill
-import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryCard
-import com.servacode.directory.core.designsystem.DirectoryImage
+import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcon
-import com.servacode.directory.core.designsystem.DirectoryIconButton
 import com.servacode.directory.core.designsystem.DirectoryIcons
+import com.servacode.directory.core.designsystem.DirectoryImage
 import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
 import com.servacode.directory.core.designsystem.DirectoryPage
-import com.servacode.directory.core.designsystem.DirectorySectionLabel
+import com.servacode.directory.core.designsystem.DirectoryRoundControl
+import com.servacode.directory.core.designsystem.DirectorySection
 import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.IconSize
@@ -114,18 +112,12 @@ fun FacilityScreen(
                         modifier = Modifier.height(Sizes.hero),
                         onPhoto = { photosOpen = true },
                     )
-                    Surface(
+                    DirectoryRoundControl(
+                        icon = DirectoryIcons.back,
+                        label = FacilityCopy.BACK,
+                        onClick = onBack,
                         modifier = Modifier.padding(Space.md).align(Alignment.TopStart),
-                        shape = RoundedCornerShape(Radius.pill),
-                        color = MaterialTheme.colorScheme.surface,
-                    ) {
-                        DirectoryIconButton(
-                            icon = DirectoryIcons.back,
-                            label = FacilityCopy.BACK,
-                            onClick = onBack,
-                            tint = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
+                    )
                 }
                 FacilityBody(
                     value = value,
@@ -229,28 +221,28 @@ private fun FacilityBody(
         }
 
         if (address.isNotEmpty() || detail.phone != null) {
-            Section(FacilityCopy.ADDRESS) {
+            DirectorySection(FacilityCopy.ADDRESS) {
                 if (address.isNotEmpty()) MetaRow(DirectoryIcons.pin, address)
                 detail.phone?.let { MetaRow(DirectoryIcons.phone, it) }
             }
         }
         if (detail.hours.isNotEmpty()) {
-            Section(FacilityCopy.HOURS) {
+            DirectorySection(FacilityCopy.HOURS) {
                 detail.hours.forEach { hour -> HourRow(hour) }
             }
         }
         detail.descriptionAr?.let { about ->
-            Section(FacilityCopy.ABOUT) { Paragraph(about) }
+            DirectorySection(FacilityCopy.ABOUT) { Paragraph(about) }
         }
         if (detail.specialties.isNotEmpty()) {
-            Section(FacilityCopy.SPECIALTIES) { Paragraph(detail.specialties.joinToString("، ")) }
+            DirectorySection(FacilityCopy.SPECIALTIES) { Paragraph(detail.specialties.joinToString("، ")) }
         }
         if (detail.services.isNotEmpty()) {
-            Section(FacilityCopy.SERVICES) { Paragraph(detail.services.joinToString("، ")) }
+            DirectorySection(FacilityCopy.SERVICES) { Paragraph(detail.services.joinToString("، ")) }
         }
 
         // The ratings, where they belong: at the end of what is being rated.
-        Section(FacilityCopy.RATINGS) {
+        DirectorySection(FacilityCopy.RATINGS) {
             RatingSummary(average = summary.ratingAverage, count = summary.ratingCount)
             HorizontalDivider(color = MaterialTheme.colorScheme.outline)
             Text(
@@ -280,17 +272,6 @@ private fun FacilityBody(
             } else {
                 DirectoryTextButton(FacilityCopy.SIGN_IN_TO_RATE, onSignIn)
             }
-        }
-    }
-}
-
-/** A label and the card under it, the shape the rest of the app's pages are read in. */
-@Composable
-private fun Section(label: String, content: @Composable ColumnScope.() -> Unit) {
-    Column {
-        DirectorySectionLabel(label)
-        DirectoryCard {
-            Column(verticalArrangement = Arrangement.spacedBy(Space.sm), content = content)
         }
     }
 }
@@ -388,18 +369,12 @@ private fun PhotosPage(urls: List<String>, name: String?, onBack: () -> Unit) {
                     contentDescription = name,
                     modifier = Modifier.fillMaxSize(),
                 )
-                Surface(
+                DirectoryRoundControl(
+                    icon = DirectoryIcons.close,
+                    label = FacilityCopy.CLOSE,
+                    onClick = { opened = null },
                     modifier = Modifier.padding(Space.md).align(Alignment.TopStart),
-                    shape = RoundedCornerShape(Radius.pill),
-                    color = MaterialTheme.colorScheme.surface,
-                ) {
-                    DirectoryIconButton(
-                        icon = DirectoryIcons.close,
-                        label = FacilityCopy.CLOSE,
-                        onClick = { opened = null },
-                        tint = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
+                )
             }
         }
         return

@@ -1,7 +1,6 @@
 package com.servacode.directory.feature.account
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,7 +15,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,6 +34,7 @@ import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIconButton
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
+import com.servacode.directory.core.designsystem.DirectoryOutlinedCard
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.FacilityCard
@@ -215,23 +214,7 @@ fun NotificationsScreen(
 private fun MessageRow(message: InboxMessage, onOpen: () -> Unit) {
     val goes = message.destination != MessageDestination.NONE
     val unread = !message.isRead
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(Radius.large),
-        color = if (unread) {
-            MaterialTheme.colorScheme.primaryContainer
-        } else {
-            MaterialTheme.colorScheme.surface
-        },
-        border = BorderStroke(
-            width = 1.dp,
-            color = if (unread) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.outline
-            },
-        ),
-    ) {
+    DirectoryOutlinedCard(highlighted = unread) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

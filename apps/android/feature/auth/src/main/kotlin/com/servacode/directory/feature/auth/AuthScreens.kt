@@ -1,35 +1,23 @@
 package com.servacode.directory.feature.auth
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsPadding
-import com.servacode.directory.core.designsystem.BrandColors
-import com.servacode.directory.core.model.DirectoryBrand
-import com.servacode.directory.core.designsystem.BrandSymbol
-import com.servacode.directory.core.designsystem.DirectoryIconButton
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.ui.draw.clip
-import com.servacode.directory.core.designsystem.DirectoryCard
-import com.servacode.directory.core.designsystem.Radius
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -38,12 +26,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.designsystem.BrandSymbol
+import com.servacode.directory.core.designsystem.DirectoryBrandHeader
+import com.servacode.directory.core.designsystem.DirectoryCard
+import com.servacode.directory.core.designsystem.DirectoryIconButton
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryPasswordField
@@ -52,6 +44,7 @@ import com.servacode.directory.core.designsystem.DirectorySecondaryButton
 import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTextField
 import com.servacode.directory.core.designsystem.Space
+import com.servacode.directory.core.model.DirectoryBrand
 
 /**
  * Screens 12 to 14: signing in, creating an account, and getting back into one.
@@ -192,26 +185,17 @@ private fun AuthFrame(
 /** The soft green field the page opens with: the mark, the app's name, and one line of welcome. */
 @Composable
 private fun Welcome(onBack: (() -> Unit)?) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(bottomStart = Radius.xl, bottomEnd = Radius.xl))
-            .background(BrandColors.softer)
-            .windowInsetsPadding(WindowInsets.statusBars),
-    ) {
+    DirectoryBrandHeader {
         if (onBack != null) {
             DirectoryIconButton(
                 icon = DirectoryIcons.back,
                 label = AuthCopy.BACK,
                 onClick = onBack,
-                modifier = Modifier.align(Alignment.TopStart).padding(Space.sm),
+                modifier = Modifier.align(Alignment.Start),
             )
         }
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = Space.xl)
-                .padding(top = Space.lg, bottom = Space.xl),
+            modifier = Modifier.fillMaxWidth().padding(bottom = Space.sm),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Space.sm),
         ) {

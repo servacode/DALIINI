@@ -180,6 +180,30 @@ def source_paths(pattern: str) -> list[Path]:
     ]
 
 
+def check_design_system() -> None:
+    """One app, one set of shapes.
+
+    Four screens had grown their own private `Section`, six had reached for `Surface` to draw
+    the same soft green field or the same outlined card, and the design system had two
+    components for the line above a group. A shape drawn again in every file drifts in every
+    file, and is then corrected one element at a time. A screen that needs a shape the design
+    system does not have adds it there, where the next screen inherits it.
+    """
+    features = [path for path in source_paths("*.kt") if "feature" in path.relative_to(ROOT).parts]
+    own_containers = [
+        f"{path.relative_to(ROOT)}"
+        for path in features
+        if "import androidx.compose.material3.Surface" in path.read_text(encoding="utf-8")
+    ]
+    require(not own_containers, f"features drawing their own containers: {own_containers}")
+    own_sections = [
+        f"{path.relative_to(ROOT)}"
+        for path in features
+        if "private fun Section(" in path.read_text(encoding="utf-8")
+    ]
+    require(not own_sections, f"features with a section of their own: {own_sections}")
+
+
 def check_hygiene() -> None:
     source_files = [*source_paths("*.kt"), *source_paths("*.kts"), *source_paths("*.xml")]
     combined = "\n".join(path.read_text(encoding="utf-8") for path in source_files)
@@ -212,7 +236,14 @@ def check_hygiene() -> None:
 
 
 def main() -> int:
-    checks = [check_modules, check_sdk_policy, check_security, check_architecture, check_hygiene]
+    checks = [
+        check_modules,
+        check_sdk_policy,
+        check_security,
+        check_architecture,
+        check_design_system,
+        check_hygiene,
+    ]
     for check in checks:
         check()
         print(f"PASS {check.__name__}")

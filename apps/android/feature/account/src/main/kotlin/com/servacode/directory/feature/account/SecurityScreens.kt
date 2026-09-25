@@ -1,42 +1,42 @@
 package com.servacode.directory.feature.account
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Row
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DirectoryAvatar
 import com.servacode.directory.core.designsystem.DirectoryChipRow
 import com.servacode.directory.core.designsystem.DirectoryFilterChip
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryInlineLoading
-import com.servacode.directory.core.designsystem.DirectoryPage
-import com.servacode.directory.core.designsystem.DirectoryPasswordField
-import com.servacode.directory.core.designsystem.DirectorySecondaryButton
 import com.servacode.directory.core.designsystem.DirectoryMenuGroup
 import com.servacode.directory.core.designsystem.DirectoryMenuRow
-import com.servacode.directory.core.designsystem.Sizes
+import com.servacode.directory.core.designsystem.DirectoryPage
+import com.servacode.directory.core.designsystem.DirectoryPasswordField
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
+import com.servacode.directory.core.designsystem.DirectorySecondaryButton
+import com.servacode.directory.core.designsystem.DirectorySectionLabel
 import com.servacode.directory.core.designsystem.DirectoryTextField
 import com.servacode.directory.core.designsystem.DirectoryTopBar
-import com.servacode.directory.core.designsystem.SectionHeader
+import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.network.UploadReader
 
@@ -118,7 +118,7 @@ fun ProfileEditScreen(
             }
             val provinces = (account as? AccountUiState.Content)?.provinces.orEmpty()
             if (provinces.isNotEmpty()) {
-                SectionHeader(SecurityCopy.PROVINCE)
+                DirectorySectionLabel(SecurityCopy.PROVINCE)
                 DirectoryChipRow {
                     provinces.forEach { province ->
                         DirectoryFilterChip(

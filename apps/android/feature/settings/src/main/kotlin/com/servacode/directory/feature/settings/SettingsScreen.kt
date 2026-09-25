@@ -6,7 +6,6 @@ import android.os.Build
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -18,14 +17,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.Lifecycle
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryMenuDivider
-import com.servacode.directory.core.designsystem.DirectoryMenuGroup
 import com.servacode.directory.core.designsystem.DirectoryMenuRow
+import com.servacode.directory.core.designsystem.DirectoryMenuSection
 import com.servacode.directory.core.designsystem.DirectoryPage
-import com.servacode.directory.core.designsystem.DirectorySectionLabel
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.Space
 
@@ -77,7 +75,7 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(Space.lg),
         ) {
             if (signedIn) {
-                Section(SettingsCopy.SECURITY) {
+                DirectoryMenuSection(SettingsCopy.SECURITY) {
                     DirectoryMenuRow(
                         title = SettingsCopy.CHANGE_PASSWORD,
                         onClick = onChangePassword,
@@ -95,7 +93,7 @@ fun SettingsScreen(
                 }
             }
 
-            Section(SettingsCopy.NOTIFICATIONS) {
+            DirectoryMenuSection(SettingsCopy.NOTIFICATIONS) {
                 DirectoryMenuRow(
                     title = SettingsCopy.ALLOW_NOTIFICATIONS,
                     onClick = { context.startActivity(NotificationSetting.systemScreen(context)) },
@@ -106,7 +104,7 @@ fun SettingsScreen(
 
             // Android owns these switches; the app sends the user to them rather than keeping a
             // copy of an answer the system can change behind its back.
-            Section(SettingsCopy.PERMISSIONS) {
+            DirectoryMenuSection(SettingsCopy.PERMISSIONS) {
                 DirectoryMenuRow(
                     title = SettingsCopy.SYSTEM_SETTINGS,
                     onClick = {
@@ -122,15 +120,6 @@ fun SettingsScreen(
                 )
             }
         }
-    }
-}
-
-/** A label and the card under it: one subject, drawn as one thing. */
-@Composable
-private fun Section(label: String, content: @Composable ColumnScope.() -> Unit) {
-    Column {
-        DirectorySectionLabel(label)
-        DirectoryMenuGroup(content = content)
     }
 }
 

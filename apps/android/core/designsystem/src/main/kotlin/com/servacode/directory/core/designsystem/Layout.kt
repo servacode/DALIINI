@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -214,31 +213,6 @@ fun DirectoryBottomBar(destinations: List<DirectoryDestination>, modifier: Modif
                     ),
                 )
             }
-        }
-    }
-}
-
-/** The line that opens a section, with at most one thing to press beside it. */
-@Composable
-fun SectionHeader(
-    title: String,
-    modifier: Modifier = Modifier,
-    action: String? = null,
-    onAction: (() -> Unit)? = null,
-) {
-    Row(
-        modifier = modifier.fillMaxWidth().heightIn(min = Sizes.touchTarget),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.semantics { heading() },
-        )
-        if (action != null && onAction != null) {
-            DirectoryTextButton(action, onAction)
         }
     }
 }

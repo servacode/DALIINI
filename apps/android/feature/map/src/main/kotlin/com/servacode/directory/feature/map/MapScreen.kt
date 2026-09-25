@@ -1,62 +1,59 @@
 package com.servacode.directory.feature.map
 
 import android.content.pm.PackageManager
-import androidx.annotation.DrawableRes
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.AvailabilityPill
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIconButton
-import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
-import com.servacode.directory.core.designsystem.DirectorySecondaryButton
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryMessageState
+import com.servacode.directory.core.designsystem.DirectoryOverlayTile
 import com.servacode.directory.core.designsystem.DirectoryPage
-import com.servacode.directory.core.designsystem.Elevation
+import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
+import com.servacode.directory.core.designsystem.DirectoryRoundControl
+import com.servacode.directory.core.designsystem.DirectorySecondaryButton
 import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.Radius
 import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.location.FOREGROUND_LOCATION_PERMISSIONS
-import com.servacode.directory.core.maps.MapCamera
 import com.servacode.directory.core.maps.FacilityMapPin
+import com.servacode.directory.core.maps.MapCamera
 import com.servacode.directory.core.maps.MapLibreController
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.maps.MapStyle
@@ -172,30 +169,8 @@ private fun MapQuickFilters(
         modifier = modifier.padding(Space.md),
         horizontalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
-        MapFilterChip(MapCopy.OPEN_NOW, filters.openNow, onOpenNow)
-        if (offersDuty) MapFilterChip(MapCopy.DUTY_NOW, filters.dutyNow, onDutyNow)
-    }
-}
-
-/** A chip that has to read against a map, so it carries its own surface rather than a tint. */
-@Composable
-private fun MapFilterChip(text: String, selected: Boolean, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(Radius.pill),
-        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-        shadowElevation = Elevation.low,
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge,
-            color = if (selected) {
-                MaterialTheme.colorScheme.onPrimary
-            } else {
-                MaterialTheme.colorScheme.onSurface
-            },
-            modifier = Modifier.padding(horizontal = Space.base, vertical = Space.sm),
-        )
+        DirectoryOverlayChip(MapCopy.OPEN_NOW, filters.openNow, onOpenNow)
+        if (offersDuty) DirectoryOverlayChip(MapCopy.DUTY_NOW, filters.dutyNow, onDutyNow)
     }
 }
 
@@ -218,12 +193,12 @@ private fun MapControls(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
-        MapRoundButton(DirectoryIcons.plus, MapCopy.ZOOM_IN, onIn)
+        DirectoryRoundControl(DirectoryIcons.plus, MapCopy.ZOOM_IN, onIn)
         // A minus, not a cross. The pair reads as one scale; a cross beside a plus reads as
         // "close", and someone pressing it expects the map to go away rather than widen.
-        MapRoundButton(DirectoryIcons.minus, MapCopy.ZOOM_OUT, onOut)
+        DirectoryRoundControl(DirectoryIcons.minus, MapCopy.ZOOM_OUT, onOut)
         if (onLocate != null) {
-            MapRoundButton(
+            DirectoryRoundControl(
                 icon = DirectoryIcons.myLocation,
                 label = MapCopy.MY_LOCATION,
                 onClick = onLocate,
@@ -233,45 +208,9 @@ private fun MapControls(
     }
 }
 
-/** A control that has to read against a map, so it carries its own surface. */
-@Composable
-private fun MapRoundButton(
-    @DrawableRes icon: Int,
-    label: String,
-    onClick: () -> Unit,
-    enabled: Boolean = true,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        onClick = onClick,
-        modifier = modifier.size(Sizes.button),
-        shape = RoundedCornerShape(Radius.pill),
-        color = MaterialTheme.colorScheme.surface,
-        // The brand's own soft green as a ring: white circles on a pale map lose their edges,
-        // and a grey outline belongs to no palette this app has.
-        border = BorderStroke(CONTROL_RING, MaterialTheme.colorScheme.primaryContainer),
-        shadowElevation = Elevation.low,
-        enabled = enabled,
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            DirectoryIcon(
-                icon = icon,
-                contentDescription = label,
-                tint = if (enabled) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.outline
-                },
-            )
-        }
-    }
-}
-
 /** One step of scale per press: enough to notice, small enough to aim with. */
 private const val ZOOM_STEP = 1.0
 
-/** Thin enough to be an edge rather than a frame. */
-private val CONTROL_RING = 1.dp
 
 /**
  * The province's categories, down the start edge.
@@ -295,51 +234,38 @@ private fun MapCategoryRail(
     ) {
         items(categories, key = { it.id }) { category ->
             val selected = category.id == selectedId
-            Surface(
+            // The name under the mark, not only in the accessibility tree. An icon alone is a
+            // guess for anyone meeting it the first time, and a rail of five guesses is a rail
+            // nobody uses — the labels are what make it a list of sections rather than a row
+            // of symbols.
+            DirectoryOverlayTile(
+                selected = selected,
                 onClick = { onCategory(category.id) },
-                shape = RoundedCornerShape(Radius.large),
-                color = if (selected) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.surface
-                },
-                shadowElevation = Elevation.low,
+                modifier = Modifier.width(Sizes.categoryLabel),
             ) {
-                // The name under the mark, not only in the accessibility tree. An icon alone
-                // is a guess for anyone meeting it the first time, and a rail of five guesses
-                // is a rail nobody uses — the labels are what make it a list of sections
-                // rather than a row of symbols.
-                Column(
-                    modifier = Modifier
-                        .width(Sizes.categoryLabel)
-                        .padding(vertical = Space.sm, horizontal = Space.xs),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(Space.xs),
-                ) {
-                    DirectoryIcon(
-                        icon = DirectoryIcons.category(category.iconKey),
-                        // The label beside it already says this; announcing both would read
-                        // the name twice.
-                        contentDescription = null,
-                        tint = if (selected) {
-                            MaterialTheme.colorScheme.onPrimary
-                        } else {
-                            MaterialTheme.colorScheme.primary
-                        },
-                    )
-                    Text(
-                        text = category.nameAr,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (selected) {
-                            MaterialTheme.colorScheme.onPrimary
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        },
-                        textAlign = TextAlign.Center,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+                DirectoryIcon(
+                    icon = DirectoryIcons.category(category.iconKey),
+                    // The label beside it already says this; announcing both would read
+                    // the name twice.
+                    contentDescription = null,
+                    tint = if (selected) {
+                        MaterialTheme.colorScheme.onPrimary
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    },
+                )
+                Text(
+                    text = category.nameAr,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (selected) {
+                        MaterialTheme.colorScheme.onPrimary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
     }

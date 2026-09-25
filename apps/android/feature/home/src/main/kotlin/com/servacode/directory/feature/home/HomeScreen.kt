@@ -1,37 +1,33 @@
 package com.servacode.directory.feature.home
 
 import android.content.pm.PackageManager
-import androidx.annotation.DrawableRes
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -45,22 +41,24 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.AdSlider
 import com.servacode.directory.core.designsystem.BrandColors
-import com.servacode.directory.core.designsystem.CategoryCircle
-import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.BrandSymbol
-import com.servacode.directory.core.designsystem.FacilityCard
+import com.servacode.directory.core.designsystem.CategoryCircle
+import com.servacode.directory.core.designsystem.DirectoryBrandHeader
+import com.servacode.directory.core.designsystem.DirectoryCard
+import com.servacode.directory.core.designsystem.DirectoryCompactFilterChip
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
 import com.servacode.directory.core.designsystem.DirectoryErrorState
-import com.servacode.directory.core.designsystem.DirectoryCompactFilterChip
-import com.servacode.directory.core.designsystem.DirectoryInlineLoading
 import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIconButton
 import com.servacode.directory.core.designsystem.DirectoryIcons
+import com.servacode.directory.core.designsystem.DirectoryInlineLoading
 import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
 import com.servacode.directory.core.designsystem.DirectoryPage
+import com.servacode.directory.core.designsystem.DirectoryPill
 import com.servacode.directory.core.designsystem.DirectorySearchEntry
 import com.servacode.directory.core.designsystem.DirectoryTextButton
+import com.servacode.directory.core.designsystem.FacilityCard
 import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.LoadMoreRow
 import com.servacode.directory.core.designsystem.Radius
@@ -184,41 +182,29 @@ private fun HomeHeader(
     onNotifications: () -> Unit,
     onSearch: () -> Unit,
 ) {
-    Surface(
-        color = BrandColors.softer,
-        shape = RoundedCornerShape(bottomStart = Radius.xl, bottomEnd = Radius.xl),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .padding(horizontal = Space.base)
-                .padding(top = Space.sm, bottom = Space.base),
-            verticalArrangement = Arrangement.spacedBy(Space.sm),
+    DirectoryBrandHeader {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(Space.sm),
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(Space.sm),
-                ) {
-                    BrandSymbol(size = HEADER_MARK)
-                    Text(
-                        text = HomeCopy.TITLE,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        maxLines = 1,
-                    )
-                }
-                NotificationBell(unread = unread, onClick = onNotifications)
+                BrandSymbol(size = HEADER_MARK)
+                Text(
+                    text = HomeCopy.TITLE,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                )
             }
-            HerePlace(place = place, onClick = onPlace)
-            DirectorySearchEntry(placeholder = HomeCopy.SEARCH, onClick = onSearch)
+            NotificationBell(unread = unread, onClick = onNotifications)
         }
+        HerePlace(place = place, onClick = onPlace)
+        DirectorySearchEntry(placeholder = HomeCopy.SEARCH, onClick = onSearch)
     }
 }
 
@@ -234,12 +220,7 @@ private val HEADER_MARK = 36.dp
  */
 @Composable
 private fun HerePlace(place: String?, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(
-        modifier = modifier,
-        onClick = onClick,
-        shape = RoundedCornerShape(Radius.pill),
-        color = MaterialTheme.colorScheme.surface,
-    ) {
+    DirectoryPill(modifier = modifier, onClick = onClick) {
         Row(
             modifier = Modifier.padding(horizontal = Space.md, vertical = Space.sm),
             verticalAlignment = Alignment.CenterVertically,

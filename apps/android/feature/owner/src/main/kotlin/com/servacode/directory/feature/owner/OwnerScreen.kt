@@ -2,22 +2,19 @@ package com.servacode.directory.feature.owner
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,14 +35,14 @@ import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryPage
+import com.servacode.directory.core.designsystem.DirectoryPill
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
 import com.servacode.directory.core.designsystem.DirectorySecondaryButton
-import com.servacode.directory.core.designsystem.DirectorySectionLabel
+import com.servacode.directory.core.designsystem.DirectorySection
 import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTextField
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.MetaRow
-import com.servacode.directory.core.designsystem.Radius
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.designsystem.StatusPill
 import com.servacode.directory.core.designsystem.StatusTone
@@ -165,10 +162,7 @@ private fun OwnerFacilityCard(
             // What the platform is waiting for, if anything: the one line on this card that is
             // work rather than description, so it sits apart on the brand's own soft green.
             item.requiredAction?.let { action ->
-                Surface(
-                    shape = RoundedCornerShape(Radius.medium),
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                ) {
+                DirectoryPill(brand = true) {
                     MetaRow(
                         icon = DirectoryIcons.info,
                         text = OwnerLabels.requiredAction(action),
@@ -292,7 +286,7 @@ fun ManageFacilityScreen(
                 }
 
                 if (OwnerCapabilities.supportsTemporaryClosure(summary)) {
-                    Section(OwnerCopy.CLOSURES) {
+                    DirectorySection(OwnerCopy.CLOSURES) {
                         if (value.closures.isEmpty()) {
                             Text(
                                 text = OwnerCopy.CLOSURES_NONE,
@@ -361,7 +355,7 @@ fun ManageFacilityScreen(
                     }
                 }
 
-                Section(OwnerCopy.MEMBERS) {
+                DirectorySection(OwnerCopy.MEMBERS) {
                     value.members.forEachIndexed { index, member ->
                         if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                         Row(
@@ -435,17 +429,6 @@ fun ManageFacilityScreen(
             onDismiss = { removing = null },
             destructive = true,
         )
-    }
-}
-
-/** A label and the card under it, the shape the rest of the app's pages are read in. */
-@Composable
-private fun Section(label: String, content: @Composable ColumnScope.() -> Unit) {
-    Column {
-        DirectorySectionLabel(label)
-        DirectoryCard {
-            Column(verticalArrangement = Arrangement.spacedBy(Space.sm), content = content)
-        }
     }
 }
 

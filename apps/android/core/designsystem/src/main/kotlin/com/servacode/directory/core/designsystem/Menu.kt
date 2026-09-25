@@ -38,15 +38,29 @@ import androidx.compose.ui.unit.dp
  * width rules.
  */
 @Composable
-fun DirectorySectionLabel(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+fun DirectorySectionLabel(
+    text: String,
+    modifier: Modifier = Modifier,
+    action: String? = null,
+    onAction: (() -> Unit)? = null,
+) {
+    Row(
         modifier = modifier
-            .padding(start = Space.md, end = Space.md, bottom = Space.sm)
-            .semantics { heading() },
-    )
+            .fillMaxWidth()
+            .padding(start = Space.md, end = Space.md, bottom = Space.sm),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.semantics { heading() },
+        )
+        // One thing, for a section whose whole content can be acted on at once. There used to
+        // be a second component for exactly this, twice the size and in another file.
+        if (action != null && onAction != null) DirectoryTextButton(action, onAction)
+    }
 }
 
 /** The card a group of rows lives in. Rows go straight inside it, with no padding of their own. */
