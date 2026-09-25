@@ -5,6 +5,7 @@ import androidx.annotation.DrawableRes
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,10 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.AvailabilityPill
@@ -100,7 +101,24 @@ fun MapScreen(
                     body = MapCopy.UNCONFIGURED_BODY,
                 )
                 // Shown only once the start is known, so it never opens on the whole world.
-                state.cameraResolved -> FacilityMap(styleUrl, state, viewModel, onFacility)
+                state.cameraResolved -> FacilityMap(
+                    styleUrl = styleUrl,
+                    state = state,
+                    viewModel = viewModel,
+                    onFacility = onFacility,
+                    // Asked once per press and forgotten: a map that follows a person is a
+                    // different product from one that points at them when asked.
+                    onLocate = {
+                        val granted = FOREGROUND_LOCATION_PERMISSIONS.any {
+                            context.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED
+                        }
+                        if (granted) {
+                            viewModel.locate()
+                        } else {
+                            askLocation.launch(FOREGROUND_LOCATION_PERMISSIONS.toTypedArray())
+                        }
+                    },
+                )
                 else -> DirectoryLoading()
             }
             // Over the map, not instead of it: the bar is at the top and the rail hugs the
@@ -121,30 +139,6 @@ fun MapScreen(
                 )
             }
             val selected = state.facilities.firstOrNull { it.id == state.selectedFacilityId }
-            if (state.cameraResolved) {
-                LocateButton(
-                    working = state.locating,
-                    onClick = {
-                        val granted = FOREGROUND_LOCATION_PERMISSIONS.any {
-                            context.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED
-                        }
-                        if (granted) {
-                            viewModel.locate()
-                        } else {
-                            askLocation.launch(FOREGROUND_LOCATION_PERMISSIONS.toTypedArray())
-                        }
-                    },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        // Clear of the card that names a marker, so one never covers the other.
-                        .padding(
-                            start = Space.base,
-                            top = Space.base,
-                            end = Space.base,
-                            bottom = if (selected != null) Sizes.mapCardClearance else Space.base,
-                        ),
-                )
-            }
             if (selected != null && state.cameraResolved) {
                 SelectedFacilityCard(
                     facility = selected,
@@ -205,9 +199,21 @@ private fun MapFilterChip(text: String, selected: Boolean, onClick: () -> Unit) 
     }
 }
 
-/** Closer and further, a step at a time. */
+/**
+ * The three things one does to a map without touching it: closer, further, and "where am I".
+ *
+ * They stand together at the top edge because they are one set — the locate button used to sit
+ * alone in the far corner, where it read as something else entirely, and it wore a pin, which
+ * on a map means "a place is here" and is what every marker under it already says.
+ */
 @Composable
-private fun ZoomControls(onIn: () -> Unit, onOut: () -> Unit, modifier: Modifier = Modifier) {
+private fun MapControls(
+    onIn: () -> Unit,
+    onOut: () -> Unit,
+    onLocate: (() -> Unit)?,
+    locating: Boolean,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(Space.sm),
@@ -216,6 +222,14 @@ private fun ZoomControls(onIn: () -> Unit, onOut: () -> Unit, modifier: Modifier
         // A minus, not a cross. The pair reads as one scale; a cross beside a plus reads as
         // "close", and someone pressing it expects the map to go away rather than widen.
         MapRoundButton(DirectoryIcons.minus, MapCopy.ZOOM_OUT, onOut)
+        if (onLocate != null) {
+            MapRoundButton(
+                icon = DirectoryIcons.myLocation,
+                label = MapCopy.MY_LOCATION,
+                onClick = onLocate,
+                enabled = !locating,
+            )
+        }
     }
 }
 
@@ -233,6 +247,9 @@ private fun MapRoundButton(
         modifier = modifier.size(Sizes.button),
         shape = RoundedCornerShape(Radius.pill),
         color = MaterialTheme.colorScheme.surface,
+        // The brand's own soft green as a ring: white circles on a pale map lose their edges,
+        // and a grey outline belongs to no palette this app has.
+        border = BorderStroke(CONTROL_RING, MaterialTheme.colorScheme.primaryContainer),
         shadowElevation = Elevation.low,
         enabled = enabled,
     ) {
@@ -250,26 +267,11 @@ private fun MapRoundButton(
     }
 }
 
-/**
- * "Where am I", as a button and not as a habit.
- *
- * A map that follows a person is a different product from one that points at them when asked,
- * and the difference is the whole of the privacy argument. This asks once per press, draws the
- * answer, and forgets about it.
- */
-@Composable
-private fun LocateButton(working: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    MapRoundButton(
-        icon = DirectoryIcons.pin,
-        label = MapCopy.MY_LOCATION,
-        onClick = onClick,
-        enabled = !working,
-        modifier = modifier,
-    )
-}
-
 /** One step of scale per press: enough to notice, small enough to aim with. */
 private const val ZOOM_STEP = 1.0
+
+/** Thin enough to be an edge rather than a frame. */
+private val CONTROL_RING = 1.dp
 
 /**
  * The province's categories, down the start edge.
@@ -420,6 +422,7 @@ private fun FacilityMap(
     state: MapUiState,
     viewModel: MapViewModel,
     onFacility: (String) -> Unit,
+    onLocate: () -> Unit,
 ) {
     val mapView = rememberMapViewWithLifecycle()
     var controller by remember(mapView) { mutableStateOf<MapLibreController?>(null) }
@@ -459,11 +462,14 @@ private fun FacilityMap(
             modifier = Modifier.fillMaxSize(),
         )
         // Beside the map rather than on a menu: two taps is how most people change a map's
-        // scale, and pinching with one hand holding a phone is not always available.
-        ZoomControls(
+        // scale, and pinching with one hand holding a phone is not always available. "Where am
+        // I" stands with them, at the top, where all three are found at once.
+        MapControls(
             onIn = { controller?.zoomBy(ZOOM_STEP) },
             onOut = { controller?.zoomBy(-ZOOM_STEP) },
-            modifier = Modifier.align(Alignment.CenterEnd).padding(Space.md),
+            onLocate = onLocate.takeIf { state.cameraResolved },
+            locating = state.locating,
+            modifier = Modifier.align(Alignment.TopEnd).padding(Space.md),
         )
     }
 

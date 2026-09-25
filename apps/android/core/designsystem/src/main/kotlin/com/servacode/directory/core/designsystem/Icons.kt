@@ -33,6 +33,7 @@ object DirectoryIcons {
     @DrawableRes val person = R.drawable.ic_person
     @DrawableRes val home = R.drawable.ic_home
     @DrawableRes val map = R.drawable.ic_map
+    @DrawableRes val myLocation = R.drawable.ic_my_location
     @DrawableRes val bell = R.drawable.ic_bell
     @DrawableRes val camera = R.drawable.ic_camera
     @DrawableRes val upload = R.drawable.ic_upload

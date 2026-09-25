@@ -458,12 +458,15 @@ private fun CodeStep(
         textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxWidth(),
     )
-    DirectoryPasswordField(
+    // Not a password: it arrives in a message the reader is looking at, it is typed once, and
+    // it is worthless a few minutes later. Hiding it only makes it harder to copy correctly.
+    DirectoryTextField(
         value = code,
         onValueChange = onCode,
         label = AuthCopy.CODE,
+        leadingIcon = DirectoryIcons.verified,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
         error = fieldError(failure, "code", "challengeId"),
-        numeric = true,
     )
     FailureText(failure)
     DirectoryPrimaryButton(

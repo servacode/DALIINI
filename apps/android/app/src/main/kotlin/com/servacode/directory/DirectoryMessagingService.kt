@@ -1,27 +1,29 @@
 package com.servacode.directory
 
-import com.servacode.directory.core.model.DirectoryBrand
-
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.Manifest
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
+import android.Manifest
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.servacode.directory.core.designsystem.R as DesignSystemR
+import com.servacode.directory.core.model.DirectoryBrand
 import com.servacode.directory.core.network.PushMessageData
 import com.servacode.directory.core.network.PushRegistrationCoordinator
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import kotlinx.coroutines.SupervisorJob
 
 /**
  * Receives token rotations and pushes.
@@ -62,8 +64,15 @@ class DirectoryMessagingService : FirebaseMessagingService() {
             Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
+        // Ours, not Android's generic dot: the status bar gets the mark drawn flat, because a
+        // small icon is filled with one colour and nothing else of it survives; the shade gets
+        // the artwork itself beside the words, and the brand's green as the accent.
         val notice = NotificationCompat.Builder(this, CHANNEL)
-            .setSmallIcon(android.R.drawable.stat_notify_more)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setColor(ContextCompat.getColor(this, DesignSystemR.color.token_colors_primary))
+            .setLargeIcon(
+                BitmapFactory.decodeResource(resources, DesignSystemR.drawable.brand_symbol),
+            )
             .setContentTitle(DirectoryBrand.NAME)
             .setContentText("لديك تحديث جديد")
             .setContentIntent(open)
