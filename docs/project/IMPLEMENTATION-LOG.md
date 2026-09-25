@@ -1550,3 +1550,23 @@ navigation; and two adapted rules in the navigation engine from the RahalGo audi
 
 Tooling: four qualifier scripts repaired and all six promoted to CI gates, with the platform-free
 JVM harness alongside them.
+
+## 2026-09-25 — One central design, and words that are files
+
+Android, design: the theme carries two palettes (`DirectoryPalettes.light` and a provisional
+`dark`) and `DirectoryTheme` takes one, so a second theme is an argument rather than an edit; the
+shapes every screen draws — a section, a menu group, a round control, an overlay chip, a brand
+panel, one loading screen with the mark inside a turning ring — are in the design system, and the
+foundation gate fails a feature module that reaches for `Surface` or grows a `Section` of its own.
+
+Android, words: all seventeen modules now read their sentences from their own
+`res/values/strings.xml`. Navigation's turns were the hard part, because they are also said out
+loud: `ManeuverPhrases` decides which sentence a turn deserves, `NavigationWords` says it from
+resources, and a voice cue carries what it is about rather than a sentence, so the recorded pack
+and the synthesiser both work from the same decision. `core/model` gave up its word tables for
+named decisions — `AppErrorMessage`, `OwnerAction`, `RoundedDistance` — and every view model now
+keeps the error itself in state, leaving the wording to the screen. `check_words` in the
+foundation qualifier keeps it that way.
+
+Not verified on a device: the words were changed under the compiler and the harness, and CI's
+Gate 1 builds the APK. What a reader sees has not been looked at since the move.

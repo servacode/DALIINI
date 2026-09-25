@@ -730,6 +730,45 @@ in this product is scoped by one.
 
 ---
 
+## DECISION-048 — Every word the app says is a resource, and a view model says none of them
+
+**Date:** 2026-09-25
+
+**Subject:** The 315 Arabic sentences that were written into Kotlin across seventeen modules.
+
+**Decision:** Each module reads what it says from its own `res/values/strings.xml`, through a
+`…Copy` object whose members are read in composition. Words more than one module needs — the days
+of the week, the mark between list items, an error's sentence, an owner's status, whether a
+facility is open, how far it is, from when to when — are in the design system's `strings.xml` and
+read through `DirectoryWords`, `OwnerWords`, `AvailabilityWords`, `appErrorText` and `closureText`.
+Nothing in `core/model` holds a sentence: the model names what happened — `AppErrorMessage`,
+`OwnerAction`, `RoundedDistance`, `ManeuverPhrase`, `OnboardingNotice`, `HomeEmptyReason`,
+`SpokenDistance` — and a renderer in the design system turns the name into the reader's language.
+A view model keeps the `AppError` in its state rather than a sentence built from it.
+
+The app's own name stays a Kotlin constant (`DirectoryBrand.NAME`), because a proper noun is not a
+translation and the launcher's label in the manifest must agree with it; `BrandNameTest` holds the
+two together. The voice's rule about which street names an Arabic synthesiser can read stays in
+Kotlin too, because it is a judgement about characters rather than a sentence a translator could
+write.
+
+`check_words` in `apps/android/scripts/qualify-source.py`, a CI gate, fails on an Arabic literal
+anywhere in Kotlin outside tests, with those two exceptions named in it.
+
+**Reason:** A second language must be a second file, not a search through every screen; and a
+sentence built when a request failed is frozen in the language the phone had at that moment. The
+split also keeps the decisions testable without Android — the platform-free harness compiles and
+tests every one of the enums above — and stops a test from asserting Arabic prose, which broke
+every time a wording was improved.
+
+**Boundaries:** No Arabic `values-ar` directory is added: the words stay in the default
+`values/`, which is what a single-language app reads, and a second language becomes
+`values-en/strings.xml` beside it with no Kotlin change. Test sources and the harness's
+`connectedTest` still name Arabic places and read Arabic answers back, because that is the data
+under test rather than what the app says.
+
+---
+
 ---
 
 # Technical Debt Register
