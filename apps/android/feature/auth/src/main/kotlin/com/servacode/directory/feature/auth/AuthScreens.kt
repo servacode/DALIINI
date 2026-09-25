@@ -83,6 +83,8 @@ fun LoginScreen(
 
     AuthFrame(
         onBack = onBack,
+        // Over the form, because a page of two fields could be anything until it is named.
+        title = AuthCopy.SIGN_IN,
         bottomBar = bottomBar,
         footer = {
             // The two ways off this page, one under the other and set alike: a link inside the

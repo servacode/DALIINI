@@ -4,8 +4,10 @@ import com.servacode.directory.core.database.Loaded
 import com.servacode.directory.core.database.PublicCache
 import com.servacode.directory.core.database.cacheFirst
 import com.servacode.directory.core.datastore.DirectoryPreferencesStore
+import com.servacode.directory.core.location.LocationFix
 import com.servacode.directory.core.location.LocationProvider
 import com.servacode.directory.core.location.LocationResult
+import com.servacode.directory.core.location.metresTo
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.AppException
 import com.servacode.directory.core.model.FacilitySummary
@@ -40,6 +42,9 @@ data class HomePlace(
     val fromLocation: Boolean = false,
 )
 
+/** Far enough to be somewhere else, near enough to notice crossing a street's worth of city. */
+private const val MOVED_METRES = 120.0
+
 class HomeRepository @Inject constructor(
     private val cache: PublicCache,
     private val api: PublicApiBoundary,
@@ -47,6 +52,32 @@ class HomeRepository @Inject constructor(
     private val locationProvider: LocationProvider,
     private val places: LocationNameResolver,
 ) {
+    /**
+     * The same question, asked again whenever the reader has actually moved.
+     *
+     * Home used to resolve the place once per start, so someone who drove across town was told
+     * they were still where the app had last looked. This follows the device's own updates and
+     * re-asks only when the new fix is [MOVED_METRES] away from the one the label was made
+     * from — a phone reports a position every second or two, and the platform is not a
+     * cartographer to be consulted that often.
+     *
+     * Without the permission the flow simply never emits, which is the same as before.
+     */
+    fun placeUpdates(): Flow<HomePlace> = flow {
+        var resolvedFrom: LocationFix? = null
+        locationProvider.updates().collect { result ->
+            val fix = (result as? LocationResult.Available)?.fix ?: return@collect
+            val previous = resolvedFrom
+            if (previous != null && previous.metresTo(fix) < MOVED_METRES) return@collect
+            val resolved = places.resolve(fix.latitude, fix.longitude) ?: return@collect
+            val label = resolved.label ?: return@collect
+            resolvedFrom = fix
+            val provinceId = resolved.province?.id
+            preferences.rememberPlace(label, provinceId)
+            emit(HomePlace(label = label, provinceId = provinceId, fromLocation = true))
+        }
+    }
+
     /**
      * The place the header shows, resolved in the order the product requires: the device's own
      * position when it is allowed and known, then the last place resolved for this device, then

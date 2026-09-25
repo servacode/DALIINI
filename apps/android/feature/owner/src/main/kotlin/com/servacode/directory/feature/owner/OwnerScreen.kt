@@ -182,13 +182,15 @@ private fun OwnerFacilityCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(Space.sm),
             ) {
+                // Two doors into the same facility, drawn alike: one filled and one outlined
+                // says one of them is the real one, and neither is.
                 DirectoryPrimaryButton(
                     text = OwnerCopy.MANAGE,
                     onClick = onManage,
                     modifier = Modifier.weight(1f),
                 )
                 if (OwnerCapabilities.supportsDuty(item)) {
-                    DirectorySecondaryButton(
+                    DirectoryPrimaryButton(
                         text = OwnerCopy.DUTY,
                         onClick = onDuty,
                         modifier = Modifier.weight(1f),
@@ -279,7 +281,7 @@ fun ManageFacilityScreen(
                                 modifier = Modifier.weight(1f),
                             )
                             if (OwnerCapabilities.supportsDuty(summary)) {
-                                DirectorySecondaryButton(
+                                DirectoryPrimaryButton(
                                     text = OwnerCopy.DUTY,
                                     onClick = { onDuty(summary.id) },
                                     modifier = Modifier.weight(1f),

@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
@@ -326,55 +327,63 @@ private fun HomeContent(
     onFacility: (String) -> Unit,
 ) {
     val snapshot = value.snapshot
-    LazyColumn(
+    // Pulling the page down is what people do when they want to know it is current, so it does
+    // what they mean: the snapshot, the list and the place are all asked again.
+    PullToRefreshBox(
+        isRefreshing = list.loading,
+        onRefresh = onRefresh,
         modifier = Modifier.fillMaxSize().padding(padding),
-        // A breath under the bar. Without it the search field starts hard against the dark
-        // edge and the two read as one block, which makes the bar look taller than it is.
-        contentPadding = PaddingValues(top = Space.base, bottom = Space.xxl),
-        verticalArrangement = Arrangement.spacedBy(Space.md),
     ) {
-        if (value.stale) {
-            item(key = "stale") {
-                DirectoryOfflineNotice(
-                    modifier = Modifier.padding(horizontal = Space.base),
-                    onRetry = onRefresh,
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            // A breath under the bar. Without it the search field starts hard against the dark
+            // edge and the two read as one block, which makes the bar look taller than it is.
+            contentPadding = PaddingValues(top = Space.base, bottom = Space.xxl),
+            verticalArrangement = Arrangement.spacedBy(Space.md),
+        ) {
+            if (value.stale) {
+                item(key = "stale") {
+                    DirectoryOfflineNotice(
+                        modifier = Modifier.padding(horizontal = Space.base),
+                        onRetry = onRefresh,
+                    )
+                }
+            }
+            if (snapshot.ads.isNotEmpty()) {
+                item(key = "ads") {
+                    AdSlider(
+                        ads = snapshot.ads,
+                        onAd = { ad -> ad.facilityId?.let(onFacility) },
+                        modifier = Modifier.padding(horizontal = Space.base),
+                    )
+                }
+            }
+            if (offerLocation) {
+                item(key = "location") {
+                    LocationOffer(onUseLocation, Modifier.padding(horizontal = Space.base))
+                }
+            }
+            if (snapshot.categories.isNotEmpty()) {
+                item(key = "categories") {
+                    CategoryRail(
+                        categories = snapshot.categories,
+                        selected = category,
+                        onCategory = onCategory,
+                    )
+                }
+            }
+            item(key = "filters") {
+                FilterBar(
+                    filters = filters,
+                    chips = homeChips(hasLocation, category),
+                    onChip = onChip,
+                    // A narrower margin than the rest of the page: this container has to hold
+                    // four filters across, and every point given to the margin is taken from them.
+                    modifier = Modifier.padding(horizontal = Space.md),
                 )
             }
+            facilityList(list, filters, onFacility, onLoadMore)
         }
-        if (snapshot.ads.isNotEmpty()) {
-            item(key = "ads") {
-                AdSlider(
-                    ads = snapshot.ads,
-                    onAd = { ad -> ad.facilityId?.let(onFacility) },
-                    modifier = Modifier.padding(horizontal = Space.base),
-                )
-            }
-        }
-        if (offerLocation) {
-            item(key = "location") {
-                LocationOffer(onUseLocation, Modifier.padding(horizontal = Space.base))
-            }
-        }
-        if (snapshot.categories.isNotEmpty()) {
-            item(key = "categories") {
-                CategoryRail(
-                    categories = snapshot.categories,
-                    selected = category,
-                    onCategory = onCategory,
-                )
-            }
-        }
-        item(key = "filters") {
-            FilterBar(
-                filters = filters,
-                chips = homeChips(hasLocation, category),
-                onChip = onChip,
-                // A narrower margin than the rest of the page: this container has to hold
-                // four filters across, and every point given to the margin is taken from them.
-                modifier = Modifier.padding(horizontal = Space.md),
-            )
-        }
-        facilityList(list, filters, onFacility, onLoadMore)
     }
 }
 

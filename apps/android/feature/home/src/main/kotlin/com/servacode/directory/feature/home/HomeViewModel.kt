@@ -76,6 +76,15 @@ class HomeViewModel @Inject constructor(
 
     init {
         resolvePlace()
+        // And then keeps answering: the label is where the reader is, not where they were when
+        // the app started. A move also re-orders a list sorted by distance.
+        viewModelScope.launch {
+            loadHome.placeUpdates().collect { here ->
+                val moved = here.provinceId != _place.value?.provinceId
+                _place.value = here
+                if (moved) refresh() else reload()
+            }
+        }
         refresh()
         viewModelScope.launch {
             invalidations.events.collect { event ->

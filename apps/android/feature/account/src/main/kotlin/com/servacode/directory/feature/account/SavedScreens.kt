@@ -1,27 +1,33 @@
 package com.servacode.directory.feature.account
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
@@ -31,10 +37,8 @@ import com.servacode.directory.core.designsystem.DirectoryIconButton
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryPage
-import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.FacilityCard
-import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.LoadMoreRow
 import com.servacode.directory.core.designsystem.Radius
 import com.servacode.directory.core.designsystem.Sizes
@@ -160,7 +164,13 @@ fun NotificationsScreen(
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize().padding(padding),
-                    contentPadding = PaddingValues(bottom = Space.xxl),
+                    contentPadding = PaddingValues(
+                        start = Space.screen,
+                        end = Space.screen,
+                        top = Space.base,
+                        bottom = Space.xxl,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(Space.sm),
                 ) {
                     items(value.items, key = { it.id }) { message ->
                         MessageRow(
@@ -174,10 +184,6 @@ fun NotificationsScreen(
                                     MessageDestination.NONE -> Unit
                                 }
                             },
-                        )
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = Space.screen),
-                            color = MaterialTheme.colorScheme.outlineVariant,
                         )
                     }
                     if (value.hasMore || value.moreError != null) {
@@ -195,70 +201,103 @@ fun NotificationsScreen(
     }
 }
 
-/** One message: unread ones carry a mark, and only a message with somewhere to go can be opened. */
+/**
+ * One message, and whether it has been read.
+ *
+ * Read and unread were told apart by the tint of a bell and a tick the size of a full stop —
+ * and a tick is what "read" looks like everywhere else, so the mark said the opposite of what
+ * it meant. Unread now stands on the brand's soft green with its title in bold and a filled dot
+ * at the end; read is a plain card. Three signals, none of them colour alone.
+ *
+ * Only a message with somewhere to go can be opened.
+ */
 @Composable
 private fun MessageRow(message: InboxMessage, onOpen: () -> Unit) {
     val goes = message.destination != MessageDestination.NONE
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .let { if (goes) it.clickable(onClick = onOpen) else it }
-            .padding(horizontal = Space.screen, vertical = Space.base),
-        horizontalArrangement = Arrangement.spacedBy(Space.md),
+    val unread = !message.isRead
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(Radius.large),
+        color = if (unread) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.surface
+        },
+        border = BorderStroke(
+            width = 1.dp,
+            color = if (unread) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.outline
+            },
+        ),
     ) {
-        Box(
-            modifier = Modifier.size(Sizes.touchTarget),
-            contentAlignment = Alignment.Center,
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .let { if (goes) it.clickable(onClick = onOpen) else it }
+                .padding(Space.base),
+            horizontalArrangement = Arrangement.spacedBy(Space.md),
         ) {
-            DirectoryIcon(
-                icon = DirectoryIcons.bell,
-                contentDescription = null,
-                tint = if (message.isRead) {
-                    MaterialTheme.colorScheme.outline
-                } else {
-                    MaterialTheme.colorScheme.primary
-                },
-            )
-        }
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(Space.xs),
-        ) {
-            Text(
-                text = message.titleAr,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            if (message.bodyAr.isNotBlank()) {
-                Text(
-                    text = message.bodyAr,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-        if (!message.isRead) {
-            // A dot as well as the colour, so "unread" is never carried by colour alone.
             Box(
                 modifier = Modifier
-                    .padding(top = Space.md)
-                    .size(Space.sm)
-                    .clip(RoundedCornerShape(Radius.pill))
-                    .let { it },
+                    .size(Sizes.touchTarget)
+                    .clip(RoundedCornerShape(Radius.medium))
+                    .background(
+                        if (unread) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant
+                        },
+                    ),
                 contentAlignment = Alignment.Center,
             ) {
                 DirectoryIcon(
-                    icon = DirectoryIcons.check,
-                    contentDescription = SavedCopy.UNREAD,
-                    size = IconSize.small,
-                    tint = MaterialTheme.colorScheme.primary,
+                    icon = DirectoryIcons.bell,
+                    contentDescription = null,
+                    tint = if (unread) {
+                        MaterialTheme.colorScheme.onPrimary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(Space.xs),
+            ) {
+                Text(
+                    text = message.titleAr,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = if (unread) FontWeight.Bold else FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (message.bodyAr.isNotBlank()) {
+                    Text(
+                        text = message.bodyAr,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            if (unread) {
+                Box(
+                    modifier = Modifier
+                        .padding(top = Space.sm)
+                        .size(UNREAD_DOT)
+                        .clip(RoundedCornerShape(Radius.pill))
+                        .background(MaterialTheme.colorScheme.primary)
+                        .semantics { contentDescription = SavedCopy.UNREAD },
                 )
             }
         }
     }
 }
+
+/** Big enough to see beside a title, small enough not to be a button. */
+private val UNREAD_DOT = 10.dp
 
 /** A row that shows how many messages are waiting, for the account screen. */
 @Composable

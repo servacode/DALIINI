@@ -11,6 +11,9 @@ class HomeUseCase @Inject constructor(
     /** Where the user is, for the header. */
     suspend fun place(): HomePlace = repository.place()
 
+    /** Where the user is now, each time that answer changes. */
+    fun placeUpdates(): Flow<HomePlace> = repository.placeUpdates()
+
     /** The list under the chips: one page of the backend's own directory query. */
     suspend fun filtered(
         provinceId: String,

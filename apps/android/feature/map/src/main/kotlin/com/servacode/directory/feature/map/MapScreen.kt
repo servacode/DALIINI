@@ -463,13 +463,14 @@ private fun FacilityMap(
         )
         // Beside the map rather than on a menu: two taps is how most people change a map's
         // scale, and pinching with one hand holding a phone is not always available. "Where am
-        // I" stands with them, at the top, where all three are found at once.
+        // I" stands with them, half way down the edge: where the eye already is and where a
+        // thumb reaches without the hand leaving the phone.
         MapControls(
             onIn = { controller?.zoomBy(ZOOM_STEP) },
             onOut = { controller?.zoomBy(-ZOOM_STEP) },
             onLocate = onLocate.takeIf { state.cameraResolved },
             locating = state.locating,
-            modifier = Modifier.align(Alignment.TopEnd).padding(Space.md),
+            modifier = Modifier.align(Alignment.CenterEnd).padding(Space.md),
         )
     }
 
