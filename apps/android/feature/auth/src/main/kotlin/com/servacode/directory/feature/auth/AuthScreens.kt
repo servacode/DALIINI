@@ -491,7 +491,14 @@ private fun PhoneField(
     )
 }
 
-/** "Check this field" under every field the backend named; the backend's text is not shown. */
+/**
+ * "Check this field" under every field the backend named; the backend's text is not shown.
+ *
+ * Composable because the sentence comes from the module's resources now: a word that follows
+ * the reader's language cannot be read outside composition.
+ */
+@Composable
+@ReadOnlyComposable
 private fun fieldError(failure: FormFailure?, vararg fields: String): String? =
     if (failure != null && fields.any { it in failure.fields }) AuthCopy.FIELD_ERROR else null
 
