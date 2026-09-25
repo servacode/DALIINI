@@ -5,6 +5,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -33,28 +35,72 @@ private val Tajawal = FontFamily(
     Font(R.font.tajawal_bold, FontWeight.Bold),
 )
 
-private val DirectoryColors = lightColorScheme(
-    primary = color(DirectoryTokens.SemanticActionPrimary),
-    onPrimary = color(DirectoryTokens.SemanticContentOnPrimary),
-    primaryContainer = color(DirectoryTokens.SemanticSurfaceBrandSoft),
-    onPrimaryContainer = color(DirectoryTokens.ColorsPrimaryStrong),
-    secondary = color(DirectoryTokens.ColorsPrimaryStrong),
-    onSecondary = color(DirectoryTokens.SemanticContentOnPrimary),
-    secondaryContainer = color(DirectoryTokens.SemanticSurfaceBrandSoft),
-    onSecondaryContainer = color(DirectoryTokens.ColorsPrimaryDeep),
-    tertiary = color(DirectoryTokens.SemanticFeedbackInfo),
-    onTertiary = color(DirectoryTokens.SemanticContentOnPrimary),
-    background = color(DirectoryTokens.SemanticSurfaceCanvas),
-    onBackground = color(DirectoryTokens.SemanticContentPrimary),
-    surface = color(DirectoryTokens.SemanticSurfaceDefault),
-    onSurface = color(DirectoryTokens.SemanticContentPrimary),
-    surfaceVariant = color(DirectoryTokens.SemanticSurfaceSubtle),
-    onSurfaceVariant = color(DirectoryTokens.SemanticContentSecondary),
-    outline = color(DirectoryTokens.SemanticStrokeDefault),
-    outlineVariant = color(DirectoryTokens.SemanticStrokeStrong),
-    error = color(DirectoryTokens.SemanticFeedbackDanger),
-    onError = color(DirectoryTokens.SemanticContentOnPrimary),
-)
+/**
+ * The colours of one theme.
+ *
+ * Every one of them is a design token; none is written here. A second theme is therefore a
+ * second object in this file and nothing else — no screen names a colour, so no screen has to
+ * be found and edited when the app wears a different one.
+ */
+object DirectoryPalettes {
+    /** The app as it ships: the brand's greens on paper. */
+    val light: ColorScheme = lightColorScheme(
+        primary = color(DirectoryTokens.SemanticActionPrimary),
+        onPrimary = color(DirectoryTokens.SemanticContentOnPrimary),
+        primaryContainer = color(DirectoryTokens.SemanticSurfaceBrandSoft),
+        onPrimaryContainer = color(DirectoryTokens.ColorsPrimaryStrong),
+        secondary = color(DirectoryTokens.ColorsPrimaryStrong),
+        onSecondary = color(DirectoryTokens.SemanticContentOnPrimary),
+        secondaryContainer = color(DirectoryTokens.SemanticSurfaceBrandSoft),
+        onSecondaryContainer = color(DirectoryTokens.ColorsPrimaryDeep),
+        tertiary = color(DirectoryTokens.SemanticFeedbackInfo),
+        onTertiary = color(DirectoryTokens.SemanticContentOnPrimary),
+        background = color(DirectoryTokens.SemanticSurfaceCanvas),
+        onBackground = color(DirectoryTokens.SemanticContentPrimary),
+        surface = color(DirectoryTokens.SemanticSurfaceDefault),
+        onSurface = color(DirectoryTokens.SemanticContentPrimary),
+        surfaceVariant = color(DirectoryTokens.SemanticSurfaceSubtle),
+        onSurfaceVariant = color(DirectoryTokens.SemanticContentSecondary),
+        outline = color(DirectoryTokens.SemanticStrokeDefault),
+        outlineVariant = color(DirectoryTokens.SemanticStrokeStrong),
+        error = color(DirectoryTokens.SemanticFeedbackDanger),
+        onError = color(DirectoryTokens.SemanticContentOnPrimary),
+    )
+
+    /**
+     * The same brand at night, mapped from the same tokens: the bar's deep green becomes the
+     * page, the deep green above it becomes the card, and what was written on the bars is
+     * written on the page.
+     *
+     * **Provisional.** No dark token set has been approved, so this is the existing palette
+     * read the other way round rather than colours chosen for the dark. It is here because the
+     * mechanism has to be real to be trusted — and when a dark set is published, this object is
+     * the only thing that changes.
+     */
+    val dark: ColorScheme = darkColorScheme(
+        primary = color(DirectoryTokens.ColorsPrimarySoft),
+        onPrimary = color(DirectoryTokens.ColorsPrimaryDeep),
+        primaryContainer = color(DirectoryTokens.ColorsPrimaryStrong),
+        onPrimaryContainer = color(DirectoryTokens.ColorsPrimarySofter),
+        secondary = color(DirectoryTokens.ColorsPrimarySofter),
+        onSecondary = color(DirectoryTokens.ColorsPrimaryDeep),
+        secondaryContainer = color(DirectoryTokens.ColorsPrimaryStrong),
+        onSecondaryContainer = color(DirectoryTokens.ColorsPrimarySofter),
+        tertiary = color(DirectoryTokens.SemanticFeedbackInfo),
+        onTertiary = color(DirectoryTokens.SemanticContentOnPrimary),
+        background = color(DirectoryTokens.ColorsBarDeep),
+        onBackground = color(DirectoryTokens.ColorsBarContent),
+        surface = color(DirectoryTokens.ColorsPrimaryDeep),
+        onSurface = color(DirectoryTokens.ColorsBarContent),
+        surfaceVariant = color(DirectoryTokens.ColorsPrimaryStrong),
+        onSurfaceVariant = color(DirectoryTokens.ColorsBarContentMuted),
+        outline = color(DirectoryTokens.ColorsPrimaryStrong),
+        outlineVariant = color(DirectoryTokens.ColorsPrimaryStrong),
+        error = color(DirectoryTokens.SemanticFeedbackDanger),
+        onError = color(DirectoryTokens.SemanticContentOnPrimary),
+    )
+}
+
 
 /** Brand colours that sit outside the Material colour scheme, from the same tokens. */
 object BrandColors {
@@ -175,12 +221,21 @@ private val DirectoryShapes = Shapes(
     extraLarge = RoundedCornerShape(Radius.xl),
 )
 
+/**
+ * The app's theme, and the one place a different one is chosen.
+ *
+ * [palette] defaults to the phone's own setting, so a reader who keeps their device dark is
+ * met in the dark. Passing one explicitly is how a screenshot, a preview or a future setting
+ * picks a theme without a single screen knowing that themes exist.
+ */
 @Composable
-fun DirectoryTheme(content: @Composable () -> Unit) {
-    @Suppress("UNUSED_VARIABLE") val darkModeRequested = isSystemInDarkTheme()
+fun DirectoryTheme(
+    palette: ColorScheme = if (isSystemInDarkTheme()) DirectoryPalettes.dark else DirectoryPalettes.light,
+    content: @Composable () -> Unit,
+) {
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         MaterialTheme(
-            colorScheme = DirectoryColors,
+            colorScheme = palette,
             typography = DirectoryTypography,
             shapes = DirectoryShapes,
             content = content,

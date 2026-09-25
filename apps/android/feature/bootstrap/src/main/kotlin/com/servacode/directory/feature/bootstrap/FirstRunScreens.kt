@@ -1,16 +1,18 @@
 package com.servacode.directory.feature.bootstrap
 
 import android.content.pm.PackageManager
+import android.Manifest
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -83,9 +85,26 @@ fun WelcomeScreen(onContinue: () -> Unit) {
 }
 
 /**
- * Screen 03. Why the app would use the location, in the user's terms, with the system's dialog
- * behind a button they press themselves. Refusing is a plain second choice and costs the
- * distances alone; nothing here asks twice.
+ * Everything the app asks the system for, asked once, on the screen that explains why.
+ *
+ * Notices join the location here rather than appearing the first time the platform has
+ * something to say: a dialog with no page behind it is a dialog people refuse. Android asks
+ * them one after another, and refusing either is a plain second choice.
+ *
+ * Before Android 13 there was no such permission to ask for, and the list is the location
+ * alone — asking for a permission the system does not have is a crash, not a courtesy.
+ */
+private fun firstRunPermissions(): List<String> =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        FOREGROUND_LOCATION_PERMISSIONS + Manifest.permission.POST_NOTIFICATIONS
+    } else {
+        FOREGROUND_LOCATION_PERMISSIONS
+    }
+
+/**
+ * Screen 03. Why the app would use the location and the notices, in the user's terms, with the
+ * system's dialogs behind a button they press themselves. Refusing is a plain second choice and
+ * costs the distances alone; nothing here asks twice.
  */
 @Composable
 fun LocationPermissionScreen(
@@ -107,9 +126,10 @@ fun LocationPermissionScreen(
         }
     }
     val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
-        viewModel.answered(
-            if (result.values.any { it }) LocationAnswer.ALLOWED else LocationAnswer.REFUSED,
-        )
+        // Only the location decides this answer: notices are a separate thing the reader may
+        // refuse without losing what this screen is about.
+        val located = FOREGROUND_LOCATION_PERMISSIONS.any { result[it] == true }
+        viewModel.answered(if (located) LocationAnswer.ALLOWED else LocationAnswer.REFUSED)
         onDone()
     }
 
@@ -166,7 +186,7 @@ fun LocationPermissionScreen(
             Spacer(Modifier.height(Space.xl))
             DirectoryPrimaryButton(
                 text = LocationCopy.ALLOW,
-                onClick = { ask.launch(FOREGROUND_LOCATION_PERMISSIONS.toTypedArray()) },
+                onClick = { ask.launch(firstRunPermissions().toTypedArray()) },
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(Space.sm))
