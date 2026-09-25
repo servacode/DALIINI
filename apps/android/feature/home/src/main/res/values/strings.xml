@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Everything Home says.
+
+     Here rather than in Kotlin so that a second language is a second file beside this one —
+     `values-en/strings.xml` — and the phone's own setting chooses between them. The app's name
+     is not here: it has one home, in `core:model`, and the manifest reads it from `app`. -->
+<resources>
+    <string name="home_you_are_in">أنت الآن في</string>
+    <string name="home_notifications">الإشعارات</string>
+    <string name="home_many">99+</string>
+    <string name="home_search">ابحث عن صيدلية، طبيب أو خدمة صحية…</string>
+    <string name="home_filters">تصفية</string>
+    <string name="home_loading_more">جارٍ تحميل المزيد…</string>
+
+    <string name="home_error">تعذر تحميل الصفحة</string>
+    <string name="home_province_required">اختر محافظتك</string>
+    <string name="home_province_required_body">نعرض المنشآت القريبة منك داخل محافظتك.</string>
+    <string name="home_province_choose">اختيار المحافظة</string>
+
+    <string name="home_location_title">اسمح بالوصول إلى موقعك</string>
+    <string name="home_location_body">لنعرض لك الأقرب إليك ونحسب المسافات.</string>
+    <string name="home_location_action">السماح بالموقع</string>
+
+    <string name="home_chip_nearest">الأقرب إليك</string>
+    <string name="home_chip_open_now">مفتوح الآن</string>
+    <string name="home_chip_duty_today">مناوبة اليوم</string>
+
+    <string name="home_empty_duty_and_open">لا توجد منشآت مناوبة اليوم ومفتوحة الآن</string>
+    <string name="home_empty_duty">لا توجد منشآت مناوبة اليوم</string>
+    <string name="home_empty_open">لا توجد منشآت مفتوحة حالياً</string>
+    <string name="home_empty_category">لم تُضف منشآت في هذا التصنيف بعد</string>
+
+    <string name="home_empty_body">لم تُضف منشآت بعد. جرّب تصنيفاً آخر أو غيّر المحافظة.</string>
+    <!-- %1$s is the place the reader is in, as the platform resolved it. -->
+    <string name="home_empty_body_here">لم تُضف منشآت في %1$s بعد. جرّب تصنيفاً آخر أو غيّر المحافظة.</string>
+</resources>

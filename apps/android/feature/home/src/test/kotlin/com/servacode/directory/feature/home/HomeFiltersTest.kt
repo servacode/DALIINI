@@ -136,17 +136,13 @@ class HomeFiltersTest {
     }
 
     @Test fun `the empty message names the question that was asked`() {
+        assertEquals(HomeEmptyReason.DUTY, HomeFilters(dutyToday = true).emptyReason())
+        assertEquals(HomeEmptyReason.OPEN, HomeFilters(openNow = true).emptyReason())
         assertEquals(
-            "لا توجد منشآت مناوبة اليوم",
-            HomeCopy.emptyFor(HomeFilters(dutyToday = true)),
+            HomeEmptyReason.DUTY_AND_OPEN,
+            HomeFilters(openNow = true, dutyToday = true).emptyReason(),
         )
-        assertEquals(
-            "لا توجد منشآت مفتوحة حالياً",
-            HomeCopy.emptyFor(HomeFilters(openNow = true)),
-        )
-        assertEquals(
-            "لا توجد منشآت مناوبة اليوم ومفتوحة الآن",
-            HomeCopy.emptyFor(HomeFilters(openNow = true, dutyToday = true)),
-        )
+        assertEquals(HomeEmptyReason.CATEGORY, HomeFilters().emptyReason())
     }
+
 }

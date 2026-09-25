@@ -29,6 +29,8 @@ val androidOnly = listOf(
     "**/core/maps/MapLibreController.kt",
     "**/core/maps/NavigationLayers.kt",
     "**/core/maps/MapViewLifecycle.kt",
+    // A `…Copy` reads the module's own strings.xml, which is Android and not Kotlin.
+    "**/*Copy.kt",
     "**/*Screen.kt",
     "**/*Screens.kt",
     "**/*ViewModel.kt",
