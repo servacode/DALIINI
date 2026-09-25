@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 
@@ -164,6 +165,8 @@ fun DirectoryRoundControl(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    /** False for an icon that carries its own colours, such as the cross in its red box. */
+    tinted: Boolean = true,
 ) {
     Surface(
         onClick = onClick,
@@ -178,10 +181,10 @@ fun DirectoryRoundControl(
             DirectoryIcon(
                 icon = icon,
                 contentDescription = label,
-                tint = if (enabled) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.outline
+                tint = when {
+                    !tinted -> Color.Unspecified
+                    enabled -> MaterialTheme.colorScheme.primary
+                    else -> MaterialTheme.colorScheme.outline
                 },
             )
         }

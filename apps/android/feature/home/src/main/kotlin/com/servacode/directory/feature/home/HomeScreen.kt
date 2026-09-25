@@ -147,6 +147,7 @@ fun HomeScreen(
             is HomeUiState.Content -> HomeContent(
                 value = value,
                 padding = padding,
+                place = here,
                 offerLocation = offerLocation,
                 filters = filters,
                 category = category,
@@ -294,6 +295,7 @@ private fun NotificationBell(unread: Int, onClick: () -> Unit, modifier: Modifie
 private fun HomeContent(
     value: HomeUiState.Content,
     padding: PaddingValues,
+    place: String?,
     offerLocation: Boolean,
     filters: HomeFilters,
     category: Category?,
@@ -363,7 +365,7 @@ private fun HomeContent(
                     modifier = Modifier.padding(horizontal = Space.md),
                 )
             }
-            facilityList(list, filters, onFacility, onLoadMore)
+            facilityList(list, filters, place, onFacility, onLoadMore)
         }
     }
 }
@@ -468,6 +470,7 @@ private fun FilterBar(
 private fun LazyListScope.facilityList(
     list: HomeListState,
     filters: HomeFilters,
+    place: String?,
     onFacility: (String) -> Unit,
     onLoadMore: () -> Unit,
 ) {
@@ -490,8 +493,9 @@ private fun LazyListScope.facilityList(
         item(key = "list-empty") {
             DirectoryEmptyState(
                 title = HomeCopy.emptyFor(filters),
-                icon = DirectoryIcons.search,
                 modifier = Modifier.padding(top = Space.lg),
+                body = HomeCopy.emptyBodyFor(place),
+                icon = DirectoryIcons.hospital,
             )
         }
         return

@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -29,7 +30,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryCompactFilterChip
 import com.servacode.directory.core.designsystem.DirectoryIcon
-import com.servacode.directory.core.designsystem.DirectoryIconButton
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryInlineLoading
 import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
@@ -38,10 +38,10 @@ import com.servacode.directory.core.designsystem.DirectoryPermissionState
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
 import com.servacode.directory.core.designsystem.DirectoryRoundControl
 import com.servacode.directory.core.designsystem.DirectorySecondaryButton
-import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.MetaRow
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.location.FOREGROUND_LOCATION_PERMISSIONS
+import com.servacode.directory.core.maps.MapLibreController
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.maps.RouteStroke
 import com.servacode.directory.core.maps.RoutingProfile
@@ -76,14 +76,15 @@ fun BuiltInNavigationScreen(
     val context = LocalContext.current
     // The map rides with the traveller until a hand moves it, and the button brings it back.
     var following by rememberSaveable { mutableStateOf(true) }
+    var map by remember { mutableStateOf<MapLibreController?>(null) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { viewModel.retry() }
     val openExternalMaps = { context.startActivity(Intent(Intent.ACTION_VIEW, geoUri(destination))) }
 
-    DirectoryPage(
-        topBar = { DirectoryTopBar(title = NavigationCopy.TITLE, onBack = onClose) },
-    ) { padding ->
+    // No bar over the map: a navigator needs every row of pixels it can have, and the way
+    // out is a button on the map rather than a title above it.
+    DirectoryPage { padding ->
         val permissionRequired = (state.navigation as? NavigationState.Error)
             ?.reason == "LOCATION_PERMISSION_REQUIRED"
         if (permissionRequired) {
@@ -114,6 +115,7 @@ fun BuiltInNavigationScreen(
                 destinationName = destinationName,
                 following = following,
                 onUserMovedMap = { following = false },
+                onController = { map = it },
             )
 
             Column(
@@ -131,25 +133,55 @@ fun BuiltInNavigationScreen(
                     onSelect = viewModel::selectProfile,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                // The turn that is coming, above everything, because that is where a driver's
-                // eyes already are. It used to sit at the foot of the screen under the numbers.
+                // How far and how long, under the three ways of travelling — the two figures
+                // that change when the choice above them changes, so they are read together.
                 (state.navigation as? NavigationState.Navigating)?.progress?.let { progress ->
-                    ManeuverBanner(progress)
+                    TripSummary(progress, state.switching)
                 }
             }
 
-            // Somewhere to press after looking around the map: it stops following when a hand
-            // moves it, and saying so silently would leave the traveller with a still map.
-            if (!following) {
+            // Everything one presses on a map, in one stack half way down the edge: closer,
+            // further, back to me, and out to another maps app. The map tab wears the same set
+            // in the same place, which is the point of it being a set.
+            Column(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(Space.base),
+                verticalArrangement = Arrangement.spacedBy(Space.sm),
+            ) {
+                DirectoryRoundControl(
+                    icon = DirectoryIcons.plus,
+                    label = NavigationCopy.ZOOM_IN,
+                    onClick = { map?.zoomBy(ZOOM_STEP) },
+                )
+                DirectoryRoundControl(
+                    icon = DirectoryIcons.minus,
+                    label = NavigationCopy.ZOOM_OUT,
+                    onClick = { map?.zoomBy(-ZOOM_STEP) },
+                )
                 DirectoryRoundControl(
                     icon = DirectoryIcons.myLocation,
                     label = NavigationCopy.RECENTRE,
                     onClick = { following = true },
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .padding(Space.base),
+                    enabled = !following,
+                )
+                DirectoryRoundControl(
+                    icon = DirectoryIcons.map,
+                    label = NavigationCopy.EXTERNAL_MAPS,
+                    onClick = openExternalMaps,
                 )
             }
+
+            // The way out, over the map rather than above it.
+            DirectoryRoundControl(
+                icon = DirectoryIcons.closeBox,
+                label = NavigationCopy.CLOSE,
+                onClick = onClose,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(Space.base),
+                tinted = false,
+            )
 
             Column(
                 modifier = Modifier
@@ -169,8 +201,7 @@ fun BuiltInNavigationScreen(
                         NavigationState.Routing,
                         -> DirectoryInlineLoading(NavigationCopy.ROUTING)
 
-                        is NavigationState.Navigating ->
-                            NavigationProgressPanel(navigation.progress, state.switching, openExternalMaps)
+                        is NavigationState.Navigating -> ManeuverBanner(navigation.progress)
 
                         is NavigationState.Rerouting -> Column(
                             verticalArrangement = Arrangement.spacedBy(Space.sm),
@@ -180,7 +211,7 @@ fun BuiltInNavigationScreen(
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.primary,
                             )
-                            NavigationProgressPanel(navigation.progress, state.switching, openExternalMaps)
+                            ManeuverBanner(navigation.progress)
                         }
 
                         is NavigationState.Arrived -> Text(
@@ -257,6 +288,38 @@ private fun TravelModeRow(
  * while moving. Everything else about the trip is at the foot of the screen, where it is read
  * when stopped.
  */
+/**
+ * How far is left and how long it will take, in the profile that is selected.
+ *
+ * Walking a kilometre is not driving a kilometre, and the two numbers are the answer to "should
+ * I walk?" — so they sit under the choice that changes them.
+ */
+@Composable
+private fun TripSummary(progress: NavigationProgress, switching: Boolean) {
+    DirectoryCard {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Space.md),
+        ) {
+            if (switching) {
+                DirectoryInlineLoading(NavigationCopy.ROUTING, modifier = Modifier.weight(1f))
+            } else {
+                MetaRow(
+                    icon = DirectoryIcons.route,
+                    text = DistanceText.of(progress.remainingDistanceMeters),
+                    modifier = Modifier.weight(1f),
+                )
+                MetaRow(
+                    icon = DirectoryIcons.clock,
+                    text = formatDuration(progress.remainingDurationSeconds),
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun ManeuverBanner(progress: NavigationProgress) {
     val maneuver = progress.maneuver ?: return
@@ -287,46 +350,6 @@ private fun ManeuverBanner(progress: NavigationProgress) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun NavigationProgressPanel(
-    progress: NavigationProgress,
-    switching: Boolean,
-    onExternalMaps: () -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Space.md),
-        ) {
-            if (switching) {
-                // The route on screen is the old one for a moment longer. Saying so is better
-                // than blanking it, which is what made the map appear to reset on every choice.
-                DirectoryInlineLoading(NavigationCopy.ROUTING, modifier = Modifier.weight(1f))
-            } else {
-                MetaRow(
-                    icon = DirectoryIcons.route,
-                    text = DistanceText.of(progress.remainingDistanceMeters),
-                    modifier = Modifier.weight(1f),
-                )
-                MetaRow(
-                    icon = DirectoryIcons.clock,
-                    text = formatDuration(progress.remainingDurationSeconds),
-                    modifier = Modifier.weight(1f),
-                )
-            }
-            // Handing the trip to another maps app is a corner of the bar, not a line of its
-            // own: it is the way out, not the thing this screen is for.
-            DirectoryIconButton(
-                icon = DirectoryIcons.map,
-                label = NavigationCopy.EXTERNAL_MAPS,
-                onClick = onExternalMaps,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }
@@ -382,6 +405,9 @@ object NavigationCopy {
     const val ARRIVED = "لقد وصلت إلى وجهتك"
     const val ALLOW_LOCATION = "السماح بالموقع"
     const val RETRY = "إعادة المحاولة"
+    const val ZOOM_IN = "تقريب"
+    const val ZOOM_OUT = "تبعيد"
+    const val CLOSE = "إغلاق"
     const val RECENTRE = "إعادة التوسيط"
     const val EXTERNAL_MAPS = "فتح تطبيق خرائط خارجي"
     const val PERMISSION_TITLE = "الملاحة تحتاج موقعك"
@@ -394,3 +420,6 @@ object NavigationCopy {
         RoutingProfile.DRIVING -> "سيارة"
     }
 }
+
+/** One step of scale per press: enough to notice, small enough to aim with. */
+private const val ZOOM_STEP = 1.0

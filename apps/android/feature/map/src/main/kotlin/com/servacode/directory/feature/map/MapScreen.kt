@@ -28,6 +28,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -47,7 +48,6 @@ import com.servacode.directory.core.designsystem.DirectoryOverlayTile
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
 import com.servacode.directory.core.designsystem.DirectoryRoundControl
-import com.servacode.directory.core.designsystem.DirectorySecondaryButton
 import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.Radius
 import com.servacode.directory.core.designsystem.Sizes
@@ -316,11 +316,13 @@ private fun SelectedFacilityCard(
                 )
                 AvailabilityPill(facility.availability)
             }
+            // A cross in a red box: a bare grey cross beside a facility's name reads as
+            // "remove this facility" as often as "close this card".
             DirectoryIconButton(
-                icon = DirectoryIcons.close,
+                icon = DirectoryIcons.closeBox,
                 label = MapCopy.DISMISS,
                 onClick = onDismiss,
-                tint = MaterialTheme.colorScheme.outline,
+                tint = Color.Unspecified,
             )
         }
         // Two ways on from a marker: read about it, or go to it. Going is the commoner of
@@ -329,12 +331,14 @@ private fun SelectedFacilityCard(
             modifier = Modifier.fillMaxWidth().padding(top = Space.md),
             horizontalArrangement = Arrangement.spacedBy(Space.sm),
         ) {
+            // Drawn alike: one filled and one outlined said that going was the real choice
+            // and reading about it was an afterthought, and from a map neither is.
             DirectoryPrimaryButton(
                 text = MapCopy.ROUTE,
                 onClick = onRoute,
                 modifier = Modifier.weight(1f),
             )
-            DirectorySecondaryButton(
+            DirectoryPrimaryButton(
                 text = MapCopy.OPEN_DETAILS,
                 onClick = onDetails,
                 modifier = Modifier.weight(1f),

@@ -20,11 +20,13 @@ object DirectoryIcons {
     @DrawableRes val search = R.drawable.ic_search
     @DrawableRes val pin = R.drawable.ic_pin
     @DrawableRes val star = R.drawable.ic_star
+    @DrawableRes val starFilled = R.drawable.ic_star_filled
     @DrawableRes val clock = R.drawable.ic_clock
     @DrawableRes val phone = R.drawable.ic_phone
     @DrawableRes val check = R.drawable.ic_check
     @DrawableRes val chat = R.drawable.ic_chat
     @DrawableRes val close = R.drawable.ic_close
+    @DrawableRes val closeBox = R.drawable.ic_close_box
     @DrawableRes val chevron = R.drawable.ic_chevron
     @DrawableRes val back = R.drawable.ic_arrow_back
     @DrawableRes val refresh = R.drawable.ic_refresh

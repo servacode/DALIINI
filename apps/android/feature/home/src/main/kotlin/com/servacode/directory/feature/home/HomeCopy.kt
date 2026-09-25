@@ -45,6 +45,18 @@ object HomeCopy {
         filters.openNow && filters.dutyToday -> "لا توجد منشآت مناوبة اليوم ومفتوحة الآن"
         filters.dutyToday -> "لا توجد منشآت مناوبة اليوم"
         filters.openNow -> "لا توجد منشآت مفتوحة حالياً"
-        else -> "لا توجد منشآت في هذا التصنيف"
+        else -> "لم تُضف منشآت في هذا التصنيف بعد"
+    }
+
+    /**
+     * And where that is, when the platform knows.
+     *
+     * A page that says only "no results" leaves the reader wondering whether the app is broken,
+     * whether they are in the wrong place, or whether there is genuinely nothing. Naming the
+     * place answers all three: nothing has been added here yet, and here is a real place.
+     */
+    fun emptyBodyFor(place: String?): String = when (place) {
+        null -> "لم تُضف منشآت بعد. جرّب تصنيفاً آخر أو غيّر المحافظة."
+        else -> "لم تُضف منشآت في $place بعد. جرّب تصنيفاً آخر أو غيّر المحافظة."
     }
 }

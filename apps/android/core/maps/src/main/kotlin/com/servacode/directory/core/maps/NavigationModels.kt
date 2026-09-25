@@ -205,6 +205,29 @@ object GeoMath {
         return 2 * EARTH_RADIUS_METERS * asin(min(1.0, sqrt(h)))
     }
 
+    /**
+     * The part of the way that is still ahead.
+     *
+     * A line that stays whole while someone walks along it is a picture of a plan, not of a
+     * trip: the traveller cannot tell what they have done from what is left. This cuts the
+     * geometry at the segment they are nearest to and starts it where they are.
+     */
+    fun remainingGeometry(geometry: List<MapPoint>, from: MapPoint): List<MapPoint> {
+        if (geometry.size < 2) return geometry
+        var nearest = 0
+        var shortest = Double.MAX_VALUE
+        for (index in 0 until geometry.lastIndex) {
+            val distance = distanceToSegmentMeters(from, geometry[index], geometry[index + 1])
+            if (distance < shortest) {
+                shortest = distance
+                nearest = index
+            }
+        }
+        val ahead = geometry.drop(nearest + 1)
+        // Two points at least, or there is no line to draw and the map would blank the route.
+        return if (ahead.isEmpty()) geometry.takeLast(2) else listOf(from) + ahead
+    }
+
     fun distanceToPolylineMeters(point: MapPoint, geometry: List<MapPoint>): Double {
         point.requireValid()
         require(geometry.isNotEmpty()) { "Polyline is empty." }

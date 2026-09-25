@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidView
 import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
+import com.servacode.directory.core.maps.GeoMath
 import com.servacode.directory.core.maps.MapCamera
 import com.servacode.directory.core.maps.MapLibreController
 import com.servacode.directory.core.maps.MapPoint
@@ -42,6 +43,8 @@ internal fun NavigationMap(
     /** True while the map rides with the traveller; false after a hand has moved it. */
     following: Boolean = true,
     onUserMovedMap: () -> Unit = {},
+    /** Handed back so the screen's own controls can work the map they are floating over. */
+    onController: (MapLibreController) -> Unit = {},
 ) {
     Box(modifier.fillMaxWidth()) {
         if (MapStyle.isConfigured(styleUrl)) {
@@ -56,6 +59,7 @@ internal fun NavigationMap(
                 destinationName = destinationName,
                 following = following,
                 onUserMovedMap = onUserMovedMap,
+                onController = onController,
             )
         } else {
             Text(
@@ -79,6 +83,7 @@ private fun RouteMap(
     destinationName: String?,
     following: Boolean,
     onUserMovedMap: () -> Unit,
+    onController: (MapLibreController) -> Unit,
 ) {
     val routeColor = MaterialTheme.colorScheme.primary.toArgb()
     val density = LocalDensity.current
@@ -111,13 +116,18 @@ private fun RouteMap(
     LaunchedEffect(controller, route, location, stroke, mark, bearingDegrees) {
         val map = controller ?: return@LaunchedEffect
         val geometry = route?.geometry ?: return@LaunchedEffect
-        map.showGuidance(geometry, routeColor, stroke, location, bearingDegrees, mark)
+        // Only what is still ahead: a line that stays whole while someone walks along it is a
+        // picture of a plan, not of a trip.
+        val ahead = location?.let { GeoMath.remainingGeometry(geometry, it) } ?: geometry
+        map.showGuidance(ahead, routeColor, stroke, location, bearingDegrees, mark)
     }
 
     // A hand on the map means "I am looking at something": the screen stops dragging the view
     // back and offers to resume instead.
     LaunchedEffect(controller) {
-        controller?.onUserMovedMap(onUserMovedMap)
+        val map = controller ?: return@LaunchedEffect
+        map.onUserMovedMap(onUserMovedMap)
+        onController(map)
     }
 
     // The whole way, once, when a route arrives: what the reader needs before setting off is

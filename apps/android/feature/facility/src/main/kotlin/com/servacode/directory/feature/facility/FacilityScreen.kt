@@ -211,9 +211,11 @@ private fun FacilityBody(
                         },
                         enabled = placed,
                     )
+                    // A filled star for one that is saved and an outline for one that is not:
+                    // a word changing under an identical icon is a change nobody notices.
                     ActionCircle(
                         label = if (summary.isFavorite) FacilityCopy.SAVED else FacilityCopy.SAVE,
-                        icon = DirectoryIcons.star,
+                        icon = if (summary.isFavorite) DirectoryIcons.starFilled else DirectoryIcons.star,
                         onClick = { if (value.signedIn) onToggleFavorite() else onSignIn() },
                     )
                 }
@@ -370,10 +372,11 @@ private fun PhotosPage(urls: List<String>, name: String?, onBack: () -> Unit) {
                     modifier = Modifier.fillMaxSize(),
                 )
                 DirectoryRoundControl(
-                    icon = DirectoryIcons.close,
+                    icon = DirectoryIcons.closeBox,
                     label = FacilityCopy.CLOSE,
                     onClick = { opened = null },
                     modifier = Modifier.padding(Space.md).align(Alignment.TopStart),
+                    tinted = false,
                 )
             }
         }

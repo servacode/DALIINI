@@ -1,26 +1,27 @@
 package com.servacode.directory.core.designsystem
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.annotation.DrawableRes
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 
 /** The app is fetching. One spinner, one place, one wording. */
 @Composable
@@ -30,7 +31,17 @@ fun DirectoryLoading(modifier: Modifier = Modifier, message: String? = null) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+        // The app's own mark with the wait turning around it, in one place, so every screen
+        // waits the same way. A bare spinner is a different pause on every page and tells the
+        // reader nothing about whose page they are on.
+        Box(contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(LOADER_RING),
+                color = MaterialTheme.colorScheme.primary,
+                strokeWidth = LOADER_STROKE,
+            )
+            BrandSymbol(size = LOADER_MARK)
+        }
         if (message != null) {
             Text(
                 text = message,
@@ -247,3 +258,8 @@ fun DirectoryInlineLoading(message: String, modifier: Modifier = Modifier) {
         )
     }
 }
+
+/** The mark, the ring around it, and how heavy that ring is drawn. */
+private val LOADER_MARK = 56.dp
+private val LOADER_RING = 88.dp
+private val LOADER_STROKE = 3.dp
