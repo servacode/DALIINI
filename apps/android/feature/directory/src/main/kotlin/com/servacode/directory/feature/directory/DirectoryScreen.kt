@@ -204,10 +204,17 @@ private fun FiltersPage(
     }
 }
 
-/** What the list is being narrowed by, said once above it. */
+/**
+ * What the list is being narrowed by, said once above it.
+ *
+ * Composable because the words are the module's resources now; the dot between them is not,
+ * because a dot is a dot in every language this app will ever be read in.
+ */
+@Composable
+@ReadOnlyComposable
 private fun appliedFilters(filter: DirectoryFilter): String = listOfNotNull(
-    DirectoryCopy.OPEN_NOW.takeIf { filter.openNow },
-    DirectoryCopy.DUTY_NOW.takeIf { filter.dutyNow },
+    if (filter.openNow) DirectoryCopy.OPEN_NOW else null,
+    if (filter.dutyNow) DirectoryCopy.DUTY_NOW else null,
 ).joinToString(" • ")
 
 /** The words of the list and its filters, provisional until product copy is approved. */
