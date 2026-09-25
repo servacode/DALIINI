@@ -859,13 +859,13 @@ Mandatory before staging or production closure. None of these blocks P2 or P10.
 
 ## DEBT-001 — Ruff baseline
 
-**Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch.
+**Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.
 
 Concentrated in `directory/models.py`, which is written in a compressed style with semicolons and lines up to 249 characters against a 100 limit. Rule: **no new lint debt** — any file touched must not increase the count. Forbidden remedies: disabling rules broadly, blanket ignores, or weakening CI to make the result green.
 
 ## DEBT-002 — Mypy baseline
 
-**Recorded:** 2026-09-17 · **Baseline:** 556 errors in 82 files.
+**Recorded:** 2026-09-17 · **Baseline:** 556 errors in 82 files. **Measured again 2026-09-26: 900 errors in 107 files.** It has grown by a third since it was recorded. New modules are still expected to be strict-clean — `locations/osm.py` and the boundary import are — but the rule has plainly not been held to across the whole backend, and the gap should be closed deliberately rather than by a later batch discovering it again.
 
 **Correction, 2026-09-18:** the 556 figure was measured on the Windows host, where the
 `django-stubs` plugin cannot import `directory_backend.settings.test` because GDAL is
