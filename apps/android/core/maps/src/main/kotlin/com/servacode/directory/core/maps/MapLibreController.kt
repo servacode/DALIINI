@@ -21,9 +21,6 @@ import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.maps.MapLibreMap
 
 /** One per map: it remembers which marker is which facility. */
-/** Long enough to read as movement, short enough to keep up with a car. */
-private const val FOLLOW_MILLIS = 900
-
 class MapLibreController(
     private val map: MapLibreMap,
     /**
@@ -105,7 +102,7 @@ class MapLibreController(
         moveCamera(current.copy(zoom = current.zoom + steps), animated = true)
     }
 
-    override fun moveCamera(camera: MapCamera, animated: Boolean) {
+    override fun moveCamera(camera: MapCamera, animated: Boolean, durationMillis: Int) {
         val position = CameraPosition.Builder()
             .target(LatLng(camera.center.latitude, camera.center.longitude))
             .zoom(camera.zoom)
@@ -113,7 +110,7 @@ class MapLibreController(
             .tilt(camera.tilt)
             .build()
         val update = CameraUpdateFactory.newCameraPosition(position)
-        if (animated) map.animateCamera(update, FOLLOW_MILLIS) else map.moveCamera(update)
+        if (animated) map.animateCamera(update, durationMillis) else map.moveCamera(update)
     }
 
     /**

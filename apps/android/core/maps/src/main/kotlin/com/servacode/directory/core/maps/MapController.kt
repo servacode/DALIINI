@@ -40,7 +40,12 @@ data class FacilityMapPin(
 interface MapController {
     /** Where the map is looking now, or null before it has a position. */
     val camera: MapCamera?
-    fun moveCamera(camera: MapCamera, animated: Boolean = true)
+    /**
+     * [durationMillis] is how long the animation takes. It exists because a navigator's camera
+     * must arrive before the next reading does: a demonstration that reports five positions a
+     * second with a one-second animation is a camera permanently catching up.
+     */
+    fun moveCamera(camera: MapCamera, animated: Boolean = true, durationMillis: Int = FOLLOW_MILLIS)
 
     /** Replaces the facility markers; the one with [selectedFacilityId] is shown selected. */
     fun showFacilities(pins: List<FacilityMapPin>, selectedFacilityId: String? = null)
@@ -79,3 +84,6 @@ object MapStyle {
      */
     private val LOOPBACK = listOf("localhost", "127.0.0.1", "10.0.2.2")
 }
+
+/** What a camera animation lasts when nothing says otherwise: one reading's worth, in life. */
+const val FOLLOW_MILLIS = 900

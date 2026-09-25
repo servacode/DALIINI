@@ -6,26 +6,28 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidView
 import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
+import com.servacode.directory.core.maps.FOLLOW_MILLIS
 import com.servacode.directory.core.maps.GeoMath
 import com.servacode.directory.core.maps.MapCamera
 import com.servacode.directory.core.maps.MapLibreController
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.maps.MapStyle
 import com.servacode.directory.core.maps.NavigationRoute
+import com.servacode.directory.core.maps.rememberMapViewWithLifecycle
 import com.servacode.directory.core.maps.RouteStroke
 import com.servacode.directory.core.maps.UserMark
-import com.servacode.directory.core.maps.rememberMapViewWithLifecycle
 
 @Composable
 internal fun NavigationMap(
@@ -141,10 +143,18 @@ private fun RouteMap(
     // Then it rides along: centred on the traveller, turned the way they are going and tilted,
     // so the road ahead takes the screen and the road behind does not. Re-framing the whole
     // route on every reading is what used to make the map look like it was jumping about.
+    // How long the last reading took to arrive: the camera is given exactly that long to move,
+    // so it lands as the next one comes rather than still travelling. Life reports about once a
+    // second; a demonstration reports five times as often, and a one-second animation there is
+    // a camera permanently catching up with itself.
+    var lastFixAt by remember { mutableLongStateOf(0L) }
     LaunchedEffect(controller, location, bearingDegrees, following) {
         val map = controller ?: return@LaunchedEffect
         if (!following) return@LaunchedEffect
         val here = location ?: return@LaunchedEffect
+        val now = System.currentTimeMillis()
+        val since = if (lastFixAt == 0L) FOLLOW_MILLIS else (now - lastFixAt).toInt()
+        lastFixAt = now
         map.moveCamera(
             MapCamera(
                 center = here,
@@ -153,6 +163,7 @@ private fun RouteMap(
                 tilt = if (route == null) 0.0 else FOLLOW_TILT,
             ),
             animated = true,
+            durationMillis = since.coerceIn(SMOOTH_MIN_MILLIS, FOLLOW_MILLIS),
         )
     }
 }
@@ -165,3 +176,6 @@ private const val OVERVIEW_ZOOM = 15.0
 
 /** Off straight down, in degrees: enough for the road to have a horizon. */
 private const val FOLLOW_TILT = 50.0
+
+/** Below this an animation is a jump, and the map reads as stuttering rather than moving. */
+private const val SMOOTH_MIN_MILLIS = 150

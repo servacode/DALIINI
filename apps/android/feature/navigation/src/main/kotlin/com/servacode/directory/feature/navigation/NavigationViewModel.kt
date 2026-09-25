@@ -274,8 +274,13 @@ class NavigationViewModel @Inject constructor(
     }
 
     private companion object {
-        /** How much faster than life a demonstration runs, at the very least. */
-        const val PLAYBACK_SPEED = 5.0
+        /**
+         * How much faster than life a demonstration runs, at the very least.
+         *
+         * Three, not five: the point of watching one is to see what the trip will feel like,
+         * and at five times a car crosses a junction before the instruction can be read.
+         */
+        const val PLAYBACK_SPEED = 3.0
 
         /** And how long the whole of it may take to watch, however long the trip is. */
         const val DEMO_SECONDS = 45.0
