@@ -2,6 +2,7 @@ package com.servacode.directory.feature.navigation
 
 import com.servacode.directory.core.maps.GeoMath
 import com.servacode.directory.core.maps.MapPoint
+import com.servacode.directory.core.maps.RoutingProfile
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -40,6 +41,20 @@ internal data class ReplayFix(
 internal object NavigationReplay {
     /** About 30 km/h: a motorcycle in a neighbourhood, and above every threshold that matters. */
     const val DEFAULT_SPEED_MPS = 8.3f
+
+    /**
+     * How fast the made-up traveller goes, by how they said they were travelling.
+     *
+     * A demonstration that walks a route at thirty kilometres an hour is a demonstration of a
+     * motorcycle: guidance times itself by speed, so the voice would speak where it never
+     * would on foot and the reader would be shown a trip that is not theirs. Walking here is a
+     * brisk 5 km/h, which is what the engine's own thresholds are written against.
+     */
+    fun speedFor(profile: RoutingProfile): Float = when (profile) {
+        RoutingProfile.WALKING -> 1.4f
+        RoutingProfile.MOTORCYCLE -> DEFAULT_SPEED_MPS
+        RoutingProfile.DRIVING -> 11.0f
+    }
 
     /** One reading a second, which is the interval real guidance runs at. */
     const val DEFAULT_STEP_SECONDS = 1.0

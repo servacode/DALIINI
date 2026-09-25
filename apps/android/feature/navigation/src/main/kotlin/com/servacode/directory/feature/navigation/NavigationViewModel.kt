@@ -182,8 +182,14 @@ class NavigationViewModel @Inject constructor(
     private fun driveTheRoute(found: NavigationRoute) {
         locationJob?.cancel()
         locationJob = viewModelScope.launch {
-            val fixes = NavigationReplay.fixes(found.geometry)
-            val interval = (NavigationReplay.DEFAULT_STEP_SECONDS * 1000 / PLAYBACK_SPEED).toLong()
+            val profile = _state.value.profile
+            val fixes = NavigationReplay.fixes(found.geometry, NavigationReplay.speedFor(profile))
+            // Played fast enough that any trip can be watched in under a minute, and never
+            // slower than five times life: a walk across a neighbourhood is an hour of
+            // readings, and nobody watches an hour to see whether the voice speaks.
+            val seconds = fixes.size * NavigationReplay.DEFAULT_STEP_SECONDS
+            val speed = maxOf(PLAYBACK_SPEED, seconds / DEMO_SECONDS)
+            val interval = (NavigationReplay.DEFAULT_STEP_SECONDS * 1000 / speed).toLong()
             fixes.forEach { fix ->
                 delay(interval)
                 handleLocation(
@@ -268,7 +274,10 @@ class NavigationViewModel @Inject constructor(
     }
 
     private companion object {
-        /** How much faster than life a demonstration runs. */
+        /** How much faster than life a demonstration runs, at the very least. */
         const val PLAYBACK_SPEED = 5.0
+
+        /** And how long the whole of it may take to watch, however long the trip is. */
+        const val DEMO_SECONDS = 45.0
     }
 }
