@@ -37,6 +37,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.ActionCircle
+import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.AvailabilityPill
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryErrorState
@@ -100,7 +101,7 @@ fun FacilityScreen(
             is FacilityUiState.Error -> DirectoryErrorState(
                 title = FacilityCopy.ERROR,
                 modifier = Modifier.padding(padding),
-                body = value.message,
+                body = appErrorText(value.error),
             )
             is FacilityUiState.Content -> Column(
                 modifier = Modifier
@@ -272,9 +273,9 @@ private fun FacilityBody(
                     )
                     DirectoryTextButton(FacilityCopy.RATING_REMOVE, onRemoveRating)
                 }
-                value.ratingMessage?.let {
+                value.ratingFailure?.let {
                     Text(
-                        text = it,
+                        text = appErrorText(it),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

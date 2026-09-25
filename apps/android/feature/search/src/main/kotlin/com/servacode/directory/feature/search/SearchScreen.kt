@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcons
@@ -69,7 +70,7 @@ fun SearchScreen(
                 is SearchUiState.Error -> item(key = "error") {
                     DirectoryErrorState(
                         title = SearchCopy.ERROR,
-                        body = value.message,
+                        body = appErrorText(value.error),
                         modifier = Modifier.padding(top = Space.xxl),
                         onRetry = { viewModel.updateQuery(query) },
                     )
@@ -96,7 +97,7 @@ fun SearchScreen(
                             LoadMoreRow(
                                 loading = value.loadingMore,
                                 onLoadMore = viewModel::loadMore,
-                                error = value.moreError,
+                                error = value.moreError?.let { appErrorText(it) },
                             )
                         }
                     }

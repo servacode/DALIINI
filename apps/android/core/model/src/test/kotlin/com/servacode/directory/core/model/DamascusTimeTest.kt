@@ -44,10 +44,8 @@ class DamascusTimeTest {
 
     @Test fun `display is the Damascus clock with Latin digits`() {
         assertEquals("2026-09-20 08:00", DamascusTime.format(instant("2026-09-20T05:00:00Z")))
-        assertEquals(
-            "من 2026-09-20 08:00 إلى 2026-09-20 16:00",
-            DamascusTime.period(instant("2026-09-20T05:00:00Z"), instant("2026-09-20T13:00:00Z")),
-        )
+        // The clock alone, for a line that already says which day.
+        assertEquals("16:00", DamascusTime.clock(instant("2026-09-20T13:00:00Z")))
     }
 
     @Test fun `the date picker's UTC midnight is the day it shows, whatever the offset`() {

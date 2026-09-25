@@ -3,16 +3,16 @@ package com.servacode.directory.feature.account
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.servacode.directory.core.model.AccountProfile
-import com.servacode.directory.core.model.AppErrorText
+import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.network.OwnerUploadPayload
 import com.servacode.directory.core.network.PublicApiBoundary
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  * Editing what the account says about itself.
@@ -31,7 +31,7 @@ data class ProfileEditUiState(
     /** True while a picture is on its way up or out; the rest of the form stays usable. */
     val savingImage: Boolean = false,
     val saved: Boolean = false,
-    val error: String? = null,
+    val error: AppError? = null,
 )
 
 @HiltViewModel
@@ -88,7 +88,7 @@ class ProfileEditViewModel @Inject constructor(
     private fun failImage(cause: Throwable) {
         _state.value = _state.value.copy(
             savingImage = false,
-            error = AppErrorText.of(cause.toAppError()),
+            error = cause.toAppError(),
         )
     }
 
@@ -118,7 +118,7 @@ class ProfileEditViewModel @Inject constructor(
                 .onFailure {
                     _state.value = _state.value.copy(
                         saving = false,
-                        error = AppErrorText.of(it.toAppError()),
+                        error = it.toAppError(),
                     )
                 }
         }
@@ -141,7 +141,7 @@ data class PasswordChangeUiState(
     val confirmation: String = "",
     val saving: Boolean = false,
     val changed: Boolean = false,
-    val error: String? = null,
+    val error: AppError? = null,
 ) {
     val mismatch: Boolean get() = confirmation.isNotEmpty() && next != confirmation
 
@@ -181,7 +181,7 @@ class PasswordChangeViewModel @Inject constructor(
                 .onFailure {
                     _state.value = _state.value.copy(
                         saving = false,
-                        error = AppErrorText.of(it.toAppError()),
+                        error = it.toAppError(),
                     )
                 }
         }

@@ -2,17 +2,17 @@ package com.servacode.directory.feature.account
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.servacode.directory.core.model.AppErrorText
+import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.InboxMessage
 import com.servacode.directory.core.model.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
+import javax.inject.Inject
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 sealed interface FavoritesUiState {
     data object Loading : FavoritesUiState
@@ -20,9 +20,9 @@ sealed interface FavoritesUiState {
         val items: List<FacilitySummary>,
         val hasMore: Boolean = false,
         val loadingMore: Boolean = false,
-        val moreError: String? = null,
+        val moreError: AppError? = null,
     ) : FavoritesUiState
-    data class Error(val message: String) : FavoritesUiState
+    data class Error(val error: AppError) : FavoritesUiState
 }
 
 @HiltViewModel
@@ -48,7 +48,7 @@ class FavoritesViewModel @Inject constructor(
                     nextCursor = page.nextCursor
                     FavoritesUiState.Content(items = page.items, hasMore = page.hasMore)
                 },
-                onFailure = { FavoritesUiState.Error(AppErrorText.of(it.toAppError())) },
+                onFailure = { FavoritesUiState.Error(it.toAppError()) },
             )
         }
     }
@@ -71,7 +71,7 @@ class FavoritesViewModel @Inject constructor(
                 .onFailure {
                     _state.value = current.copy(
                         loadingMore = false,
-                        moreError = AppErrorText.of(it.toAppError()),
+                        moreError = it.toAppError(),
                     )
                 }
         }
@@ -98,9 +98,9 @@ sealed interface InboxUiState {
         val unreadCount: Int,
         val hasMore: Boolean = false,
         val loadingMore: Boolean = false,
-        val moreError: String? = null,
+        val moreError: AppError? = null,
     ) : InboxUiState
-    data class Error(val message: String) : InboxUiState
+    data class Error(val error: AppError) : InboxUiState
 }
 
 @HiltViewModel
@@ -130,7 +130,7 @@ class InboxViewModel @Inject constructor(
                         hasMore = page.hasMore,
                     )
                 },
-                onFailure = { InboxUiState.Error(AppErrorText.of(it.toAppError())) },
+                onFailure = { InboxUiState.Error(it.toAppError()) },
             )
         }
     }
@@ -153,7 +153,7 @@ class InboxViewModel @Inject constructor(
                 .onFailure {
                     _state.value = current.copy(
                         loadingMore = false,
-                        moreError = AppErrorText.of(it.toAppError()),
+                        moreError = it.toAppError(),
                     )
                 }
         }

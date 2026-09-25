@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DateTimeField
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryErrorState
@@ -30,8 +31,8 @@ import com.servacode.directory.core.designsystem.DirectorySecondaryButton
 import com.servacode.directory.core.designsystem.DirectorySectionLabel
 import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTopBar
+import com.servacode.directory.core.designsystem.DirectoryWords
 import com.servacode.directory.core.designsystem.Space
-import com.servacode.directory.core.model.DamascusTime
 
 /**
  * The owner's duty shifts. Not one of the numbered screens, and not a screen to remove either:
@@ -74,9 +75,9 @@ fun DutyScreen(
                         modifier = Modifier.padding(top = Space.sm),
                     )
                 }
-                value.message?.let {
+                value.failure?.let {
                     Text(
-                        text = it,
+                        text = appErrorText(it),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = Space.sm),
@@ -108,7 +109,7 @@ fun DutyScreen(
                     DirectoryCard(modifier = Modifier.padding(vertical = Space.xs)) {
                         Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
                             Text(
-                                text = DamascusTime.period(
+                                text = DirectoryWords.period(
                                     shift.startsAtEpochMillis,
                                     shift.endsAtEpochMillis,
                                 ),

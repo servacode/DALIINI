@@ -38,6 +38,10 @@ EXPECTED_MODULES = {
 }
 
 
+ARABIC_LETTER = re.compile("[\u0600-\u06ff\u0750-\u077f\ufb50-\ufeff]")
+ARABIC_CHAR_LITERAL = re.compile("'[\u0600-\u06ff\u0750-\u077f\ufb50-\ufeff]'")
+
+
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise AssertionError(message)
@@ -204,6 +208,40 @@ def check_design_system() -> None:
     require(not own_sections, f"features with a section of their own: {own_sections}")
 
 
+def check_words() -> None:
+    """A screen's words live in its resources, not in its Kotlin.
+
+    Every module reads what it says from its own `res/values/strings.xml`, which is what makes a
+    second language a second file: Android picks the file that matches the phone's setting and no
+    Kotlin changes. This gate is what keeps it that way — 315 sentences had grown across
+    seventeen modules before they were moved, and one literal added back is how that starts again.
+
+    What is allowed through:
+
+    * comments, which explain the words and are not shown to anyone;
+    * the app's own name, a proper noun that must match the launcher's label (`DirectoryBrand`);
+    * single-character literals, which are the rules about writing rather than writing: the voice
+      decides whether a street name can be read aloud by looking at its characters.
+    """
+    offenders: list[str] = []
+    for path in source_paths("*.kt"):
+        parts = path.relative_to(ROOT).parts
+        # Tests name Arabic places and read Arabic answers back: that is the data under test,
+        # not what the app says. The harness's `connectedTest` sends real names to a real server.
+        if any("test" in part.lower() for part in parts):
+            continue
+        if path.name == "DirectoryBrand.kt":
+            continue
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            stripped = line.strip()
+            if stripped.startswith(("*", "//", "/*")):
+                continue
+            without_chars = ARABIC_CHAR_LITERAL.sub("", line)
+            if ARABIC_LETTER.search(without_chars):
+                offenders.append(f"{path.relative_to(ROOT)}:{number}")
+    require(not offenders, f"words in Kotlin rather than in resources: {offenders}")
+
+
 def check_hygiene() -> None:
     source_files = [*source_paths("*.kt"), *source_paths("*.kts"), *source_paths("*.xml")]
     combined = "\n".join(path.read_text(encoding="utf-8") for path in source_files)
@@ -242,6 +280,7 @@ def main() -> int:
         check_security,
         check_architecture,
         check_design_system,
+        check_words,
         check_hygiene,
     ]
     for check in checks:

@@ -3,7 +3,7 @@ package com.servacode.directory.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.servacode.directory.core.database.Loaded
-import com.servacode.directory.core.model.AppErrorText
+import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.Category
 import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.HomeSnapshot
@@ -11,18 +11,18 @@ import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.network.RealtimeInvalidation
 import com.servacode.directory.core.network.RealtimeInvalidationBus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
+import javax.inject.Inject
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 sealed interface HomeUiState {
     data object Loading : HomeUiState
     data object ProvinceRequired : HomeUiState
     data class Content(val snapshot: HomeSnapshot, val stale: Boolean) : HomeUiState
-    data class Error(val message: String) : HomeUiState
+    data class Error(val error: AppError) : HomeUiState
 }
 
 /**
@@ -37,7 +37,7 @@ data class HomeListState(
     val loading: Boolean = true,
     val loadingMore: Boolean = false,
     val hasMore: Boolean = false,
-    val error: String? = null,
+    val error: AppError? = null,
 )
 
 @HiltViewModel
@@ -150,7 +150,7 @@ class HomeViewModel @Inject constructor(
                 .onFailure {
                     _list.value = HomeListState(
                         loading = false,
-                        error = AppErrorText.of(it.toAppError()),
+                        error = it.toAppError(),
                     )
                 }
         }
@@ -178,7 +178,7 @@ class HomeViewModel @Inject constructor(
                 .onFailure {
                     _list.value = current.copy(
                         loadingMore = false,
-                        error = AppErrorText.of(it.toAppError()),
+                        error = it.toAppError(),
                     )
                 }
         }
@@ -197,7 +197,7 @@ class HomeViewModel @Inject constructor(
                         is Loaded.Cached -> HomeUiState.Content(loaded.value, stale = false)
                         is Loaded.Fresh -> HomeUiState.Content(loaded.value, stale = false)
                         is Loaded.Stale -> HomeUiState.Content(loaded.value, stale = true)
-                        is Loaded.Failed -> HomeUiState.Error(AppErrorText.of(loaded.error))
+                        is Loaded.Failed -> HomeUiState.Error(loaded.error)
                     }
                 }
                 adoptSnapshot()

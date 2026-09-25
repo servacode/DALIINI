@@ -34,6 +34,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DirectoryActionBar
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
@@ -53,16 +54,15 @@ import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.DirectoryWords
 import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.MetaRow
+import com.servacode.directory.core.designsystem.OwnerWords
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.designsystem.StatusPill
 import com.servacode.directory.core.designsystem.StatusTone
 import com.servacode.directory.core.designsystem.StepIndicator
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.model.AppError
-import com.servacode.directory.core.model.AppErrorText
 import com.servacode.directory.core.model.BusinessHour
 import com.servacode.directory.core.model.OwnerFacilityStatus
-import com.servacode.directory.core.model.OwnerLabels
 import com.servacode.directory.core.network.NotificationPermissionPolicy
 
 /**
@@ -434,7 +434,7 @@ private fun StatusStep(value: OnboardingUiState.Content) {
                             },
                         )
                         Text(
-                            text = OwnerLabels.status(state),
+                            text = OwnerWords.status(state),
                             style = MaterialTheme.typography.bodyLarge,
                             color = if (here) {
                                 MaterialTheme.colorScheme.primary
@@ -456,7 +456,7 @@ private fun StatusStep(value: OnboardingUiState.Content) {
             )
         }
         value.draft?.summary?.requiredAction?.let { action ->
-            MetaRow(DirectoryIcons.info, OwnerLabels.requiredAction(action))
+            MetaRow(DirectoryIcons.info, OwnerWords.requiredAction(action))
         }
     }
 }
@@ -638,8 +638,10 @@ private fun noticeText(message: OnboardingMessage): String = when (message.notic
 }
 
 /** The error's own sentence, or the one for an error nobody named. */
+@Composable
+@ReadOnlyComposable
 private fun OnboardingMessage.reason(): String =
-    AppErrorText.of(error ?: AppError(AppError.Kind.UNEXPECTED))
+    appErrorText(error ?: AppError(AppError.Kind.UNEXPECTED))
 
 /**
  * The words of the owner's registration, read from the module's own resources.

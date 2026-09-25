@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcon
@@ -69,7 +70,7 @@ fun FavoritesScreen(
             is FavoritesUiState.Error -> DirectoryErrorState(
                 title = SavedCopy.FAVORITES_ERROR,
                 modifier = Modifier.padding(padding),
-                body = value.message,
+                body = appErrorText(value.error),
                 onRetry = viewModel::refresh,
             )
             is FavoritesUiState.Content -> if (value.items.isEmpty()) {
@@ -110,7 +111,7 @@ fun FavoritesScreen(
                             LoadMoreRow(
                                 loading = value.loadingMore,
                                 onLoadMore = viewModel::loadMore,
-                                error = value.moreError,
+                                error = value.moreError?.let { appErrorText(it) },
                             )
                         }
                     }
@@ -152,7 +153,7 @@ fun NotificationsScreen(
             is InboxUiState.Error -> DirectoryErrorState(
                 title = SavedCopy.NOTIFICATIONS_ERROR,
                 modifier = Modifier.padding(padding),
-                body = value.message,
+                body = appErrorText(value.error),
                 onRetry = viewModel::refresh,
             )
             is InboxUiState.Content -> if (value.items.isEmpty()) {
@@ -192,7 +193,7 @@ fun NotificationsScreen(
                             LoadMoreRow(
                                 loading = value.loadingMore,
                                 onLoadMore = viewModel::loadMore,
-                                error = value.moreError,
+                                error = value.moreError?.let { appErrorText(it) },
                             )
                         }
                     }
@@ -268,13 +269,16 @@ private fun MessageRow(message: InboxMessage, onOpen: () -> Unit) {
                 }
             }
             if (unread) {
+                // Read before the modifier: a semantics block is not composition, and this word
+                // comes from the module's resources.
+                val label = SavedCopy.UNREAD
                 Box(
                     modifier = Modifier
                         .padding(top = Space.sm)
                         .size(UNREAD_DOT)
                         .clip(RoundedCornerShape(Radius.pill))
                         .background(MaterialTheme.colorScheme.primary)
-                        .semantics { contentDescription = SavedCopy.UNREAD },
+                        .semantics { contentDescription = label },
                 )
             }
         }

@@ -3,30 +3,34 @@ package com.servacode.directory.feature.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.servacode.directory.core.datastore.DirectoryPreferencesStore
+import com.servacode.directory.core.location.fixWithoutPrompt
+import com.servacode.directory.core.location.LocationProvider
 import com.servacode.directory.core.model.AppError
-import com.servacode.directory.core.model.AppErrorText
 import com.servacode.directory.core.model.Province
 import com.servacode.directory.core.model.toAppError
-import com.servacode.directory.core.location.LocationProvider
-import com.servacode.directory.core.location.fixWithoutPrompt
 import com.servacode.directory.core.network.PublicApiBoundary
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-/** What a form shows after the backend refused it: one message, and the fields at fault. */
+/**
+ * What a form shows after the backend refused it: the refusal, and the fields at fault.
+ *
+ * The refusal itself rather than a sentence, because the sentence belongs to the reader's
+ * language and is read from resources where the form is drawn.
+ */
 data class FormFailure(
-    val message: String,
+    val error: AppError,
     val fields: Set<String> = emptySet(),
     /** The backend's code, for the one or two failures a screen answers rather than states. */
     val code: String? = null,
 )
 
-internal fun AppError.toFormFailure() = FormFailure(AppErrorText.of(this), fieldErrors.keys, code)
+internal fun AppError.toFormFailure() = FormFailure(this, fieldErrors.keys, code)
 
 data class LoginUiState(
     val busy: Boolean = false,

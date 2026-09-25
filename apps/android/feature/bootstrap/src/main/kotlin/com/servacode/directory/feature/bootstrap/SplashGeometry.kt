@@ -29,5 +29,4 @@ object SplashGeometry {
  */
 object SplashCopy {
     const val NAME = DirectoryBrand.NAME
-    const val TAGLINE = DirectoryBrand.TAGLINE
 }

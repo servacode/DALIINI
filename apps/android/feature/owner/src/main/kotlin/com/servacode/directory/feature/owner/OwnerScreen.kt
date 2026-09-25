@@ -29,6 +29,8 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.designsystem.appErrorText
+import com.servacode.directory.core.designsystem.closureText
 import com.servacode.directory.core.designsystem.DateTimeField
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryConfirmDialog
@@ -45,14 +47,13 @@ import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTextField
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.MetaRow
+import com.servacode.directory.core.designsystem.OwnerWords
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.designsystem.StatusPill
 import com.servacode.directory.core.designsystem.StatusTone
-import com.servacode.directory.core.model.ClosureText
 import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.model.OwnerFacilityStatus
 import com.servacode.directory.core.model.OwnerFacilitySummary
-import com.servacode.directory.core.model.OwnerLabels
 
 /**
  * Screen 18. What the owner has, where each one stands, and what is being asked of them.
@@ -92,7 +93,7 @@ fun MyFacilitiesScreen(
             is MyFacilitiesUiState.Error -> DirectoryErrorState(
                 title = OwnerCopy.LIST_ERROR,
                 modifier = Modifier.padding(padding),
-                body = value.message,
+                body = appErrorText(value.error),
                 onRetry = viewModel::refresh,
             )
             is MyFacilitiesUiState.Content -> if (value.items.isEmpty()) {
@@ -154,7 +155,7 @@ private fun OwnerFacilityCard(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f).semantics { heading() },
                 )
-                StatusPill(OwnerLabels.status(item.status), item.status.tone())
+                StatusPill(OwnerWords.status(item.status), item.status.tone())
             }
             Text(
                 text = "${item.category.nameAr} - ${item.province.nameAr}",
@@ -167,7 +168,7 @@ private fun OwnerFacilityCard(
                 DirectoryPill(brand = true) {
                     MetaRow(
                         icon = DirectoryIcons.info,
-                        text = OwnerLabels.requiredAction(action),
+                        text = OwnerWords.requiredAction(action),
                         modifier = Modifier.padding(horizontal = Space.md, vertical = Space.sm),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
@@ -227,7 +228,7 @@ fun ManageFacilityScreen(
             is ManageFacilityUiState.Error -> DirectoryErrorState(
                 title = OwnerCopy.MANAGE_ERROR,
                 modifier = Modifier.padding(padding),
-                body = value.message,
+                body = appErrorText(value.error),
                 onRetry = viewModel::refresh,
             )
             is ManageFacilityUiState.Content -> Column(
@@ -252,16 +253,16 @@ fun ManageFacilityScreen(
                                 color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.weight(1f).semantics { heading() },
                             )
-                            StatusPill(OwnerLabels.status(summary.status), summary.status.tone())
+                            StatusPill(OwnerWords.status(summary.status), summary.status.tone())
                         }
                         Text(
                             text = "${summary.category.nameAr} - ${summary.province.nameAr}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                        value.message?.let {
+                        value.failure?.let {
                             Text(
-                                text = it,
+                                text = appErrorText(it),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -306,7 +307,7 @@ fun ManageFacilityScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                             ) {
                                 Text(
-                                    text = ClosureText.of(closure),
+                                    text = closureText(closure),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.weight(1f),
@@ -372,7 +373,7 @@ fun ManageFacilityScreen(
                                     color = MaterialTheme.colorScheme.onSurface,
                                 )
                                 Text(
-                                    text = OwnerLabels.role(member.role),
+                                    text = OwnerWords.role(member.role),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )

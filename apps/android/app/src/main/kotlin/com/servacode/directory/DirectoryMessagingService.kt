@@ -55,7 +55,11 @@ class DirectoryMessagingService : FirebaseMessagingService() {
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             getSystemService(NotificationManager::class.java).createNotificationChannel(
-                NotificationChannel(CHANNEL, "التحديثات", NotificationManager.IMPORTANCE_DEFAULT),
+                NotificationChannel(
+                    CHANNEL,
+                    getString(R.string.app_notification_channel),
+                    NotificationManager.IMPORTANCE_DEFAULT,
+                ),
             )
         }
         val open = PendingIntent.getActivity(
@@ -74,7 +78,7 @@ class DirectoryMessagingService : FirebaseMessagingService() {
                 BitmapFactory.decodeResource(resources, DesignSystemR.drawable.brand_symbol),
             )
             .setContentTitle(DirectoryBrand.NAME)
-            .setContentText("لديك تحديث جديد")
+            .setContentText(getString(R.string.app_notification_body))
             .setContentIntent(open)
             .setAutoCancel(true)
             .build()

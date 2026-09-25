@@ -76,7 +76,7 @@ fun BrandLockup(
         )
         if (showTagline) {
             Text(
-                text = DirectoryBrand.TAGLINE,
+                text = DirectoryWords.TAGLINE,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

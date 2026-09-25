@@ -4,55 +4,56 @@ import android.content.Intent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.servacode.directory.core.auth.SessionState
 import com.servacode.directory.core.designsystem.DirectoryBottomBar
 import com.servacode.directory.core.designsystem.DirectoryDestination
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.model.DirectoryRoute
-import com.servacode.directory.core.model.MapNavigation
-import com.servacode.directory.feature.auth.LoginScreen
-import com.servacode.directory.feature.auth.RecoveryScreen
-import com.servacode.directory.feature.auth.RegisterScreen
-import kotlinx.coroutines.flow.StateFlow
 import com.servacode.directory.core.model.LegalPageKey
+import com.servacode.directory.core.model.MapNavigation
 import com.servacode.directory.feature.account.AccountScreen
 import com.servacode.directory.feature.account.FavoritesScreen
 import com.servacode.directory.feature.account.NotificationsScreen
 import com.servacode.directory.feature.account.PasswordChangeScreen
 import com.servacode.directory.feature.account.PhoneChangeScreen
 import com.servacode.directory.feature.account.ProfileEditScreen
-import com.servacode.directory.feature.settings.HelpScreen
-import com.servacode.directory.feature.settings.LegalPageScreen
-import com.servacode.directory.feature.settings.SettingsScreen
+import com.servacode.directory.feature.auth.LoginScreen
+import com.servacode.directory.feature.auth.RecoveryScreen
+import com.servacode.directory.feature.auth.RegisterScreen
 import com.servacode.directory.feature.bootstrap.BootstrapScreen
 import com.servacode.directory.feature.bootstrap.LocationPermissionScreen
 import com.servacode.directory.feature.bootstrap.StartDestination
 import com.servacode.directory.feature.bootstrap.WelcomeScreen
 import com.servacode.directory.feature.directory.DirectoryScreen
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.servacode.directory.feature.owner.OwnerPresenceViewModel
-import com.servacode.directory.feature.owner.MyFacilitiesScreen
-import com.servacode.directory.feature.owner.ManageFacilityScreen
-import com.servacode.directory.feature.onboarding.OnboardingScreen
 import com.servacode.directory.feature.duty.DutyScreen
 import com.servacode.directory.feature.facility.FacilityScreen
 import com.servacode.directory.feature.home.HomeScreen
 import com.servacode.directory.feature.map.MapScreen
 import com.servacode.directory.feature.navigation.BuiltInNavigationScreen
+import com.servacode.directory.feature.onboarding.OnboardingScreen
+import com.servacode.directory.feature.owner.ManageFacilityScreen
+import com.servacode.directory.feature.owner.MyFacilitiesScreen
+import com.servacode.directory.feature.owner.OwnerPresenceViewModel
 import com.servacode.directory.feature.province.ProvinceScreen
 import com.servacode.directory.feature.ratings.RatingsScreen
 import com.servacode.directory.feature.search.SearchScreen
+import com.servacode.directory.feature.settings.HelpScreen
+import com.servacode.directory.feature.settings.LegalPageScreen
+import com.servacode.directory.feature.settings.SettingsScreen
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun DirectoryApp(sessionState: StateFlow<SessionState>) {
@@ -411,7 +412,7 @@ private fun DirectoryTabs(
     DirectoryBottomBar(
         listOfNotNull(
             DirectoryDestination(
-                label = "الرئيسية",
+                label = stringResource(R.string.app_tab_home),
                 icon = DirectoryIcons.home,
                 selected = current == DirectoryTab.HOME,
             ) {
@@ -423,7 +424,7 @@ private fun DirectoryTabs(
                 }
             },
             DirectoryDestination(
-                label = "الخريطة",
+                label = stringResource(R.string.app_tab_map),
                 icon = DirectoryIcons.map,
                 selected = current == DirectoryTab.MAP,
             ) {
@@ -440,7 +441,7 @@ private fun DirectoryTabs(
                 null
             } else {
                 DirectoryDestination(
-                    label = "منشآتي",
+                    label = stringResource(R.string.app_tab_facilities),
                     icon = DirectoryIcons.hospital,
                     selected = current == DirectoryTab.FACILITIES,
                 ) {
@@ -453,7 +454,7 @@ private fun DirectoryTabs(
                 }
             },
             DirectoryDestination(
-                label = "حسابي",
+                label = stringResource(R.string.app_tab_account),
                 icon = DirectoryIcons.person,
                 selected = current == DirectoryTab.ACCOUNT,
             ) {

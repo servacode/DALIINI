@@ -1,11 +1,11 @@
 package com.servacode.directory.core.model
 
-/** How a temporary closure reads in a list (INT-095). */
-object ClosureText {
-    /** "<reason> • <period>", or the period alone when there is no reason to show. */
-    fun of(closure: TemporaryClosure): String {
-        val period = DamascusTime.period(closure.startsAtEpochMillis, closure.endsAtEpochMillis)
-        val reason = closure.reason?.trim().orEmpty()
-        return if (reason.isEmpty()) period else "$reason • $period"
-    }
-}
+/**
+ * What a temporary closure shows besides its period (INT-095).
+ *
+ * A reason of spaces is not a reason. Dropping it here, rather than where the line is drawn, keeps
+ * the rule testable and stops a stray separator with nothing after it appearing on the owner's
+ * page. How the reason and the period are joined is a sentence, so it is in the design system's
+ * resources and `closureText` reads it.
+ */
+fun TemporaryClosure.shownReason(): String? = reason?.trim()?.takeIf { it.isNotEmpty() }

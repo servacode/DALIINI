@@ -1,38 +1,38 @@
 package com.servacode.directory.feature.bootstrap
 
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableFloatState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -44,6 +44,7 @@ import com.servacode.directory.core.designsystem.BrandMarkHandoverSize
 import com.servacode.directory.core.designsystem.BrandMarkSize
 import com.servacode.directory.core.designsystem.BrandSymbol
 import com.servacode.directory.core.designsystem.DirectoryTextStyles
+import com.servacode.directory.core.designsystem.DirectoryWords
 import com.servacode.directory.core.designsystem.SystemBarsColor
 import com.servacode.directory.designsystem.generated.DirectoryTokens
 
@@ -108,7 +109,7 @@ fun DirectorySplashScreen(modifier: Modifier = Modifier) {
                         modifier = Modifier.semantics { heading() },
                     )
                     Text(
-                        text = SplashCopy.TAGLINE,
+                        text = DirectoryWords.TAGLINE,
                         style = MaterialTheme.typography.bodyLarge,
                         color = BrandColors.contentSecondary,
                         textAlign = TextAlign.Center,

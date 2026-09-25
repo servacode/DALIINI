@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DirectoryAvatar
 import com.servacode.directory.core.designsystem.DirectoryChipRow
 import com.servacode.directory.core.designsystem.DirectoryFilterChip
@@ -133,7 +134,7 @@ fun ProfileEditScreen(
             }
             state.error?.let {
                 Text(
-                    text = it,
+                    text = appErrorText(it),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error,
                 )
@@ -233,7 +234,7 @@ fun PasswordChangeScreen(
             )
             state.error?.let {
                 Text(
-                    text = it,
+                    text = appErrorText(it),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error,
                 )

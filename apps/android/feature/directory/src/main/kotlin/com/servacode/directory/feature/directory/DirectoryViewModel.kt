@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.servacode.directory.core.database.Loaded
-import com.servacode.directory.core.model.AppErrorText
+import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.DirectoryRoute
 import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.toAppError
@@ -13,12 +13,12 @@ import com.servacode.directory.core.network.DirectoryQuery
 import com.servacode.directory.core.network.RealtimeInvalidation
 import com.servacode.directory.core.network.RealtimeInvalidationBus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
+import javax.inject.Inject
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 sealed interface DirectoryUiState {
     data object Loading : DirectoryUiState
@@ -28,10 +28,10 @@ sealed interface DirectoryUiState {
         val stale: Boolean,
         val hasMore: Boolean = false,
         val loadingMore: Boolean = false,
-        val moreError: String? = null,
+        val moreError: AppError? = null,
     ) : DirectoryUiState
     data object ProvinceRequired : DirectoryUiState
-    data class Error(val message: String) : DirectoryUiState
+    data class Error(val error: AppError) : DirectoryUiState
 }
 
 @HiltViewModel
@@ -75,7 +75,7 @@ class DirectoryViewModel @Inject constructor(
                             is Loaded.Fresh -> content(loaded.value.items, stale = false,
                                 cursor = loaded.value.nextCursor)
                             is Loaded.Stale -> content(loaded.value.items, stale = true, cursor = null)
-                            is Loaded.Failed -> DirectoryUiState.Error(AppErrorText.of(loaded.error))
+                            is Loaded.Failed -> DirectoryUiState.Error(loaded.error)
                         }
                     }
                 }
@@ -101,7 +101,7 @@ class DirectoryViewModel @Inject constructor(
                     )
                 }
                 .onFailure { failure ->
-                    _state.value = current.copy(loadingMore = false, moreError = AppErrorText.of(failure.toAppError()))
+                    _state.value = current.copy(loadingMore = false, moreError = failure.toAppError())
                 }
         }
     }

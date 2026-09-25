@@ -4,4 +4,15 @@
      disagree, which is how the name came to be written five ways before. -->
 <resources>
     <string name="app_name">دليني</string>
+
+    <!-- The four places the bottom bar goes. -->
+    <string name="app_tab_home">الرئيسية</string>
+    <string name="app_tab_map">الخريطة</string>
+    <string name="app_tab_facilities">منشآتي</string>
+    <string name="app_tab_account">حسابي</string>
+
+    <!-- What a notification is filed under in the phone's settings, and what it says when the
+         message carried no words of its own. -->
+    <string name="app_notification_channel">التحديثات</string>
+    <string name="app_notification_body">لديك تحديث جديد</string>
 </resources>

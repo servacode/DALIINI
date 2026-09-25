@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcons
@@ -25,6 +26,7 @@ import com.servacode.directory.core.designsystem.DirectoryMenuRow
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.Space
+import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.LegalPage
 import com.servacode.directory.core.model.LegalPageKey
 
@@ -51,7 +53,7 @@ fun HelpScreen(
             is LegalListState.Error -> DirectoryErrorState(
                 title = HelpCopy.ERROR,
                 modifier = Modifier.padding(padding),
-                body = value.message,
+                body = appErrorText(value.error),
                 onRetry = viewModel::refresh,
             )
             is LegalListState.Content -> if (value.pages.isEmpty()) {
@@ -117,7 +119,7 @@ fun LegalPageScreen(
             is LegalPageState.Error -> DirectoryErrorState(
                 title = HelpCopy.ERROR,
                 modifier = Modifier.padding(padding),
-                body = value.message,
+                body = appErrorText(value.error),
                 onRetry = { viewModel.open(key) },
             )
             is LegalPageState.Content -> Column(
@@ -174,11 +176,11 @@ object HelpCopy {
 sealed interface LegalListState {
     data object Loading : LegalListState
     data class Content(val pages: List<LegalPage>) : LegalListState
-    data class Error(val message: String) : LegalListState
+    data class Error(val error: AppError) : LegalListState
 }
 
 sealed interface LegalPageState {
     data object Loading : LegalPageState
     data class Content(val page: LegalPage) : LegalPageState
-    data class Error(val message: String) : LegalPageState
+    data class Error(val error: AppError) : LegalPageState
 }

@@ -1,7 +1,8 @@
 package com.servacode.directory.core.network.api
 
 import com.servacode.directory.core.model.AppError
-import com.servacode.directory.core.model.AppErrorText
+import com.servacode.directory.core.model.AppErrorMessage
+import com.servacode.directory.core.model.AppErrorMessages
 import kotlinx.serialization.SerializationException
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Protocol
@@ -82,10 +83,10 @@ class ApiErrorMapperTest {
     @Test fun `text for the user comes from the code, never from the backend message`() {
         val error = AppError(AppError.Kind.CONFLICT, code = "DUTY_NOT_SUPPORTED", message = "Duty is not supported.")
 
-        assertEquals("هذا القسم لا يدعم المناوبة.", AppErrorText.of(error))
+        assertEquals(AppErrorMessage.DUTY_NOT_SUPPORTED, AppErrorMessages.of(error))
         assertEquals(
-            AppErrorText.byKind(AppError.Kind.SERVER),
-            AppErrorText.of(AppError(AppError.Kind.SERVER, code = "SOMETHING_NEW")),
+            AppErrorMessages.byKind(AppError.Kind.SERVER),
+            AppErrorMessages.of(AppError(AppError.Kind.SERVER, code = "SOMETHING_NEW")),
         )
     }
 }

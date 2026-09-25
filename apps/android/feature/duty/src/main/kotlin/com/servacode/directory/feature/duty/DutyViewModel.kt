@@ -4,24 +4,24 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.servacode.directory.core.model.AppErrorText
+import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.DirectoryRoute
-import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.model.DutyShift
+import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.network.DutyShiftInput
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 sealed interface DutyUiState {
     data object Loading : DutyUiState
     data class Content(
         val shifts: List<DutyShift>,
         /** The backend's own refusal, already in words; the screen shows it as it came. */
-        val message: String? = null,
+        val failure: AppError? = null,
         /**
          * True when the times typed cannot be a shift.
          *
@@ -89,7 +89,7 @@ class DutyViewModel @Inject constructor(
 
     /** The backend's refusal, in its Arabic wording: overlap, category without duty, and so on. */
     private fun report(failure: Throwable) {
-        _state.value = DutyUiState.Content(currentShifts(), AppErrorText.of(failure.toAppError()))
+        _state.value = DutyUiState.Content(currentShifts(), failure.toAppError())
     }
 
     private fun currentShifts(): List<DutyShift> =

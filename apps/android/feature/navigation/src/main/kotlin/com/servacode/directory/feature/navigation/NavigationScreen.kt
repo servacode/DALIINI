@@ -40,6 +40,7 @@ import com.servacode.directory.core.designsystem.DirectoryPermissionState
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
 import com.servacode.directory.core.designsystem.DirectoryRoundControl
 import com.servacode.directory.core.designsystem.DirectorySecondaryButton
+import com.servacode.directory.core.designsystem.DirectoryWords
 import com.servacode.directory.core.designsystem.MetaRow
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.location.FOREGROUND_LOCATION_PERMISSIONS
@@ -48,7 +49,6 @@ import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.maps.RouteStroke
 import com.servacode.directory.core.maps.RoutingProfile
 import com.servacode.directory.core.maps.UserMark
-import com.servacode.directory.core.model.DistanceText
 import kotlin.math.roundToInt
 
 /**
@@ -316,7 +316,7 @@ private fun TripSummary(progress: NavigationProgress, switching: Boolean) {
             } else {
                 MetaRow(
                     icon = DirectoryIcons.route,
-                    text = DistanceText.of(progress.remainingDistanceMeters),
+                    text = DirectoryWords.distance(progress.remainingDistanceMeters),
                     modifier = Modifier.weight(1f),
                 )
                 MetaRow(
@@ -354,7 +354,7 @@ private fun ManeuverBanner(progress: NavigationProgress) {
                 // How far to the turn, not how long the turn's own leg is: "in 300 m" is the
                 // sentence a navigator says, and the engine already measures it for the voice.
                 Text(
-                    text = DistanceText.of(progress.distanceToManeuverMeters),
+                    text = DirectoryWords.distance(progress.distanceToManeuverMeters),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

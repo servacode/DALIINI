@@ -49,4 +49,68 @@
 
     <!-- What goes between items of a list. A comma is not the same mark in every language. -->
     <string name="directory_list_separator">، </string>
+
+    <!-- What the app is for, under its name where there is room for it. The name itself is not
+         here: it is a proper noun, it must match the launcher's label, and DirectoryBrand.NAME is
+         where the manifest and the app agree on it. -->
+    <string name="ds_tagline">أقرب الخدمات الصحية إليك</string>
+
+    <!-- Why something was refused. The backend sends a code; AppErrorMessages turns it into one of
+         these, and the backend's own message - English, and written for developers - is never
+         shown. -->
+    <string name="ds_error_authentication_failed">بيانات الدخول غير صحيحة أو انتهت الجلسة.</string>
+    <string name="ds_error_authentication_required">سجّل الدخول للمتابعة.</string>
+    <string name="ds_error_permission_denied">لا تملك الصلاحية لهذا الإجراء.</string>
+    <string name="ds_error_not_found">العنصر المطلوب غير موجود.</string>
+    <string name="ds_error_throttled">محاولات كثيرة. حاول بعد قليل.</string>
+    <string name="ds_error_validation">تحقق من البيانات المدخلة.</string>
+    <string name="ds_error_province_required">اختر المحافظة أولًا.</string>
+    <string name="ds_error_phone_already_registered">هذا الرقم له حساب بالفعل. سجّل الدخول أو استعد كلمة
+        المرور.</string>
+    <string name="ds_error_duty_not_supported">هذا القسم لا يدعم المناوبة.</string>
+    <string name="ds_error_duty_overlap">وقت المناوبة يتداخل مع مناوبة أخرى أو غير صالح.</string>
+    <string name="ds_error_hours_not_supported">هذا القسم لا يدعم ساعات العمل.</string>
+    <string name="ds_error_invalid_hours">ساعات العمل غير صالحة.</string>
+    <string name="ds_error_photos_not_supported">هذا القسم لا يدعم الصور.</string>
+    <string name="ds_error_closure_not_supported">هذا القسم لا يدعم الإغلاق المؤقت.</string>
+    <string name="ds_error_evidence_max_files">تجاوزت العدد المسموح من الملفات لهذا المتطلب.</string>
+    <string name="ds_error_evidence_locked">لا يمكن تعديل المستندات أثناء المراجعة.</string>
+    <string name="ds_error_last_owner">لا يمكن إزالة المالك الوحيد للمنشأة.</string>
+    <string name="ds_error_offline">لا يوجد اتصال بالإنترنت.</string>
+    <string name="ds_error_session_expired">انتهت الجلسة. سجّل الدخول من جديد.</string>
+    <string name="ds_error_conflict">لا يمكن تنفيذ هذا الإجراء الآن.</string>
+    <string name="ds_error_server">حدث خطأ في الخادم. حاول لاحقًا.</string>
+    <string name="ds_error_unexpected">حدث خطأ غير متوقع.</string>
+
+    <!-- Where an owner's facility stands, and what is being asked of them. -->
+    <string name="ds_owner_status_draft">مسودة</string>
+    <string name="ds_owner_status_submitted">قيد المراجعة</string>
+    <string name="ds_owner_status_active">فعّالة</string>
+    <string name="ds_owner_status_reverification">بحاجة إلى إعادة التحقق</string>
+    <string name="ds_owner_status_suspended">موقوفة</string>
+    <string name="ds_owner_status_closed">مغلقة</string>
+    <string name="ds_owner_action_review_rejection">راجِع سبب الرفض وعدّل الطلب</string>
+    <string name="ds_owner_action_complete_and_submit">أكمِل البيانات وأرسلها للمراجعة</string>
+    <string name="ds_owner_action_reverify_and_submit">حدّث البيانات وأرسلها لإعادة التحقق</string>
+    <string name="ds_owner_action_wait_for_review">بانتطار المراجعة</string>
+    <string name="ds_owner_action_contact_support">تواصل مع الدعم</string>
+    <string name="ds_owner_action_unknown">يلزم إجراء، راجِع تفاصيل المنشأة</string>
+    <string name="ds_owner_role_owner">مالك</string>
+    <string name="ds_owner_role_manager">مدير</string>
+
+    <!-- Whether a facility is open, as a list line reads it. -->
+    <string name="ds_availability_open">مفتوح الآن</string>
+    <string name="ds_availability_duty">مناوب الآن</string>
+    <string name="ds_availability_temp_closed">مغلق مؤقتًا</string>
+    <string name="ds_availability_closed">مغلق</string>
+    <!-- The state, and when it opens next: "closed - opens 08:00". -->
+    <string name="ds_availability_next_open">%1$s • يفتح %2$s</string>
+
+    <!-- How far it is. The number is rounded before it gets here. -->
+    <string name="ds_distance_metres">%1$d م</string>
+    <string name="ds_distance_kilometres">%1$d.%2$d كم</string>
+
+    <!-- From when to when, and a closure's reason before its period. -->
+    <string name="ds_period">من %1$s إلى %2$s</string>
+    <string name="ds_closure_with_reason">%1$s • %2$s</string>
 </resources>

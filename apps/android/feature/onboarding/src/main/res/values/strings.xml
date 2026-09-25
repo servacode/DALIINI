@@ -25,7 +25,8 @@
     <string name="onboarding_map_save">حفظ هذا الموقع</string>
     <string name="onboarding_map_current">استخدام موقعي الحالي</string>
     <string name="onboarding_map_not_configured">يجب ضبط مزود خرائط الإنتاج لاختيار النقطة من الخريطة</string>
-    <string name="onboarding_hours_note">يمكن إضافة أكثر من فترة في اليوم. إذا كان وقت الإغلاق قبل وقت الفتح فالفترة تمتد بعد منتصف الليل.</string>
+    <string name="onboarding_hours_note">يمكن إضافة أكثر من فترة في اليوم. إذا كان وقت الإغلاق قبل وقت الفتح فالفترة
+        تمتد بعد منتصف الليل.</string>
     <string name="onboarding_hours_save">حفظ الساعات والمتابعة</string>
     <string name="onboarding_opens_at">يفتح HH:mm</string>
     <string name="onboarding_closes_at">يغلق HH:mm</string>

@@ -147,7 +147,7 @@ def check_tests() -> None:
     expected = (
         "core/maps/src/test/kotlin/com/servacode/directory/core/maps/NavigationModelsTest.kt",
         "feature/navigation/src/test/kotlin/com/servacode/directory/feature/navigation/NavigationEngineTest.kt",
-        "feature/navigation/src/test/kotlin/com/servacode/directory/feature/navigation/ArabicManeuverPhraseBuilderTest.kt",
+        "feature/navigation/src/test/kotlin/com/servacode/directory/feature/navigation/ManeuverPhrasesTest.kt",
     )
     for relative in expected:
         require((ROOT / relative).exists(), f"navigation test missing: {relative}")

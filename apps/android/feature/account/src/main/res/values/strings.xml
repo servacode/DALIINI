@@ -24,7 +24,8 @@
     <string name="account_sign_out_body">ستحتاج إلى تسجيل الدخول مرة أخرى لإدارة معلوماتك ومنشآتك.</string>
     <string name="account_delete">حذف الحساب</string>
     <string name="account_delete_title">حذف الحساب نهائيًا؟</string>
-    <string name="account_delete_body">سيتم إلغاء جلساتك وإزالة بيانات الحساب الشخصية. إذا كنت المالك الوحيد لمنشأة غير مغلقة، يجب نقل الملكية أو إغلاقها أولًا.</string>
+    <string name="account_delete_body">سيتم إلغاء جلساتك وإزالة بيانات الحساب الشخصية. إذا كنت المالك الوحيد لمنشأة غير
+        مغلقة، يجب نقل الملكية أو إغلاقها أولًا.</string>
     <string name="account_delete_confirm">تأكيد الحذف</string>
     <string name="account_delete_failed">تعذر طلب حذف الحساب. تحقق من ملكية المنشآت ثم أعد المحاولة.</string>
     <string name="saved_favorites">المفضلة</string>
@@ -54,14 +55,16 @@
     <string name="security_new_password">كلمة المرور الجديدة</string>
     <string name="security_confirm_password">تأكيد كلمة المرور</string>
     <string name="security_mismatch">كلمتا المرور غير متطابقتين</string>
-    <string name="security_sessions_note">بعد التغيير ستُنهى جميع الجلسات، بما فيها هذا الجهاز، وستحتاج إلى تسجيل الدخول بكلمة المرور الجديدة.</string>
+    <string name="security_sessions_note">بعد التغيير ستُنهى جميع الجلسات، بما فيها هذا الجهاز، وستحتاج إلى تسجيل الدخول
+        بكلمة المرور الجديدة.</string>
     <string name="phone_change_title">تغيير رقم الهاتف</string>
     <string name="phone_change_new_phone">الرقم الجديد</string>
     <string name="phone_change_code">رمز التحقق</string>
     <string name="phone_change_send">إرسال الرمز</string>
     <string name="phone_change_confirm">تأكيد الرقم</string>
     <string name="phone_change_another_number">رقم آخر</string>
-    <string name="phone_change_sessions_note">سنرسل رمزًا إلى الرقم الجديد للتأكد أنه لك. بعد التأكيد ستُنهى جميع الجلسات، بما فيها هذا الجهاز، وستحتاج إلى تسجيل الدخول بالرقم الجديد.</string>
+    <string name="phone_change_sessions_note">سنرسل رمزًا إلى الرقم الجديد للتأكد أنه لك. بعد التأكيد ستُنهى جميع
+        الجلسات، بما فيها هذا الجهاز، وستحتاج إلى تسجيل الدخول بالرقم الجديد.</string>
     <!-- %1$s is the number the code was sent to, as the reader typed it. -->
     <string name="phone_change_sent_to">أرسلنا رمزًا مكوّنًا من ٦ أرقام إلى %1$s.</string>
 </resources>

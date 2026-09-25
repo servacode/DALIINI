@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.AdSlider
+import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.BrandColors
 import com.servacode.directory.core.designsystem.BrandSymbol
 import com.servacode.directory.core.designsystem.CategoryCircle
@@ -141,7 +142,7 @@ fun HomeScreen(
             is HomeUiState.Error -> DirectoryErrorState(
                 title = HomeCopy.ERROR,
                 modifier = Modifier.padding(padding),
-                body = value.message,
+                body = appErrorText(value.error),
                 onRetry = viewModel::refresh,
             )
             is HomeUiState.Content -> HomeContent(
@@ -482,7 +483,7 @@ private fun LazyListScope.facilityList(
         item(key = "list-error") {
             DirectoryErrorState(
                 title = HomeCopy.ERROR,
-                body = list.error,
+                body = appErrorText(list.error),
                 onRetry = onLoadMore,
                 modifier = Modifier.padding(top = Space.lg),
             )
@@ -526,7 +527,7 @@ private fun LazyListScope.facilityList(
     // against a backend that is already refusing, and say nothing while it did.
     if (list.error != null) {
         item(key = "list-more-failed") {
-            LoadMoreRow(loading = false, onLoadMore = onLoadMore, error = list.error)
+            LoadMoreRow(loading = false, onLoadMore = onLoadMore, error = appErrorText(list.error))
         }
     }
 }

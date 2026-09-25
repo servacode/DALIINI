@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
@@ -68,7 +69,7 @@ fun PhoneChangeScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                state.error?.let { ErrorLine(it) }
+                state.error?.let { ErrorLine(appErrorText(it)) }
                 DirectoryPrimaryButton(
                     text = PhoneChangeCopy.SEND,
                     onClick = viewModel::send,
@@ -90,7 +91,7 @@ fun PhoneChangeScreen(
                     leadingIcon = DirectoryIcons.verified,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
-                state.error?.let { ErrorLine(it) }
+                state.error?.let { ErrorLine(appErrorText(it)) }
                 DirectoryPrimaryButton(
                     text = PhoneChangeCopy.CONFIRM,
                     onClick = viewModel::confirm,

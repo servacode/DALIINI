@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DirectoryAvatar
 import com.servacode.directory.core.designsystem.DirectoryBrandPanel
 import com.servacode.directory.core.designsystem.DirectoryConfirmDialog
@@ -98,7 +99,7 @@ fun AccountScreen(
             is AccountUiState.Error -> DirectoryErrorState(
                 title = AccountCopy.ERROR,
                 modifier = Modifier.padding(padding),
-                body = value.message,
+                body = appErrorText(value.error),
                 onRetry = viewModel::refresh,
             )
             is AccountUiState.Content -> Column(
@@ -209,7 +210,7 @@ fun AccountScreen(
                             color = MaterialTheme.colorScheme.error,
                         )
                         Text(
-                            text = failure.message,
+                            text = appErrorText(failure.error),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

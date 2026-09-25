@@ -2,14 +2,14 @@ package com.servacode.directory.feature.account
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.servacode.directory.core.model.AppErrorText
+import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  * Moving the account to another number.
@@ -26,7 +26,7 @@ data class PhoneChangeUiState(
     val challengeId: String? = null,
     val working: Boolean = false,
     val changed: Boolean = false,
-    val error: String? = null,
+    val error: AppError? = null,
 ) {
     val canSend: Boolean get() = phone.isNotBlank() && !working
     val canConfirm: Boolean get() = code.length == CODE_LENGTH && !working
@@ -82,6 +82,6 @@ class PhoneChangeViewModel @Inject constructor(
     }
 
     private fun fail(cause: Throwable) {
-        _state.value = _state.value.copy(working = false, error = AppErrorText.of(cause.toAppError()))
+        _state.value = _state.value.copy(working = false, error = cause.toAppError())
     }
 }

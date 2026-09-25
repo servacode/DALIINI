@@ -4,21 +4,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.servacode.directory.core.auth.SessionState
 import com.servacode.directory.core.model.AccountProfile
-import com.servacode.directory.core.model.AppErrorText
+import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.Province
 import com.servacode.directory.core.model.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 sealed interface DeletionUiState {
     data object Idle : DeletionUiState
     data object Deleting : DeletionUiState
     data object Deleted : DeletionUiState
-    data class Error(val message: String) : DeletionUiState
+    data class Error(val error: AppError) : DeletionUiState
 }
 
 sealed interface AccountUiState {
@@ -37,7 +37,7 @@ sealed interface AccountUiState {
          */
         val ownsFacility: Boolean = false,
     ) : AccountUiState
-    data class Error(val message: String) : AccountUiState
+    data class Error(val error: AppError) : AccountUiState
 }
 
 @HiltViewModel
@@ -74,7 +74,7 @@ class AccountViewModel @Inject constructor(
                         ownsFacility = account.ownsFacility(),
                     )
                 },
-                onFailure = { AccountUiState.Error(AppErrorText.of(it.toAppError())) },
+                onFailure = { AccountUiState.Error(it.toAppError()) },
             )
         }
     }
@@ -88,7 +88,7 @@ class AccountViewModel @Inject constructor(
             _deletionState.value = DeletionUiState.Deleting
             _deletionState.value = accountDeletion().fold(
                 onSuccess = { DeletionUiState.Deleted },
-                onFailure = { DeletionUiState.Error(AppErrorText.of(it.toAppError())) },
+                onFailure = { DeletionUiState.Error(it.toAppError()) },
             )
         }
     }

@@ -2,17 +2,17 @@ package com.servacode.directory.feature.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.servacode.directory.core.model.AppErrorText
+import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
+import javax.inject.Inject
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 sealed interface SearchUiState {
     data object Idle : SearchUiState
@@ -21,9 +21,9 @@ sealed interface SearchUiState {
         val values: List<FacilitySummary>,
         val hasMore: Boolean = false,
         val loadingMore: Boolean = false,
-        val moreError: String? = null,
+        val moreError: AppError? = null,
     ) : SearchUiState
-    data class Error(val message: String) : SearchUiState
+    data class Error(val error: AppError) : SearchUiState
 }
 
 @HiltViewModel
@@ -58,7 +58,7 @@ class SearchViewModel @Inject constructor(
                         SearchUiState.Results(result.second.items, hasMore = result.second.hasMore)
                     }
                 },
-                onFailure = { SearchUiState.Error(AppErrorText.of(it.toAppError())) },
+                onFailure = { SearchUiState.Error(it.toAppError()) },
             )
         }
     }
@@ -76,7 +76,7 @@ class SearchViewModel @Inject constructor(
                     _state.value = current.copy(values = current.values + page.items, hasMore = page.hasMore)
                 }
                 .onFailure {
-                    _state.value = current.copy(loadingMore = false, moreError = AppErrorText.of(it.toAppError()))
+                    _state.value = current.copy(loadingMore = false, moreError = it.toAppError())
                 }
         }
     }

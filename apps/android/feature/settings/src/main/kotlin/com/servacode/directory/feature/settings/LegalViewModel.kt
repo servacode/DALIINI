@@ -2,15 +2,14 @@ package com.servacode.directory.feature.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.servacode.directory.core.model.AppErrorText
 import com.servacode.directory.core.model.LegalPageKey
 import com.servacode.directory.core.model.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
 class LegalViewModel @Inject constructor(
@@ -31,7 +30,7 @@ class LegalViewModel @Inject constructor(
             _pages.value = LegalListState.Loading
             _pages.value = legal.pages().fold(
                 onSuccess = { LegalListState.Content(it) },
-                onFailure = { LegalListState.Error(AppErrorText.of(it.toAppError())) },
+                onFailure = { LegalListState.Error(it.toAppError()) },
             )
         }
     }
@@ -44,7 +43,7 @@ class LegalViewModel @Inject constructor(
                 onSuccess = { LegalPageState.Content(it) },
                 onFailure = { failure ->
                     legal.cached(key)?.let { LegalPageState.Content(it) }
-                        ?: LegalPageState.Error(AppErrorText.of(failure.toAppError()))
+                        ?: LegalPageState.Error(failure.toAppError())
                 },
             )
         }

@@ -22,6 +22,7 @@ import java.util.Locale
 object DamascusTime {
     val ZONE: ZoneId = ZoneId.of("Asia/Damascus")
     private val DISPLAY = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.ROOT)
+    private val CLOCK = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
 
     fun toEpochMillis(date: LocalDate, time: LocalTime): Long =
         ZonedDateTime.of(date, time, ZONE).toInstant().toEpochMilli()
@@ -34,8 +35,8 @@ object DamascusTime {
     /** "2026-09-20 08:00", Latin digits, Damascus clock. */
     fun format(epochMillis: Long): String = localDateTime(epochMillis).format(DISPLAY)
 
-    fun period(startEpochMillis: Long, endEpochMillis: Long): String =
-        "من ${format(startEpochMillis)} إلى ${format(endEpochMillis)}"
+    /** "08:00", the wall clock alone, for a line that already says which day. */
+    fun clock(epochMillis: Long): String = localDateTime(epochMillis).format(CLOCK)
 
     /** Material's date picker reports the chosen day as UTC midnight; this is that day. */
     fun dateFromPicker(utcMidnightMillis: Long): LocalDate =

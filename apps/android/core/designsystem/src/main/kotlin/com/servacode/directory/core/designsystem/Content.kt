@@ -41,9 +41,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import coil3.compose.AsyncImage
-import com.servacode.directory.core.model.AvailabilityLabel
 import com.servacode.directory.core.model.AvailabilityState
-import com.servacode.directory.core.model.DistanceText
 import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.HomeAd
 import kotlinx.coroutines.delay
@@ -83,13 +81,13 @@ fun DirectoryImage(
  */
 @Composable
 fun AvailabilityPill(summary: FacilitySummary, modifier: Modifier = Modifier) {
-    AvailabilityPill(summary.availability, AvailabilityLabel.of(summary), modifier)
+    AvailabilityPill(summary.availability, AvailabilityWords.of(summary), modifier)
 }
 
 /** The same pill where all that is known is the state itself, as on the map. */
 @Composable
 fun AvailabilityPill(state: AvailabilityState, modifier: Modifier = Modifier) {
-    AvailabilityPill(state, AvailabilityLabel.of(state), modifier)
+    AvailabilityPill(state, AvailabilityWords.of(state), modifier)
 }
 
 @Composable
@@ -128,7 +126,7 @@ fun DistanceLabel(meters: Double?, modifier: Modifier = Modifier) {
     ) {
         DirectoryIcon(DirectoryIcons.pin, null, size = IconSize.small, tint = MaterialTheme.colorScheme.primary)
         Text(
-            text = DistanceText.of(meters),
+            text = DirectoryWords.distance(meters),
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
