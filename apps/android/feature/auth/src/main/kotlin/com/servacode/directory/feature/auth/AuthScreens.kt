@@ -20,11 +20,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -514,28 +516,29 @@ private const val TAKEN = "PHONE_ALREADY_REGISTERED"
 
 /** The words of the account screens, provisional until product copy is approved. */
 object AuthCopy {
-    const val SIGN_IN = "تسجيل الدخول"
-    const val BACK = "رجوع"
+    val SIGN_IN: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_sign_in)
+    val BACK: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_back)
     const val APP_NAME = DirectoryBrand.NAME
     const val WELCOME = DirectoryBrand.TAGLINE
-    const val NO_ACCOUNT = "ليس لديك حساب؟"
-    const val CREATE = "إنشاء حساب جديد"
-    const val CREATE_ACCOUNT = "إنشاء حساب"
-    const val RECOVERY = "استعادة كلمة المرور"
-    const val RECOVERY_NOTE = "أدخل رقم هاتفك وسنرسل إليك رمز تحقق."
-    const val PHONE = "رقم الهاتف"
-    const val FULL_NAME = "الاسم الكامل"
-    const val CONFIRM_PASSWORD = "تأكيد كلمة المرور"
-    const val MISMATCH = "الكلمتان غير متطابقتين"
-    const val RESET_PASSWORD = "إعادة تعيين كلمة المرور"
-    const val PHONE_FIRST = "أدخل رقم هاتفك وسنرسل إليك رمز تحقق."
-    const val PASSWORD = "كلمة المرور"
-    const val NEW_PASSWORD = "كلمة المرور الجديدة"
-    const val CODE = "رمز التحقق"
-    const val CODE_SENT = "أدخل الرمز المرسل إلى هاتفك"
-    const val SEND_CODE = "إرسال رمز التحقق"
-    const val VERIFY = "تحقق"
-    const val FORGOT = "نسيت كلمة المرور؟"
-    const val RECOVERED = "تم تغيير كلمة المرور. سجّل الدخول بها الآن."
-    const val FIELD_ERROR = "تحقق من هذا الحقل"
+    val NO_ACCOUNT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_no_account)
+    val CREATE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_create)
+    val CREATE_ACCOUNT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_create_account)
+    val RECOVERY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_recovery)
+    val RECOVERY_NOTE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_recovery_note)
+    val PHONE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_phone)
+    val FULL_NAME: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_full_name)
+    val CONFIRM_PASSWORD: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_confirm_password)
+    val MISMATCH: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_mismatch)
+    val RESET_PASSWORD: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_reset_password)
+    val PHONE_FIRST: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_phone_first)
+    val PASSWORD: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_password)
+    val NEW_PASSWORD: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_new_password)
+    val CODE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_code)
+    val CODE_SENT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_code_sent)
+    val SEND_CODE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_send_code)
+    val VERIFY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_verify)
+    val FORGOT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_forgot)
+    val RECOVERED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_recovered)
+    val FIELD_ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_field_error)
 }

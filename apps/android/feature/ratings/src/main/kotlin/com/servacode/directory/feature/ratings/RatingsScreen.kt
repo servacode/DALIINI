@@ -114,7 +114,7 @@ private fun RatingCard(
                 StarPicker(
                     stars = rating.stars,
                     onRate = onRate,
-                    label = RatingsCopy::starLabel,
+                    label = { stars -> RatingsCopy.starLabel(stars) },
                     enabled = !saving,
                 )
                 DirectoryTextButton(RatingsCopy.DELETE, onDelete, enabled = !saving)

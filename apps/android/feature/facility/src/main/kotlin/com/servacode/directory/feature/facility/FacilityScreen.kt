@@ -25,11 +25,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -148,7 +151,8 @@ private fun FacilityBody(
     val detail = value.value
     val summary = detail.summary
     val placed = detail.latitude != null && detail.longitude != null
-    val address = listOfNotNull(detail.neighborhoodNameAr, detail.addressAr).joinToString("، ")
+    val separator = stringResource(R.string.facility_list_separator)
+    val address = listOfNotNull(detail.neighborhoodNameAr, detail.addressAr).joinToString(separator)
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -237,10 +241,10 @@ private fun FacilityBody(
             DirectorySection(FacilityCopy.ABOUT) { Paragraph(about) }
         }
         if (detail.specialties.isNotEmpty()) {
-            DirectorySection(FacilityCopy.SPECIALTIES) { Paragraph(detail.specialties.joinToString("، ")) }
+            DirectorySection(FacilityCopy.SPECIALTIES) { Paragraph(detail.specialties.joinToString(separator)) }
         }
         if (detail.services.isNotEmpty()) {
-            DirectorySection(FacilityCopy.SERVICES) { Paragraph(detail.services.joinToString("، ")) }
+            DirectorySection(FacilityCopy.SERVICES) { Paragraph(detail.services.joinToString(separator)) }
         }
 
         // The ratings, where they belong: at the end of what is being rated.
@@ -253,7 +257,11 @@ private fun FacilityBody(
                 color = MaterialTheme.colorScheme.onSurface,
             )
             if (value.signedIn) {
-                StarPicker(stars = value.myRating, onRate = onRate, label = FacilityCopy::rateLabel)
+                StarPicker(
+                    stars = value.myRating,
+                    onRate = onRate,
+                    label = { stars -> FacilityCopy.rateLabel(stars) },
+                )
                 // A rating is a sentence one is allowed to take back: another star replaces it,
                 // and this removes it. Before, it could only ever be said once.
                 if (value.myRating != null) {
@@ -314,41 +322,40 @@ private fun HourRow(hour: BusinessHour) {
     }
 }
 
-/** 0 is Monday, matching the backend's weekday numbering. */
-private fun weekdayName(weekday: Int): String = when (weekday) {
-    0 -> "الاثنين"
-    1 -> "الثلاثاء"
-    2 -> "الأربعاء"
-    3 -> "الخميس"
-    4 -> "الجمعة"
-    5 -> "السبت"
-    6 -> "الأحد"
-    else -> "—"
+/** 0 is Monday, matching the backend's weekday numbering; the names are the module's own. */
+@Composable
+@ReadOnlyComposable
+private fun weekdayName(weekday: Int): String {
+    val days = LocalContext.current.resources.getStringArray(R.array.facility_weekdays)
+    return days.getOrNull(weekday) ?: stringResource(R.string.facility_weekday_unknown)
 }
 
 /** The words of a facility's page, provisional until product copy is approved. */
 object FacilityCopy {
-    const val BACK = "رجوع"
-    const val ERROR = "تعذر تحميل المنشأة"
-    const val CALL = "اتصال"
-    const val DIRECTIONS = "الطريق"
-    const val WHATSAPP = "واتساب"
-    const val RATINGS = "التقييمات"
-    const val SAVE = "المفضلة"
-    const val SAVED = "في المفضلة"
-    const val ADDRESS = "العنوان"
-    const val HOURS = "ساعات العمل"
-    const val ABOUT = "نبذة"
-    const val SPECIALTIES = "الاختصاصات"
-    const val SERVICES = "الخدمات"
-    const val YOUR_RATING = "تقييمك"
-    const val RATING_CHANGE = "اضغط نجمة أخرى لتغيير تقييمك."
-    const val RATING_REMOVE = "حذف تقييمي"
-    const val SIGN_IN_TO_RATE = "سجّل الدخول لتقييم المنشأة"
-    const val PHOTOS = "الصور"
-    const val CLOSE = "إغلاق"
+    val BACK: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_back)
+    val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_error)
+    val CALL: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_call)
+    val DIRECTIONS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_directions)
+    val WHATSAPP: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_whatsapp)
+    val RATINGS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_ratings)
+    val SAVE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_save)
+    val SAVED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_saved)
+    val ADDRESS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_address)
+    val HOURS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_hours)
+    val ABOUT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_about)
+    val SPECIALTIES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_specialties)
+    val SERVICES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_services)
+    val YOUR_RATING: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_your_rating)
+    val RATING_CHANGE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_rating_change)
+    val RATING_REMOVE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_rating_remove)
+    val SIGN_IN_TO_RATE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_sign_in_to_rate)
+    val PHOTOS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_photos)
+    val CLOSE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_close)
 
-    fun rateLabel(stars: Int): String = "$stars من 5"
+    @Composable
+    @ReadOnlyComposable
+    fun rateLabel(stars: Int): String = stringResource(R.string.facility_rate_label, stars)
 }
 
 /**

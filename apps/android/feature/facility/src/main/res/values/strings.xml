@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What this module says. Here rather than in Kotlin so that a second language is a
+     second file beside this one and the phone's own setting chooses between them. -->
+<resources>
+    <string name="facility_back">رجوع</string>
+    <string name="facility_error">تعذر تحميل المنشأة</string>
+    <string name="facility_call">اتصال</string>
+    <string name="facility_directions">الطريق</string>
+    <string name="facility_whatsapp">واتساب</string>
+    <string name="facility_ratings">التقييمات</string>
+    <string name="facility_save">المفضلة</string>
+    <string name="facility_saved">في المفضلة</string>
+    <string name="facility_address">العنوان</string>
+    <string name="facility_hours">ساعات العمل</string>
+    <string name="facility_about">نبذة</string>
+    <string name="facility_specialties">الاختصاصات</string>
+    <string name="facility_services">الخدمات</string>
+    <string name="facility_your_rating">تقييمك</string>
+    <string name="facility_rating_change">اضغط نجمة أخرى لتغيير تقييمك.</string>
+    <string name="facility_rating_remove">حذف تقييمي</string>
+    <string name="facility_sign_in_to_rate">سجّل الدخول لتقييم المنشأة</string>
+    <string name="facility_photos">الصور</string>
+    <string name="facility_close">إغلاق</string>
+    <!-- %1$d is how many stars, out of five. -->
+    <string name="facility_rate_label">%1$d من 5</string>
+    <!-- What goes between items of a list. A comma is not the same mark in every language. -->
+    <string name="facility_list_separator">، </string>
+
+    <!-- Monday first, matching the backend's weekday numbering, and read by index. -->
+    <string-array name="facility_weekdays">
+        <item>الاثنين</item>
+        <item>الثلاثاء</item>
+        <item>الأربعاء</item>
+        <item>الخميس</item>
+        <item>الجمعة</item>
+        <item>السبت</item>
+        <item>الأحد</item>
+    </string-array>
+    <string name="facility_weekday_unknown">—</string>
+</resources>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What this module says. Here rather than in Kotlin so that a second language is a
+     second file beside this one and the phone's own setting chooses between them. -->
+<resources>
+    <string name="auth_sign_in">تسجيل الدخول</string>
+    <string name="auth_back">رجوع</string>
+    <string name="auth_no_account">ليس لديك حساب؟</string>
+    <string name="auth_create">إنشاء حساب جديد</string>
+    <string name="auth_create_account">إنشاء حساب</string>
+    <string name="auth_recovery">استعادة كلمة المرور</string>
+    <string name="auth_recovery_note">أدخل رقم هاتفك وسنرسل إليك رمز تحقق.</string>
+    <string name="auth_phone">رقم الهاتف</string>
+    <string name="auth_full_name">الاسم الكامل</string>
+    <string name="auth_confirm_password">تأكيد كلمة المرور</string>
+    <string name="auth_mismatch">الكلمتان غير متطابقتين</string>
+    <string name="auth_reset_password">إعادة تعيين كلمة المرور</string>
+    <string name="auth_phone_first">أدخل رقم هاتفك وسنرسل إليك رمز تحقق.</string>
+    <string name="auth_password">كلمة المرور</string>
+    <string name="auth_new_password">كلمة المرور الجديدة</string>
+    <string name="auth_code">رمز التحقق</string>
+    <string name="auth_code_sent">أدخل الرمز المرسل إلى هاتفك</string>
+    <string name="auth_send_code">إرسال رمز التحقق</string>
+    <string name="auth_verify">تحقق</string>
+    <string name="auth_forgot">نسيت كلمة المرور؟</string>
+    <string name="auth_recovered">تم تغيير كلمة المرور. سجّل الدخول بها الآن.</string>
+    <string name="auth_field_error">تحقق من هذا الحقل</string>
+</resources>

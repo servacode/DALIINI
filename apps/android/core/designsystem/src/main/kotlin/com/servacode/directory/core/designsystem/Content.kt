@@ -592,7 +592,8 @@ fun StarRow(
 fun StarPicker(
     stars: Int?,
     onRate: (Int) -> Unit,
-    label: (Int) -> String,
+    /** Composable because the words come from resources now, and resources are read in it. */
+    label: @Composable (Int) -> String,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
