@@ -2,6 +2,7 @@ package com.servacode.directory.feature.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,6 +44,7 @@ import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
 import com.servacode.directory.core.designsystem.DirectorySecondaryButton
 import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTextField
+import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.model.DirectoryBrand
 
@@ -186,13 +188,18 @@ private fun AuthFrame(
 @Composable
 private fun Welcome(onBack: (() -> Unit)?) {
     DirectoryBrandHeader {
-        if (onBack != null) {
-            DirectoryIconButton(
-                icon = DirectoryIcons.back,
-                label = AuthCopy.BACK,
-                onClick = onBack,
-                modifier = Modifier.align(Alignment.Start),
-            )
+        // The row is there whether or not there is a way back, so the mark sits at the same
+        // height on all three pages. Signing in had no arrow and its logo rode that much higher
+        // than the one on the page beside it.
+        Box(modifier = Modifier.fillMaxWidth().height(Sizes.touchTarget)) {
+            if (onBack != null) {
+                DirectoryIconButton(
+                    icon = DirectoryIcons.back,
+                    label = AuthCopy.BACK,
+                    onClick = onBack,
+                    modifier = Modifier.align(Alignment.CenterStart),
+                )
+            }
         }
         Column(
             modifier = Modifier.fillMaxWidth().padding(bottom = Space.sm),

@@ -8,14 +8,17 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -25,6 +28,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryCompactFilterChip
+import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIconButton
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryInlineLoading
@@ -32,6 +36,7 @@ import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryPermissionState
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
+import com.servacode.directory.core.designsystem.DirectoryRoundControl
 import com.servacode.directory.core.designsystem.DirectorySecondaryButton
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.MetaRow
@@ -69,6 +74,8 @@ fun BuiltInNavigationScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // The map rides with the traveller until a hand moves it, and the button brings it back.
+    var following by rememberSaveable { mutableStateOf(true) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { viewModel.retry() }
@@ -105,19 +112,44 @@ fun BuiltInNavigationScreen(
                 bearingDegrees = state.bearingDegrees ?: 0f,
                 destination = destination,
                 destinationName = destinationName,
+                following = following,
+                onUserMovedMap = { following = false },
             )
 
-            // The three ways of travelling sit at the top, present from the moment the screen
-            // opens: the choice is not something to be waited for, and one of them is already
-            // being computed behind it.
-            TravelModeRow(
-                selected = state.profile,
-                onSelect = viewModel::selectProfile,
+            Column(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .fillMaxWidth()
                     .padding(Space.base),
-            )
+                verticalArrangement = Arrangement.spacedBy(Space.sm),
+            ) {
+                // The three ways of travelling, present from the moment the screen opens: the
+                // choice is not something to be waited for, and one of them is already being
+                // computed behind it.
+                TravelModeRow(
+                    selected = state.profile,
+                    onSelect = viewModel::selectProfile,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                // The turn that is coming, above everything, because that is where a driver's
+                // eyes already are. It used to sit at the foot of the screen under the numbers.
+                (state.navigation as? NavigationState.Navigating)?.progress?.let { progress ->
+                    ManeuverBanner(progress)
+                }
+            }
+
+            // Somewhere to press after looking around the map: it stops following when a hand
+            // moves it, and saying so silently would leave the traveller with a still map.
+            if (!following) {
+                DirectoryRoundControl(
+                    icon = DirectoryIcons.myLocation,
+                    label = NavigationCopy.RECENTRE,
+                    onClick = { following = true },
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(Space.base),
+                )
+            }
 
             Column(
                 modifier = Modifier
@@ -218,6 +250,47 @@ private fun TravelModeRow(
     }
 }
 
+/**
+ * The turn that is coming, as a navigator says it: the instruction, and how far to it.
+ *
+ * At the top of the screen and on the brand's own green, because it is the one thing being read
+ * while moving. Everything else about the trip is at the foot of the screen, where it is read
+ * when stopped.
+ */
+@Composable
+private fun ManeuverBanner(progress: NavigationProgress) {
+    val maneuver = progress.maneuver ?: return
+    DirectoryCard {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Space.md),
+        ) {
+            DirectoryIcon(
+                icon = DirectoryIcons.route,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = ArabicManeuverPhraseBuilder.phrase(maneuver),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                // How far to the turn, not how long the turn's own leg is: "in 300 m" is the
+                // sentence a navigator says, and the engine already measures it for the voice.
+                Text(
+                    text = DistanceText.of(progress.distanceToManeuverMeters),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun NavigationProgressPanel(
     progress: NavigationProgress,
@@ -225,15 +298,6 @@ private fun NavigationProgressPanel(
     onExternalMaps: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
-        progress.maneuver?.let {
-            Text(
-                text = ArabicManeuverPhraseBuilder.phrase(it),
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -318,6 +382,7 @@ object NavigationCopy {
     const val ARRIVED = "لقد وصلت إلى وجهتك"
     const val ALLOW_LOCATION = "السماح بالموقع"
     const val RETRY = "إعادة المحاولة"
+    const val RECENTRE = "إعادة التوسيط"
     const val EXTERNAL_MAPS = "فتح تطبيق خرائط خارجي"
     const val PERMISSION_TITLE = "الملاحة تحتاج موقعك"
     const val SIMULATE = "رحلة تجريبية"

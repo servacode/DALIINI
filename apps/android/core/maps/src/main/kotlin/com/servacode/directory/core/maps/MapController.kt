@@ -6,7 +6,19 @@ data class MapPoint(val latitude: Double, val longitude: Double)
 
 fun GeoPoint.toMapPoint() = MapPoint(latitude, longitude)
 
-data class MapCamera(val center: MapPoint, val zoom: Double, val bearing: Double = 0.0)
+/**
+ * Where the map looks from.
+ *
+ * [tilt] is the angle off straight down, in degrees. Zero is a plan, which is what a map of a
+ * city wants; a navigator wants the road ahead to take more of the screen than the road behind,
+ * and that is what tilting gives.
+ */
+data class MapCamera(
+    val center: MapPoint,
+    val zoom: Double,
+    val bearing: Double = 0.0,
+    val tilt: Double = 0.0,
+)
 
 data class FacilityMapPin(
     val facilityId: String,

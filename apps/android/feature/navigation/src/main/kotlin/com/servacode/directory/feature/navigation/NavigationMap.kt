@@ -39,10 +39,24 @@ internal fun NavigationMap(
     bearingDegrees: Float = 0f,
     destination: MapPoint? = null,
     destinationName: String? = null,
+    /** True while the map rides with the traveller; false after a hand has moved it. */
+    following: Boolean = true,
+    onUserMovedMap: () -> Unit = {},
 ) {
     Box(modifier.fillMaxWidth()) {
         if (MapStyle.isConfigured(styleUrl)) {
-            RouteMap(styleUrl, route, location, stroke, mark, bearingDegrees, destination, destinationName)
+            RouteMap(
+                styleUrl = styleUrl,
+                route = route,
+                location = location,
+                stroke = stroke,
+                mark = mark,
+                bearingDegrees = bearingDegrees,
+                destination = destination,
+                destinationName = destinationName,
+                following = following,
+                onUserMovedMap = onUserMovedMap,
+            )
         } else {
             Text(
                 text = "يجب ضبط مزود خرائط الإنتاج قبل عرض مسار الملاحة",
@@ -63,6 +77,8 @@ private fun RouteMap(
     bearingDegrees: Float,
     destination: MapPoint?,
     destinationName: String?,
+    following: Boolean,
+    onUserMovedMap: () -> Unit,
 ) {
     val routeColor = MaterialTheme.colorScheme.primary.toArgb()
     val density = LocalDensity.current
@@ -98,18 +114,44 @@ private fun RouteMap(
         map.showGuidance(geometry, routeColor, stroke, location, bearingDegrees, mark)
     }
 
-    // The camera is framed once per route, not once per reading. Re-framing on every fix is
-    // what made the map appear to jump about on its own while nobody was touching it.
+    // A hand on the map means "I am looking at something": the screen stops dragging the view
+    // back and offers to resume instead.
+    LaunchedEffect(controller) {
+        controller?.onUserMovedMap(onUserMovedMap)
+    }
+
+    // The whole way, once, when a route arrives: what the reader needs before setting off is
+    // how far and which way, and that is the one moment it can be seen at all.
     LaunchedEffect(controller, route?.geometry?.size, route?.distanceMeters) {
         val map = controller ?: return@LaunchedEffect
         val geometry = route?.geometry ?: return@LaunchedEffect
         map.frameRoute(geometry, sidePadding, bottomPadding)
     }
 
-    // Before there is a route there is still a person, and the map opens where they are.
-    LaunchedEffect(controller, route == null, location != null) {
+    // Then it rides along: centred on the traveller, turned the way they are going and tilted,
+    // so the road ahead takes the screen and the road behind does not. Re-framing the whole
+    // route on every reading is what used to make the map look like it was jumping about.
+    LaunchedEffect(controller, location, bearingDegrees, following) {
         val map = controller ?: return@LaunchedEffect
-        if (route != null) return@LaunchedEffect
-        location?.let { map.moveCamera(MapCamera(it, zoom = 15.0), animated = true) }
+        if (!following) return@LaunchedEffect
+        val here = location ?: return@LaunchedEffect
+        map.moveCamera(
+            MapCamera(
+                center = here,
+                zoom = if (route == null) OVERVIEW_ZOOM else FOLLOW_ZOOM,
+                bearing = bearingDegrees.toDouble(),
+                tilt = if (route == null) 0.0 else FOLLOW_TILT,
+            ),
+            animated = true,
+        )
     }
 }
+
+/** Close enough to see the next turn, wide enough to see what is after it. */
+private const val FOLLOW_ZOOM = 17.0
+
+/** Before there is a route there is still a person, and the map opens where they are. */
+private const val OVERVIEW_ZOOM = 15.0
+
+/** Off straight down, in degrees: enough for the road to have a horizon. */
+private const val FOLLOW_TILT = 50.0

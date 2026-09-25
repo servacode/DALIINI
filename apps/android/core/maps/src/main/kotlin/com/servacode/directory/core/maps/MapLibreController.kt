@@ -21,6 +21,9 @@ import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.maps.MapLibreMap
 
 /** One per map: it remembers which marker is which facility. */
+/** Long enough to read as movement, short enough to keep up with a car. */
+private const val FOLLOW_MILLIS = 900
+
 class MapLibreController(
     private val map: MapLibreMap,
     /**
@@ -107,9 +110,23 @@ class MapLibreController(
             .target(LatLng(camera.center.latitude, camera.center.longitude))
             .zoom(camera.zoom)
             .bearing(camera.bearing)
+            .tilt(camera.tilt)
             .build()
         val update = CameraUpdateFactory.newCameraPosition(position)
-        if (animated) map.animateCamera(update) else map.moveCamera(update)
+        if (animated) map.animateCamera(update, FOLLOW_MILLIS) else map.moveCamera(update)
+    }
+
+    /**
+     * Told when a hand moves the map, and not when the app does.
+     *
+     * A navigator that keeps dragging the view back to the driver while they are looking ahead
+     * is a navigator people stop trusting. This is how the screen knows to stop following until
+     * it is asked to resume.
+     */
+    fun onUserMovedMap(listener: () -> Unit) {
+        map.addOnCameraMoveStartedListener { reason ->
+            if (reason == MapLibreMap.OnCameraMoveStartedListener.REASON_API_GESTURE) listener()
+        }
     }
 
     override fun showFacilities(pins: List<FacilityMapPin>, selectedFacilityId: String?) {
