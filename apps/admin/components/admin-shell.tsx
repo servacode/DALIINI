@@ -41,56 +41,113 @@ export function useCan(permission: string): boolean {
   return useIdentity().permissions.includes(permission);
 }
 
-type NavItem = readonly [href: string, label: string, permission: string, icon: IconName];
+/** One page inside a section: its URL, its tab label and the permission that opens it. */
+type Page = Readonly<{ href: string; label: string; permission: string }>;
+type Section = Readonly<{ key: string; label: string; icon: IconName; pages: readonly Page[] }>;
 
 /**
- * Grouped by the job an operator is doing, in the order they usually do it. The flat order
- * inside each group is the old order, so muscle memory survives the regrouping.
+ * Nine sections, grouped by the job an operator is doing. Related screens share one section
+ * and appear as tabs inside it, so the rail stays short and the operator's mental map is
+ * "reviews and reports", "catalogue", "platform" rather than fifteen separate places. Every
+ * page keeps its own URL; only the way to reach it changed.
  */
-const NAVIGATION: readonly { label: string; items: readonly NavItem[] }[] = [
+const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
   {
     label: "التشغيل",
-    items: [
-      ["/dashboard", "لوحة المتابعة", "admin.dashboard.read", "dashboard"],
-      ["/reviews", "المراجعات", "admin.reviews.read", "inbox"],
-      ["/facilities", "المنشآت", "admin.facilities.read", "building"],
-      ["/users", "المستخدمون", "admin.users.read", "users"],
+    sections: [
+      {
+        key: "home",
+        label: "الرئيسية",
+        icon: "dashboard",
+        pages: [{ href: "/dashboard", label: "الرئيسية", permission: "admin.dashboard.read" }],
+      },
+      {
+        key: "tasks",
+        label: "المراجعات والبلاغات",
+        icon: "inbox",
+        pages: [
+          { href: "/reviews", label: "طلبات المراجعة", permission: "admin.reviews.read" },
+          { href: "/reports", label: "البلاغات", permission: "admin.reports.read" },
+        ],
+      },
+      {
+        key: "facilities",
+        label: "المنشآت",
+        icon: "building",
+        pages: [{ href: "/facilities", label: "المنشآت", permission: "admin.facilities.read" }],
+      },
+      {
+        key: "users",
+        label: "المستخدمون والصلاحيات",
+        icon: "users",
+        pages: [{ href: "/users", label: "المستخدمون", permission: "admin.users.read" }],
+      },
     ],
   },
   {
-    label: "الكتالوج",
-    items: [
-      ["/taxonomy/groups", "مجموعات التصنيفات", "admin.taxonomy.read", "layers"],
-      ["/taxonomy/categories", "التصنيفات", "admin.taxonomy.read", "tag"],
-      ["/provinces", "المحافظات", "admin.provinces.read", "map"],
-    ],
-  },
-  {
-    label: "الثقة والمحتوى",
-    items: [
-      ["/reports", "البلاغات", "admin.reports.read", "flag"],
-      ["/verification", "التحقق", "admin.verification.read", "shield"],
-      ["/ads", "الإعلانات", "admin.ads.read", "megaphone"],
-      ["/audit", "سجل التدقيق", "admin.audit.read", "history"],
+    label: "الدليل",
+    sections: [
+      {
+        key: "catalogue",
+        label: "التصنيفات والتحقق",
+        icon: "tag",
+        pages: [
+          { href: "/taxonomy/categories", label: "التصنيفات", permission: "admin.taxonomy.read" },
+          { href: "/taxonomy/groups", label: "المجموعات", permission: "admin.taxonomy.read" },
+          { href: "/verification", label: "متطلبات التحقق", permission: "admin.verification.read" },
+        ],
+      },
+      {
+        key: "regions",
+        label: "المناطق",
+        icon: "mapPin",
+        pages: [{ href: "/provinces", label: "المحافظات والمدن", permission: "admin.provinces.read" }],
+      },
+      {
+        key: "ads",
+        label: "الإعلانات",
+        icon: "megaphone",
+        pages: [{ href: "/ads", label: "الإعلانات", permission: "admin.ads.read" }],
+      },
     ],
   },
   {
     label: "المنصة",
-    items: [
-      ["/analytics", "التحليلات", "admin.analytics.read", "chart"],
-      ["/settings", "الإعدادات", "admin.settings.read", "settings"],
-      ["/system", "النظام", "admin.system.read", "server"],
+    sections: [
+      {
+        key: "analytics",
+        label: "التقارير والإحصاءات",
+        icon: "chart",
+        pages: [{ href: "/analytics", label: "الإحصاءات", permission: "admin.analytics.read" }],
+      },
+      {
+        key: "platform",
+        label: "الإعدادات والنظام",
+        icon: "settings",
+        pages: [
+          { href: "/settings", label: "الإعدادات", permission: "admin.settings.read" },
+          { href: "/system", label: "حالة النظام", permission: "admin.system.read" },
+          { href: "/audit", label: "سجل العمليات", permission: "admin.audit.read" },
+          { href: "/design", label: "نظام التصميم", permission: "admin.system.read" },
+        ],
+      },
     ],
   },
 ];
 
-const ALL_ITEMS = NAVIGATION.flatMap((group) => group.items);
+const ALL_SECTIONS = NAVIGATION.flatMap((group) => group.sections);
 
-/** The section a path belongs to, so a detail page still highlights its list. */
-function sectionFor(pathname: string): NavItem | undefined {
-  return ALL_ITEMS.filter(([href]) => pathname === href || pathname.startsWith(`${href}/`)).sort(
-    (a, b) => b[0].length - a[0].length,
-  )[0];
+/** The section and page a path belongs to, so a detail page still lights its section and tab. */
+function locate(pathname: string): { section: Section; page: Page } | undefined {
+  let best: { section: Section; page: Page } | undefined;
+  for (const section of ALL_SECTIONS) {
+    for (const page of section.pages) {
+      if (pathname === page.href || pathname.startsWith(`${page.href}/`)) {
+        if (!best || page.href.length > best.page.href.length) best = { section, page };
+      }
+    }
+  }
+  return best;
 }
 
 function initials(name: string): string {
@@ -124,12 +181,16 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }
 
   const identity = me.data;
+  const can = (page: Page) => identity.permissions.includes(page.permission);
   const groups = NAVIGATION.map((group) => ({
     label: group.label,
-    items: group.items.filter(([, , permission]) => identity.permissions.includes(permission)),
-  })).filter((group) => group.items.length > 0);
-  const current = sectionFor(pathname);
-  const isDetail = current ? pathname !== current[0] : false;
+    sections: group.sections
+      .map((section) => ({ ...section, pages: section.pages.filter(can) }))
+      .filter((section) => section.pages.length > 0),
+  })).filter((group) => group.sections.length > 0);
+  const here = locate(pathname);
+  const tabs = here ? here.section.pages.filter(can) : [];
+  const isDetail = here ? pathname !== here.page.href : false;
 
   return (
     <IdentityContext.Provider value={identity}>
@@ -149,19 +210,20 @@ export function AdminShell({ children }: { children: ReactNode }) {
                   <span className="nav-group-label" aria-hidden="true">
                     {group.label}
                   </span>
-                  {group.items.map(([href, label, , icon]) => {
-                    const Glyph = Icons[icon];
+                  {group.sections.map((section) => {
+                    const Glyph = Icons[section.icon];
+                    const href = section.pages[0]!.href;
                     return (
                       <Link
-                        key={href}
+                        key={section.key}
                         href={href}
                         className="nav-link"
-                        aria-current={current?.[0] === href ? "page" : undefined}
+                        aria-current={here?.section.key === section.key ? "page" : undefined}
                         data-testid={`nav-${href.replace(/\//g, "-").slice(1)}`}
                         onClick={() => setNavOpen(false)}
                       >
                         <Glyph />
-                        <span>{label}</span>
+                        <span>{section.label}</span>
                       </Link>
                     );
                   })}
@@ -227,17 +289,20 @@ export function AdminShell({ children }: { children: ReactNode }) {
               </button>
               <ol className="breadcrumb" aria-label="المسار">
                 <li>لوحة الإدارة</li>
-                {current ? (
-                  isDetail ? (
-                    <>
-                      <li>
-                        <Link href={current[0]}>{current[1]}</Link>
-                      </li>
-                      <li aria-current="page">التفاصيل</li>
-                    </>
-                  ) : (
-                    <li aria-current="page">{current[1]}</li>
-                  )
+                {here ? (
+                  <>
+                    {here.section.pages.length > 1 ? <li>{here.section.label}</li> : null}
+                    {isDetail ? (
+                      <>
+                        <li>
+                          <Link href={here.page.href}>{here.page.label}</Link>
+                        </li>
+                        <li aria-current="page">التفاصيل</li>
+                      </>
+                    ) : (
+                      <li aria-current="page">{here.page.label}</li>
+                    )}
+                  </>
                 ) : null}
               </ol>
             </div>
@@ -251,7 +316,23 @@ export function AdminShell({ children }: { children: ReactNode }) {
               </div>
             </div>
           </header>
-          <main className="content">{children}</main>
+          <main className="content">
+            {tabs.length > 1 && !isDetail ? (
+              <nav className="section-tabs" aria-label={here!.section.label} data-testid="section-tabs">
+                {tabs.map((tab) => (
+                  <Link
+                    key={tab.href}
+                    href={tab.href}
+                    className="section-tab"
+                    aria-current={here!.page.href === tab.href ? "page" : undefined}
+                  >
+                    {tab.label}
+                  </Link>
+                ))}
+              </nav>
+            ) : null}
+            {children}
+          </main>
         </section>
       </div>
     </IdentityContext.Provider>

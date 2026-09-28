@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 
 import {
   ErrorState,
@@ -60,15 +59,7 @@ export default function SystemPage() {
 
   return (
     <div className="stack">
-      <PageHeader
-        title="حالة النظام"
-        description="جاهزية الاعتماديات التشغيلية."
-        actions={
-          <Link className="button-ghost" href="/design">
-            نظام التصميم
-          </Link>
-        }
-      />
+      <PageHeader title="حالة النظام" description="جاهزية الاعتماديات التشغيلية." />
       {status.loading ? <LoadingState /> : null}
       {status.error ? <ErrorState error={status.error} onRetry={status.reload} /> : null}
       {status.data ? (

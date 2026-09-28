@@ -206,3 +206,23 @@
 }
 .icon-button:hover { background: var(--ad-surface-hover); color: var(--ad-text); }
 .icon-button svg { width: 18px; height: 18px; }
+
+/* Tabs for the pages that share a section (e.g. reviews | reports). */
+.section-tabs {
+  display: flex; gap: var(--ad-space-1); flex-wrap: wrap;
+  margin-block-end: var(--ad-space-5);
+  border-block-end: 1px solid var(--ad-stroke);
+}
+.section-tab {
+  position: relative;
+  padding: var(--ad-space-2) var(--ad-space-4);
+  font-size: var(--ad-text-md); font-weight: 600;
+  color: var(--ad-text-secondary);
+  border-radius: var(--ad-radius) var(--ad-radius) 0 0;
+}
+.section-tab:hover { color: var(--ad-text); background: var(--ad-surface-hover); }
+.section-tab[aria-current="page"] { color: var(--ad-brand); }
+.section-tab[aria-current="page"]::after {
+  content: ""; position: absolute; inset-inline: var(--ad-space-3); inset-block-end: -1px;
+  height: 2px; border-radius: 2px; background: var(--ad-brand);
+}
