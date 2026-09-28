@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 
 import {
@@ -16,15 +15,11 @@ import {
  * Built once here so thirteen screens do not each invent a table, an empty state and a
  * confirm dialog that behave slightly differently. Everything is RTL by inheritance from
  * `<html dir="rtl">` and uses logical CSS properties, so nothing needs mirroring. Colour,
- * spacing, radius and type come from the design tokens through `app/design/`; there are no
- * literal colours and no measurements typed into a screen.
+ * spacing and radius come from the design tokens; there are no literal colours.
  *
  * The density is deliberate. This is a console an operator reads all day, not a marketing
  * page: tables are tight, filters sit directly above the data they filter, and a
  * destructive action looks different from a safe one.
- *
- * A screen is a `PageHeader` and a stack of `Card`s. Anything a screen needs that is not here
- * belongs here rather than in the screen — that is what keeps eighteen pages one product.
  */
 
 // --------------------------------------------------------------------------------------
@@ -34,19 +29,15 @@ import {
 export function PageHeader({
   title,
   description,
-  eyebrow,
   actions,
 }: {
   title: string;
   description?: string;
-  /** The section this page belongs to, for a reader who arrived from a link. */
-  eyebrow?: string;
   actions?: ReactNode;
 }) {
   return (
     <header className="page-heading">
       <div>
-        {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
         <h1>{title}</h1>
         {description ? <p>{description}</p> : null}
       </div>
@@ -55,141 +46,20 @@ export function PageHeader({
   );
 }
 
-/**
- * The one container a screen puts anything in.
- *
- * A card is a title, the thing itself, and sometimes a row of actions under it. `flush` is for a
- * body that draws its own edges — a table — so the rows meet the card's border with nothing
- * between them.
- */
-export function Card({
-  title,
-  description,
-  actions,
-  footer,
-  flush,
-  children,
-  testId,
-}: {
-  title?: string;
-  description?: string;
-  actions?: ReactNode;
-  footer?: ReactNode;
-  flush?: boolean;
-  children: ReactNode;
-  testId?: string;
-}) {
-  return (
-    <section className="card" data-testid={testId}>
-      {title ? (
-        <header className="card-header">
-          <div>
-            <h2>{title}</h2>
-            {description ? <p>{description}</p> : null}
-          </div>
-          {actions ? <div className="card-actions">{actions}</div> : null}
-        </header>
-      ) : null}
-      <div className={flush ? "card-body card-body-flush" : "card-body"}>{children}</div>
-      {footer ? <footer className="card-footer">{footer}</footer> : null}
-    </section>
-  );
-}
-
-/** A figure worth acting on. Give it `href` when the number leads somewhere. */
-export function StatCard({
-  label,
-  value,
-  href,
-  testId,
-}: {
-  label: string;
-  value: ReactNode;
-  href?: string;
-  testId?: string;
-}) {
-  const body = (
-    <>
-      <strong>{value}</strong>
-      <span>{label}</span>
-    </>
-  );
-  return href ? (
-    <Link href={href} className="kpi" data-testid={testId}>
-      {body}
-    </Link>
-  ) : (
-    <div className="kpi" data-testid={testId}>
-      {body}
-    </div>
-  );
-}
-
-/** The facts about one record: a label and its value, in a grid that reflows. */
-export function DetailList({
-  items,
-}: {
-  items: readonly { label: string; value: ReactNode; ltr?: boolean }[];
-}) {
-  return (
-    <dl className="detail-list">
-      {items.map((item) => (
-        <div key={item.label}>
-          <dt>{item.label}</dt>
-          <dd className={item.ltr ? "cell-ltr" : undefined}>{item.value}</dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
-
 export function LoadingState({ label = "جارٍ التحميل…" }: { label?: string }) {
   return (
-    <div className="state state-loading" role="status" aria-live="polite" data-testid="loading-state">
+    <div className="state-block" role="status" aria-live="polite" data-testid="loading-state">
       <span className="spinner" aria-hidden="true" />
       <span>{label}</span>
     </div>
   );
 }
 
-/**
- * Nothing to show, and why.
- *
- * The hint is the useful half: "no results" leaves an operator wondering whether the filter or the
- * data is at fault, and an action beside it is what they would have gone looking for.
- */
-export function EmptyState({
-  title,
-  hint,
-  action,
-}: {
-  title: string;
-  hint?: string;
-  action?: ReactNode;
-}) {
+export function EmptyState({ title, hint }: { title: string; hint?: string }) {
   return (
-    <div className="state" data-testid="empty-state">
-      <span className="state-icon" aria-hidden="true">
-        —
-      </span>
+    <div className="state-block state-empty" data-testid="empty-state">
       <strong>{title}</strong>
       {hint ? <span className="muted">{hint}</span> : null}
-      {action ? <div className="state-actions">{action}</div> : null}
-    </div>
-  );
-}
-
-/** The shape of what is coming, so a page does not jump when it arrives. */
-export function Skeleton({ rows = 3 }: { rows?: number }) {
-  return (
-    <div className="stack" aria-hidden="true" data-testid="skeleton">
-      {Array.from({ length: rows }, (_, index) => (
-        <span
-          key={index}
-          className="skeleton"
-          style={{ inlineSize: index % 3 === 2 ? "62%" : "100%" }}
-        />
-      ))}
     </div>
   );
 }
@@ -209,10 +79,7 @@ export function ErrorState({
 }) {
   const requestId = requestIdFor(error);
   return (
-    <div className="state state-error" role="alert" data-testid="error-state">
-      <span className="state-icon" aria-hidden="true">
-        !
-      </span>
+    <div className="state-block state-error" role="alert" data-testid="error-state">
       <strong>{messageFor(error)}</strong>
       {requestId ? (
         <span className="muted request-id">
@@ -220,11 +87,9 @@ export function ErrorState({
         </span>
       ) : null}
       {onRetry ? (
-        <div className="state-actions">
-          <button type="button" className="button-ghost" onClick={onRetry}>
-            إعادة المحاولة
-          </button>
-        </div>
+        <button type="button" className="button-ghost" onClick={onRetry}>
+          إعادة المحاولة
+        </button>
       ) : null}
     </div>
   );
@@ -266,7 +131,7 @@ export function DataTable<T>({
   empty?: ReactNode;
 }) {
   if (rows.length === 0) {
-    return <>{empty ?? <EmptyState title="لا توجد نتائج" hint="عدّل الفلاتر أو امسحها." />}</>;
+    return <>{empty ?? <EmptyState title="لا توجد نتائج" />}</>;
   }
   return (
     <div className="table-wrap">
@@ -329,7 +194,7 @@ export function FilterBar({
 
   return (
     <form
-      className="toolbar"
+      className="filter-bar"
       data-testid="filter-bar"
       onSubmit={(event) => {
         event.preventDefault();
@@ -488,9 +353,14 @@ export function FormSection({
   footer?: ReactNode;
 }) {
   return (
-    <Card title={title} description={description} footer={footer}>
+    <section className="panel form-section">
+      <header>
+        <h2>{title}</h2>
+        {description ? <p className="muted">{description}</p> : null}
+      </header>
       <div className="form-grid">{children}</div>
-    </Card>
+      {footer ? <footer className="form-footer">{footer}</footer> : null}
+    </section>
   );
 }
 
@@ -542,7 +412,7 @@ export function ConfirmDialog({
   return (
     <div className="dialog-backdrop" role="presentation">
       <div
-        className="dialog"
+        className="panel dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby={headingId}

@@ -133,9 +133,8 @@ export default function AdsPage() {
   }
 
   return (
-    <div className="operation-stack">
+    <div className="stack">
       <PageHeader
-        eyebrow="المستخدمون والمحتوى"
         title="الإعلانات"
         description="إعلانات الطرف الأول: المحتوى والاستهداف والجدولة."
         actions={

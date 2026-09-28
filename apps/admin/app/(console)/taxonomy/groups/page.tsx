@@ -97,12 +97,8 @@ export default function TaxonomyGroupsPage() {
   ];
 
   return (
-    <div className="operation-stack">
-      <PageHeader
-        eyebrow="الدليل"
-        title="مجموعات التصنيفات"
-        description="البنية العليا للتصنيفات."
-      />
+    <div className="stack">
+      <PageHeader title="مجموعات التصنيفات" description="البنية العليا للتصنيفات." />
       {groups.loading ? <LoadingState /> : null}
       {groups.error ? <ErrorState error={groups.error} onRetry={groups.reload} /> : null}
       {mutation.error ? <ErrorState error={mutation.error} /> : null}

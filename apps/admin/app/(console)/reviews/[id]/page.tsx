@@ -4,7 +4,6 @@ import { use, useState } from "react";
 
 import { useCan } from "../../../../components/admin-shell";
 import {
-  Card,
   AuditTimeline,
   ConfirmDialog,
   DiffViewer,
@@ -75,7 +74,7 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
   const reasonError = fieldErrorsFor(decision.error).reason;
 
   return (
-    <div className="operation-stack">
+    <div className="stack">
       <PageHeader
         title="مراجعة طلب"
         description={detail.data?.facilityNameAr}
@@ -114,7 +113,8 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
 
       {detail.data ? (
         <>
-          <Card title="حالة الطلب">
+          <section className="panel stack">
+            <h2>حالة الطلب</h2>
             <div className="button-row">
               <StatusBadge tone={STATUS[detail.data.status]?.tone ?? "neutral"}>
                 {STATUS[detail.data.status]?.label ?? detail.data.status}
@@ -131,13 +131,15 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
             {detail.data.rejectionReason ? (
               <p className="notice">سبب الرفض السابق: {detail.data.rejectionReason}</p>
             ) : null}
-          </Card>
+          </section>
 
-          <Card title="لقطة الطلب">
+          <section className="panel stack">
+            <h2>لقطة الطلب</h2>
             <DiffViewer before={{}} after={detail.data.snapshot} />
-          </Card>
+          </section>
 
-          <Card title="أدلة التحقق">
+          <section className="panel stack">
+            <h2>أدلة التحقق</h2>
             {detail.data.evidence.length === 0 ? (
               <span className="muted">لا أدلة مرفوعة.</span>
             ) : (
@@ -165,11 +167,12 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
             <p className="muted">
               يُفتح المستند عبر مسار مُدقَّق ولمدة محدودة. لا يُعرض مفتاح التخزين ولا رابط دائم.
             </p>
-          </Card>
+          </section>
 
-          <Card title="سجل التدقيق">
+          <section className="panel stack">
+            <h2>سجل التدقيق</h2>
             <AuditTimeline entries={detail.data.audit} />
-          </Card>
+          </section>
         </>
       ) : null}
 

@@ -4,7 +4,6 @@ import { use, useState } from "react";
 
 import { useCan } from "../../../../components/admin-shell";
 import {
-  Card,
   ConfirmDialog,
   ErrorState,
   LoadingState,
@@ -88,7 +87,7 @@ export default function FacilityDetailPage({ params }: { params: Promise<{ id: s
   const status = facility.data?.status;
 
   return (
-    <div className="operation-stack">
+    <div className="stack">
       <PageHeader
         title={facility.data?.nameAr ?? "منشأة"}
         description="الحالة التشغيلية والإجراءات المتاحة."
@@ -143,7 +142,8 @@ export default function FacilityDetailPage({ params }: { params: Promise<{ id: s
       {facility.error ? <ErrorState error={facility.error} onRetry={facility.reload} /> : null}
 
       {facility.data ? (
-        <Card title="الحالة">
+        <section className="panel stack">
+          <h2>الحالة</h2>
           <div className="button-row">
             <StatusBadge tone={STATUS[facility.data.status]?.tone ?? "neutral"}>
               {STATUS[facility.data.status]?.label ?? facility.data.status}
@@ -167,7 +167,7 @@ export default function FacilityDetailPage({ params }: { params: Promise<{ id: s
               <dd className="cell-ltr">{facility.data.categoryId}</dd>
             </div>
           </dl>
-        </Card>
+        </section>
       ) : null}
 
       <ConfirmDialog

@@ -5,7 +5,6 @@ import { useState } from "react";
 
 import {
   type Column,
-  Card,
   DataTable,
   ErrorState,
   FilterBar,
@@ -89,51 +88,45 @@ export default function ReviewsPage() {
   ];
 
   return (
-    <div className="operation-stack">
-      <PageHeader
-        eyebrow="العمليات"
-        title="طلبات المراجعة"
-        description="طلبات التسجيل وإعادة التحقق."
+    <div className="stack">
+      <PageHeader title="طلبات المراجعة" description="طلبات التسجيل وإعادة التحقق." />
+      <FilterBar
+        fields={[
+          {
+            name: "status",
+            label: "الحالة",
+            type: "select",
+            options: [
+              { value: "SUBMITTED", label: "قيد المراجعة" },
+              { value: "APPROVED", label: "مقبول" },
+              { value: "REJECTED", label: "مرفوض" },
+            ],
+          },
+          {
+            name: "kind",
+            label: "النوع",
+            type: "select",
+            options: [
+              { value: "INITIAL", label: "تسجيل أولي" },
+              { value: "REVERIFICATION", label: "إعادة تحقق" },
+            ],
+          },
+          { name: "province", label: "معرّف المحافظة", placeholder: "UUID" },
+          { name: "category", label: "معرّف التصنيف", placeholder: "UUID" },
+        ]}
+        values={filters}
+        onApply={setFilters}
       />
-      <Card flush>
-        <FilterBar
-          fields={[
-            {
-              name: "status",
-              label: "الحالة",
-              type: "select",
-              options: [
-                { value: "SUBMITTED", label: "قيد المراجعة" },
-                { value: "APPROVED", label: "مقبول" },
-                { value: "REJECTED", label: "مرفوض" },
-              ],
-            },
-            {
-              name: "kind",
-              label: "النوع",
-              type: "select",
-              options: [
-                { value: "INITIAL", label: "تسجيل أولي" },
-                { value: "REVERIFICATION", label: "إعادة تحقق" },
-              ],
-            },
-            { name: "province", label: "معرّف المحافظة", placeholder: "UUID" },
-            { name: "category", label: "معرّف التصنيف", placeholder: "UUID" },
-          ]}
-          values={filters}
-          onApply={setFilters}
+      {queue.loading ? <LoadingState /> : null}
+      {queue.error ? <ErrorState error={queue.error} onRetry={queue.reload} /> : null}
+      {queue.data ? (
+        <DataTable
+          caption="طلبات المراجعة"
+          columns={columns}
+          rows={queue.data.items}
+          rowKey={(row) => row.id}
         />
-        {queue.loading ? <LoadingState /> : null}
-        {queue.error ? <ErrorState error={queue.error} onRetry={queue.reload} /> : null}
-        {queue.data ? (
-          <DataTable
-            caption="طلبات المراجعة"
-            columns={columns}
-            rows={queue.data.items}
-            rowKey={(row) => row.id}
-          />
-        ) : null}
-      </Card>
+      ) : null}
     </div>
   );
 }

@@ -3,8 +3,6 @@
 import { useState } from "react";
 
 import {
-  EmptyState,
-  Card,
   DiffViewer,
   ErrorState,
   FilterBar,
@@ -45,13 +43,8 @@ export default function AuditPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   return (
-    <div className="operation-stack">
-      <PageHeader
-        eyebrow="الرقابة"
-        title="سجل التدقيق"
-        description="كل تغيير إداري، ومن نفّذه، ومتى."
-      />
-      <Card flush>
+    <div className="stack">
+      <PageHeader title="سجل التدقيق" description="كل تغيير إداري، ومن نفّذه، ومتى." />
       <FilterBar
         fields={[
           { name: "action", label: "الإجراء", placeholder: "facility.suspended" },
@@ -68,7 +61,9 @@ export default function AuditPage() {
 
       {audit.data ? (
         audit.data.items.length === 0 ? (
-          <EmptyState title="لا نتائج مطابقة" hint="عدّل الفلاتر أو امسحها." />
+          <div className="state-block state-empty" data-testid="empty-state">
+            <strong>لا نتائج مطابقة</strong>
+          </div>
         ) : (
           <div className="table-wrap">
             <table className="data-table" data-testid="data-table">
@@ -114,10 +109,10 @@ export default function AuditPage() {
           </div>
         )
       ) : null}
-      </Card>
 
       {expanded && audit.data ? (
-        <Card title="تفاصيل التغيير" description="ما تغيّر في هذا الإجراء، قبل وبعد.">
+        <section className="panel stack">
+          <h2>تفاصيل التغيير</h2>
           {(() => {
             const row = audit.data.items.find((item) => item.id === expanded);
             if (!row) return null;
@@ -134,7 +129,7 @@ export default function AuditPage() {
               </>
             );
           })()}
-        </Card>
+        </section>
       ) : null}
     </div>
   );

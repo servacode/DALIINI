@@ -4,7 +4,6 @@ import { use, useState } from "react";
 
 import { useCan } from "../../../../components/admin-shell";
 import {
-  Card,
   ConfirmDialog,
   ErrorState,
   LoadingState,
@@ -65,7 +64,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
   }
 
   return (
-    <div className="operation-stack">
+    <div className="stack">
       <PageHeader
         title={user.data?.name ?? "مستخدم"}
         description="حالة الحساب والأدوار الإدارية."
@@ -104,7 +103,8 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
       {user.error ? <ErrorState error={user.error} onRetry={user.reload} /> : null}
 
       {user.data ? (
-        <Card title="الحساب">
+        <section className="panel stack">
+          <h2>الحساب</h2>
           <div className="button-row">
             <StatusBadge tone={user.data.active ? "positive" : "danger"}>
               {user.data.active ? "فعّال" : "محظور"}
@@ -114,15 +114,16 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
               أُنشئ: <span className="cell-ltr">{formatDateTime(user.data.createdAt)}</span>
             </span>
           </div>
-        </Card>
+        </section>
       ) : null}
 
       {canManageRoles ? (
-        <Card title="الأدوار الإدارية">
+        <section className="panel stack">
+          <h2>الأدوار الإدارية</h2>
           {roles.loading ? <LoadingState /> : null}
           {roles.data ? (
             <>
-              <div className="operation-stack">
+              <div className="stack">
                 {roles.data.items.map((role) => (
                   <label key={role.id} className="switch-row">
                     <span>
@@ -159,7 +160,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
               </div>
             </>
           ) : null}
-        </Card>
+        </section>
       ) : null}
 
       <ConfirmDialog
