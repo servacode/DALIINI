@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.openapi import NOT_FOUND_404, VALIDATION_400, protected
+from core.throttles import FavoritesWriteThrottle
 from search.pagination import FacilityCursorPagination
 from search.views import PAGE_PARAMS
 from search.selectors import public_facilities, with_rating_summary
@@ -34,6 +35,7 @@ class FavoriteCursorPagination(FacilityCursorPagination):
 
 
 class AccountFavoritesView(APIView):
+    throttle_classes = [FavoritesWriteThrottle]
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
@@ -91,6 +93,7 @@ class AccountFavoritesView(APIView):
 
 
 class AccountFavoriteDetailView(APIView):
+    throttle_classes = [FavoritesWriteThrottle]
     permission_classes = [IsAuthenticated]
 
     @extend_schema(

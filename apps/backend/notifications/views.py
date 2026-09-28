@@ -16,6 +16,7 @@ from rest_framework.views import APIView
 
 from core.openapi import NOT_FOUND_404, VALIDATION_400, protected
 from core.pagination import CursorPage
+from core.throttles import PushTokenThrottle
 from search.views import PAGE_PARAMS
 from sessions.models import UserSession
 
@@ -46,6 +47,7 @@ def _session(request: Request) -> UserSession | None:
 
 
 class PushTokenView(APIView):
+    throttle_classes = [PushTokenThrottle]
     permission_classes = [IsAuthenticated]
 
     @extend_schema(

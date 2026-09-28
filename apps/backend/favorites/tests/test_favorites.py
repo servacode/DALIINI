@@ -130,3 +130,14 @@ def test_saving_requires_an_account(public_facility):
     assert anonymous.post(
         FAVORITES, {"facilityId": str(public_facility.id)}, format="json"
     ).status_code in (401, 403)
+
+
+def test_favorite_writes_are_throttled_but_reads_are_not(signed_in, public_facility, monkeypatch):
+    from core.throttles import FavoritesWriteThrottle
+
+    monkeypatch.setattr(FavoritesWriteThrottle, "THROTTLE_RATES", {"favorites_write": "2/hour"})
+    body = {"facilityId": str(public_facility.id)}
+    assert signed_in.post(FAVORITES, body, format="json").status_code < 300
+    assert signed_in.delete(f"{FAVORITES}{public_facility.id}/").status_code < 300
+    assert signed_in.post(FAVORITES, body, format="json").status_code == 429
+    assert signed_in.get(FAVORITES).status_code == 200

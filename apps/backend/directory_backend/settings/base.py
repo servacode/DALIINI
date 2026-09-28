@@ -104,6 +104,15 @@ REST_FRAMEWORK = {
         "otp_verify": "10/hour",
         "login": "10/minute",
         "recovery": "5/hour",
+        # Abuse protection for public and account writes; override per environment.
+        "ratings_write": env("THROTTLE_RATINGS_WRITE", "30/hour"),
+        "favorites_write": env("THROTTLE_FAVORITES_WRITE", "60/hour"),
+        "push_token": env("THROTTLE_PUSH_TOKEN", "20/hour"),
+        "analytics_ingest": env("THROTTLE_ANALYTICS_INGEST", "600/hour"),
+        "search": env("THROTTLE_SEARCH", "120/minute"),
+        "owner_submit": env("THROTTLE_OWNER_SUBMIT", "10/hour"),
+        "evidence_upload": env("THROTTLE_EVIDENCE_UPLOAD", "30/hour"),
+        "facility_report": env("THROTTLE_FACILITY_REPORT", "5/hour"),
     },
 }
 # Interactive schema exposure. Safe default; development widens it and production

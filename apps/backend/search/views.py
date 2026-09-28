@@ -12,6 +12,7 @@ from business_hours.services import get_facility_availability
 from content_services.selectors import active_ads
 from content_services.serializers import public_ad
 from core.openapi import NOT_FOUND_404, VALIDATION_400
+from core.throttles import SearchThrottle
 from directory.models import CategoryProvince
 from locations.models import Province
 
@@ -135,6 +136,7 @@ def _with_flags(params, queryset):
 
 
 class PublicFacilityListView(APIView):
+    throttle_classes = [SearchThrottle]
     @extend_schema(
         operation_id="publicFacilitiesList",
         tags=["Public Discovery"],
@@ -194,6 +196,7 @@ class PublicFacilityDetailView(APIView):
 
 
 class PublicMapFacilitiesView(APIView):
+    throttle_classes = [SearchThrottle]
     @extend_schema(
         operation_id="publicMapFacilitiesList",
         tags=["Public Discovery"],
@@ -238,6 +241,7 @@ class PublicMapFacilitiesView(APIView):
 
 
 class PublicSearchView(APIView):
+    throttle_classes = [SearchThrottle]
     @extend_schema(
         operation_id="publicSearchList",
         tags=["Public Discovery"],

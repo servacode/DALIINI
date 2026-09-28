@@ -17,6 +17,7 @@ from core.openapi import (
     VALIDATION_400,
     protected,
 )
+from core.throttles import EvidenceUploadThrottle, OwnerSubmitThrottle
 from directory.models import CategoryProvince, VerificationRequirement
 from directory.presenters import category_capabilities
 from locations.models import Province
@@ -274,6 +275,7 @@ class OwnerFacilityDetailView(APIView):
 
 
 class OwnerFacilitySubmitView(APIView):
+    throttle_classes = [OwnerSubmitThrottle]
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
@@ -469,6 +471,7 @@ class OwnerFacilityImageDeleteView(APIView):
 
 
 class OwnerFacilityEvidenceView(APIView):
+    throttle_classes = [EvidenceUploadThrottle]
     parser_classes = [MultiPartParser, FormParser]
     permission_classes = [IsAuthenticated]
 

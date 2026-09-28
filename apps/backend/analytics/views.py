@@ -6,12 +6,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.openapi import VALIDATION_400
+from core.throttles import AnalyticsIngestThrottle
 
 from .schemas import AnalyticsEventAcceptedSerializer, AnalyticsEventRequestSerializer
 from .services import record_product_event
 
 
 class AnalyticsEventView(APIView):
+    throttle_classes = [AnalyticsIngestThrottle]
     authentication_classes = []
     permission_classes = []
 

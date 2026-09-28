@@ -3150,6 +3150,8 @@ paths:
             the caller.
     delete:
       operationId: facilityRatingDelete
+      description: Idempotent for a publicly visible facility; a facility that is
+        not publicly visible answers 404, exactly as the write does.
       summary: Remove the caller's rating for a facility
       parameters:
       - in: path
@@ -3178,6 +3180,13 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
   /api/v1/owner/config/:
     get:
       operationId: ownerConfigRetrieve
