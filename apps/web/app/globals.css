@@ -1,19 +1,23 @@
+@import "@servacode/design-tokens/fonts.css";
 @import "@servacode/design-tokens/tokens.css";
 
 /*
- * Mobile-first RTL styles built only on brand tokens. System fonts only:
- * no web fonts are loaded (CSP + low-bandwidth users).
+ * Mobile-first RTL styles built only on the shared brand tokens, so the site follows the
+ * device's dark mode like the app and the console. Tajawal is self-hosted from the design
+ * package in small unicode-range subsets (~12 KB each) with font-display: swap, so a slow
+ * connection shows text at once in the system face and swaps when the brand face arrives.
  */
+:root { color-scheme: light dark; }
 * { box-sizing: border-box; }
 html { background: var(--sd-semantic-surface-canvas); color: var(--sd-semantic-content-primary); }
-body { margin: 0; font-family: Tajawal, "Segoe UI", Tahoma, Arial, sans-serif; background: var(--sd-semantic-surface-canvas); line-height: 1.6; }
+body { margin: 0; font-family: "Tajawal", "Segoe UI", Tahoma, Arial, sans-serif; background: var(--sd-semantic-surface-canvas); line-height: 1.6; }
 a { color: inherit; }
 .shell { width: min(960px, calc(100% - 32px)); margin-inline: auto; }
 
 .site-header { background: var(--sd-semantic-surface-default); border-bottom: 1px solid var(--sd-semantic-stroke-default); }
 .header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; text-decoration: none; }
-.brand-mark { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--sd-semantic-action-primary); color: var(--sd-semantic-content-on-primary); font-size: 20px; }
+.brand-mark { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--sd-colors-primary); color: #fff; font-size: 20px; }
 .nav { display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; }
 
 .hero { padding-block: 48px 24px; display: grid; gap: 16px; }
@@ -40,10 +44,27 @@ p, li { color: var(--sd-semantic-content-secondary); line-height: 1.9; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .cta { margin-top: 32px; }
 
-.badge { flex: none; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 3px 10px; background: var(--sd-semantic-surface-subtle); color: var(--sd-semantic-content-secondary); }
-.badge-open { background: var(--sd-semantic-feedback-success); color: var(--sd-semantic-content-on-primary); }
-.badge-duty { background: var(--sd-semantic-action-primary); color: var(--sd-semantic-content-on-primary); }
-.badge-temp_closed { background: var(--sd-semantic-feedback-warning); color: var(--sd-semantic-content-primary); }
+.badge { flex: none; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 3px 10px; border: 1px solid transparent; }
+.badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+/* Tones from the shared vocabulary — the same pairs the console uses. */
+.badge-neutral { background: var(--sd-semantic-surface-subtle); color: var(--sd-semantic-content-secondary); border-color: var(--sd-semantic-stroke-default); }
+.badge-positive { background: var(--sd-semantic-feedback-success-soft); color: var(--sd-semantic-feedback-success); }
+.badge-warning { background: var(--sd-semantic-feedback-warning-soft); color: var(--sd-semantic-content-warning); }
+.badge-danger { background: var(--sd-semantic-feedback-danger-soft); color: var(--sd-semantic-feedback-danger); }
+.badge-info { background: var(--sd-semantic-feedback-info-soft); color: var(--sd-semantic-feedback-info); }
+.badge-brand { background: var(--sd-semantic-action-primary); color: var(--sd-semantic-content-on-primary); }
+
+/* Buttons carry an icon before the label; directional icons flip in RTL. */
+.button svg { flex: none; }
+.button { align-items: center; gap: 8px; }
+[dir="rtl"] svg[data-mirror="true"] { transform: scaleX(-1); }
+
+/* Empty and unavailable states */
+.state { display: grid; justify-items: center; text-align: center; gap: 6px; padding-block: 28px; }
+.state p { margin: 0; }
+.il-soft { fill: var(--sd-semantic-surface-brand-soft); }
+.il-line { stroke: var(--sd-semantic-content-muted); }
+.il-accent { stroke: var(--sd-semantic-action-primary); }
 
 .crumbs { font-size: 14px; color: var(--sd-semantic-content-muted); margin-bottom: 12px; }
 .facts { display: grid; gap: 8px; margin: 0; }

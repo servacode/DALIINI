@@ -29,7 +29,7 @@ export default async function DutyPage() {
         groups.map((g) => (
           <section key={g.province.id} aria-labelledby={`p-${g.province.id}`}>
             <h2 id={`p-${g.province.id}`}>{g.province.nameAr}</h2>
-            {g.items.length === 0 ? <Empty>لا توجد صيدليات مناوبة معلنة حالياً.</Empty> : <FacilityList items={g.items} />}
+            {g.items.length === 0 ? <Empty illustration="noResults">لا توجد صيدليات مناوبة معلنة حالياً.</Empty> : <FacilityList items={g.items} />}
           </section>
         ))
       )}

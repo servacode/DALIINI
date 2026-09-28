@@ -1,3 +1,5 @@
+import { type IconName, type IllustrationName, iconPaths, illustrationPaths, mirroredIcons } from "@servacode/design-tokens/icons";
+import { term } from "@servacode/design-tokens/vocabulary";
 import Link from "next/link";
 import type { AvailabilityState, CompactFacility } from "../lib/api";
 import { publicConfig } from "../lib/config";
@@ -7,15 +9,43 @@ import { publicConfig } from "../lib/config";
  * components rendering plain HTML/CSS so pages ship no client JavaScript.
  */
 
-const STATE_LABEL: Record<AvailabilityState, string> = {
-  OPEN: "مفتوح الآن",
-  CLOSED: "مغلق الآن",
-  DUTY: "مناوب الآن",
-  TEMP_CLOSED: "مغلق مؤقتاً",
-};
+/** The platform's shared icon, drawn from the design package; decorative, so hidden from readers. */
+export function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+      data-mirror={mirroredIcons.has(name) || undefined}
+    >
+      {iconPaths[name].map((d) => <path key={d} d={d} />)}
+    </svg>
+  );
+}
 
+/** A two-tone state illustration that follows the light or dark theme. */
+export function Illustration({ name, size = 96 }: { name: IllustrationName; size?: number }) {
+  const layers = illustrationPaths[name];
+  return (
+    <svg className="illustration" viewBox="0 0 120 120" width={size} height={size} fill="none" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      {layers.soft.map((d) => <path key={d} d={d} className="il-soft" />)}
+      {layers.line.map((d) => <path key={d} d={d} className="il-line" />)}
+      {layers.accent.map((d) => <path key={d} d={d} className="il-accent" />)}
+    </svg>
+  );
+}
+
+/** Open, closed, on duty: the label and colour come from the shared vocabulary. */
 export function StatusBadge({ state }: { state: AvailabilityState }) {
-  return <span className={`badge badge-${state.toLowerCase()}`}>{STATE_LABEL[state] ?? state}</span>;
+  const t = term("availability", state);
+  return <span className={`badge badge-${t.tone}`}>{t.ar}</span>;
 }
 
 export function Rating({ average, count }: { average: number | null; count: number }) {
@@ -45,15 +75,21 @@ export function FacilityList({ items }: { items: CompactFacility[] }) {
 
 export function Unavailable() {
   return (
-    <div className="card notice" role="status">
+    <div className="card state" role="status">
+      <Illustration name="offline" size={88} />
       <strong>تعذّر تحميل البيانات حالياً.</strong>
       <p>الخدمة غير متاحة مؤقتاً، يرجى المحاولة بعد قليل أو استخدام التطبيق.</p>
     </div>
   );
 }
 
-export function Empty({ children }: { children: React.ReactNode }) {
-  return <div className="card notice"><p>{children}</p></div>;
+export function Empty({ children, illustration = "empty" }: { children: React.ReactNode; illustration?: IllustrationName }) {
+  return (
+    <div className="card state">
+      <Illustration name={illustration} size={80} />
+      <p>{children}</p>
+    </div>
+  );
 }
 
 export function Breadcrumbs({ items }: { items: { href?: string; label: string }[] }) {

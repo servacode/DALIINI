@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import { Breadcrumbs, JsonLd, Rating, StatusBadge, Unavailable } from "../../../components/ui";
+import { Breadcrumbs, Icon, JsonLd, Rating, StatusBadge, Unavailable } from "../../../components/ui";
 import { getFacility, type FacilityDetail, type HoursEntry } from "../../../lib/api";
 import { absoluteUrl } from "../../../lib/config";
 import { UNAVAILABLE_METADATA, pageMetadata } from "../../../lib/seo";
@@ -133,10 +133,11 @@ export default async function FacilityPage({ params }: Props) {
       {f.descriptionAr ? <p>{f.descriptionAr}</p> : null}
 
       <div className="actions more">
-        {f.phone ? <a className="button" href={`tel:${f.phone.replace(/\s+/g, "")}`}>اتصال</a> : null}
-        {wa ? <a className="button button-alt" href={wa} rel="noopener">واتساب</a> : null}
+        {f.phone ? <a className="button" href={`tel:${f.phone.replace(/\s+/g, "")}`}><Icon name="phone" />اتصال</a> : null}
+        {wa ? <a className="button button-alt" href={wa} rel="noopener"><Icon name="whatsapp" />واتساب</a> : null}
         {loc ? (
           <a className="button button-alt" href={`https://www.google.com/maps/dir/?api=1&destination=${loc}`} rel="noopener">
+            <Icon name="directions" />
             الاتجاهات
           </a>
         ) : null}
