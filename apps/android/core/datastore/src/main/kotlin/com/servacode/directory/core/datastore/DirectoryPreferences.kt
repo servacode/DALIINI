@@ -25,9 +25,26 @@ data class DirectoryPreferences(
      * the app does not fetch it again behind their back; asking for it in settings says yes again.
      */
     val offlineMapDeclined: Boolean = false,
+    /** Light, dark, or whatever the phone is set to — the last is the default. */
+    val themePreference: ThemePreference = ThemePreference.SYSTEM,
 )
 
 enum class LocationPreference { ASK, ENABLED, DISABLED }
+
+/** The reader's choice in Settings: تلقائي (follow the phone), فاتح or داكن. */
+enum class ThemePreference {
+    SYSTEM,
+    LIGHT,
+    DARK,
+    ;
+
+    /** Whether the app is dark, given whether the phone is. */
+    fun isDark(systemDark: Boolean): Boolean = when (this) {
+        SYSTEM -> systemDark
+        LIGHT -> false
+        DARK -> true
+    }
+}
 
 /**
  * The device preferences repositories read. DataStore implements it in the app; tests use an
@@ -44,4 +61,7 @@ interface DirectoryPreferencesStore {
 
     /** Remember that the reader does, or does not, want the province's map kept. */
     suspend fun setOfflineMapDeclined(value: Boolean)
+
+    /** Remember the reader's theme; applied at the root of the app. */
+    suspend fun setThemePreference(value: ThemePreference)
 }

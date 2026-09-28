@@ -1,5 +1,7 @@
 package com.servacode.directory.feature.map
 
+import com.servacode.directory.core.designsystem.DirectoryVocabulary
+import com.servacode.directory.core.model.AvailabilityState
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -442,8 +444,10 @@ private const val MY_LOCATION_ZOOM = 15.0
 
 /** The words of the map, provisional until product copy is approved. */
 object MapCopy {
-    val OPEN_NOW: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_open_now)
-    val DUTY_NOW: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_duty_now)
+    val OPEN_NOW: String
+        @Composable @ReadOnlyComposable get() = DirectoryVocabulary.availability(AvailabilityState.OPEN)
+    val DUTY_NOW: String
+        @Composable @ReadOnlyComposable get() = DirectoryVocabulary.availability(AvailabilityState.DUTY)
     val MY_LOCATION: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_my_location)
     val OPEN_DETAILS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_open_details)
     val DISMISS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_dismiss)

@@ -1,5 +1,6 @@
 package com.servacode.directory.feature.facility
 
+import com.servacode.directory.core.designsystem.DirectoryVocabulary
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -146,7 +147,7 @@ fun FacilityScreen(
             is FacilityUiState.Error -> DirectoryErrorState(
                 title = FacilityCopy.ERROR,
                 modifier = Modifier.padding(padding),
-                body = appErrorText(value.error),
+                error = value.error,
             )
             is FacilityUiState.Content -> Column(
                 modifier = Modifier
@@ -253,7 +254,7 @@ private fun FacilityBody(
                     // is not a WhatsApp account, so the phone is never used in its place.
                     ActionCircle(
                         label = FacilityCopy.WHATSAPP,
-                        icon = DirectoryIcons.chat,
+                        icon = DirectoryIcons.whatsapp,
                         onClick = { whatsApp?.let(onWhatsApp) },
                         enabled = whatsApp != null,
                     )
@@ -286,7 +287,7 @@ private fun FacilityBody(
                     // Said as "واتساب: …" so it is not heard as a second phone number.
                     val spoken = FacilityCopy.whatsAppNumber(it)
                     MetaRow(
-                        DirectoryIcons.chat,
+                        DirectoryIcons.whatsapp,
                         it,
                         Modifier.semantics { contentDescription = spoken },
                     )
@@ -551,16 +552,7 @@ object FacilityCopy {
     fun noteCount(length: Int, max: Int): String = stringResource(R.string.facility_report_note_count, length, max)
 
     @Composable @ReadOnlyComposable
-    fun reason(reason: FacilityReportReason): String = stringResource(
-        when (reason) {
-            FacilityReportReason.WRONG_INFO -> R.string.facility_report_wrong_info
-            FacilityReportReason.CLOSED_PERMANENTLY -> R.string.facility_report_closed_permanently
-            FacilityReportReason.WRONG_LOCATION -> R.string.facility_report_wrong_location
-            FacilityReportReason.WRONG_HOURS -> R.string.facility_report_wrong_hours
-            FacilityReportReason.NOT_ON_DUTY -> R.string.facility_report_not_on_duty
-            FacilityReportReason.OTHER -> R.string.facility_report_other
-        },
-    )
+    fun reason(reason: FacilityReportReason): String = DirectoryVocabulary.reportReason(reason)
 
     @Composable @ReadOnlyComposable
     fun reportFailure(failure: ReportFailure): String = stringResource(

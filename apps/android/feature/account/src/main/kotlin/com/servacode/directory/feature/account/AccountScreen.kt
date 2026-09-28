@@ -99,7 +99,7 @@ fun AccountScreen(
             is AccountUiState.Error -> DirectoryErrorState(
                 title = AccountCopy.ERROR,
                 modifier = Modifier.padding(padding),
-                body = appErrorText(value.error),
+                error = value.error,
                 onRetry = viewModel::refresh,
             )
             is AccountUiState.Content -> Column(

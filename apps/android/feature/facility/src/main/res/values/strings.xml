@@ -57,12 +57,6 @@
 
     <!-- Reporting a problem with the facility's details. -->
     <string name="facility_report">الإبلاغ عن مشكلة</string>
-    <string name="facility_report_wrong_info">معلومات خاطئة</string>
-    <string name="facility_report_closed_permanently">مغلقة نهائياً</string>
-    <string name="facility_report_wrong_location">الموقع خاطئ</string>
-    <string name="facility_report_wrong_hours">أوقات الدوام خاطئة</string>
-    <string name="facility_report_not_on_duty">ليست مناوبة</string>
-    <string name="facility_report_other">أخرى</string>
     <string name="facility_report_note">ملاحظة - اختياري</string>
     <!-- %1$d characters typed, of at most %2$d. -->
     <string name="facility_report_note_count">%1$d / %2$d</string>

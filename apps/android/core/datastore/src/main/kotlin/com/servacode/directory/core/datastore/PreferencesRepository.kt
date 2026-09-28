@@ -32,6 +32,9 @@ class PreferencesRepository @Inject constructor(
             placeLabel = prefs[PLACE_LABEL],
             placeProvinceId = prefs[PLACE_PROVINCE],
             offlineMapDeclined = prefs[OFFLINE_MAP_DECLINED] ?: false,
+            themePreference = prefs[THEME_PREFERENCE]
+                ?.let { runCatching { ThemePreference.valueOf(it) }.getOrNull() }
+                ?: ThemePreference.SYSTEM,
         )
     }
 
@@ -58,6 +61,10 @@ class PreferencesRepository @Inject constructor(
         context.directoryDataStore.edit { it[OFFLINE_MAP_DECLINED] = value }
     }
 
+    override suspend fun setThemePreference(value: ThemePreference) {
+        context.directoryDataStore.edit { it[THEME_PREFERENCE] = value.name }
+    }
+
     private companion object {
         val SELECTED_PROVINCE = stringPreferencesKey("selected_province_id")
         val LOCATION_PREFERENCE = stringPreferencesKey("location_preference")
@@ -66,6 +73,7 @@ class PreferencesRepository @Inject constructor(
         val PLACE_LABEL = stringPreferencesKey("place_label")
         val PLACE_PROVINCE = stringPreferencesKey("place_province_id")
         val OFFLINE_MAP_DECLINED = booleanPreferencesKey("offline_map_declined")
+        val THEME_PREFERENCE = stringPreferencesKey("theme_preference")
     }
 }
 

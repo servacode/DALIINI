@@ -35,27 +35,13 @@
     <string name="ds_maintenance_body">نعمل على تحسين الخدمة وسنعود قريبًا. لا حاجة لإغلاق التطبيق.</string>
     <string name="ds_maintenance_auto_retry">سيعيد التطبيق المحاولة تلقائيًا.</string>
 
-    <!-- Whether the doors are open, and whether today's roster names this facility. -->
-    <string name="ds_open_now">مفتوحة الآن</string>
-    <string name="ds_closed_now">مغلقة الآن</string>
+    <!-- Whether today's roster names this facility. Open, closed and on duty now are the shared
+         vocabulary's (vocab_availability_*). -->
     <string name="ds_on_duty_today">مناوبة اليوم</string>
 
     <string name="ds_no_ratings">لا توجد تقييمات بعد</string>
 
-    <!-- Shared vocabulary: words that belong to no single screen.
-
-         Monday first, matching the backend's weekday numbering, and read by index. Both the
-         facility's opening hours and the owner's hours editor name the days, and they must name
-         them the same way — so they name them from here. -->
-    <string-array name="directory_weekdays">
-        <item>الاثنين</item>
-        <item>الثلاثاء</item>
-        <item>الأربعاء</item>
-        <item>الخميس</item>
-        <item>الجمعة</item>
-        <item>السبت</item>
-        <item>الأحد</item>
-    </string-array>
+    <!-- A weekday number that names no day. The days themselves are vocab_weekday_*. -->
     <string name="directory_weekday_unknown">—</string>
 
     <!-- What goes between items of a list. A comma is not the same mark in every language. -->
@@ -94,13 +80,7 @@
     <string name="ds_error_server">حدث خطأ في الخادم. حاول لاحقًا.</string>
     <string name="ds_error_unexpected">حدث خطأ غير متوقع.</string>
 
-    <!-- Where an owner's facility stands, and what is being asked of them. -->
-    <string name="ds_owner_status_draft">مسودة</string>
-    <string name="ds_owner_status_submitted">قيد المراجعة</string>
-    <string name="ds_owner_status_active">فعّالة</string>
-    <string name="ds_owner_status_reverification">بحاجة إلى إعادة التحقق</string>
-    <string name="ds_owner_status_suspended">موقوفة</string>
-    <string name="ds_owner_status_closed">مغلقة</string>
+    <!-- What is being asked of an owner. Where their facility stands is vocab_facility_status_*. -->
     <string name="ds_owner_action_review_rejection">راجِع سبب الرفض وعدّل الطلب</string>
     <string name="ds_owner_action_complete_and_submit">أكمِل البيانات وأرسلها للمراجعة</string>
     <string name="ds_owner_action_reverify_and_submit">حدّث البيانات وأرسلها لإعادة التحقق</string>
@@ -110,12 +90,7 @@
     <string name="ds_owner_role_owner">مالك</string>
     <string name="ds_owner_role_manager">مدير</string>
 
-    <!-- Whether a facility is open, as a list line reads it. -->
-    <string name="ds_availability_open">مفتوح الآن</string>
-    <string name="ds_availability_duty">مناوب الآن</string>
-    <string name="ds_availability_temp_closed">مغلق مؤقتًا</string>
-    <string name="ds_availability_closed">مغلق</string>
-    <!-- The state, and when it opens next: "closed - opens 08:00". -->
+    <!-- The state (vocab_availability_*), and when it opens next: "closed - opens 08:00". -->
     <string name="ds_availability_next_open">%1$s • يفتح %2$s</string>
 
     <!-- How far it is. The number is rounded before it gets here. -->

@@ -14,6 +14,12 @@ extensions.configure<com.android.build.api.dsl.LibraryExtension> {
     sourceSets.getByName("main").res.srcDir(
         rootProject.file("../../packages/design-tokens/generated/android")
     )
+    // Tajawal 400/500/700/800, the token font, from the package that owns it (SIL OFL,
+    // packages/design-tokens/fonts/OFL.txt): the site, the console and the app set the same
+    // files, so no copy lives here to fall behind.
+    sourceSets.getByName("main").res.srcDir(
+        rootProject.file("../../packages/design-tokens/fonts/android")
+    )
 }
 
 dependencies {
@@ -29,4 +35,5 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    testImplementation(libs.junit)
 }

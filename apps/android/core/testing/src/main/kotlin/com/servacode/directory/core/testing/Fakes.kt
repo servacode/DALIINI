@@ -5,6 +5,7 @@ import com.servacode.directory.core.database.PublicCache
 import com.servacode.directory.core.datastore.DirectoryPreferences
 import com.servacode.directory.core.datastore.DirectoryPreferencesStore
 import com.servacode.directory.core.datastore.LocationPreference
+import com.servacode.directory.core.datastore.ThemePreference
 import com.servacode.directory.core.location.LocationFix
 import com.servacode.directory.core.location.LocationProvider
 import com.servacode.directory.core.location.LocationResult
@@ -110,6 +111,10 @@ class FakePreferences(
 
     override suspend fun setOfflineMapDeclined(value: Boolean) {
         state.value = state.value.copy(offlineMapDeclined = value)
+    }
+
+    override suspend fun setThemePreference(value: ThemePreference) {
+        state.value = state.value.copy(themePreference = value)
     }
 }
 

@@ -40,6 +40,7 @@ import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DirectoryActionBar
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
+import com.servacode.directory.core.designsystem.DirectoryIllustrations
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIcons
@@ -58,7 +59,7 @@ import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.MetaRow
 import com.servacode.directory.core.designsystem.OwnerWords
 import com.servacode.directory.core.designsystem.Space
-import com.servacode.directory.core.designsystem.StatusPill
+import com.servacode.directory.core.designsystem.StatusChip
 import com.servacode.directory.core.designsystem.StatusTone
 import com.servacode.directory.core.designsystem.StepIndicator
 import com.servacode.directory.core.maps.MapPoint
@@ -135,7 +136,7 @@ fun OnboardingScreen(
             OnboardingUiState.ProvinceRequired -> DirectoryEmptyState(
                 title = OnboardingCopy.PROVINCE_REQUIRED,
                 modifier = Modifier.padding(padding),
-                icon = DirectoryIcons.pin,
+                illustration = DirectoryIllustrations.location,
                 action = OnboardingCopy.PROVINCE_CHOOSE,
                 onAction = onChooseProvince,
             )
@@ -372,13 +373,13 @@ private fun EvidenceStep(value: OnboardingUiState.Content, onUpload: (String) ->
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f),
                         )
-                        StatusPill(
+                        StatusChip(
                             text = if (requirement.required) {
                                 OnboardingCopy.REQUIRED
                             } else {
                                 OnboardingCopy.OPTIONAL
                             },
-                            tone = if (requirement.required) StatusTone.PENDING else StatusTone.NEUTRAL,
+                            tone = if (requirement.required) StatusTone.WARNING else StatusTone.NEUTRAL,
                         )
                     }
                     requirement.instructionsAr?.let {

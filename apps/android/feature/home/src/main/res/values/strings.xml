@@ -23,8 +23,6 @@
     <string name="home_location_action">السماح بالموقع</string>
 
     <string name="home_chip_nearest">الأقرب إليك</string>
-    <string name="home_chip_open_now">مفتوح الآن</string>
-    <string name="home_chip_duty_today">مناوبة اليوم</string>
 
     <string name="home_empty_duty_and_open">لا توجد منشآت مناوبة اليوم ومفتوحة الآن</string>
     <string name="home_empty_duty">لا توجد منشآت مناوبة اليوم</string>

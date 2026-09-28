@@ -3,6 +3,10 @@
      second file beside this one and the phone's own setting chooses between them. -->
 <resources>
     <string name="settings_title">الإعدادات</string>
+    <string name="settings_appearance">المظهر</string>
+    <string name="settings_theme_system">تلقائي</string>
+    <string name="settings_theme_light">فاتح</string>
+    <string name="settings_theme_dark">داكن</string>
     <string name="settings_security">الحساب والأمان</string>
     <string name="settings_change_password">تغيير كلمة المرور</string>
     <string name="settings_change_phone">تغيير رقم الهاتف</string>

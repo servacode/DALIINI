@@ -1,5 +1,7 @@
 package com.servacode.directory.feature.owner
 
+import com.servacode.directory.core.designsystem.StatusTones
+import com.servacode.directory.core.designsystem.StatusChip
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -56,7 +58,6 @@ import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.MetaRow
 import com.servacode.directory.core.designsystem.OwnerWords
 import com.servacode.directory.core.designsystem.Space
-import com.servacode.directory.core.designsystem.StatusPill
 import com.servacode.directory.core.designsystem.StatusTone
 import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.model.OwnerFacilityStatus
@@ -100,7 +101,7 @@ fun MyFacilitiesScreen(
             is MyFacilitiesUiState.Error -> DirectoryErrorState(
                 title = OwnerCopy.LIST_ERROR,
                 modifier = Modifier.padding(padding),
-                body = appErrorText(value.error),
+                error = value.error,
                 onRetry = viewModel::refresh,
             )
             is MyFacilitiesUiState.Content -> if (value.items.isEmpty()) {
@@ -108,7 +109,6 @@ fun MyFacilitiesScreen(
                     title = OwnerCopy.EMPTY,
                     modifier = Modifier.padding(padding),
                     body = OwnerCopy.EMPTY_BODY,
-                    icon = DirectoryIcons.hospital,
                     action = OwnerCopy.ADD,
                     onAction = onAdd,
                 )
@@ -162,7 +162,7 @@ private fun OwnerFacilityCard(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f).semantics { heading() },
                 )
-                StatusPill(OwnerWords.status(item.status), item.status.tone())
+                StatusChip(OwnerWords.status(item.status), item.status.tone())
             }
             Text(
                 text = "${item.category.nameAr} - ${item.province.nameAr}",
@@ -237,7 +237,7 @@ fun ManageFacilityScreen(
             is ManageFacilityUiState.Error -> DirectoryErrorState(
                 title = OwnerCopy.MANAGE_ERROR,
                 modifier = Modifier.padding(padding),
-                body = appErrorText(value.error),
+                error = value.error,
                 onRetry = viewModel::refresh,
             )
             is ManageFacilityUiState.Content -> Column(
@@ -262,7 +262,7 @@ fun ManageFacilityScreen(
                                 color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.weight(1f).semantics { heading() },
                             )
-                            StatusPill(OwnerWords.status(summary.status), summary.status.tone())
+                            StatusChip(OwnerWords.status(summary.status), summary.status.tone())
                         }
                         Text(
                             text = "${summary.category.nameAr} - ${summary.province.nameAr}",
@@ -447,15 +447,8 @@ fun ManageFacilityScreen(
     }
 }
 
-/** The colour a status is read in; the word itself is the backend's. */
-internal fun OwnerFacilityStatus.tone(): StatusTone = when (this) {
-    OwnerFacilityStatus.ACTIVE -> StatusTone.POSITIVE
-    OwnerFacilityStatus.SUBMITTED -> StatusTone.PENDING
-    OwnerFacilityStatus.REVERIFICATION_REQUIRED -> StatusTone.PENDING
-    OwnerFacilityStatus.SUSPENDED -> StatusTone.DANGER
-    OwnerFacilityStatus.DRAFT -> StatusTone.NEUTRAL
-    OwnerFacilityStatus.CLOSED -> StatusTone.NEUTRAL
-}
+/** The colour a status is read in: the shared vocabulary's tone for it. */
+internal fun OwnerFacilityStatus.tone(): StatusTone = StatusTones.facilityStatus(this)
 
 /** The words of the owner's screens, provisional until product copy is approved. */
 /**

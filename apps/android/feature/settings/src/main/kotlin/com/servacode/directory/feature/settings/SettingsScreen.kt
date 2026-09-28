@@ -1,5 +1,18 @@
 package com.servacode.directory.feature.settings
 
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.Role
+import com.servacode.directory.core.datastore.ThemePreference
+import com.servacode.directory.core.designsystem.DirectoryIcon
+import com.servacode.directory.core.designsystem.Sizes
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -39,8 +52,8 @@ import kotlin.math.roundToInt
 /**
  * Settings: everything about the app, and only what this app actually has.
  *
- * There is no theme to choose — the app has one — and no language to choose, because it is
- * written in Arabic and has no second translation to offer.
+ * The theme follows the phone unless the reader picks light or dark here. There is no language
+ * to choose, because the app is written in Arabic and has no second translation to offer.
  *
  * This is the one place for the password and for whether notices are allowed. The profile used
  * to offer both as well, so a reader who wanted to change a password had two rows that did the
@@ -111,6 +124,8 @@ fun SettingsScreen(
                 )
             }
 
+            AppearanceSection()
+
             // What a trip needs when the connection goes, which in this country it does.
             OfflineMapSection()
 
@@ -133,6 +148,54 @@ fun SettingsScreen(
             }
         }
     }
+}
+
+/**
+ * تلقائي / فاتح / داكن, as one radio group: the choice is applied at the app's root the moment it
+ * is made, so the reader sees what they picked without leaving the page.
+ */
+@Composable
+private fun AppearanceSection(viewModel: AppearanceViewModel = hiltViewModel()) {
+    val theme by viewModel.theme.collectAsStateWithLifecycle()
+    DirectoryMenuSection(SettingsCopy.APPEARANCE) {
+        Column(Modifier.selectableGroup()) {
+            ThemePreference.entries.forEach { option ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = Sizes.touchTarget)
+                        .selectable(
+                            selected = theme == option,
+                            onClick = { viewModel.choose(option) },
+                            role = Role.RadioButton,
+                        )
+                        .padding(horizontal = Space.base, vertical = Space.sm),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Space.md),
+                ) {
+                    DirectoryIcon(
+                        icon = themeIcon(option),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        text = SettingsCopy.theme(option),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f),
+                    )
+                    // The row is the control; the button only shows the choice.
+                    RadioButton(selected = theme == option, onClick = null)
+                }
+            }
+        }
+    }
+}
+
+private fun themeIcon(option: ThemePreference): Int = when (option) {
+    ThemePreference.SYSTEM -> DirectoryIcons.settings
+    ThemePreference.LIGHT -> DirectoryIcons.sun
+    ThemePreference.DARK -> DirectoryIcons.moon
 }
 
 /**
@@ -259,6 +322,17 @@ private object NotificationSetting {
 /** The words of the settings, provisional until product copy is approved. */
 object SettingsCopy {
     val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_title)
+    val APPEARANCE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_appearance)
+
+    @Composable
+    @ReadOnlyComposable
+    fun theme(option: ThemePreference): String = stringResource(
+        when (option) {
+            ThemePreference.SYSTEM -> R.string.settings_theme_system
+            ThemePreference.LIGHT -> R.string.settings_theme_light
+            ThemePreference.DARK -> R.string.settings_theme_dark
+        },
+    )
     val SECURITY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_security)
     val CHANGE_PASSWORD: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_change_password)

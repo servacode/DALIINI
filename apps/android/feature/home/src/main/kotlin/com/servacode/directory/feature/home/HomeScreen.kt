@@ -55,6 +55,7 @@ import com.servacode.directory.core.designsystem.DirectoryBrandHeader
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryCompactFilterChip
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
+import com.servacode.directory.core.designsystem.DirectoryIllustrations
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIconButton
@@ -143,14 +144,14 @@ fun HomeScreen(
                 title = HomeCopy.PROVINCE_REQUIRED,
                 modifier = Modifier.padding(padding),
                 body = HomeCopy.PROVINCE_REQUIRED_BODY,
-                icon = DirectoryIcons.pin,
+                illustration = DirectoryIllustrations.location,
                 action = HomeCopy.PROVINCE_CHOOSE,
                 onAction = onProvince,
             )
             is HomeUiState.Error -> DirectoryErrorState(
                 title = HomeCopy.ERROR,
                 modifier = Modifier.padding(padding),
-                body = appErrorText(value.error),
+                error = value.error,
                 onRetry = viewModel::refresh,
             )
             is HomeUiState.Content -> HomeContent(
@@ -507,7 +508,7 @@ private fun LazyListScope.facilityList(
         item(key = "list-error") {
             DirectoryErrorState(
                 title = HomeCopy.ERROR,
-                body = appErrorText(list.error),
+                error = list.error,
                 onRetry = onLoadMore,
                 modifier = Modifier.padding(top = Space.lg),
             )
@@ -520,7 +521,7 @@ private fun LazyListScope.facilityList(
                 title = HomeCopy.emptyFor(filters),
                 modifier = Modifier.padding(top = Space.lg),
                 body = HomeCopy.emptyBodyFor(place),
-                icon = DirectoryIcons.hospital,
+                illustration = DirectoryIllustrations.noResults,
             )
         }
         return

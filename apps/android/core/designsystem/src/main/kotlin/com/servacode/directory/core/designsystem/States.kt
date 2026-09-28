@@ -1,5 +1,6 @@
 package com.servacode.directory.core.designsystem
 
+import com.servacode.directory.core.model.AppError
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -64,6 +65,8 @@ fun DirectoryMessageState(
     @DrawableRes icon: Int,
     title: String,
     modifier: Modifier = Modifier,
+    /** A shared illustration shown in place of [icon]; see [DirectoryIllustrations]. */
+    @DrawableRes illustration: Int? = null,
     body: String? = null,
     tint: Color = MaterialTheme.colorScheme.primary,
     primaryAction: String? = null,
@@ -76,13 +79,17 @@ fun DirectoryMessageState(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(
-            modifier = Modifier
-                .size(Sizes.avatar + Space.xxl)
-                .background(tint.copy(alpha = 0.10f), RoundedCornerShape(Radius.pill)),
-            contentAlignment = Alignment.Center,
-        ) {
-            DirectoryIcon(icon, null, size = IconSize.large, tint = tint)
+        if (illustration != null) {
+            DirectoryIllustration(illustration)
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(Sizes.avatar + Space.xxl)
+                    .background(tint.copy(alpha = 0.10f), RoundedCornerShape(Radius.pill)),
+                contentAlignment = Alignment.Center,
+            ) {
+                DirectoryIcon(icon, null, size = IconSize.large, tint = tint)
+            }
         }
         Text(
             text = title,
@@ -113,18 +120,23 @@ fun DirectoryMessageState(
     }
 }
 
-/** A list with nothing in it yet. */
+/**
+ * A list with nothing in it yet. [illustration] is the shared empty picture; a search that found
+ * nothing passes [DirectoryIllustrations.noResults], a list that needs a place first
+ * [DirectoryIllustrations.location].
+ */
 @Composable
 fun DirectoryEmptyState(
     title: String,
     modifier: Modifier = Modifier,
     body: String? = null,
-    @DrawableRes icon: Int = DirectoryIcons.search,
+    @DrawableRes illustration: Int = DirectoryIllustrations.empty,
     action: String? = null,
     onAction: (() -> Unit)? = null,
 ) {
     DirectoryMessageState(
-        icon = icon,
+        icon = DirectoryIcons.search,
+        illustration = illustration,
         title = title,
         modifier = modifier,
         body = body,
@@ -134,7 +146,10 @@ fun DirectoryEmptyState(
     )
 }
 
-/** Something failed, and the user can try it again. */
+/**
+ * Something failed, and the user can try it again. [offline] shows the no-connection picture
+ * rather than the error one: the fix is the reader's connection, not a retry of the same thing.
+ */
 @Composable
 fun DirectoryErrorState(
     title: String,
@@ -142,15 +157,36 @@ fun DirectoryErrorState(
     body: String? = null,
     retry: String? = stringResource(R.string.ds_retry),
     onRetry: (() -> Unit)? = null,
+    offline: Boolean = false,
 ) {
     DirectoryMessageState(
         icon = DirectoryIcons.warning,
+        illustration = if (offline) DirectoryIllustrations.offline else DirectoryIllustrations.error,
         title = title,
         modifier = modifier,
         body = body,
         tint = MaterialTheme.colorScheme.error,
         primaryAction = if (onRetry != null) retry else null,
         onPrimaryAction = onRetry,
+    )
+}
+
+/** A failure read from the backend's own error: its words, and the offline picture when it is one. */
+@Composable
+fun DirectoryErrorState(
+    title: String,
+    error: AppError,
+    modifier: Modifier = Modifier,
+    retry: String? = stringResource(R.string.ds_retry),
+    onRetry: (() -> Unit)? = null,
+) {
+    DirectoryErrorState(
+        title = title,
+        modifier = modifier,
+        body = appErrorText(error),
+        retry = retry,
+        onRetry = onRetry,
+        offline = error.kind == AppError.Kind.OFFLINE,
     )
 }
 
@@ -165,12 +201,12 @@ fun DirectoryOfflineNotice(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(BrandColors.warning.copy(alpha = 0.10f), RoundedCornerShape(Radius.medium))
+            .background(LocalDirectoryTones.current.warning.container, RoundedCornerShape(Radius.medium))
             .padding(horizontal = Space.base, vertical = Space.md),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Space.md),
     ) {
-        DirectoryIcon(DirectoryIcons.info, null, tint = BrandColors.warning)
+        DirectoryIcon(DirectoryIcons.offline, null, tint = LocalDirectoryTones.current.warning.content)
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
@@ -196,6 +232,7 @@ fun DirectoryPermissionState(
 ) {
     DirectoryMessageState(
         icon = DirectoryIcons.pin,
+        illustration = DirectoryIllustrations.location,
         title = title,
         modifier = modifier,
         body = body,

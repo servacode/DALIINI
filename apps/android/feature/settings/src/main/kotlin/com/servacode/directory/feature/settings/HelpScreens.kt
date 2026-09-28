@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcons
@@ -53,7 +52,7 @@ fun HelpScreen(
             is LegalListState.Error -> DirectoryErrorState(
                 title = HelpCopy.ERROR,
                 modifier = Modifier.padding(padding),
-                body = appErrorText(value.error),
+                error = value.error,
                 onRetry = viewModel::refresh,
             )
             is LegalListState.Content -> if (value.pages.isEmpty()) {
@@ -61,7 +60,6 @@ fun HelpScreen(
                     title = HelpCopy.EMPTY,
                     modifier = Modifier.padding(padding),
                     body = HelpCopy.EMPTY_BODY,
-                    icon = DirectoryIcons.document,
                 )
             } else {
                 // Few enough pages to draw at once, and one card reads as one subject — which
@@ -119,7 +117,7 @@ fun LegalPageScreen(
             is LegalPageState.Error -> DirectoryErrorState(
                 title = HelpCopy.ERROR,
                 modifier = Modifier.padding(padding),
-                body = appErrorText(value.error),
+                error = value.error,
                 onRetry = { viewModel.open(key) },
             )
             is LegalPageState.Content -> Column(

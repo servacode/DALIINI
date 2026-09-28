@@ -1,6 +1,18 @@
 package com.servacode.directory.core.designsystem
 
+import android.app.Activity
+import android.content.res.Configuration
+import android.view.ContextThemeWrapper
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
@@ -24,15 +36,20 @@ import com.servacode.directory.designsystem.generated.DirectoryTokens
 private fun color(hex: String): Color = Color(hex.toColorInt())
 
 /**
- * Tajawal, the token font (`typography.fontFamily.primary`), bundled with the app under its open
- * font licence (docs/design/fonts/Tajawal-OFL.txt). Arabic is the app's first language, so the
- * type it is set in belongs to the design system, not to a screen.
+ * Tajawal, the token font (`typography.fontFamily.primary`), read from the design-token package
+ * (`packages/design-tokens/fonts/android`, SIL OFL — `fonts/OFL.txt`) so the app sets the same
+ * files as the site and the console. Arabic is the app's first language, so the type it is set in
+ * belongs to the design system, not to a screen.
+ *
+ * Tajawal has no 600. The type scale asks for it on titles and labels; it is set at 700, which is
+ * also what a browser picks for 600 from these four weights, so the app and the site agree.
  */
-private val Tajawal = FontFamily(
+val Tajawal = FontFamily(
     Font(R.font.tajawal_regular, FontWeight.Normal),
     Font(R.font.tajawal_medium, FontWeight.Medium),
-    Font(R.font.tajawal_medium, FontWeight.SemiBold),
+    Font(R.font.tajawal_bold, FontWeight.SemiBold),
     Font(R.font.tajawal_bold, FontWeight.Bold),
+    Font(R.font.tajawal_extrabold, FontWeight.ExtraBold),
 )
 
 /**
@@ -68,39 +85,141 @@ object DirectoryPalettes {
     )
 
     /**
-     * The same brand at night, mapped from the same tokens: the bar's deep green becomes the
-     * page, the deep green above it becomes the card, and what was written on the bars is
-     * written on the page.
+     * The same brand at night, from the approved dark tokens (`semanticDark` / `colorsDark`).
      *
-     * **Provisional.** No dark token set has been approved, so this is the existing palette
-     * read the other way round rather than colours chosen for the dark. It is here because the
-     * mechanism has to be real to be trusted — and when a dark set is published, this object is
-     * the only thing that changes.
+     * Contrast, as the tokens give it: primary text on the canvas and on cards is above 12:1,
+     * secondary text on the subtle surface above 7:1, and the green action carries its near-black
+     * label at about 9:1. The container roles are set too — left to Material they are a violet
+     * grey that has nothing to do with this brand.
      */
     val dark: ColorScheme = darkColorScheme(
-        primary = color(DirectoryTokens.ColorsPrimarySoft),
-        onPrimary = color(DirectoryTokens.ColorsPrimaryDeep),
-        primaryContainer = color(DirectoryTokens.ColorsPrimaryStrong),
-        onPrimaryContainer = color(DirectoryTokens.ColorsPrimarySofter),
-        secondary = color(DirectoryTokens.ColorsPrimarySofter),
-        onSecondary = color(DirectoryTokens.ColorsPrimaryDeep),
-        secondaryContainer = color(DirectoryTokens.ColorsPrimaryStrong),
-        onSecondaryContainer = color(DirectoryTokens.ColorsPrimarySofter),
-        tertiary = color(DirectoryTokens.SemanticFeedbackInfo),
-        onTertiary = color(DirectoryTokens.SemanticContentOnPrimary),
-        background = color(DirectoryTokens.ColorsBarDeep),
-        onBackground = color(DirectoryTokens.ColorsBarContent),
-        surface = color(DirectoryTokens.ColorsPrimaryDeep),
-        onSurface = color(DirectoryTokens.ColorsBarContent),
-        surfaceVariant = color(DirectoryTokens.ColorsPrimaryStrong),
-        onSurfaceVariant = color(DirectoryTokens.ColorsBarContentMuted),
-        outline = color(DirectoryTokens.ColorsPrimaryStrong),
-        outlineVariant = color(DirectoryTokens.ColorsPrimaryStrong),
-        error = color(DirectoryTokens.SemanticFeedbackDanger),
-        onError = color(DirectoryTokens.SemanticContentOnPrimary),
+        primary = color(DirectoryTokens.SemanticDarkActionPrimary),
+        onPrimary = color(DirectoryTokens.SemanticDarkContentOnPrimary),
+        primaryContainer = color(DirectoryTokens.SemanticDarkSurfaceBrandSoft),
+        onPrimaryContainer = color(DirectoryTokens.ColorsDarkPrimaryStrong),
+        inversePrimary = color(DirectoryTokens.SemanticActionPrimary),
+        secondary = color(DirectoryTokens.ColorsDarkPrimaryStrong),
+        onSecondary = color(DirectoryTokens.ColorsDarkOnPrimary),
+        secondaryContainer = color(DirectoryTokens.SemanticDarkSurfaceBrandSoft),
+        onSecondaryContainer = color(DirectoryTokens.SemanticDarkContentPrimary),
+        tertiary = color(DirectoryTokens.SemanticDarkFeedbackInfo),
+        onTertiary = color(DirectoryTokens.ColorsDarkOnPrimary),
+        tertiaryContainer = color(DirectoryTokens.SemanticDarkFeedbackInfoSoft),
+        onTertiaryContainer = color(DirectoryTokens.SemanticDarkFeedbackInfo),
+        background = color(DirectoryTokens.SemanticDarkSurfaceCanvas),
+        onBackground = color(DirectoryTokens.SemanticDarkContentPrimary),
+        surface = color(DirectoryTokens.SemanticDarkSurfaceDefault),
+        onSurface = color(DirectoryTokens.SemanticDarkContentPrimary),
+        surfaceVariant = color(DirectoryTokens.SemanticDarkSurfaceSubtle),
+        onSurfaceVariant = color(DirectoryTokens.SemanticDarkContentSecondary),
+        surfaceTint = color(DirectoryTokens.SemanticDarkActionPrimary),
+        inverseSurface = color(DirectoryTokens.SemanticDarkContentPrimary),
+        inverseOnSurface = color(DirectoryTokens.SemanticDarkSurfaceCanvas),
+        outline = color(DirectoryTokens.SemanticDarkStrokeDefault),
+        outlineVariant = color(DirectoryTokens.SemanticDarkStrokeStrong),
+        error = color(DirectoryTokens.SemanticDarkFeedbackDanger),
+        onError = color(DirectoryTokens.ColorsDarkOnPrimary),
+        errorContainer = color(DirectoryTokens.SemanticDarkFeedbackDangerSoft),
+        onErrorContainer = color(DirectoryTokens.SemanticDarkContentDanger),
+        surfaceBright = color(DirectoryTokens.SemanticDarkSurfaceHover),
+        surfaceDim = color(DirectoryTokens.SemanticDarkSurfaceCanvas),
+        surfaceContainerLowest = color(DirectoryTokens.SemanticDarkSurfaceCanvas),
+        surfaceContainerLow = color(DirectoryTokens.SemanticDarkSurfaceDefault),
+        surfaceContainer = color(DirectoryTokens.SemanticDarkSurfaceDefault),
+        surfaceContainerHigh = color(DirectoryTokens.SemanticDarkSurfaceSubtle),
+        surfaceContainerHighest = color(DirectoryTokens.SemanticDarkSurfaceHover),
+        scrim = color(DirectoryTokens.ColorsDarkBarDeep),
     )
 }
 
+/**
+ * The colours a state is shown in: one tone per state, as the shared vocabulary assigns it
+ * (`vocabulary.json`), so a word means the same colour in the app, the site and the console.
+ * [content] is the word and its dot; [container] is the soft ground under them.
+ */
+@Immutable
+data class ToneColors(val content: Color, val container: Color)
+
+/** Every tone, for one theme. */
+@Immutable
+data class DirectoryToneColors(
+    val neutral: ToneColors,
+    val positive: ToneColors,
+    val warning: ToneColors,
+    val danger: ToneColors,
+    val info: ToneColors,
+    val brand: ToneColors,
+) {
+    fun of(tone: StatusTone): ToneColors = when (tone) {
+        StatusTone.NEUTRAL -> neutral
+        StatusTone.POSITIVE -> positive
+        StatusTone.WARNING -> warning
+        StatusTone.DANGER -> danger
+        StatusTone.INFO -> info
+        StatusTone.BRAND -> brand
+    }
+
+    companion object {
+        val light = DirectoryToneColors(
+            neutral = ToneColors(
+                color(DirectoryTokens.SemanticContentSecondary),
+                color(DirectoryTokens.SemanticSurfaceSubtle),
+            ),
+            positive = ToneColors(
+                color(DirectoryTokens.SemanticFeedbackSuccess),
+                color(DirectoryTokens.SemanticFeedbackSuccessSoft),
+            ),
+            // content.warning, not feedback.warning: the amber is for fills, and too light to
+            // carry a word on white.
+            warning = ToneColors(
+                color(DirectoryTokens.SemanticContentWarning),
+                color(DirectoryTokens.SemanticFeedbackWarningSoft),
+            ),
+            danger = ToneColors(
+                color(DirectoryTokens.SemanticContentDanger),
+                color(DirectoryTokens.SemanticFeedbackDangerSoft),
+            ),
+            info = ToneColors(
+                color(DirectoryTokens.SemanticFeedbackInfo),
+                color(DirectoryTokens.SemanticFeedbackInfoSoft),
+            ),
+            brand = ToneColors(
+                color(DirectoryTokens.SemanticActionPrimary),
+                color(DirectoryTokens.SemanticSurfaceBrandSoft),
+            ),
+        )
+
+        val dark = DirectoryToneColors(
+            neutral = ToneColors(
+                color(DirectoryTokens.SemanticDarkContentSecondary),
+                color(DirectoryTokens.SemanticDarkSurfaceSubtle),
+            ),
+            positive = ToneColors(
+                color(DirectoryTokens.SemanticDarkFeedbackSuccess),
+                color(DirectoryTokens.SemanticDarkFeedbackSuccessSoft),
+            ),
+            warning = ToneColors(
+                color(DirectoryTokens.SemanticDarkContentWarning),
+                color(DirectoryTokens.SemanticDarkFeedbackWarningSoft),
+            ),
+            danger = ToneColors(
+                color(DirectoryTokens.SemanticDarkContentDanger),
+                color(DirectoryTokens.SemanticDarkFeedbackDangerSoft),
+            ),
+            info = ToneColors(
+                color(DirectoryTokens.SemanticDarkFeedbackInfo),
+                color(DirectoryTokens.SemanticDarkFeedbackInfoSoft),
+            ),
+            brand = ToneColors(
+                color(DirectoryTokens.SemanticDarkActionPrimary),
+                color(DirectoryTokens.SemanticDarkSurfaceBrandSoft),
+            ),
+        )
+    }
+}
+
+/** The tones of the theme in use. */
+val LocalDirectoryTones = staticCompositionLocalOf { DirectoryToneColors.light }
 
 /** Brand colours that sit outside the Material colour scheme, from the same tokens. */
 object BrandColors {
@@ -224,21 +343,67 @@ private val DirectoryShapes = Shapes(
 /**
  * The app's theme, and the one place a different one is chosen.
  *
- * [palette] defaults to the phone's own setting, so a reader who keeps their device dark is
- * met in the dark. Passing one explicitly is how a screenshot, a preview or a future setting
- * picks a theme without a single screen knowing that themes exist.
+ * [darkTheme] defaults to the phone's own setting, so a reader who keeps their device dark is
+ * met in the dark; the app's own setting (تلقائي / فاتح / داكن) passes it explicitly, as a
+ * screenshot or a preview does. No screen knows that themes exist.
+ *
+ * Resources follow the same choice: the composition reads them through a configuration whose
+ * night bit is the theme's, so the token colours in `values-night` — and the illustrations and
+ * icons drawn with them — are the dark ones even when the phone itself is light.
  */
 @Composable
 fun DirectoryTheme(
-    palette: ColorScheme = if (isSystemInDarkTheme()) DirectoryPalettes.dark else DirectoryPalettes.light,
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+    val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val night = if (darkTheme) Configuration.UI_MODE_NIGHT_YES else Configuration.UI_MODE_NIGHT_NO
+    val themed = remember(context, configuration, night) {
+        if (configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == night) {
+            context to configuration
+        } else {
+            val override = Configuration(configuration).apply {
+                uiMode = (uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or night
+            }
+            // A wrapper, not createConfigurationContext: it still is the activity for everything
+            // but its resources, so starting a dialer or a browser from it needs no new task.
+            // Its own theme object, copied from the activity's: the vector cache is keyed by theme,
+            // so a shared one would hand back an icon already drawn in the other mode's colours.
+            val wrapped = ContextThemeWrapper(context, 0).apply {
+                applyOverrideConfiguration(override)
+                theme.setTo(context.theme)
+            }
+            wrapped to override
+        }
+    }
+    SystemBarAppearance(darkTheme)
+    CompositionLocalProvider(
+        LocalLayoutDirection provides LayoutDirection.Rtl,
+        LocalContext provides themed.first,
+        LocalConfiguration provides themed.second,
+        // stringResource and painterResource read this one, not the context.
+        LocalResources provides themed.first.resources,
+        LocalDirectoryTones provides if (darkTheme) DirectoryToneColors.dark else DirectoryToneColors.light,
+    ) {
         MaterialTheme(
-            colorScheme = palette,
+            colorScheme = if (darkTheme) DirectoryPalettes.dark else DirectoryPalettes.light,
             typography = DirectoryTypography,
             shapes = DirectoryShapes,
             content = content,
         )
+    }
+}
+
+/** Light system-bar icons on the dark theme, dark ones on the light theme. */
+@Composable
+private fun SystemBarAppearance(darkTheme: Boolean) {
+    val view = LocalView.current
+    if (view.isInEditMode) return
+    SideEffect {
+        val window = (view.context as? Activity)?.window ?: return@SideEffect
+        val controller = WindowCompat.getInsetsController(window, view)
+        controller.isAppearanceLightStatusBars = !darkTheme
+        controller.isAppearanceLightNavigationBars = !darkTheme
     }
 }

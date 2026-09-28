@@ -54,7 +54,7 @@ fun MaintenanceScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         BrandLockup()
-        TownBackdrop(Modifier.fillMaxWidth(), height = 160.dp)
+        DirectoryIllustration(DirectoryIllustrations.maintenance, size = 160.dp)
         Text(
             text = stringResource(R.string.ds_maintenance_title),
             style = MaterialTheme.typography.titleLarge,

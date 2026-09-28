@@ -95,27 +95,7 @@ fun AvailabilityPill(state: AvailabilityState, modifier: Modifier = Modifier) {
 
 @Composable
 private fun AvailabilityPill(state: AvailabilityState, text: String, modifier: Modifier) {
-    val colour = when (state) {
-        AvailabilityState.OPEN -> BrandColors.success
-        AvailabilityState.DUTY -> BrandColors.info
-        AvailabilityState.TEMP_CLOSED -> BrandColors.warning
-        AvailabilityState.CLOSED -> BrandColors.contentMuted
-    }
-    Row(
-        modifier = modifier
-            .background(colour.copy(alpha = 0.10f), RoundedCornerShape(Radius.pill))
-            .padding(horizontal = Space.md, vertical = Space.xs),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Space.xs),
-    ) {
-        Box(Modifier.size(Space.sm).clip(RoundedCornerShape(Radius.pill)).background(colour))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelMedium,
-            color = colour,
-            maxLines = 1,
-        )
-    }
+    StatusChip(text = text, tone = StatusTones.availability(state), modifier = modifier)
 }
 
 /** How far away the backend said a facility is. Shown only when it said. */
@@ -322,35 +302,19 @@ fun StatusBadges(facility: FacilitySummary, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
-        StatusBadge(
-            text = if (facility.isOpenNow) StatusText.OPEN_NOW else StatusText.CLOSED_NOW,
-            colour = if (facility.isOpenNow) BrandColors.success else BrandColors.danger,
-        )
+        val state = if (facility.isOpenNow) AvailabilityState.OPEN else AvailabilityState.CLOSED
+        StatusChip(text = DirectoryVocabulary.availability(state), tone = StatusTones.availability(state))
         if (facility.isOnDutyToday) {
-            StatusBadge(text = StatusText.ON_DUTY_TODAY, colour = BrandColors.info)
+            StatusChip(text = StatusText.ON_DUTY_TODAY, tone = StatusTones.availability(AvailabilityState.DUTY))
         }
     }
 }
 
-@Composable
-private fun StatusBadge(text: String, colour: Color) {
-    Row(
-        modifier = Modifier
-            .background(colour.copy(alpha = 0.10f), RoundedCornerShape(Radius.pill))
-            .padding(horizontal = Space.md, vertical = Space.xs),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Space.xs),
-    ) {
-        Box(Modifier.size(Space.sm).clip(CircleShape).background(colour))
-        Text(text = text, style = MaterialTheme.typography.labelMedium, color = colour)
-    }
-}
-
-/** Whether the doors are open, in words, read from the design system's resources. */
+/**
+ * On today's roster: a different fact from "on duty now", so it keeps its own words. Open and
+ * closed are the shared vocabulary's.
+ */
 object StatusText {
-    val OPEN_NOW: String @Composable @ReadOnlyComposable get() = stringResource(R.string.ds_open_now)
-    val CLOSED_NOW: String
-        @Composable @ReadOnlyComposable get() = stringResource(R.string.ds_closed_now)
     val ON_DUTY_TODAY: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.ds_on_duty_today)
 }
@@ -665,32 +629,6 @@ fun averageText(average: Double): String {
 }
 
 const val MAX_STARS = 5
-
-/** How a state reads: settled, waiting, wrong, or merely a fact. */
-enum class StatusTone { POSITIVE, PENDING, DANGER, NEUTRAL }
-
-/**
- * A state in one word, in the colour that agrees with it: what an owner's facility is going
- * through, or where a submission stands. The word comes from the backend's own labels.
- */
-@Composable
-fun StatusPill(text: String, tone: StatusTone, modifier: Modifier = Modifier) {
-    val colour = when (tone) {
-        StatusTone.POSITIVE -> BrandColors.success
-        StatusTone.PENDING -> BrandColors.warning
-        StatusTone.DANGER -> BrandColors.danger
-        StatusTone.NEUTRAL -> BrandColors.contentMuted
-    }
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelMedium,
-        color = colour,
-        maxLines = 1,
-        modifier = modifier
-            .background(colour.copy(alpha = 0.12f), RoundedCornerShape(Radius.pill))
-            .padding(horizontal = Space.md, vertical = Space.xs),
-    )
-}
 
 /**
  * The advertisements a province wants seen first.

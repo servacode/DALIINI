@@ -1,5 +1,8 @@
 package com.servacode.directory.feature.home
 
+import com.servacode.directory.core.designsystem.DirectoryVocabulary
+import com.servacode.directory.core.designsystem.StatusText
+import com.servacode.directory.core.model.AvailabilityState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.res.stringResource
@@ -51,13 +54,11 @@ object HomeCopy {
 
     @Composable
     @ReadOnlyComposable
-    fun chip(chip: HomeChip): String = stringResource(
-        when (chip) {
-            HomeChip.NEAREST -> R.string.home_chip_nearest
-            HomeChip.OPEN_NOW -> R.string.home_chip_open_now
-            HomeChip.DUTY_TODAY -> R.string.home_chip_duty_today
-        },
-    )
+    fun chip(chip: HomeChip): String = when (chip) {
+        HomeChip.NEAREST -> stringResource(R.string.home_chip_nearest)
+        HomeChip.OPEN_NOW -> DirectoryVocabulary.availability(AvailabilityState.OPEN)
+        HomeChip.DUTY_TODAY -> StatusText.ON_DUTY_TODAY
+    }
 
     /**
      * Why the list is empty, in terms of what was asked.

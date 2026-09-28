@@ -1,5 +1,9 @@
 package com.servacode.directory.core.designsystem
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -124,4 +128,29 @@ fun LocationIllustration(
         }
         BrandSymbol(size = mark)
     }
+}
+
+/**
+ * The shared state illustrations (`packages/design-tokens/illustrations`, generated as
+ * `dl_illustration_*`): the same pictures the site and the console show for the same states.
+ * Two-tone, drawn in the semantic token colours, so they follow the theme's night mode.
+ */
+object DirectoryIllustrations {
+    @DrawableRes val empty = R.drawable.dl_illustration_empty
+    @DrawableRes val noResults = R.drawable.dl_illustration_no_results
+    @DrawableRes val offline = R.drawable.dl_illustration_offline
+    @DrawableRes val error = R.drawable.dl_illustration_error
+    @DrawableRes val maintenance = R.drawable.dl_illustration_maintenance
+    @DrawableRes val success = R.drawable.dl_illustration_success
+    @DrawableRes val location = R.drawable.dl_illustration_location
+}
+
+/** One of [DirectoryIllustrations], at the size every state screen shows it. Decorative. */
+@Composable
+fun DirectoryIllustration(@DrawableRes illustration: Int, modifier: Modifier = Modifier, size: Dp = 120.dp) {
+    Image(
+        painter = painterResource(illustration),
+        contentDescription = null,
+        modifier = modifier.size(size),
+    )
 }

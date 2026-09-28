@@ -70,7 +70,7 @@ fun FavoritesScreen(
             is FavoritesUiState.Error -> DirectoryErrorState(
                 title = SavedCopy.FAVORITES_ERROR,
                 modifier = Modifier.padding(padding),
-                body = appErrorText(value.error),
+                error = value.error,
                 onRetry = viewModel::refresh,
             )
             is FavoritesUiState.Content -> if (value.items.isEmpty()) {
@@ -78,7 +78,6 @@ fun FavoritesScreen(
                     title = SavedCopy.FAVORITES_EMPTY,
                     modifier = Modifier.padding(padding),
                     body = SavedCopy.FAVORITES_EMPTY_BODY,
-                    icon = DirectoryIcons.star,
                 )
             } else {
                 LazyColumn(
@@ -153,7 +152,7 @@ fun NotificationsScreen(
             is InboxUiState.Error -> DirectoryErrorState(
                 title = SavedCopy.NOTIFICATIONS_ERROR,
                 modifier = Modifier.padding(padding),
-                body = appErrorText(value.error),
+                error = value.error,
                 onRetry = viewModel::refresh,
             )
             is InboxUiState.Content -> if (value.items.isEmpty()) {
@@ -161,7 +160,6 @@ fun NotificationsScreen(
                     title = SavedCopy.NOTIFICATIONS_EMPTY,
                     modifier = Modifier.padding(padding),
                     body = SavedCopy.NOTIFICATIONS_EMPTY_BODY,
-                    icon = DirectoryIcons.bell,
                 )
             } else {
                 LazyColumn(
