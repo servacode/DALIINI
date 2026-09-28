@@ -1603,3 +1603,46 @@ strict are clean on the new modules.
 
 Known and not mine: `core/tests/test_openapi_contract.py` has two failures on this branch before
 this batch — the committed schema and its hash have drifted from the source.
+
+## 2026-09-28 — Backend hardening: reliability, maintenance mode, abuse limits, trust signals
+
+Backend, in six commits on top of 394f99a:
+
+- Reliability. `CELERY_BEAT_SCHEDULE` runs the analytics retention purge and new purges of
+  sessions ended more than 30 days ago and OTP challenges expired more than a day ago. Push
+  delivery is `acks_late` and idempotent per device (`NotificationPushDelivery`); an invalid
+  token deactivates the device and a misconfigured provider is logged, neither retried; only
+  `TransientPushError` retries, with capped exponential backoff and jitter. Every JSON log line
+  carries the request id; Sentry starts only when `SENTRY_DSN` is set, with
+  `send_default_pii=False`.
+- Maintenance mode. Typed settings `maintenance.enabled`, `maintenance.messageAr` and
+  `maintenance.retryAfterSeconds` are seeded. While enabled, gated `/api/v1/` paths answer 503
+  `MAINTENANCE` with `details.retryAfterSeconds` and `Retry-After`; admin, auth
+  login/refresh/logout, health, the schema and the new public `GET /api/v1/platform/status/`
+  stay open. The state is cached for 15 s, invalidated on write, and fails open on a database
+  error.
+- Abuse limits. Scoped per-account or per-IP throttles on ratings, favorites and push-token
+  writes, analytics ingest, public search, list and map, owner submit, evidence upload and
+  problem reports, each overridable by a `THROTTLE_*` variable. Rating upserts are race-safe,
+  and a rating DELETE is now 404 for a facility the public cannot see, as the write already was.
+- Fixes found by the new duty, lifecycle, audit and session tests: a suspended or closed
+  facility could be resubmitted and approved back to ACTIVE; rejecting a reverification demoted
+  a once-live facility to DRAFT; `record_audit` missed camelCase secrets such as `storageKey`; a
+  duty shift on a category without a capability row was a 500.
+- Additive contract. Admin lists and details show category, province and owner names; the review
+  detail adds the previous approved snapshot, location, likely duplicates (same phone, or the
+  same normalised Arabic name within 200 m) and image URLs. Audit gains `from`/`to`, users a
+  `role` filter; the dashboard gains duty-now, new-users, open-reports and configuration
+  warnings; analytics gains approval median hours and 30-day search, zero-result, view and
+  directions counts. Category groups gain `iconKey`; provinces gain a city list with an active
+  toggle. Public facilities gain `lastVerifiedAt`, `updatedAt` and an optional `whatsapp`. The new
+  "report a problem" flow is `POST /facilities/<id>/reports/` plus admin list, resolve and
+  dismiss under `admin.reports.read|manage`. Owners get `GET /owner/facilities/<id>/insights/`.
+- Pillow is now >=12.3.0, which clears the 8 PYSEC advisories pip-audit reported against 11.3.0.
+
+Verified on this machine: 414 passed, and the 10 S3-dependent seed tests still error without
+object storage, as before. ruff has no new findings; mypy strict is at 829, down from 900, with no
+new errors in any touched file. `makemigrations --check` finds nothing to add, and
+`check-openapi-drift.sh` passes with the three clients regenerated. Not verified: a live Celery
+worker against Redis, and a real Sentry DSN. Production should point `CACHES` at Redis, because
+throttle counts and the maintenance cache are per process on the default local memory cache.
