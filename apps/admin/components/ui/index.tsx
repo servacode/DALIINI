@@ -1,9 +1,10 @@
 "use client";
 
+import { type VocabularyGroup, term, vocabulary } from "@servacode/design-tokens/vocabulary";
 import Link from "next/link";
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 
-import { type IconName, Icons } from "../icons";
+import { type IconName, type IllustrationName, Icons, Illustration } from "../icons";
 
 import {
   type ApiErrorBody,
@@ -182,11 +183,23 @@ export function LoadingState({ label = "جارٍ التحميل…" }: { label?:
   );
 }
 
-export function EmptyState({ title, hint }: { title: string; hint?: string }) {
+export function EmptyState({
+  title,
+  hint,
+  illustration = "empty",
+  action,
+}: {
+  title: string;
+  hint?: string;
+  illustration?: IllustrationName;
+  action?: ReactNode;
+}) {
   return (
     <div className="state-block state-empty" data-testid="empty-state">
+      <Illustration name={illustration} size={88} />
       <strong>{title}</strong>
       {hint ? <span className="muted">{hint}</span> : null}
+      {action ? <div className="state-action">{action}</div> : null}
     </div>
   );
 }
@@ -444,7 +457,7 @@ export function Pagination({
 // Status and permissions
 // --------------------------------------------------------------------------------------
 
-export type Tone = "neutral" | "positive" | "warning" | "danger" | "info";
+export type Tone = "neutral" | "positive" | "warning" | "danger" | "info" | "brand";
 
 export function StatusBadge({ tone = "neutral", children }: { tone?: Tone; children: ReactNode }) {
   return (
@@ -452,6 +465,28 @@ export function StatusBadge({ tone = "neutral", children }: { tone?: Tone; child
       {children}
     </span>
   );
+}
+
+/**
+ * A state shown in the platform's shared words: the label and colour come from the design
+ * package's vocabulary, so "فعّالة" or "مناوب الآن" reads and looks the same in the console,
+ * the app and the site.
+ */
+/** A vocabulary group as `{ VALUE: { label, tone } }`, for tables, filters and badges. */
+export function termsFor(group: VocabularyGroup): Record<string, { label: string; tone: Tone }> {
+  return Object.fromEntries(
+    Object.entries(vocabulary[group]).map(([key, entry]) => [key, { label: entry.ar, tone: entry.tone }]),
+  );
+}
+
+/** A vocabulary group as `{ VALUE: label }`. */
+export function labelsFor(group: VocabularyGroup): Record<string, string> {
+  return Object.fromEntries(Object.entries(vocabulary[group]).map(([key, entry]) => [key, entry.ar]));
+}
+
+export function TermBadge({ group, value }: { group: VocabularyGroup; value: string | null | undefined }) {
+  const t = term(group, value);
+  return <StatusBadge tone={t.tone}>{t.ar}</StatusBadge>;
 }
 
 /**

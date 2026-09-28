@@ -11,8 +11,9 @@ import {
   LoadingState,
   PageHeader,
   StatusBadge,
-  type Tone,
   formatDateTime,
+  termsFor,
+  labelsFor,
 } from "../../../components/ui";
 import { useLookups } from "../../../lib/client/use-lookups";
 import { useResource } from "../../../lib/client/use-resource";
@@ -27,19 +28,11 @@ type Application = Readonly<{
   reviewedAt: string | null;
 }>;
 
-const STATUS: Record<string, { label: string; tone: Tone }> = {
-  SUBMITTED: { label: "قيد المراجعة", tone: "info" },
-  APPROVED: { label: "مقبول", tone: "positive" },
-  REJECTED: { label: "مرفوض", tone: "danger" },
-  DRAFT: { label: "مسودة", tone: "neutral" },
-};
+const STATUS = termsFor("applicationStatus");
 
 // The two kinds the model declares. `INITIAL` is a first registration; `REVERIFICATION` is
 // a facility asked to prove itself again.
-const KIND: Record<string, string> = {
-  INITIAL: "تسجيل أولي",
-  REVERIFICATION: "إعادة تحقق",
-};
+const KIND = labelsFor("applicationKind");
 
 /**
  * The review queue.

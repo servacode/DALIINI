@@ -11,8 +11,8 @@ import {
   LoadingState,
   PageHeader,
   StatusBadge,
-  type Tone,
   formatDateTime,
+  termsFor,
 } from "../../../components/ui";
 import { useLookups } from "../../../lib/client/use-lookups";
 import { useResource } from "../../../lib/client/use-resource";
@@ -30,14 +30,7 @@ type Facility = Readonly<{
   ownerName?: string | null;
 }>;
 
-export const STATUS: Record<string, { label: string; tone: Tone }> = {
-  DRAFT: { label: "مسودة", tone: "neutral" },
-  SUBMITTED: { label: "قيد المراجعة", tone: "info" },
-  ACTIVE: { label: "فعّالة", tone: "positive" },
-  SUSPENDED: { label: "موقوفة", tone: "warning" },
-  CLOSED: { label: "مغلقة", tone: "danger" },
-  REVERIFICATION_REQUIRED: { label: "تحتاج إعادة تحقق", tone: "warning" },
-};
+export const STATUS = termsFor("facilityStatus");
 
 /** The four filters here are the ones INT-041 declared; the client sends them typed. */
 export default function FacilitiesPage() {

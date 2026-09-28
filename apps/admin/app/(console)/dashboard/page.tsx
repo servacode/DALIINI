@@ -10,6 +10,8 @@ import {
   StatCard,
   StatusBadge,
   type Tone,
+  termsFor,
+  labelsFor,
 } from "../../../components/ui";
 
 type Dashboard = Readonly<{
@@ -29,22 +31,11 @@ type Dashboard = Readonly<{
   }[];
 }>;
 
-const STATUS_LABELS: Record<string, string> = {
-  DRAFT: "مسودة",
-  SUBMITTED: "قيد المراجعة",
-  ACTIVE: "فعّالة",
-  SUSPENDED: "موقوفة",
-  CLOSED: "مغلقة",
-  REVERIFICATION_REQUIRED: "تحتاج إعادة تحقق",
-};
+const STATUS_LABELS = labelsFor("facilityStatus");
 
-const STATUS_TONES: Record<string, Tone> = {
-  ACTIVE: "positive",
-  SUSPENDED: "warning",
-  CLOSED: "danger",
-  REVERIFICATION_REQUIRED: "warning",
-  SUBMITTED: "info",
-};
+const STATUS_TONES = Object.fromEntries(
+  Object.entries(termsFor("facilityStatus")).map(([key, meta]) => [key, meta.tone]),
+) as Record<string, Tone>;
 
 export default function DashboardPage() {
   const dashboard = useResource<Dashboard>("dashboard", {}, { refreshMs: 60_000 });

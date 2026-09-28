@@ -7,6 +7,7 @@ import { type ReactNode, createContext, useContext, useState } from "react";
 import { logout } from "../lib/client/api";
 import { useResource } from "../lib/client/use-resource";
 import { type IconName, Icons } from "./icons";
+import { ThemeToggle } from "./theme-toggle";
 import { BrandMark, ErrorState, LoadingState } from "./ui";
 
 /**
@@ -240,11 +241,14 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 ) : null}
               </ol>
             </div>
-            <div className="topbar-identity" data-testid="operator-name">
+            <div className="topbar-end">
+              <ThemeToggle />
+              <div className="topbar-identity" data-testid="operator-name">
               <span className="identity-name">{identity.displayName}</span>
-              <span className="avatar" aria-hidden="true">
-                {initials(identity.displayName)}
-              </span>
+                <span className="avatar" aria-hidden="true">
+                  {initials(identity.displayName)}
+                </span>
+              </div>
             </div>
           </header>
           <main className="content">{children}</main>

@@ -15,8 +15,9 @@ import {
   Panel,
   StatusBadge,
   Toast,
-  type Tone,
   formatDateTime,
+  termsFor,
+  labelsFor,
 } from "../../../../components/ui";
 import { useMutation } from "../../../../lib/client/use-mutation";
 import { useResource } from "../../../../lib/client/use-resource";
@@ -49,16 +50,9 @@ const DUPLICATE_REASONS: Record<string, string> = {
   SAME_NAME_NEARBY: "اسم مطابق على مسافة قريبة",
 };
 
-const KIND: Record<string, string> = {
-  INITIAL: "تسجيل أولي",
-  REVERIFICATION: "إعادة تحقق",
-};
+const KIND = labelsFor("applicationKind");
 
-const STATUS: Record<string, { label: string; tone: Tone }> = {
-  SUBMITTED: { label: "قيد المراجعة", tone: "info" },
-  APPROVED: { label: "مقبول", tone: "positive" },
-  REJECTED: { label: "مرفوض", tone: "danger" },
-};
+const STATUS = termsFor("applicationStatus");
 
 /**
  * One application, with everything a reviewer needs to decide.

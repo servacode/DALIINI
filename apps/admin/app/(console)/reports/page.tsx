@@ -15,8 +15,9 @@ import {
   PageHeader,
   StatusBadge,
   Toast,
-  type Tone,
   formatDateTime,
+  termsFor,
+  labelsFor,
 } from "../../../components/ui";
 import { useMutation } from "../../../lib/client/use-mutation";
 import { useResource } from "../../../lib/client/use-resource";
@@ -34,20 +35,9 @@ type Report = Readonly<{
   resolvedAt: string | null;
 }>;
 
-export const REASONS: Record<string, string> = {
-  WRONG_INFO: "معلومات خاطئة",
-  CLOSED_PERMANENTLY: "مغلقة نهائياً",
-  WRONG_LOCATION: "موقع خاطئ",
-  WRONG_HOURS: "أوقات دوام خاطئة",
-  NOT_ON_DUTY: "ليست مناوبة",
-  OTHER: "أخرى",
-};
+export const REASONS = labelsFor("reportReason");
 
-const STATUS: Record<string, { label: string; tone: Tone }> = {
-  OPEN: { label: "مفتوح", tone: "warning" },
-  RESOLVED: { label: "تمت المعالجة", tone: "positive" },
-  DISMISSED: { label: "مرفوض", tone: "neutral" },
-};
+const STATUS = termsFor("reportStatus");
 
 /**
  * Problems the public reported about a listing.

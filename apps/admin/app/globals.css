@@ -8,6 +8,7 @@
  *
  * Screens never add their own styles; a new need becomes a component here.
  */
+@import "@servacode/design-tokens/fonts.css";
 @import "@servacode/design-tokens/tokens.css";
 @import "./styles/tokens.css";
 @import "./styles/base.css";

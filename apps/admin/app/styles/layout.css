@@ -27,7 +27,7 @@
   width: 34px; height: 34px; flex-shrink: 0;
   display: grid; place-items: center;
   border-radius: var(--ad-radius-md);
-  background: var(--ad-brand);
+  background: var(--sd-colors-primary);
   color: #fff;
   font-weight: 800; font-size: 18px; line-height: 1;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
@@ -97,8 +97,6 @@
 .sidebar-logout:hover:not(:disabled) { background: var(--ad-shell-hover); color: #fff; }
 .sidebar-logout:disabled { opacity: 0.5; }
 .sidebar-logout svg { width: 18px; height: 18px; }
-/* Logout points "out" of the page, which in RTL is the left edge. */
-[dir="rtl"] .sidebar-logout svg { transform: scaleX(-1); }
 
 .avatar {
   width: 34px; height: 34px; flex-shrink: 0;
@@ -117,7 +115,7 @@
   height: var(--ad-topbar-h);
   display: flex; align-items: center; justify-content: space-between; gap: var(--ad-space-4);
   padding-inline: var(--ad-space-8);
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--ad-topbar-bg);
   backdrop-filter: saturate(1.4) blur(8px);
   border-block-end: 1px solid var(--ad-stroke);
 }
@@ -199,3 +197,13 @@
   padding-block-start: var(--ad-space-4);
   border-block-start: 1px solid var(--ad-stroke-subtle);
 }
+
+.topbar-end { display: flex; align-items: center; gap: var(--ad-space-3); }
+.icon-button {
+  width: 36px; height: 36px; display: grid; place-items: center;
+  border: 1px solid var(--ad-stroke); border-radius: var(--ad-radius);
+  background: var(--ad-surface); color: var(--ad-text-secondary);
+  transition: background var(--ad-fast) var(--ad-ease), color var(--ad-fast) var(--ad-ease);
+}
+.icon-button:hover { background: var(--ad-surface-hover); color: var(--ad-text); }
+.icon-button svg { width: 18px; height: 18px; }

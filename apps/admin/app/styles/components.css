@@ -16,7 +16,6 @@
 }
 .page-heading .back-link:hover { color: var(--ad-brand); }
 .page-heading .back-link svg { width: 16px; height: 16px; }
-[dir="rtl"] .page-heading .back-link svg { transform: scaleX(-1); }
 .eyebrow { margin: 0; font-size: var(--ad-text-xs); font-weight: 700; color: var(--ad-brand); letter-spacing: 0.02em; }
 .header-actions { display: flex; gap: var(--ad-space-2); align-items: center; flex-wrap: wrap; flex-shrink: 0; }
 
@@ -336,14 +335,8 @@ label.switch-row { cursor: pointer; }
   background: var(--ad-surface);
 }
 .state-empty strong { color: var(--ad-text); font-size: var(--ad-text-lg); }
-.state-empty::before {
-  content: ""; width: 44px; height: 44px; margin-block-end: var(--ad-space-2);
-  border-radius: var(--ad-radius-lg);
-  background: var(--ad-surface-subtle)
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' fill='none' stroke='%237A8780' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Cpath d='M22 12h-6l-2 3h-4l-2-3H2'/%3E%3Cpath d='M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z'/%3E%3C/svg%3E")
-    center / 22px no-repeat;
-  border: 1px solid var(--ad-stroke);
-}
+.state-empty .illustration { margin-block-end: var(--ad-space-2); }
+.state-action { margin-block-start: var(--ad-space-3); }
 .panel .state-empty { border: 0; padding-block: var(--ad-space-8); }
 .state-error {
   flex-wrap: wrap;
@@ -368,7 +361,7 @@ label.switch-row { cursor: pointer; }
 .skeleton-stack { display: grid; gap: var(--ad-space-2); }
 .skeleton {
   height: 14px; border-radius: var(--ad-radius-sm);
-  background: linear-gradient(90deg, var(--ad-surface-subtle) 25%, #E9EEEB 50%, var(--ad-surface-subtle) 75%);
+  background: linear-gradient(90deg, var(--ad-surface-subtle) 25%, var(--ad-skeleton-shine) 50%, var(--ad-surface-subtle) 75%);
   background-size: 200% 100%;
   animation: ad-shimmer 1.3s ease-in-out infinite;
 }
@@ -395,7 +388,7 @@ label.switch-row { cursor: pointer; }
   position: fixed; inset: 0; z-index: var(--ad-z-dialog);
   display: grid; place-items: center;
   padding: var(--ad-space-6);
-  background: rgba(4, 38, 35, 0.42);
+  background: var(--ad-scrim);
   backdrop-filter: blur(2px);
   animation: ad-fade var(--ad-standard) var(--ad-ease);
 }
@@ -506,3 +499,29 @@ label.switch-row { cursor: pointer; }
 .image-grid img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .image-grid a:hover { border-color: var(--ad-brand); }
 .setting-hint { display: block; margin-block: 2px 4px; }
+
+/* Shared icon set: directional icons flip in RTL. */
+[dir="rtl"] svg[data-mirror="true"] { transform: scaleX(-1); }
+
+/* Brand tone (e.g. "مناوب الآن", "موثّقة") */
+.badge-brand { background: var(--ad-brand-soft); color: var(--ad-brand-strong); border-color: color-mix(in srgb, var(--ad-brand) 30%, var(--ad-surface)); }
+
+/* Illustrations */
+.illustration-soft { fill: var(--ad-brand-soft); }
+.illustration-line { stroke: var(--ad-text-muted); }
+.illustration-accent { stroke: var(--ad-brand); }
+
+/* Design reference page */
+.swatch-grid { display: grid; gap: var(--ad-space-3); grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.swatch { display: grid; gap: 4px; font-size: var(--ad-text-sm); }
+.swatch-chip { height: 56px; border-radius: var(--ad-radius-lg); border: 1px solid var(--ad-stroke); }
+.swatch code { font-size: 11px; width: fit-content; }
+.icon-grid { display: grid; gap: var(--ad-space-2); grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+.icon-grid figure {
+  margin: 0; display: grid; justify-items: center; gap: 6px;
+  padding: var(--ad-space-3) var(--ad-space-1);
+  border-radius: var(--ad-radius-md); color: var(--ad-text);
+}
+.icon-grid figure:hover { background: var(--ad-surface-hover); }
+.icon-grid figcaption code { font-size: 10px; background: none; border: 0; padding: 0; color: var(--ad-text-muted); }
+.illustration-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
