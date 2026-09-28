@@ -1,8 +1,9 @@
 from pathlib import Path
 
 import dj_database_url
+from celery.schedules import crontab  # type: ignore[import-untyped]
 
-from .env import env, env_csv
+from .env import env, env_bool, env_csv
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 
@@ -161,6 +162,24 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_ACKS_LATE = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+# Periodic maintenance, run by `celery -A directory_backend beat`. Times are Damascus
+# local (CELERY_TIMEZONE) and sit in the quiet night hours.
+CELERY_BEAT_SCHEDULE = {
+    "analytics-retention-purge": {
+        "task": "analytics.tasks.purge_analytics_retention",
+        "schedule": crontab(hour=3, minute=17),
+    },
+    "sessions-purge-ended": {
+        "task": "sessions.tasks.purge_ended_sessions",
+        "schedule": crontab(hour=3, minute=37),
+    },
+    "otp-purge-expired": {
+        "task": "accounts.tasks.purge_expired_otp_challenges",
+        "schedule": crontab(hour=3, minute=47),
+    },
+}
 
 S3_ENDPOINT_URL = env("S3_ENDPOINT_URL", "http://localhost:9000")
 S3_REGION = env("S3_REGION", "auto")
@@ -190,8 +209,34 @@ LOGGING = {
     "formatters": {
         "json": {"()": "core.logging.JsonFormatter"},
     },
-    "handlers": {
-        "console": {"class": "logging.StreamHandler", "formatter": "json"},
+    "filters": {
+        "request_id": {"()": "core.logging.RequestIdFilter"},
     },
-    "root": {"handlers": ["console"], "level": "INFO"},
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json",
+            "filters": ["request_id"],
+        },
+    },
+    "root": {"handlers": ["console"], "level": env("LOG_LEVEL", "INFO")},
+    "loggers": {
+        "django.server": {"level": "WARNING"},
+        "celery": {"level": "INFO"},
+    },
 }
+
+# Optional error reporting. Nothing is sent unless SENTRY_DSN is set; personal data is
+# never attached (send_default_pii=False).
+SENTRY_DSN = env("SENTRY_DSN", "")
+SENTRY_TRACES_SAMPLE_RATE = float(env("SENTRY_TRACES_SAMPLE_RATE", "0") or 0)
+SENTRY_ENVIRONMENT = env("SENTRY_ENVIRONMENT", "")
+SENTRY_ENABLED = bool(SENTRY_DSN) and env_bool("SENTRY_ENABLED", True)
+if SENTRY_ENABLED:
+    from core.observability import init_sentry
+
+    init_sentry(
+        dsn=SENTRY_DSN,
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
+        environment=SENTRY_ENVIRONMENT or None,
+    )

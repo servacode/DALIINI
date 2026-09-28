@@ -18,6 +18,8 @@ def test_push_payload_contains_only_notification_reference_and_type():
 
 def test_celery_push_delivery_has_retry_policy():
     source = Path("notifications/tasks.py").read_text()
-    assert "autoretry_for" in source
-    assert "retry_backoff=True" in source
-    assert "max_retries=5" in source
+    # Only transient failures retry (explicit self.retry with backoff), never every Exception.
+    assert "autoretry_for=(Exception,)" not in source
+    assert "acks_late=True" in source
+    assert "max_retries=MAX_RETRIES" in source
+    assert "except TransientPushError" in source

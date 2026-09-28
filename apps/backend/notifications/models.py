@@ -78,3 +78,23 @@ class DevicePushToken(models.Model):
                 name="notificatio_user_id_67bc12_idx",
             )
         ]
+
+
+class NotificationPushDelivery(models.Model):
+    """One successful push of a notification to one device; makes retries idempotent."""
+
+    notification = models.ForeignKey(
+        Notification, on_delete=models.CASCADE, related_name="push_deliveries"
+    )
+    device = models.ForeignKey(DevicePushToken, on_delete=models.CASCADE, related_name="deliveries")
+    delivered_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["notification", "device"], name="uniq_notification_push_delivery"
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.notification_id}->{self.device_id}"

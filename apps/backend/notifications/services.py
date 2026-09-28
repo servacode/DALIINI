@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import logging
+
+from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
 from django.utils import timezone
 
@@ -7,10 +10,12 @@ from realtime.events import EventName, RealtimeEvent, ScopeType
 from realtime.publisher import publish_after_commit
 
 from .crypto import decrypt_push_token, encrypt_push_token, push_token_digest
-from .models import DevicePushToken, Notification
-from .providers.base import InvalidPushToken, PushMessage
+from .models import DevicePushToken, Notification, NotificationPushDelivery
+from .providers.base import InvalidPushToken, PushMessage, TransientPushError
 from .providers.factory import get_push_provider
 from .sanitization import safe_notification_payload
+
+logger = logging.getLogger(__name__)
 
 
 def register_push_token(*, user, platform: str, token: str, session=None) -> DevicePushToken:
@@ -21,9 +26,9 @@ def register_push_token(*, user, platform: str, token: str, session=None) -> Dev
         if session is not None:
             # One device per session: a new token from the same session replaces the one
             # the provider rotated away, so the old token stops receiving anything.
-            DevicePushToken.objects.filter(
-                session=session, platform=platform, active=True
-            ).exclude(token_digest=digest).update(active=False)
+            DevicePushToken.objects.filter(session=session, platform=platform, active=True).exclude(
+                token_digest=digest
+            ).update(active=False)
         obj, _ = DevicePushToken.objects.update_or_create(
             token_digest=digest,
             defaults={
@@ -113,19 +118,57 @@ def mark_notification_read(*, user, notification_id) -> Notification:
 
 
 def push_notification(notification: Notification, *, title: str, body: str) -> None:
+    """Send to every active device that has not received this notification yet.
+
+    InvalidPushToken deactivates the device (permanent, never retried). A misconfigured
+    provider is logged and skipped (permanent). TransientPushError propagates after the
+    remaining devices were attempted, so the caller can retry only what is left.
+    """
     data = {"notificationId": str(notification.id), "type": notification.type}
-    for device in notification.user.push_tokens.filter(active=True):
-        provider = get_push_provider(device.platform)
-        try:
-            provider.send(
-                PushMessage(
-                    token=decrypt_push_token(device.token_ciphertext),
-                    title=title,
-                    body=body,
-                    data=data,
+    delivered = NotificationPushDelivery.objects.filter(notification=notification).values(
+        "device_id"
+    )
+    devices = notification.user.push_tokens.filter(active=True).exclude(id__in=delivered)
+    transient: TransientPushError | None = None
+    for device in devices:
+        with transaction.atomic():
+            # Lock the device row so two concurrent attempts cannot both send.
+            locked = DevicePushToken.objects.select_for_update().filter(pk=device.pk).first()
+            if locked is None or not locked.active:
+                continue
+            if NotificationPushDelivery.objects.filter(
+                notification=notification, device=locked
+            ).exists():
+                continue
+            try:
+                provider = get_push_provider(locked.platform)
+                provider.send(
+                    PushMessage(
+                        token=decrypt_push_token(locked.token_ciphertext),
+                        title=title,
+                        body=body,
+                        data=data,
+                    )
                 )
-            )
-        except InvalidPushToken:
-            # The provider no longer knows this token; keeping it would only fail again.
-            device.active = False
-            device.save(update_fields=["active"])
+            except InvalidPushToken:
+                # The provider no longer knows this token; keeping it would only fail again.
+                locked.active = False
+                locked.save(update_fields=["active"])
+                logger.info("push.token_deactivated", extra={"device_id": str(locked.pk)})
+                continue
+            except ImproperlyConfigured:
+                logger.error(
+                    "push.provider_misconfigured",
+                    extra={"platform": locked.platform, "notification_id": str(notification.pk)},
+                )
+                continue
+            except TransientPushError as exc:
+                logger.warning(
+                    "push.send_failed_transient",
+                    extra={"device_id": str(locked.pk), "notification_id": str(notification.pk)},
+                )
+                transient = exc
+                continue
+            NotificationPushDelivery.objects.create(notification=notification, device=locked)
+    if transient is not None:
+        raise transient

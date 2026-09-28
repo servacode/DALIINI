@@ -1,3 +1,4 @@
+import logging
 import mimetypes
 from pathlib import PurePosixPath
 
@@ -107,6 +108,8 @@ from .schemas import AdminApplicationSerializer as App
 from .serializers import application_payload, facility_payload, user_payload
 from .services import decide_application, replace_user_roles, set_user_blocked, transition_facility
 
+logger = logging.getLogger(__name__)
+
 
 def _request_id(request):
     return getattr(request, "request_id", "")
@@ -127,6 +130,20 @@ def _validation_error(exc):
 
 class AdminView(APIView):
     permission_classes = [IsAuthenticated, HasAdminPermission]
+
+    def handle_exception(self, exc: Exception) -> Response:
+        # Failed admin mutations are operationally interesting even when they are 4xx.
+        if self.request.method not in ("GET", "HEAD", "OPTIONS"):
+            logger.warning(
+                "admin.mutation_failed",
+                extra={
+                    "view": type(self).__name__,
+                    "method": self.request.method,
+                    "error": type(exc).__name__,
+                    "actor_id": str(getattr(self.request.user, "pk", "") or ""),
+                },
+            )
+        return super().handle_exception(exc)
 
 
 class AdminMeView(APIView):
@@ -359,7 +376,19 @@ class EvidenceContentView(AdminView):
             metadata={"facilityId": str(evidence.facility_id)},
             request_id=_request_id(request),
         )
-        stream = PrivateS3Storage().open(evidence.storage_key, "rb")
+        logger.info(
+            "evidence.accessed",
+            extra={
+                "evidence_id": str(evidence.pk),
+                "facility_id": str(evidence.facility_id),
+                "actor_id": str(request.user.pk),
+            },
+        )
+        try:
+            stream = PrivateS3Storage().open(evidence.storage_key, "rb")
+        except Exception:
+            logger.exception("evidence.open_failed", extra={"evidence_id": str(evidence.pk)})
+            raise
         # Evidence is re-encoded to JPEG on upload, and the stored name says so. Serving it as
         # octet-stream told the operator's browser nothing about what it received (INT-066).
         content_type = mimetypes.guess_type(evidence.storage_key)[0] or "application/octet-stream"
