@@ -1,5 +1,9 @@
 package com.servacode.directory.core.network.api
 
+import com.servacode.directory.api.models.FacilityReportReasonEnum
+import com.servacode.directory.api.models.OwnerFacilityInsights as WireOwnerFacilityInsights
+import com.servacode.directory.core.model.FacilityReportReason
+import com.servacode.directory.core.model.OwnerFacilityInsights
 import com.servacode.directory.api.models.AccountRating
 import com.servacode.directory.api.models.AdvertisementAction
 import com.servacode.directory.api.models.AdvertisementActionTypeEnum
@@ -315,6 +319,9 @@ internal fun PublicFacilityDetail.toDomain() = FacilityDetail(
     hours = hours.map { it.toDomain() }.sortedWith(hourOrder),
     specialties = specialties.map { it.nameAr },
     services = services.map { it.nameAr },
+    whatsapp = whatsapp?.takeIf { it.isNotBlank() },
+    lastVerifiedAtEpochMillis = lastVerifiedAt?.toEpochMillis(),
+    updatedAtEpochMillis = updatedAt.toEpochMillis(),
 )
 
 internal fun PublicAdvertisement.toDomain() = HomeAd(
@@ -505,6 +512,7 @@ internal fun WireOwnerFacilityDetail.toDomain() = OwnerFacilityDetail(
     descriptionAr = descriptionAr,
     descriptionEn = descriptionEn,
     phone = phone,
+    whatsapp = whatsapp?.takeIf { it.isNotBlank() },
     addressAr = addressAr,
     addressEn = addressEn,
     cityId = cityId?.toString(),
@@ -517,6 +525,24 @@ internal fun WireOwnerFacilityDetail.toDomain() = OwnerFacilityDetail(
     evidence = evidence.map { it.toDomain() },
     application = application?.toDomain(),
 )
+
+internal fun WireOwnerFacilityInsights.toDomain() = OwnerFacilityInsights(
+    facilityId = facilityId.toString(),
+    windowDays = windowDays,
+    sinceEpochMillis = since.toEpochMillis(),
+    views = views,
+    calls = calls,
+    directions = directions,
+)
+
+internal fun FacilityReportReason.toWire(): FacilityReportReasonEnum = when (this) {
+    FacilityReportReason.WRONG_INFO -> FacilityReportReasonEnum.WRONG_INFO
+    FacilityReportReason.CLOSED_PERMANENTLY -> FacilityReportReasonEnum.CLOSED_PERMANENTLY
+    FacilityReportReason.WRONG_LOCATION -> FacilityReportReasonEnum.WRONG_LOCATION
+    FacilityReportReason.WRONG_HOURS -> FacilityReportReasonEnum.WRONG_HOURS
+    FacilityReportReason.NOT_ON_DUTY -> FacilityReportReasonEnum.NOT_ON_DUTY
+    FacilityReportReason.OTHER -> FacilityReportReasonEnum.OTHER
+}
 
 internal fun OwnerSubmitResult.toDomain() = OwnerSubmission(
     applicationId = applicationId.toString(),

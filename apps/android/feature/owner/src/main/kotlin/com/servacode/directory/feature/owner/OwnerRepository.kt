@@ -1,5 +1,6 @@
 package com.servacode.directory.feature.owner
 
+import com.servacode.directory.core.model.OwnerFacilityInsights
 import com.servacode.directory.core.model.FacilityMember
 import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.model.OwnerFacilityDetail
@@ -19,6 +20,9 @@ class OwnerRepository @Inject constructor(
 
     suspend fun patch(id: String, patch: OwnerFacilityPatch): Result<OwnerFacilityDetail> =
         runCatching { api.patchFacility(id, patch) }
+
+    /** Views, calls and directions over the backend's window. Never cached: it is the owner's. */
+    suspend fun insights(id: String): Result<OwnerFacilityInsights> = runCatching { api.insights(id) }
     suspend fun closures(id: String): Result<List<TemporaryClosure>> =
         runCatching { api.temporaryClosures(id) }
     suspend fun createClosure(

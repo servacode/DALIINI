@@ -1,5 +1,23 @@
 package com.servacode.directory.feature.facility
 
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
+import com.servacode.directory.core.designsystem.DirectoryTextField
+import com.servacode.directory.core.model.FacilityReportReason
 import androidx.compose.ui.semantics.Role
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -78,8 +96,20 @@ fun FacilityScreen(
     onWhatsApp: (String) -> Unit,
     onBack: () -> Unit,
     viewModel: FacilityViewModel = hiltViewModel(),
+    reportViewModel: FacilityReportViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val report by reportViewModel.state.collectAsStateWithLifecycle()
+    var reporting by rememberSaveable { mutableStateOf(false) }
+    val snackbar = remember { SnackbarHostState() }
+    val thanks = FacilityCopy.REPORT_THANKS
+    LaunchedEffect(report.sent) {
+        if (report.sent) {
+            reporting = false
+            reportViewModel.consumeSent()
+            snackbar.showSnackbar(thanks)
+        }
+    }
     // Screen 10 lives here rather than on a route of its own: the pictures belong to the
     // facility already loaded, and nothing is fetched to show them larger.
     var photosOpen by remember { mutableStateOf(false) }
@@ -96,7 +126,21 @@ fun FacilityScreen(
         return
     }
 
-    DirectoryPage { padding ->
+    val facilityId = (state as? FacilityUiState.Content)?.value?.summary?.id
+    if (reporting && facilityId != null) {
+        ReportSheet(
+            state = report,
+            onReason = reportViewModel::choose,
+            onNote = reportViewModel::updateNote,
+            onSend = { reportViewModel.submit(facilityId) },
+            onDismiss = {
+                reporting = false
+                reportViewModel.clearFailure()
+            },
+        )
+    }
+
+    DirectoryPage(snackbarHost = { SnackbarHost(snackbar) }) { padding ->
         when (val value = state) {
             FacilityUiState.Loading -> DirectoryLoading(Modifier.padding(padding))
             is FacilityUiState.Error -> DirectoryErrorState(
@@ -133,6 +177,7 @@ fun FacilityScreen(
                     onRate = viewModel::rate,
                     onRemoveRating = viewModel::removeRating,
                     onToggleFavorite = viewModel::toggleFavorite,
+                    onReport = { reporting = true },
                 )
             }
         }
@@ -149,8 +194,10 @@ private fun FacilityBody(
     onRate: (Int) -> Unit,
     onRemoveRating: () -> Unit,
     onToggleFavorite: () -> Unit,
+    onReport: () -> Unit,
 ) {
     val detail = value.value
+    val whatsApp = detail.whatsapp?.let(::whatsAppLink)
     val summary = detail.summary
     val placed = detail.latitude != null && detail.longitude != null
     val separator = DirectoryWords.LIST_SEPARATOR
@@ -178,6 +225,7 @@ private fun FacilityBody(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                TrustLine(detail.lastVerifiedAtEpochMillis, detail.updatedAtEpochMillis)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -201,11 +249,13 @@ private fun FacilityBody(
                         onClick = { detail.phone?.let(onCall) },
                         enabled = detail.phone != null,
                     )
+                    // The facility's own WhatsApp number when it published one; a landline
+                    // is not a WhatsApp account, so the phone is never used in its place.
                     ActionCircle(
                         label = FacilityCopy.WHATSAPP,
                         icon = DirectoryIcons.chat,
-                        onClick = { detail.phone?.let(onWhatsApp) },
-                        enabled = detail.phone != null,
+                        onClick = { whatsApp?.let(onWhatsApp) },
+                        enabled = whatsApp != null,
                     )
                     ActionCircle(
                         label = FacilityCopy.DIRECTIONS,
@@ -228,10 +278,19 @@ private fun FacilityBody(
             }
         }
 
-        if (address.isNotEmpty() || detail.phone != null) {
+        if (address.isNotEmpty() || detail.phone != null || detail.whatsapp != null) {
             DirectorySection(FacilityCopy.ADDRESS) {
                 if (address.isNotEmpty()) MetaRow(DirectoryIcons.pin, address)
                 detail.phone?.let { MetaRow(DirectoryIcons.phone, it) }
+                detail.whatsapp?.let {
+                    // Said as "واتساب: …" so it is not heard as a second phone number.
+                    val spoken = FacilityCopy.whatsAppNumber(it)
+                    MetaRow(
+                        DirectoryIcons.chat,
+                        it,
+                        Modifier.semantics { contentDescription = spoken },
+                    )
+                }
             }
         }
         if (detail.hours.isNotEmpty()) {
@@ -284,6 +343,133 @@ private fun FacilityBody(
             } else {
                 DirectoryTextButton(FacilityCopy.SIGN_IN_TO_RATE, onSignIn)
             }
+        }
+
+        // Last, after everything the reader could have checked against what they know.
+        DirectoryTextButton(
+            text = FacilityCopy.REPORT,
+            onClick = onReport,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
+/**
+ * When the details were last checked by an operator, and when they last changed: the two facts
+ * a reader weighs before driving somewhere. Nothing is drawn when neither is known.
+ */
+@Composable
+private fun TrustLine(verifiedAt: Long?, updatedAt: Long?) {
+    val now = System.currentTimeMillis()
+    val parts = listOfNotNull(
+        verifiedAt?.let { FacilityCopy.verified(FacilityAge.of(it, now)) },
+        updatedAt?.let { FacilityCopy.updated(FacilityAge.of(it, now)) },
+    )
+    if (parts.isEmpty()) return
+    Row(
+        // One statement for a screen reader, not an icon and two fragments.
+        modifier = Modifier.semantics(mergeDescendants = true) { },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.xs),
+    ) {
+        if (verifiedAt != null) {
+            DirectoryIcon(
+                icon = DirectoryIcons.verified,
+                contentDescription = null,
+                size = IconSize.small,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        }
+        Text(
+            text = parts.joinToString(DirectoryWords.LIST_SEPARATOR),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/**
+ * Screen 08's "report a problem": a reason, an optional note, send. It works signed out, and a
+ * failure keeps what was chosen so trying again is one tap.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ReportSheet(
+    state: FacilityReportUiState,
+    onReason: (FacilityReportReason) -> Unit,
+    onNote: (String) -> Unit,
+    onSend: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = Space.screen, vertical = Space.base),
+            verticalArrangement = Arrangement.spacedBy(Space.sm),
+        ) {
+            Text(
+                text = FacilityCopy.REPORT,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.semantics { heading() },
+            )
+            Column(Modifier.selectableGroup()) {
+                FacilityReportReason.entries.forEach { reason ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = Sizes.touchTarget)
+                            .selectable(
+                                selected = state.reason == reason,
+                                onClick = { onReason(reason) },
+                                role = Role.RadioButton,
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Space.sm),
+                    ) {
+                        // The row is the control; the button only shows the choice.
+                        RadioButton(selected = state.reason == reason, onClick = null)
+                        Text(
+                            text = FacilityCopy.reason(reason),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            }
+            DirectoryTextField(
+                value = state.note,
+                onValueChange = onNote,
+                label = FacilityCopy.REPORT_NOTE,
+                singleLine = false,
+                minLines = 3,
+            )
+            Text(
+                text = FacilityCopy.noteCount(state.note.length, FacilityRepository.REPORT_NOTE_MAX),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.align(Alignment.End),
+            )
+            state.failure?.let { failure ->
+                Text(
+                    text = FacilityCopy.reportFailure(failure),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                )
+            }
+            DirectoryPrimaryButton(
+                text = FacilityCopy.REPORT_SEND,
+                onClick = onSend,
+                enabled = state.reason != null,
+                loading = state.sending,
+                modifier = Modifier.fillMaxWidth().padding(top = Space.sm),
+            )
         }
     }
 }
@@ -353,6 +539,53 @@ object FacilityCopy {
     fun photo(name: String, position: Int, count: Int): String =
         stringResource(R.string.facility_photo, name, position, count)
     val CLOSE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_close)
+    val REPORT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_report)
+    val REPORT_NOTE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_report_note)
+    val REPORT_SEND: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_report_send)
+    val REPORT_THANKS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_report_thanks)
+
+    @Composable @ReadOnlyComposable
+    fun whatsAppNumber(number: String): String = stringResource(R.string.facility_whatsapp_number, number)
+
+    @Composable @ReadOnlyComposable
+    fun noteCount(length: Int, max: Int): String = stringResource(R.string.facility_report_note_count, length, max)
+
+    @Composable @ReadOnlyComposable
+    fun reason(reason: FacilityReportReason): String = stringResource(
+        when (reason) {
+            FacilityReportReason.WRONG_INFO -> R.string.facility_report_wrong_info
+            FacilityReportReason.CLOSED_PERMANENTLY -> R.string.facility_report_closed_permanently
+            FacilityReportReason.WRONG_LOCATION -> R.string.facility_report_wrong_location
+            FacilityReportReason.WRONG_HOURS -> R.string.facility_report_wrong_hours
+            FacilityReportReason.NOT_ON_DUTY -> R.string.facility_report_not_on_duty
+            FacilityReportReason.OTHER -> R.string.facility_report_other
+        },
+    )
+
+    @Composable @ReadOnlyComposable
+    fun reportFailure(failure: ReportFailure): String = stringResource(
+        when (failure) {
+            ReportFailure.THROTTLED -> R.string.facility_report_throttled
+            ReportFailure.OFFLINE -> R.string.facility_report_offline
+            ReportFailure.OTHER -> R.string.facility_report_failed
+        },
+    )
+
+    /** "تم التحقق اليوم" / "تم التحقق قبل ٣ أيام". */
+    @Composable
+    fun verified(age: FacilityAge): String = stringResource(R.string.facility_verified, age(age))
+
+    /** "آخر تحديث قبل شهر". */
+    @Composable
+    fun updated(age: FacilityAge): String = stringResource(R.string.facility_updated, age(age))
+
+    @Composable
+    private fun age(age: FacilityAge): String = when (age) {
+        FacilityAge.Today -> stringResource(R.string.facility_age_today)
+        is FacilityAge.Days -> pluralStringResource(R.plurals.facility_age_days, age.count, age.count)
+        is FacilityAge.Months -> pluralStringResource(R.plurals.facility_age_months, age.count, age.count)
+        is FacilityAge.Years -> pluralStringResource(R.plurals.facility_age_years, age.count, age.count)
+    }
 
     @Composable
     @ReadOnlyComposable

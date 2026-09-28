@@ -1,5 +1,12 @@
 package com.servacode.directory.feature.owner
 
+import androidx.annotation.DrawableRes
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import com.servacode.directory.core.designsystem.DirectoryIcon
+import com.servacode.directory.core.designsystem.DirectoryInlineLoading
+import com.servacode.directory.core.designsystem.IconSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -212,8 +219,10 @@ fun ManageFacilityScreen(
     onDuty: (String) -> Unit,
     onBack: () -> Unit,
     viewModel: ManageFacilityViewModel = hiltViewModel(),
+    insightsViewModel: OwnerInsightsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val insights by insightsViewModel.state.collectAsStateWithLifecycle()
     var managerId by remember { mutableStateOf("") }
     var closureStart by remember { mutableStateOf<Long?>(null) }
     var closureEnd by remember { mutableStateOf<Long?>(null) }
@@ -287,6 +296,9 @@ fun ManageFacilityScreen(
                         }
                     }
                 }
+
+                LaunchedEffect(summary.id) { insightsViewModel.show(summary.id) }
+                InsightsSection(insights, onRetry = insightsViewModel::refresh)
 
                 if (OwnerCapabilities.supportsTemporaryClosure(summary)) {
                     DirectorySection(OwnerCopy.CLOSURES) {
@@ -446,12 +458,100 @@ internal fun OwnerFacilityStatus.tone(): StatusTone = when (this) {
 }
 
 /** The words of the owner's screens, provisional until product copy is approved. */
+/**
+ * Views, calls and directions over the last 30 days: what the listing has done for the owner.
+ * Loading, failure and an empty window each say so in their own words.
+ */
+@Composable
+private fun InsightsSection(state: OwnerInsightsUiState, onRetry: () -> Unit) {
+    DirectorySection(OwnerCopy.INSIGHTS) {
+        when (state) {
+            OwnerInsightsUiState.Loading -> DirectoryInlineLoading(OwnerCopy.INSIGHTS_LOADING)
+            is OwnerInsightsUiState.Error -> {
+                Text(
+                    text = OwnerCopy.INSIGHTS_ERROR,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                )
+                DirectoryTextButton(OwnerCopy.RETRY, onRetry)
+            }
+            is OwnerInsightsUiState.Empty -> Text(
+                text = OwnerCopy.insightsEmpty(state.windowDays),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            is OwnerInsightsUiState.Content -> {
+                Text(
+                    text = OwnerCopy.insightsWindow(state.insights.windowDays),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                ) {
+                    InsightFigure(state.insights.views, OwnerCopy.INSIGHTS_VIEWS, DirectoryIcons.eye)
+                    InsightFigure(state.insights.calls, OwnerCopy.INSIGHTS_CALLS, DirectoryIcons.phone)
+                    InsightFigure(state.insights.directions, OwnerCopy.INSIGHTS_DIRECTIONS, DirectoryIcons.route)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun InsightFigure(count: Int, label: String, @DrawableRes icon: Int) {
+    Column(
+        // "١٢ مشاهدة" as one statement, not a number and a word read apart.
+        modifier = Modifier.semantics(mergeDescendants = true) { },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Space.xs),
+    ) {
+        DirectoryIcon(
+            icon = icon,
+            contentDescription = null,
+            size = IconSize.medium,
+            tint = MaterialTheme.colorScheme.primary,
+        )
+        Text(
+            text = OwnerCopy.count(count),
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
 object OwnerCopy {
     val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_title)
     val ADD: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_add)
     val MANAGE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_manage)
     val DUTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_duty)
     val EDIT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_edit)
+    val INSIGHTS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights)
+    val INSIGHTS_LOADING: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights_loading)
+    val INSIGHTS_ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights_error)
+    val INSIGHTS_VIEWS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights_views)
+    val INSIGHTS_CALLS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights_calls)
+    val INSIGHTS_DIRECTIONS: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights_directions)
+    val RETRY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_retry)
+
+    @Composable @ReadOnlyComposable
+    fun insightsWindow(days: Int): String = stringResource(R.string.owner_insights_window, days)
+
+    @Composable @ReadOnlyComposable
+    fun insightsEmpty(days: Int): String = stringResource(R.string.owner_insights_empty, days)
+
+    /** A count in the reader's own digits. */
+    @Composable @ReadOnlyComposable
+    fun count(value: Int): String = stringResource(R.string.owner_count, value)
     val LIST_ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_list_error)
     val EMPTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_empty)
     val EMPTY_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_empty_body)

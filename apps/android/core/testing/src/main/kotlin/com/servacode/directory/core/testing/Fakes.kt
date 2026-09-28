@@ -1,5 +1,6 @@
 package com.servacode.directory.core.testing
 
+import com.servacode.directory.core.model.FacilityReportReason
 import com.servacode.directory.core.database.PublicCache
 import com.servacode.directory.core.datastore.DirectoryPreferences
 import com.servacode.directory.core.datastore.DirectoryPreferencesStore
@@ -145,6 +146,7 @@ class ScriptedPublicApi : PublicApiBoundary {
     var provincesAnswer: () -> List<Province> = { throw offline }
     var homeAnswer: (Province) -> HomeSnapshot = { throw offline }
     var adsAnswer: (String) -> List<HomeAd> = { throw offline }
+    var reportAnswer: (String, FacilityReportReason, String?) -> Unit = { _, _, _ -> throw offline }
     var directoryAnswer: (DirectoryQuery, String?) -> Page<FacilitySummary> = { _, _ -> throw offline }
     var searchAnswer: (String, String?) -> Page<FacilitySummary> = { _, _ -> throw offline }
     var facilityAnswer: (String) -> FacilityDetail = { throw offline }
@@ -157,6 +159,11 @@ class ScriptedPublicApi : PublicApiBoundary {
     override suspend fun home(province: Province, latitude: Double?, longitude: Double?): HomeSnapshot {
         calls += "home:${province.id}:$latitude:$longitude"
         return homeAnswer(province)
+    }
+
+    override suspend fun reportFacility(facilityId: String, reason: FacilityReportReason, note: String?) {
+        calls += "report:$facilityId:$reason:${note.orEmpty()}"
+        reportAnswer(facilityId, reason, note)
     }
 
     override suspend fun ads(provinceId: String): List<HomeAd> {

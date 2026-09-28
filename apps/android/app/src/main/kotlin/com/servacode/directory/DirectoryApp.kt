@@ -1,5 +1,6 @@
 package com.servacode.directory
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -171,11 +172,15 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onCall = { phone ->
                     context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$phone".toUri()))
                 },
-                // wa.me wants the number as digits alone. With WhatsApp installed it opens
-                // there; without it, its own page opens in the browser and says so.
-                onWhatsApp = { phone ->
-                    val digits = phone.filter(Char::isDigit)
-                    context.startActivity(Intent(Intent.ACTION_VIEW, "https://wa.me/$digits".toUri()))
+                // A wa.me link built from the facility's own WhatsApp number. With WhatsApp
+                // installed it opens there; without it, its own page opens in the browser and
+                // says so. A phone with nothing to open an https link does nothing.
+                onWhatsApp = { link ->
+                    try {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, link.toUri()))
+                    } catch (_: ActivityNotFoundException) {
+                        // Nothing can show it; the tap is a no-op rather than a crash.
+                    }
                 },
                 onBack = { navController.popBackStack() },
             )

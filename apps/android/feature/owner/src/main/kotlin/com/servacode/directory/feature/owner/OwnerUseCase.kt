@@ -22,6 +22,13 @@ class LoadManageFacilityUseCase @Inject constructor(
 
 }
 
+/** How people engaged with one of the owner's facilities over the last 30 days. */
+class LoadOwnerInsightsUseCase @Inject constructor(
+    private val repository: OwnerRepository,
+) {
+    suspend operator fun invoke(id: String) = repository.insights(id)
+}
+
 class ManageFacilityUseCase @Inject constructor(
     private val repository: OwnerRepository,
 ) {

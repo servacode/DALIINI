@@ -1,5 +1,6 @@
 package com.servacode.directory.core.network.api
 
+import com.servacode.directory.core.model.OwnerFacilityInsights
 import com.servacode.directory.api.apis.AvailabilityApi
 import com.servacode.directory.api.apis.DutyApi
 import com.servacode.directory.api.apis.MediaApi
@@ -67,6 +68,9 @@ class GeneratedOwnerApi(client: GeneratedClient) : OwnerApiBoundary {
     override suspend fun facility(id: String): OwnerFacilityDetail =
         call { owner.ownerFacilityRetrieve(UUID.fromString(id)) }.toDomain()
 
+    override suspend fun insights(id: String): OwnerFacilityInsights =
+        call { owner.ownerFacilityInsightsRetrieve(UUID.fromString(id)) }.toDomain()
+
     override suspend fun patchFacility(id: String, input: OwnerFacilityPatch): OwnerFacilityDetail = call {
         owner.ownerFacilityUpdate(
             facilityId = UUID.fromString(id),
@@ -76,6 +80,7 @@ class GeneratedOwnerApi(client: GeneratedClient) : OwnerApiBoundary {
                 descriptionAr = input.descriptionAr,
                 descriptionEn = input.descriptionEn,
                 phone = input.phone,
+                whatsapp = input.whatsapp,
                 addressAr = input.addressAr,
                 addressEn = input.addressEn,
                 cityId = input.cityId?.let(UUID::fromString),

@@ -23,6 +23,54 @@
     <string name="facility_photo">%1$s، صورة %2$d من %3$d</string>
     <string name="facility_photo_open">عرض الصورة بحجم أكبر</string>
     <string name="facility_close">إغلاق</string>
+    <!-- %1$s is the WhatsApp number as published. -->
+    <string name="facility_whatsapp_number">واتساب: %1$s</string>
+
+    <!-- The trust line. %1$s is an age: "اليوم" or "قبل ٣ أيام". -->
+    <string name="facility_verified">تم التحقق %1$s</string>
+    <string name="facility_updated">آخر تحديث %1$s</string>
+    <string name="facility_age_today">اليوم</string>
+    <plurals name="facility_age_days">
+        <item quantity="zero">اليوم</item>
+        <item quantity="one">قبل يوم</item>
+        <item quantity="two">قبل يومين</item>
+        <item quantity="few">قبل %d أيام</item>
+        <item quantity="many">قبل %d يومًا</item>
+        <item quantity="other">قبل %d يوم</item>
+    </plurals>
+    <plurals name="facility_age_months">
+        <item quantity="zero">هذا الشهر</item>
+        <item quantity="one">قبل شهر</item>
+        <item quantity="two">قبل شهرين</item>
+        <item quantity="few">قبل %d أشهر</item>
+        <item quantity="many">قبل %d شهرًا</item>
+        <item quantity="other">قبل %d شهر</item>
+    </plurals>
+    <plurals name="facility_age_years">
+        <item quantity="zero">هذا العام</item>
+        <item quantity="one">قبل سنة</item>
+        <item quantity="two">قبل سنتين</item>
+        <item quantity="few">قبل %d سنوات</item>
+        <item quantity="many">قبل %d سنة</item>
+        <item quantity="other">قبل %d سنة</item>
+    </plurals>
+
+    <!-- Reporting a problem with the facility's details. -->
+    <string name="facility_report">الإبلاغ عن مشكلة</string>
+    <string name="facility_report_wrong_info">معلومات خاطئة</string>
+    <string name="facility_report_closed_permanently">مغلقة نهائياً</string>
+    <string name="facility_report_wrong_location">الموقع خاطئ</string>
+    <string name="facility_report_wrong_hours">أوقات الدوام خاطئة</string>
+    <string name="facility_report_not_on_duty">ليست مناوبة</string>
+    <string name="facility_report_other">أخرى</string>
+    <string name="facility_report_note">ملاحظة - اختياري</string>
+    <!-- %1$d characters typed, of at most %2$d. -->
+    <string name="facility_report_note_count">%1$d / %2$d</string>
+    <string name="facility_report_send">إرسال البلاغ</string>
+    <string name="facility_report_thanks">شكراً، سيراجع فريقنا البلاغ</string>
+    <string name="facility_report_throttled">أرسلت بلاغات كثيرة خلال وقت قصير. حاول مرة أخرى لاحقاً.</string>
+    <string name="facility_report_offline">لا يوجد اتصال بالإنترنت. تحقق من الاتصال ثم أعد الإرسال.</string>
+    <string name="facility_report_failed">تعذر إرسال البلاغ. حاول مرة أخرى.</string>
     <!-- %1$d is how many stars, out of five. -->
     <string name="facility_rate_label">%1$d من 5</string>
 </resources>

@@ -3,6 +3,7 @@ package com.servacode.directory.core.network.api
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.AppException
 import com.servacode.directory.core.model.AvailabilityState
+import com.servacode.directory.core.model.FacilityReportReason
 import com.servacode.directory.core.model.GeoPoint
 import com.servacode.directory.core.model.OwnerFacilityStatus
 import com.servacode.directory.core.model.Province
@@ -70,6 +71,7 @@ class GeneratedAdapterTest {
          "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":"Pharmacy"},
          "city":null,"distanceMeters":120.5,"ratingAverage":4.5,"ratingCount":2,
          "isFavorite":false,"imageUrl":"https://cdn.example.test/shop.jpg",
+         "lastVerifiedAt":null,"updatedAt":"2026-09-19T10:00:00Z",
          "availability":{"state":"$state","nextOpenAt":null,
                          "isOpenNow":true,"isOnDutyToday":false}}
     """
@@ -205,6 +207,7 @@ class GeneratedAdapterTest {
             """{"id":"$FACILITY","nameAr":"صيدلية","nameEn":null,
             "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":null},"city":{"id":"$PROVINCE","nameAr":"الرقة"},
             "distanceMeters":null,"ratingAverage":null,"ratingCount":0,"isFavorite":true,"imageUrl":null,
+            "lastVerifiedAt":"2026-09-18T10:00:00Z","updatedAt":"2026-09-19T10:00:00Z","whatsapp":"+963933000000",
             "availability":{"state":"CLOSED","nextOpenAt":"2026-09-20T08:00:00+03:00",
                             "isOpenNow":false,"isOnDutyToday":true},
             "descriptionAr":null,"descriptionEn":null,"phone":"+963900000000","addressAr":"شارع","addressEn":null,
@@ -225,6 +228,9 @@ class GeneratedAdapterTest {
         assertEquals(listOf("https://cdn.example.test/a.jpg"), detail.imageUrls)
         assertEquals(listOf("قياس ضغط"), detail.services)
         assertEquals("الرقة", detail.summary.cityNameAr)
+        assertEquals("+963933000000", detail.whatsapp)
+        assertEquals(1_789_725_600_000L, detail.lastVerifiedAtEpochMillis)
+        assertEquals(1_789_812_000_000L, detail.updatedAtEpochMillis)
     }
 
     @Test fun `the home decodes advertisements with a free-form payload`() = runTest {
@@ -265,6 +271,56 @@ class GeneratedAdapterTest {
         val request = taken()
         assertEquals("PATCH", request.method)
         assertEquals("""{"phone":"+963900000001"}""", request.body!!.utf8())
+    }
+
+    @Test fun `an empty WhatsApp is sent, because blank is how it is cleared`() = runTest {
+        respond(ownerDetail())
+
+        val detail = ownerApi.patchFacility(FACILITY, OwnerFacilityPatch(whatsapp = ""))
+
+        assertEquals("""{"whatsapp":""}""", taken().body!!.utf8())
+        assertEquals("+963933000000", detail.whatsapp)
+    }
+
+    @Test fun `a refused WhatsApp names its field`() = runTest {
+        respond(
+            """{"code":"VALIDATION_ERROR","message":"Invalid input.",
+            "details":{"whatsapp":["Enter a valid Syrian mobile number."]},"requestId":"r"}""",
+            code = 400,
+        )
+
+        val error = runCatching { ownerApi.patchFacility(FACILITY, OwnerFacilityPatch(whatsapp = "123")) }
+            .exceptionOrNull() as AppException
+
+        assertEquals(AppError.Kind.VALIDATION, error.error.kind)
+        assertTrue("whatsapp" in error.error.fieldErrors)
+    }
+
+    @Test fun `insights are the owner's three counts over the window`() = runTest {
+        respond(
+            """{"facilityId":"$FACILITY","windowDays":30,"since":"2026-08-20T10:00:00Z",
+            "views":12,"calls":3,"directions":5}""",
+        )
+
+        val insights = ownerApi.insights(FACILITY)
+
+        assertEquals("/api/v1/owner/facilities/$FACILITY/insights/", taken().url.encodedPath)
+        assertEquals(listOf(12, 3, 5), listOf(insights.views, insights.calls, insights.directions))
+        assertEquals(30, insights.windowDays)
+    }
+
+    @Test fun `a report goes to the facility with its reason and note`() = runTest {
+        respond(
+            """{"id":"$FACILITY","status":"OPEN","createdAt":"2026-09-19T10:00:00Z"}""",
+            code = 201,
+        )
+
+        publicApi.reportFacility(FACILITY, FacilityReportReason.WRONG_HOURS, "  يفتح مساءً  ")
+
+        val request = taken()
+        assertEquals("POST", request.method)
+        assertEquals("/api/v1/facilities/$FACILITY/reports/", request.url.encodedPath)
+        assertEquals("""{"reason":"WRONG_HOURS","note":"يفتح مساءً"}""", request.body!!.utf8())
     }
 
     @Test fun `evidence goes as a real file part with the requirement id as plain text`() = runTest {
@@ -418,7 +474,7 @@ class GeneratedAdapterTest {
          "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,
          "serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true},"nameEn":null,"descriptionAr":null,
          "descriptionEn":null,
-         "phone":"+963900000001","addressAr":null,"addressEn":null,"cityId":null,"neighborhoodId":null,
+         "phone":"+963900000001","whatsapp":"+963933000000","addressAr":null,"addressEn":null,"cityId":null,"neighborhoodId":null,
          "location":null,"specialtyIds":[],"serviceTagIds":[],"evidence":[],"hours":[],"application":null}
     """
 }

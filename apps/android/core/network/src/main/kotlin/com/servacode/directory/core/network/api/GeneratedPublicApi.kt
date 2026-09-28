@@ -1,5 +1,8 @@
 package com.servacode.directory.core.network.api
 
+import com.servacode.directory.api.apis.PublicFacilitiesApi
+import com.servacode.directory.api.models.FacilityReportRequest
+import com.servacode.directory.core.model.FacilityReportReason
 import com.servacode.directory.api.apis.AccountApi
 import com.servacode.directory.api.apis.ContentApi
 import com.servacode.directory.api.apis.AdsApi
@@ -50,6 +53,10 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
     private val account by lazy { authorized.create<AccountApi>() }
     private val content by lazy { anonymous.create<ContentApi>() }
     private val ratings by lazy { authorized.create<RatingsApi>() }
+
+    // Through the signed-in client so a report is attributed when there is a session; with none
+    // it goes out without a token, which the endpoint accepts.
+    private val reports by lazy { authorized.create<PublicFacilitiesApi>() }
 
     override suspend fun provinces(): List<Province> =
         call { taxonomy.publicProvincesList() }.items.map { it.toDomain() }
@@ -129,6 +136,18 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
 
     override suspend fun facility(id: String): FacilityDetail =
         call { discovery.publicFacilityRetrieve(UUID.fromString(id)) }.toDomain()
+
+    override suspend fun reportFacility(facilityId: String, reason: FacilityReportReason, note: String?) {
+        call {
+            reports.publicFacilityReportCreate(
+                facilityId = UUID.fromString(facilityId),
+                facilityReportRequest = FacilityReportRequest(
+                    reason = reason.toWire(),
+                    note = note?.trim()?.takeIf { it.isNotEmpty() },
+                ),
+            )
+        }
+    }
 
     override suspend fun profile(): AccountProfile = call { account.accountProfileRetrieve() }.toDomain()
 

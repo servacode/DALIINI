@@ -19,6 +19,10 @@
     <string name="onboarding_name_en">الاسم بالإنكليزية - اختياري</string>
     <string name="onboarding_description">الوصف</string>
     <string name="onboarding_phone">الهاتف</string>
+    <string name="onboarding_phone_invalid">رقم الهاتف غير صالح.</string>
+    <string name="onboarding_whatsapp">واتساب - اختياري</string>
+    <string name="onboarding_whatsapp_hint">09XXXXXXXX</string>
+    <string name="onboarding_whatsapp_invalid">أدخل رقم جوال سوري صالحاً، مثل 0933123456، أو اترك الحقل فارغاً.</string>
     <string name="onboarding_address">العنوان</string>
     <string name="onboarding_map_note">حدد نقطة المنشأة على الخريطة أو استخدم موقعك الحالي.</string>
     <string name="onboarding_map_waiting">جارٍ تجهيز الخريطة…</string>

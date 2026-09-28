@@ -1,5 +1,6 @@
 package com.servacode.directory.core.network
 
+import com.servacode.directory.core.model.FacilityReportReason
 import com.servacode.directory.core.model.AccountProfile
 import com.servacode.directory.core.model.InboxPage
 import com.servacode.directory.core.model.LegalPage
@@ -89,6 +90,12 @@ interface PublicApiBoundary {
     ): List<PublicMapFacility>
 
     suspend fun facility(id: String): FacilityDetail
+
+    /**
+     * Reports a problem with a facility's public details. Works signed out; when signed in the
+     * backend records who reported. [note] is optional and at most 500 characters.
+     */
+    suspend fun reportFacility(facilityId: String, reason: FacilityReportReason, note: String?)
     suspend fun profile(): AccountProfile
     suspend fun updateProfile(
         displayName: String? = null,

@@ -95,7 +95,7 @@ class MaintenanceTest {
 
     private fun probe(): GeneratedMaintenanceProbe {
         val environment = ApiEnvironment(server.url("/").toString(), allowCleartext = true)
-        return GeneratedMaintenanceProbe(environment, http, GeneratedClient(environment, http), state)
+        return GeneratedMaintenanceProbe(GeneratedClient(environment, http), state)
     }
 
     @Test fun `the adapters still see a typed server error`() = runTest {
@@ -122,21 +122,35 @@ class MaintenanceTest {
         assertEquals(3600L, active.retryAfterSeconds)
         assertEquals("/api/v1/platform/status/", server.takeRequest().url.encodedPath)
 
-        respond(200, """{"maintenance":false,"messageAr":null,"retryAfterSeconds":null}""")
+        respond(200, """{"maintenance":false,"messageAr":"","retryAfterSeconds":0}""")
         probe().probe()
         assertEquals(MaintenanceStatus.Normal, state.status.value)
     }
 
-    @Test fun `a backend without the status endpoint is probed through the provinces`() = runTest {
+    @Test fun `a backend that answers anything but maintenance is up`() = runTest {
         state.enter(MaintenanceStatus.Active(message = null, retryAfterSeconds = null))
+        // A server from before the status endpoint: it answered, so it is not in maintenance.
         respond(404, """{"code":"NOT_FOUND","message":"","details":{},"requestId":""}""")
-        respond(200, """{"items":[]}""")
 
         probe().probe()
 
         assertEquals(MaintenanceStatus.Normal, state.status.value)
-        assertEquals("/api/v1/platform/status/", server.takeRequest().url.encodedPath)
-        assertEquals("/api/v1/public/provinces/", server.takeRequest().url.encodedPath)
+    }
+
+    @Test fun `a server error or no answer leaves the notice up`() = runTest {
+        state.enter(MaintenanceStatus.Active(message = null, retryAfterSeconds = null))
+        respond(500, "")
+
+        assertTrue(runCatching { probe().probe() }.isFailure)
+        assertTrue(state.active)
+    }
+
+    @Test fun `a zero retry hint is no hint`() {
+        val active = GeneratedMaintenanceProbe.active(
+            com.servacode.directory.api.models.PlatformStatus(maintenance = true, messageAr = " ", retryAfterSeconds = 0),
+        )!!
+        assertNull(active.message)
+        assertNull(active.retryAfterSeconds)
     }
 
     @Test fun `a maintenance answer from the status endpoint keeps the screen up`() = runTest {

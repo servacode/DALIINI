@@ -7,6 +7,7 @@ import com.servacode.directory.core.datastore.DirectoryPreferencesStore
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.AppException
 import com.servacode.directory.core.model.FacilityDetail
+import com.servacode.directory.core.model.FacilityReportReason
 import com.servacode.directory.core.network.PublicApiBoundary
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -48,4 +49,18 @@ class FacilityRepository @Inject constructor(
     suspend fun save(id: String): Result<Boolean> = runCatching { api.addFavorite(id) }
 
     suspend fun unsave(id: String): Result<Boolean> = runCatching { api.removeFavorite(id) }
+
+    /**
+     * Report a problem with the facility's public details. The note is trimmed and capped here
+     * as well as on the form, so a long paste cannot turn into a refused request.
+     */
+    suspend fun report(id: String, reason: FacilityReportReason, note: String?): Result<Unit> =
+        runCatching {
+            api.reportFacility(id, reason, note?.trim()?.take(REPORT_NOTE_MAX)?.takeIf { it.isNotEmpty() })
+        }
+
+    companion object {
+        /** The backend's own limit on a report's note. */
+        const val REPORT_NOTE_MAX = 500
+    }
 }

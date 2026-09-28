@@ -80,6 +80,12 @@ data class FacilityDetail(
     val hours: List<BusinessHour> = emptyList(),
     val specialties: List<String> = emptyList(),
     val services: List<String> = emptyList(),
+    /** WhatsApp contact, E.164 Syrian mobile, when the facility gave one. */
+    val whatsapp: String? = null,
+    /** When an operator last approved these details: the trust line. Null when never. */
+    val lastVerifiedAtEpochMillis: Long? = null,
+    /** The last change to the facility record. Null only in snapshots cached before it existed. */
+    val updatedAtEpochMillis: Long? = null,
 )
 
 @Serializable
@@ -303,6 +309,8 @@ data class OwnerFacilityDetail(
     val descriptionAr: String? = null,
     val descriptionEn: String? = null,
     val phone: String? = null,
+    /** WhatsApp contact, E.164 Syrian mobile; null when the facility has none. */
+    val whatsapp: String? = null,
     val addressAr: String? = null,
     val addressEn: String? = null,
     val cityId: String? = null,
@@ -402,3 +410,29 @@ data class LegalPage(
 
 @Serializable
 enum class LegalPageKey { ABOUT, PRIVACY, TERMS, INSTRUCTIONS, FAQ, CONTACT }
+
+/**
+ * Why someone reports a facility's public details. The backend's `FacilityReportReasonEnum`,
+ * in the order the sheet offers them.
+ */
+enum class FacilityReportReason {
+    WRONG_INFO,
+    CLOSED_PERMANENTLY,
+    WRONG_LOCATION,
+    WRONG_HOURS,
+    NOT_ON_DUTY,
+    OTHER,
+}
+
+/** An owner's facility, as people engaged with it over the backend's window (30 days). */
+data class OwnerFacilityInsights(
+    val facilityId: String,
+    val windowDays: Int,
+    val sinceEpochMillis: Long,
+    val views: Int,
+    val calls: Int,
+    val directions: Int,
+) {
+    /** Nothing happened in the window: the card says so rather than showing three zeros. */
+    val isEmpty: Boolean get() = views == 0 && calls == 0 && directions == 0
+}

@@ -121,9 +121,7 @@ object NetworkModule {
     /** Maintenance ends when this answers normally; see [MaintenanceCoordinator]. */
     @Provides @Singleton
     fun provideMaintenanceProbe(
-        environment: ApiEnvironment,
-        @AnonymousApi http: OkHttpClient,
         @AnonymousApi anonymous: GeneratedClient,
         state: MaintenanceState,
-    ): MaintenanceProbe = GeneratedMaintenanceProbe(environment, http, anonymous, state)
+    ): MaintenanceProbe = GeneratedMaintenanceProbe(anonymous, state)
 }

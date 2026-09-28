@@ -49,6 +49,8 @@ fun DirectoryPage(
     bottomBar: @Composable () -> Unit = {},
     floatingAction: @Composable () -> Unit = {},
     background: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.background,
+    /** A short confirmation at the foot of the page, when a screen has one to give. */
+    snackbarHost: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     Scaffold(
@@ -56,6 +58,7 @@ fun DirectoryPage(
         topBar = topBar,
         bottomBar = bottomBar,
         floatingActionButton = floatingAction,
+        snackbarHost = snackbarHost,
         containerColor = background,
         content = content,
     )
