@@ -61,7 +61,13 @@ def decide_application(*, request, application_id, approve, reason=""):
     else:
         application.status = FacilityApplication.Status.REJECTED
         application.rejection_reason = reason.strip()
-        facility.status = Facility.Status.DRAFT
+        # A facility that was live before goes back to needing re-verification rather than
+        # being demoted to a never-published draft.
+        facility.status = (
+            Facility.Status.REVERIFICATION_REQUIRED
+            if facility.activated_at is not None
+            else Facility.Status.DRAFT
+        )
     application.reviewed_by = request.user
     application.reviewed_at = timezone.now()
     application.save(

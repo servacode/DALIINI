@@ -54,5 +54,6 @@ class DutyShift(models.Model):
     def clean(self):
         if self.ends_at <= self.starts_at:
             raise ValidationError({"ends_at": "Must be after starts_at."})
-        if not self.facility.category.capabilities.supports_duty:
+        capabilities = getattr(self.facility.category, "capabilities", None)
+        if capabilities is None or not capabilities.supports_duty:
             raise ValidationError("Facility category does not support duty.")

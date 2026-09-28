@@ -236,6 +236,11 @@ def submit_facility(*, actor, facility, request_id=""):
         .select_related("category__group", "category__capabilities", "province")
         .get(pk=facility.pk)
     )
+    if locked.status in (Facility.Status.SUSPENDED, Facility.Status.CLOSED):
+        # A suspension or closure is an operator decision; resubmitting must not undo it.
+        raise ValidationError(
+            {"status": "A suspended or closed facility cannot be submitted for review."}
+        )
     validate_owner_registration(
         province_id=locked.province_id,
         category_id=locked.category_id,

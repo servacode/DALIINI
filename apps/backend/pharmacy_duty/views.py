@@ -65,7 +65,8 @@ class DutyListCreateView(APIView):
     def post(self, request, facility_id):
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
-        if not facility.category.capabilities.supports_duty:
+        capabilities = getattr(facility.category, "capabilities", None)
+        if capabilities is None or not capabilities.supports_duty:
             raise ConflictError(
                 "DUTY_NOT_SUPPORTED",
                 message="هذا التصنيف لا يدعم ورديات المناوبة.",

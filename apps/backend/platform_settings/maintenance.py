@@ -5,9 +5,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+import logging
+
 from django.core.cache import cache
+from django.db import DatabaseError
 
 from .models import PlatformSetting
+
+logger = logging.getLogger(__name__)
 
 ENABLED_KEY = "maintenance.enabled"
 MESSAGE_KEY = "maintenance.messageAr"
@@ -64,7 +69,13 @@ def get_maintenance_state() -> MaintenanceState:
     cached = cache.get(CACHE_KEY)
     if isinstance(cached, MaintenanceState):
         return cached
-    state = _load()
+    try:
+        state = _load()
+    except DatabaseError:
+        # Fail open: a database hiccup must not turn into a platform-wide 503. The request
+        # itself will surface the database problem through the normal error path.
+        logger.warning("maintenance.state_unavailable")
+        return MaintenanceState(False, DEFAULT_MESSAGE_AR, DEFAULT_RETRY_AFTER_SECONDS)
     cache.set(CACHE_KEY, state, CACHE_TTL_SECONDS)
     return state
 
