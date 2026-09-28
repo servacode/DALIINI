@@ -1,0 +1,337 @@
+/* What the work sits on, and what the screen says when there is nothing to show.
+ *
+ * One card. It is flat — a hairline and a white field — because a page of twelve floating boxes
+ * is a page with no hierarchy. Elevation is kept for the two things that genuinely sit above the
+ * page: the dialog and the toast. */
+
+.card {
+  background: var(--sd-semantic-surface-default);
+  border: 1px solid var(--sd-semantic-stroke-default);
+  border-radius: var(--sd-radius-large);
+  overflow: clip;
+}
+
+/* The old name, kept so that nothing in flight breaks while the screens move over. */
+.panel {
+  background: var(--sd-semantic-surface-default);
+  border: 1px solid var(--sd-semantic-stroke-default);
+  border-radius: var(--sd-radius-large);
+  padding: var(--sd-spacing-lg);
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sd-spacing-base);
+  padding: var(--sd-spacing-base) var(--sd-spacing-lg);
+  border-block-end: 1px solid var(--sd-semantic-stroke-default);
+}
+
+.card-header h2,
+.card-header h3 {
+  font-size: var(--sd-typography-roles-title-medium-size);
+  line-height: var(--sd-typography-roles-title-medium-line-height);
+  font-weight: var(--sd-typography-roles-title-medium-weight);
+}
+
+.card-header p {
+  margin-block-start: 2px;
+  font-size: var(--sd-typography-roles-body-small-size);
+  line-height: var(--sd-typography-roles-body-small-line-height);
+  color: var(--sd-semantic-content-secondary);
+  max-inline-size: 72ch;
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sd-spacing-sm);
+  flex: none;
+}
+
+.card-body {
+  padding: var(--sd-spacing-lg);
+  display: grid;
+  gap: var(--sd-spacing-base);
+  align-content: start;
+}
+
+/* A card whose body is a table has no padding of its own: the table draws its own edges. */
+.card-body-flush {
+  padding: 0;
+  gap: 0;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--sd-spacing-sm);
+  padding: var(--sd-spacing-md) var(--sd-spacing-lg);
+  border-block-start: 1px solid var(--sd-semantic-stroke-default);
+  background: var(--sd-semantic-surface-subtle);
+}
+
+/* States ------------------------------------------------------------------------------------
+ * Four of them, and the screen shows exactly one at a time: working, empty, failed, or the data.
+ * Each says what happened and what can be done about it — never a bare spinner on a white page. */
+
+.state {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: var(--sd-spacing-sm);
+  padding: var(--sd-spacing-3xl) var(--sd-spacing-lg);
+  background: var(--sd-semantic-surface-default);
+  border: 1px solid var(--sd-semantic-stroke-default);
+  border-radius: var(--sd-radius-large);
+  color: var(--sd-semantic-content-secondary);
+}
+
+.state strong {
+  font-size: var(--sd-typography-roles-title-medium-size);
+  font-weight: var(--sd-typography-roles-title-medium-weight);
+  color: var(--sd-semantic-content-primary);
+}
+
+.state-icon {
+  inline-size: 40px;
+  block-size: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--sd-radius-pill);
+  background: var(--sd-semantic-surface-subtle);
+  color: var(--sd-semantic-content-muted);
+}
+
+/* A state inside a card is the card's own content: the card already drew the edges, and two
+   borders around one message is the sort of thing that makes a console look assembled rather than
+   designed. */
+.card-body-flush > .state,
+.card-body > .state {
+  border: 0;
+  border-radius: 0;
+}
+
+.card-body-flush > .state:not(.state-loading) {
+  border-block-start: 1px solid var(--sd-semantic-stroke-default);
+}
+
+/* Working is a row, not a page: it replaces the data while keeping the furniture around it. */
+.state-loading {
+  flex-direction: row;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: start;
+  gap: var(--sd-spacing-md);
+  padding: var(--sd-spacing-lg);
+}
+
+.state-error {
+  border-color: var(--sd-semantic-feedback-danger);
+  justify-items: start;
+  text-align: start;
+}
+
+.state-error .state-icon {
+  background: var(--sd-semantic-surface-canvas);
+  color: var(--sd-semantic-feedback-danger);
+}
+
+.state-actions {
+  display: flex;
+  gap: var(--sd-spacing-sm);
+  margin-block-start: var(--sd-spacing-xs);
+}
+
+.spinner {
+  inline-size: 16px;
+  block-size: 16px;
+  border-radius: var(--sd-radius-pill);
+  border: 2px solid var(--sd-semantic-stroke-default);
+  border-block-start-color: var(--sd-semantic-action-primary);
+  animation: spin 0.7s linear infinite;
+  flex: none;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* The shape of the thing that is coming, so the page does not jump when it arrives. */
+.skeleton {
+  border-radius: var(--sd-radius-small);
+  background: linear-gradient(
+    90deg,
+    var(--sd-semantic-surface-subtle) 25%,
+    var(--sd-semantic-surface-canvas) 37%,
+    var(--sd-semantic-surface-subtle) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+  block-size: 1em;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -135% 0;
+  }
+}
+
+/* Badges ------------------------------------------------------------------------------------
+ * A status is a word with a colour behind it, and the colour means the same thing on every
+ * screen. The soft backgrounds are the feedback colours themselves at low opacity, so there is
+ * no second palette to keep in step with the first. */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sd-spacing-2xs);
+  padding: 3px var(--sd-spacing-md);
+  border-radius: var(--sd-radius-pill);
+  border: 1px solid transparent;
+  font-size: var(--sd-typography-roles-label-medium-size);
+  font-weight: var(--sd-typography-roles-label-medium-weight);
+  line-height: var(--sd-typography-roles-label-medium-line-height);
+  white-space: nowrap;
+}
+
+.badge::before {
+  content: "";
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: var(--sd-radius-pill);
+  background: currentColor;
+  flex: none;
+}
+
+.badge-neutral {
+  background: var(--sd-semantic-surface-subtle);
+  color: var(--sd-semantic-content-secondary);
+  border-color: var(--sd-semantic-stroke-default);
+}
+
+.badge-positive {
+  background: color-mix(in srgb, var(--sd-semantic-feedback-success) 10%, transparent);
+  color: var(--sd-semantic-feedback-success);
+  border-color: color-mix(in srgb, var(--sd-semantic-feedback-success) 24%, transparent);
+}
+
+.badge-warning {
+  background: color-mix(in srgb, var(--sd-semantic-feedback-warning) 12%, transparent);
+  color: var(--sd-semantic-feedback-warning);
+  border-color: color-mix(in srgb, var(--sd-semantic-feedback-warning) 26%, transparent);
+}
+
+.badge-danger {
+  background: color-mix(in srgb, var(--sd-semantic-feedback-danger) 10%, transparent);
+  color: var(--sd-semantic-feedback-danger);
+  border-color: color-mix(in srgb, var(--sd-semantic-feedback-danger) 24%, transparent);
+}
+
+.badge-info {
+  background: color-mix(in srgb, var(--sd-semantic-feedback-info) 10%, transparent);
+  color: var(--sd-semantic-feedback-info);
+  border-color: color-mix(in srgb, var(--sd-semantic-feedback-info) 24%, transparent);
+}
+
+.notice {
+  padding: var(--sd-spacing-md) var(--sd-spacing-base);
+  border-radius: var(--sd-radius-medium);
+  border: 1px solid var(--sd-semantic-stroke-default);
+  background: var(--sd-semantic-surface-subtle);
+  font-size: var(--sd-typography-roles-body-small-size);
+  line-height: var(--sd-typography-roles-body-small-line-height);
+  color: var(--sd-semantic-content-secondary);
+}
+
+/* Above the page ----------------------------------------------------------------------------
+ * The only two things allowed to cast a shadow, because they are the only two that are actually
+ * in front of something. */
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: var(--sd-spacing-xl);
+  background: color-mix(in srgb, var(--sd-semantic-surface-bar) 55%, transparent);
+  animation: fade var(--sd-motion-duration-standard) var(--sd-motion-easing-decelerate);
+}
+
+.dialog {
+  inline-size: min(520px, 100%);
+  max-block-size: min(86vh, 720px);
+  overflow: auto;
+  background: var(--sd-semantic-surface-default);
+  border: 1px solid var(--sd-semantic-stroke-default);
+  border-radius: var(--sd-radius-large);
+  padding: var(--sd-spacing-lg);
+  display: grid;
+  gap: var(--sd-spacing-md);
+  box-shadow: 0 var(--sd-elevation-medium-y) var(--sd-elevation-medium-blur)
+    color-mix(in srgb, var(--sd-semantic-surface-bar) 22%, transparent);
+  animation: rise var(--sd-motion-duration-standard) var(--sd-motion-easing-decelerate);
+}
+
+.dialog h2 {
+  font-size: var(--sd-typography-roles-title-large-size);
+  line-height: var(--sd-typography-roles-title-large-line-height);
+  font-weight: var(--sd-typography-roles-title-large-weight);
+}
+
+.dialog-actions {
+  display: flex;
+  gap: var(--sd-spacing-sm);
+  padding-block-start: var(--sd-spacing-xs);
+}
+
+.toast {
+  position: fixed;
+  inset-block-end: var(--sd-spacing-xl);
+  inset-inline-start: var(--sd-spacing-xl);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: var(--sd-spacing-md);
+  padding: var(--sd-spacing-md) var(--sd-spacing-base);
+  border-radius: var(--sd-radius-medium);
+  background: var(--sd-semantic-surface-default);
+  border: 1px solid var(--sd-semantic-feedback-success);
+  border-inline-start: 3px solid var(--sd-semantic-feedback-success);
+  box-shadow: 0 var(--sd-elevation-medium-y) var(--sd-elevation-medium-blur)
+    color-mix(in srgb, var(--sd-semantic-surface-bar) 18%, transparent);
+  animation: rise var(--sd-motion-duration-standard) var(--sd-motion-easing-decelerate);
+}
+
+.toast-danger {
+  border-color: var(--sd-semantic-feedback-danger);
+  border-inline-start-color: var(--sd-semantic-feedback-danger);
+}
+
+.toast-close {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--sd-semantic-content-muted);
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}

@@ -4,6 +4,8 @@ import { useState } from "react";
 
 import { useCan } from "../../../components/admin-shell";
 import {
+  EmptyState,
+  Card,
   ErrorState,
   LoadingState,
   PageHeader,
@@ -60,19 +62,21 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="stack">
-      <PageHeader title="الإعدادات" description="إعدادات المنصة، كل تغيير مُسجَّل." />
+    <div className="operation-stack">
+      <PageHeader
+        eyebrow="النظام"
+        title="الإعدادات"
+        description="إعدادات المنصة، كل تغيير مُسجَّل."
+      />
       {settings.loading ? <LoadingState /> : null}
       {settings.error ? <ErrorState error={settings.error} onRetry={settings.reload} /> : null}
       {mutation.error ? <ErrorState error={mutation.error} /> : null}
 
       {settings.data ? (
         settings.data.items.length === 0 ? (
-          <div className="state-block state-empty" data-testid="empty-state">
-            <strong>لا إعدادات مُهيّأة</strong>
-          </div>
+          <EmptyState title="لا إعدادات مُهيّأة" />
         ) : (
-          <section className="panel stack">
+          <Card title="الإعدادات المُهيّأة" description="كل مفتاح وقيمته الحالية.">
             {settings.data.items.map((setting) => (
               <div key={setting.key} className="switch-row">
                 <span>
@@ -131,7 +135,7 @@ export default function SettingsPage() {
                 </span>
               </div>
             ))}
-          </section>
+          </Card>
         )
       ) : null}
 

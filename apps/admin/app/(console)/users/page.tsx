@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import {
   type Column,
+  Card,
   DataTable,
   ErrorState,
   FilterBar,
@@ -52,34 +53,40 @@ export default function UsersPage() {
   ];
 
   return (
-    <div className="stack">
-      <PageHeader title="المستخدمون" description="الحسابات وحالتها والأدوار الإدارية." />
-      <FilterBar
-        fields={[
-          { name: "q", label: "بحث", placeholder: "اسم أو رقم هاتف" },
-          {
-            name: "status",
-            label: "الحالة",
-            type: "select",
-            options: [
-              { value: "active", label: "فعّال" },
-              { value: "blocked", label: "محظور" },
-            ],
-          },
-        ]}
-        values={filters}
-        onApply={setFilters}
+    <div className="operation-stack">
+      <PageHeader
+        eyebrow="المستخدمون والمحتوى"
+        title="المستخدمون"
+        description="الحسابات وحالتها والأدوار الإدارية."
       />
-      {users.loading ? <LoadingState /> : null}
-      {users.error ? <ErrorState error={users.error} onRetry={users.reload} /> : null}
-      {users.data ? (
-        <DataTable
-          caption="المستخدمون"
-          columns={columns}
-          rows={users.data.items}
-          rowKey={(row) => row.id}
+      <Card flush>
+        <FilterBar
+          fields={[
+            { name: "q", label: "بحث", placeholder: "اسم أو رقم هاتف" },
+            {
+              name: "status",
+              label: "الحالة",
+              type: "select",
+              options: [
+                { value: "active", label: "فعّال" },
+                { value: "blocked", label: "محظور" },
+              ],
+            },
+          ]}
+          values={filters}
+          onApply={setFilters}
         />
-      ) : null}
+        {users.loading ? <LoadingState /> : null}
+        {users.error ? <ErrorState error={users.error} onRetry={users.reload} /> : null}
+        {users.data ? (
+          <DataTable
+            caption="المستخدمون"
+            columns={columns}
+            rows={users.data.items}
+            rowKey={(row) => row.id}
+          />
+        ) : null}
+      </Card>
     </div>
   );
 }

@@ -1,0 +1,295 @@
+/* Rows, filters and figures — the part of the console an operator actually spends the day in.
+ *
+ * Density is the design here. A table that shows twenty rows instead of eight saves a scroll on
+ * every queue, so the padding is tight, the header is quiet and sticky, and the only decoration is
+ * the line between rows. Numbers are tabular so a column of them can be scanned rather than read. */
+
+.table-wrap {
+  inline-size: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.card > .table-wrap {
+  border-radius: 0;
+}
+
+.data-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--sd-typography-roles-body-medium-size);
+}
+
+.data-table th,
+.data-table td {
+  padding: var(--sd-spacing-md) var(--sd-spacing-base);
+  text-align: start;
+  vertical-align: middle;
+  border-block-end: 1px solid var(--sd-semantic-stroke-default);
+}
+
+.data-table thead th {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  background: var(--sd-semantic-surface-subtle);
+  color: var(--sd-semantic-content-secondary);
+  font-size: var(--sd-typography-roles-label-medium-size);
+  font-weight: var(--sd-typography-roles-label-medium-weight);
+  white-space: nowrap;
+}
+
+.data-table tbody tr {
+  transition: background var(--sd-motion-duration-feedback) var(--sd-motion-easing-standard);
+}
+
+.data-table tbody tr:hover {
+  background: var(--sd-semantic-surface-subtle);
+}
+
+.data-table tbody tr:last-child td {
+  border-block-end: 0;
+}
+
+.data-table tbody tr[data-selected="true"] {
+  background: var(--sd-semantic-surface-brand-soft);
+}
+
+/* The first column carries the name of the thing; it earns the weight. */
+.data-table td:first-child {
+  font-weight: var(--sd-typography-roles-label-large-weight);
+}
+
+.data-table .cell-actions {
+  text-align: end;
+  white-space: nowrap;
+}
+
+/* The toolbar above a table ------------------------------------------------------------------
+ * Filters sit directly on top of the rows they filter, inside the same card, so it is never a
+ * question which table a search box belongs to. */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sd-spacing-md);
+  padding: var(--sd-spacing-base) var(--sd-spacing-lg);
+  border-block-end: 1px solid var(--sd-semantic-stroke-default);
+  background: var(--sd-semantic-surface-default);
+}
+
+.filter-field {
+  display: grid;
+  gap: var(--sd-spacing-2xs);
+  min-inline-size: 0;
+}
+
+.filter-field > span {
+  font-size: var(--sd-typography-roles-label-medium-size);
+  font-weight: var(--sd-typography-roles-label-medium-weight);
+  color: var(--sd-semantic-content-secondary);
+}
+
+.filter-field :is(input, select) {
+  min-block-size: 36px;
+  min-inline-size: 190px;
+  padding: var(--sd-spacing-sm) var(--sd-spacing-md);
+  border: 1px solid var(--sd-semantic-stroke-default);
+  border-radius: var(--sd-radius-small);
+  background: var(--sd-semantic-surface-default);
+  font-size: var(--sd-typography-roles-body-medium-size);
+}
+
+.filter-field :is(input, select):hover {
+  border-color: var(--sd-semantic-stroke-strong);
+}
+
+.filter-field :is(input, select):focus-visible {
+  outline: 2px solid var(--sd-semantic-action-primary);
+  outline-offset: 1px;
+  border-color: var(--sd-semantic-action-primary);
+}
+
+.filter-actions {
+  display: flex;
+  gap: var(--sd-spacing-sm);
+  margin-inline-start: auto;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sd-spacing-sm);
+  padding: var(--sd-spacing-md) var(--sd-spacing-lg);
+  border-block-start: 1px solid var(--sd-semantic-stroke-default);
+  background: var(--sd-semantic-surface-subtle);
+}
+
+/* Figures -------------------------------------------------------------------------------------
+ * A number worth a card is a number somebody acts on. The ones that lead somewhere are links and
+ * say so on hover; the rest are plain. */
+
+.kpi-grid {
+  display: grid;
+  gap: var(--sd-spacing-base);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.kpi {
+  display: grid;
+  gap: var(--sd-spacing-2xs);
+  padding: var(--sd-spacing-lg);
+  border-radius: var(--sd-radius-large);
+  border: 1px solid var(--sd-semantic-stroke-default);
+  background: var(--sd-semantic-surface-default);
+  transition: border-color var(--sd-motion-duration-feedback) var(--sd-motion-easing-standard),
+    background var(--sd-motion-duration-feedback) var(--sd-motion-easing-standard);
+}
+
+a.kpi:hover {
+  border-color: var(--sd-semantic-action-primary);
+  background: var(--sd-semantic-surface-brand-soft);
+}
+
+.kpi strong {
+  font-size: var(--sd-typography-roles-headline-large-size);
+  line-height: var(--sd-typography-roles-headline-large-line-height);
+  font-weight: var(--sd-typography-roles-headline-large-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi span {
+  font-size: var(--sd-typography-roles-body-small-size);
+  color: var(--sd-semantic-content-secondary);
+}
+
+/* Facts about one record: a label and its value, read down the page. */
+.detail-list {
+  display: grid;
+  gap: var(--sd-spacing-md);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.detail-list > div {
+  display: grid;
+  gap: var(--sd-spacing-2xs);
+  min-inline-size: 0;
+}
+
+.detail-list dt {
+  font-size: var(--sd-typography-roles-label-medium-size);
+  font-weight: var(--sd-typography-roles-label-medium-weight);
+  color: var(--sd-semantic-content-muted);
+}
+
+.detail-list dd {
+  margin: 0;
+  font-size: var(--sd-typography-roles-body-medium-size);
+  overflow-wrap: anywhere;
+}
+
+/* A row of one fact and its value, stacked in a panel. */
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sd-spacing-lg);
+  padding-block: var(--sd-spacing-md);
+  border-block-end: 1px solid var(--sd-semantic-stroke-default);
+}
+
+.status-row:last-child {
+  border-block-end: 0;
+}
+
+.status-row code {
+  direction: ltr;
+  text-align: start;
+  font-variant-numeric: tabular-nums;
+}
+
+/* What changed, and when ---------------------------------------------------------------------- */
+
+.diff {
+  display: grid;
+  gap: var(--sd-spacing-sm);
+  font-size: var(--sd-typography-roles-body-small-size);
+}
+
+.diff-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 220px) 1fr;
+  gap: var(--sd-spacing-md);
+  padding-block: var(--sd-spacing-xs);
+  border-block-end: 1px solid var(--sd-semantic-stroke-default);
+}
+
+.diff-row:last-child {
+  border-block-end: 0;
+}
+
+.diff-row dt {
+  font-weight: var(--sd-typography-roles-label-medium-weight);
+  color: var(--sd-semantic-content-secondary);
+}
+
+.diff-row dd {
+  display: flex;
+  gap: var(--sd-spacing-sm);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.diff-before {
+  color: var(--sd-semantic-content-muted);
+  text-decoration: line-through;
+}
+
+.diff-after {
+  color: var(--sd-semantic-feedback-success);
+  font-weight: var(--sd-typography-roles-label-large-weight);
+}
+
+.timeline {
+  display: grid;
+  gap: 0;
+  font-size: var(--sd-typography-roles-body-small-size);
+}
+
+.timeline li {
+  display: flex;
+  gap: var(--sd-spacing-md);
+  align-items: baseline;
+  flex-wrap: wrap;
+  padding-block: var(--sd-spacing-md);
+  border-block-end: 1px solid var(--sd-semantic-stroke-default);
+}
+
+.timeline li:last-child {
+  border-block-end: 0;
+}
+
+.timeline time {
+  color: var(--sd-semantic-content-muted);
+  min-inline-size: 132px;
+}
+
+@media (max-width: 680px) {
+  .status-row,
+  .diff-row {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sd-spacing-xs);
+  }
+
+  .toolbar {
+    padding: var(--sd-spacing-md);
+  }
+
+  .filter-actions {
+    margin-inline-start: 0;
+  }
+}

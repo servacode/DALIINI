@@ -12,7 +12,22 @@ const flat = resolveRefs(tokens);
 const pascal = (s) => s.split('.').map((part) => part.replace(/(^|[-_])(\w)/g, (_, __, c) => c.toUpperCase())).join('');
 const cssName = (s) => s.replaceAll('.', '-').replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
 const ts = `// GENERATED — DO NOT EDIT\nexport const tokens = ${JSON.stringify(tokens, null, 2)} as const;\n`;
-const css = `/* GENERATED — DO NOT EDIT */\n:root {\n${Object.entries(flat).filter(([,v]) => typeof v === 'string' || typeof v === 'number').map(([k,v]) => `  --sd-${cssName(k)}: ${typeof v === 'number' ? `${v}px` : v};`).join('\n')}\n}\n`;
+
+/**
+ * A number in CSS carries its unit, and not every number is a length.
+ *
+ * A weight is a weight and an opacity is a fraction: `font-weight: 400px` and
+ * `opacity: 0.08px` are both invalid, so a stylesheet that wanted them had to write the
+ * number itself and the token stopped being the single source. A duration is milliseconds.
+ * Everything else measured here is a length.
+ */
+const cssUnit = (key) => {
+  if (/(^|\.)weight$/.test(key) || /(^|\.)opacity$/.test(key)) return '';
+  if (key.startsWith('motion.duration.')) return 'ms';
+  return 'px';
+};
+const cssValue = (key, value) => (typeof value === 'number' ? `${value}${cssUnit(key)}` : value);
+const css = `/* GENERATED — DO NOT EDIT */\n:root {\n${Object.entries(flat).filter(([,v]) => typeof v === 'string' || typeof v === 'number').map(([k,v]) => `  --sd-${cssName(k)}: ${cssValue(k, v)};`).join('\n')}\n}\n`;
 const kotlinLines = Object.entries(flat).filter(([,v]) => typeof v === 'string' || typeof v === 'number').map(([k,v]) => `    const val ${pascal(k)} = ${typeof v === 'number' ? `${v}` : JSON.stringify(v)}`);
 const kotlin = `// GENERATED — DO NOT EDIT\npackage com.servacode.directory.designsystem.generated\n\nobject DirectoryTokens {\n${kotlinLines.join('\n')}\n}\n`;
 const swiftLines = Object.entries(flat).filter(([,v]) => typeof v === 'string' || typeof v === 'number').map(([k,v]) => `    static let ${pascal(k).replace(/^./, (c) => c.toLowerCase())} = ${typeof v === 'number' ? `${v}` : JSON.stringify(v)}`);

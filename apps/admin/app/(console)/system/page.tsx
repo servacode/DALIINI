@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Card,
   ErrorState,
   LoadingState,
   PageHeader,
@@ -55,14 +56,17 @@ export default function SystemPage() {
     : [];
 
   return (
-    <div className="stack">
-      <PageHeader title="حالة النظام" description="جاهزية الاعتماديات التشغيلية." />
+    <div className="operation-stack">
+      <PageHeader
+        eyebrow="النظام"
+        title="حالة النظام"
+        description="جاهزية الاعتماديات التشغيلية."
+      />
       {status.loading ? <LoadingState /> : null}
       {status.error ? <ErrorState error={status.error} onRetry={status.reload} /> : null}
       {status.data ? (
         <>
-          <section className="panel stack">
-            <h2>الاعتماديات</h2>
+          <Card title="الاعتماديات" description="ما يحتاجه الخادم ليعمل، وحالة كل منها.">
             {dependencies.map(([label, value]) => (
               <div key={label} className="switch-row">
                 <span>{label}</span>
@@ -71,9 +75,8 @@ export default function SystemPage() {
                 </StatusBadge>
               </div>
             ))}
-          </section>
-          <section className="panel stack">
-            <h2>الإصدار</h2>
+          </Card>
+          <Card title="الإصدار" description="ما يعمل الآن، وأي عقد بُني عليه.">
             <div className="switch-row">
               <span>إصدار الواجهة البرمجية</span>
               <span className="cell-ltr">{status.data.apiVersion}</span>
@@ -90,7 +93,7 @@ export default function SystemPage() {
               <span>وقت الفحص</span>
               <span className="cell-ltr">{formatDateTime(status.data.checkedAt)}</span>
             </div>
-          </section>
+          </Card>
         </>
       ) : null}
     </div>

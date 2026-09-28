@@ -3,9 +3,11 @@
 import {
   type Column,
   DataTable,
+  Card,
   ErrorState,
   LoadingState,
   PageHeader,
+  StatCard,
 } from "../../../components/ui";
 import { useResource } from "../../../lib/client/use-resource";
 
@@ -31,8 +33,8 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="stack">
-      <PageHeader title="التحليلات" description="مؤشرات تشغيلية مجمّعة." />
+    <div className="operation-stack">
+      <PageHeader eyebrow="الرقابة" title="التحليلات" description="مؤشرات تشغيلية مجمّعة." />
       {analytics.loading ? <LoadingState /> : null}
       {analytics.error ? (
         <ErrorState error={analytics.error} onRetry={analytics.reload} />
@@ -40,32 +42,25 @@ export default function AnalyticsPage() {
       {analytics.data ? (
         <>
           <div className="kpi-grid">
-            <div className="kpi">
-              <strong>{analytics.data.activeFacilities}</strong>
-              <span>منشآت فعّالة</span>
-            </div>
-            <div className="kpi">
-              <strong>{analytics.data.pendingReviews}</strong>
-              <span>طلبات بانتظار المراجعة</span>
-            </div>
-            <div className="kpi">
-              <strong>
-                {analytics.data.ratingAverage === null
+            <StatCard label="منشآت فعّالة" value={analytics.data.activeFacilities} />
+            <StatCard label="طلبات بانتظار المراجعة" value={analytics.data.pendingReviews} />
+            <StatCard
+              label="متوسط التقييم"
+              value={
+                analytics.data.ratingAverage === null
                   ? "—"
-                  : analytics.data.ratingAverage.toFixed(2)}
-              </strong>
-              <span>متوسط التقييم</span>
-            </div>
+                  : analytics.data.ratingAverage.toFixed(2)
+              }
+            />
           </div>
-          <section className="panel stack">
-            <h2>أحداث المنتج</h2>
+          <Card title="أحداث المنتج" description="ما سجّله التطبيق من أحداث، بعددها." flush>
             <DataTable
               caption="أحداث المنتج"
               columns={columns}
               rows={analytics.data.events}
               rowKey={(row) => row.name}
             />
-          </section>
+          </Card>
         </>
       ) : null}
     </div>

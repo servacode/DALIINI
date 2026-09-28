@@ -128,8 +128,9 @@ export default function TaxonomyCategoriesPage() {
   }
 
   return (
-    <div className="stack">
+    <div className="operation-stack">
       <PageHeader
+        eyebrow="الدليل"
         title="التصنيفات"
         description="التصنيفات وقدراتها ومفاتيح ظهورها في كل محافظة."
         actions={

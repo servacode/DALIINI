@@ -1,0 +1,217 @@
+/* The things an operator presses and types into.
+ *
+ * Three buttons and no more: the one that does the thing, the one beside it, and the one that
+ * cannot be undone. A fourth would mean the screen stopped saying which action matters. Every
+ * control shares one height, one radius and one focus ring, so a row of them lines up without
+ * anybody nudging a margin. */
+
+/* The base belongs to the variants themselves, not to a class each of them has to be paired with:
+   a screen writes `button-ghost` and gets a whole button. `btn` stays as the name to reach for when
+   a new control needs the same shape. */
+.btn,
+.button-primary,
+.button-ghost,
+.button-danger {
+  --btn-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sd-spacing-sm);
+  block-size: var(--btn-height);
+  padding-inline: var(--sd-spacing-base);
+  border: 1px solid transparent;
+  border-radius: var(--sd-radius-small);
+  background: transparent;
+  font-size: var(--sd-typography-roles-label-large-size);
+  font-weight: var(--sd-typography-roles-label-large-weight);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--sd-motion-duration-feedback) var(--sd-motion-easing-standard),
+    border-color var(--sd-motion-duration-feedback) var(--sd-motion-easing-standard),
+    color var(--sd-motion-duration-feedback) var(--sd-motion-easing-standard);
+}
+
+.btn:disabled,
+.button-primary:disabled,
+.button-ghost:disabled,
+.button-danger:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* The action the screen is for. */
+.button-primary {
+  background: var(--sd-semantic-action-primary);
+  color: var(--sd-semantic-content-on-primary);
+}
+
+.button-primary:hover:not(:disabled) {
+  background: var(--sd-semantic-action-primary-pressed);
+}
+
+.button-primary:disabled {
+  cursor: progress;
+}
+
+/* Everything else on the row. */
+.button-ghost {
+  background: var(--sd-semantic-surface-default);
+  border-color: var(--sd-semantic-stroke-default);
+  color: var(--sd-semantic-content-primary);
+}
+
+.button-ghost:hover:not(:disabled) {
+  background: var(--sd-semantic-surface-subtle);
+  border-color: var(--sd-semantic-stroke-strong);
+}
+
+/* What cannot be taken back. It is never the default and never sits first. */
+.button-danger {
+  background: var(--sd-semantic-action-danger);
+  color: var(--sd-semantic-content-on-primary);
+}
+
+.button-danger:hover:not(:disabled) {
+  filter: brightness(0.94);
+}
+
+.button-danger:disabled {
+  cursor: progress;
+}
+
+/* A quiet action inside a table row: the same size as the text it sits with. */
+.button-link {
+  block-size: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--sd-semantic-action-primary);
+  font-size: inherit;
+  font-weight: var(--sd-typography-roles-label-large-weight);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button-link:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.button-small {
+  --btn-height: 32px;
+  padding-inline: var(--sd-spacing-md);
+  font-size: var(--sd-typography-roles-label-medium-size);
+}
+
+.button-row {
+  display: flex;
+  gap: var(--sd-spacing-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Fields ------------------------------------------------------------------------------------ */
+
+.field {
+  display: grid;
+  gap: var(--sd-spacing-xs);
+  min-inline-size: 0;
+}
+
+.field > label,
+.field-label {
+  font-size: var(--sd-typography-roles-label-medium-size);
+  font-weight: var(--sd-typography-roles-label-medium-weight);
+  color: var(--sd-semantic-content-secondary);
+}
+
+.input,
+.field input,
+.field select,
+.field textarea {
+  inline-size: 100%;
+  min-block-size: 38px;
+  padding: var(--sd-spacing-sm) var(--sd-spacing-md);
+  border: 1px solid var(--sd-semantic-stroke-default);
+  border-radius: var(--sd-radius-small);
+  background: var(--sd-semantic-surface-default);
+  color: var(--sd-semantic-content-primary);
+  font-size: var(--sd-typography-roles-body-medium-size);
+  transition: border-color var(--sd-motion-duration-feedback) var(--sd-motion-easing-standard);
+}
+
+.field textarea {
+  min-block-size: 96px;
+  resize: vertical;
+}
+
+.input:hover:not(:disabled),
+.field :is(input, select, textarea):hover:not(:disabled) {
+  border-color: var(--sd-semantic-stroke-strong);
+}
+
+.input:focus-visible,
+.field :is(input, select, textarea):focus-visible {
+  outline: 2px solid var(--sd-semantic-action-primary);
+  outline-offset: 1px;
+  border-color: var(--sd-semantic-action-primary);
+}
+
+.field :is(input, select, textarea)[aria-invalid="true"] {
+  border-color: var(--sd-semantic-feedback-danger);
+}
+
+.field :is(input, select, textarea):disabled {
+  background: var(--sd-semantic-surface-subtle);
+  color: var(--sd-semantic-content-muted);
+  cursor: not-allowed;
+}
+
+.field-hint {
+  font-size: var(--sd-typography-roles-body-small-size);
+  color: var(--sd-semantic-content-muted);
+}
+
+.field-error {
+  font-size: var(--sd-typography-roles-body-small-size);
+  color: var(--sd-semantic-feedback-danger);
+}
+
+/* A row that carries one setting and its switch. The label is the target, so the whole row is
+   clickable rather than a 20px box at the end of it. */
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sd-spacing-md);
+  padding-block: var(--sd-spacing-md);
+  border-block-end: 1px solid var(--sd-semantic-stroke-default);
+}
+
+.switch-row:last-child {
+  border-block-end: 0;
+}
+
+.switch-row .switch-text {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.switch-row .switch-text span:last-child {
+  font-size: var(--sd-typography-roles-body-small-size);
+  color: var(--sd-semantic-content-muted);
+}
+
+.form-grid {
+  display: grid;
+  gap: var(--sd-spacing-base);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.form-footer {
+  display: flex;
+  gap: var(--sd-spacing-sm);
+  align-items: center;
+  padding-block-start: var(--sd-spacing-xs);
+}

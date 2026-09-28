@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { useCan } from "../../../components/admin-shell";
 import {
+  Card,
   type Column,
   ConfirmDialog,
   DataTable,
@@ -87,8 +88,13 @@ export default function ProvincesPage() {
   ];
 
   return (
-    <div className="stack">
-      <PageHeader title="المحافظات" description="التحكم في التوسّع الجغرافي للمنصة." />
+    <div className="operation-stack">
+      <PageHeader
+        eyebrow="الدليل"
+        title="المحافظات"
+        description="التحكم في التوسّع الجغرافي للمنصة."
+      />
+      <Card flush>
       {provinces.loading ? <LoadingState /> : null}
       {provinces.error ? (
         <ErrorState error={provinces.error} onRetry={provinces.reload} />
@@ -101,6 +107,7 @@ export default function ProvincesPage() {
           rowKey={(row) => row.id}
         />
       ) : null}
+      </Card>
 
       <ConfirmDialog
         open={pending !== null}

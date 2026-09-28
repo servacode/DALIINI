@@ -6,6 +6,7 @@ import { type ReactNode, createContext, useContext } from "react";
 
 import { logout } from "../lib/client/api";
 import { useResource } from "../lib/client/use-resource";
+import { Icon, type IconName } from "./icons";
 import { ErrorState, LoadingState } from "./ui";
 
 /**
@@ -18,6 +19,10 @@ import { ErrorState, LoadingState } from "./ui";
  * still calls the backend, which refuses — that refusal is the actual boundary. What the
  * hiding buys is a console that shows an operator their own job rather than a wall of
  * entries that all end in 403.
+ *
+ * The rail is grouped because thirteen flat links are a list to be read; five groups of two or
+ * three are a place to be navigated. A group whose every entry is hidden by permissions
+ * disappears with its heading, so an operator never reads a label for a section they do not have.
  */
 
 export type AdminIdentity = Readonly<{
@@ -39,21 +44,54 @@ export function useCan(permission: string): boolean {
   return useIdentity().permissions.includes(permission);
 }
 
-const NAVIGATION = [
-  ["/dashboard", "لوحة المتابعة", "admin.dashboard.read"],
-  ["/reviews", "المراجعات", "admin.reviews.read"],
-  ["/facilities", "المنشآت", "admin.facilities.read"],
-  ["/users", "المستخدمون", "admin.users.read"],
-  ["/taxonomy/groups", "مجموعات التصنيفات", "admin.taxonomy.read"],
-  ["/taxonomy/categories", "التصنيفات", "admin.taxonomy.read"],
-  ["/provinces", "المحافظات", "admin.provinces.read"],
-  ["/verification", "التحقق", "admin.verification.read"],
-  ["/ads", "الإعلانات", "admin.ads.read"],
-  ["/audit", "سجل التدقيق", "admin.audit.read"],
-  ["/analytics", "التحليلات", "admin.analytics.read"],
-  ["/settings", "الإعدادات", "admin.settings.read"],
-  ["/system", "النظام", "admin.system.read"],
+type Entry = Readonly<{ href: string; label: string; permission: string; icon: IconName }>;
+type Group = Readonly<{ label: string; entries: readonly Entry[] }>;
+
+const NAVIGATION: readonly Group[] = [
+  {
+    label: "العمليات",
+    entries: [
+      { href: "/dashboard", label: "لوحة المتابعة", permission: "admin.dashboard.read", icon: "dashboard" },
+      { href: "/reviews", label: "المراجعات", permission: "admin.reviews.read", icon: "reviews" },
+      { href: "/verification", label: "التحقق", permission: "admin.verification.read", icon: "verification" },
+    ],
+  },
+  {
+    label: "الدليل",
+    entries: [
+      { href: "/facilities", label: "المنشآت", permission: "admin.facilities.read", icon: "facilities" },
+      { href: "/taxonomy/groups", label: "مجموعات التصنيفات", permission: "admin.taxonomy.read", icon: "groups" },
+      { href: "/taxonomy/categories", label: "التصنيفات", permission: "admin.taxonomy.read", icon: "categories" },
+      { href: "/provinces", label: "المحافظات", permission: "admin.provinces.read", icon: "provinces" },
+    ],
+  },
+  {
+    label: "المستخدمون والمحتوى",
+    entries: [
+      { href: "/users", label: "المستخدمون", permission: "admin.users.read", icon: "users" },
+      { href: "/ads", label: "الإعلانات", permission: "admin.ads.read", icon: "ads" },
+    ],
+  },
+  {
+    label: "الرقابة",
+    entries: [
+      { href: "/audit", label: "سجل التدقيق", permission: "admin.audit.read", icon: "audit" },
+      { href: "/analytics", label: "التحليلات", permission: "admin.analytics.read", icon: "analytics" },
+    ],
+  },
+  {
+    label: "النظام",
+    entries: [
+      { href: "/settings", label: "الإعدادات", permission: "admin.settings.read", icon: "settings" },
+      { href: "/system", label: "النظام", permission: "admin.system.read", icon: "system" },
+    ],
+  },
 ] as const;
+
+/** The first letter of a name, for the mark beside it. */
+function initial(name: string): string {
+  return name.trim().slice(0, 1) || "?";
+}
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -79,37 +117,64 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }
 
   const identity = me.data;
-  const visible = NAVIGATION.filter(([, , permission]) =>
-    identity.permissions.includes(permission),
-  );
+  const groups = NAVIGATION.map((group) => ({
+    label: group.label,
+    entries: group.entries.filter((entry) => identity.permissions.includes(entry.permission)),
+  })).filter((group) => group.entries.length > 0);
+
+  const current = groups
+    .flatMap((group) => group.entries)
+    .find((entry) => pathname === entry.href || pathname.startsWith(`${entry.href}/`));
 
   return (
     <IdentityContext.Provider value={identity}>
       <div className="admin-shell">
-        <aside className="sidebar">
-          <strong>إدارة الدليل</strong>
-          <nav aria-label="أقسام اللوحة" data-testid="admin-nav">
-            {visible.map(([href, label]) => (
-              <Link
-                key={href}
-                href={href}
-                aria-current={pathname === href ? "page" : undefined}
-                data-testid={`nav-${href.replace(/\//g, "-").slice(1)}`}
-              >
-                {label}
-              </Link>
+        <aside className="rail">
+          <div className="rail-brand">
+            <span className="rail-mark" aria-hidden="true">
+              د
+            </span>
+            <span>
+              <strong>دليني</strong>
+              <span>لوحة الإدارة</span>
+            </span>
+          </div>
+
+          <nav className="rail-nav" aria-label="أقسام اللوحة" data-testid="admin-nav">
+            {groups.map((group) => (
+              <div key={group.label}>
+                <p className="rail-group-label">{group.label}</p>
+                {group.entries.map((entry) => (
+                  <Link
+                    key={entry.href}
+                    href={entry.href}
+                    className="rail-link"
+                    aria-current={pathname === entry.href ? "page" : undefined}
+                    data-testid={`nav-${entry.href.replace(/\//g, "-").slice(1)}`}
+                  >
+                    <Icon name={entry.icon} />
+                    <span>{entry.label}</span>
+                  </Link>
+                ))}
+              </div>
             ))}
+            {groups.length === 0 ? (
+              <p className="rail-note" data-testid="no-permissions">
+                لا توجد صلاحيات مرتبطة بحسابك بعد. راجع مدير النظام.
+              </p>
+            ) : null}
           </nav>
-          {visible.length === 0 ? (
-            <p className="notice" data-testid="no-permissions">
-              لا توجد صلاحيات مرتبطة بحسابك بعد. راجع مدير النظام.
-            </p>
-          ) : null}
-          <div className="sidebar-footer">
-            <span className="muted">{identity.displayName}</span>
+
+          <div className="rail-foot">
+            <div className="rail-operator">
+              <span className="avatar" aria-hidden="true">
+                {initial(identity.displayName)}
+              </span>
+              <span className="rail-operator-name">{identity.displayName}</span>
+            </div>
             <button
               type="button"
-              className="button-ghost"
+              className="button-ghost button-small"
               data-testid="logout"
               onClick={async () => {
                 await logout();
@@ -121,9 +186,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </button>
           </div>
         </aside>
+
         <section className="admin-main">
           <header className="topbar">
-            <strong>لوحة الإدارة</strong>
+            <div className="topbar-context">
+              <span className="topbar-place">لوحة الإدارة</span>
+              <strong>{current?.label ?? "دليني"}</strong>
+            </div>
             <div className="topbar-identity" data-testid="operator-name">
               <span>{identity.displayName}</span>
             </div>

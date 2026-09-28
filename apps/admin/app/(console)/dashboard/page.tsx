@@ -1,12 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useResource } from "../../../lib/client/use-resource";
 import {
   AuditTimeline,
+  Card,
   ErrorState,
   LoadingState,
   PageHeader,
+  StatCard,
   StatusBadge,
   type Tone,
 } from "../../../components/ui";
@@ -45,8 +46,9 @@ export default function DashboardPage() {
   const dashboard = useResource<Dashboard>("dashboard");
 
   return (
-    <div className="stack">
+    <div className="operation-stack">
       <PageHeader
+        eyebrow="العمليات"
         title="لوحة المتابعة"
         description="الحالة التشغيلية الحالية وآخر الإجراءات المسجّلة."
       />
@@ -55,22 +57,20 @@ export default function DashboardPage() {
       {dashboard.data ? (
         <>
           <div className="kpi-grid">
-            <Link href="/reviews" className="kpi" data-testid="kpi-pending">
-              <strong>{dashboard.data.pendingReviews}</strong>
-              <span>طلبات بانتظار المراجعة</span>
-            </Link>
-            <div className="kpi">
-              <strong>{dashboard.data.reverification}</strong>
-              <span>منشآت تحتاج إعادة تحقق</span>
-            </div>
-            <div className="kpi">
-              <strong>{dashboard.data.activeUsers}</strong>
-              <span>حسابات فعّالة</span>
-            </div>
+            <StatCard
+              label="طلبات بانتظار المراجعة"
+              value={dashboard.data.pendingReviews}
+              href="/reviews"
+              testId="kpi-pending"
+            />
+            <StatCard label="منشآت تحتاج إعادة تحقق" value={dashboard.data.reverification} />
+            <StatCard label="حسابات فعّالة" value={dashboard.data.activeUsers} />
           </div>
 
-          <section className="panel stack">
-            <h2>المنشآت حسب الحالة</h2>
+          <Card
+            title="المنشآت حسب الحالة"
+            description="كل منشأة في الدليل، حسب المرحلة التي هي فيها الآن."
+          >
             <div className="button-row">
               {dashboard.data.facilitiesByStatus.length === 0 ? (
                 <span className="muted">لا منشآت بعد.</span>
@@ -82,12 +82,11 @@ export default function DashboardPage() {
                 ))
               )}
             </div>
-          </section>
+          </Card>
 
-          <section className="panel stack">
-            <h2>آخر الإجراءات</h2>
+          <Card title="آخر الإجراءات" description="ما سجّله التدقيق مؤخّرًا، بأحدثها أولًا.">
             <AuditTimeline entries={dashboard.data.recentActions} />
-          </section>
+          </Card>
         </>
       ) : null}
     </div>

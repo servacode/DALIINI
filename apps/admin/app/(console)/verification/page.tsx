@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { useCan } from "../../../components/admin-shell";
 import {
+  EmptyState,
   ConfirmDialog,
   ErrorState,
   LoadingState,
@@ -95,8 +96,9 @@ export default function VerificationPage() {
   }
 
   return (
-    <div className="stack">
+    <div className="operation-stack">
       <PageHeader
+        eyebrow="العمليات"
         title="متطلبات التحقق"
         description="سياسة الأدلة المطلوبة لكل تصنيف."
         actions={
@@ -129,12 +131,10 @@ export default function VerificationPage() {
 
       {requirements.data ? (
         requirements.data.items.length === 0 ? (
-          <div className="state-block state-empty" data-testid="empty-state">
-            <strong>لا متطلبات مُهيّأة بعد</strong>
-            <span className="muted">
-              هذه هي حالة الإطلاق المقصودة. أضف متطلباً عندما تُعتمد السياسة.
-            </span>
-          </div>
+          <EmptyState
+            title="لا متطلبات مُهيّأة بعد"
+            hint="هذه هي حالة الإطلاق المقصودة. أضف متطلباً عندما تُعتمد السياسة."
+          />
         ) : (
           <div className="table-wrap">
             <table className="data-table" data-testid="data-table">

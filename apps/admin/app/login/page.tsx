@@ -14,8 +14,11 @@ export default async function LoginPage() {
 
   return (
     <main className="login-shell">
-      <section className="panel login-card">
+      <section className="login-card">
         <header className="login-header">
+          <span className="login-mark" aria-hidden="true">
+            د
+          </span>
           <p className="eyebrow">دليل سيرفا كود</p>
           <h1>تسجيل دخول الموظفين</h1>
           <p className="muted">هذه اللوحة مخصّصة لفريق التشغيل. الوصول مقيّد بالصلاحيات.</p>

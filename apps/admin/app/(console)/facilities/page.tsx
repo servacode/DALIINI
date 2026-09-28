@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import {
   type Column,
+  Card,
   DataTable,
   ErrorState,
   FilterBar,
@@ -74,38 +75,44 @@ export default function FacilitiesPage() {
   ];
 
   return (
-    <div className="stack">
-      <PageHeader title="المنشآت" description="متابعة الحالة التشغيلية للمنشآت وإدارتها." />
-      <FilterBar
-        fields={[
-          { name: "q", label: "بحث", placeholder: "اسم المنشأة" },
-          {
-            name: "status",
-            label: "الحالة",
-            type: "select",
-            options: Object.entries(STATUS).map(([value, meta]) => ({
-              value,
-              label: meta.label,
-            })),
-          },
-          { name: "province", label: "معرّف المحافظة", placeholder: "UUID" },
-          { name: "category", label: "معرّف التصنيف", placeholder: "UUID" },
-        ]}
-        values={filters}
-        onApply={setFilters}
+    <div className="operation-stack">
+      <PageHeader
+        eyebrow="الدليل"
+        title="المنشآت"
+        description="متابعة الحالة التشغيلية للمنشآت وإدارتها."
       />
-      {facilities.loading ? <LoadingState /> : null}
-      {facilities.error ? (
-        <ErrorState error={facilities.error} onRetry={facilities.reload} />
-      ) : null}
-      {facilities.data ? (
-        <DataTable
-          caption="المنشآت"
-          columns={columns}
-          rows={facilities.data.items}
-          rowKey={(row) => row.id}
+      <Card flush>
+        <FilterBar
+          fields={[
+            { name: "q", label: "بحث", placeholder: "اسم المنشأة" },
+            {
+              name: "status",
+              label: "الحالة",
+              type: "select",
+              options: Object.entries(STATUS).map(([value, meta]) => ({
+                value,
+                label: meta.label,
+              })),
+            },
+            { name: "province", label: "معرّف المحافظة", placeholder: "UUID" },
+            { name: "category", label: "معرّف التصنيف", placeholder: "UUID" },
+          ]}
+          values={filters}
+          onApply={setFilters}
         />
-      ) : null}
+        {facilities.loading ? <LoadingState /> : null}
+        {facilities.error ? (
+          <ErrorState error={facilities.error} onRetry={facilities.reload} />
+        ) : null}
+        {facilities.data ? (
+          <DataTable
+            caption="المنشآت"
+            columns={columns}
+            rows={facilities.data.items}
+            rowKey={(row) => row.id}
+          />
+        ) : null}
+      </Card>
     </div>
   );
 }
