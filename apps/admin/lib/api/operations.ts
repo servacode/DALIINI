@@ -48,7 +48,7 @@ export const READS = {
     apis.facilities.adminFacilityRetrieve({ facilityId: p.id! }),
 
   users: (apis: AdminApis, p: Params) =>
-    apis.users.adminUsersList(filled(p, ["q", "status"])),
+    apis.users.adminUsersList(filled(p, ["q", "status", "role"])),
   user: (apis: AdminApis, p: Params) => apis.users.adminUserRetrieve({ userId: p.id! }),
   roles: (apis: AdminApis) => apis.users.adminRolesList(),
 
@@ -61,7 +61,14 @@ export const READS = {
   settings: (apis: AdminApis) => apis.settings.adminSettingsList(),
 
   audit: (apis: AdminApis, p: Params) =>
-    apis.audit.adminAuditList(filled(p, ["actor", "action", "resource", "requestId"])),
+    apis.audit.adminAuditList(
+      filled(p, ["actor", "action", "resource", "requestId", "from", "to"]),
+    ),
+
+  reports: (apis: AdminApis, p: Params) =>
+    apis.reports.adminReportsList(filled(p, ["status", "facility"])),
+  provinceCities: (apis: AdminApis, p: Params) =>
+    apis.provinces.adminProvinceCitiesList({ provinceId: p.id! }),
 } as const satisfies Record<string, ReadFn>;
 
 /**
@@ -176,6 +183,23 @@ export const WRITES = {
     }),
   adDelete: (apis: AdminApis, b: Body) =>
     apis.ads.adminAdDelete({ advertisementId: String(b.id) }),
+
+  reportResolve: (apis: AdminApis, b: Body) =>
+    apis.reports.adminReportResolve({
+      reportId: String(b.id),
+      adminReportDecisionRequest: { note: String(b.note ?? "") },
+    }),
+  reportDismiss: (apis: AdminApis, b: Body) =>
+    apis.reports.adminReportDismiss({
+      reportId: String(b.id),
+      adminReportDecisionRequest: { note: String(b.note ?? "") },
+    }),
+  cityUpdate: (apis: AdminApis, b: Body) =>
+    apis.provinces.adminProvinceCityUpdate({
+      provinceId: String(b.provinceId),
+      cityId: String(b.id),
+      adminCityUpdateRequest: { active: Boolean(b.active) },
+    }),
 
   settingWrite: (apis: AdminApis, b: Body) =>
     apis.settings.adminSettingWrite({ adminSettingWriteRequest: b as never }),

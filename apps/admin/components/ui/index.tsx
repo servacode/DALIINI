@@ -292,7 +292,7 @@ export function DataTable<T>({
 export type FilterField = Readonly<{
   name: string;
   label: string;
-  type?: "text" | "select";
+  type?: "text" | "select" | "date";
   options?: readonly { value: string; label: string }[];
   placeholder?: string;
 }>;
@@ -347,6 +347,17 @@ export function FilterBar({
                 </option>
               ))}
             </select>
+          ) : field.type === "date" ? (
+            <input
+              name={field.name}
+              type="date"
+              dir="ltr"
+              value={draft[field.name] ?? ""}
+              data-testid={`filter-${field.name}`}
+              onChange={(event) =>
+                setDraft({ ...draft, [field.name]: event.target.value })
+              }
+            />
           ) : (
             <input
               name={field.name}

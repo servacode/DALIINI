@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { use, useState } from "react";
 
 import { useCan } from "../../../../components/admin-shell";
@@ -15,6 +16,7 @@ import {
   formatDateTime,
 } from "../../../../components/ui";
 import { useMutation } from "../../../../lib/client/use-mutation";
+import { REASONS } from "../../reports/page";
 import { useLookups } from "../../../../lib/client/use-lookups";
 import { useResource } from "../../../../lib/client/use-resource";
 import { STATUS } from "../page";
@@ -29,6 +31,10 @@ type Facility = Readonly<{
   cityId: string | null;
   updatedAt: string | null;
   location: { latitude: number; longitude: number } | null;
+  categoryNameAr?: string;
+  provinceNameAr?: string;
+  ownerName?: string | null;
+  ownerPhone?: string | null;
 }>;
 
 type Action = Readonly<{
@@ -68,6 +74,7 @@ const ACTIONS: Record<string, Action> = {
 export default function FacilityDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const lookups = useLookups();
+  const canReadReports = useCan("admin.reports.read");
   const facility = useResource<Facility>("facility", { id });
   const mutation = useMutation();
   const canManage = useCan("admin.facilities.manage");
@@ -159,11 +166,47 @@ export default function FacilityDetailPage({ params }: { params: Promise<{ id: s
                 ),
               },
               { label: "الاسم بالإنجليزية", value: facility.data.nameEn || "—" },
-              { label: "المحافظة", value: lookups.provinceName(facility.data.provinceId) },
-              { label: "التصنيف", value: lookups.categoryName(facility.data.categoryId) },
+              {
+                label: "المحافظة",
+                value: facility.data.provinceNameAr ?? lookups.provinceName(facility.data.provinceId),
+              },
+              {
+                label: "التصنيف",
+                value: facility.data.categoryNameAr ?? lookups.categoryName(facility.data.categoryId),
+              },
+              { label: "المالك", value: facility.data.ownerName ?? "—" },
+              { label: "هاتف المالك", value: facility.data.ownerPhone ?? "—", ltr: true },
+              {
+                label: "الموقع",
+                value: facility.data.location ? (
+                  <a
+                    href={`https://www.openstreetmap.org/?mlat=${facility.data.location.latitude}&mlon=${facility.data.location.longitude}#map=18/${facility.data.location.latitude}/${facility.data.location.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    فتح على الخريطة
+                  </a>
+                ) : (
+                  "—"
+                ),
+              },
               { label: "آخر تحديث", value: formatDateTime(facility.data.updatedAt), ltr: true },
             ]}
           />
+        </Panel>
+      ) : null}
+
+      {facility.data && canReadReports ? (
+        <Panel
+          title="البلاغات"
+          description="ما أبلغ عنه المستخدمون عن هذه المنشأة."
+          actions={
+            <Link className="button-ghost" href="/reports">
+              كل البلاغات
+            </Link>
+          }
+        >
+          <FacilityReports facilityId={facility.data.id} />
         </Panel>
       ) : null}
 
@@ -193,5 +236,32 @@ export default function FacilityDetailPage({ params }: { params: Promise<{ id: s
 
       <Toast message={toast} onDismiss={() => setToast(null)} />
     </div>
+  );
+}
+
+/** Open and past problem reports for one facility, read-only here; decisions happen on /reports. */
+function FacilityReports({ facilityId }: { facilityId: string }) {
+  const reports = useResource<{
+    items: { id: string; reason: string; note: string; status: string; createdAt: string }[];
+  }>("reports", { facility: facilityId });
+  if (reports.loading) return <LoadingState />;
+  if (reports.error) return <ErrorState error={reports.error} onRetry={reports.reload} />;
+  const items = reports.data?.items ?? [];
+  if (items.length === 0) return <span className="muted">لا بلاغات.</span>;
+  return (
+    <ol className="timeline">
+      {items.map((report) => (
+        <li key={report.id}>
+          <time dateTime={report.createdAt} className="cell-ltr">
+            {formatDateTime(report.createdAt)}
+          </time>
+          <strong>{REASONS[report.reason] ?? report.reason}</strong>
+          {report.note ? <span className="muted">{report.note}</span> : null}
+          <StatusBadge tone={report.status === "OPEN" ? "warning" : "neutral"}>
+            {report.status === "OPEN" ? "مفتوح" : report.status === "RESOLVED" ? "مُعالَج" : "مرفوض"}
+          </StatusBadge>
+        </li>
+      ))}
+    </ol>
   );
 }

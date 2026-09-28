@@ -16,6 +16,10 @@ type Dashboard = Readonly<{
   pendingReviews: number;
   reverification: number;
   activeUsers: number;
+  dutyActiveNow: number;
+  newUsers7d: number;
+  openReports: number;
+  systemWarnings: readonly string[];
   facilitiesByStatus: readonly { status: string; count: number }[];
   recentActions: readonly {
     action: string;
@@ -43,7 +47,7 @@ const STATUS_TONES: Record<string, Tone> = {
 };
 
 export default function DashboardPage() {
-  const dashboard = useResource<Dashboard>("dashboard");
+  const dashboard = useResource<Dashboard>("dashboard", {}, { refreshMs: 60_000 });
 
   return (
     <div className="stack">
@@ -55,6 +59,16 @@ export default function DashboardPage() {
       {dashboard.error ? <ErrorState error={dashboard.error} onRetry={dashboard.reload} /> : null}
       {dashboard.data ? (
         <>
+          {dashboard.data.systemWarnings.length > 0 ? (
+            <div className="state-block state-warning" role="status" data-testid="system-warnings">
+              <strong>تنبيهات النظام</strong>
+              <ul>
+                {dashboard.data.systemWarnings.map((warning) => (
+                  <li key={warning}>{warning}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           <div className="kpi-grid">
             <StatCard
               href="/reviews"
@@ -72,9 +86,23 @@ export default function DashboardPage() {
               tone="warning"
             />
             <StatCard
+              href="/reports"
+              label="بلاغات مفتوحة"
+              value={dashboard.data.openReports}
+              icon="flag"
+              tone="warning"
+              hint="فتح البلاغات"
+            />
+            <StatCard
+              label="صيدليات مناوبة الآن"
+              value={dashboard.data.dutyActiveNow}
+              icon="clock"
+            />
+            <StatCard
               label="حسابات فعّالة"
               value={dashboard.data.activeUsers}
               icon="userCheck"
+              hint={`${dashboard.data.newUsers7d} حساباً جديداً خلال ٧ أيام`}
             />
           </div>
 

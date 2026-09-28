@@ -53,6 +53,8 @@ export default function AuditPage() {
           { name: "resource", label: "العنصر", placeholder: "النوع أو المعرّف" },
           { name: "actor", label: "المنفّذ", placeholder: "معرّف المستخدم" },
           { name: "requestId", label: "معرّف الطلب", placeholder: "UUID" },
+          { name: "from", label: "من تاريخ", type: "date" },
+          { name: "to", label: "إلى تاريخ", type: "date" },
         ]}
         values={filters}
         onApply={setFilters}

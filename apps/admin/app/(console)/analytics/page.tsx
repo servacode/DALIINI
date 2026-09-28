@@ -15,6 +15,11 @@ type Analytics = Readonly<{
   activeFacilities: number;
   pendingReviews: number;
   ratingAverage: number | null;
+  approvalMedianHours: number | null;
+  searches: number;
+  zeroResultSearches: number;
+  facilityViews: number;
+  directionsRequests: number;
   events: readonly { name: string; count: number }[];
 }>;
 
@@ -64,6 +69,38 @@ export default function AnalyticsPage() {
               tone="warning"
             />
           </div>
+          <Panel title="آخر ٣٠ يوماً" description="استخدام الدليل ومدة المراجعة.">
+            <div className="kpi-grid">
+              <StatCard
+                label="متوسط زمن الموافقة"
+                value={
+                  analytics.data.approvalMedianHours === null
+                    ? "—"
+                    : `${analytics.data.approvalMedianHours.toFixed(1)} س`
+                }
+                icon="clock"
+                hint="الوسيط بين الإرسال والقرار"
+              />
+              <StatCard label="عمليات البحث" value={analytics.data.searches} icon="dashboard" />
+              <StatCard
+                label="بحث بلا نتائج"
+                value={analytics.data.zeroResultSearches}
+                icon="inbox"
+                tone="warning"
+                hint={
+                  analytics.data.searches > 0
+                    ? `${Math.round((analytics.data.zeroResultSearches / analytics.data.searches) * 100)}% من عمليات البحث`
+                    : undefined
+                }
+              />
+              <StatCard label="مشاهدات المنشآت" value={analytics.data.facilityViews} icon="building" />
+              <StatCard
+                label="طلبات الاتجاهات"
+                value={analytics.data.directionsRequests}
+                icon="map"
+              />
+            </div>
+          </Panel>
           <Panel title="أحداث المنتج" flush>
             <DataTable
               caption="أحداث المنتج"

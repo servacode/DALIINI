@@ -121,3 +121,47 @@ describe("dispatch", () => {
     expect(calls[0]?.args[0]).toMatchObject({ requirementId: 7 });
   });
 });
+
+describe("problem reports, cities and the new filters", () => {
+  it("sends the audit date range and the user role filter", async () => {
+    const { apis, calls } = spyApis();
+
+    await READS.audit(apis, { from: "2026-09-01", to: "2026-09-28", action: "" });
+    await READS.users(apis, { role: "none" });
+
+    expect(calls[0]?.args[0]).toEqual({ from: "2026-09-01", to: "2026-09-28" });
+    expect(calls[1]?.args[0]).toEqual({ role: "none" });
+  });
+
+  it("routes report decisions with the note and report id", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.reportResolve(apis, { id: "r-1", note: "صُحّحت الساعات" });
+    await WRITES.reportDismiss(apis, { id: "r-2" });
+
+    expect(calls[0]?.name).toBe("reports.adminReportResolve");
+    expect(calls[0]?.args[0]).toEqual({
+      reportId: "r-1",
+      adminReportDecisionRequest: { note: "صُحّحت الساعات" },
+    });
+    expect(calls[1]?.name).toBe("reports.adminReportDismiss");
+    expect(calls[1]?.args[0]).toEqual({ reportId: "r-2", adminReportDecisionRequest: { note: "" } });
+  });
+
+  it("scopes a city toggle to its province and sends only the switch", async () => {
+    const { apis, calls } = spyApis();
+
+    await READS.provinceCities(apis, { id: "p-1" });
+    await WRITES.cityUpdate(apis, { provinceId: "p-1", id: "c-1", active: true, name: "x" });
+
+    expect(calls[0]).toMatchObject({
+      name: "provinces.adminProvinceCitiesList",
+      args: [{ provinceId: "p-1" }],
+    });
+    expect(calls[1]?.args[0]).toEqual({
+      provinceId: "p-1",
+      cityId: "c-1",
+      adminCityUpdateRequest: { active: true },
+    });
+  });
+});

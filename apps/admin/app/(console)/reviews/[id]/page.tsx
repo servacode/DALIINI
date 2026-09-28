@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { use, useState } from "react";
 
 import { useCan } from "../../../../components/admin-shell";
@@ -8,6 +9,7 @@ import {
   ConfirmDialog,
   DiffViewer,
   ErrorState,
+  KeyValueList,
   LoadingState,
   PageHeader,
   Panel,
@@ -22,18 +24,35 @@ import { fieldErrorsFor } from "../../../../lib/errors/messages";
 
 type Detail = Readonly<{
   id: string;
+  facilityId: string;
   facilityNameAr: string;
   kind: string;
   status: string;
   submittedAt: string | null;
   reviewedAt: string | null;
   rejectionReason: string | null;
-  facility: Record<string, unknown>;
+  categoryNameAr: string;
+  provinceNameAr: string;
+  ownerName: string | null;
+  ownerPhone: string | null;
   snapshot: Record<string, unknown>;
-  publicImageIds: readonly string[];
+  previous: Record<string, unknown> | null;
+  location: { latitude: number; longitude: number } | null;
+  duplicates: readonly { id: string; nameAr: string; status: string; reasons: readonly string[] }[];
+  publicImages: readonly { id: string; url: string }[];
   evidence: readonly { id: string; requirementId: number; labelAr: string }[];
   audit: readonly { action: string; requestId: string; createdAt: string }[];
 }>;
+
+const DUPLICATE_REASONS: Record<string, string> = {
+  SAME_PHONE: "نفس رقم الهاتف",
+  SAME_NAME_NEARBY: "اسم مطابق على مسافة قريبة",
+};
+
+const KIND: Record<string, string> = {
+  INITIAL: "تسجيل أولي",
+  REVERIFICATION: "إعادة تحقق",
+};
 
 const STATUS: Record<string, { label: string; tone: Tone }> = {
   SUBMITTED: { label: "قيد المراجعة", tone: "info" },
@@ -115,36 +134,109 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
 
       {detail.data ? (
         <>
-          <Panel title="حالة الطلب">
-            <div className="button-row">
-              <StatusBadge tone={STATUS[detail.data.status]?.tone ?? "neutral"}>
-                {STATUS[detail.data.status]?.label ?? detail.data.status}
-              </StatusBadge>
-              <span className="muted">
-                أُرسل: <span className="cell-ltr">{formatDateTime(detail.data.submittedAt)}</span>
-              </span>
-              {detail.data.reviewedAt ? (
-                <span className="muted">
-                  روجع: <span className="cell-ltr">{formatDateTime(detail.data.reviewedAt)}</span>
-                </span>
-              ) : null}
+          {detail.data.duplicates.length > 0 ? (
+            <div className="state-block state-warning" role="status" data-testid="duplicates">
+              <strong>منشآت مشابهة قد تكون مكررة</strong>
+              <ul>
+                {detail.data.duplicates.map((dup) => (
+                  <li key={dup.id}>
+                    <Link href={`/facilities/${dup.id}`}>{dup.nameAr}</Link>
+                    {" — "}
+                    {dup.reasons.map((reason) => DUPLICATE_REASONS[reason] ?? reason).join("، ")}
+                  </li>
+                ))}
+              </ul>
             </div>
-            {detail.data.rejectionReason ? (
-              <p className="notice">سبب الرفض السابق: {detail.data.rejectionReason}</p>
-            ) : null}
-          </Panel>
+          ) : null}
 
-          <div className="grid-2">
-            <Panel
-              title="التغييرات المطلوبة"
-              description="الفرق بين بيانات المنشأة الحالية وما أرسله المالك."
-            >
-              <DiffViewer before={detail.data.facility} after={detail.data.snapshot} />
+          <div className="grid-main-aside">
+            <Panel title="ملخص الطلب">
+              <KeyValueList
+                items={[
+                  {
+                    label: "الحالة",
+                    value: (
+                      <StatusBadge tone={STATUS[detail.data.status]?.tone ?? "neutral"}>
+                        {STATUS[detail.data.status]?.label ?? detail.data.status}
+                      </StatusBadge>
+                    ),
+                  },
+                  { label: "النوع", value: KIND[detail.data.kind] ?? detail.data.kind },
+                  { label: "التصنيف", value: detail.data.categoryNameAr },
+                  { label: "المحافظة", value: detail.data.provinceNameAr },
+                  { label: "مقدّم الطلب", value: detail.data.ownerName ?? "—" },
+                  { label: "هاتف المالك", value: detail.data.ownerPhone ?? "—", ltr: true },
+                  { label: "أُرسل", value: formatDateTime(detail.data.submittedAt), ltr: true },
+                  ...(detail.data.reviewedAt
+                    ? [{ label: "روجع", value: formatDateTime(detail.data.reviewedAt), ltr: true }]
+                    : []),
+                ]}
+              />
+              {detail.data.rejectionReason ? (
+                <p className="notice">سبب الرفض السابق: {detail.data.rejectionReason}</p>
+              ) : null}
             </Panel>
-            <Panel title="لقطة الطلب" description="البيانات كما أُرسلت للمراجعة.">
-              <DiffViewer before={{}} after={detail.data.snapshot} />
+
+            <Panel title="الموقع">
+              {detail.data.location ? (
+                <>
+                  <KeyValueList
+                    items={[
+                      {
+                        label: "الإحداثيات",
+                        value: `${detail.data.location.latitude.toFixed(5)}, ${detail.data.location.longitude.toFixed(5)}`,
+                        ltr: true,
+                      },
+                    ]}
+                  />
+                  <a
+                    className="button-ghost"
+                    href={`https://www.openstreetmap.org/?mlat=${detail.data.location.latitude}&mlon=${detail.data.location.longitude}#map=18/${detail.data.location.latitude}/${detail.data.location.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid="open-map"
+                  >
+                    فتح على الخريطة
+                  </a>
+                </>
+              ) : (
+                <span className="muted">لم يُحدَّد موقع.</span>
+              )}
             </Panel>
           </div>
+
+          {detail.data.previous ? (
+            <div className="grid-2">
+              <Panel
+                title="التغييرات المطلوبة"
+                description="الفرق بين آخر نسخة معتمدة وما أرسله المالك."
+              >
+                <DiffViewer before={detail.data.previous} after={detail.data.snapshot} />
+              </Panel>
+              <Panel title="لقطة الطلب" description="البيانات كما أُرسلت للمراجعة.">
+                <DiffViewer before={{}} after={detail.data.snapshot} />
+              </Panel>
+            </div>
+          ) : (
+            <Panel title="لقطة الطلب" description="تسجيل أول: لا نسخة معتمدة سابقة للمقارنة.">
+              <DiffViewer before={{}} after={detail.data.snapshot} />
+            </Panel>
+          )}
+
+          <Panel title="الصور العامة" description="الصور التي ستظهر للعامة بعد القبول.">
+            {detail.data.publicImages.length === 0 ? (
+              <span className="muted">لا صور مرفوعة.</span>
+            ) : (
+              <div className="image-grid" data-testid="public-images">
+                {detail.data.publicImages.map((image) => (
+                  <a key={image.id} href={image.url} target="_blank" rel="noopener noreferrer">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- CDN URL, CSP-allowed origin, no optimisation route */}
+                    <img src={image.url} alt="صورة المنشأة" loading="lazy" />
+                  </a>
+                ))}
+              </div>
+            )}
+          </Panel>
 
           <Panel title="أدلة التحقق">
             {detail.data.evidence.length === 0 ? (

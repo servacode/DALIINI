@@ -53,7 +53,9 @@ export default function ReviewsPage() {
     kind: "",
   });
   const lookups = useLookups();
-  const queue = useResource<{ items: Application[] }>("reviews", filters);
+  const queue = useResource<{ items: Application[] }>("reviews", filters, {
+    refreshMs: 60_000,
+  });
 
   const columns: readonly Column<Application>[] = [
     {

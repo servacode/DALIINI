@@ -25,6 +25,9 @@ type Facility = Readonly<{
   provinceId: string;
   categoryId: string;
   updatedAt: string | null;
+  categoryNameAr?: string;
+  provinceNameAr?: string;
+  ownerName?: string | null;
 }>;
 
 export const STATUS: Record<string, { label: string; tone: Tone }> = {
@@ -60,12 +63,17 @@ export default function FacilitiesPage() {
     {
       key: "category",
       header: "التصنيف",
-      render: (row) => lookups.categoryName(row.categoryId),
+      render: (row) => row.categoryNameAr ?? lookups.categoryName(row.categoryId),
     },
     {
       key: "province",
       header: "المحافظة",
-      render: (row) => lookups.provinceName(row.provinceId),
+      render: (row) => row.provinceNameAr ?? lookups.provinceName(row.provinceId),
+    },
+    {
+      key: "owner",
+      header: "المالك",
+      render: (row) => row.ownerName ?? <span className="muted">—</span>,
     },
     {
       key: "updatedAt",

@@ -7,9 +7,11 @@ import {
   type Column,
   ConfirmDialog,
   DataTable,
+  EmptyState,
   ErrorState,
   LoadingState,
   PageHeader,
+  Panel,
   StatusBadge,
   Toast,
 } from "../../../components/ui";
@@ -38,6 +40,7 @@ export default function ProvincesPage() {
   const canManage = useCan("admin.provinces.manage");
 
   const [pending, setPending] = useState<Province | null>(null);
+  const [citiesOf, setCitiesOf] = useState<Province | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   async function submit(): Promise<void> {
@@ -69,20 +72,31 @@ export default function ProvincesPage() {
       key: "actions",
       header: "",
       width: "1%",
-      render: (row) =>
-        canManage ? (
+      render: (row) => (
+        <div className="button-row">
           <button
             type="button"
             className="button-ghost"
-            data-testid={`toggle-province-${row.code}`}
-            onClick={() => {
-              mutation.reset();
-              setPending(row);
-            }}
+            data-testid={`cities-${row.code}`}
+            onClick={() => setCitiesOf(citiesOf?.id === row.id ? null : row)}
           >
-            {row.active ? "تعطيل" : "تفعيل"}
+            {citiesOf?.id === row.id ? "إخفاء المدن" : "المدن"}
           </button>
-        ) : null,
+          {canManage ? (
+            <button
+              type="button"
+              className="button-ghost"
+              data-testid={`toggle-province-${row.code}`}
+              onClick={() => {
+                mutation.reset();
+                setPending(row);
+              }}
+            >
+              {row.active ? "تعطيل" : "تفعيل"}
+            </button>
+          ) : null}
+        </div>
+      ),
     },
   ];
 
@@ -100,6 +114,10 @@ export default function ProvincesPage() {
           rows={provinces.data.items}
           rowKey={(row) => row.id}
         />
+      ) : null}
+
+      {citiesOf ? (
+        <CitiesPanel key={citiesOf.id} province={citiesOf} canManage={canManage} />
       ) : null}
 
       <ConfirmDialog
@@ -120,5 +138,73 @@ export default function ProvincesPage() {
 
       <Toast message={toast} onDismiss={() => setToast(null)} />
     </div>
+  );
+}
+
+type City = Readonly<{ id: string; code: string; nameAr: string; nameEn: string; active: boolean }>;
+
+/**
+ * The cities inside one province, with their own activation switch.
+ *
+ * A city switch narrows what the public sees inside an active province; it cannot open a
+ * city in a province that is itself off. Each toggle is audited by the backend.
+ */
+function CitiesPanel({ province, canManage }: { province: Province; canManage: boolean }) {
+  const cities = useResource<{ items: City[] }>("provinceCities", { id: province.id });
+  const mutation = useMutation();
+
+  async function toggle(city: City): Promise<void> {
+    const ok = await mutation.run("cityUpdate", {
+      provinceId: province.id,
+      id: city.id,
+      active: !city.active,
+    });
+    if (ok) cities.reload();
+  }
+
+  return (
+    <Panel title={`مدن ${province.nameAr}`} flush testId="cities-panel">
+      {cities.loading ? <LoadingState /> : null}
+      {cities.error ? <ErrorState error={cities.error} onRetry={cities.reload} /> : null}
+      {mutation.error ? <ErrorState error={mutation.error} /> : null}
+      {cities.data ? (
+        <DataTable
+          caption={`مدن ${province.nameAr}`}
+          rows={cities.data.items}
+          rowKey={(row) => row.id}
+          empty={<EmptyState title="لا مدن مسجّلة لهذه المحافظة" />}
+          columns={[
+            { key: "nameAr", header: "المدينة", render: (row) => row.nameAr },
+            { key: "code", header: "الرمز", ltr: true, render: (row) => <code>{row.code}</code> },
+            {
+              key: "active",
+              header: "الحالة",
+              render: (row) => (
+                <StatusBadge tone={row.active ? "positive" : "neutral"}>
+                  {row.active ? "مفعّلة" : "غير مفعّلة"}
+                </StatusBadge>
+              ),
+            },
+            {
+              key: "actions",
+              header: "",
+              width: "1%",
+              render: (row) =>
+                canManage ? (
+                  <button
+                    type="button"
+                    className="button-ghost"
+                    disabled={mutation.pending}
+                    data-testid={`toggle-city-${row.code}`}
+                    onClick={() => toggle(row)}
+                  >
+                    {row.active ? "تعطيل" : "تفعيل"}
+                  </button>
+                ) : null,
+            },
+          ]}
+        />
+      ) : null}
+    </Panel>
   );
 }

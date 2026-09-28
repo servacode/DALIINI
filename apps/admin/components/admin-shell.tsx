@@ -67,6 +67,7 @@ const NAVIGATION: readonly { label: string; items: readonly NavItem[] }[] = [
   {
     label: "الثقة والمحتوى",
     items: [
+      ["/reports", "البلاغات", "admin.reports.read", "flag"],
       ["/verification", "التحقق", "admin.verification.read", "shield"],
       ["/ads", "الإعلانات", "admin.ads.read", "megaphone"],
       ["/audit", "سجل التدقيق", "admin.audit.read", "history"],

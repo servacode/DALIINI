@@ -83,6 +83,11 @@ export const Icons = {
       <path d="m9 12 2 2 4-4" />
     </Icon>
   ),
+  flag: (p: P) => (
+    <Icon {...p}>
+      <path d="M5 21V4M5 4h11l-2 4 2 4H5" />
+    </Icon>
+  ),
   megaphone: (p: P) => (
     <Icon {...p}>
       <path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z" />
