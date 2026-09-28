@@ -53,6 +53,7 @@ from directory.services import (
 )
 from facilities.models import Facility, FacilityApplication, VerificationEvidence
 from locations.models import Province
+from platform_settings.maintenance import TYPED_DEFAULTS as TYPED_SETTING_DEFAULTS
 from platform_settings.models import PlatformSetting
 from storage.backends import PrivateS3Storage
 
@@ -1279,6 +1280,9 @@ class SettingsView(AdminView):
         key = str(request.data.get("key", "")).strip()
         if not key:
             raise ValidationError({"key": "Required."})
+        typed = TYPED_SETTING_DEFAULTS.get(key)
+        if typed is not None and request.data.get("type", typed[0]) != typed[0]:
+            raise ValidationError({"type": f"{key} must be {typed[0]}."})
         setting, _ = PlatformSetting.objects.get_or_create(
             key=key,
             defaults={"value_type": request.data.get("type", "JSON"), "value": None},

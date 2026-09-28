@@ -4406,6 +4406,22 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/platform/status/:
+    get:
+      operationId: publicPlatformStatusRetrieve
+      description: Always served, even during maintenance. While `maintenance` is
+        true every other public and owner API answers 503 with code MAINTENANCE, details
+        {retryAfterSeconds} and a Retry-After header.
+      summary: Platform availability (maintenance mode)
+      tags:
+      - Public Platform
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformStatus'
+          description: ''
   /api/v1/public/ads/:
     get:
       operationId: publicAdsList
@@ -7548,6 +7564,20 @@ components:
           type: string
       required:
       - phone
+    PlatformStatus:
+      type: object
+      properties:
+        maintenance:
+          type: boolean
+        messageAr:
+          type: string
+        retryAfterSeconds:
+          type: integer
+          minimum: 0
+      required:
+      - maintenance
+      - messageAr
+      - retryAfterSeconds
     Profile:
       type: object
       properties:
