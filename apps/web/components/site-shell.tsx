@@ -1,3 +1,4 @@
+import brandSymbol from "@servacode/design-tokens/brand/symbol-128.webp";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -7,7 +8,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
       <header className="site-header">
         <div className="shell header">
           <Link href="/" className="brand" aria-label="دليني — الصفحة الرئيسية">
-            <span className="brand-mark" aria-hidden="true">د</span>
+            {/* eslint-disable-next-line @next/next/no-img-element -- small static brand asset */}
+            <img className="brand-mark" src={brandSymbol.src} width={36} height={36} alt="" aria-hidden="true" />
             <span>دليني</span>
           </Link>
           <nav className="nav" aria-label="التنقل العام">

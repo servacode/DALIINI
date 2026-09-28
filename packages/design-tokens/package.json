@@ -11,6 +11,7 @@
     "./tokens": "./generated/tokens.ts",
     "./fonts.css": "./fonts/fonts.css",
     "./vocabulary": "./generated/vocabulary.ts",
-    "./icons": "./generated/icons.ts"
+    "./icons": "./generated/icons.ts",
+    "./brand/*": "./brand/*"
   }
 }

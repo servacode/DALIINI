@@ -1,6 +1,7 @@
 "use client";
 
 import { type VocabularyGroup, term, vocabulary } from "@servacode/design-tokens/vocabulary";
+import brandSymbol from "@servacode/design-tokens/brand/symbol-128.webp";
 import Link from "next/link";
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 
@@ -30,11 +31,11 @@ import {
 // Page furniture
 // --------------------------------------------------------------------------------------
 
+/** The approved brand symbol (the road and the pin inside the letter); the name is set beside it as text. */
 export function BrandMark() {
   return (
-    <span className="brand-mark" aria-hidden="true">
-      د
-    </span>
+    // eslint-disable-next-line @next/next/no-img-element -- a 128px static asset; no optimisation route needed
+    <img className="brand-mark" src={brandSymbol.src} width={40} height={40} alt="" aria-hidden="true" />
   );
 }
 

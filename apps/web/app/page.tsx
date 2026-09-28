@@ -21,7 +21,7 @@ export default async function HomePage() {
           "@type": "Organization",
           name: SITE_NAME,
           url: absoluteUrl("/"),
-          logo: absoluteUrl("/icon.svg"),
+          logo: absoluteUrl("/icon.png"),
           email: publicConfig.supportEmail.includes("@") ? publicConfig.supportEmail : undefined,
         }}
       />

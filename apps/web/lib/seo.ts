@@ -8,7 +8,7 @@ import { SITE_NAME } from "./config";
  * `metadataBase` from the root layout. Because the override drops the
  * file-based app/opengraph-image, it is re-attached explicitly.
  */
-const OG_IMAGE = { url: "/opengraph-image", width: 1200, height: 630, alt: SITE_NAME };
+const OG_IMAGE = { url: "/opengraph-image.png", width: 1200, height: 630, alt: SITE_NAME };
 
 /* Metadata for pages whose data could not be loaded: keep them out of the index. */
 export const UNAVAILABLE_METADATA: Metadata = { title: { absolute: SITE_NAME }, robots: { index: false, follow: false } };

@@ -17,7 +17,9 @@ a { color: inherit; }
 .site-header { background: var(--sd-semantic-surface-default); border-bottom: 1px solid var(--sd-semantic-stroke-default); }
 .header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; text-decoration: none; }
-.brand-mark { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--sd-colors-primary); color: #fff; font-size: 20px; }
+.brand-mark { display: block; width: 36px; height: 36px; object-fit: contain; }
+/* The symbol is dark green on transparent; in the dark it sits on a light disc to stay legible. */
+@media (prefers-color-scheme: dark) { .brand-mark { background: #fff; border-radius: 10px; padding: 2px; } }
 .nav { display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; }
 
 .hero { padding-block: 48px 24px; display: grid; gap: 16px; }
