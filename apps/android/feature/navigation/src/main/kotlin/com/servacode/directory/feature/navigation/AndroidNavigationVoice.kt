@@ -51,10 +51,15 @@ class AndroidNavigationVoice @Inject constructor(
         speak(words.spoken(cue))
     }
 
-    /** True when the recording was found and started; false when there is none to play. */
+    /**
+     * True when the recording was found and started; false when there is none to play.
+     *
+     * The id comes from the generated table rather than from `Resources.getIdentifier`, which is
+     * handed the application id — and every build but production carries a suffix on it, so the
+     * lookup found nothing and guidance fell silently through to the synthesiser.
+     */
     private fun playClip(name: String): Boolean {
-        val id = context.resources.getIdentifier(name, "raw", context.packageName)
-        if (id == 0) return false
+        val id = NAVIGATION_CLIPS[name] ?: return false
         // One instruction at a time. A turn announced while the last sentence is still playing
         // replaces it: the newer one is the one that is still true.
         release()

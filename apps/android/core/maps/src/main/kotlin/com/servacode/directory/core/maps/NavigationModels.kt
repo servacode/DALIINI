@@ -2,6 +2,7 @@ package com.servacode.directory.core.maps
 
 import kotlin.math.PI
 import kotlin.math.asin
+import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
@@ -234,6 +235,50 @@ object GeoMath {
         val ahead = geometry.drop(nearest + 1)
         // Two points at least, or there is no line to draw and the map would blank the route.
         return if (ahead.isEmpty()) geometry.takeLast(2) else listOf(from) + ahead
+    }
+
+    /**
+     * The compass bearing from one point to another, in degrees clockwise from north.
+     *
+     * Used to place a made-up starting point up the road the traveller is actually coming from,
+     * and to point the arrow on the map the way it is moving.
+     */
+    fun bearingDegrees(from: MapPoint, to: MapPoint): Double {
+        from.requireValid()
+        to.requireValid()
+        val fromLatitude = from.latitude.toRadians()
+        val toLatitude = to.latitude.toRadians()
+        val deltaLongitude = (to.longitude - from.longitude).toRadians()
+        val y = sin(deltaLongitude) * cos(toLatitude)
+        val x = cos(fromLatitude) * sin(toLatitude) -
+            sin(fromLatitude) * cos(toLatitude) * cos(deltaLongitude)
+        return (Math.toDegrees(atan2(y, x)) + 360.0) % 360.0
+    }
+
+    /**
+     * The point a given distance away along a bearing, on the sphere.
+     *
+     * It lands wherever the arithmetic puts it — in a field, on a roof — and that is fine: a
+     * routing engine snaps a request to the nearest road, so what comes back is a real place on a
+     * real street. Nothing here pretends to know where the roads are.
+     */
+    fun pointAtBearing(from: MapPoint, bearingDegrees: Double, meters: Double): MapPoint {
+        from.requireValid()
+        val angular = meters / EARTH_RADIUS_METERS
+        val bearing = bearingDegrees.toRadians()
+        val latitude = from.latitude.toRadians()
+        val longitude = from.longitude.toRadians()
+        val newLatitude = asin(
+            sin(latitude) * cos(angular) + cos(latitude) * sin(angular) * cos(bearing),
+        )
+        val newLongitude = longitude + atan2(
+            sin(bearing) * sin(angular) * cos(latitude),
+            cos(angular) - sin(latitude) * sin(newLatitude),
+        )
+        return MapPoint(
+            latitude = Math.toDegrees(newLatitude).coerceIn(-90.0, 90.0),
+            longitude = ((Math.toDegrees(newLongitude) + 540.0) % 360.0) - 180.0,
+        )
     }
 
     fun distanceToPolylineMeters(point: MapPoint, geometry: List<MapPoint>): Double {

@@ -39,6 +39,8 @@ val androidOnly = listOf(
     "**/feature/bootstrap/BootstrapModule.kt",
     "**/feature/navigation/NavigationMap.kt",
     "**/feature/navigation/NavigationWords.kt",
+    // A table of R ids for the voice pack: Android resources, not Kotlin.
+    "**/feature/navigation/NavigationClipResources.kt",
     "**/feature/navigation/AndroidNavigationVoice.kt",
     "**/feature/navigation/NavigationVoice.kt",
     "**/feature/onboarding/OnboardingMapPicker.kt",

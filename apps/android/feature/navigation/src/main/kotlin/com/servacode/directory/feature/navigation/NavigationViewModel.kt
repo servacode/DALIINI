@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.servacode.directory.core.location.LocationProvider
 import com.servacode.directory.core.location.LocationResult
+import com.servacode.directory.core.maps.GeoMath
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.maps.NavigationRoute
 import com.servacode.directory.core.maps.RoutingException
@@ -157,9 +158,17 @@ class NavigationViewModel @Inject constructor(
             if (switching) it.copy(switching = true, warning = null) else it.copy(warning = null)
         }
         routeJob = viewModelScope.launch {
-            runCatching { routingProvider.route(from, destination, profile) }
+            val request = suspend {
+                if (simulated) demonstrableRoute(from, profile)
+                else routingProvider.route(from, destination, profile)
+            }
+            runCatching { request() }
                 .onSuccess { found ->
-                    publish(engine.start(found, from, System.currentTimeMillis()))
+                    // A made-up trip starts where its own route starts, which is not where the
+                    // reader is standing: the engine would otherwise open three kilometres off
+                    // its own line and spend the demonstration recomputing.
+                    val at = if (simulated) found.geometry.first() else from
+                    publish(engine.start(found, at, System.currentTimeMillis()))
                     _state.update { it.copy(switching = false) }
                     if (simulated) driveTheRoute(found) else collectLocationUpdates()
                 }
@@ -170,6 +179,29 @@ class NavigationViewModel @Inject constructor(
                     }
                 }
         }
+    }
+
+    /**
+     * The route the demonstration is run on, which is not always the reader's own.
+     *
+     * A reader standing across the street from the pharmacy asks for a demonstration and gets a
+     * fifty-metre line with no turn in it, over before the map has settled and too short for
+     * guidance to say a word — the planner's earliest warning is a hundred and fifty metres out.
+     * That is not a demonstration of anything, and it is what this screen showed.
+     *
+     * So when the real trip is too short to show guidance working, the demonstration is run from a
+     * point up the road the reader is coming from, far enough to carry turns and the three
+     * sentences that go with each of them. The point is put on a bearing and handed to the routing
+     * engine, which snaps it to a real street — nothing here guesses where roads are. If that
+     * second request fails, the short trip is shown rather than nothing.
+     */
+    private suspend fun demonstrableRoute(from: MapPoint, profile: RoutingProfile): NavigationRoute {
+        val real = routingProvider.route(from, destination, profile)
+        if (real.distanceMeters >= DEMO_MIN_METERS) return real
+        val away = GeoMath.bearingDegrees(destination, from)
+        val start = GeoMath.pointAtBearing(destination, away, DEMO_START_METERS)
+        return runCatching { routingProvider.route(start, destination, profile) }
+            .getOrDefault(real)
     }
 
     /**
@@ -284,5 +316,15 @@ class NavigationViewModel @Inject constructor(
 
         /** And how long the whole of it may take to watch, however long the trip is. */
         const val DEMO_SECONDS = 45.0
+
+        /**
+         * Below this a trip has nothing to demonstrate: no turn, and no distance for the voice
+         * to speak into. The planner's earliest warning is 150 m ahead of a maneuver, so 600 m
+         * is about the shortest trip that can carry one.
+         */
+        const val DEMO_MIN_METERS = 600.0
+
+        /** How far up the road a demonstration starts when the real trip is shorter than that. */
+        const val DEMO_START_METERS = 2_500.0
     }
 }
