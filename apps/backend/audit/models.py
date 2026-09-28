@@ -17,3 +17,7 @@ class AuditEvent(models.Model):
     request_id=models.CharField(max_length=64, blank=True)
     metadata=models.JSONField(default=dict, blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # The facility timeline and the review detail look audit rows up by target.
+        indexes = [models.Index(fields=["target_id", "-created_at"], name="audit_target_idx")]

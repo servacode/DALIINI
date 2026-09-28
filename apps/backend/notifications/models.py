@@ -98,3 +98,34 @@ class NotificationPushDelivery(models.Model):
 
     def __str__(self) -> str:
         return f"{self.notification_id}->{self.device_id}"
+
+
+class Broadcast(models.Model):
+    """An operator's message to many accounts at once; each recipient gets a Notification."""
+
+    class Audience(models.TextChoices):
+        ALL = "ALL", "Every active account"
+        OWNERS = "OWNERS", "Facility owners and managers"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    title_ar = models.CharField(max_length=180)
+    body_ar = models.CharField(max_length=400)
+    audience = models.CharField(max_length=8, choices=Audience.choices)
+    province = models.ForeignKey(
+        "locations.Province", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    recipient_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [models.Index(fields=["actor", "-created_at"], name="notifications_bcast_idx")]
+
+    def __str__(self) -> str:
+        return self.title_ar

@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.utils import timezone
 
 from audit.services import record_audit
 
@@ -23,6 +24,10 @@ def replace_business_hours(*, actor, facility, rows):
         obj.full_clean()
         obj.save()
         created.append(obj)
+    # Writing the hours is also confirming them: the owner has just looked at every row.
+    confirmed_at = timezone.now()
+    type(facility).objects.filter(pk=facility.pk).update(hours_confirmed_at=confirmed_at)
+    facility.hours_confirmed_at = confirmed_at
     record_audit(
         actor=actor,
         action="facility.hours.replaced",

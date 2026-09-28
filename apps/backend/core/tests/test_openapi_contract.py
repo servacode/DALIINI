@@ -45,6 +45,7 @@ BODYLESS_MUTATIONS = {
     ("/api/v1/admin/users/{user_id}/unblock/", "post"),
     ("/api/v1/auth/logout-all/", "post"),
     ("/api/v1/owner/facilities/{facility_id}/submit/", "post"),
+    ("/api/v1/owner/facilities/{facility_id}/confirm-hours/", "post"),
 }
 
 # Endpoints that legitimately answer 204 with no body.
@@ -53,6 +54,11 @@ NO_CONTENT_OPERATIONS = {
     ("/api/v1/account/push-token/", "put"),
     ("/api/v1/account/push-token/unregister/", "post"),
     ("/api/v1/admin/ads/{advertisement_id}/", "delete"),
+    ("/api/v1/admin/content/faq/{entry_id}/", "delete"),
+    ("/api/v1/admin/content/pages/{slug}/", "delete"),
+    ("/api/v1/admin/duty/{shift_id}/", "delete"),
+    ("/api/v1/admin/emergency-numbers/{number_id}/", "delete"),
+    ("/api/v1/admin/rejection-templates/{template_id}/", "delete"),
     ("/api/v1/admin/users/{user_id}/roles/", "put"),
     ("/api/v1/auth/logout-all/", "post"),
     ("/api/v1/auth/logout/", "post"),

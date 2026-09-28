@@ -51,6 +51,12 @@ class Facility(models.Model):
     activated_at = models.DateTimeField(null=True, blank=True)
     # When an operator last approved an application of this facility (trust signal).
     last_verified_at = models.DateTimeField(null=True, blank=True)
+    # When a member last confirmed the opening hours are still right, or replaced them. Feeds
+    # the public `infoConfirmedAt` together with `last_verified_at`, which keeps its meaning.
+    hours_confirmed_at = models.DateTimeField(null=True, blank=True)
+    # When the weekly "are your hours still right?" reminder last went out, so a rerun of the
+    # weekly task in the same week sends nothing twice.
+    hours_reminder_sent_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -269,3 +275,21 @@ class FacilityReport(models.Model):
         indexes = [
             models.Index(fields=["status", "-created_at"], name="facility_report_status_idx"),
         ]
+
+
+class RejectionTemplate(models.Model):
+    """A reviewer's ready-made rejection reason; picking one fills the reason, nothing more."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title_ar = models.CharField(max_length=120)
+    body_ar = models.CharField(max_length=1000)
+    active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["sort_order", "title_ar"]
+
+    def __str__(self) -> str:
+        return self.title_ar

@@ -6,12 +6,31 @@ leave reads alone, so a view can list and write under one class.
 
 from __future__ import annotations
 
+import hmac
 from typing import Any
 
+from django.conf import settings
 from rest_framework.request import Request
 from rest_framework.throttling import SimpleRateThrottle
 
 SAFE_METHODS = ("GET", "HEAD", "OPTIONS")
+WEB_KEY_HEADER = "HTTP_X_DALIINI_WEB_KEY"
+
+
+def is_trusted_web_server(request: Request) -> bool:
+    """The request comes from the platform's own website server (`X-Daliini-Web-Key`).
+
+    The public website renders on its server, so every visitor reaches the API from the same
+    address, and a per-address limit meant for one person would throttle the whole site. A
+    request carrying the shared key is counted under the separate `web_server` scope instead.
+    It grants nothing else: no data, permission or identity comes with the key. Compared in
+    constant time; with `WEB_SERVER_API_KEY` unset no request is ever trusted.
+    """
+    expected = str(getattr(settings, "WEB_SERVER_API_KEY", "") or "")
+    supplied = str(request.META.get(WEB_KEY_HEADER, "") or "")
+    if not expected or not supplied:
+        return False
+    return hmac.compare_digest(supplied.encode(), expected.encode())
 
 
 class UserOrIpThrottle(SimpleRateThrottle):
@@ -24,8 +43,30 @@ class UserOrIpThrottle(SimpleRateThrottle):
         if user is not None and getattr(user, "is_authenticated", False):
             ident = f"user:{user.pk}"
         else:
+            if request.method in SAFE_METHODS and is_trusted_web_server(request):
+                # Anonymous reads from the website server: `WebServerThrottle` counts these.
+                return None
             ident = f"ip:{self.get_ident(request)}"
         return self.cache_format % {"scope": self.scope, "ident": ident}
+
+
+class WebServerThrottle(SimpleRateThrottle):
+    """The website server's own, much higher limit on anonymous public reads.
+
+    Applies only to requests carrying a valid `X-Daliini-Web-Key`; every other request is
+    left to the per-account or per-address throttles beside it. Writes are never moved
+    here: a write from the site is still limited per address.
+    """
+
+    scope = "web_server"
+
+    def get_cache_key(self, request: Request, view: Any) -> str | None:
+        if request.method not in SAFE_METHODS or not is_trusted_web_server(request):
+            return None
+        user = getattr(request, "user", None)
+        if user is not None and getattr(user, "is_authenticated", False):
+            return None
+        return self.cache_format % {"scope": self.scope, "ident": "site"}
 
 
 class RatingsWriteThrottle(UserOrIpThrottle):
@@ -64,3 +105,22 @@ class EvidenceUploadThrottle(UserOrIpThrottle):
 class FacilityReportThrottle(UserOrIpThrottle):
     scope = "facility_report"
     only_writes = True
+
+
+class ContactThrottle(UserOrIpThrottle):
+    """The public contact form: strict, and not escapable by forging X-Forwarded-For.
+
+    DRF trusts X-Forwarded-For whenever NUM_PROXIES is unset, so a client could send a new
+    forged address with every request. Here the header is honoured only when NUM_PROXIES says
+    how many proxies to trust; otherwise the connection's own address is the identity.
+    """
+
+    scope = "contact"
+    only_writes = True
+
+    def get_ident(self, request: Request) -> str:
+        from rest_framework.settings import api_settings
+
+        if api_settings.NUM_PROXIES is None:
+            return str(request.META.get("REMOTE_ADDR") or "")
+        return str(super().get_ident(request))

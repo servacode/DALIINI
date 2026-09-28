@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
+from django.db.models import QuerySet
 from django.utils import timezone
 
 from realtime.events import EventName, RealtimeEvent, ScopeType
 from realtime.publisher import publish_after_commit
 
 from .crypto import decrypt_push_token, encrypt_push_token, push_token_digest
-from .models import DevicePushToken, Notification, NotificationPushDelivery
+from .models import Broadcast, DevicePushToken, Notification, NotificationPushDelivery
 from .providers.base import InvalidPushToken, PushMessage, TransientPushError
 from .providers.factory import get_push_provider
 from .sanitization import safe_notification_payload
@@ -172,3 +174,127 @@ def push_notification(notification: Notification, *, title: str, body: str) -> N
             NotificationPushDelivery.objects.create(notification=notification, device=locked)
     if transient is not None:
         raise transient
+
+
+def enqueue_push(notification: Notification) -> None:
+    """Announce a stored notification on the account's devices, after the transaction commits.
+
+    The inbox row is the record, so a broker that cannot be reached must not undo it or fail
+    the request that created it: the failure is logged and the message stays in the inbox.
+    """
+    notification_id = str(notification.pk)
+    title, body = notification.title_ar, notification.body_ar
+
+    def _send() -> None:
+        from .tasks import deliver_notification_push
+
+        try:
+            deliver_notification_push.delay(notification_id, title, body)
+        except Exception:  # noqa: BLE001 - the broker is optional; the inbox is the record
+            logger.warning("push.enqueue_failed", extra={"notification_id": notification_id})
+
+    transaction.on_commit(_send)
+
+
+def notify(
+    *,
+    user: Any,
+    type: str,
+    title_ar: str,
+    body_ar: str,
+    destination: str = Notification.Destination.NONE,
+    payload: dict[str, Any] | None = None,
+) -> Notification:
+    """Store a notification in the inbox and queue its push."""
+    notification = create_notification(
+        user=user,
+        type=type,
+        payload=payload or {},
+        title_ar=title_ar,
+        body_ar=body_ar,
+        destination=destination,
+    )
+    enqueue_push(notification)
+    return notification
+
+
+BROADCAST_TYPE = "platform.broadcast"
+BROADCAST_CHUNK = 1000
+
+
+def broadcast_recipients(*, audience: str, province_id: Any = None) -> QuerySet[Any]:
+    """Active accounts a broadcast reaches.
+
+    ALL is every active account, narrowed to those who chose `province_id` when one is given.
+    OWNERS is every active owner or manager of a facility, narrowed to facilities in the
+    province when one is given.
+    """
+    from accounts.models import User
+
+    users = User.objects.filter(is_active=True)
+    if audience == Broadcast.Audience.OWNERS:
+        memberships = {"facility_memberships__isnull": False}
+        if province_id:
+            memberships = {"facility_memberships__facility__province_id": province_id}
+        return users.filter(**memberships).distinct()
+    if province_id:
+        users = users.filter(province_id=province_id)
+    return users
+
+
+@transaction.atomic
+def send_broadcast(
+    *, actor: Any, title_ar: str, body_ar: str, audience: str, province: Any = None
+) -> Broadcast:
+    """Put one message in the inbox of every recipient, then push it after commit.
+
+    Rows are written in bulk, so a broadcast to many accounts is a handful of INSERTs. The
+    per-account realtime ping `create_notification` sends is skipped here; the push, fanned
+    out by a task, is the announcement.
+    """
+    broadcast = Broadcast.objects.create(
+        actor=actor, title_ar=title_ar, body_ar=body_ar, audience=audience, province=province
+    )
+    destination = (
+        Notification.Destination.OWNER_FACILITIES
+        if audience == Broadcast.Audience.OWNERS
+        else Notification.Destination.NONE
+    )
+    payload = safe_notification_payload({"broadcastId": str(broadcast.pk)})
+    user_ids = broadcast_recipients(
+        audience=audience, province_id=province.pk if province else None
+    ).values_list("pk", flat=True)
+    total = 0
+    batch: list[Notification] = []
+    for user_id in user_ids.iterator(chunk_size=BROADCAST_CHUNK):
+        batch.append(
+            Notification(
+                user_id=user_id,
+                type=BROADCAST_TYPE,
+                title_ar=title_ar,
+                body_ar=body_ar,
+                destination=destination,
+                payload=payload,
+            )
+        )
+        if len(batch) >= BROADCAST_CHUNK:
+            Notification.objects.bulk_create(batch)
+            total += len(batch)
+            batch = []
+    if batch:
+        Notification.objects.bulk_create(batch)
+        total += len(batch)
+    broadcast.recipient_count = total
+    broadcast.save(update_fields=["recipient_count"])
+    broadcast_id = str(broadcast.pk)
+
+    def _fan_out() -> None:
+        from .tasks import fan_out_broadcast_push
+
+        try:
+            fan_out_broadcast_push.delay(broadcast_id)
+        except Exception:  # noqa: BLE001 - the broker is optional; the inbox is the record
+            logger.warning("push.broadcast_enqueue_failed", extra={"broadcast_id": broadcast_id})
+
+    transaction.on_commit(_fan_out)
+    return broadcast

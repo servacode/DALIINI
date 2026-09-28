@@ -66,6 +66,13 @@ class CompactFacilitySerializer(serializers.Serializer):
         allow_null=True,
         help_text="When an operator last approved this facility's details (trust signal).",
     )
+    infoConfirmedAt = serializers.DateTimeField(
+        allow_null=True,
+        help_text=(
+            "The most recent of `lastVerifiedAt` and the owner's own confirmation that the "
+            "opening hours are still right. Null when neither ever happened."
+        ),
+    )
     updatedAt = serializers.DateTimeField(help_text="Last change to the facility record.")
 
 

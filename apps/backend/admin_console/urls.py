@@ -1,10 +1,50 @@
 from django.urls import path
 
-from . import views
+from . import exports, views, views_content, views_duty, views_smart
 
 urlpatterns = [
     path("admin/me/", views.AdminMeView.as_view()),
     path("admin/dashboard/", views.DashboardView.as_view()),
+    path("admin/tasks/", views_smart.TasksView.as_view()),
+    path("admin/alerts/", views_smart.AlertsView.as_view()),
+    path("admin/search/", views_smart.AdminSearchView.as_view()),
+    path(
+        "admin/facilities/<uuid:facility_id>/timeline/",
+        views_smart.FacilityTimelineView.as_view(),
+    ),
+    path("admin/reports/bulk/", views_smart.ReportBulkDecisionView.as_view()),
+    path("admin/rejection-templates/", views_smart.RejectionTemplateListView.as_view()),
+    path(
+        "admin/rejection-templates/<uuid:template_id>/",
+        views_smart.RejectionTemplateDetailView.as_view(),
+    ),
+    path("admin/notifications/broadcast/", views_smart.BroadcastSendView.as_view()),
+    path("admin/notifications/broadcasts/", views_smart.BroadcastHistoryView.as_view()),
+    path(
+        "admin/provinces/<uuid:province_id>/readiness/",
+        views_smart.ProvinceReadinessView.as_view(),
+    ),
+    path("admin/analytics/staff/", views_smart.StaffAnalyticsView.as_view()),
+    path("admin/ads/images/", views_smart.AdvertisementImageUploadView.as_view()),
+    path("admin/exports/facilities.csv", exports.FacilitiesCsvView.as_view()),
+    path("admin/exports/reports.csv", exports.ReportsCsvView.as_view()),
+    path("admin/exports/audit.csv", exports.AuditCsvView.as_view()),
+    path("admin/content/pages/", views_content.ContentPageListView.as_view()),
+    path("admin/content/pages/<str:slug>/", views_content.ContentPageDetailView.as_view()),
+    path("admin/content/faq/", views_content.FaqEntryListView.as_view()),
+    path("admin/content/faq/<uuid:entry_id>/", views_content.FaqEntryDetailView.as_view()),
+    path("admin/emergency-numbers/", views_content.EmergencyNumberListView.as_view()),
+    path(
+        "admin/emergency-numbers/<uuid:number_id>/",
+        views_content.EmergencyNumberDetailView.as_view(),
+    ),
+    path("admin/contact-messages/", views_content.ContactMessageListView.as_view()),
+    path(
+        "admin/contact-messages/<uuid:message_id>/handle/",
+        views_content.ContactMessageHandleView.as_view(),
+    ),
+    path("admin/duty/", views_duty.DutyRosterView.as_view()),
+    path("admin/duty/<uuid:shift_id>/", views_duty.DutyShiftDetailView.as_view()),
     path("admin/applications/", views.ApplicationListView.as_view()),
     path("admin/applications/<uuid:application_id>/", views.ApplicationDetailView.as_view()),
     path(

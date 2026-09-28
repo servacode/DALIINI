@@ -58,6 +58,16 @@ def _first_image_url(facility):
     return PublicS3Storage().url(images[0].storage_key)
 
 
+def info_confirmed_at(facility: Any) -> Any:
+    """The later of an operator's approval and the owner's own confirmation of the hours."""
+    moments = [
+        value
+        for value in (facility.last_verified_at, getattr(facility, "hours_confirmed_at", None))
+        if value is not None
+    ]
+    return max(moments) if moments else None
+
+
 def compact_facility(facility: Any) -> dict[str, Any]:
     distance = getattr(facility, "distance_meters", None)
     return {
@@ -88,6 +98,7 @@ def compact_facility(facility: Any) -> dict[str, Any]:
         # is null; nothing stands in for a picture the facility never uploaded.
         "imageUrl": _first_image_url(facility),
         "lastVerifiedAt": _iso(facility.last_verified_at),
+        "infoConfirmedAt": _iso(info_confirmed_at(facility)),
         "updatedAt": _iso(facility.updated_at),
     }
 

@@ -57,13 +57,14 @@ from directory.services import (
 from facilities.models import Facility, FacilityApplication, FacilityReport, VerificationEvidence
 from locations.models import City, Province
 from pharmacy_duty.models import DutyShift
-from platform_settings.maintenance import TYPED_DEFAULTS as TYPED_SETTING_DEFAULTS
 from platform_settings.maintenance import get_maintenance_state
 from platform_settings.models import PlatformSetting
+from platform_settings.operations import TYPED_SETTINGS as TYPED_SETTING_DEFAULTS
 from storage.backends import PrivateS3Storage
 from storage.public_media import public_media_url
 
 from .permissions import HasAdminPermission, IsAdminOperator
+from .quality import QUALITY_ISSUES, filter_issue, quality_payload, with_quality
 from .review import find_duplicates, previous_snapshot
 from .schemas import (
     AdminAdvertisementListSerializer,
@@ -90,6 +91,7 @@ from .schemas import (
     AdminDashboardSerializer,
     AdminDecisionRequestSerializer,
     AdminFacilityListSerializer,
+    AdminFacilityQualitySerializer,
     AdminFacilityReportListSerializer,
     AdminFacilityReportSerializer,
     AdminFacilitySerializer,
@@ -127,7 +129,13 @@ from .serializers import (
     with_application_names,
     with_facility_names,
 )
-from .services import decide_application, replace_user_roles, set_user_blocked, transition_facility
+from .services import (
+    decide_application,
+    decide_report,
+    replace_user_roles,
+    set_user_blocked,
+    transition_facility,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -158,6 +166,72 @@ KPI_EVENTS = {
 }
 
 
+# Wire ordering -> columns. Every ordering ends in the primary key so ties are stable.
+FACILITY_ORDERINGS: dict[str, tuple[str, ...]] = {
+    "qualityScore": ("quality_score", "-updated_at", "id"),
+    "-qualityScore": ("-quality_score", "-updated_at", "id"),
+    "updatedAt": ("updated_at", "id"),
+    "-updatedAt": ("-updated_at", "id"),
+}
+
+
+def filtered_facilities(params: Any) -> Any:
+    """The Admin facility list query, with quality annotations, filters and ordering.
+
+    Shared by the list endpoint and the CSV export so the two always select the same rows.
+    """
+    ordering = params.get("ordering") or "-updatedAt"
+    if ordering not in FACILITY_ORDERINGS:
+        raise ValidationError({"ordering": f"Use one of {', '.join(FACILITY_ORDERINGS)}."})
+    qs = with_quality(with_facility_names(Facility.objects.all()))
+    if value := params.get("status"):
+        qs = qs.filter(status=value)
+    if value := params.get("province"):
+        qs = qs.filter(province_id=value)
+    if value := params.get("category"):
+        qs = qs.filter(category_id=value)
+    if value := params.get("q"):
+        qs = qs.filter(Q(name_ar__icontains=value) | Q(name_en__icontains=value))
+    if value := params.get("issue"):
+        if value not in QUALITY_ISSUES:
+            raise ValidationError({"issue": f"Use one of {', '.join(QUALITY_ISSUES)}."})
+        qs = filter_issue(qs, value)
+    return qs.order_by(*FACILITY_ORDERINGS[ordering])
+
+
+def filtered_audit(params: Any) -> Any:
+    """The audit search query, shared by the list endpoint and the CSV export."""
+    qs = AuditEvent.objects.order_by("-created_at")
+    if value := params.get("actor"):
+        qs = qs.filter(actor_id=value)
+    if value := params.get("action"):
+        qs = qs.filter(action__icontains=value)
+    if value := params.get("resource"):
+        qs = qs.filter(Q(target_type__icontains=value) | Q(target_id=value))
+    if value := params.get("requestId"):
+        qs = qs.filter(request_id=value)
+    if value := params.get("from"):
+        qs = qs.filter(created_at__gte=_parse_bound(value, "from", end=False))
+    if value := params.get("to"):
+        bound = _parse_bound(value, "to", end=True)
+        qs = (
+            qs.filter(created_at__lt=bound)
+            if _is_date(value)
+            else qs.filter(created_at__lte=bound)
+        )
+    return qs
+
+
+def filtered_reports(params: Any) -> Any:
+    """The report list query, shared by the list endpoint and the CSV export."""
+    qs = FacilityReport.objects.select_related("facility").order_by("-created_at")
+    if value := params.get("status"):
+        qs = qs.filter(status=value.upper())
+    if value := params.get("facility"):
+        qs = qs.filter(facility_id=value)
+    return qs
+
+
 def _is_date(value: str) -> bool:
     return len(value) == 10 and parse_date(value) is not None
 
@@ -178,18 +252,57 @@ def _parse_bound(value: str, name: str, *, end: bool) -> datetime:
     return moment if timezone.is_aware(moment) else timezone.make_aware(moment)
 
 
-def _approval_median_hours(since: datetime) -> float | None:
-    """Median hours from submission to decision, over applications decided since `since`."""
+def _approval_median_hours(since: datetime, until: datetime | None = None) -> float | None:
+    """Median hours from submission to approval, over applications approved in the period."""
+    until = until or timezone.now()
     with connection.cursor() as cursor:
         cursor.execute(
             "SELECT percentile_cont(0.5) WITHIN GROUP ("
             "ORDER BY EXTRACT(EPOCH FROM (reviewed_at - submitted_at)) / 3600.0) "
             "FROM facilities_facilityapplication "
-            "WHERE status = %s AND reviewed_at >= %s AND submitted_at IS NOT NULL",
-            [FacilityApplication.Status.APPROVED, since],
+            "WHERE status = %s AND reviewed_at >= %s AND reviewed_at < %s "
+            "AND submitted_at IS NOT NULL",
+            [FacilityApplication.Status.APPROVED, since, until],
         )
         row = cursor.fetchone()
     return round(float(row[0]), 2) if row and row[0] is not None else None
+
+
+ANALYTICS_DEFAULT_DAYS = 30
+ANALYTICS_MAX_DAYS = 366
+
+
+def analytics_period(request: Any) -> tuple[datetime, datetime]:
+    """`from`/`to` query bounds as a half-open period; the default is the last 30 days."""
+    now = timezone.now()
+    raw_to = request.query_params.get("to")
+    end = _parse_bound(raw_to, "to", end=True) if raw_to else now
+    raw_from = request.query_params.get("from")
+    start = (
+        _parse_bound(raw_from, "from", end=False)
+        if raw_from
+        else end - timedelta(days=ANALYTICS_DEFAULT_DAYS)
+    )
+    if start >= end:
+        raise ValidationError({"from": "Must be before `to`."})
+    if end - start > timedelta(days=ANALYTICS_MAX_DAYS):
+        raise ValidationError({"from": f"The period may span at most {ANALYTICS_MAX_DAYS} days."})
+    return start, end
+
+
+def _period_kpis(start: datetime, end: datetime) -> dict[str, Any]:
+    named = dict(
+        ProductAnalyticsEvent.objects.filter(
+            occurred_at__gte=start, occurred_at__lt=end, name__in=KPI_EVENTS.values()
+        )
+        .values_list("name")
+        .annotate(count=Count("id"))
+        .values_list("name", "count")
+    )
+    return {
+        "approvalMedianHours": _approval_median_hours(start, end),
+        **{key: named.get(name, 0) for key, name in KPI_EVENTS.items()},
+    }
 
 
 def _open_reports_count() -> int:
@@ -511,26 +624,40 @@ class FacilityListView(AdminView):
         operation_id="adminFacilitiesList",
         tags=["Admin Facilities"],
         summary="List facilities for operations",
-        description="Capped at 250 rows. Every filter is optional and combines with the rest.",
+        description=(
+            "Capped at 250 rows. Every filter is optional and combines with the rest. Each "
+            "row carries `qualityScore` (0-100) and `qualityIssues`, computed in the same "
+            "query."
+        ),
         parameters=[
             _filter("status", "Facility status, for example ACTIVE or SUSPENDED."),
             _filter("province", "Province id."),
             _filter("category", "Category id."),
             _filter("q", "Free text matched against the Arabic and English facility names."),
+            OpenApiParameter(
+                "issue",
+                str,
+                OpenApiParameter.QUERY,
+                required=False,
+                enum=QUALITY_ISSUES,
+                description="Keep facilities that have this quality issue.",
+            ),
+            OpenApiParameter(
+                "ordering",
+                str,
+                OpenApiParameter.QUERY,
+                required=False,
+                enum=list(FACILITY_ORDERINGS),
+                description="Sort order; the default is `-updatedAt` (most recently changed).",
+            ),
         ],
-        responses={200: AdminFacilityListSerializer, **protected()},
+        responses={200: AdminFacilityListSerializer, 400: VALIDATION_400, **protected()},
     )
     def get(self, request):
-        qs = with_facility_names(Facility.objects.all()).order_by("-updated_at")
-        if value := request.query_params.get("status"):
-            qs = qs.filter(status=value)
-        if value := request.query_params.get("province"):
-            qs = qs.filter(province_id=value)
-        if value := request.query_params.get("category"):
-            qs = qs.filter(category_id=value)
-        if value := request.query_params.get("q"):
-            qs = qs.filter(Q(name_ar__icontains=value) | Q(name_en__icontains=value))
-        return Response({"items": [facility_payload(item) for item in qs[:250]]})
+        qs = filtered_facilities(request.query_params)
+        return Response(
+            {"items": [{**facility_payload(item), **quality_payload(item)} for item in qs[:250]]}
+        )
 
 
 class FacilityDetailView(AdminView):
@@ -540,14 +667,13 @@ class FacilityDetailView(AdminView):
         operation_id="adminFacilityRetrieve",
         tags=["Admin Facilities"],
         summary="Retrieve one facility",
-        responses={200: AdminFacilitySerializer, **protected(), 404: NOT_FOUND_404},
+        responses={200: AdminFacilityQualitySerializer, **protected(), 404: NOT_FOUND_404},
     )
     def get(self, request, facility_id):
-        return Response(
-            facility_payload(
-                get_object_or_404(with_facility_names(Facility.objects.all()), pk=facility_id)
-            )
+        facility = get_object_or_404(
+            with_quality(with_facility_names(Facility.objects.all())), pk=facility_id
         )
+        return Response({**facility_payload(facility), **quality_payload(facility)})
 
 
 class FacilityTransitionView(AdminView):
@@ -1309,24 +1435,7 @@ class AuditListView(AdminView):
         responses={200: AdminAuditListSerializer, 400: VALIDATION_400, **protected()},
     )
     def get(self, request):
-        qs = AuditEvent.objects.order_by("-created_at")
-        if value := request.query_params.get("actor"):
-            qs = qs.filter(actor_id=value)
-        if value := request.query_params.get("action"):
-            qs = qs.filter(action__icontains=value)
-        if value := request.query_params.get("resource"):
-            qs = qs.filter(Q(target_type__icontains=value) | Q(target_id=value))
-        if value := request.query_params.get("requestId"):
-            qs = qs.filter(request_id=value)
-        if value := request.query_params.get("from"):
-            qs = qs.filter(created_at__gte=_parse_bound(value, "from", end=False))
-        if value := request.query_params.get("to"):
-            bound = _parse_bound(value, "to", end=True)
-            qs = (
-                qs.filter(created_at__lt=bound)
-                if _is_date(value)
-                else qs.filter(created_at__lte=bound)
-            )
+        qs = filtered_audit(request.query_params)
         return Response(
             {
                 "items": AdminAuditEntrySerializer(
@@ -1353,26 +1462,36 @@ class AnalyticsView(AdminView):
         operation_id="adminAnalyticsRetrieve",
         tags=["Admin Analytics"],
         summary="Operational KPIs",
-        responses={200: AdminAnalyticsSerializer, **protected()},
+        description=(
+            "Period-bound KPIs (approval median and the four event counts) cover `from` to "
+            "`to`, by default the last 30 days, and `previous` holds the same KPIs for the "
+            "equally long period just before, for comparison. The remaining fields are "
+            "current totals."
+        ),
+        parameters=[
+            _filter("from", "ISO date or datetime; default 30 days before `to`."),
+            _filter("to", "ISO date or datetime; a bare date includes that whole day."),
+        ],
+        responses={200: AdminAnalyticsSerializer, 400: VALIDATION_400, **protected()},
     )
     def get(self, request):
+        start, end = analytics_period(request)
+        span = end - start
         event_counts = list(
             ProductAnalyticsEvent.objects.values("name")
             .annotate(count=Count("id"))
             .order_by("name")
         )
-        since = timezone.now() - timedelta(days=30)
-        recent = ProductAnalyticsEvent.objects.filter(occurred_at__gte=since)
-        named = dict(
-            recent.filter(name__in=KPI_EVENTS.values())
-            .values_list("name")
-            .annotate(count=Count("id"))
-            .values_list("name", "count")
-        )
         return Response(
             {
-                "approvalMedianHours": _approval_median_hours(since),
-                **{key: named.get(name, 0) for key, name in KPI_EVENTS.items()},
+                "from": start.isoformat(),
+                "to": end.isoformat(),
+                **_period_kpis(start, end),
+                "previous": {
+                    "from": (start - span).isoformat(),
+                    "to": start.isoformat(),
+                    **_period_kpis(start - span, start),
+                },
                 "activeFacilities": Facility.objects.filter(status=Facility.Status.ACTIVE).count(),
                 "pendingReviews": FacilityApplication.objects.filter(
                     status=FacilityApplication.Status.SUBMITTED
@@ -1518,11 +1637,7 @@ class ReportListView(AdminView):
         responses={200: AdminFacilityReportListSerializer, **protected()},
     )
     def get(self, request: Any) -> Response:
-        qs = FacilityReport.objects.select_related("facility").order_by("-created_at")
-        if value := request.query_params.get("status"):
-            qs = qs.filter(status=value.upper())
-        if value := request.query_params.get("facility"):
-            qs = qs.filter(facility_id=value)
+        qs = filtered_reports(request.query_params)
         return Response({"items": [_report_payload(item) for item in qs[:250]]})
 
 
@@ -1551,24 +1666,16 @@ class ReportDecisionView(AdminView):
                 FacilityReport.objects.select_for_update().select_related("facility"),
                 pk=report_id,
             )
-            if report.status != FacilityReport.Status.OPEN:
-                raise ValidationError({"status": "Only open reports can be decided."})
-            report.status = self.target_status
-            report.resolved_by = request.user
-            report.resolved_at = timezone.now()
-            report.save(update_fields=["status", "resolved_by", "resolved_at"])
-            record_audit(
-                actor=request.user,
-                action=f"facility_report.{self.target_status.lower()}",
-                target=report,
-                before_snapshot={"status": FacilityReport.Status.OPEN},
-                after_snapshot={"status": report.status},
-                metadata={
-                    "facilityId": str(report.facility_id),
-                    "note": payload.validated_data.get("note", "").strip(),
-                },
-                request_id=_request_id(request),
-            )
+            try:
+                decide_report(
+                    report=report,
+                    target_status=self.target_status,
+                    actor=request.user,
+                    note=payload.validated_data.get("note", ""),
+                    request_id=_request_id(request),
+                )
+            except DjangoValidationError as exc:
+                raise _validation_error(exc) from exc
         return Response(_report_payload(report))
 
 

@@ -20,6 +20,7 @@ from core.openapi import CoordinatesSerializer
 from directory.models import Category
 from facilities.models import Facility, FacilityApplication, FacilityReport
 
+from .quality import QUALITY_ISSUE_CHOICES
 from .review import DUPLICATE_REASON_CHOICES
 
 
@@ -57,8 +58,25 @@ class AdminFacilitySerializer(serializers.Serializer):
     ownerPhone = serializers.CharField(allow_null=True, help_text="First owner membership.")
 
 
+class AdminFacilityQualitySerializer(AdminFacilitySerializer):
+    """An Admin facility row with its data-quality score (see `admin_console.quality`)."""
+
+    qualityScore = serializers.IntegerField(
+        min_value=0, max_value=100, help_text="100 minus a fixed penalty per issue."
+    )
+    qualityIssues = serializers.ListField(
+        child=serializers.ChoiceField(choices=QUALITY_ISSUE_CHOICES),
+        help_text=(
+            "NO_PHOTOS 10, NO_HOURS 15, NO_LOCATION 20, NO_PHONE 20, STALE 10 (nothing changed "
+            "or confirmed for 90 days), OPEN_REPORTS 15, NOT_VERIFIED_RECENTLY 10 (never "
+            "approved, or not in 180 days). Photos and hours count only where the category "
+            "supports them."
+        ),
+    )
+
+
 class AdminFacilityListSerializer(serializers.Serializer):
-    items = AdminFacilitySerializer(many=True)
+    items = AdminFacilityQualitySerializer(many=True)
 
 
 class AdminApplicationSerializer(serializers.Serializer):
@@ -486,18 +504,47 @@ class AdminEventCountSerializer(serializers.Serializer):
     count = serializers.IntegerField()
 
 
+class AdminAnalyticsPeriodKpisSerializer(serializers.Serializer[Any]):
+    """The period-bound KPIs of the comparison period, `from` inclusive, `to` exclusive."""
+
+    approvalMedianHours = serializers.FloatField(allow_null=True)
+    searches = serializers.IntegerField()
+    zeroResultSearches = serializers.IntegerField()
+    facilityViews = serializers.IntegerField()
+    directionsRequests = serializers.IntegerField()
+
+    def get_fields(self) -> Any:
+        fields = super().get_fields()
+        return {
+            "from": serializers.DateTimeField(),
+            "to": serializers.DateTimeField(),
+            **fields,
+        }
+
+
 class AdminAnalyticsSerializer(serializers.Serializer):
     approvalMedianHours = serializers.FloatField(
-        allow_null=True, help_text="Median submit-to-approval time, last 30 days."
+        allow_null=True, help_text="Median submit-to-approval time in the period."
     )
-    searches = serializers.IntegerField(help_text="search_submitted events, last 30 days.")
-    zeroResultSearches = serializers.IntegerField(help_text="search_zero_results, last 30 days.")
-    facilityViews = serializers.IntegerField(help_text="facility_view events, last 30 days.")
-    directionsRequests = serializers.IntegerField(help_text="directions_start, last 30 days.")
+    searches = serializers.IntegerField(help_text="search_submitted events in the period.")
+    zeroResultSearches = serializers.IntegerField(help_text="search_zero_results in the period.")
+    facilityViews = serializers.IntegerField(help_text="facility_view events in the period.")
+    directionsRequests = serializers.IntegerField(help_text="directions_start in the period.")
+    previous = AdminAnalyticsPeriodKpisSerializer(
+        help_text="The same KPIs for the equally long period just before `from`."
+    )
     activeFacilities = serializers.IntegerField()
     pendingReviews = serializers.IntegerField()
     ratingAverage = serializers.FloatField(allow_null=True)
-    events = AdminEventCountSerializer(many=True)
+    events = AdminEventCountSerializer(many=True, help_text="All-time counts per event name.")
+
+    def get_fields(self) -> Any:
+        fields = super().get_fields()
+        return {
+            "from": serializers.DateTimeField(help_text="Period start, inclusive."),
+            "to": serializers.DateTimeField(help_text="Period end, exclusive."),
+            **fields,
+        }
 
 
 class AdminSettingSerializer(serializers.Serializer):

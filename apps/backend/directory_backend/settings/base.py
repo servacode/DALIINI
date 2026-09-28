@@ -113,7 +113,15 @@ REST_FRAMEWORK = {
         "owner_submit": env("THROTTLE_OWNER_SUBMIT", "10/hour"),
         "evidence_upload": env("THROTTLE_EVIDENCE_UPLOAD", "30/hour"),
         "facility_report": env("THROTTLE_FACILITY_REPORT", "5/hour"),
+        "contact": env("THROTTLE_CONTACT", "3/hour"),
+        # Anonymous public reads from the website server (see WEB_SERVER_API_KEY).
+        "web_server": env("THROTTLE_WEB_SERVER", "3000/minute"),
     },
+    # How many reverse proxies sit in front of the app. Unset (the default), `ContactThrottle`
+    # identifies an anonymous caller by REMOTE_ADDR alone and ignores X-Forwarded-For, which a
+    # client could otherwise forge to escape the limit. Set it to the real proxy count (for
+    # example 1 behind one load balancer) to take the client address from X-Forwarded-For.
+    "NUM_PROXIES": int(env("DRF_NUM_PROXIES")) if env("DRF_NUM_PROXIES") else None,
 }
 # Interactive schema exposure. Safe default; development widens it and production
 # disables it. CI never needs the route: it uses the spectacular management command.
@@ -151,6 +159,22 @@ SPECTACULAR_SETTINGS = {
         "FacilityReportReasonEnum": "facilities.models.FacilityReport.Reason",
         "FacilityReportStatusEnum": "facilities.models.FacilityReport.Status",
         "DuplicateReasonEnum": "admin_console.review.DUPLICATE_REASON_CHOICES",
+        "FacilityQualityIssueEnum": "admin_console.quality.QUALITY_ISSUE_CHOICES",
+        "AdminAlertKindEnum": "admin_console.insights.ALERT_KINDS",
+        "AdminAlertSeverityEnum": "admin_console.insights.ALERT_SEVERITIES",
+        "AdminLinkEntityTypeEnum": "admin_console.insights.LINK_ENTITY_TYPES",
+        "AdminReadinessCodeEnum": "admin_console.insights.READINESS_CODES",
+        "AdminTimelineEventKindEnum": "admin_console.schemas_smart.TIMELINE_KINDS",
+        "AdminSearchHitTypeEnum": "admin_console.schemas_smart.SEARCH_HIT_TYPES",
+        "AdminReportBulkActionEnum": "admin_console.schemas_smart.BULK_REPORT_ACTIONS",
+        "AdminReportBulkOutcomeEnum": "admin_console.schemas_smart.BULK_OUTCOMES",
+        "DutyShiftStatusEnum": "admin_console.schemas_smart.SHIFT_STATUSES",
+        "DutyShiftSourceEnum": "pharmacy_duty.models.DutyShift.Source",
+        "BroadcastAudienceEnum": "notifications.models.Broadcast.Audience",
+        "ContentPageKindEnum": "content_services.models.LegalDocument.Kind",
+        "EmergencyNumberKindEnum": "content_services.models.EmergencyNumber.Kind",
+        "EmergencyNumberScopeEnum": "content_services.content_schemas.EMERGENCY_SCOPES",
+        "ContactMessageKindEnum": "content_services.models.ContactMessage.Kind",
     },
     # A nullable choice field is otherwise described as `oneOf: [<Enum>, NullEnum]`, where
     # NullEnum is an enum whose only value is null. The Kotlin generator renders that as an
@@ -192,6 +216,16 @@ CELERY_BEAT_SCHEDULE = {
         "task": "accounts.tasks.purge_expired_otp_challenges",
         "schedule": crontab(hour=3, minute=47),
     },
+    # Daytime, because these reach people: ask pharmacists to cover uncovered duty days.
+    "duty-gap-nudges": {
+        "task": "pharmacy_duty.tasks.nudge_uncovered_duty_days",
+        "schedule": crontab(hour=10, minute=7),
+    },
+    # Mondays (the ISO week the reminder is idempotent over): "are your hours still right?"
+    "hours-confirmation-reminder": {
+        "task": "facilities.tasks.remind_hours_confirmation",
+        "schedule": crontab(day_of_week="mon", hour=10, minute=17),
+    },
 }
 
 S3_ENDPOINT_URL = env("S3_ENDPOINT_URL", "http://localhost:9000")
@@ -209,6 +243,10 @@ PUSH_PROVIDER = env("PUSH_PROVIDER", "development")
 PUSH_TOKEN_ENCRYPTION_KEY = env("PUSH_TOKEN_ENCRYPTION_KEY", "development-push-token-key")
 FCM_PROJECT_ID = env("FCM_PROJECT_ID", "")
 ANALYTICS_HASH_SALT = env("ANALYTICS_HASH_SALT", "development-analytics-salt")
+# Optional shared secret of the public website's server. Requests carrying it in
+# `X-Daliini-Web-Key` have their anonymous public reads counted under the `web_server`
+# throttle instead of per address; it grants no data or permission. Empty disables it.
+WEB_SERVER_API_KEY = env("WEB_SERVER_API_KEY", "")
 ANALYTICS_RETENTION_DAYS = 180
 
 STORAGES = {

@@ -1,4 +1,5 @@
 from collections import Counter
+from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -6,7 +7,7 @@ from django.utils import timezone
 
 from accounts.models import UserAdminRole
 from audit.services import record_audit
-from facilities.models import Facility, FacilityApplication, VerificationEvidence
+from facilities.models import Facility, FacilityApplication, FacilityReport, VerificationEvidence
 from notifications.models import Notification
 from notifications.services import create_notification
 from sessions.models import UserSession
@@ -14,6 +15,28 @@ from sessions.models import UserSession
 
 def _request_id(request):
     return getattr(request, "request_id", "")
+
+
+def decide_report(
+    *, report: FacilityReport, target_status: str, actor: Any, note: str = "", request_id: str = ""
+) -> FacilityReport:
+    """Resolve or dismiss one OPEN report the caller has already locked. Audited."""
+    if report.status != FacilityReport.Status.OPEN:
+        raise ValidationError({"status": "Only open reports can be decided."})
+    report.status = target_status
+    report.resolved_by = actor
+    report.resolved_at = timezone.now()
+    report.save(update_fields=["status", "resolved_by", "resolved_at"])
+    record_audit(
+        actor=actor,
+        action=f"facility_report.{target_status.lower()}",
+        target=report,
+        before_snapshot={"status": FacilityReport.Status.OPEN},
+        after_snapshot={"status": report.status},
+        metadata={"facilityId": str(report.facility_id), "note": (note or "").strip()},
+        request_id=request_id,
+    )
+    return report
 
 
 def _facility_snapshot(facility):

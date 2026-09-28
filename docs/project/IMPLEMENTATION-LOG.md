@@ -1676,3 +1676,52 @@ Not verified: every GitHub Actions job on this branch fails within seconds befor
 on `main` too, which points at the Actions account (billing or runner access), not the code. The
 new workflows are therefore checked only as YAML and by running their commands locally.
 
+## 2026-09-28 — Backend phase 2: smart admin console, content, duty operations
+
+- Operator queue and alerts. `GET /admin/tasks/` (oldest submitted INITIAL/REVERIFICATION
+  applications, open reports grouped by facility with repeat-reported first, facilities waiting
+  in REVERIFICATION_REQUIRED, each with age and `overdue` against the new setting
+  `review.slaHours`, default 48). `GET /admin/alerts/`: DUTY_GAP, STALE_FACILITY,
+  REPORTED_FACILITY, ZERO_RESULT_SEARCH, REVIEW_OVERDUE, MAINTENANCE_ON. Search text is never
+  recorded (the registry keeps `queryLength` only), so zero-result searches are grouped by
+  province and category; no new personal data is stored.
+- One duty-gap rule (`pharmacy_duty.coverage`): a Damascus day is covered when a shift of an
+  ACTIVE duty pharmacy overlaps it; duty is per facility, so gaps are per province, or per city
+  on request. Alerts, the admin roster (`GET/POST /admin/duty/`, `PATCH/DELETE
+  /admin/duty/<id>/`), province readiness and the daily gap nudge all use it. Every duty write
+  goes through `upsert_duty_shifts(rows, source)` (OWNER, ADMIN, IMPORT; new `DutyShift.source`),
+  which also refuses a shift inside a temporary closure (409 DUTY_DURING_CLOSURE, owners too).
+  Admin changes are audited and notify the pharmacy's owners.
+- Facility quality: `qualityScore` and `qualityIssues` on admin facility rows, computed as SQL
+  annotations (constant query count), with `ordering` and `issue` filters. "Fresh" is the latest
+  of `updated_at`, the new `hours_confirmed_at` and `last_verified_at`.
+- Admin: global search, facility timeline, bulk report decisions, rejection templates (6
+  seeded), broadcasts (new `admin.notifications.send`, 5 per operator per hour, bulk inbox rows
+  and a push fan-out task), province readiness (`readiness.minActiveFacilities`, default 5),
+  analytics `from`/`to` with a `previous` period, reviewer statistics, streamed CSV exports
+  (UTF-8 BOM, 50 000 rows, formula cells neutralised), ad image upload into public media.
+- Content: pages are the existing versioned `LegalDocument` rows, now with a `kind` and free
+  slugs; editing a published page writes a new version. New FAQ entries, emergency numbers and
+  a contact inbox under `admin.content.read|manage`; public `/content/pages/<slug>/`,
+  `/content/faq/`, `/emergency-numbers/`, `/contact/` (3/hour, X-Forwarded-For honoured only
+  when `DRF_NUM_PROXIES` is set). New permissions are granted with the nearest existing ones
+  (accounts 0008). `OPERATOR_VERIFICATION_REQUIRED`: the seeded national numbers 110
+  (ambulance), 113 (fire) and 112 (police) are the commonly cited ones and were not checked
+  against an official source; each row carries an operator note saying so.
+- Owners: `POST /owner/facilities/<id>/confirm-hours/`; replacing the hours also confirms them.
+  Public facilities gain `infoConfirmedAt` (later of approval and confirmation);
+  `lastVerifiedAt` is unchanged. Beat: Monday hours reminders (once per ISO week) and daily gap
+  nudges (once per province and gap day, at most one per owner per day).
+- Website: `GET /public/duty/?provinceId&date&days` (compact rows, cacheable). Optional
+  `WEB_SERVER_API_KEY`: anonymous public reads carrying it in `X-Daliini-Web-Key` are counted
+  under `THROTTLE_WEB_SERVER` (default 3000/minute) instead of per address; it grants nothing
+  else, and writes stay per address. The env contract and `render.yaml` still need the new
+  variables (`WEB_SERVER_API_KEY`, `THROTTLE_WEB_SERVER`, `THROTTLE_CONTACT`,
+  `DRF_NUM_PROXIES`).
+
+Verified here: 453 passed, and the same 10 S3-dependent seed tests error without object
+storage. ruff has no new findings (106 before and after); mypy strict has no new errors in any
+touched file. `makemigrations --check` is clean and `check-openapi-drift.sh` passes with the
+three clients regenerated. Not verified: a Celery worker and beat against Redis, real push
+delivery, and a TypeScript compile of the regenerated client (no node_modules here).
+

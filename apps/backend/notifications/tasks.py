@@ -43,3 +43,24 @@ def deliver_notification_push(self: Task, notification_id: str, title: str, body
             extra={"notification_id": notification_id, "retries": self.request.retries},
         )
         raise self.retry(exc=exc, countdown=retry_countdown(self.request.retries)) from exc
+
+
+@shared_task(acks_late=True)  # type: ignore[untyped-decorator]
+def fan_out_broadcast_push(broadcast_id: str) -> int:
+    """Queue one push per broadcast notification whose account has an active device.
+
+    Accounts without a device are skipped: the message already waits in their inbox.
+    Returns how many pushes were queued.
+    """
+    notifications = (
+        Notification.objects.filter(
+            payload__broadcastId=broadcast_id, user__push_tokens__active=True
+        )
+        .distinct()
+        .values_list("pk", "title_ar", "body_ar")
+    )
+    queued = 0
+    for notification_id, title, body in notifications.iterator(chunk_size=1000):
+        deliver_notification_push.delay(str(notification_id), title, body)
+        queued += 1
+    return queued

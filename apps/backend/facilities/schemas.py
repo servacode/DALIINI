@@ -120,6 +120,13 @@ class OwnerFacilityDetailSerializer(OwnerFacilitySummarySerializer):
     serviceTagIds = serializers.ListField(child=serializers.UUIDField())
     evidence = OwnerEvidenceRefSerializer(many=True)
     hours = OwnerHoursEntrySerializer(many=True)
+    hoursConfirmedAt = serializers.DateTimeField(
+        allow_null=True,
+        help_text=(
+            "When a member last confirmed the opening hours (or replaced them). The app asks "
+            "again once this is a week old."
+        ),
+    )
     application = OwnerApplicationSerializer(allow_null=True)
 
 
@@ -166,3 +173,11 @@ class OwnerMemberUpsertedSerializer(serializers.Serializer):
     userId = serializers.UUIDField()
     name = serializers.CharField()
     role = serializers.ChoiceField(choices=FacilityMembership.Role.choices)
+
+
+class OwnerHoursConfirmedSerializer(serializers.Serializer[Any]):
+    facilityId = serializers.UUIDField()
+    hoursConfirmedAt = serializers.DateTimeField()
+    infoConfirmedAt = serializers.DateTimeField(
+        help_text="The later of `hoursConfirmedAt` and the last operator approval."
+    )
