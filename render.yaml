@@ -118,6 +118,8 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: WEB_SERVER_API_KEY
+        sync: false
       - key: PUBLIC_API_ORIGIN
         sync: false
       - key: NEXT_PUBLIC_ROOT_DOMAIN
@@ -206,3 +208,15 @@ envVarGroups:
         sync: false
       - key: SENTRY_ENVIRONMENT
         value: staging
+      # The website's server calls the public API for every visitor, so it presents this key
+      # to be counted under its own limit (THROTTLE_WEB_SERVER) instead of one shared IP. Set
+      # the same value on the www service. It grants no data and no permission.
+      - key: WEB_SERVER_API_KEY
+        sync: false
+      - key: THROTTLE_WEB_SERVER
+        value: 3000/minute
+      - key: THROTTLE_CONTACT
+        value: 3/hour
+      # Render terminates TLS in one proxy hop; the client address is the last X-Forwarded-For.
+      - key: DRF_NUM_PROXIES
+        value: "1"
