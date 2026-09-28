@@ -24,7 +24,13 @@ const contentSecurityPolicy = [
   "default-src 'self'",
   `img-src ${withApi("'self' data:")}`,
   "style-src 'self' 'unsafe-inline'",
-  "script-src 'self'",
+  // Next streams each page's server-component payload as inline <script> tags. The
+  // admin console signs those with a per-request nonce, but these pages are cached
+  // (ISR) and a cached page has no request to mint a nonce for, so they are allowed
+  // inline. The risk that normally carries is script injection through rendered data;
+  // React escapes everything it renders here and no page uses dangerouslySetInnerHTML
+  // for anything but JSON-LD built from JSON.stringify.
+  "script-src 'self' 'unsafe-inline'",
   `connect-src ${withApi("'self'")}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
