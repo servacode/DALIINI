@@ -25,6 +25,8 @@ jobs:
       - run: node scripts/check-governance.mjs
       - run: node packages/design-tokens/scripts/validate.mjs
       - run: node packages/design-tokens/scripts/generate.mjs --check
+      - run: node packages/design-tokens/scripts/vocabulary.mjs --check
+      - run: node packages/design-tokens/scripts/icons.mjs --check
 
   backend-source:
     runs-on: ubuntu-latest

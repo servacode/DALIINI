@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GENERATED — DO NOT EDIT (source: vocabulary.json) -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="vocab_availability_open">مفتوح الآن</string>
+    <string name="vocab_availability_closed">مغلق الآن</string>
+    <string name="vocab_availability_duty">مناوب الآن</string>
+    <string name="vocab_availability_temp_closed">مغلق مؤقتاً</string>
+    <string name="vocab_facility_status_draft">مسودة</string>
+    <string name="vocab_facility_status_submitted">قيد المراجعة</string>
+    <string name="vocab_facility_status_active">فعّالة</string>
+    <string name="vocab_facility_status_suspended">موقوفة</string>
+    <string name="vocab_facility_status_closed">مغلقة نهائياً</string>
+    <string name="vocab_facility_status_reverification_required">تحتاج إعادة تحقق</string>
+    <string name="vocab_application_status_draft">مسودة</string>
+    <string name="vocab_application_status_submitted">قيد المراجعة</string>
+    <string name="vocab_application_status_approved">مقبول</string>
+    <string name="vocab_application_status_rejected">مرفوض</string>
+    <string name="vocab_application_kind_initial">تسجيل جديد</string>
+    <string name="vocab_application_kind_reverification">إعادة تحقق</string>
+    <string name="vocab_report_reason_wrong_info">معلومات خاطئة</string>
+    <string name="vocab_report_reason_closed_permanently">مغلقة نهائياً</string>
+    <string name="vocab_report_reason_wrong_location">الموقع خاطئ</string>
+    <string name="vocab_report_reason_wrong_hours">أوقات الدوام خاطئة</string>
+    <string name="vocab_report_reason_not_on_duty">ليست مناوبة</string>
+    <string name="vocab_report_reason_other">أخرى</string>
+    <string name="vocab_report_status_open">مفتوح</string>
+    <string name="vocab_report_status_resolved">تمت المعالجة</string>
+    <string name="vocab_report_status_dismissed">مرفوض</string>
+    <string name="vocab_account_status_active">فعّال</string>
+    <string name="vocab_account_status_blocked">محظور</string>
+    <string name="vocab_switch_on">مفعّل</string>
+    <string name="vocab_switch_off">معطّل</string>
+    <string name="vocab_trust_verified">موثّقة</string>
+    <string name="vocab_weekday_saturday">السبت</string>
+    <string name="vocab_weekday_sunday">الأحد</string>
+    <string name="vocab_weekday_monday">الاثنين</string>
+    <string name="vocab_weekday_tuesday">الثلاثاء</string>
+    <string name="vocab_weekday_wednesday">الأربعاء</string>
+    <string name="vocab_weekday_thursday">الخميس</string>
+    <string name="vocab_weekday_friday">الجمعة</string>
+</resources>

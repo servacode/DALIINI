@@ -26,6 +26,31 @@ const checks = [
   // The selected tab is a pale pill with the bar's own colour inside it.
   ['bar on brand-soft', resolved['semantic.surface.bar'], resolved['semantic.surface.brandSoft'], 4.5]
 ];
+// The dark set is checked on the same terms. Its primary button carries dark text on a light
+// green, which is what keeps it legible; the selected tab in dark mode uses primary text on the
+// soft brand surface rather than the bar colour.
+const requiredDark = ['primary','primarySoft','onPrimary','background','surface','textPrimary','textSecondary','border','success','warning','danger','info'];
+for (const key of requiredDark) {
+  if (!/^#[0-9A-F]{6}$/.test(tokens.colorsDark[key] ?? '')) throw new Error(`Missing/invalid dark color: ${key}`);
+}
+for (const key of Object.keys(resolved).filter((k) => k.startsWith('semantic.'))) {
+  if (!(key.replace(/^semantic\./, 'semanticDark.') in resolved)) throw new Error(`Dark set is missing ${key}`);
+}
+const d = (k) => resolved[`semanticDark.${k}`];
+checks.push(
+  ['dark: text primary on surface', d('content.primary'), d('surface.default'), 4.5],
+  ['dark: text secondary on surface', d('content.secondary'), d('surface.default'), 4.5],
+  ['dark: text muted on surface', d('content.muted'), d('surface.default'), 4.5],
+  ['dark: on-primary on primary', d('content.onPrimary'), d('action.primary'), 4.5],
+  ['dark: text primary on canvas', d('content.primary'), d('surface.canvas'), 4.5],
+  ['dark: on-bar muted on bar', d('content.onBarMuted'), d('surface.bar'), 4.5],
+  ['dark: text primary on brand-soft', d('content.primary'), d('surface.brandSoft'), 4.5],
+  ['dark: danger on surface', d('feedback.danger'), d('surface.default'), 4.5],
+  ['dark: warning on surface', d('content.warning'), d('surface.default'), 4.5],
+  ['light: warning text on warning-soft', resolved['semantic.content.warning'], resolved['semantic.feedback.warningSoft'], 4.5],
+  ['light: success on success-soft', resolved['semantic.feedback.success'], resolved['semantic.feedback.successSoft'], 3],
+  ['light: danger on danger-soft', resolved['semantic.feedback.danger'], resolved['semantic.feedback.dangerSoft'], 4.5],
+);
 for (const [name, fg, bg, min] of checks) {
   const ratio = contrastRatio(fg, bg);
   if (ratio < min) throw new Error(`${name} contrast ${ratio.toFixed(2)} < ${min}`);

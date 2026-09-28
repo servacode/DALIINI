@@ -1,0 +1,179 @@
+// GENERATED — DO NOT EDIT (source: vocabulary.json)
+export type Tone = "neutral" | "positive" | "warning" | "danger" | "info" | "brand";
+export type Term = Readonly<{ ar: string; tone: Tone }>;
+export const vocabulary = {
+  "availability": {
+    "OPEN": {
+      "ar": "مفتوح الآن",
+      "tone": "positive"
+    },
+    "CLOSED": {
+      "ar": "مغلق الآن",
+      "tone": "neutral"
+    },
+    "DUTY": {
+      "ar": "مناوب الآن",
+      "tone": "brand"
+    },
+    "TEMP_CLOSED": {
+      "ar": "مغلق مؤقتاً",
+      "tone": "warning"
+    }
+  },
+  "facilityStatus": {
+    "DRAFT": {
+      "ar": "مسودة",
+      "tone": "neutral"
+    },
+    "SUBMITTED": {
+      "ar": "قيد المراجعة",
+      "tone": "info"
+    },
+    "ACTIVE": {
+      "ar": "فعّالة",
+      "tone": "positive"
+    },
+    "SUSPENDED": {
+      "ar": "موقوفة",
+      "tone": "warning"
+    },
+    "CLOSED": {
+      "ar": "مغلقة نهائياً",
+      "tone": "danger"
+    },
+    "REVERIFICATION_REQUIRED": {
+      "ar": "تحتاج إعادة تحقق",
+      "tone": "warning"
+    }
+  },
+  "applicationStatus": {
+    "DRAFT": {
+      "ar": "مسودة",
+      "tone": "neutral"
+    },
+    "SUBMITTED": {
+      "ar": "قيد المراجعة",
+      "tone": "info"
+    },
+    "APPROVED": {
+      "ar": "مقبول",
+      "tone": "positive"
+    },
+    "REJECTED": {
+      "ar": "مرفوض",
+      "tone": "danger"
+    }
+  },
+  "applicationKind": {
+    "INITIAL": {
+      "ar": "تسجيل جديد",
+      "tone": "info"
+    },
+    "REVERIFICATION": {
+      "ar": "إعادة تحقق",
+      "tone": "warning"
+    }
+  },
+  "reportReason": {
+    "WRONG_INFO": {
+      "ar": "معلومات خاطئة",
+      "tone": "warning"
+    },
+    "CLOSED_PERMANENTLY": {
+      "ar": "مغلقة نهائياً",
+      "tone": "danger"
+    },
+    "WRONG_LOCATION": {
+      "ar": "الموقع خاطئ",
+      "tone": "warning"
+    },
+    "WRONG_HOURS": {
+      "ar": "أوقات الدوام خاطئة",
+      "tone": "warning"
+    },
+    "NOT_ON_DUTY": {
+      "ar": "ليست مناوبة",
+      "tone": "danger"
+    },
+    "OTHER": {
+      "ar": "أخرى",
+      "tone": "neutral"
+    }
+  },
+  "reportStatus": {
+    "OPEN": {
+      "ar": "مفتوح",
+      "tone": "warning"
+    },
+    "RESOLVED": {
+      "ar": "تمت المعالجة",
+      "tone": "positive"
+    },
+    "DISMISSED": {
+      "ar": "مرفوض",
+      "tone": "neutral"
+    }
+  },
+  "accountStatus": {
+    "ACTIVE": {
+      "ar": "فعّال",
+      "tone": "positive"
+    },
+    "BLOCKED": {
+      "ar": "محظور",
+      "tone": "danger"
+    }
+  },
+  "switch": {
+    "ON": {
+      "ar": "مفعّل",
+      "tone": "positive"
+    },
+    "OFF": {
+      "ar": "معطّل",
+      "tone": "neutral"
+    }
+  },
+  "trust": {
+    "VERIFIED": {
+      "ar": "موثّقة",
+      "tone": "brand"
+    }
+  },
+  "weekday": {
+    "SATURDAY": {
+      "ar": "السبت",
+      "tone": "neutral"
+    },
+    "SUNDAY": {
+      "ar": "الأحد",
+      "tone": "neutral"
+    },
+    "MONDAY": {
+      "ar": "الاثنين",
+      "tone": "neutral"
+    },
+    "TUESDAY": {
+      "ar": "الثلاثاء",
+      "tone": "neutral"
+    },
+    "WEDNESDAY": {
+      "ar": "الأربعاء",
+      "tone": "neutral"
+    },
+    "THURSDAY": {
+      "ar": "الخميس",
+      "tone": "neutral"
+    },
+    "FRIDAY": {
+      "ar": "الجمعة",
+      "tone": "neutral"
+    }
+  }
+} as const satisfies Record<string, Record<string, Term>>;
+export type VocabularyGroup = keyof typeof vocabulary;
+/** The label and tone for a state, falling back to the raw value so an unknown state still shows. */
+export function term(group: VocabularyGroup, key: string | null | undefined): Term {
+  const entries = vocabulary[group] as Record<string, Term>;
+  return (key && entries[key]) || { ar: key ?? "—", tone: "neutral" };
+}

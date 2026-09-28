@@ -1,0 +1,62 @@
+// GENERATED — DO NOT EDIT (source: vocabulary.json)
+import Foundation
+
+enum DirectoryVocabulary {
+    static let availability: [String: (ar: String, tone: String)] = [
+        "OPEN": ("مفتوح الآن", "positive"),
+        "CLOSED": ("مغلق الآن", "neutral"),
+        "DUTY": ("مناوب الآن", "brand"),
+        "TEMP_CLOSED": ("مغلق مؤقتاً", "warning")
+    ]
+    static let facilityStatus: [String: (ar: String, tone: String)] = [
+        "DRAFT": ("مسودة", "neutral"),
+        "SUBMITTED": ("قيد المراجعة", "info"),
+        "ACTIVE": ("فعّالة", "positive"),
+        "SUSPENDED": ("موقوفة", "warning"),
+        "CLOSED": ("مغلقة نهائياً", "danger"),
+        "REVERIFICATION_REQUIRED": ("تحتاج إعادة تحقق", "warning")
+    ]
+    static let applicationStatus: [String: (ar: String, tone: String)] = [
+        "DRAFT": ("مسودة", "neutral"),
+        "SUBMITTED": ("قيد المراجعة", "info"),
+        "APPROVED": ("مقبول", "positive"),
+        "REJECTED": ("مرفوض", "danger")
+    ]
+    static let applicationKind: [String: (ar: String, tone: String)] = [
+        "INITIAL": ("تسجيل جديد", "info"),
+        "REVERIFICATION": ("إعادة تحقق", "warning")
+    ]
+    static let reportReason: [String: (ar: String, tone: String)] = [
+        "WRONG_INFO": ("معلومات خاطئة", "warning"),
+        "CLOSED_PERMANENTLY": ("مغلقة نهائياً", "danger"),
+        "WRONG_LOCATION": ("الموقع خاطئ", "warning"),
+        "WRONG_HOURS": ("أوقات الدوام خاطئة", "warning"),
+        "NOT_ON_DUTY": ("ليست مناوبة", "danger"),
+        "OTHER": ("أخرى", "neutral")
+    ]
+    static let reportStatus: [String: (ar: String, tone: String)] = [
+        "OPEN": ("مفتوح", "warning"),
+        "RESOLVED": ("تمت المعالجة", "positive"),
+        "DISMISSED": ("مرفوض", "neutral")
+    ]
+    static let accountStatus: [String: (ar: String, tone: String)] = [
+        "ACTIVE": ("فعّال", "positive"),
+        "BLOCKED": ("محظور", "danger")
+    ]
+    static let switch: [String: (ar: String, tone: String)] = [
+        "ON": ("مفعّل", "positive"),
+        "OFF": ("معطّل", "neutral")
+    ]
+    static let trust: [String: (ar: String, tone: String)] = [
+        "VERIFIED": ("موثّقة", "brand")
+    ]
+    static let weekday: [String: (ar: String, tone: String)] = [
+        "SATURDAY": ("السبت", "neutral"),
+        "SUNDAY": ("الأحد", "neutral"),
+        "MONDAY": ("الاثنين", "neutral"),
+        "TUESDAY": ("الثلاثاء", "neutral"),
+        "WEDNESDAY": ("الأربعاء", "neutral"),
+        "THURSDAY": ("الخميس", "neutral"),
+        "FRIDAY": ("الجمعة", "neutral")
+    ]
+}
