@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useCan } from "../../../components/admin-shell";
 import {
   ConfirmDialog,
+  EmptyState,
   ErrorState,
   LoadingState,
   PageHeader,
@@ -129,12 +130,7 @@ export default function VerificationPage() {
 
       {requirements.data ? (
         requirements.data.items.length === 0 ? (
-          <div className="state-block state-empty" data-testid="empty-state">
-            <strong>لا متطلبات مُهيّأة بعد</strong>
-            <span className="muted">
-              هذه هي حالة الإطلاق المقصودة. أضف متطلباً عندما تُعتمد السياسة.
-            </span>
-          </div>
+          <EmptyState title="لا متطلبات مُهيّأة بعد" hint="هذه هي حالة الإطلاق المقصودة. أضف متطلباً عندما تُعتمد السياسة." />
         ) : (
           <div className="table-wrap">
             <table className="data-table" data-testid="data-table">

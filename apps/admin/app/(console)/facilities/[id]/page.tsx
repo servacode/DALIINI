@@ -6,8 +6,10 @@ import { useCan } from "../../../../components/admin-shell";
 import {
   ConfirmDialog,
   ErrorState,
+  KeyValueList,
   LoadingState,
   PageHeader,
+  Panel,
   StatusBadge,
   Toast,
   formatDateTime,
@@ -89,6 +91,7 @@ export default function FacilityDetailPage({ params }: { params: Promise<{ id: s
   return (
     <div className="stack">
       <PageHeader
+        back={{ href: "/facilities", label: "المنشآت" }}
         title={facility.data?.nameAr ?? "منشأة"}
         description="الحالة التشغيلية والإجراءات المتاحة."
         actions={
@@ -142,32 +145,24 @@ export default function FacilityDetailPage({ params }: { params: Promise<{ id: s
       {facility.error ? <ErrorState error={facility.error} onRetry={facility.reload} /> : null}
 
       {facility.data ? (
-        <section className="panel stack">
-          <h2>الحالة</h2>
-          <div className="button-row">
-            <StatusBadge tone={STATUS[facility.data.status]?.tone ?? "neutral"}>
-              {STATUS[facility.data.status]?.label ?? facility.data.status}
-            </StatusBadge>
-            <span className="muted">
-              آخر تحديث:{" "}
-              <span className="cell-ltr">{formatDateTime(facility.data.updatedAt)}</span>
-            </span>
-          </div>
-          <dl className="diff">
-            <div className="diff-row">
-              <dt>الاسم بالإنجليزية</dt>
-              <dd>{facility.data.nameEn || "—"}</dd>
-            </div>
-            <div className="diff-row">
-              <dt>المحافظة</dt>
-              <dd className="cell-ltr">{facility.data.provinceId}</dd>
-            </div>
-            <div className="diff-row">
-              <dt>التصنيف</dt>
-              <dd className="cell-ltr">{facility.data.categoryId}</dd>
-            </div>
-          </dl>
-        </section>
+        <Panel title="بيانات المنشأة">
+          <KeyValueList
+            items={[
+              {
+                label: "الحالة",
+                value: (
+                  <StatusBadge tone={STATUS[facility.data.status]?.tone ?? "neutral"}>
+                    {STATUS[facility.data.status]?.label ?? facility.data.status}
+                  </StatusBadge>
+                ),
+              },
+              { label: "الاسم بالإنجليزية", value: facility.data.nameEn || "—" },
+              { label: "المحافظة", value: facility.data.provinceId, ltr: true },
+              { label: "التصنيف", value: facility.data.categoryId, ltr: true },
+              { label: "آخر تحديث", value: formatDateTime(facility.data.updatedAt), ltr: true },
+            ]}
+          />
+        </Panel>
       ) : null}
 
       <ConfirmDialog

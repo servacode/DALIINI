@@ -6,8 +6,10 @@ import { useCan } from "../../../../components/admin-shell";
 import {
   ConfirmDialog,
   ErrorState,
+  KeyValueList,
   LoadingState,
   PageHeader,
+  Panel,
   StatusBadge,
   Toast,
   formatDateTime,
@@ -66,6 +68,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
   return (
     <div className="stack">
       <PageHeader
+        back={{ href: "/users", label: "المستخدمون" }}
         title={user.data?.name ?? "مستخدم"}
         description="حالة الحساب والأدوار الإدارية."
         actions={
@@ -103,27 +106,30 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
       {user.error ? <ErrorState error={user.error} onRetry={user.reload} /> : null}
 
       {user.data ? (
-        <section className="panel stack">
-          <h2>الحساب</h2>
-          <div className="button-row">
-            <StatusBadge tone={user.data.active ? "positive" : "danger"}>
-              {user.data.active ? "فعّال" : "محظور"}
-            </StatusBadge>
-            <span className="muted cell-ltr">{user.data.phone}</span>
-            <span className="muted">
-              أُنشئ: <span className="cell-ltr">{formatDateTime(user.data.createdAt)}</span>
-            </span>
-          </div>
-        </section>
+        <Panel title="الحساب">
+          <KeyValueList
+            items={[
+              {
+                label: "الحالة",
+                value: (
+                  <StatusBadge tone={user.data.active ? "positive" : "danger"}>
+                    {user.data.active ? "فعّال" : "محظور"}
+                  </StatusBadge>
+                ),
+              },
+              { label: "رقم الهاتف", value: user.data.phone, ltr: true },
+              { label: "تاريخ الإنشاء", value: formatDateTime(user.data.createdAt), ltr: true },
+            ]}
+          />
+        </Panel>
       ) : null}
 
       {canManageRoles ? (
-        <section className="panel stack">
-          <h2>الأدوار الإدارية</h2>
+        <Panel title="الأدوار الإدارية">
           {roles.loading ? <LoadingState /> : null}
           {roles.data ? (
             <>
-              <div className="stack">
+              <div>
                 {roles.data.items.map((role) => (
                   <label key={role.id} className="switch-row">
                     <span>
@@ -160,7 +166,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
               </div>
             </>
           ) : null}
-        </section>
+        </Panel>
       ) : null}
 
       <ConfirmDialog
