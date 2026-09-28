@@ -4,6 +4,8 @@ What matters here is that saving is idempotent in both directions, that a saved 
 that stops being public stops being served, and that one account never sees another's list.
 """
 
+from typing import Any
+
 import pytest
 from rest_framework.test import APIClient
 
@@ -132,7 +134,9 @@ def test_saving_requires_an_account(public_facility):
     ).status_code in (401, 403)
 
 
-def test_favorite_writes_are_throttled_but_reads_are_not(signed_in, public_facility, monkeypatch):
+def test_favorite_writes_are_throttled_but_reads_are_not(
+    signed_in: Any, public_facility: Any, monkeypatch: Any
+) -> None:
     from core.throttles import FavoritesWriteThrottle
 
     monkeypatch.setattr(FavoritesWriteThrottle, "THROTTLE_RATES", {"favorites_write": "2/hour"})

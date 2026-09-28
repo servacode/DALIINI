@@ -2,6 +2,8 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from accounts.phone import normalize_syrian_phone
+
 from .models import FacilityMembership
 
 
@@ -29,6 +31,12 @@ class FacilityPatchSerializer(serializers.Serializer):
     descriptionAr = serializers.CharField(required=False, allow_blank=True)
     descriptionEn = serializers.CharField(required=False, allow_blank=True)
     phone = serializers.CharField(max_length=16, required=False, allow_blank=True)
+    whatsapp = serializers.CharField(
+        max_length=20,
+        required=False,
+        allow_blank=True,
+        help_text="Optional Syrian mobile (09XXXXXXXX or +9639XXXXXXXX); blank clears it.",
+    )
     addressAr = serializers.CharField(max_length=255, required=False, allow_blank=True)
     addressEn = serializers.CharField(max_length=255, required=False, allow_blank=True)
     cityId = serializers.UUIDField(required=False, allow_null=True)
@@ -39,6 +47,15 @@ class FacilityPatchSerializer(serializers.Serializer):
     serviceTagIds = serializers.ListField(
         child=serializers.UUIDField(), required=False
     )
+
+
+    def validate_whatsapp(self, value: str) -> str:
+        if not value.strip():
+            return ""
+        try:
+            return normalize_syrian_phone(value)
+        except ValueError as exc:
+            raise serializers.ValidationError("Enter a valid Syrian mobile number.") from exc
 
 
 class FacilityLocationSerializer(serializers.Serializer):

@@ -1,3 +1,5 @@
+from typing import Any
+
 from business_hours.serializers import serialize_hours
 from business_hours.services import (
     get_facility_availability,
@@ -19,7 +21,11 @@ def _flag(facility, annotation, fallback):
     return bool(value) if value is not _UNSET else bool(fallback(facility))
 
 
-def _availability_payload(facility):
+def _iso(value: Any) -> str | None:
+    return value.isoformat() if value else None
+
+
+def _availability_payload(facility: Any) -> dict[str, Any]:
     result = get_facility_availability(facility)
     return {
         "state": result.state.value,
@@ -52,7 +58,7 @@ def _first_image_url(facility):
     return PublicS3Storage().url(images[0].storage_key)
 
 
-def compact_facility(facility):
+def compact_facility(facility: Any) -> dict[str, Any]:
     distance = getattr(facility, "distance_meters", None)
     return {
         "id": str(facility.id),
@@ -81,6 +87,8 @@ def compact_facility(facility):
         # The owner's own first photograph, or null. A list row shows the brand mark when it
         # is null; nothing stands in for a picture the facility never uploaded.
         "imageUrl": _first_image_url(facility),
+        "lastVerifiedAt": _iso(facility.last_verified_at),
+        "updatedAt": _iso(facility.updated_at),
     }
 
 
@@ -92,6 +100,7 @@ def facility_detail(facility):
             "descriptionAr": facility.description_ar or None,
             "descriptionEn": facility.description_en or None,
             "phone": facility.phone or None,
+            "whatsapp": facility.whatsapp or None,
             "addressAr": facility.address_ar or None,
             "addressEn": facility.address_en or None,
             "neighborhood": (

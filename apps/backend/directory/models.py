@@ -6,6 +6,7 @@ class CategoryGroup(models.Model):
     code=models.CharField(max_length=80,unique=True)
     name_ar=models.CharField(max_length=120)
     name_en=models.CharField(max_length=120,blank=True)
+    icon_key=models.CharField(max_length=80,blank=True)
     active=models.BooleanField(default=True)
     sort_order=models.PositiveIntegerField(default=0)
 class Category(models.Model):

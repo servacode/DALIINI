@@ -42,11 +42,15 @@ class Facility(models.Model):
     description_ar = models.TextField(blank=True)
     description_en = models.TextField(blank=True)
     phone = models.CharField(max_length=16, blank=True)
+    # Optional WhatsApp contact, a Syrian mobile in E.164 (+9639XXXXXXXX), shown publicly.
+    whatsapp = models.CharField(max_length=16, blank=True)
     address_ar = models.CharField(max_length=255, blank=True)
     address_en = models.CharField(max_length=255, blank=True)
     location = models.PointField(srid=4326, null=True, blank=True)
     status = models.CharField(max_length=40, choices=Status.choices, default=Status.DRAFT)
     activated_at = models.DateTimeField(null=True, blank=True)
+    # When an operator last approved an application of this facility (trust signal).
+    last_verified_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -220,4 +224,48 @@ class FacilityServiceTag(models.Model):
                 fields=["facility", "service_tag"],
                 name="uniq_facility_service_tag",
             )
+        ]
+
+
+class FacilityReport(models.Model):
+    """A public "report a problem" about a facility, triaged by operators."""
+
+    class Reason(models.TextChoices):
+        WRONG_INFO = "WRONG_INFO", "Wrong information"
+        CLOSED_PERMANENTLY = "CLOSED_PERMANENTLY", "Closed permanently"
+        WRONG_LOCATION = "WRONG_LOCATION", "Wrong location"
+        WRONG_HOURS = "WRONG_HOURS", "Wrong hours"
+        NOT_ON_DUTY = "NOT_ON_DUTY", "Not on duty"
+        OTHER = "OTHER", "Other"
+
+    class Status(models.TextChoices):
+        OPEN = "OPEN", "Open"
+        RESOLVED = "RESOLVED", "Resolved"
+        DISMISSED = "DISMISSED", "Dismissed"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    facility = models.ForeignKey(Facility, on_delete=models.CASCADE, related_name="reports")
+    reporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    reason = models.CharField(max_length=24, choices=Reason.choices)
+    note = models.CharField(max_length=500, blank=True)
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.OPEN)
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["status", "-created_at"], name="facility_report_status_idx"),
         ]

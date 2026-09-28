@@ -43,6 +43,7 @@ def _group_snapshot(group: CategoryGroup) -> dict[str, Any]:
         "code": group.code,
         "nameAr": group.name_ar,
         "nameEn": group.name_en,
+        "iconKey": group.icon_key,
         "active": group.active,
         "sortOrder": group.sort_order,
     }
@@ -86,6 +87,7 @@ def create_category_group(*, request: Any, data: dict[str, Any]) -> CategoryGrou
         code=data["code"],
         name_ar=data["nameAr"],
         name_en=data.get("nameEn", ""),
+        icon_key=data.get("iconKey", ""),
         active=data.get("active", True),
         sort_order=data.get("sortOrder", 0),
     )
@@ -109,7 +111,7 @@ def update_category_group(
     if "code" in data and data["code"] != group.code:
         raise ValidationError({"code": "The group code is immutable."})
     before = _group_snapshot(group)
-    for wire, field in (("nameAr", "name_ar"), ("nameEn", "name_en")):
+    for wire, field in (("nameAr", "name_ar"), ("nameEn", "name_en"), ("iconKey", "icon_key")):
         if wire in data:
             setattr(group, field, data[wire])
     if "active" in data:

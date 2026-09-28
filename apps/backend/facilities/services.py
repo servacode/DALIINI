@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from typing import Any
 
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
@@ -21,7 +22,7 @@ from .models import (
 )
 
 
-def _snapshot(facility):
+def _snapshot(facility: Facility) -> dict[str, Any]:
     return {
         "status": facility.status,
         "nameAr": facility.name_ar,
@@ -32,6 +33,35 @@ def _snapshot(facility):
             str(facility.neighborhood_id) if facility.neighborhood_id else None
         ),
         "hasLocation": facility.location is not None,
+    }
+
+
+def application_snapshot(facility: Facility) -> dict[str, Any]:
+    """What the operator reviews: the audit snapshot plus the public-facing content."""
+    point = facility.location
+    return {
+        **_snapshot(facility),
+        "nameEn": facility.name_en or None,
+        "descriptionAr": facility.description_ar or None,
+        "descriptionEn": facility.description_en or None,
+        "phone": facility.phone or None,
+        "whatsapp": facility.whatsapp or None,
+        "addressAr": facility.address_ar or None,
+        "addressEn": facility.address_en or None,
+        "location": {"latitude": point.y, "longitude": point.x} if point else None,
+        "specialtyIds": sorted(
+            str(value) for value in facility.specialty_links.values_list("specialty_id", flat=True)
+        ),
+        "serviceTagIds": sorted(
+            str(value)
+            for value in facility.service_links.values_list("service_tag_id", flat=True)
+        ),
+        "imageIds": [
+            str(value)
+            for value in facility.images.order_by("sort_order", "created_at").values_list(
+                "id", flat=True
+            )
+        ],
     }
 
 
@@ -165,6 +195,7 @@ def update_facility_core(*, actor, facility, data, request_id=""):
         "descriptionAr": "description_ar",
         "descriptionEn": "description_en",
         "phone": "phone",
+        "whatsapp": "whatsapp",
         "addressAr": "address_ar",
         "addressEn": "address_en",
     }
@@ -276,7 +307,7 @@ def submit_facility(*, actor, facility, request_id=""):
     application.status = FacilityApplication.Status.SUBMITTED
     application.submitted_at = timezone.now()
     application.rejection_reason = ""
-    application.snapshot = _snapshot(locked)
+    application.snapshot = application_snapshot(locked)
     application.save(
         update_fields=[
             "status",

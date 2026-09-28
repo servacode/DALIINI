@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Any
-
-import logging
 
 from django.core.cache import cache
 from django.db import DatabaseError

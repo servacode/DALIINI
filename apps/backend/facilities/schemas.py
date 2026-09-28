@@ -110,6 +110,7 @@ class OwnerFacilityDetailSerializer(OwnerFacilitySummarySerializer):
     descriptionAr = serializers.CharField(allow_null=True)
     descriptionEn = serializers.CharField(allow_null=True)
     phone = serializers.CharField(allow_null=True)
+    whatsapp = serializers.CharField(allow_null=True, help_text="E.164 Syrian mobile.")
     addressAr = serializers.CharField(allow_null=True)
     addressEn = serializers.CharField(allow_null=True)
     cityId = serializers.UUIDField(allow_null=True)

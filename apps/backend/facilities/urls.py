@@ -1,5 +1,7 @@
 from django.urls import path
 
+from .insights import OwnerFacilityInsightsView
+from .reports import PublicFacilityReportView
 from .views import (
     OwnerConfigView,
     OwnerFacilityDetailView,
@@ -15,7 +17,12 @@ from .views import (
 )
 
 urlpatterns = [
+    path("facilities/<uuid:facility_id>/reports/", PublicFacilityReportView.as_view()),
     path("owner/config/", OwnerConfigView.as_view()),
+    path(
+        "owner/facilities/<uuid:facility_id>/insights/",
+        OwnerFacilityInsightsView.as_view(),
+    ),
     path("owner/facilities/", OwnerFacilityListCreateView.as_view()),
     path("owner/facilities/<uuid:facility_id>/", OwnerFacilityDetailView.as_view()),
     path(

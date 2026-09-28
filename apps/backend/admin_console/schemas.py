@@ -11,12 +11,16 @@ System status reports only whether a dependency is configured. No secret, connec
 string or credential is described or returned.
 """
 
+from typing import Any
+
 from rest_framework import serializers
 
 from content_services.models import Advertisement
 from core.openapi import CoordinatesSerializer
 from directory.models import Category
-from facilities.models import Facility, FacilityApplication
+from facilities.models import Facility, FacilityApplication, FacilityReport
+
+from .review import DUPLICATE_REASON_CHOICES
 
 
 class AdminUserSerializer(serializers.Serializer):
@@ -47,6 +51,10 @@ class AdminFacilitySerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=Facility.Status.choices)
     location = CoordinatesSerializer(allow_null=True)
     updatedAt = serializers.DateTimeField(allow_null=True)
+    categoryNameAr = serializers.CharField()
+    provinceNameAr = serializers.CharField()
+    ownerName = serializers.CharField(allow_null=True, help_text="First owner membership.")
+    ownerPhone = serializers.CharField(allow_null=True, help_text="First owner membership.")
 
 
 class AdminFacilityListSerializer(serializers.Serializer):
@@ -64,6 +72,10 @@ class AdminApplicationSerializer(serializers.Serializer):
     submittedAt = serializers.DateTimeField(allow_null=True)
     reviewedAt = serializers.DateTimeField(allow_null=True)
     rejectionReason = serializers.CharField(allow_null=True)
+    categoryNameAr = serializers.CharField()
+    provinceNameAr = serializers.CharField()
+    ownerName = serializers.CharField(allow_null=True)
+    ownerPhone = serializers.CharField(allow_null=True)
 
 
 class AdminApplicationListSerializer(serializers.Serializer):
@@ -84,10 +96,38 @@ class AdminAuditTrailEntrySerializer(serializers.Serializer):
     createdAt = serializers.DateTimeField(source="created_at")
 
 
+class AdminPublicImageSerializer(serializers.Serializer[Any]):
+    id = serializers.UUIDField()
+    url = serializers.CharField(help_text="Permanent public media address.")
+
+
+class AdminDuplicateCandidateSerializer(serializers.Serializer[Any]):
+    id = serializers.UUIDField()
+    nameAr = serializers.CharField()
+    status = serializers.ChoiceField(choices=Facility.Status.choices)
+    reasons = serializers.ListField(
+        child=serializers.ChoiceField(choices=DUPLICATE_REASON_CHOICES)
+    )
+
+
 class AdminApplicationDetailSerializer(AdminApplicationSerializer):
     facility = AdminFacilitySerializer()
     snapshot = serializers.DictField(help_text="Redacted submission snapshot.")
+    previous = serializers.DictField(
+        allow_null=True,
+        help_text=(
+            "Snapshot of the last approved application of this facility (plus `approvedAt`), "
+            "for diffing a REVERIFICATION. Null when the facility was never approved."
+        ),
+    )
+    location = CoordinatesSerializer(allow_null=True)
+    duplicates = AdminDuplicateCandidateSerializer(
+        many=True,
+        help_text="Up to 5 other facilities with the same phone, or the same normalized "
+        "Arabic name within 200 m.",
+    )
     publicImageIds = serializers.ListField(child=serializers.UUIDField())
+    publicImages = AdminPublicImageSerializer(many=True)
     evidence = AdminEvidenceRefSerializer(many=True)
     audit = AdminAuditTrailEntrySerializer(many=True)
 
@@ -113,6 +153,12 @@ class AdminRecentActionSerializer(serializers.Serializer):
 
 
 class AdminDashboardSerializer(serializers.Serializer):
+    dutyActiveNow = serializers.IntegerField(help_text="Facilities on a duty shift right now.")
+    newUsers7d = serializers.IntegerField()
+    openReports = serializers.IntegerField(help_text="Facility problem reports still OPEN.")
+    systemWarnings = serializers.ListField(
+        child=serializers.CharField(), help_text="Arabic, configuration-level warnings."
+    )
     pendingReviews = serializers.IntegerField()
     reverification = serializers.IntegerField()
     facilitiesByStatus = AdminFacilityStatusCountSerializer(many=True)
@@ -140,6 +186,7 @@ class AdminCategoryGroupSerializer(serializers.Serializer):
     code = serializers.CharField()
     nameAr = serializers.CharField(source="name_ar")
     nameEn = serializers.CharField(source="name_en", allow_blank=True)
+    iconKey = serializers.CharField(source="icon_key", allow_blank=True)
     active = serializers.BooleanField()
     sortOrder = serializers.IntegerField(source="sort_order")
 
@@ -240,6 +287,7 @@ class AdminCategoryGroupRequestSerializer(serializers.Serializer):
     )
     nameAr = serializers.CharField(required=False)
     nameEn = serializers.CharField(required=False, allow_blank=True)
+    iconKey = serializers.CharField(required=False, allow_blank=True, max_length=80)
     active = serializers.BooleanField(required=False)
     sortOrder = serializers.IntegerField(required=False)
 
@@ -439,6 +487,13 @@ class AdminEventCountSerializer(serializers.Serializer):
 
 
 class AdminAnalyticsSerializer(serializers.Serializer):
+    approvalMedianHours = serializers.FloatField(
+        allow_null=True, help_text="Median submit-to-approval time, last 30 days."
+    )
+    searches = serializers.IntegerField(help_text="search_submitted events, last 30 days.")
+    zeroResultSearches = serializers.IntegerField(help_text="search_zero_results, last 30 days.")
+    facilityViews = serializers.IntegerField(help_text="facility_view events, last 30 days.")
+    directionsRequests = serializers.IntegerField(help_text="directions_start, last 30 days.")
     activeFacilities = serializers.IntegerField()
     pendingReviews = serializers.IntegerField()
     ratingAverage = serializers.FloatField(allow_null=True)
@@ -479,3 +534,42 @@ class AdminSystemStatusSerializer(serializers.Serializer):
     storage = serializers.ChoiceField(choices=["configured", "unconfigured"])
     schemaHash = serializers.CharField()
     checkedAt = serializers.DateTimeField()
+
+
+class AdminFacilityReportSerializer(serializers.Serializer[Any]):
+    id = serializers.UUIDField()
+    facilityId = serializers.UUIDField()
+    facilityNameAr = serializers.CharField()
+    reporterId = serializers.UUIDField(allow_null=True)
+    reason = serializers.ChoiceField(choices=FacilityReport.Reason.choices)
+    note = serializers.CharField(allow_blank=True)
+    status = serializers.ChoiceField(choices=FacilityReport.Status.choices)
+    createdAt = serializers.DateTimeField()
+    resolvedById = serializers.UUIDField(allow_null=True)
+    resolvedAt = serializers.DateTimeField(allow_null=True)
+
+
+class AdminFacilityReportListSerializer(serializers.Serializer[Any]):
+    items = AdminFacilityReportSerializer(many=True)
+
+
+class AdminReportDecisionRequestSerializer(serializers.Serializer[Any]):
+    note = serializers.CharField(
+        required=False, allow_blank=True, max_length=500, help_text="Recorded in the audit trail."
+    )
+
+
+class AdminCityAdminSerializer(serializers.Serializer[Any]):
+    id = serializers.UUIDField()
+    nameAr = serializers.CharField()
+    nameEn = serializers.CharField(allow_null=True)
+    code = serializers.CharField()
+    active = serializers.BooleanField()
+
+
+class AdminCityAdminListSerializer(serializers.Serializer[Any]):
+    items = AdminCityAdminSerializer(many=True)
+
+
+class AdminCityUpdateRequestSerializer(serializers.Serializer[Any]):
+    active = serializers.BooleanField()

@@ -37,6 +37,14 @@ urlpatterns = [
     path("admin/categories/<uuid:category_id>/provinces/", views.CategoryProvinceView.as_view()),
     path("admin/provinces/", views.ProvinceListView.as_view()),
     path("admin/provinces/<uuid:province_id>/", views.ProvinceDetailView.as_view()),
+    path("admin/provinces/<uuid:province_id>/cities/", views.ProvinceCityListView.as_view()),
+    path(
+        "admin/provinces/<uuid:province_id>/cities/<uuid:city_id>/",
+        views.ProvinceCityDetailView.as_view(),
+    ),
+    path("admin/reports/", views.ReportListView.as_view()),
+    path("admin/reports/<uuid:report_id>/resolve/", views.ReportDecisionView.as_view()),
+    path("admin/reports/<uuid:report_id>/dismiss/", views.ReportDismissView.as_view()),
     path("admin/verification-requirements/", views.VerificationRequirementListView.as_view()),
     path(
         "admin/verification-requirements/<int:requirement_id>/",

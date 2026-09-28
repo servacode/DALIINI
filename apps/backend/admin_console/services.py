@@ -58,6 +58,7 @@ def decide_application(*, request, application_id, approve, reason=""):
         facility.status = Facility.Status.ACTIVE
         if facility.activated_at is None:
             facility.activated_at = timezone.now()
+        facility.last_verified_at = timezone.now()
     else:
         application.status = FacilityApplication.Status.REJECTED
         application.rejection_reason = reason.strip()
@@ -79,7 +80,7 @@ def decide_application(*, request, application_id, approve, reason=""):
             "updated_at",
         ]
     )
-    facility.save(update_fields=["status", "activated_at", "updated_at"])
+    facility.save(update_fields=["status", "activated_at", "last_verified_at", "updated_at"])
     record_audit(
         actor=request.user,
         action="facility_application.approved" if approve else "facility_application.rejected",

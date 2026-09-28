@@ -1197,6 +1197,11 @@ paths:
           type: string
         description: Actor user id.
       - in: query
+        name: from
+        schema:
+          type: string
+        description: ISO date or datetime; keeps entries created at or after it.
+      - in: query
         name: requestId
         schema:
           type: string
@@ -1207,6 +1212,11 @@ paths:
           type: string
         description: Substring matched against the target type, or an exact target
           id.
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: ISO date or datetime; a bare date includes that whole day.
       tags:
       - Admin Audit
       security:
@@ -1218,6 +1228,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/AdminAuditList'
           description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
@@ -2090,6 +2107,277 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/admin/provinces/{province_id}/cities/:
+    get:
+      operationId: adminProvinceCitiesList
+      summary: List every city of a province, active or not
+      parameters:
+      - in: path
+        name: province_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Provinces
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCityAdminList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+  /api/v1/admin/provinces/{province_id}/cities/{city_id}/:
+    put:
+      operationId: adminProvinceCityUpdate
+      summary: Activate or deactivate a city
+      parameters:
+      - in: path
+        name: city_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: province_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Provinces
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminCityUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminCityUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminCityUpdateRequest'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCityAdmin'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+  /api/v1/admin/reports/:
+    get:
+      operationId: adminReportsList
+      description: Newest first, capped at 250 rows.
+      summary: List facility problem reports
+      parameters:
+      - in: query
+        name: facility
+        schema:
+          type: string
+        description: Facility id.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: OPEN, RESOLVED or DISMISSED.
+      tags:
+      - Admin Reports
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminFacilityReportList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/admin/reports/{report_id}/dismiss/:
+    post:
+      operationId: adminReportDismiss
+      description: Only OPEN reports can be decided; the decision is audited.
+      summary: Dismiss a report
+      parameters:
+      - in: path
+        name: report_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminReportDecisionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminReportDecisionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminReportDecisionRequest'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminFacilityReport'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+  /api/v1/admin/reports/{report_id}/resolve/:
+    post:
+      operationId: adminReportResolve
+      description: Only OPEN reports can be decided; the decision is audited.
+      summary: Mark a report resolved
+      parameters:
+      - in: path
+        name: report_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminReportDecisionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminReportDecisionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminReportDecisionRequest'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminFacilityReport'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
   /api/v1/admin/roles/:
     get:
       operationId: adminRolesList
@@ -2236,6 +2524,12 @@ paths:
         schema:
           type: string
         description: Free text matched against the account name and phone number.
+      - in: query
+        name: role
+        schema:
+          type: string
+        description: Admin role id or code; keeps accounts holding that role actively.
+          The value `any` keeps every operator, `none` every non-operator.
       - in: query
         name: status
         schema:
@@ -3187,6 +3481,58 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/facilities/{facility_id}/reports/:
+    post:
+      operationId: publicFacilityReportCreate
+      description: Anonymous callers are allowed; a signed-in caller is recorded as
+        the reporter. Strictly throttled per account or IP. Only publicly visible
+        facilities accept reports.
+      summary: Report a problem with a facility's listing
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Public Facilities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacilityReportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FacilityReportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FacilityReportRequest'
+        required: true
+      security:
+      - bearerAccessToken: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FacilityReportCreated'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
   /api/v1/owner/config/:
     get:
       operationId: ownerConfigRetrieve
@@ -3965,6 +4311,49 @@ paths:
       responses:
         '204':
           description: No response body
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+  /api/v1/owner/facilities/{facility_id}/insights/:
+    get:
+      operationId: ownerFacilityInsightsRetrieve
+      description: Counts of product analytics events that reference this facility.
+      summary: Engagement with a facility over the last 30 days
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Owner
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerFacilityInsights'
+          description: ''
         '401':
           content:
             application/json:
@@ -5226,6 +5615,23 @@ components:
     AdminAnalytics:
       type: object
       properties:
+        approvalMedianHours:
+          type: number
+          format: double
+          nullable: true
+          description: Median submit-to-approval time, last 30 days.
+        searches:
+          type: integer
+          description: search_submitted events, last 30 days.
+        zeroResultSearches:
+          type: integer
+          description: search_zero_results, last 30 days.
+        facilityViews:
+          type: integer
+          description: facility_view events, last 30 days.
+        directionsRequests:
+          type: integer
+          description: directions_start, last 30 days.
         activeFacilities:
           type: integer
         pendingReviews:
@@ -5240,9 +5646,14 @@ components:
             $ref: '#/components/schemas/AdminEventCount'
       required:
       - activeFacilities
+      - approvalMedianHours
+      - directionsRequests
       - events
+      - facilityViews
       - pendingReviews
       - ratingAverage
+      - searches
+      - zeroResultSearches
     AdminApplication:
       type: object
       properties:
@@ -5275,13 +5686,27 @@ components:
         rejectionReason:
           type: string
           nullable: true
+        categoryNameAr:
+          type: string
+        provinceNameAr:
+          type: string
+        ownerName:
+          type: string
+          nullable: true
+        ownerPhone:
+          type: string
+          nullable: true
       required:
       - categoryId
+      - categoryNameAr
       - facilityId
       - facilityNameAr
       - id
       - kind
+      - ownerName
+      - ownerPhone
       - provinceId
+      - provinceNameAr
       - rejectionReason
       - reviewedAt
       - status
@@ -5318,17 +5743,48 @@ components:
         rejectionReason:
           type: string
           nullable: true
+        categoryNameAr:
+          type: string
+        provinceNameAr:
+          type: string
+        ownerName:
+          type: string
+          nullable: true
+        ownerPhone:
+          type: string
+          nullable: true
         facility:
           $ref: '#/components/schemas/AdminFacility'
         snapshot:
           type: object
           additionalProperties: {}
           description: Redacted submission snapshot.
+        previous:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          description: Snapshot of the last approved application of this facility
+            (plus `approvedAt`), for diffing a REVERIFICATION. Null when the facility
+            was never approved.
+        location:
+          allOf:
+          - $ref: '#/components/schemas/Coordinates'
+          nullable: true
+        duplicates:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminDuplicateCandidate'
+          description: Up to 5 other facilities with the same phone, or the same normalized
+            Arabic name within 200 m.
         publicImageIds:
           type: array
           items:
             type: string
             format: uuid
+        publicImages:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminPublicImage'
         evidence:
           type: array
           items:
@@ -5340,14 +5796,22 @@ components:
       required:
       - audit
       - categoryId
+      - categoryNameAr
+      - duplicates
       - evidence
       - facility
       - facilityId
       - facilityNameAr
       - id
       - kind
+      - location
+      - ownerName
+      - ownerPhone
+      - previous
       - provinceId
+      - provinceNameAr
       - publicImageIds
+      - publicImages
       - rejectionReason
       - reviewedAt
       - snapshot
@@ -5545,6 +6009,8 @@ components:
           type: string
         nameEn:
           type: string
+        iconKey:
+          type: string
         active:
           type: boolean
         sortOrder:
@@ -5552,6 +6018,7 @@ components:
       required:
       - active
       - code
+      - iconKey
       - id
       - nameAr
       - nameEn
@@ -5577,6 +6044,9 @@ components:
           type: string
         nameEn:
           type: string
+        iconKey:
+          type: string
+          maxLength: 80
         active:
           type: boolean
         sortOrder:
@@ -5628,9 +6098,59 @@ components:
           type: boolean
         sortOrder:
           type: integer
+    AdminCityAdmin:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+          nullable: true
+        code:
+          type: string
+        active:
+          type: boolean
+      required:
+      - active
+      - code
+      - id
+      - nameAr
+      - nameEn
+    AdminCityAdminList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminCityAdmin'
+      required:
+      - items
+    AdminCityUpdateRequest:
+      type: object
+      properties:
+        active:
+          type: boolean
+      required:
+      - active
     AdminDashboard:
       type: object
       properties:
+        dutyActiveNow:
+          type: integer
+          description: Facilities on a duty shift right now.
+        newUsers7d:
+          type: integer
+        openReports:
+          type: integer
+          description: Facility problem reports still OPEN.
+        systemWarnings:
+          type: array
+          items:
+            type: string
+          description: Arabic, configuration-level warnings.
         pendingReviews:
           type: integer
         reverification:
@@ -5647,10 +6167,14 @@ components:
             $ref: '#/components/schemas/AdminRecentAction'
       required:
       - activeUsers
+      - dutyActiveNow
       - facilitiesByStatus
+      - newUsers7d
+      - openReports
       - pendingReviews
       - recentActions
       - reverification
+      - systemWarnings
     AdminDecisionRequest:
       type: object
       properties:
@@ -5658,6 +6182,25 @@ components:
           type: string
           description: Required in practice for a rejection; recorded in the audit
             trail.
+    AdminDuplicateCandidate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        status:
+          $ref: '#/components/schemas/FacilityStatusEnum'
+        reasons:
+          type: array
+          items:
+            $ref: '#/components/schemas/DuplicateReasonEnum'
+      required:
+      - id
+      - nameAr
+      - reasons
+      - status
     AdminEventCount:
       type: object
       properties:
@@ -5715,14 +6258,30 @@ components:
           type: string
           format: date-time
           nullable: true
+        categoryNameAr:
+          type: string
+        provinceNameAr:
+          type: string
+        ownerName:
+          type: string
+          nullable: true
+          description: First owner membership.
+        ownerPhone:
+          type: string
+          nullable: true
+          description: First owner membership.
       required:
       - categoryId
+      - categoryNameAr
       - cityId
       - id
       - location
       - nameAr
       - nameEn
+      - ownerName
+      - ownerPhone
       - provinceId
+      - provinceNameAr
       - status
       - updatedAt
     AdminFacilityList:
@@ -5732,6 +6291,58 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AdminFacility'
+      required:
+      - items
+    AdminFacilityReport:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        facilityId:
+          type: string
+          format: uuid
+        facilityNameAr:
+          type: string
+        reporterId:
+          type: string
+          format: uuid
+          nullable: true
+        reason:
+          $ref: '#/components/schemas/FacilityReportReasonEnum'
+        note:
+          type: string
+        status:
+          $ref: '#/components/schemas/FacilityReportStatusEnum'
+        createdAt:
+          type: string
+          format: date-time
+        resolvedById:
+          type: string
+          format: uuid
+          nullable: true
+        resolvedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - createdAt
+      - facilityId
+      - facilityNameAr
+      - id
+      - note
+      - reason
+      - reporterId
+      - resolvedAt
+      - resolvedById
+      - status
+    AdminFacilityReportList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminFacilityReport'
       required:
       - items
     AdminFacilityStatusCount:
@@ -5829,6 +6440,18 @@ components:
       required:
       - active
       - sortOrder
+    AdminPublicImage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          description: Permanent public media address.
+      required:
+      - id
+      - url
     AdminRecentAction:
       type: object
       properties:
@@ -5846,6 +6469,13 @@ components:
       - createdAt
       - targetId
       - targetType
+    AdminReportDecisionRequest:
+      type: object
+      properties:
+        note:
+          type: string
+          description: Recorded in the audit trail.
+          maxLength: 500
     AdminRole:
       type: object
       properties:
@@ -6487,6 +7117,16 @@ components:
           description: The facility's first photograph, in the order its owner arranged
             them, or null when it has none. A public media URL; clients never build
             one.
+        lastVerifiedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When an operator last approved this facility's details (trust
+            signal).
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last change to the facility record.
       required:
       - availability
       - category
@@ -6495,10 +7135,12 @@ components:
       - id
       - imageUrl
       - isFavorite
+      - lastVerifiedAt
       - nameAr
       - nameEn
       - ratingAverage
       - ratingCount
+      - updatedAt
     Coordinates:
       type: object
       description: WGS84 / SRID 4326 decimal degrees, as stored by PostGIS.
@@ -6549,6 +7191,14 @@ components:
         * `NONE` - NONE
         * `FACILITY` - FACILITY
         * `OWNER_FACILITIES` - OWNER_FACILITIES
+    DuplicateReasonEnum:
+      enum:
+      - SAME_PHONE
+      - SAME_NAME_NEARBY
+      type: string
+      description: |-
+        * `SAME_PHONE` - Same phone
+        * `SAME_NAME_NEARBY` - Same name nearby
     DutyShift:
       type: object
       properties:
@@ -6720,6 +7370,57 @@ components:
       required:
       - facilityId
       - stars
+    FacilityReportCreated:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/FacilityReportStatusEnum'
+        createdAt:
+          type: string
+          format: date-time
+      required:
+      - createdAt
+      - id
+      - status
+    FacilityReportReasonEnum:
+      enum:
+      - WRONG_INFO
+      - CLOSED_PERMANENTLY
+      - WRONG_LOCATION
+      - WRONG_HOURS
+      - NOT_ON_DUTY
+      - OTHER
+      type: string
+      description: |-
+        * `WRONG_INFO` - Wrong information
+        * `CLOSED_PERMANENTLY` - Closed permanently
+        * `WRONG_LOCATION` - Wrong location
+        * `WRONG_HOURS` - Wrong hours
+        * `NOT_ON_DUTY` - Not on duty
+        * `OTHER` - Other
+    FacilityReportRequest:
+      type: object
+      properties:
+        reason:
+          $ref: '#/components/schemas/FacilityReportReasonEnum'
+        note:
+          type: string
+          maxLength: 500
+      required:
+      - reason
+    FacilityReportStatusEnum:
+      enum:
+      - OPEN
+      - RESOLVED
+      - DISMISSED
+      type: string
+      description: |-
+        * `OPEN` - Open
+        * `RESOLVED` - Resolved
+        * `DISMISSED` - Dismissed
     FacilityStatusEnum:
       enum:
       - DRAFT
@@ -6778,6 +7479,16 @@ components:
           description: The facility's first photograph, in the order its owner arranged
             them, or null when it has none. A public media URL; clients never build
             one.
+        lastVerifiedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When an operator last approved this facility's details (trust
+            signal).
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last change to the facility record.
         favoritedAt:
           type: string
           format: date-time
@@ -6791,10 +7502,12 @@ components:
       - id
       - imageUrl
       - isFavorite
+      - lastVerifiedAt
       - nameAr
       - nameEn
       - ratingAverage
       - ratingCount
+      - updatedAt
     FavoriteList:
       type: object
       properties:
@@ -7229,6 +7942,10 @@ components:
         phone:
           type: string
           nullable: true
+        whatsapp:
+          type: string
+          nullable: true
+          description: E.164 Syrian mobile.
         addressAr:
           type: string
           nullable: true
@@ -7292,6 +8009,7 @@ components:
       - serviceTagIds
       - specialtyIds
       - status
+      - whatsapp
     OwnerFacilityImage:
       type: object
       properties:
@@ -7323,6 +8041,33 @@ components:
             $ref: '#/components/schemas/OwnerFacilityImage'
       required:
       - items
+    OwnerFacilityInsights:
+      type: object
+      properties:
+        facilityId:
+          type: string
+          format: uuid
+        windowDays:
+          type: integer
+        since:
+          type: string
+          format: date-time
+        views:
+          type: integer
+          description: facility_view events.
+        calls:
+          type: integer
+          description: phone_tap events.
+        directions:
+          type: integer
+          description: directions_start events.
+      required:
+      - calls
+      - directions
+      - facilityId
+      - since
+      - views
+      - windowDays
     OwnerFacilitySummary:
       type: object
       properties:
@@ -7528,6 +8273,11 @@ components:
         phone:
           type: string
           maxLength: 16
+        whatsapp:
+          type: string
+          description: Optional Syrian mobile (09XXXXXXXX or +9639XXXXXXXX); blank
+            clears it.
+          maxLength: 20
         addressAr:
           type: string
           maxLength: 255
@@ -7779,6 +8529,16 @@ components:
           description: The facility's first photograph, in the order its owner arranged
             them, or null when it has none. A public media URL; clients never build
             one.
+        lastVerifiedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When an operator last approved this facility's details (trust
+            signal).
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last change to the facility record.
         descriptionAr:
           type: string
           nullable: true
@@ -7788,6 +8548,10 @@ components:
         phone:
           type: string
           nullable: true
+        whatsapp:
+          type: string
+          nullable: true
+          description: WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX).
         addressAr:
           type: string
           nullable: true
@@ -7832,6 +8596,7 @@ components:
       - imageUrl
       - images
       - isFavorite
+      - lastVerifiedAt
       - location
       - nameAr
       - nameEn
@@ -7841,6 +8606,8 @@ components:
       - ratingCount
       - services
       - specialties
+      - updatedAt
+      - whatsapp
     PublicHome:
       type: object
       properties:

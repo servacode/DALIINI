@@ -62,6 +62,11 @@ class CompactFacilitySerializer(serializers.Serializer):
             "null when it has none. A public media URL; clients never build one."
         ),
     )
+    lastVerifiedAt = serializers.DateTimeField(
+        allow_null=True,
+        help_text="When an operator last approved this facility's details (trust signal).",
+    )
+    updatedAt = serializers.DateTimeField(help_text="Last change to the facility record.")
 
 
 class FacilityImageSerializer(serializers.Serializer):
@@ -85,6 +90,9 @@ class PublicFacilityDetailSerializer(CompactFacilitySerializer):
     descriptionAr = serializers.CharField(allow_null=True)
     descriptionEn = serializers.CharField(allow_null=True)
     phone = serializers.CharField(allow_null=True)
+    whatsapp = serializers.CharField(
+        allow_null=True, help_text="WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX)."
+    )
     addressAr = serializers.CharField(allow_null=True)
     addressEn = serializers.CharField(allow_null=True)
     neighborhood = NamedRefSerializer(allow_null=True)

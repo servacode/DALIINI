@@ -47,6 +47,7 @@ def facility_detail(facility):
         "descriptionAr": facility.description_ar or None,
         "descriptionEn": facility.description_en or None,
         "phone": facility.phone or None,
+        "whatsapp": facility.whatsapp or None,
         "addressAr": facility.address_ar or None,
         "addressEn": facility.address_en or None,
         "cityId": str(facility.city_id) if facility.city_id else None,

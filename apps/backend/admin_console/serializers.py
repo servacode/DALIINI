@@ -1,8 +1,15 @@
-def _iso(value):
+from typing import Any
+
+from django.db.models import Prefetch, QuerySet
+
+from facilities.models import Facility, FacilityApplication, FacilityMembership
+
+
+def _iso(value: Any) -> Any:
     return value.isoformat() if value else None
 
 
-def user_payload(user):
+def user_payload(user: Any) -> Any:
     return {
         "id": str(user.id),
         "name": user.name,
@@ -14,7 +21,57 @@ def user_payload(user):
     }
 
 
-def facility_payload(facility):
+def _owner_prefetch(prefix: str = "") -> Any:
+    return Prefetch(
+        f"{prefix}memberships",
+        queryset=FacilityMembership.objects.filter(role=FacilityMembership.Role.OWNER)
+        .select_related("user")
+        .order_by("created_at"),
+        to_attr="owner_links",
+    )
+
+
+def with_facility_names(queryset: QuerySet[Facility]) -> QuerySet[Facility]:
+    """Everything `facility_payload` reads, fetched in a fixed number of queries."""
+    return queryset.select_related("category", "province").prefetch_related(_owner_prefetch())
+
+
+def with_application_names(
+    queryset: QuerySet[FacilityApplication],
+) -> QuerySet[FacilityApplication]:
+    return queryset.select_related("facility__category", "facility__province").prefetch_related(
+        _owner_prefetch("facility__")
+    )
+
+
+def _owner(facility: Any) -> Any:
+    links = getattr(facility, "owner_links", None)
+    if links is None:
+        links = list(
+            facility.memberships.filter(role=FacilityMembership.Role.OWNER)
+            .select_related("user")
+            .order_by("created_at")[:1]
+        )
+    return links[0].user if links else None
+
+
+def _names(facility: Any) -> Any:
+    owner = _owner(facility)
+    return {
+        "categoryNameAr": facility.category.name_ar,
+        "provinceNameAr": facility.province.name_ar,
+        "ownerName": owner.name if owner else None,
+        "ownerPhone": owner.phone if owner else None,
+    }
+
+
+def location_payload(facility: Any) -> Any:
+    if not facility.location:
+        return None
+    return {"latitude": facility.location.y, "longitude": facility.location.x}
+
+
+def facility_payload(facility: Any) -> Any:
     return {
         "id": str(facility.id),
         "nameAr": facility.name_ar,
@@ -23,16 +80,13 @@ def facility_payload(facility):
         "provinceId": str(facility.province_id),
         "cityId": str(facility.city_id) if facility.city_id else None,
         "status": facility.status,
-        "location": (
-            {"latitude": facility.location.y, "longitude": facility.location.x}
-            if facility.location
-            else None
-        ),
+        "location": location_payload(facility),
         "updatedAt": _iso(facility.updated_at),
+        **_names(facility),
     }
 
 
-def application_payload(application):
+def application_payload(application: Any) -> Any:
     facility = application.facility
     return {
         "id": str(application.id),
@@ -45,4 +99,5 @@ def application_payload(application):
         "submittedAt": _iso(application.submitted_at),
         "reviewedAt": _iso(application.reviewed_at),
         "rejectionReason": application.rejection_reason or None,
+        **_names(facility),
     }

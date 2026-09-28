@@ -148,6 +148,9 @@ SPECTACULAR_SETTINGS = {
         "DatabaseHealthEnum": "core.enums.DATABASE_HEALTH",
         "OwnerRequiredActionEnum": "core.enums.OWNER_REQUIRED_ACTION",
         "PushPlatformEnum": "notifications.models.DevicePushToken.Platform",
+        "FacilityReportReasonEnum": "facilities.models.FacilityReport.Reason",
+        "FacilityReportStatusEnum": "facilities.models.FacilityReport.Status",
+        "DuplicateReasonEnum": "admin_console.review.DUPLICATE_REASON_CHOICES",
     },
     # A nullable choice field is otherwise described as `oneOf: [<Enum>, NullEnum]`, where
     # NullEnum is an enum whose only value is null. The Kotlin generator renders that as an
