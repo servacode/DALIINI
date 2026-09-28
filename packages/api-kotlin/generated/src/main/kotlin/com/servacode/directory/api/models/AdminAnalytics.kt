@@ -24,6 +24,11 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
+ * @param approvalMedianHours Median submit-to-approval time, last 30 days.
+ * @param searches search_submitted events, last 30 days.
+ * @param zeroResultSearches search_zero_results, last 30 days.
+ * @param facilityViews facility_view events, last 30 days.
+ * @param directionsRequests directions_start, last 30 days.
  * @param activeFacilities 
  * @param pendingReviews 
  * @param ratingAverage 
@@ -32,6 +37,26 @@ import kotlinx.serialization.Contextual
 @Serializable
 
 data class AdminAnalytics (
+
+    /* Median submit-to-approval time, last 30 days. */
+    @SerialName(value = "approvalMedianHours")
+    val approvalMedianHours: kotlin.Double?,
+
+    /* search_submitted events, last 30 days. */
+    @SerialName(value = "searches")
+    val searches: kotlin.Int,
+
+    /* search_zero_results, last 30 days. */
+    @SerialName(value = "zeroResultSearches")
+    val zeroResultSearches: kotlin.Int,
+
+    /* facility_view events, last 30 days. */
+    @SerialName(value = "facilityViews")
+    val facilityViews: kotlin.Int,
+
+    /* directions_start, last 30 days. */
+    @SerialName(value = "directionsRequests")
+    val directionsRequests: kotlin.Int,
 
     @SerialName(value = "activeFacilities")
     val activeFacilities: kotlin.Int,

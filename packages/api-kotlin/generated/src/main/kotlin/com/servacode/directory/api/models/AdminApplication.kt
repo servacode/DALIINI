@@ -35,6 +35,10 @@ import kotlinx.serialization.Contextual
  * @param submittedAt 
  * @param reviewedAt 
  * @param rejectionReason 
+ * @param categoryNameAr 
+ * @param provinceNameAr 
+ * @param ownerName 
+ * @param ownerPhone 
  */
 @Serializable
 
@@ -68,7 +72,19 @@ data class AdminApplication (
     val reviewedAt: java.time.OffsetDateTime?,
 
     @SerialName(value = "rejectionReason")
-    val rejectionReason: kotlin.String?
+    val rejectionReason: kotlin.String?,
+
+    @SerialName(value = "categoryNameAr")
+    val categoryNameAr: kotlin.String,
+
+    @SerialName(value = "provinceNameAr")
+    val provinceNameAr: kotlin.String,
+
+    @SerialName(value = "ownerName")
+    val ownerName: kotlin.String?,
+
+    @SerialName(value = "ownerPhone")
+    val ownerPhone: kotlin.String?
 
 ) {
 

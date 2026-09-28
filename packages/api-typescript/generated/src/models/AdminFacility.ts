@@ -88,6 +88,30 @@ export interface AdminFacility {
      * @memberof AdminFacility
      */
     updatedAt: Date | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminFacility
+     */
+    categoryNameAr: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminFacility
+     */
+    provinceNameAr: string;
+    /**
+     * First owner membership.
+     * @type {string}
+     * @memberof AdminFacility
+     */
+    ownerName: string | null;
+    /**
+     * First owner membership.
+     * @type {string}
+     * @memberof AdminFacility
+     */
+    ownerPhone: string | null;
 }
 
 
@@ -105,6 +129,10 @@ export function instanceOfAdminFacility(value: object): value is AdminFacility {
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('location' in value) || value['location'] === undefined) return false;
     if (!('updatedAt' in value) || value['updatedAt'] === undefined) return false;
+    if (!('categoryNameAr' in value) || value['categoryNameAr'] === undefined) return false;
+    if (!('provinceNameAr' in value) || value['provinceNameAr'] === undefined) return false;
+    if (!('ownerName' in value) || value['ownerName'] === undefined) return false;
+    if (!('ownerPhone' in value) || value['ownerPhone'] === undefined) return false;
     return true;
 }
 
@@ -127,6 +155,10 @@ export function AdminFacilityFromJSONTyped(json: any, ignoreDiscriminator: boole
         'status': FacilityStatusEnumFromJSON(json['status']),
         'location': CoordinatesFromJSON(json['location']),
         'updatedAt': (json['updatedAt'] == null ? null : new Date(json['updatedAt'])),
+        'categoryNameAr': json['categoryNameAr'],
+        'provinceNameAr': json['provinceNameAr'],
+        'ownerName': json['ownerName'],
+        'ownerPhone': json['ownerPhone'],
     };
 }
 
@@ -150,6 +182,10 @@ export function AdminFacilityToJSONTyped(value?: AdminFacility | null, ignoreDis
         'status': FacilityStatusEnumToJSON(value['status']),
         'location': CoordinatesToJSON(value['location']),
         'updatedAt': ((value['updatedAt'] as any).toISOString()),
+        'categoryNameAr': value['categoryNameAr'],
+        'provinceNameAr': value['provinceNameAr'],
+        'ownerName': value['ownerName'],
+        'ownerPhone': value['ownerPhone'],
     };
 }
 

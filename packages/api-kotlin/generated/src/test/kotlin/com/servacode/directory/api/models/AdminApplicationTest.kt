@@ -87,5 +87,29 @@ class AdminApplicationTest : ShouldSpec() {
             //modelInstance.rejectionReason shouldBe ("TODO")
         }
 
+        // to test the property `categoryNameAr`
+        should("test categoryNameAr") {
+            // uncomment below to test the property
+            //modelInstance.categoryNameAr shouldBe ("TODO")
+        }
+
+        // to test the property `provinceNameAr`
+        should("test provinceNameAr") {
+            // uncomment below to test the property
+            //modelInstance.provinceNameAr shouldBe ("TODO")
+        }
+
+        // to test the property `ownerName`
+        should("test ownerName") {
+            // uncomment below to test the property
+            //modelInstance.ownerName shouldBe ("TODO")
+        }
+
+        // to test the property `ownerPhone`
+        should("test ownerPhone") {
+            // uncomment below to test the property
+            //modelInstance.ownerPhone shouldBe ("TODO")
+        }
+
     }
 }

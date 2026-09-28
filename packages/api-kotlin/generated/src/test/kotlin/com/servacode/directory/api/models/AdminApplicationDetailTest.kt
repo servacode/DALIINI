@@ -20,8 +20,11 @@ import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.models.AdminApplicationDetail
 import com.servacode.directory.api.models.AdminAuditTrailEntry
+import com.servacode.directory.api.models.AdminDuplicateCandidate
 import com.servacode.directory.api.models.AdminEvidenceRef
 import com.servacode.directory.api.models.AdminFacility
+import com.servacode.directory.api.models.AdminPublicImage
+import com.servacode.directory.api.models.Coordinates
 import com.servacode.directory.api.models.FacilityApplicationKindEnum
 import com.servacode.directory.api.models.FacilityApplicationStatusEnum
 
@@ -90,6 +93,30 @@ class AdminApplicationDetailTest : ShouldSpec() {
             //modelInstance.rejectionReason shouldBe ("TODO")
         }
 
+        // to test the property `categoryNameAr`
+        should("test categoryNameAr") {
+            // uncomment below to test the property
+            //modelInstance.categoryNameAr shouldBe ("TODO")
+        }
+
+        // to test the property `provinceNameAr`
+        should("test provinceNameAr") {
+            // uncomment below to test the property
+            //modelInstance.provinceNameAr shouldBe ("TODO")
+        }
+
+        // to test the property `ownerName`
+        should("test ownerName") {
+            // uncomment below to test the property
+            //modelInstance.ownerName shouldBe ("TODO")
+        }
+
+        // to test the property `ownerPhone`
+        should("test ownerPhone") {
+            // uncomment below to test the property
+            //modelInstance.ownerPhone shouldBe ("TODO")
+        }
+
         // to test the property `facility`
         should("test facility") {
             // uncomment below to test the property
@@ -102,10 +129,34 @@ class AdminApplicationDetailTest : ShouldSpec() {
             //modelInstance.snapshot shouldBe ("TODO")
         }
 
+        // to test the property `previous` - Snapshot of the last approved application of this facility (plus `approvedAt`), for diffing a REVERIFICATION. Null when the facility was never approved.
+        should("test previous") {
+            // uncomment below to test the property
+            //modelInstance.previous shouldBe ("TODO")
+        }
+
+        // to test the property `location`
+        should("test location") {
+            // uncomment below to test the property
+            //modelInstance.location shouldBe ("TODO")
+        }
+
+        // to test the property `duplicates` - Up to 5 other facilities with the same phone, or the same normalized Arabic name within 200 m.
+        should("test duplicates") {
+            // uncomment below to test the property
+            //modelInstance.duplicates shouldBe ("TODO")
+        }
+
         // to test the property `publicImageIds`
         should("test publicImageIds") {
             // uncomment below to test the property
             //modelInstance.publicImageIds shouldBe ("TODO")
+        }
+
+        // to test the property `publicImages`
+        should("test publicImages") {
+            // uncomment below to test the property
+            //modelInstance.publicImages shouldBe ("TODO")
         }
 
         // to test the property `evidence`

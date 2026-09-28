@@ -13,6 +13,10 @@ Name | Type | Description | Notes
 **submittedAt** | **Date** |  | 
 **reviewedAt** | **Date** |  | 
 **rejectionReason** | **String** |  | 
+**categoryNameAr** | **String** |  | 
+**provinceNameAr** | **String** |  | 
+**ownerName** | **String** |  | 
+**ownerPhone** | **String** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

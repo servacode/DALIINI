@@ -21,8 +21,14 @@ public struct AdminFacility: Codable, JSONEncodable, Hashable {
     public var status: FacilityStatusEnum
     public var location: Coordinates?
     public var updatedAt: Date?
+    public var categoryNameAr: String
+    public var provinceNameAr: String
+    /** First owner membership. */
+    public var ownerName: String?
+    /** First owner membership. */
+    public var ownerPhone: String?
 
-    public init(id: UUID, nameAr: String, nameEn: String?, categoryId: UUID, provinceId: UUID, cityId: UUID?, status: FacilityStatusEnum, location: Coordinates?, updatedAt: Date?) {
+    public init(id: UUID, nameAr: String, nameEn: String?, categoryId: UUID, provinceId: UUID, cityId: UUID?, status: FacilityStatusEnum, location: Coordinates?, updatedAt: Date?, categoryNameAr: String, provinceNameAr: String, ownerName: String?, ownerPhone: String?) {
         self.id = id
         self.nameAr = nameAr
         self.nameEn = nameEn
@@ -32,6 +38,10 @@ public struct AdminFacility: Codable, JSONEncodable, Hashable {
         self.status = status
         self.location = location
         self.updatedAt = updatedAt
+        self.categoryNameAr = categoryNameAr
+        self.provinceNameAr = provinceNameAr
+        self.ownerName = ownerName
+        self.ownerPhone = ownerPhone
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
@@ -44,6 +54,10 @@ public struct AdminFacility: Codable, JSONEncodable, Hashable {
         case status
         case location
         case updatedAt
+        case categoryNameAr
+        case provinceNameAr
+        case ownerName
+        case ownerPhone
     }
 
     // Encodable protocol methods
@@ -59,6 +73,10 @@ public struct AdminFacility: Codable, JSONEncodable, Hashable {
         try container.encode(status, forKey: .status)
         try container.encode(location, forKey: .location)
         try container.encode(updatedAt, forKey: .updatedAt)
+        try container.encode(categoryNameAr, forKey: .categoryNameAr)
+        try container.encode(provinceNameAr, forKey: .provinceNameAr)
+        try container.encode(ownerName, forKey: .ownerName)
+        try container.encode(ownerPhone, forKey: .ownerPhone)
     }
 }
 

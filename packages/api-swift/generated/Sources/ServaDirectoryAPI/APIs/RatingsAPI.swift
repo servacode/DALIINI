@@ -26,6 +26,7 @@ open class RatingsAPI {
     /**
      Remove the caller's rating for a facility
      - DELETE /api/v1/facilities/{facility_id}/rating/
+     - Idempotent for a publicly visible facility; a facility that is not publicly visible answers 404, exactly as the write does.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken

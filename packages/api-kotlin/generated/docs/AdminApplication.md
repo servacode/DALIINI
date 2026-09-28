@@ -14,6 +14,10 @@
 | **submittedAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) |  |  |
 | **reviewedAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) |  |  |
 | **rejectionReason** | **kotlin.String** |  |  |
+| **categoryNameAr** | **kotlin.String** |  |  |
+| **provinceNameAr** | **kotlin.String** |  |  |
+| **ownerName** | **kotlin.String** |  |  |
+| **ownerPhone** | **kotlin.String** |  |  |
 
 
 

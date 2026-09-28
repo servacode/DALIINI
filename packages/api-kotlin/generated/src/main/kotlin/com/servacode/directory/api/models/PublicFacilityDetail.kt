@@ -40,9 +40,12 @@ import kotlinx.serialization.Contextual
  * @param availability 
  * @param isFavorite Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery.
  * @param imageUrl The facility's first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one.
+ * @param lastVerifiedAt When an operator last approved this facility's details (trust signal).
+ * @param updatedAt Last change to the facility record.
  * @param descriptionAr 
  * @param descriptionEn 
  * @param phone 
+ * @param whatsapp WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX).
  * @param addressAr 
  * @param addressEn 
  * @param neighborhood 
@@ -92,6 +95,14 @@ data class PublicFacilityDetail (
     @Contextual @SerialName(value = "imageUrl")
     val imageUrl: java.net.URI?,
 
+    /* When an operator last approved this facility's details (trust signal). */
+    @Contextual @SerialName(value = "lastVerifiedAt")
+    val lastVerifiedAt: java.time.OffsetDateTime?,
+
+    /* Last change to the facility record. */
+    @Contextual @SerialName(value = "updatedAt")
+    val updatedAt: java.time.OffsetDateTime,
+
     @SerialName(value = "descriptionAr")
     val descriptionAr: kotlin.String?,
 
@@ -100,6 +111,10 @@ data class PublicFacilityDetail (
 
     @SerialName(value = "phone")
     val phone: kotlin.String?,
+
+    /* WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX). */
+    @SerialName(value = "whatsapp")
+    val whatsapp: kotlin.String?,
 
     @SerialName(value = "addressAr")
     val addressAr: kotlin.String?,

@@ -50,6 +50,12 @@ export interface PatchedFacilityPatch {
      */
     phone?: string;
     /**
+     * Optional Syrian mobile (09XXXXXXXX or +9639XXXXXXXX); blank clears it.
+     * @type {string}
+     * @memberof PatchedFacilityPatch
+     */
+    whatsapp?: string;
+    /**
      * 
      * @type {string}
      * @memberof PatchedFacilityPatch
@@ -109,6 +115,7 @@ export function PatchedFacilityPatchFromJSONTyped(json: any, ignoreDiscriminator
         'descriptionAr': json['descriptionAr'] == null ? undefined : json['descriptionAr'],
         'descriptionEn': json['descriptionEn'] == null ? undefined : json['descriptionEn'],
         'phone': json['phone'] == null ? undefined : json['phone'],
+        'whatsapp': json['whatsapp'] == null ? undefined : json['whatsapp'],
         'addressAr': json['addressAr'] == null ? undefined : json['addressAr'],
         'addressEn': json['addressEn'] == null ? undefined : json['addressEn'],
         'cityId': json['cityId'] == null ? undefined : json['cityId'],
@@ -134,6 +141,7 @@ export function PatchedFacilityPatchToJSONTyped(value?: PatchedFacilityPatch | n
         'descriptionAr': value['descriptionAr'],
         'descriptionEn': value['descriptionEn'],
         'phone': value['phone'],
+        'whatsapp': value['whatsapp'],
         'addressAr': value['addressAr'],
         'addressEn': value['addressEn'],
         'cityId': value['cityId'],

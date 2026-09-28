@@ -56,6 +56,7 @@ export interface AdminUserUnblockRequest {
 
 export interface AdminUsersListRequest {
     q?: string;
+    role?: string;
     status?: string;
 }
 
@@ -305,6 +306,10 @@ export class AdminUsersApi extends runtime.BaseAPI {
 
         if (requestParameters['q'] != null) {
             queryParameters['q'] = requestParameters['q'];
+        }
+
+        if (requestParameters['role'] != null) {
+            queryParameters['role'] = requestParameters['role'];
         }
 
         if (requestParameters['status'] != null) {

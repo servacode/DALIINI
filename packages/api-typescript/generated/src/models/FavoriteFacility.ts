@@ -108,6 +108,18 @@ export interface FavoriteFacility {
      */
     imageUrl: string | null;
     /**
+     * When an operator last approved this facility's details (trust signal).
+     * @type {Date}
+     * @memberof FavoriteFacility
+     */
+    lastVerifiedAt: Date | null;
+    /**
+     * Last change to the facility record.
+     * @type {Date}
+     * @memberof FavoriteFacility
+     */
+    updatedAt: Date;
+    /**
      * When the caller saved this facility.
      * @type {Date}
      * @memberof FavoriteFacility
@@ -130,6 +142,8 @@ export function instanceOfFavoriteFacility(value: object): value is FavoriteFaci
     if (!('availability' in value) || value['availability'] === undefined) return false;
     if (!('isFavorite' in value) || value['isFavorite'] === undefined) return false;
     if (!('imageUrl' in value) || value['imageUrl'] === undefined) return false;
+    if (!('lastVerifiedAt' in value) || value['lastVerifiedAt'] === undefined) return false;
+    if (!('updatedAt' in value) || value['updatedAt'] === undefined) return false;
     if (!('favoritedAt' in value) || value['favoritedAt'] === undefined) return false;
     return true;
 }
@@ -155,6 +169,8 @@ export function FavoriteFacilityFromJSONTyped(json: any, ignoreDiscriminator: bo
         'availability': AvailabilityFromJSON(json['availability']),
         'isFavorite': json['isFavorite'],
         'imageUrl': json['imageUrl'],
+        'lastVerifiedAt': (json['lastVerifiedAt'] == null ? null : new Date(json['lastVerifiedAt'])),
+        'updatedAt': (new Date(json['updatedAt'])),
         'favoritedAt': (new Date(json['favoritedAt'])),
     };
 }
@@ -181,6 +197,8 @@ export function FavoriteFacilityToJSONTyped(value?: FavoriteFacility | null, ign
         'availability': AvailabilityToJSON(value['availability']),
         'isFavorite': value['isFavorite'],
         'imageUrl': value['imageUrl'],
+        'lastVerifiedAt': ((value['lastVerifiedAt'] as any).toISOString()),
+        'updatedAt': ((value['updatedAt']).toISOString()),
         'favoritedAt': ((value['favoritedAt']).toISOString()),
     };
 }

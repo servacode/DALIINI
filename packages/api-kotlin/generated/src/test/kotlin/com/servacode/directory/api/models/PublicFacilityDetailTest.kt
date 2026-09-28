@@ -97,6 +97,18 @@ class PublicFacilityDetailTest : ShouldSpec() {
             //modelInstance.imageUrl shouldBe ("TODO")
         }
 
+        // to test the property `lastVerifiedAt` - When an operator last approved this facility's details (trust signal).
+        should("test lastVerifiedAt") {
+            // uncomment below to test the property
+            //modelInstance.lastVerifiedAt shouldBe ("TODO")
+        }
+
+        // to test the property `updatedAt` - Last change to the facility record.
+        should("test updatedAt") {
+            // uncomment below to test the property
+            //modelInstance.updatedAt shouldBe ("TODO")
+        }
+
         // to test the property `descriptionAr`
         should("test descriptionAr") {
             // uncomment below to test the property
@@ -113,6 +125,12 @@ class PublicFacilityDetailTest : ShouldSpec() {
         should("test phone") {
             // uncomment below to test the property
             //modelInstance.phone shouldBe ("TODO")
+        }
+
+        // to test the property `whatsapp` - WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX).
+        should("test whatsapp") {
+            // uncomment below to test the property
+            //modelInstance.whatsapp shouldBe ("TODO")
         }
 
         // to test the property `addressAr`

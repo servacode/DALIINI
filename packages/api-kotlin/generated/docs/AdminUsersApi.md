@@ -233,15 +233,17 @@ val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AdminUsersApi::class.java)
 val q : kotlin.String = q_example // kotlin.String | Free text matched against the account name and phone number.
+val role : kotlin.String = role_example // kotlin.String | Admin role id or code; keeps accounts holding that role actively. The value `any` keeps every operator, `none` every non-operator.
 val status : kotlin.String = status_example // kotlin.String | `active` keeps active accounts; any other value keeps blocked accounts.
 
 launch(Dispatchers.IO) {
-    val result : AdminUserList = webService.adminUsersList(q, status)
+    val result : AdminUserList = webService.adminUsersList(q, role, status)
 }
 ```
 
 ### Parameters
 | **q** | **kotlin.String**| Free text matched against the account name and phone number. | [optional] |
+| **role** | **kotlin.String**| Admin role id or code; keeps accounts holding that role actively. The value &#x60;any&#x60; keeps every operator, &#x60;none&#x60; every non-operator. | [optional] |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
 | **status** | **kotlin.String**| &#x60;active&#x60; keeps active accounts; any other value keeps blocked accounts. | [optional] |

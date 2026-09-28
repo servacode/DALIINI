@@ -11,6 +11,8 @@ All URIs are relative to *http://localhost*
 
 Remove the caller&#39;s rating for a facility
 
+Idempotent for a publicly visible facility; a facility that is not publicly visible answers 404, exactly as the write does.
+
 ### Example
 ```kotlin
 // Import classes:

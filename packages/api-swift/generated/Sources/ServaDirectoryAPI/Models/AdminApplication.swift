@@ -22,8 +22,12 @@ public struct AdminApplication: Codable, JSONEncodable, Hashable {
     public var submittedAt: Date?
     public var reviewedAt: Date?
     public var rejectionReason: String?
+    public var categoryNameAr: String
+    public var provinceNameAr: String
+    public var ownerName: String?
+    public var ownerPhone: String?
 
-    public init(id: UUID, facilityId: UUID, facilityNameAr: String, kind: FacilityApplicationKindEnum, status: FacilityApplicationStatusEnum, provinceId: UUID, categoryId: UUID, submittedAt: Date?, reviewedAt: Date?, rejectionReason: String?) {
+    public init(id: UUID, facilityId: UUID, facilityNameAr: String, kind: FacilityApplicationKindEnum, status: FacilityApplicationStatusEnum, provinceId: UUID, categoryId: UUID, submittedAt: Date?, reviewedAt: Date?, rejectionReason: String?, categoryNameAr: String, provinceNameAr: String, ownerName: String?, ownerPhone: String?) {
         self.id = id
         self.facilityId = facilityId
         self.facilityNameAr = facilityNameAr
@@ -34,6 +38,10 @@ public struct AdminApplication: Codable, JSONEncodable, Hashable {
         self.submittedAt = submittedAt
         self.reviewedAt = reviewedAt
         self.rejectionReason = rejectionReason
+        self.categoryNameAr = categoryNameAr
+        self.provinceNameAr = provinceNameAr
+        self.ownerName = ownerName
+        self.ownerPhone = ownerPhone
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
@@ -47,6 +55,10 @@ public struct AdminApplication: Codable, JSONEncodable, Hashable {
         case submittedAt
         case reviewedAt
         case rejectionReason
+        case categoryNameAr
+        case provinceNameAr
+        case ownerName
+        case ownerPhone
     }
 
     // Encodable protocol methods
@@ -63,6 +75,10 @@ public struct AdminApplication: Codable, JSONEncodable, Hashable {
         try container.encode(submittedAt, forKey: .submittedAt)
         try container.encode(reviewedAt, forKey: .reviewedAt)
         try container.encode(rejectionReason, forKey: .rejectionReason)
+        try container.encode(categoryNameAr, forKey: .categoryNameAr)
+        try container.encode(provinceNameAr, forKey: .provinceNameAr)
+        try container.encode(ownerName, forKey: .ownerName)
+        try container.encode(ownerPhone, forKey: .ownerPhone)
     }
 }
 

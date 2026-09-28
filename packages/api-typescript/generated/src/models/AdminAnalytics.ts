@@ -28,6 +28,36 @@ import {
  */
 export interface AdminAnalytics {
     /**
+     * Median submit-to-approval time, last 30 days.
+     * @type {number}
+     * @memberof AdminAnalytics
+     */
+    approvalMedianHours: number | null;
+    /**
+     * search_submitted events, last 30 days.
+     * @type {number}
+     * @memberof AdminAnalytics
+     */
+    searches: number;
+    /**
+     * search_zero_results, last 30 days.
+     * @type {number}
+     * @memberof AdminAnalytics
+     */
+    zeroResultSearches: number;
+    /**
+     * facility_view events, last 30 days.
+     * @type {number}
+     * @memberof AdminAnalytics
+     */
+    facilityViews: number;
+    /**
+     * directions_start, last 30 days.
+     * @type {number}
+     * @memberof AdminAnalytics
+     */
+    directionsRequests: number;
+    /**
      * 
      * @type {number}
      * @memberof AdminAnalytics
@@ -57,6 +87,11 @@ export interface AdminAnalytics {
  * Check if a given object implements the AdminAnalytics interface.
  */
 export function instanceOfAdminAnalytics(value: object): value is AdminAnalytics {
+    if (!('approvalMedianHours' in value) || value['approvalMedianHours'] === undefined) return false;
+    if (!('searches' in value) || value['searches'] === undefined) return false;
+    if (!('zeroResultSearches' in value) || value['zeroResultSearches'] === undefined) return false;
+    if (!('facilityViews' in value) || value['facilityViews'] === undefined) return false;
+    if (!('directionsRequests' in value) || value['directionsRequests'] === undefined) return false;
     if (!('activeFacilities' in value) || value['activeFacilities'] === undefined) return false;
     if (!('pendingReviews' in value) || value['pendingReviews'] === undefined) return false;
     if (!('ratingAverage' in value) || value['ratingAverage'] === undefined) return false;
@@ -74,6 +109,11 @@ export function AdminAnalyticsFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
+        'approvalMedianHours': json['approvalMedianHours'],
+        'searches': json['searches'],
+        'zeroResultSearches': json['zeroResultSearches'],
+        'facilityViews': json['facilityViews'],
+        'directionsRequests': json['directionsRequests'],
         'activeFacilities': json['activeFacilities'],
         'pendingReviews': json['pendingReviews'],
         'ratingAverage': json['ratingAverage'],
@@ -92,6 +132,11 @@ export function AdminAnalyticsToJSONTyped(value?: AdminAnalytics | null, ignoreD
 
     return {
         
+        'approvalMedianHours': value['approvalMedianHours'],
+        'searches': value['searches'],
+        'zeroResultSearches': value['zeroResultSearches'],
+        'facilityViews': value['facilityViews'],
+        'directionsRequests': value['directionsRequests'],
         'activeFacilities': value['activeFacilities'],
         'pendingReviews': value['pendingReviews'],
         'ratingAverage': value['ratingAverage'],

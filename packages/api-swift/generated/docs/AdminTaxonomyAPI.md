@@ -174,7 +174,7 @@ Cycle J begins here: a group has to exist before a category can join it.
 // The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
 import ServaDirectoryAPI
 
-let adminCategoryGroupRequest = AdminCategoryGroupRequest(code: "code_example", nameAr: "nameAr_example", nameEn: "nameEn_example", active: false, sortOrder: 123) // AdminCategoryGroupRequest |  (optional)
+let adminCategoryGroupRequest = AdminCategoryGroupRequest(code: "code_example", nameAr: "nameAr_example", nameEn: "nameEn_example", iconKey: "iconKey_example", active: false, sortOrder: 123) // AdminCategoryGroupRequest |  (optional)
 
 // Create a category group
 AdminTaxonomyAPI.adminCategoryGroupCreate(adminCategoryGroupRequest: adminCategoryGroupRequest) { (response, error) in
@@ -225,7 +225,7 @@ The group code is immutable; sending a different one is refused.
 import ServaDirectoryAPI
 
 let groupId = 987 // UUID | 
-let adminCategoryGroupRequest = AdminCategoryGroupRequest(code: "code_example", nameAr: "nameAr_example", nameEn: "nameEn_example", active: false, sortOrder: 123) // AdminCategoryGroupRequest |  (optional)
+let adminCategoryGroupRequest = AdminCategoryGroupRequest(code: "code_example", nameAr: "nameAr_example", nameEn: "nameEn_example", iconKey: "iconKey_example", active: false, sortOrder: 123) // AdminCategoryGroupRequest |  (optional)
 
 // Rename, reorder or deactivate a category group
 AdminTaxonomyAPI.adminCategoryGroupUpdate(groupId: groupId, adminCategoryGroupRequest: adminCategoryGroupRequest) { (response, error) in

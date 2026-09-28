@@ -26,6 +26,36 @@ class AdminAnalyticsTest : ShouldSpec() {
         // uncomment below to create an instance of AdminAnalytics
         //val modelInstance = AdminAnalytics()
 
+        // to test the property `approvalMedianHours` - Median submit-to-approval time, last 30 days.
+        should("test approvalMedianHours") {
+            // uncomment below to test the property
+            //modelInstance.approvalMedianHours shouldBe ("TODO")
+        }
+
+        // to test the property `searches` - search_submitted events, last 30 days.
+        should("test searches") {
+            // uncomment below to test the property
+            //modelInstance.searches shouldBe ("TODO")
+        }
+
+        // to test the property `zeroResultSearches` - search_zero_results, last 30 days.
+        should("test zeroResultSearches") {
+            // uncomment below to test the property
+            //modelInstance.zeroResultSearches shouldBe ("TODO")
+        }
+
+        // to test the property `facilityViews` - facility_view events, last 30 days.
+        should("test facilityViews") {
+            // uncomment below to test the property
+            //modelInstance.facilityViews shouldBe ("TODO")
+        }
+
+        // to test the property `directionsRequests` - directions_start, last 30 days.
+        should("test directionsRequests") {
+            // uncomment below to test the property
+            //modelInstance.directionsRequests shouldBe ("TODO")
+        }
+
         // to test the property `activeFacilities`
         should("test activeFacilities") {
             // uncomment below to test the property

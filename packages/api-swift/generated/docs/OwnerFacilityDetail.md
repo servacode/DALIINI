@@ -15,6 +15,7 @@ Name | Type | Description | Notes
 **descriptionAr** | **String** |  | 
 **descriptionEn** | **String** |  | 
 **phone** | **String** |  | 
+**whatsapp** | **String** | E.164 Syrian mobile. | 
 **addressAr** | **String** |  | 
 **addressEn** | **String** |  | 
 **cityId** | **UUID** |  | 

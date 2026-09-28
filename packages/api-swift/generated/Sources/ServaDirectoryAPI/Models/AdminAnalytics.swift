@@ -12,12 +12,27 @@ import AnyCodable
 
 public struct AdminAnalytics: Codable, JSONEncodable, Hashable {
 
+    /** Median submit-to-approval time, last 30 days. */
+    public var approvalMedianHours: Double?
+    /** search_submitted events, last 30 days. */
+    public var searches: Int
+    /** search_zero_results, last 30 days. */
+    public var zeroResultSearches: Int
+    /** facility_view events, last 30 days. */
+    public var facilityViews: Int
+    /** directions_start, last 30 days. */
+    public var directionsRequests: Int
     public var activeFacilities: Int
     public var pendingReviews: Int
     public var ratingAverage: Double?
     public var events: [AdminEventCount]
 
-    public init(activeFacilities: Int, pendingReviews: Int, ratingAverage: Double?, events: [AdminEventCount]) {
+    public init(approvalMedianHours: Double?, searches: Int, zeroResultSearches: Int, facilityViews: Int, directionsRequests: Int, activeFacilities: Int, pendingReviews: Int, ratingAverage: Double?, events: [AdminEventCount]) {
+        self.approvalMedianHours = approvalMedianHours
+        self.searches = searches
+        self.zeroResultSearches = zeroResultSearches
+        self.facilityViews = facilityViews
+        self.directionsRequests = directionsRequests
         self.activeFacilities = activeFacilities
         self.pendingReviews = pendingReviews
         self.ratingAverage = ratingAverage
@@ -25,6 +40,11 @@ public struct AdminAnalytics: Codable, JSONEncodable, Hashable {
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
+        case approvalMedianHours
+        case searches
+        case zeroResultSearches
+        case facilityViews
+        case directionsRequests
         case activeFacilities
         case pendingReviews
         case ratingAverage
@@ -35,6 +55,11 @@ public struct AdminAnalytics: Codable, JSONEncodable, Hashable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(approvalMedianHours, forKey: .approvalMedianHours)
+        try container.encode(searches, forKey: .searches)
+        try container.encode(zeroResultSearches, forKey: .zeroResultSearches)
+        try container.encode(facilityViews, forKey: .facilityViews)
+        try container.encode(directionsRequests, forKey: .directionsRequests)
         try container.encode(activeFacilities, forKey: .activeFacilities)
         try container.encode(pendingReviews, forKey: .pendingReviews)
         try container.encode(ratingAverage, forKey: .ratingAverage)

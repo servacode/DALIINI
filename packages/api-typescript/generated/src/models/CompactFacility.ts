@@ -107,6 +107,18 @@ export interface CompactFacility {
      * @memberof CompactFacility
      */
     imageUrl: string | null;
+    /**
+     * When an operator last approved this facility's details (trust signal).
+     * @type {Date}
+     * @memberof CompactFacility
+     */
+    lastVerifiedAt: Date | null;
+    /**
+     * Last change to the facility record.
+     * @type {Date}
+     * @memberof CompactFacility
+     */
+    updatedAt: Date;
 }
 
 /**
@@ -124,6 +136,8 @@ export function instanceOfCompactFacility(value: object): value is CompactFacili
     if (!('availability' in value) || value['availability'] === undefined) return false;
     if (!('isFavorite' in value) || value['isFavorite'] === undefined) return false;
     if (!('imageUrl' in value) || value['imageUrl'] === undefined) return false;
+    if (!('lastVerifiedAt' in value) || value['lastVerifiedAt'] === undefined) return false;
+    if (!('updatedAt' in value) || value['updatedAt'] === undefined) return false;
     return true;
 }
 
@@ -148,6 +162,8 @@ export function CompactFacilityFromJSONTyped(json: any, ignoreDiscriminator: boo
         'availability': AvailabilityFromJSON(json['availability']),
         'isFavorite': json['isFavorite'],
         'imageUrl': json['imageUrl'],
+        'lastVerifiedAt': (json['lastVerifiedAt'] == null ? null : new Date(json['lastVerifiedAt'])),
+        'updatedAt': (new Date(json['updatedAt'])),
     };
 }
 
@@ -173,6 +189,8 @@ export function CompactFacilityToJSONTyped(value?: CompactFacility | null, ignor
         'availability': AvailabilityToJSON(value['availability']),
         'isFavorite': value['isFavorite'],
         'imageUrl': value['imageUrl'],
+        'lastVerifiedAt': ((value['lastVerifiedAt'] as any).toISOString()),
+        'updatedAt': ((value['updatedAt']).toISOString()),
     };
 }
 

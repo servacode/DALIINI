@@ -15,6 +15,7 @@ public struct PatchedFacilityPatch: Codable, JSONEncodable, Hashable {
     public static let nameArRule = StringRule(minLength: nil, maxLength: 160, pattern: nil)
     public static let nameEnRule = StringRule(minLength: nil, maxLength: 160, pattern: nil)
     public static let phoneRule = StringRule(minLength: nil, maxLength: 16, pattern: nil)
+    public static let whatsappRule = StringRule(minLength: nil, maxLength: 20, pattern: nil)
     public static let addressArRule = StringRule(minLength: nil, maxLength: 255, pattern: nil)
     public static let addressEnRule = StringRule(minLength: nil, maxLength: 255, pattern: nil)
     public var nameAr: String?
@@ -22,6 +23,8 @@ public struct PatchedFacilityPatch: Codable, JSONEncodable, Hashable {
     public var descriptionAr: String?
     public var descriptionEn: String?
     public var phone: String?
+    /** Optional Syrian mobile (09XXXXXXXX or +9639XXXXXXXX); blank clears it. */
+    public var whatsapp: String?
     public var addressAr: String?
     public var addressEn: String?
     public var cityId: UUID?
@@ -29,12 +32,13 @@ public struct PatchedFacilityPatch: Codable, JSONEncodable, Hashable {
     public var specialtyIds: [UUID]?
     public var serviceTagIds: [UUID]?
 
-    public init(nameAr: String? = nil, nameEn: String? = nil, descriptionAr: String? = nil, descriptionEn: String? = nil, phone: String? = nil, addressAr: String? = nil, addressEn: String? = nil, cityId: UUID? = nil, neighborhoodId: UUID? = nil, specialtyIds: [UUID]? = nil, serviceTagIds: [UUID]? = nil) {
+    public init(nameAr: String? = nil, nameEn: String? = nil, descriptionAr: String? = nil, descriptionEn: String? = nil, phone: String? = nil, whatsapp: String? = nil, addressAr: String? = nil, addressEn: String? = nil, cityId: UUID? = nil, neighborhoodId: UUID? = nil, specialtyIds: [UUID]? = nil, serviceTagIds: [UUID]? = nil) {
         self.nameAr = nameAr
         self.nameEn = nameEn
         self.descriptionAr = descriptionAr
         self.descriptionEn = descriptionEn
         self.phone = phone
+        self.whatsapp = whatsapp
         self.addressAr = addressAr
         self.addressEn = addressEn
         self.cityId = cityId
@@ -49,6 +53,7 @@ public struct PatchedFacilityPatch: Codable, JSONEncodable, Hashable {
         case descriptionAr
         case descriptionEn
         case phone
+        case whatsapp
         case addressAr
         case addressEn
         case cityId
@@ -66,6 +71,7 @@ public struct PatchedFacilityPatch: Codable, JSONEncodable, Hashable {
         try container.encodeIfPresent(descriptionAr, forKey: .descriptionAr)
         try container.encodeIfPresent(descriptionEn, forKey: .descriptionEn)
         try container.encodeIfPresent(phone, forKey: .phone)
+        try container.encodeIfPresent(whatsapp, forKey: .whatsapp)
         try container.encodeIfPresent(addressAr, forKey: .addressAr)
         try container.encodeIfPresent(addressEn, forKey: .addressEn)
         try container.encodeIfPresent(cityId, forKey: .cityId)

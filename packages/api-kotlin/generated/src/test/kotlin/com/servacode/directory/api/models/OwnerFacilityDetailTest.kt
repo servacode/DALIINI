@@ -105,6 +105,12 @@ class OwnerFacilityDetailTest : ShouldSpec() {
             //modelInstance.phone shouldBe ("TODO")
         }
 
+        // to test the property `whatsapp` - E.164 Syrian mobile.
+        should("test whatsapp") {
+            // uncomment below to test the property
+            //modelInstance.whatsapp shouldBe ("TODO")
+        }
+
         // to test the property `addressAr`
         should("test addressAr") {
             // uncomment below to test the property

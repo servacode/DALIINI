@@ -55,8 +55,13 @@ Class | Method | HTTP request | Description
 *AdminFacilitiesAPI* | [**adminFacilityReactivate**](docs/AdminFacilitiesAPI.md#adminfacilityreactivate) | **POST** /api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility
 *AdminFacilitiesAPI* | [**adminFacilityRetrieve**](docs/AdminFacilitiesAPI.md#adminfacilityretrieve) | **GET** /api/v1/admin/facilities/{facility_id}/ | Retrieve one facility
 *AdminFacilitiesAPI* | [**adminFacilitySuspend**](docs/AdminFacilitiesAPI.md#adminfacilitysuspend) | **POST** /api/v1/admin/facilities/{facility_id}/suspend/ | Suspend a facility
+*AdminProvincesAPI* | [**adminProvinceCitiesList**](docs/AdminProvincesAPI.md#adminprovincecitieslist) | **GET** /api/v1/admin/provinces/{province_id}/cities/ | List every city of a province, active or not
+*AdminProvincesAPI* | [**adminProvinceCityUpdate**](docs/AdminProvincesAPI.md#adminprovincecityupdate) | **PUT** /api/v1/admin/provinces/{province_id}/cities/{city_id}/ | Activate or deactivate a city
 *AdminProvincesAPI* | [**adminProvinceUpdate**](docs/AdminProvincesAPI.md#adminprovinceupdate) | **PUT** /api/v1/admin/provinces/{province_id}/ | Activate a province or change its order
 *AdminProvincesAPI* | [**adminProvincesList**](docs/AdminProvincesAPI.md#adminprovinceslist) | **GET** /api/v1/admin/provinces/ | List every province
+*AdminReportsAPI* | [**adminReportDismiss**](docs/AdminReportsAPI.md#adminreportdismiss) | **POST** /api/v1/admin/reports/{report_id}/dismiss/ | Dismiss a report
+*AdminReportsAPI* | [**adminReportResolve**](docs/AdminReportsAPI.md#adminreportresolve) | **POST** /api/v1/admin/reports/{report_id}/resolve/ | Mark a report resolved
+*AdminReportsAPI* | [**adminReportsList**](docs/AdminReportsAPI.md#adminreportslist) | **GET** /api/v1/admin/reports/ | List facility problem reports
 *AdminReviewsAPI* | [**adminEvidenceContentRetrieve**](docs/AdminReviewsAPI.md#adminevidencecontentretrieve) | **GET** /api/v1/admin/evidence/{evidence_id}/content/ | Stream one piece of private verification evidence
 *AdminReviewsAPI* | [**adminReviewApprove**](docs/AdminReviewsAPI.md#adminreviewapprove) | **POST** /api/v1/admin/applications/{application_id}/approve/ | Approve an application
 *AdminReviewsAPI* | [**adminReviewReject**](docs/AdminReviewsAPI.md#adminreviewreject) | **POST** /api/v1/admin/applications/{application_id}/reject/ | Reject an application
@@ -116,6 +121,7 @@ Class | Method | HTTP request | Description
 *OwnerAPI* | [**ownerConfigRetrieve**](docs/OwnerAPI.md#ownerconfigretrieve) | **GET** /api/v1/owner/config/ | List categories open for owner onboarding in a province
 *OwnerAPI* | [**ownerFacilitiesList**](docs/OwnerAPI.md#ownerfacilitieslist) | **GET** /api/v1/owner/facilities/ | List the facilities the caller belongs to
 *OwnerAPI* | [**ownerFacilityCreate**](docs/OwnerAPI.md#ownerfacilitycreate) | **POST** /api/v1/owner/facilities/ | Create a facility draft
+*OwnerAPI* | [**ownerFacilityInsightsRetrieve**](docs/OwnerAPI.md#ownerfacilityinsightsretrieve) | **GET** /api/v1/owner/facilities/{facility_id}/insights/ | Engagement with a facility over the last 30 days
 *OwnerAPI* | [**ownerFacilityLocationReplace**](docs/OwnerAPI.md#ownerfacilitylocationreplace) | **PUT** /api/v1/owner/facilities/{facility_id}/location/ | Set the map point of a facility
 *OwnerAPI* | [**ownerFacilityMemberDelete**](docs/OwnerAPI.md#ownerfacilitymemberdelete) | **DELETE** /api/v1/owner/facilities/{facility_id}/members/{user_id}/ | Remove a member from a facility
 *OwnerAPI* | [**ownerFacilityMemberUpsert**](docs/OwnerAPI.md#ownerfacilitymemberupsert) | **POST** /api/v1/owner/facilities/{facility_id}/members/ | Add a member or change a member role
@@ -128,6 +134,8 @@ Class | Method | HTTP request | Description
 *PublicDiscoveryAPI* | [**publicHomeRetrieve**](docs/PublicDiscoveryAPI.md#publichomeretrieve) | **GET** /api/v1/public/home/ | Retrieve the home composition for a province
 *PublicDiscoveryAPI* | [**publicMapFacilitiesList**](docs/PublicDiscoveryAPI.md#publicmapfacilitieslist) | **GET** /api/v1/public/map/facilities/ | List compact map markers inside a viewport
 *PublicDiscoveryAPI* | [**publicSearchList**](docs/PublicDiscoveryAPI.md#publicsearchlist) | **GET** /api/v1/public/search/ | Search facilities within a province
+*PublicFacilitiesAPI* | [**publicFacilityReportCreate**](docs/PublicFacilitiesAPI.md#publicfacilityreportcreate) | **POST** /api/v1/facilities/{facility_id}/reports/ | Report a problem with a facility&#39;s listing
+*PublicPlatformAPI* | [**publicPlatformStatusRetrieve**](docs/PublicPlatformAPI.md#publicplatformstatusretrieve) | **GET** /api/v1/platform/status/ | Platform availability (maintenance mode)
 *PublicTaxonomyAPI* | [**publicLocationResolve**](docs/PublicTaxonomyAPI.md#publiclocationresolve) | **GET** /api/v1/public/locations/resolve/ | Resolve a coordinate to a province, city and neighbourhood
 *PublicTaxonomyAPI* | [**publicProvinceCategoriesList**](docs/PublicTaxonomyAPI.md#publicprovincecategorieslist) | **GET** /api/v1/public/provinces/{province_id}/categories/ | List categories publicly enabled for a province
 *PublicTaxonomyAPI* | [**publicProvinceCitiesList**](docs/PublicTaxonomyAPI.md#publicprovincecitieslist) | **GET** /api/v1/public/provinces/{province_id}/cities/ | List active cities in a province
@@ -163,12 +171,18 @@ Class | Method | HTTP request | Description
  - [AdminCategoryList](docs/AdminCategoryList.md)
  - [AdminCategoryProvinceRequest](docs/AdminCategoryProvinceRequest.md)
  - [AdminCategoryUpdateRequest](docs/AdminCategoryUpdateRequest.md)
+ - [AdminCityAdmin](docs/AdminCityAdmin.md)
+ - [AdminCityAdminList](docs/AdminCityAdminList.md)
+ - [AdminCityUpdateRequest](docs/AdminCityUpdateRequest.md)
  - [AdminDashboard](docs/AdminDashboard.md)
  - [AdminDecisionRequest](docs/AdminDecisionRequest.md)
+ - [AdminDuplicateCandidate](docs/AdminDuplicateCandidate.md)
  - [AdminEventCount](docs/AdminEventCount.md)
  - [AdminEvidenceRef](docs/AdminEvidenceRef.md)
  - [AdminFacility](docs/AdminFacility.md)
  - [AdminFacilityList](docs/AdminFacilityList.md)
+ - [AdminFacilityReport](docs/AdminFacilityReport.md)
+ - [AdminFacilityReportList](docs/AdminFacilityReportList.md)
  - [AdminFacilityStatusCount](docs/AdminFacilityStatusCount.md)
  - [AdminId](docs/AdminId.md)
  - [AdminMe](docs/AdminMe.md)
@@ -176,7 +190,9 @@ Class | Method | HTTP request | Description
  - [AdminProvinceList](docs/AdminProvinceList.md)
  - [AdminProvinceUpdateRequest](docs/AdminProvinceUpdateRequest.md)
  - [AdminProvinceUpdated](docs/AdminProvinceUpdated.md)
+ - [AdminPublicImage](docs/AdminPublicImage.md)
  - [AdminRecentAction](docs/AdminRecentAction.md)
+ - [AdminReportDecisionRequest](docs/AdminReportDecisionRequest.md)
  - [AdminRole](docs/AdminRole.md)
  - [AdminRoleList](docs/AdminRoleList.md)
  - [AdminSetting](docs/AdminSetting.md)
@@ -215,6 +231,7 @@ Class | Method | HTTP request | Description
  - [DeletionRequest](docs/DeletionRequest.md)
  - [DependencyConfiguredEnum](docs/DependencyConfiguredEnum.md)
  - [DestinationEnum](docs/DestinationEnum.md)
+ - [DuplicateReasonEnum](docs/DuplicateReasonEnum.md)
  - [DutyShift](docs/DutyShift.md)
  - [DutyShiftInput](docs/DutyShiftInput.md)
  - [DutyShiftList](docs/DutyShiftList.md)
@@ -227,6 +244,10 @@ Class | Method | HTTP request | Description
  - [FacilityMember](docs/FacilityMember.md)
  - [FacilityMemberRoleEnum](docs/FacilityMemberRoleEnum.md)
  - [FacilityRating](docs/FacilityRating.md)
+ - [FacilityReportCreated](docs/FacilityReportCreated.md)
+ - [FacilityReportReasonEnum](docs/FacilityReportReasonEnum.md)
+ - [FacilityReportRequest](docs/FacilityReportRequest.md)
+ - [FacilityReportStatusEnum](docs/FacilityReportStatusEnum.md)
  - [FacilityStatusEnum](docs/FacilityStatusEnum.md)
  - [FavoriteFacility](docs/FavoriteFacility.md)
  - [FavoriteList](docs/FavoriteList.md)
@@ -255,6 +276,7 @@ Class | Method | HTTP request | Description
  - [OwnerFacilityDetail](docs/OwnerFacilityDetail.md)
  - [OwnerFacilityImage](docs/OwnerFacilityImage.md)
  - [OwnerFacilityImageList](docs/OwnerFacilityImageList.md)
+ - [OwnerFacilityInsights](docs/OwnerFacilityInsights.md)
  - [OwnerFacilitySummary](docs/OwnerFacilitySummary.md)
  - [OwnerFacilitySummaryList](docs/OwnerFacilitySummaryList.md)
  - [OwnerHoursEntry](docs/OwnerHoursEntry.md)
@@ -269,6 +291,7 @@ Class | Method | HTTP request | Description
  - [PatchedFacilityPatch](docs/PatchedFacilityPatch.md)
  - [PatchedProfilePatch](docs/PatchedProfilePatch.md)
  - [PhoneChangeStart](docs/PhoneChangeStart.md)
+ - [PlatformStatus](docs/PlatformStatus.md)
  - [Profile](docs/Profile.md)
  - [PublicAdvertisement](docs/PublicAdvertisement.md)
  - [PublicAdvertisementList](docs/PublicAdvertisementList.md)

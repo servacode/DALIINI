@@ -19,6 +19,9 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.AdminProvincesApi
+import com.servacode.directory.api.models.AdminCityAdmin
+import com.servacode.directory.api.models.AdminCityAdminList
+import com.servacode.directory.api.models.AdminCityUpdateRequest
 import com.servacode.directory.api.models.AdminProvinceList
 import com.servacode.directory.api.models.AdminProvinceUpdateRequest
 import com.servacode.directory.api.models.AdminProvinceUpdated
@@ -28,6 +31,24 @@ class AdminProvincesApiTest : ShouldSpec() {
     init {
         // uncomment below to create an instance of AdminProvincesApi
         //val apiInstance = AdminProvincesApi()
+
+        // to test adminProvinceCitiesList
+        should("test adminProvinceCitiesList") {
+            // uncomment below to test adminProvinceCitiesList
+            //val provinceId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : AdminCityAdminList = apiInstance.adminProvinceCitiesList(provinceId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminProvinceCityUpdate
+        should("test adminProvinceCityUpdate") {
+            // uncomment below to test adminProvinceCityUpdate
+            //val cityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val provinceId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val adminCityUpdateRequest : AdminCityUpdateRequest =  // AdminCityUpdateRequest | 
+            //val result : AdminCityAdmin = apiInstance.adminProvinceCityUpdate(cityId, provinceId, adminCityUpdateRequest)
+            //result shouldBe ("TODO")
+        }
 
         // to test adminProvinceUpdate
         should("test adminProvinceUpdate") {

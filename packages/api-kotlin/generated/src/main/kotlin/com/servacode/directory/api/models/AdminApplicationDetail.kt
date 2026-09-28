@@ -16,8 +16,11 @@
 package com.servacode.directory.api.models
 
 import com.servacode.directory.api.models.AdminAuditTrailEntry
+import com.servacode.directory.api.models.AdminDuplicateCandidate
 import com.servacode.directory.api.models.AdminEvidenceRef
 import com.servacode.directory.api.models.AdminFacility
+import com.servacode.directory.api.models.AdminPublicImage
+import com.servacode.directory.api.models.Coordinates
 import com.servacode.directory.api.models.FacilityApplicationKindEnum
 import com.servacode.directory.api.models.FacilityApplicationStatusEnum
 
@@ -38,9 +41,17 @@ import kotlinx.serialization.Contextual
  * @param submittedAt 
  * @param reviewedAt 
  * @param rejectionReason 
+ * @param categoryNameAr 
+ * @param provinceNameAr 
+ * @param ownerName 
+ * @param ownerPhone 
  * @param facility 
  * @param snapshot Redacted submission snapshot.
+ * @param previous Snapshot of the last approved application of this facility (plus `approvedAt`), for diffing a REVERIFICATION. Null when the facility was never approved.
+ * @param location 
+ * @param duplicates Up to 5 other facilities with the same phone, or the same normalized Arabic name within 200 m.
  * @param publicImageIds 
+ * @param publicImages 
  * @param evidence 
  * @param audit 
  */
@@ -78,6 +89,18 @@ data class AdminApplicationDetail (
     @SerialName(value = "rejectionReason")
     val rejectionReason: kotlin.String?,
 
+    @SerialName(value = "categoryNameAr")
+    val categoryNameAr: kotlin.String,
+
+    @SerialName(value = "provinceNameAr")
+    val provinceNameAr: kotlin.String,
+
+    @SerialName(value = "ownerName")
+    val ownerName: kotlin.String?,
+
+    @SerialName(value = "ownerPhone")
+    val ownerPhone: kotlin.String?,
+
     @SerialName(value = "facility")
     val facility: AdminFacility,
 
@@ -85,8 +108,22 @@ data class AdminApplicationDetail (
     @Contextual @SerialName(value = "snapshot")
     val snapshot: kotlin.collections.Map<kotlin.String, kotlinx.serialization.json.JsonElement>,
 
+    /* Snapshot of the last approved application of this facility (plus `approvedAt`), for diffing a REVERIFICATION. Null when the facility was never approved. */
+    @Contextual @SerialName(value = "previous")
+    val previous: kotlin.collections.Map<kotlin.String, kotlinx.serialization.json.JsonElement>?,
+
+    @SerialName(value = "location")
+    val location: Coordinates?,
+
+    /* Up to 5 other facilities with the same phone, or the same normalized Arabic name within 200 m. */
+    @SerialName(value = "duplicates")
+    val duplicates: kotlin.collections.List<AdminDuplicateCandidate>,
+
     @SerialName(value = "publicImageIds")
     val publicImageIds: kotlin.collections.List<@Contextual java.util.UUID>,
+
+    @SerialName(value = "publicImages")
+    val publicImages: kotlin.collections.List<AdminPublicImage>,
 
     @SerialName(value = "evidence")
     val evidence: kotlin.collections.List<AdminEvidenceRef>,

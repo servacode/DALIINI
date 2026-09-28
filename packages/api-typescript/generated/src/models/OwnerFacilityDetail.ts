@@ -149,6 +149,12 @@ export interface OwnerFacilityDetail {
      */
     phone: string | null;
     /**
+     * E.164 Syrian mobile.
+     * @type {string}
+     * @memberof OwnerFacilityDetail
+     */
+    whatsapp: string | null;
+    /**
      * 
      * @type {string}
      * @memberof OwnerFacilityDetail
@@ -228,6 +234,7 @@ export function instanceOfOwnerFacilityDetail(value: object): value is OwnerFaci
     if (!('descriptionAr' in value) || value['descriptionAr'] === undefined) return false;
     if (!('descriptionEn' in value) || value['descriptionEn'] === undefined) return false;
     if (!('phone' in value) || value['phone'] === undefined) return false;
+    if (!('whatsapp' in value) || value['whatsapp'] === undefined) return false;
     if (!('addressAr' in value) || value['addressAr'] === undefined) return false;
     if (!('addressEn' in value) || value['addressEn'] === undefined) return false;
     if (!('cityId' in value) || value['cityId'] === undefined) return false;
@@ -263,6 +270,7 @@ export function OwnerFacilityDetailFromJSONTyped(json: any, ignoreDiscriminator:
         'descriptionAr': json['descriptionAr'],
         'descriptionEn': json['descriptionEn'],
         'phone': json['phone'],
+        'whatsapp': json['whatsapp'],
         'addressAr': json['addressAr'],
         'addressEn': json['addressEn'],
         'cityId': json['cityId'],
@@ -299,6 +307,7 @@ export function OwnerFacilityDetailToJSONTyped(value?: OwnerFacilityDetail | nul
         'descriptionAr': value['descriptionAr'],
         'descriptionEn': value['descriptionEn'],
         'phone': value['phone'],
+        'whatsapp': value['whatsapp'],
         'addressAr': value['addressAr'],
         'addressEn': value['addressEn'],
         'cityId': value['cityId'],

@@ -16,6 +16,7 @@
 | **descriptionAr** | **kotlin.String** |  |  |
 | **descriptionEn** | **kotlin.String** |  |  |
 | **phone** | **kotlin.String** |  |  |
+| **whatsapp** | **kotlin.String** | E.164 Syrian mobile. |  |
 | **addressAr** | **kotlin.String** |  |  |
 | **addressEn** | **kotlin.String** |  |  |
 | **cityId** | [**java.util.UUID**](java.util.UUID.md) |  |  |

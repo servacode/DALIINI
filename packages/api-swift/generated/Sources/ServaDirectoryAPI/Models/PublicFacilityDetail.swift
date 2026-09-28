@@ -26,9 +26,15 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
     public var isFavorite: Bool
     /** The facility's first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one. */
     public var imageUrl: String?
+    /** When an operator last approved this facility's details (trust signal). */
+    public var lastVerifiedAt: Date?
+    /** Last change to the facility record. */
+    public var updatedAt: Date
     public var descriptionAr: String?
     public var descriptionEn: String?
     public var phone: String?
+    /** WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX). */
+    public var whatsapp: String?
     public var addressAr: String?
     public var addressEn: String?
     public var neighborhood: NamedRef?
@@ -38,7 +44,7 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
     public var services: [NamedRef]
     public var hours: [PublicHoursEntry]
 
-    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, isFavorite: Bool, imageUrl: String?, descriptionAr: String?, descriptionEn: String?, phone: String?, addressAr: String?, addressEn: String?, neighborhood: NamedRef?, location: Coordinates?, images: [FacilityImage], specialties: [NamedRef], services: [NamedRef], hours: [PublicHoursEntry]) {
+    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, isFavorite: Bool, imageUrl: String?, lastVerifiedAt: Date?, updatedAt: Date, descriptionAr: String?, descriptionEn: String?, phone: String?, whatsapp: String?, addressAr: String?, addressEn: String?, neighborhood: NamedRef?, location: Coordinates?, images: [FacilityImage], specialties: [NamedRef], services: [NamedRef], hours: [PublicHoursEntry]) {
         self.id = id
         self.nameAr = nameAr
         self.nameEn = nameEn
@@ -50,9 +56,12 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
         self.availability = availability
         self.isFavorite = isFavorite
         self.imageUrl = imageUrl
+        self.lastVerifiedAt = lastVerifiedAt
+        self.updatedAt = updatedAt
         self.descriptionAr = descriptionAr
         self.descriptionEn = descriptionEn
         self.phone = phone
+        self.whatsapp = whatsapp
         self.addressAr = addressAr
         self.addressEn = addressEn
         self.neighborhood = neighborhood
@@ -75,9 +84,12 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
         case availability
         case isFavorite
         case imageUrl
+        case lastVerifiedAt
+        case updatedAt
         case descriptionAr
         case descriptionEn
         case phone
+        case whatsapp
         case addressAr
         case addressEn
         case neighborhood
@@ -103,9 +115,12 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
         try container.encode(availability, forKey: .availability)
         try container.encode(isFavorite, forKey: .isFavorite)
         try container.encode(imageUrl, forKey: .imageUrl)
+        try container.encode(lastVerifiedAt, forKey: .lastVerifiedAt)
+        try container.encode(updatedAt, forKey: .updatedAt)
         try container.encode(descriptionAr, forKey: .descriptionAr)
         try container.encode(descriptionEn, forKey: .descriptionEn)
         try container.encode(phone, forKey: .phone)
+        try container.encode(whatsapp, forKey: .whatsapp)
         try container.encode(addressAr, forKey: .addressAr)
         try container.encode(addressEn, forKey: .addressEn)
         try container.encode(neighborhood, forKey: .neighborhood)

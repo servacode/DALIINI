@@ -26,6 +26,7 @@ import kotlinx.serialization.Contextual
  * @param code Required on create. Refused on update; the group code is immutable.
  * @param nameAr 
  * @param nameEn 
+ * @param iconKey 
  * @param active 
  * @param sortOrder 
  */
@@ -42,6 +43,9 @@ data class AdminCategoryGroupRequest (
 
     @SerialName(value = "nameEn")
     val nameEn: kotlin.String? = null,
+
+    @SerialName(value = "iconKey")
+    val iconKey: kotlin.String? = null,
 
     @SerialName(value = "active")
     val active: kotlin.Boolean? = null,

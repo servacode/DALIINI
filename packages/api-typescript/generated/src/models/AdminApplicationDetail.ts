@@ -20,6 +20,27 @@ import {
     AdminAuditTrailEntryToJSON,
     AdminAuditTrailEntryToJSONTyped,
 } from './AdminAuditTrailEntry';
+import type { AdminPublicImage } from './AdminPublicImage';
+import {
+    AdminPublicImageFromJSON,
+    AdminPublicImageFromJSONTyped,
+    AdminPublicImageToJSON,
+    AdminPublicImageToJSONTyped,
+} from './AdminPublicImage';
+import type { AdminDuplicateCandidate } from './AdminDuplicateCandidate';
+import {
+    AdminDuplicateCandidateFromJSON,
+    AdminDuplicateCandidateFromJSONTyped,
+    AdminDuplicateCandidateToJSON,
+    AdminDuplicateCandidateToJSONTyped,
+} from './AdminDuplicateCandidate';
+import type { Coordinates } from './Coordinates';
+import {
+    CoordinatesFromJSON,
+    CoordinatesFromJSONTyped,
+    CoordinatesToJSON,
+    CoordinatesToJSONTyped,
+} from './Coordinates';
 import type { FacilityApplicationKindEnum } from './FacilityApplicationKindEnum';
 import {
     FacilityApplicationKindEnumFromJSON,
@@ -117,6 +138,30 @@ export interface AdminApplicationDetail {
     rejectionReason: string | null;
     /**
      * 
+     * @type {string}
+     * @memberof AdminApplicationDetail
+     */
+    categoryNameAr: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminApplicationDetail
+     */
+    provinceNameAr: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminApplicationDetail
+     */
+    ownerName: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminApplicationDetail
+     */
+    ownerPhone: string | null;
+    /**
+     * 
      * @type {AdminFacility}
      * @memberof AdminApplicationDetail
      */
@@ -128,11 +173,35 @@ export interface AdminApplicationDetail {
      */
     snapshot: { [key: string]: any; };
     /**
+     * Snapshot of the last approved application of this facility (plus `approvedAt`), for diffing a REVERIFICATION. Null when the facility was never approved.
+     * @type {{ [key: string]: any; }}
+     * @memberof AdminApplicationDetail
+     */
+    previous: { [key: string]: any; } | null;
+    /**
+     * 
+     * @type {Coordinates}
+     * @memberof AdminApplicationDetail
+     */
+    location: Coordinates | null;
+    /**
+     * Up to 5 other facilities with the same phone, or the same normalized Arabic name within 200 m.
+     * @type {Array<AdminDuplicateCandidate>}
+     * @memberof AdminApplicationDetail
+     */
+    duplicates: Array<AdminDuplicateCandidate>;
+    /**
      * 
      * @type {Array<string>}
      * @memberof AdminApplicationDetail
      */
     publicImageIds: Array<string>;
+    /**
+     * 
+     * @type {Array<AdminPublicImage>}
+     * @memberof AdminApplicationDetail
+     */
+    publicImages: Array<AdminPublicImage>;
     /**
      * 
      * @type {Array<AdminEvidenceRef>}
@@ -163,9 +232,17 @@ export function instanceOfAdminApplicationDetail(value: object): value is AdminA
     if (!('submittedAt' in value) || value['submittedAt'] === undefined) return false;
     if (!('reviewedAt' in value) || value['reviewedAt'] === undefined) return false;
     if (!('rejectionReason' in value) || value['rejectionReason'] === undefined) return false;
+    if (!('categoryNameAr' in value) || value['categoryNameAr'] === undefined) return false;
+    if (!('provinceNameAr' in value) || value['provinceNameAr'] === undefined) return false;
+    if (!('ownerName' in value) || value['ownerName'] === undefined) return false;
+    if (!('ownerPhone' in value) || value['ownerPhone'] === undefined) return false;
     if (!('facility' in value) || value['facility'] === undefined) return false;
     if (!('snapshot' in value) || value['snapshot'] === undefined) return false;
+    if (!('previous' in value) || value['previous'] === undefined) return false;
+    if (!('location' in value) || value['location'] === undefined) return false;
+    if (!('duplicates' in value) || value['duplicates'] === undefined) return false;
     if (!('publicImageIds' in value) || value['publicImageIds'] === undefined) return false;
+    if (!('publicImages' in value) || value['publicImages'] === undefined) return false;
     if (!('evidence' in value) || value['evidence'] === undefined) return false;
     if (!('audit' in value) || value['audit'] === undefined) return false;
     return true;
@@ -191,9 +268,17 @@ export function AdminApplicationDetailFromJSONTyped(json: any, ignoreDiscriminat
         'submittedAt': (json['submittedAt'] == null ? null : new Date(json['submittedAt'])),
         'reviewedAt': (json['reviewedAt'] == null ? null : new Date(json['reviewedAt'])),
         'rejectionReason': json['rejectionReason'],
+        'categoryNameAr': json['categoryNameAr'],
+        'provinceNameAr': json['provinceNameAr'],
+        'ownerName': json['ownerName'],
+        'ownerPhone': json['ownerPhone'],
         'facility': AdminFacilityFromJSON(json['facility']),
         'snapshot': json['snapshot'],
+        'previous': json['previous'],
+        'location': CoordinatesFromJSON(json['location']),
+        'duplicates': ((json['duplicates'] as Array<any>).map(AdminDuplicateCandidateFromJSON)),
         'publicImageIds': json['publicImageIds'],
+        'publicImages': ((json['publicImages'] as Array<any>).map(AdminPublicImageFromJSON)),
         'evidence': ((json['evidence'] as Array<any>).map(AdminEvidenceRefFromJSON)),
         'audit': ((json['audit'] as Array<any>).map(AdminAuditTrailEntryFromJSON)),
     };
@@ -220,9 +305,17 @@ export function AdminApplicationDetailToJSONTyped(value?: AdminApplicationDetail
         'submittedAt': ((value['submittedAt'] as any).toISOString()),
         'reviewedAt': ((value['reviewedAt'] as any).toISOString()),
         'rejectionReason': value['rejectionReason'],
+        'categoryNameAr': value['categoryNameAr'],
+        'provinceNameAr': value['provinceNameAr'],
+        'ownerName': value['ownerName'],
+        'ownerPhone': value['ownerPhone'],
         'facility': AdminFacilityToJSON(value['facility']),
         'snapshot': value['snapshot'],
+        'previous': value['previous'],
+        'location': CoordinatesToJSON(value['location']),
+        'duplicates': ((value['duplicates'] as Array<any>).map(AdminDuplicateCandidateToJSON)),
         'publicImageIds': value['publicImageIds'],
+        'publicImages': ((value['publicImages'] as Array<any>).map(AdminPublicImageToJSON)),
         'evidence': ((value['evidence'] as Array<any>).map(AdminEvidenceRefToJSON)),
         'audit': ((value['audit'] as Array<any>).map(AdminAuditTrailEntryToJSON)),
     };

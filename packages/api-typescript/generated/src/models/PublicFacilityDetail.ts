@@ -129,6 +129,18 @@ export interface PublicFacilityDetail {
      */
     imageUrl: string | null;
     /**
+     * When an operator last approved this facility's details (trust signal).
+     * @type {Date}
+     * @memberof PublicFacilityDetail
+     */
+    lastVerifiedAt: Date | null;
+    /**
+     * Last change to the facility record.
+     * @type {Date}
+     * @memberof PublicFacilityDetail
+     */
+    updatedAt: Date;
+    /**
      * 
      * @type {string}
      * @memberof PublicFacilityDetail
@@ -146,6 +158,12 @@ export interface PublicFacilityDetail {
      * @memberof PublicFacilityDetail
      */
     phone: string | null;
+    /**
+     * WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX).
+     * @type {string}
+     * @memberof PublicFacilityDetail
+     */
+    whatsapp: string | null;
     /**
      * 
      * @type {string}
@@ -211,9 +229,12 @@ export function instanceOfPublicFacilityDetail(value: object): value is PublicFa
     if (!('availability' in value) || value['availability'] === undefined) return false;
     if (!('isFavorite' in value) || value['isFavorite'] === undefined) return false;
     if (!('imageUrl' in value) || value['imageUrl'] === undefined) return false;
+    if (!('lastVerifiedAt' in value) || value['lastVerifiedAt'] === undefined) return false;
+    if (!('updatedAt' in value) || value['updatedAt'] === undefined) return false;
     if (!('descriptionAr' in value) || value['descriptionAr'] === undefined) return false;
     if (!('descriptionEn' in value) || value['descriptionEn'] === undefined) return false;
     if (!('phone' in value) || value['phone'] === undefined) return false;
+    if (!('whatsapp' in value) || value['whatsapp'] === undefined) return false;
     if (!('addressAr' in value) || value['addressAr'] === undefined) return false;
     if (!('addressEn' in value) || value['addressEn'] === undefined) return false;
     if (!('neighborhood' in value) || value['neighborhood'] === undefined) return false;
@@ -246,9 +267,12 @@ export function PublicFacilityDetailFromJSONTyped(json: any, ignoreDiscriminator
         'availability': AvailabilityFromJSON(json['availability']),
         'isFavorite': json['isFavorite'],
         'imageUrl': json['imageUrl'],
+        'lastVerifiedAt': (json['lastVerifiedAt'] == null ? null : new Date(json['lastVerifiedAt'])),
+        'updatedAt': (new Date(json['updatedAt'])),
         'descriptionAr': json['descriptionAr'],
         'descriptionEn': json['descriptionEn'],
         'phone': json['phone'],
+        'whatsapp': json['whatsapp'],
         'addressAr': json['addressAr'],
         'addressEn': json['addressEn'],
         'neighborhood': NamedRefFromJSON(json['neighborhood']),
@@ -282,9 +306,12 @@ export function PublicFacilityDetailToJSONTyped(value?: PublicFacilityDetail | n
         'availability': AvailabilityToJSON(value['availability']),
         'isFavorite': value['isFavorite'],
         'imageUrl': value['imageUrl'],
+        'lastVerifiedAt': ((value['lastVerifiedAt'] as any).toISOString()),
+        'updatedAt': ((value['updatedAt']).toISOString()),
         'descriptionAr': value['descriptionAr'],
         'descriptionEn': value['descriptionEn'],
         'phone': value['phone'],
+        'whatsapp': value['whatsapp'],
         'addressAr': value['addressAr'],
         'addressEn': value['addressEn'],
         'neighborhood': NamedRefToJSON(value['neighborhood']),

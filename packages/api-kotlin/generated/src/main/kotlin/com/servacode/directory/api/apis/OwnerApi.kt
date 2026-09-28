@@ -13,6 +13,7 @@ import com.servacode.directory.api.models.FacilityLocation
 import com.servacode.directory.api.models.FacilityMember
 import com.servacode.directory.api.models.OwnerConfig
 import com.servacode.directory.api.models.OwnerFacilityDetail
+import com.servacode.directory.api.models.OwnerFacilityInsights
 import com.servacode.directory.api.models.OwnerFacilitySummaryList
 import com.servacode.directory.api.models.OwnerMemberList
 import com.servacode.directory.api.models.OwnerMemberUpserted
@@ -66,6 +67,22 @@ interface OwnerApi {
      */
     @POST("api/v1/owner/facilities/")
     suspend fun ownerFacilityCreate(@Body facilityCreate: FacilityCreate): Response<OwnerFacilityDetail>
+
+    /**
+     * GET api/v1/owner/facilities/{facility_id}/insights/
+     * Engagement with a facility over the last 30 days
+     * Counts of product analytics events that reference this facility.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param facilityId 
+     * @return [OwnerFacilityInsights]
+     */
+    @GET("api/v1/owner/facilities/{facility_id}/insights/")
+    suspend fun ownerFacilityInsightsRetrieve(@Path("facility_id") facilityId: java.util.UUID): Response<OwnerFacilityInsights>
 
     /**
      * PUT api/v1/owner/facilities/{facility_id}/location/

@@ -43,6 +43,7 @@ import kotlinx.serialization.Contextual
  * @param descriptionAr 
  * @param descriptionEn 
  * @param phone 
+ * @param whatsapp E.164 Syrian mobile.
  * @param addressAr 
  * @param addressEn 
  * @param cityId 
@@ -93,6 +94,10 @@ data class OwnerFacilityDetail (
 
     @SerialName(value = "phone")
     val phone: kotlin.String?,
+
+    /* E.164 Syrian mobile. */
+    @SerialName(value = "whatsapp")
+    val whatsapp: kotlin.String?,
 
     @SerialName(value = "addressAr")
     val addressAr: kotlin.String?,

@@ -13,9 +13,17 @@ Name | Type | Description | Notes
 **submittedAt** | **Date** |  | 
 **reviewedAt** | **Date** |  | 
 **rejectionReason** | **String** |  | 
+**categoryNameAr** | **String** |  | 
+**provinceNameAr** | **String** |  | 
+**ownerName** | **String** |  | 
+**ownerPhone** | **String** |  | 
 **facility** | [**AdminFacility**](AdminFacility.md) |  | 
 **snapshot** | **[String: AnyCodable]** | Redacted submission snapshot. | 
+**previous** | **[String: AnyCodable]** | Snapshot of the last approved application of this facility (plus &#x60;approvedAt&#x60;), for diffing a REVERIFICATION. Null when the facility was never approved. | 
+**location** | [**Coordinates**](Coordinates.md) |  | 
+**duplicates** | [AdminDuplicateCandidate] | Up to 5 other facilities with the same phone, or the same normalized Arabic name within 200 m. | 
 **publicImageIds** | **[UUID]** |  | 
+**publicImages** | [AdminPublicImage] |  | 
 **evidence** | [AdminEvidenceRef] |  | 
 **audit** | [AdminAuditTrailEntry] |  | 
 

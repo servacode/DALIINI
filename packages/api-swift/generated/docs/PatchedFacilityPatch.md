@@ -8,6 +8,7 @@ Name | Type | Description | Notes
 **descriptionAr** | **String** |  | [optional] 
 **descriptionEn** | **String** |  | [optional] 
 **phone** | **String** |  | [optional] 
+**whatsapp** | **String** | Optional Syrian mobile (09XXXXXXXX or +9639XXXXXXXX); blank clears it. | [optional] 
 **addressAr** | **String** |  | [optional] 
 **addressEn** | **String** |  | [optional] 
 **cityId** | **UUID** |  | [optional] 

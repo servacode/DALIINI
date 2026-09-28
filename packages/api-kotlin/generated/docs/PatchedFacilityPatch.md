@@ -9,6 +9,7 @@
 | **descriptionAr** | **kotlin.String** |  |  [optional] |
 | **descriptionEn** | **kotlin.String** |  |  [optional] |
 | **phone** | **kotlin.String** |  |  [optional] |
+| **whatsapp** | **kotlin.String** | Optional Syrian mobile (09XXXXXXXX or +9639XXXXXXXX); blank clears it. |  [optional] |
 | **addressAr** | **kotlin.String** |  |  [optional] |
 | **addressEn** | **kotlin.String** |  |  [optional] |
 | **cityId** | [**java.util.UUID**](java.util.UUID.md) |  |  [optional] |

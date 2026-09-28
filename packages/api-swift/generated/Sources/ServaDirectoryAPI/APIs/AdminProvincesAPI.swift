@@ -13,6 +13,95 @@ import AnyCodable
 open class AdminProvincesAPI {
 
     /**
+     List every city of a province, active or not
+     
+     - parameter provinceId: (path)  
+     - returns: AdminCityAdminList
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminProvinceCitiesList(provinceId: UUID) async throws -> AdminCityAdminList {
+        return try await adminProvinceCitiesListWithRequestBuilder(provinceId: provinceId).execute().body
+    }
+
+    /**
+     List every city of a province, active or not
+     - GET /api/v1/admin/provinces/{province_id}/cities/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter provinceId: (path)  
+     - returns: RequestBuilder<AdminCityAdminList> 
+     */
+    open class func adminProvinceCitiesListWithRequestBuilder(provinceId: UUID) -> RequestBuilder<AdminCityAdminList> {
+        var localVariablePath = "/api/v1/admin/provinces/{province_id}/cities/"
+        let provinceIdPreEscape = "\(APIHelper.mapValueToPathItem(provinceId))"
+        let provinceIdPostEscape = provinceIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{province_id}", with: provinceIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminCityAdminList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Activate or deactivate a city
+     
+     - parameter cityId: (path)  
+     - parameter provinceId: (path)  
+     - parameter adminCityUpdateRequest: (body)  
+     - returns: AdminCityAdmin
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminProvinceCityUpdate(cityId: UUID, provinceId: UUID, adminCityUpdateRequest: AdminCityUpdateRequest) async throws -> AdminCityAdmin {
+        return try await adminProvinceCityUpdateWithRequestBuilder(cityId: cityId, provinceId: provinceId, adminCityUpdateRequest: adminCityUpdateRequest).execute().body
+    }
+
+    /**
+     Activate or deactivate a city
+     - PUT /api/v1/admin/provinces/{province_id}/cities/{city_id}/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter cityId: (path)  
+     - parameter provinceId: (path)  
+     - parameter adminCityUpdateRequest: (body)  
+     - returns: RequestBuilder<AdminCityAdmin> 
+     */
+    open class func adminProvinceCityUpdateWithRequestBuilder(cityId: UUID, provinceId: UUID, adminCityUpdateRequest: AdminCityUpdateRequest) -> RequestBuilder<AdminCityAdmin> {
+        var localVariablePath = "/api/v1/admin/provinces/{province_id}/cities/{city_id}/"
+        let cityIdPreEscape = "\(APIHelper.mapValueToPathItem(cityId))"
+        let cityIdPostEscape = cityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{city_id}", with: cityIdPostEscape, options: .literal, range: nil)
+        let provinceIdPreEscape = "\(APIHelper.mapValueToPathItem(provinceId))"
+        let provinceIdPostEscape = provinceIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{province_id}", with: provinceIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminCityUpdateRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminCityAdmin>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Activate a province or change its order
      
      - parameter provinceId: (path)  

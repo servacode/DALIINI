@@ -94,6 +94,30 @@ export interface AdminApplication {
      * @memberof AdminApplication
      */
     rejectionReason: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminApplication
+     */
+    categoryNameAr: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminApplication
+     */
+    provinceNameAr: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminApplication
+     */
+    ownerName: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminApplication
+     */
+    ownerPhone: string | null;
 }
 
 
@@ -112,6 +136,10 @@ export function instanceOfAdminApplication(value: object): value is AdminApplica
     if (!('submittedAt' in value) || value['submittedAt'] === undefined) return false;
     if (!('reviewedAt' in value) || value['reviewedAt'] === undefined) return false;
     if (!('rejectionReason' in value) || value['rejectionReason'] === undefined) return false;
+    if (!('categoryNameAr' in value) || value['categoryNameAr'] === undefined) return false;
+    if (!('provinceNameAr' in value) || value['provinceNameAr'] === undefined) return false;
+    if (!('ownerName' in value) || value['ownerName'] === undefined) return false;
+    if (!('ownerPhone' in value) || value['ownerPhone'] === undefined) return false;
     return true;
 }
 
@@ -135,6 +163,10 @@ export function AdminApplicationFromJSONTyped(json: any, ignoreDiscriminator: bo
         'submittedAt': (json['submittedAt'] == null ? null : new Date(json['submittedAt'])),
         'reviewedAt': (json['reviewedAt'] == null ? null : new Date(json['reviewedAt'])),
         'rejectionReason': json['rejectionReason'],
+        'categoryNameAr': json['categoryNameAr'],
+        'provinceNameAr': json['provinceNameAr'],
+        'ownerName': json['ownerName'],
+        'ownerPhone': json['ownerPhone'],
     };
 }
 
@@ -159,6 +191,10 @@ export function AdminApplicationToJSONTyped(value?: AdminApplication | null, ign
         'submittedAt': ((value['submittedAt'] as any).toISOString()),
         'reviewedAt': ((value['reviewedAt'] as any).toISOString()),
         'rejectionReason': value['rejectionReason'],
+        'categoryNameAr': value['categoryNameAr'],
+        'provinceNameAr': value['provinceNameAr'],
+        'ownerName': value['ownerName'],
+        'ownerPhone': value['ownerPhone'],
     };
 }
 

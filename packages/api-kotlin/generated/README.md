@@ -74,8 +74,13 @@ All URIs are relative to *http://localhost*
 | *AdminFacilitiesApi* | [**adminFacilityReactivate**](docs/AdminFacilitiesApi.md#adminfacilityreactivate) | **POST** api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility |
 | *AdminFacilitiesApi* | [**adminFacilityRetrieve**](docs/AdminFacilitiesApi.md#adminfacilityretrieve) | **GET** api/v1/admin/facilities/{facility_id}/ | Retrieve one facility |
 | *AdminFacilitiesApi* | [**adminFacilitySuspend**](docs/AdminFacilitiesApi.md#adminfacilitysuspend) | **POST** api/v1/admin/facilities/{facility_id}/suspend/ | Suspend a facility |
+| *AdminProvincesApi* | [**adminProvinceCitiesList**](docs/AdminProvincesApi.md#adminprovincecitieslist) | **GET** api/v1/admin/provinces/{province_id}/cities/ | List every city of a province, active or not |
+| *AdminProvincesApi* | [**adminProvinceCityUpdate**](docs/AdminProvincesApi.md#adminprovincecityupdate) | **PUT** api/v1/admin/provinces/{province_id}/cities/{city_id}/ | Activate or deactivate a city |
 | *AdminProvincesApi* | [**adminProvinceUpdate**](docs/AdminProvincesApi.md#adminprovinceupdate) | **PUT** api/v1/admin/provinces/{province_id}/ | Activate a province or change its order |
 | *AdminProvincesApi* | [**adminProvincesList**](docs/AdminProvincesApi.md#adminprovinceslist) | **GET** api/v1/admin/provinces/ | List every province |
+| *AdminReportsApi* | [**adminReportDismiss**](docs/AdminReportsApi.md#adminreportdismiss) | **POST** api/v1/admin/reports/{report_id}/dismiss/ | Dismiss a report |
+| *AdminReportsApi* | [**adminReportResolve**](docs/AdminReportsApi.md#adminreportresolve) | **POST** api/v1/admin/reports/{report_id}/resolve/ | Mark a report resolved |
+| *AdminReportsApi* | [**adminReportsList**](docs/AdminReportsApi.md#adminreportslist) | **GET** api/v1/admin/reports/ | List facility problem reports |
 | *AdminReviewsApi* | [**adminEvidenceContentRetrieve**](docs/AdminReviewsApi.md#adminevidencecontentretrieve) | **GET** api/v1/admin/evidence/{evidence_id}/content/ | Stream one piece of private verification evidence |
 | *AdminReviewsApi* | [**adminReviewApprove**](docs/AdminReviewsApi.md#adminreviewapprove) | **POST** api/v1/admin/applications/{application_id}/approve/ | Approve an application |
 | *AdminReviewsApi* | [**adminReviewReject**](docs/AdminReviewsApi.md#adminreviewreject) | **POST** api/v1/admin/applications/{application_id}/reject/ | Reject an application |
@@ -135,6 +140,7 @@ All URIs are relative to *http://localhost*
 | *OwnerApi* | [**ownerConfigRetrieve**](docs/OwnerApi.md#ownerconfigretrieve) | **GET** api/v1/owner/config/ | List categories open for owner onboarding in a province |
 | *OwnerApi* | [**ownerFacilitiesList**](docs/OwnerApi.md#ownerfacilitieslist) | **GET** api/v1/owner/facilities/ | List the facilities the caller belongs to |
 | *OwnerApi* | [**ownerFacilityCreate**](docs/OwnerApi.md#ownerfacilitycreate) | **POST** api/v1/owner/facilities/ | Create a facility draft |
+| *OwnerApi* | [**ownerFacilityInsightsRetrieve**](docs/OwnerApi.md#ownerfacilityinsightsretrieve) | **GET** api/v1/owner/facilities/{facility_id}/insights/ | Engagement with a facility over the last 30 days |
 | *OwnerApi* | [**ownerFacilityLocationReplace**](docs/OwnerApi.md#ownerfacilitylocationreplace) | **PUT** api/v1/owner/facilities/{facility_id}/location/ | Set the map point of a facility |
 | *OwnerApi* | [**ownerFacilityMemberDelete**](docs/OwnerApi.md#ownerfacilitymemberdelete) | **DELETE** api/v1/owner/facilities/{facility_id}/members/{user_id}/ | Remove a member from a facility |
 | *OwnerApi* | [**ownerFacilityMemberUpsert**](docs/OwnerApi.md#ownerfacilitymemberupsert) | **POST** api/v1/owner/facilities/{facility_id}/members/ | Add a member or change a member role |
@@ -147,6 +153,8 @@ All URIs are relative to *http://localhost*
 | *PublicDiscoveryApi* | [**publicHomeRetrieve**](docs/PublicDiscoveryApi.md#publichomeretrieve) | **GET** api/v1/public/home/ | Retrieve the home composition for a province |
 | *PublicDiscoveryApi* | [**publicMapFacilitiesList**](docs/PublicDiscoveryApi.md#publicmapfacilitieslist) | **GET** api/v1/public/map/facilities/ | List compact map markers inside a viewport |
 | *PublicDiscoveryApi* | [**publicSearchList**](docs/PublicDiscoveryApi.md#publicsearchlist) | **GET** api/v1/public/search/ | Search facilities within a province |
+| *PublicFacilitiesApi* | [**publicFacilityReportCreate**](docs/PublicFacilitiesApi.md#publicfacilityreportcreate) | **POST** api/v1/facilities/{facility_id}/reports/ | Report a problem with a facility's listing |
+| *PublicPlatformApi* | [**publicPlatformStatusRetrieve**](docs/PublicPlatformApi.md#publicplatformstatusretrieve) | **GET** api/v1/platform/status/ | Platform availability (maintenance mode) |
 | *PublicTaxonomyApi* | [**publicLocationResolve**](docs/PublicTaxonomyApi.md#publiclocationresolve) | **GET** api/v1/public/locations/resolve/ | Resolve a coordinate to a province, city and neighbourhood |
 | *PublicTaxonomyApi* | [**publicProvinceCategoriesList**](docs/PublicTaxonomyApi.md#publicprovincecategorieslist) | **GET** api/v1/public/provinces/{province_id}/categories/ | List categories publicly enabled for a province |
 | *PublicTaxonomyApi* | [**publicProvinceCitiesList**](docs/PublicTaxonomyApi.md#publicprovincecitieslist) | **GET** api/v1/public/provinces/{province_id}/cities/ | List active cities in a province |
@@ -183,12 +191,18 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminCategoryList](docs/AdminCategoryList.md)
  - [com.servacode.directory.api.models.AdminCategoryProvinceRequest](docs/AdminCategoryProvinceRequest.md)
  - [com.servacode.directory.api.models.AdminCategoryUpdateRequest](docs/AdminCategoryUpdateRequest.md)
+ - [com.servacode.directory.api.models.AdminCityAdmin](docs/AdminCityAdmin.md)
+ - [com.servacode.directory.api.models.AdminCityAdminList](docs/AdminCityAdminList.md)
+ - [com.servacode.directory.api.models.AdminCityUpdateRequest](docs/AdminCityUpdateRequest.md)
  - [com.servacode.directory.api.models.AdminDashboard](docs/AdminDashboard.md)
  - [com.servacode.directory.api.models.AdminDecisionRequest](docs/AdminDecisionRequest.md)
+ - [com.servacode.directory.api.models.AdminDuplicateCandidate](docs/AdminDuplicateCandidate.md)
  - [com.servacode.directory.api.models.AdminEventCount](docs/AdminEventCount.md)
  - [com.servacode.directory.api.models.AdminEvidenceRef](docs/AdminEvidenceRef.md)
  - [com.servacode.directory.api.models.AdminFacility](docs/AdminFacility.md)
  - [com.servacode.directory.api.models.AdminFacilityList](docs/AdminFacilityList.md)
+ - [com.servacode.directory.api.models.AdminFacilityReport](docs/AdminFacilityReport.md)
+ - [com.servacode.directory.api.models.AdminFacilityReportList](docs/AdminFacilityReportList.md)
  - [com.servacode.directory.api.models.AdminFacilityStatusCount](docs/AdminFacilityStatusCount.md)
  - [com.servacode.directory.api.models.AdminId](docs/AdminId.md)
  - [com.servacode.directory.api.models.AdminMe](docs/AdminMe.md)
@@ -196,7 +210,9 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminProvinceList](docs/AdminProvinceList.md)
  - [com.servacode.directory.api.models.AdminProvinceUpdateRequest](docs/AdminProvinceUpdateRequest.md)
  - [com.servacode.directory.api.models.AdminProvinceUpdated](docs/AdminProvinceUpdated.md)
+ - [com.servacode.directory.api.models.AdminPublicImage](docs/AdminPublicImage.md)
  - [com.servacode.directory.api.models.AdminRecentAction](docs/AdminRecentAction.md)
+ - [com.servacode.directory.api.models.AdminReportDecisionRequest](docs/AdminReportDecisionRequest.md)
  - [com.servacode.directory.api.models.AdminRole](docs/AdminRole.md)
  - [com.servacode.directory.api.models.AdminRoleList](docs/AdminRoleList.md)
  - [com.servacode.directory.api.models.AdminSetting](docs/AdminSetting.md)
@@ -235,6 +251,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.DeletionRequest](docs/DeletionRequest.md)
  - [com.servacode.directory.api.models.DependencyConfiguredEnum](docs/DependencyConfiguredEnum.md)
  - [com.servacode.directory.api.models.DestinationEnum](docs/DestinationEnum.md)
+ - [com.servacode.directory.api.models.DuplicateReasonEnum](docs/DuplicateReasonEnum.md)
  - [com.servacode.directory.api.models.DutyShift](docs/DutyShift.md)
  - [com.servacode.directory.api.models.DutyShiftInput](docs/DutyShiftInput.md)
  - [com.servacode.directory.api.models.DutyShiftList](docs/DutyShiftList.md)
@@ -247,6 +264,10 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.FacilityMember](docs/FacilityMember.md)
  - [com.servacode.directory.api.models.FacilityMemberRoleEnum](docs/FacilityMemberRoleEnum.md)
  - [com.servacode.directory.api.models.FacilityRating](docs/FacilityRating.md)
+ - [com.servacode.directory.api.models.FacilityReportCreated](docs/FacilityReportCreated.md)
+ - [com.servacode.directory.api.models.FacilityReportReasonEnum](docs/FacilityReportReasonEnum.md)
+ - [com.servacode.directory.api.models.FacilityReportRequest](docs/FacilityReportRequest.md)
+ - [com.servacode.directory.api.models.FacilityReportStatusEnum](docs/FacilityReportStatusEnum.md)
  - [com.servacode.directory.api.models.FacilityStatusEnum](docs/FacilityStatusEnum.md)
  - [com.servacode.directory.api.models.FavoriteFacility](docs/FavoriteFacility.md)
  - [com.servacode.directory.api.models.FavoriteList](docs/FavoriteList.md)
@@ -275,6 +296,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.OwnerFacilityDetail](docs/OwnerFacilityDetail.md)
  - [com.servacode.directory.api.models.OwnerFacilityImage](docs/OwnerFacilityImage.md)
  - [com.servacode.directory.api.models.OwnerFacilityImageList](docs/OwnerFacilityImageList.md)
+ - [com.servacode.directory.api.models.OwnerFacilityInsights](docs/OwnerFacilityInsights.md)
  - [com.servacode.directory.api.models.OwnerFacilitySummary](docs/OwnerFacilitySummary.md)
  - [com.servacode.directory.api.models.OwnerFacilitySummaryList](docs/OwnerFacilitySummaryList.md)
  - [com.servacode.directory.api.models.OwnerHoursEntry](docs/OwnerHoursEntry.md)
@@ -289,6 +311,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.PatchedFacilityPatch](docs/PatchedFacilityPatch.md)
  - [com.servacode.directory.api.models.PatchedProfilePatch](docs/PatchedProfilePatch.md)
  - [com.servacode.directory.api.models.PhoneChangeStart](docs/PhoneChangeStart.md)
+ - [com.servacode.directory.api.models.PlatformStatus](docs/PlatformStatus.md)
  - [com.servacode.directory.api.models.Profile](docs/Profile.md)
  - [com.servacode.directory.api.models.PublicAdvertisement](docs/PublicAdvertisement.md)
  - [com.servacode.directory.api.models.PublicAdvertisementList](docs/PublicAdvertisementList.md)

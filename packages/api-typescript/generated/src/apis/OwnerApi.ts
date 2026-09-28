@@ -21,6 +21,7 @@ import type {
   FacilityMember,
   OwnerConfig,
   OwnerFacilityDetail,
+  OwnerFacilityInsights,
   OwnerFacilitySummaryList,
   OwnerMemberList,
   OwnerMemberUpserted,
@@ -40,6 +41,8 @@ import {
     OwnerConfigToJSON,
     OwnerFacilityDetailFromJSON,
     OwnerFacilityDetailToJSON,
+    OwnerFacilityInsightsFromJSON,
+    OwnerFacilityInsightsToJSON,
     OwnerFacilitySummaryListFromJSON,
     OwnerFacilitySummaryListToJSON,
     OwnerMemberListFromJSON,
@@ -58,6 +61,10 @@ export interface OwnerConfigRetrieveRequest {
 
 export interface OwnerFacilityCreateRequest {
     facilityCreate: FacilityCreate;
+}
+
+export interface OwnerFacilityInsightsRetrieveRequest {
+    facilityId: string;
 }
 
 export interface OwnerFacilityLocationReplaceRequest {
@@ -230,6 +237,53 @@ export class OwnerApi extends runtime.BaseAPI {
      */
     async ownerFacilityCreate(requestParameters: OwnerFacilityCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OwnerFacilityDetail> {
         const response = await this.ownerFacilityCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Counts of product analytics events that reference this facility.
+     * Engagement with a facility over the last 30 days
+     */
+    async ownerFacilityInsightsRetrieveRaw(requestParameters: OwnerFacilityInsightsRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OwnerFacilityInsights>> {
+        if (requestParameters['facilityId'] == null) {
+            throw new runtime.RequiredError(
+                'facilityId',
+                'Required parameter "facilityId" was null or undefined when calling ownerFacilityInsightsRetrieve().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/owner/facilities/{facility_id}/insights/`;
+        urlPath = urlPath.replace(`{${"facility_id"}}`, encodeURIComponent(String(requestParameters['facilityId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => OwnerFacilityInsightsFromJSON(jsonValue));
+    }
+
+    /**
+     * Counts of product analytics events that reference this facility.
+     * Engagement with a facility over the last 30 days
+     */
+    async ownerFacilityInsightsRetrieve(requestParameters: OwnerFacilityInsightsRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OwnerFacilityInsights> {
+        const response = await this.ownerFacilityInsightsRetrieveRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

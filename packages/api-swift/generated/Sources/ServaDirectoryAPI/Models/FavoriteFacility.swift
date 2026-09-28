@@ -26,10 +26,14 @@ public struct FavoriteFacility: Codable, JSONEncodable, Hashable {
     public var isFavorite: Bool
     /** The facility's first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one. */
     public var imageUrl: String?
+    /** When an operator last approved this facility's details (trust signal). */
+    public var lastVerifiedAt: Date?
+    /** Last change to the facility record. */
+    public var updatedAt: Date
     /** When the caller saved this facility. */
     public var favoritedAt: Date
 
-    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, isFavorite: Bool, imageUrl: String?, favoritedAt: Date) {
+    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, isFavorite: Bool, imageUrl: String?, lastVerifiedAt: Date?, updatedAt: Date, favoritedAt: Date) {
         self.id = id
         self.nameAr = nameAr
         self.nameEn = nameEn
@@ -41,6 +45,8 @@ public struct FavoriteFacility: Codable, JSONEncodable, Hashable {
         self.availability = availability
         self.isFavorite = isFavorite
         self.imageUrl = imageUrl
+        self.lastVerifiedAt = lastVerifiedAt
+        self.updatedAt = updatedAt
         self.favoritedAt = favoritedAt
     }
 
@@ -56,6 +62,8 @@ public struct FavoriteFacility: Codable, JSONEncodable, Hashable {
         case availability
         case isFavorite
         case imageUrl
+        case lastVerifiedAt
+        case updatedAt
         case favoritedAt
     }
 
@@ -74,6 +82,8 @@ public struct FavoriteFacility: Codable, JSONEncodable, Hashable {
         try container.encode(availability, forKey: .availability)
         try container.encode(isFavorite, forKey: .isFavorite)
         try container.encode(imageUrl, forKey: .imageUrl)
+        try container.encode(lastVerifiedAt, forKey: .lastVerifiedAt)
+        try container.encode(updatedAt, forKey: .updatedAt)
         try container.encode(favoritedAt, forKey: .favoritedAt)
     }
 }

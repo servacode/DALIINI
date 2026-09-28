@@ -81,5 +81,29 @@ class AdminFacilityTest : ShouldSpec() {
             //modelInstance.updatedAt shouldBe ("TODO")
         }
 
+        // to test the property `categoryNameAr`
+        should("test categoryNameAr") {
+            // uncomment below to test the property
+            //modelInstance.categoryNameAr shouldBe ("TODO")
+        }
+
+        // to test the property `provinceNameAr`
+        should("test provinceNameAr") {
+            // uncomment below to test the property
+            //modelInstance.provinceNameAr shouldBe ("TODO")
+        }
+
+        // to test the property `ownerName` - First owner membership.
+        should("test ownerName") {
+            // uncomment below to test the property
+            //modelInstance.ownerName shouldBe ("TODO")
+        }
+
+        // to test the property `ownerPhone` - First owner membership.
+        should("test ownerPhone") {
+            // uncomment below to test the property
+            //modelInstance.ownerPhone shouldBe ("TODO")
+        }
+
     }
 }

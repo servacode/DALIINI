@@ -130,6 +130,48 @@ open class OwnerAPI {
     }
 
     /**
+     Engagement with a facility over the last 30 days
+     
+     - parameter facilityId: (path)  
+     - returns: OwnerFacilityInsights
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func ownerFacilityInsightsRetrieve(facilityId: UUID) async throws -> OwnerFacilityInsights {
+        return try await ownerFacilityInsightsRetrieveWithRequestBuilder(facilityId: facilityId).execute().body
+    }
+
+    /**
+     Engagement with a facility over the last 30 days
+     - GET /api/v1/owner/facilities/{facility_id}/insights/
+     - Counts of product analytics events that reference this facility.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter facilityId: (path)  
+     - returns: RequestBuilder<OwnerFacilityInsights> 
+     */
+    open class func ownerFacilityInsightsRetrieveWithRequestBuilder(facilityId: UUID) -> RequestBuilder<OwnerFacilityInsights> {
+        var localVariablePath = "/api/v1/owner/facilities/{facility_id}/insights/"
+        let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
+        let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{facility_id}", with: facilityIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<OwnerFacilityInsights>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Set the map point of a facility
      
      - parameter facilityId: (path)  

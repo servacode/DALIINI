@@ -28,6 +28,7 @@ import kotlinx.serialization.Contextual
  * @param descriptionAr 
  * @param descriptionEn 
  * @param phone 
+ * @param whatsapp Optional Syrian mobile (09XXXXXXXX or +9639XXXXXXXX); blank clears it.
  * @param addressAr 
  * @param addressEn 
  * @param cityId 
@@ -53,6 +54,10 @@ data class PatchedFacilityPatch (
 
     @SerialName(value = "phone")
     val phone: kotlin.String? = null,
+
+    /* Optional Syrian mobile (09XXXXXXXX or +9639XXXXXXXX); blank clears it. */
+    @SerialName(value = "whatsapp")
+    val whatsapp: kotlin.String? = null,
 
     @SerialName(value = "addressAr")
     val addressAr: kotlin.String? = null,

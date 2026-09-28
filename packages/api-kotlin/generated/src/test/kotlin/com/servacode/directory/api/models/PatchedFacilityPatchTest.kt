@@ -55,6 +55,12 @@ class PatchedFacilityPatchTest : ShouldSpec() {
             //modelInstance.phone shouldBe ("TODO")
         }
 
+        // to test the property `whatsapp` - Optional Syrian mobile (09XXXXXXXX or +9639XXXXXXXX); blank clears it.
+        should("test whatsapp") {
+            // uncomment below to test the property
+            //modelInstance.whatsapp shouldBe ("TODO")
+        }
+
         // to test the property `addressAr`
         should("test addressAr") {
             // uncomment below to test the property

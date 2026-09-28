@@ -22,14 +22,24 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
     public var submittedAt: Date?
     public var reviewedAt: Date?
     public var rejectionReason: String?
+    public var categoryNameAr: String
+    public var provinceNameAr: String
+    public var ownerName: String?
+    public var ownerPhone: String?
     public var facility: AdminFacility
     /** Redacted submission snapshot. */
     public var snapshot: [String: AnyCodable]
+    /** Snapshot of the last approved application of this facility (plus `approvedAt`), for diffing a REVERIFICATION. Null when the facility was never approved. */
+    public var previous: [String: AnyCodable]?
+    public var location: Coordinates?
+    /** Up to 5 other facilities with the same phone, or the same normalized Arabic name within 200 m. */
+    public var duplicates: [AdminDuplicateCandidate]
     public var publicImageIds: [UUID]
+    public var publicImages: [AdminPublicImage]
     public var evidence: [AdminEvidenceRef]
     public var audit: [AdminAuditTrailEntry]
 
-    public init(id: UUID, facilityId: UUID, facilityNameAr: String, kind: FacilityApplicationKindEnum, status: FacilityApplicationStatusEnum, provinceId: UUID, categoryId: UUID, submittedAt: Date?, reviewedAt: Date?, rejectionReason: String?, facility: AdminFacility, snapshot: [String: AnyCodable], publicImageIds: [UUID], evidence: [AdminEvidenceRef], audit: [AdminAuditTrailEntry]) {
+    public init(id: UUID, facilityId: UUID, facilityNameAr: String, kind: FacilityApplicationKindEnum, status: FacilityApplicationStatusEnum, provinceId: UUID, categoryId: UUID, submittedAt: Date?, reviewedAt: Date?, rejectionReason: String?, categoryNameAr: String, provinceNameAr: String, ownerName: String?, ownerPhone: String?, facility: AdminFacility, snapshot: [String: AnyCodable], previous: [String: AnyCodable]?, location: Coordinates?, duplicates: [AdminDuplicateCandidate], publicImageIds: [UUID], publicImages: [AdminPublicImage], evidence: [AdminEvidenceRef], audit: [AdminAuditTrailEntry]) {
         self.id = id
         self.facilityId = facilityId
         self.facilityNameAr = facilityNameAr
@@ -40,9 +50,17 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
         self.submittedAt = submittedAt
         self.reviewedAt = reviewedAt
         self.rejectionReason = rejectionReason
+        self.categoryNameAr = categoryNameAr
+        self.provinceNameAr = provinceNameAr
+        self.ownerName = ownerName
+        self.ownerPhone = ownerPhone
         self.facility = facility
         self.snapshot = snapshot
+        self.previous = previous
+        self.location = location
+        self.duplicates = duplicates
         self.publicImageIds = publicImageIds
+        self.publicImages = publicImages
         self.evidence = evidence
         self.audit = audit
     }
@@ -58,9 +76,17 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
         case submittedAt
         case reviewedAt
         case rejectionReason
+        case categoryNameAr
+        case provinceNameAr
+        case ownerName
+        case ownerPhone
         case facility
         case snapshot
+        case previous
+        case location
+        case duplicates
         case publicImageIds
+        case publicImages
         case evidence
         case audit
     }
@@ -79,9 +105,17 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
         try container.encode(submittedAt, forKey: .submittedAt)
         try container.encode(reviewedAt, forKey: .reviewedAt)
         try container.encode(rejectionReason, forKey: .rejectionReason)
+        try container.encode(categoryNameAr, forKey: .categoryNameAr)
+        try container.encode(provinceNameAr, forKey: .provinceNameAr)
+        try container.encode(ownerName, forKey: .ownerName)
+        try container.encode(ownerPhone, forKey: .ownerPhone)
         try container.encode(facility, forKey: .facility)
         try container.encode(snapshot, forKey: .snapshot)
+        try container.encode(previous, forKey: .previous)
+        try container.encode(location, forKey: .location)
+        try container.encode(duplicates, forKey: .duplicates)
         try container.encode(publicImageIds, forKey: .publicImageIds)
+        try container.encode(publicImages, forKey: .publicImages)
         try container.encode(evidence, forKey: .evidence)
         try container.encode(audit, forKey: .audit)
     }
