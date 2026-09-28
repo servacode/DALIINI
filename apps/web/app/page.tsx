@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SearchBox } from "../components/search-form";
 import { DownloadCta, FacilityList, JsonLd, Unavailable } from "../components/ui";
 import { getDutyByProvince, getProvinces } from "../lib/api";
 import { SITE_NAME, absoluteUrl, publicConfig } from "../lib/config";
@@ -29,9 +30,10 @@ export default async function HomePage() {
         <span className="eyebrow">دليني</span>
         <h1>اعثر على الصيدليات والعيادات والخدمات القريبة منك بسهولة.</h1>
         <p>دليل محلي يعرض أوقات الدوام، والصيدليات المناوبة، وأرقام التواصل، ومواقع المنشآت على الخريطة — بمعلومات تُراجَع باستمرار.</p>
+        <SearchBox id="hero-q" variant="hero" />
         <div className="actions">
           <Link className="button" href="/duty">الصيدليات المناوبة الآن</Link>
-          <Link className="button button-alt" href="/support">الدعم والمساعدة</Link>
+          <Link className="button button-alt" href="/owners">أضف منشأتك</Link>
         </div>
       </section>
 

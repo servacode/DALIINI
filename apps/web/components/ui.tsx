@@ -96,27 +96,44 @@ export function Breadcrumbs({ items }: { items: { href?: string; label: string }
   return (
     <nav aria-label="مسار التنقل" className="crumbs">
       <Link href="/">الرئيسية</Link>
-      {items.map((item) => (
+      {items.map((item, i) => (
         <span key={item.label}>
           {" / "}
-          {item.href ? <Link href={item.href}>{item.label}</Link> : <span aria-current="page">{item.label}</span>}
+          {item.href ? (
+            <Link href={item.href}>{item.label}</Link>
+          ) : (
+            <span aria-current={i === items.length - 1 ? "page" : undefined}>{item.label}</span>
+          )}
         </span>
       ))}
     </nav>
   );
 }
 
-export function DownloadCta() {
+export function DownloadCta({
+  title = "حمّل تطبيق دليني",
+  body = "ابحث حسب موقعك، واحفظ المنشآت، وقيّم تجربتك من هاتفك.",
+}: { title?: string; body?: string }) {
   const { playStoreUrl, appStoreUrl } = publicConfig;
   if (!playStoreUrl && !appStoreUrl) return null;
   return (
     <section className="card cta" aria-labelledby="download-title">
-      <h2 id="download-title">حمّل تطبيق دليني</h2>
-      <p>ابحث حسب موقعك، واحفظ المنشآت، وقيّم تجربتك من هاتفك.</p>
+      <h2 id="download-title">{title}</h2>
+      <p>{body}</p>
       <div className="actions">
-        {playStoreUrl ? <a className="button" href={playStoreUrl} rel="noopener">Google Play</a> : null}
-        {appStoreUrl ? <a className="button button-alt" href={appStoreUrl} rel="noopener">App Store</a> : null}
+        {playStoreUrl ? <a className="button" href={playStoreUrl} rel="noopener"><Icon name="download" />Google Play</a> : null}
+        {appStoreUrl ? <a className="button button-alt" href={appStoreUrl} rel="noopener"><Icon name="download" />App Store</a> : null}
       </div>
+    </section>
+  );
+}
+
+/** A short page section: heading and body, used by the explanatory pages. */
+export function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
+  return (
+    <section aria-labelledby={id}>
+      <h2 id={id}>{title}</h2>
+      {children}
     </section>
   );
 }

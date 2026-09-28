@@ -1,5 +1,4 @@
-import { Empty, FacilityList, Unavailable } from "../../components/ui";
-import { getDutyByProvince } from "../../lib/api";
+import { DUTY_TITLES, DutyView } from "../../components/duty";
 import { pageMetadata } from "../../lib/seo";
 
 /*
@@ -10,29 +9,11 @@ import { pageMetadata } from "../../lib/seo";
 export const revalidate = 300;
 
 export const metadata = pageMetadata({
-  title: "الصيدليات المناوبة الآن",
+  title: DUTY_TITLES.now,
   description: "قائمة الصيدليات المناوبة الآن في كل محافظة مع أرقام التواصل والموقع.",
   path: "/duty",
 });
 
-export default async function DutyPage() {
-  const groups = await getDutyByProvince();
-  return (
-    <div className="shell page">
-      <h1>الصيدليات المناوبة الآن</h1>
-      <p className="muted">تُحدَّث القائمة كل بضع دقائق. يُنصح بالاتصال قبل التوجّه.</p>
-      {groups === null ? (
-        <Unavailable />
-      ) : groups.length === 0 ? (
-        <Empty>لا توجد محافظات مفعّلة بعد.</Empty>
-      ) : (
-        groups.map((g) => (
-          <section key={g.province.id} aria-labelledby={`p-${g.province.id}`}>
-            <h2 id={`p-${g.province.id}`}>{g.province.nameAr}</h2>
-            {g.items.length === 0 ? <Empty illustration="noResults">لا توجد صيدليات مناوبة معلنة حالياً.</Empty> : <FacilityList items={g.items} />}
-          </section>
-        ))
-      )}
-    </div>
-  );
+export default function DutyPage() {
+  return <DutyView when="now" />;
 }

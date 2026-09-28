@@ -1,6 +1,7 @@
 import brandSymbol from "@servacode/design-tokens/brand/symbol-128.webp";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { SearchBox } from "./search-form";
 
 export function SiteShell({ children }: { children: ReactNode }) {
   return (
@@ -12,17 +13,23 @@ export function SiteShell({ children }: { children: ReactNode }) {
             <img className="brand-mark" src={brandSymbol.src} width={36} height={36} alt="" aria-hidden="true" />
             <span>دليني</span>
           </Link>
-          <nav className="nav" aria-label="التنقل العام">
+          <SearchBox id="header-q" variant="header" />
+          <nav className="nav header-nav" aria-label="التنقل العام">
             <Link href="/duty">المناوبات</Link>
+            <Link href="/search">ابحث</Link>
+            <Link href="/owners">لأصحاب المنشآت</Link>
             <Link href="/support">الدعم</Link>
           </nav>
         </div>
       </header>
       <main>{children}</main>
       <footer className="shell footer">
-        <nav className="nav" aria-label="روابط قانونية">
-          <Link href="/privacy">سياسة الخصوصية</Link>
-          <Link href="/terms">شروط الاستخدام</Link>
+        <nav className="nav" aria-label="روابط الموقع">
+          <Link href="/how-we-verify">كيف نتحقق</Link>
+          <Link href="/faq">الأسئلة الشائعة</Link>
+          <Link href="/owners">لأصحاب المنشآت</Link>
+          <Link href="/privacy">الخصوصية</Link>
+          <Link href="/terms">الشروط</Link>
           <Link href="/support">الدعم</Link>
           <Link href="/delete-account">حذف الحساب</Link>
         </nav>

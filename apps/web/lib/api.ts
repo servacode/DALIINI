@@ -31,6 +31,9 @@ export interface CompactFacility {
   ratingAverage: number | null;
   ratingCount: number;
   availability: { state: AvailabilityState; nextOpenAt: string | null };
+  /* When staff last confirmed the details, and when anything last changed. */
+  lastVerifiedAt?: string | null;
+  updatedAt?: string | null;
 }
 
 export interface HoursEntry { id: string; weekday: number; opensAt: string; closesAt: string; sequence: number }
@@ -42,9 +45,7 @@ export interface FacilityDetail extends CompactFacility {
   neighborhood: Ref | null;
   location: { latitude: number; longitude: number } | null;
   hours: HoursEntry[];
-  /* Not in the schema yet; read defensively so the page lights up once added. */
   whatsapp?: string | null;
-  lastVerifiedAt?: string | null;
 }
 
 export interface Province { id: string; code: string; nameAr: string; nameEn: string | null }
@@ -133,10 +134,62 @@ export async function getFacility(id: string): Promise<FacilityDetail | null | u
   return getJson<FacilityDetail>(`facilities/${id}/`);
 }
 
+/*
+ * The duty roster the public API can answer: "now" (a shift is running) or
+ * "today" (on today's roster). The API has no roster for other dates yet.
+ */
+export type DutyWhen = "now" | "today";
+
 /* Duty pharmacies for every active province; null when the API is down. */
-export async function getDutyByProvince(): Promise<{ province: Province; items: CompactFacility[] }[] | null> {
+export async function getDutyByProvince(when: DutyWhen = "now"): Promise<{ province: Province; items: CompactFacility[] }[] | null> {
   const provinces = await getProvinces();
   if (!provinces) return null;
-  const pages = await Promise.all(provinces.map((p) => getFacilities({ provinceId: p.id, dutyNow: true, limit: 50 })));
+  const pages = await Promise.all(
+    provinces.map((p) =>
+      getJson<FacilityPage>("facilities/", {
+        provinceId: p.id,
+        dutyNow: when === "now" ? "true" : undefined,
+        dutyToday: when === "today" ? "true" : undefined,
+        limit: "50",
+      }),
+    ),
+  );
   return provinces.map((province, i) => ({ province, items: pages[i]?.items ?? [] }));
+}
+
+/* Search needs at least this many characters (the API rejects shorter terms). */
+export const MIN_QUERY_LENGTH = 2;
+
+/* One page of search results inside a province; null when the API is down. */
+export async function searchFacilities(params: {
+  q: string;
+  provinceId: string;
+  categoryId?: string;
+  cursor?: string;
+  limit?: number;
+}): Promise<FacilityPage | null> {
+  if (params.q.trim().length < MIN_QUERY_LENGTH) return { items: [], nextCursor: null, hasMore: false };
+  return (await getJson<FacilityPage>("search/", {
+    q: params.q.trim(),
+    provinceId: params.provinceId,
+    categoryId: params.categoryId && isUuid(params.categoryId) ? params.categoryId : undefined,
+    cursor: params.cursor,
+    limit: String(params.limit ?? 30),
+  })) ?? null;
+}
+
+/* Every category offered in at least one of the given provinces, first seen first. */
+export async function getCategoriesFor(provinces: Province[]): Promise<Category[] | null> {
+  const lists = await Promise.all(provinces.map((p) => getCategories(p.id)));
+  if (lists.length > 0 && lists.every((l) => l === null)) return null;
+  const seen = new Map<string, Category>();
+  for (const list of lists) for (const c of list ?? []) if (!seen.has(c.id)) seen.set(c.id, c);
+  return [...seen.values()];
+}
+
+export interface PublishedPage { key: string; titleAr: string; version: number; publishedAt: string | null; bodyAr: string }
+
+/* A page the team publishes from the console (FAQ, about…); undefined when unpublished. */
+export async function getPublishedPage(key: "FAQ" | "ABOUT" | "INSTRUCTIONS"): Promise<PublishedPage | null | undefined> {
+  return getJson<PublishedPage>(`legal/${key}/`);
 }

@@ -20,6 +20,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [
     { url: absoluteUrl("/"), changeFrequency: "daily", priority: 1 },
     { url: absoluteUrl("/duty"), changeFrequency: "hourly", priority: 0.9 },
+    { url: absoluteUrl("/duty/today"), changeFrequency: "hourly", priority: 0.8 },
+    { url: absoluteUrl("/search"), changeFrequency: "monthly", priority: 0.5 },
+    ...["/owners", "/how-we-verify", "/faq"].map((path) => ({
+      url: absoluteUrl(path),
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    })),
     ...["/support", "/privacy", "/terms", "/delete-account"].map((path) => ({
       url: absoluteUrl(path),
       changeFrequency: "monthly" as const,

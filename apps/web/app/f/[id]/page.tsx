@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
+import Link from "next/link";
+import { ShareLinks } from "../../../components/share";
 import { Breadcrumbs, Icon, JsonLd, Rating, StatusBadge, Unavailable } from "../../../components/ui";
-import { getFacility, type FacilityDetail, type HoursEntry } from "../../../lib/api";
-import { absoluteUrl } from "../../../lib/config";
+import { getFacility, getProvinces, type FacilityDetail, type HoursEntry } from "../../../lib/api";
+import { absoluteUrl, appOpenUrl } from "../../../lib/config";
+import { spokenDate } from "../../../lib/dates";
 import { UNAVAILABLE_METADATA, pageMetadata } from "../../../lib/seo";
 
 /*
@@ -106,6 +109,43 @@ function HoursTable({ hours }: { hours: HoursEntry[] }) {
   );
 }
 
+/*
+ * The detail payload names the category but not the province. With a single
+ * active province (the launch set-up) the category listing is unambiguous, so
+ * the breadcrumb links to it; otherwise the category is shown as plain text.
+ */
+async function crumbs(f: FacilityDetail) {
+  const provinces = await getProvinces();
+  const only = provinces?.length === 1 ? provinces[0] : null;
+  return only
+    ? [
+        { href: `/${only.code}`, label: only.nameAr },
+        { href: `/${only.code}/${f.category.id}`, label: f.category.nameAr },
+        { label: f.nameAr },
+      ]
+    : [{ label: f.category.nameAr }, { label: f.nameAr }];
+}
+
+/* «تم التحقق قبل ٣ أيام · آخر تحديث أمس · كيف نتحقق؟» */
+function TrustLine({ f }: { f: FacilityDetail }) {
+  const verified = spokenDate(f.lastVerifiedAt);
+  const updated = spokenDate(f.updatedAt);
+  return (
+    <p className="trust">
+      {verified ? (
+        <span className="with-icon">
+          <Icon name="verified" size={16} />
+          <span>تم التحقق <time dateTime={verified.iso} title={verified.full}>{verified.text}</time></span>
+        </span>
+      ) : null}
+      {updated ? (
+        <span>آخر تحديث <time dateTime={updated.iso} title={updated.full}>{updated.text}</time></span>
+      ) : null}
+      <Link href="/how-we-verify">كيف نتحقق؟</Link>
+    </p>
+  );
+}
+
 export default async function FacilityPage({ params }: Props) {
   const { id } = await params;
   const f = await load(id);
@@ -114,13 +154,14 @@ export default async function FacilityPage({ params }: Props) {
 
   const wa = waLink(f.whatsapp);
   const loc = f.location ? `${f.location.latitude},${f.location.longitude}` : null;
-  const verified = f.lastVerifiedAt ? new Date(f.lastVerifiedAt) : null;
+  const openInApp = appOpenUrl(f.id);
+  const url = absoluteUrl(`/f/${f.id}`);
 
   return (
     <article className="shell page">
       <JsonLd data={structuredData(f)} />
-      <Breadcrumbs items={[{ label: f.nameAr }]} />
-      <div className="row">
+      <Breadcrumbs items={await crumbs(f)} />
+      <div className="row title-row">
         <h1>{f.nameAr}</h1>
         <StatusBadge state={f.availability.state} />
       </div>
@@ -129,6 +170,7 @@ export default async function FacilityPage({ params }: Props) {
         {f.city ? <span>· {f.city.nameAr}</span> : null}
         <Rating average={f.ratingAverage} count={f.ratingCount} />
       </div>
+      <TrustLine f={f} />
       {f.availability.state === "DUTY" ? <p><strong>هذه الصيدلية مناوبة الآن.</strong></p> : null}
       {f.descriptionAr ? <p>{f.descriptionAr}</p> : null}
 
@@ -141,6 +183,12 @@ export default async function FacilityPage({ params }: Props) {
             الاتجاهات
           </a>
         ) : null}
+        {openInApp ? (
+          <a className="button button-alt" href={openInApp}>
+            <Icon name="externalLink" />
+            افتح في التطبيق
+          </a>
+        ) : null}
       </div>
 
       <h2>المعلومات</h2>
@@ -149,10 +197,7 @@ export default async function FacilityPage({ params }: Props) {
           <div><dt>العنوان</dt><dd>{[f.addressAr, f.neighborhood?.nameAr, f.city?.nameAr].filter(Boolean).join("، ")}</dd></div>
         ) : null}
         {f.phone ? <div><dt>الهاتف</dt><dd className="ltr"><a href={`tel:${f.phone.replace(/\s+/g, "")}`}>{f.phone}</a></dd></div> : null}
-        {loc ? <div><dt>الموقع</dt><dd><a href={`geo:${loc}`}>فتح في تطبيق الخرائط</a></dd></div> : null}
-        {verified && !Number.isNaN(verified.getTime()) ? (
-          <div><dt>آخر تحقق</dt><dd>{verified.toLocaleDateString("ar-SY", { dateStyle: "long" })}</dd></div>
-        ) : null}
+        {loc ? <div><dt>الموقع</dt><dd><a href={`geo:${loc}`}>افتح في تطبيق الخرائط</a></dd></div> : null}
       </dl>
 
       {f.hours.length > 0 ? (
@@ -161,6 +206,18 @@ export default async function FacilityPage({ params }: Props) {
           <div className="card"><HoursTable hours={f.hours} /></div>
         </>
       ) : null}
+
+      <ShareLinks title={f.nameAr} url={url} />
+
+      <section aria-labelledby="report-title">
+        <h2 id="report-title" className="with-icon"><Icon name="flag" size={20} />وجدت معلومة خاطئة؟</h2>
+        <div className="card note">
+          <p>
+            افتح هذه المنشأة في تطبيق دليني واضغط «الإبلاغ عن مشكلة»، وسيراجع فريقنا البلاغ. لا تملك التطبيق؟{" "}
+            <Link href="/support">راسل الدعم</Link> واذكر رابط هذه الصفحة.
+          </p>
+        </div>
+      </section>
     </article>
   );
 }
