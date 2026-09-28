@@ -7,6 +7,7 @@ import { type ReactNode, createContext, useContext, useState } from "react";
 import { logout } from "../lib/client/api";
 import { useResource } from "../lib/client/use-resource";
 import { type IconName, Icons } from "./icons";
+import { GlobalSearch } from "./global-search";
 import { ThemeToggle } from "./theme-toggle";
 import { BrandMark, ErrorState, LoadingState } from "./ui";
 
@@ -305,6 +306,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                   </>
                 ) : null}
               </ol>
+              <GlobalSearch />
             </div>
             <div className="topbar-end">
               <ThemeToggle />

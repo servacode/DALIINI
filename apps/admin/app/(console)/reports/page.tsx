@@ -21,6 +21,7 @@ import {
 } from "../../../components/ui";
 import { useMutation } from "../../../lib/client/use-mutation";
 import { useResource } from "../../../lib/client/use-resource";
+import { useUrlFilters } from "../../../lib/client/use-url-filters";
 
 type Report = Readonly<{
   id: string;
@@ -49,7 +50,7 @@ const STATUS = termsFor("reportStatus");
  * facility screen, where the lifecycle rules apply.
  */
 export default function ReportsPage() {
-  const [filters, setFilters] = useState<Record<string, string>>({ status: "OPEN" });
+  const [filters, setFilters] = useUrlFilters({ status: "OPEN", facility: "" });
   const reports = useResource<{ items: Report[] }>("reports", filters);
   const mutation = useMutation();
   const canManage = useCan("admin.reports.manage");

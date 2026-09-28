@@ -12,6 +12,7 @@ import {
   PageHeader,
   Panel,
   StatusBadge,
+  type Tone,
   Toast,
   formatDateTime,
 } from "../../../../components/ui";
@@ -19,7 +20,7 @@ import { useMutation } from "../../../../lib/client/use-mutation";
 import { REASONS } from "../../reports/page";
 import { useLookups } from "../../../../lib/client/use-lookups";
 import { useResource } from "../../../../lib/client/use-resource";
-import { STATUS } from "../page";
+import { QUALITY_ISSUES, QualityMeter, STATUS } from "../page";
 
 type Facility = Readonly<{
   id: string;
@@ -35,7 +36,28 @@ type Facility = Readonly<{
   provinceNameAr?: string;
   ownerName?: string | null;
   ownerPhone?: string | null;
+  qualityScore?: number;
+  qualityIssues?: readonly string[];
 }>;
+
+type TimelineEvent = Readonly<{
+  at: string;
+  kind: string;
+  titleAr: string;
+  actorName: string | null;
+  requestId: string | null;
+}>;
+
+const TIMELINE_TONE: Record<string, Tone> = {
+  APPLICATION_SUBMITTED: "info",
+  APPLICATION_APPROVED: "positive",
+  APPLICATION_REJECTED: "danger",
+  REPORT_CREATED: "warning",
+  REPORT_RESOLVED: "positive",
+  REPORT_DISMISSED: "neutral",
+  DUTY_SUMMARY: "brand",
+  AUDIT: "neutral",
+};
 
 type Action = Readonly<{
   operation: string;
@@ -174,6 +196,25 @@ export default function FacilityDetailPage({ params }: { params: Promise<{ id: s
                 label: "التصنيف",
                 value: facility.data.categoryNameAr ?? lookups.categoryName(facility.data.categoryId),
               },
+              ...(facility.data.qualityScore !== undefined
+                ? [
+                    {
+                      label: "مؤشر الجودة",
+                      value: (
+                        <span className="quality-cell">
+                          <QualityMeter score={facility.data.qualityScore} />
+                          {facility.data.qualityIssues?.length ? (
+                            <span className="muted quality-issues">
+                              {facility.data.qualityIssues
+                                .map((code) => QUALITY_ISSUES[code] ?? code)
+                                .join("، ")}
+                            </span>
+                          ) : null}
+                        </span>
+                      ),
+                    },
+                  ]
+                : []),
               { label: "المالك", value: facility.data.ownerName ?? "—" },
               { label: "هاتف المالك", value: facility.data.ownerPhone ?? "—", ltr: true },
               {
@@ -193,6 +234,12 @@ export default function FacilityDetailPage({ params }: { params: Promise<{ id: s
               { label: "آخر تحديث", value: formatDateTime(facility.data.updatedAt), ltr: true },
             ]}
           />
+        </Panel>
+      ) : null}
+
+      {facility.data ? (
+        <Panel title="السجل الزمني" description="كل ما حدث لهذه المنشأة من التسجيل حتى اليوم.">
+          <FacilityTimeline facilityId={facility.data.id} />
         </Panel>
       ) : null}
 
@@ -260,6 +307,28 @@ function FacilityReports({ facilityId }: { facilityId: string }) {
           <StatusBadge tone={report.status === "OPEN" ? "warning" : "neutral"}>
             {report.status === "OPEN" ? "مفتوح" : report.status === "RESOLVED" ? "مُعالَج" : "مرفوض"}
           </StatusBadge>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** Everything that happened to one facility, newest first: applications, decisions, reports, audit. */
+function FacilityTimeline({ facilityId }: { facilityId: string }) {
+  const timeline = useResource<{ items: TimelineEvent[] }>("facilityTimeline", { id: facilityId });
+  if (timeline.loading) return <LoadingState />;
+  if (timeline.error) return <ErrorState error={timeline.error} onRetry={timeline.reload} />;
+  const items = timeline.data?.items ?? [];
+  if (items.length === 0) return <span className="muted">لا أحداث مسجّلة بعد.</span>;
+  return (
+    <ol className="timeline" data-testid="facility-timeline">
+      {items.map((event, index) => (
+        <li key={`${event.at}-${index}`}>
+          <time dateTime={event.at} className="cell-ltr">
+            {formatDateTime(event.at)}
+          </time>
+          <StatusBadge tone={TIMELINE_TONE[event.kind] ?? "neutral"}>{event.titleAr}</StatusBadge>
+          {event.actorName ? <span className="muted">بواسطة {event.actorName}</span> : null}
         </li>
       ))}
     </ol>

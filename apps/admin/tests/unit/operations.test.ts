@@ -165,3 +165,32 @@ describe("problem reports, cities and the new filters", () => {
     });
   });
 });
+
+describe("smart console reads", () => {
+  it("routes the task centre, alerts, search and timeline to their generated operations", async () => {
+    const { apis, calls } = spyApis();
+
+    await READS.tasks(apis);
+    await READS.alerts(apis);
+    await READS.globalSearch(apis, { q: "  شفاء " });
+    await READS.facilityTimeline(apis, { id: "f-1" });
+
+    expect(calls.map((call) => call.name)).toEqual([
+      "system.adminTasksRetrieve",
+      "system.adminAlertsList",
+      "system.adminSearchRetrieve",
+      "facilities.adminFacilityTimelineRetrieve",
+    ]);
+    expect(calls[2]?.args[0]).toEqual({ q: "شفاء" });
+    expect(calls[3]?.args[0]).toEqual({ facilityId: "f-1" });
+  });
+
+  it("sends the quality filters on the facility list", async () => {
+    const { apis, calls } = spyApis();
+
+    await READS.facilities(apis, { issue: "STALE", ordering: "qualityScore", status: "" });
+
+    expect(calls[0]?.args[0]).toEqual({ issue: "STALE", ordering: "qualityScore" });
+  });
+});
+

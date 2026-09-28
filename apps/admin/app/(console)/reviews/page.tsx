@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 
 import {
   type Column,
@@ -17,6 +16,7 @@ import {
 } from "../../../components/ui";
 import { useLookups } from "../../../lib/client/use-lookups";
 import { useResource } from "../../../lib/client/use-resource";
+import { useUrlFilters } from "../../../lib/client/use-url-filters";
 
 type Application = Readonly<{
   id: string;
@@ -41,9 +41,11 @@ const KIND = labelsFor("applicationKind");
  * sent through the generated client, which is why nothing here builds a query string.
  */
 export default function ReviewsPage() {
-  const [filters, setFilters] = useState<Record<string, string>>({
+  const [filters, setFilters] = useUrlFilters({
     status: "SUBMITTED",
     kind: "",
+    province: "",
+    category: "",
   });
   const lookups = useLookups();
   const queue = useResource<{ items: Application[] }>("reviews", filters, {

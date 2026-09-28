@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 
 import {
   type Column,
@@ -16,6 +15,7 @@ import {
 } from "../../../components/ui";
 import { useLookups } from "../../../lib/client/use-lookups";
 import { useResource } from "../../../lib/client/use-resource";
+import { useUrlFilters } from "../../../lib/client/use-url-filters";
 
 type Facility = Readonly<{
   id: string;
@@ -28,13 +28,45 @@ type Facility = Readonly<{
   categoryNameAr?: string;
   provinceNameAr?: string;
   ownerName?: string | null;
+  qualityScore?: number;
+  qualityIssues?: readonly string[];
 }>;
+
+/** What lowers a listing's quality, in the operator's words. */
+export const QUALITY_ISSUES: Record<string, string> = {
+  NO_PHOTOS: "بلا صور",
+  NO_HOURS: "بلا أوقات دوام",
+  NO_LOCATION: "بلا موقع",
+  NO_PHONE: "بلا هاتف",
+  STALE: "لم تُحدَّث منذ ٩٠ يوماً",
+  OPEN_REPORTS: "عليها بلاغات",
+  NOT_VERIFIED_RECENTLY: "لم يُتحقق منها مؤخراً",
+};
+
+export function QualityMeter({ score }: { score: number }) {
+  const tone = score >= 80 ? "positive" : score >= 50 ? "warning" : "danger";
+  return (
+    <span className="quality" data-tone={tone} title={`مؤشر الجودة ${score} من 100`}>
+      <span className="quality-bar" aria-hidden="true">
+        <span style={{ inlineSize: `${Math.max(4, score)}%` }} />
+      </span>
+      <span className="tabular">{score}</span>
+    </span>
+  );
+}
 
 export const STATUS = termsFor("facilityStatus");
 
 /** The four filters here are the ones INT-041 declared; the client sends them typed. */
 export default function FacilitiesPage() {
-  const [filters, setFilters] = useState<Record<string, string>>({ q: "", status: "" });
+  const [filters, setFilters] = useUrlFilters({
+    q: "",
+    status: "",
+    province: "",
+    category: "",
+    issue: "",
+    ordering: "",
+  });
   const lookups = useLookups();
   const facilities = useResource<{ items: Facility[] }>("facilities", filters);
 
@@ -52,6 +84,23 @@ export default function FacilitiesPage() {
           {STATUS[row.status]?.label ?? row.status}
         </StatusBadge>
       ),
+    },
+    {
+      key: "quality",
+      header: "الجودة",
+      render: (row) =>
+        row.qualityScore === undefined ? (
+          <span className="muted">—</span>
+        ) : (
+          <span className="quality-cell">
+            <QualityMeter score={row.qualityScore} />
+            {row.qualityIssues && row.qualityIssues.length > 0 ? (
+              <span className="muted quality-issues">
+                {row.qualityIssues.map((code) => QUALITY_ISSUES[code] ?? code).join("، ")}
+              </span>
+            ) : null}
+          </span>
+        ),
     },
     {
       key: "category",
@@ -103,6 +152,23 @@ export default function FacilitiesPage() {
           },
           lookups.provinceFilter,
           lookups.categoryFilter,
+          {
+            name: "issue",
+            label: "مشكلة في البيانات",
+            type: "select",
+            options: Object.entries(QUALITY_ISSUES).map(([value, label]) => ({ value, label })),
+          },
+          {
+            name: "ordering",
+            label: "الترتيب",
+            type: "select",
+            options: [
+              { value: "qualityScore", label: "الأقل جودة أولاً" },
+              { value: "-qualityScore", label: "الأعلى جودة أولاً" },
+              { value: "-updatedAt", label: "الأحدث تحديثاً" },
+              { value: "updatedAt", label: "الأقدم تحديثاً" },
+            ],
+          },
         ]}
         values={filters}
         onApply={setFilters}

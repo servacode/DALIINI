@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertsPanel, TaskCenter } from "../../../components/smart";
 import { useResource } from "../../../lib/client/use-resource";
 import {
   AuditTimeline,
@@ -46,18 +47,17 @@ export default function DashboardPage() {
         title="لوحة المتابعة"
         description="الحالة التشغيلية الحالية وآخر الإجراءات المسجّلة."
       />
+      <AlertsPanel />
       {dashboard.loading ? <LoadingState /> : null}
       {dashboard.error ? <ErrorState error={dashboard.error} onRetry={dashboard.reload} /> : null}
       {dashboard.data ? (
         <>
           {dashboard.data.systemWarnings.length > 0 ? (
-            <div className="state-block state-warning" role="status" data-testid="system-warnings">
-              <strong>تنبيهات النظام</strong>
-              <ul>
-                {dashboard.data.systemWarnings.map((warning) => (
-                  <li key={warning}>{warning}</li>
-                ))}
-              </ul>
+            <div className="notice" role="status" data-testid="system-warnings">
+              <span>
+                <strong>تنبيهات الإعداد: </strong>
+                {dashboard.data.systemWarnings.join(" · ")}
+              </span>
             </div>
           ) : null}
           <div className="kpi-grid">
@@ -98,9 +98,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid-main-aside">
-            <Panel title="آخر الإجراءات" description="أحدث العمليات المسجّلة في سجل التدقيق.">
-              <AuditTimeline entries={dashboard.data.recentActions} />
-            </Panel>
+            <TaskCenter />
 
             <Panel title="المنشآت حسب الحالة">
               {dashboard.data.facilitiesByStatus.length === 0 ? (
@@ -119,6 +117,10 @@ export default function DashboardPage() {
               )}
             </Panel>
           </div>
+
+          <Panel title="آخر الإجراءات" description="أحدث العمليات المسجّلة في سجل التدقيق.">
+            <AuditTimeline entries={dashboard.data.recentActions} />
+          </Panel>
         </>
       ) : null}
     </div>

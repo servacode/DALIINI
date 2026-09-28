@@ -34,6 +34,10 @@ function filled(params: Params, keys: readonly string[]): Record<string, string>
 export const READS = {
   me: (apis: AdminApis) => apis.system.adminMeRetrieve(),
   dashboard: (apis: AdminApis) => apis.system.adminDashboardRetrieve(),
+  tasks: (apis: AdminApis) => apis.system.adminTasksRetrieve(),
+  alerts: (apis: AdminApis) => apis.system.adminAlertsList(),
+  globalSearch: (apis: AdminApis, p: Params) =>
+    apis.system.adminSearchRetrieve({ q: (p.q ?? "").trim() }),
   systemStatus: (apis: AdminApis) => apis.system.adminSystemStatusRetrieve(),
   analytics: (apis: AdminApis) => apis.analytics.adminAnalyticsRetrieve(),
 
@@ -43,7 +47,11 @@ export const READS = {
     apis.reviews.adminReviewRetrieve({ applicationId: p.id! }),
 
   facilities: (apis: AdminApis, p: Params) =>
-    apis.facilities.adminFacilitiesList(filled(p, ["status", "province", "category", "q"])),
+    apis.facilities.adminFacilitiesList(
+      filled(p, ["status", "province", "category", "q", "issue", "ordering"]) as never,
+    ),
+  facilityTimeline: (apis: AdminApis, p: Params) =>
+    apis.facilities.adminFacilityTimelineRetrieve({ facilityId: p.id! }),
   facility: (apis: AdminApis, p: Params) =>
     apis.facilities.adminFacilityRetrieve({ facilityId: p.id! }),
 
