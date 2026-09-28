@@ -134,9 +134,17 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
             ) : null}
           </Panel>
 
-          <Panel title="لقطة الطلب">
-            <DiffViewer before={{}} after={detail.data.snapshot} />
-          </Panel>
+          <div className="grid-2">
+            <Panel
+              title="التغييرات المطلوبة"
+              description="الفرق بين بيانات المنشأة الحالية وما أرسله المالك."
+            >
+              <DiffViewer before={detail.data.facility} after={detail.data.snapshot} />
+            </Panel>
+            <Panel title="لقطة الطلب" description="البيانات كما أُرسلت للمراجعة.">
+              <DiffViewer before={{}} after={detail.data.snapshot} />
+            </Panel>
+          </div>
 
           <Panel title="أدلة التحقق">
             {detail.data.evidence.length === 0 ? (

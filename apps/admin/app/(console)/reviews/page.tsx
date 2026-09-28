@@ -14,6 +14,7 @@ import {
   type Tone,
   formatDateTime,
 } from "../../../components/ui";
+import { useLookups } from "../../../lib/client/use-lookups";
 import { useResource } from "../../../lib/client/use-resource";
 
 type Application = Readonly<{
@@ -51,6 +52,7 @@ export default function ReviewsPage() {
     status: "SUBMITTED",
     kind: "",
   });
+  const lookups = useLookups();
   const queue = useResource<{ items: Application[] }>("reviews", filters);
 
   const columns: readonly Column<Application>[] = [
@@ -111,8 +113,8 @@ export default function ReviewsPage() {
               { value: "REVERIFICATION", label: "إعادة تحقق" },
             ],
           },
-          { name: "province", label: "معرّف المحافظة", placeholder: "UUID" },
-          { name: "category", label: "معرّف التصنيف", placeholder: "UUID" },
+          lookups.provinceFilter,
+          lookups.categoryFilter,
         ]}
         values={filters}
         onApply={setFilters}

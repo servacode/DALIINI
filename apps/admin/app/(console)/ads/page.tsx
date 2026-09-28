@@ -345,6 +345,41 @@ export default function AdsPage() {
                 <span className="field-error">{errors.ends_at ?? errors.endsAt}</span>
               ) : null}
             </label>
+            <label className="field">
+              <span>الترتيب</span>
+              <input
+                type="number"
+                dir="ltr"
+                min={0}
+                value={draft.sortOrder}
+                data-testid="ad-sort"
+                aria-invalid={Boolean(errors.sortOrder)}
+                onChange={(event) => setDraft({ ...draft, sortOrder: event.target.value })}
+              />
+              <span className="field-hint">الأصغر يظهر أولاً في الشريط.</span>
+              {errors.sortOrder ? <span className="field-error">{errors.sortOrder}</span> : null}
+            </label>
+            <label className="field">
+              <span>مدة العرض (ثوانٍ)</span>
+              <input
+                type="number"
+                dir="ltr"
+                min={1}
+                step={0.5}
+                value={String(Number(draft.slideDurationMs) / 1000 || "")}
+                data-testid="ad-duration"
+                aria-invalid={Boolean(errors.slideDurationMs)}
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    slideDurationMs: String(Math.round(Number(event.target.value) * 1000)),
+                  })
+                }
+              />
+              {errors.slideDurationMs ? (
+                <span className="field-error">{errors.slideDurationMs}</span>
+              ) : null}
+            </label>
             <label className="switch-row">
               <span>مفعّل</span>
               <input

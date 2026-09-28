@@ -14,6 +14,7 @@ import {
   type Tone,
   formatDateTime,
 } from "../../../components/ui";
+import { useLookups } from "../../../lib/client/use-lookups";
 import { useResource } from "../../../lib/client/use-resource";
 
 type Facility = Readonly<{
@@ -38,6 +39,7 @@ export const STATUS: Record<string, { label: string; tone: Tone }> = {
 /** The four filters here are the ones INT-041 declared; the client sends them typed. */
 export default function FacilitiesPage() {
   const [filters, setFilters] = useState<Record<string, string>>({ q: "", status: "" });
+  const lookups = useLookups();
   const facilities = useResource<{ items: Facility[] }>("facilities", filters);
 
   const columns: readonly Column<Facility>[] = [
@@ -54,6 +56,16 @@ export default function FacilitiesPage() {
           {STATUS[row.status]?.label ?? row.status}
         </StatusBadge>
       ),
+    },
+    {
+      key: "category",
+      header: "التصنيف",
+      render: (row) => lookups.categoryName(row.categoryId),
+    },
+    {
+      key: "province",
+      header: "المحافظة",
+      render: (row) => lookups.provinceName(row.provinceId),
     },
     {
       key: "updatedAt",
@@ -88,8 +100,8 @@ export default function FacilitiesPage() {
               label: meta.label,
             })),
           },
-          { name: "province", label: "معرّف المحافظة", placeholder: "UUID" },
-          { name: "category", label: "معرّف التصنيف", placeholder: "UUID" },
+          lookups.provinceFilter,
+          lookups.categoryFilter,
         ]}
         values={filters}
         onApply={setFilters}

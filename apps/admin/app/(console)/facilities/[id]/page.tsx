@@ -15,6 +15,7 @@ import {
   formatDateTime,
 } from "../../../../components/ui";
 import { useMutation } from "../../../../lib/client/use-mutation";
+import { useLookups } from "../../../../lib/client/use-lookups";
 import { useResource } from "../../../../lib/client/use-resource";
 import { STATUS } from "../page";
 
@@ -66,6 +67,7 @@ const ACTIONS: Record<string, Action> = {
 
 export default function FacilityDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const lookups = useLookups();
   const facility = useResource<Facility>("facility", { id });
   const mutation = useMutation();
   const canManage = useCan("admin.facilities.manage");
@@ -157,8 +159,8 @@ export default function FacilityDetailPage({ params }: { params: Promise<{ id: s
                 ),
               },
               { label: "الاسم بالإنجليزية", value: facility.data.nameEn || "—" },
-              { label: "المحافظة", value: facility.data.provinceId, ltr: true },
-              { label: "التصنيف", value: facility.data.categoryId, ltr: true },
+              { label: "المحافظة", value: lookups.provinceName(facility.data.provinceId) },
+              { label: "التصنيف", value: lookups.categoryName(facility.data.categoryId) },
               { label: "آخر تحديث", value: formatDateTime(facility.data.updatedAt), ltr: true },
             ]}
           />
