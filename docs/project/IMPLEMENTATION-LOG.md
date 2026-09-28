@@ -1646,3 +1646,33 @@ new errors in any touched file. `makemigrations --check` finds nothing to add, a
 `check-openapi-drift.sh` passes with the three clients regenerated. Not verified: a live Celery
 worker against Redis, and a real Sentry DSN. Production should point `CACHES` at Redis, because
 throttle counts and the maintenance cache are per process on the default local memory cache.
+
+## 2026-09-28 — Admin, public web and delivery hardening (same batch)
+
+- Admin console rebuilt on one design system (`app/styles/{tokens,base,layout,components}.css`,
+  `--ad-*` tokens over the brand tokens), with a grouped sidebar, a top bar with breadcrumbs, an
+  off-canvas drawer below 1024 px and shared `Panel`, `StatCard`, `KeyValueList` components.
+  Screens now show names instead of ids and pick provinces and categories from lists. New:
+  `/reports` queue, review context (owner, location, photos, duplicates, diff against the last
+  approved version), dashboard warnings and counts, 30-day analytics, audit date range, user role
+  filter, cities per province, category-group editing, readable maintenance settings. The review
+  queue and the dashboard refresh in place every 60 s while the tab is visible. `img-src` admits
+  only the public-media origin (`ADMIN_PUBLIC_MEDIA_ORIGIN`). 74 unit tests pass; lint, typecheck
+  and build are clean. The e2e nav count is 14 now that `/reports` exists (not run here: needs the
+  backend).
+- Public web (`apps/web`): landing, province, category-in-province, facility (`/f/[id]`) and duty
+  pages with ISR, sitemap, robots, per-page metadata, OpenGraph image and JSON-LD. Pages degrade to
+  a noindex "unavailable" state without the API. The CSP allows inline scripts because cached
+  pages cannot carry a per-request nonce (verified in Chromium: no violations after the change).
+- Delivery: CI gains a frontend job, Docker builds, concurrency and timeouts; CodeQL, pip-audit,
+  pnpm audit and Trivy workflows; Dependabot. Images run non-root with health checks and frozen
+  lockfiles (fixing an admin image that could not start and a backend image that installed dev
+  tools at boot). Render gains Celery beat, web/admin health checks, a shared env group and a
+  nightly `pg_dump` backup job (`scripts/db-backup.sh`, `scripts/db-restore.sh`,
+  `infrastructure/BACKUP-RESTORE.md`). Production `CACHES` now use Redis. vitest is 3.2.6
+  (critical GHSA-5xrq-8626-4rwp).
+
+Not verified: every GitHub Actions job on this branch fails within seconds before any step runs,
+on `main` too, which points at the Actions account (billing or runner access), not the code. The
+new workflows are therefore checked only as YAML and by running their commands locally.
+
