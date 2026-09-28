@@ -101,6 +101,45 @@ open class AdminReportsAPI {
     }
 
     /**
+     Resolve or dismiss many reports at once
+     
+     - parameter adminReportBulkRequest: (body)  
+     - returns: AdminReportBulkResponse
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminReportsBulkDecide(adminReportBulkRequest: AdminReportBulkRequest) async throws -> AdminReportBulkResponse {
+        return try await adminReportsBulkDecideWithRequestBuilder(adminReportBulkRequest: adminReportBulkRequest).execute().body
+    }
+
+    /**
+     Resolve or dismiss many reports at once
+     - POST /api/v1/admin/reports/bulk/
+     - Up to 100 ids, in one transaction: every OPEN report is decided and audited individually, exactly as the single-report endpoints do. An id that does not exist or is no longer OPEN is reported per id (NOT_FOUND, NOT_OPEN) and left alone; it does not fail the others.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter adminReportBulkRequest: (body)  
+     - returns: RequestBuilder<AdminReportBulkResponse> 
+     */
+    open class func adminReportsBulkDecideWithRequestBuilder(adminReportBulkRequest: AdminReportBulkRequest) -> RequestBuilder<AdminReportBulkResponse> {
+        let localVariablePath = "/api/v1/admin/reports/bulk/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminReportBulkRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminReportBulkResponse>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      List facility problem reports
      
      - parameter facility: (query) Facility id. (optional)

@@ -16,17 +16,44 @@
 import * as runtime from '../runtime';
 import type {
   ApiError,
+  ContactMessageCreated,
+  ContactMessageRequest,
+  ContentPage,
+  EmergencyNumberList,
+  FaqList,
   LegalDocument,
   LegalDocumentList,
 } from '../models/index';
 import {
     ApiErrorFromJSON,
     ApiErrorToJSON,
+    ContactMessageCreatedFromJSON,
+    ContactMessageCreatedToJSON,
+    ContactMessageRequestFromJSON,
+    ContactMessageRequestToJSON,
+    ContentPageFromJSON,
+    ContentPageToJSON,
+    EmergencyNumberListFromJSON,
+    EmergencyNumberListToJSON,
+    FaqListFromJSON,
+    FaqListToJSON,
     LegalDocumentFromJSON,
     LegalDocumentToJSON,
     LegalDocumentListFromJSON,
     LegalDocumentListToJSON,
 } from '../models/index';
+
+export interface PublicContactCreateRequest {
+    contactMessageRequest: ContactMessageRequest;
+}
+
+export interface PublicContentPageRetrieveRequest {
+    slug: string;
+}
+
+export interface PublicEmergencyNumbersListRequest {
+    provinceId?: string;
+}
 
 export interface PublicLegalDocumentRetrieveRequest {
     key: string;
@@ -36,6 +63,160 @@ export interface PublicLegalDocumentRetrieveRequest {
  * 
  */
 export class ContentApi extends runtime.BaseAPI {
+
+    /**
+     * Anonymous or signed in; a signed-in sender is linked to their account. Strictly throttled per account or per client address (3/hour by default). The client address is taken from X-Forwarded-For only when the server is configured with the number of trusted proxies.
+     * Send a message to the platform team
+     */
+    async publicContactCreateRaw(requestParameters: PublicContactCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ContactMessageCreated>> {
+        if (requestParameters['contactMessageRequest'] == null) {
+            throw new runtime.RequiredError(
+                'contactMessageRequest',
+                'Required parameter "contactMessageRequest" was null or undefined when calling publicContactCreate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/contact/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ContactMessageRequestToJSON(requestParameters['contactMessageRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ContactMessageCreatedFromJSON(jsonValue));
+    }
+
+    /**
+     * Anonymous or signed in; a signed-in sender is linked to their account. Strictly throttled per account or per client address (3/hour by default). The client address is taken from X-Forwarded-For only when the server is configured with the number of trusted proxies.
+     * Send a message to the platform team
+     */
+    async publicContactCreate(requestParameters: PublicContactCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ContactMessageCreated> {
+        const response = await this.publicContactCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Only the published version is served; an unpublished or unknown slug is 404. Cacheable for five minutes (`Cache-Control: public, max-age=300`).
+     * Retrieve one published content page
+     */
+    async publicContentPageRetrieveRaw(requestParameters: PublicContentPageRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ContentPage>> {
+        if (requestParameters['slug'] == null) {
+            throw new runtime.RequiredError(
+                'slug',
+                'Required parameter "slug" was null or undefined when calling publicContentPageRetrieve().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/v1/content/pages/{slug}/`;
+        urlPath = urlPath.replace(`{${"slug"}}`, encodeURIComponent(String(requestParameters['slug'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ContentPageFromJSON(jsonValue));
+    }
+
+    /**
+     * Only the published version is served; an unpublished or unknown slug is 404. Cacheable for five minutes (`Cache-Control: public, max-age=300`).
+     * Retrieve one published content page
+     */
+    async publicContentPageRetrieve(requestParameters: PublicContentPageRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ContentPage> {
+        const response = await this.publicContentPageRetrieveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * National numbers come first, then those of `provinceId` when one is given. Cacheable for five minutes.
+     * Emergency numbers: national, plus the province\'s own
+     */
+    async publicEmergencyNumbersListRaw(requestParameters: PublicEmergencyNumbersListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EmergencyNumberList>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['provinceId'] != null) {
+            queryParameters['provinceId'] = requestParameters['provinceId'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/v1/emergency-numbers/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => EmergencyNumberListFromJSON(jsonValue));
+    }
+
+    /**
+     * National numbers come first, then those of `provinceId` when one is given. Cacheable for five minutes.
+     * Emergency numbers: national, plus the province\'s own
+     */
+    async publicEmergencyNumbersList(requestParameters: PublicEmergencyNumbersListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EmergencyNumberList> {
+        const response = await this.publicEmergencyNumbersListRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Cacheable for five minutes (`Cache-Control: public, max-age=300`).
+     * List the published questions and answers, in order
+     */
+    async publicFaqListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FaqList>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/v1/content/faq/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FaqListFromJSON(jsonValue));
+    }
+
+    /**
+     * Cacheable for five minutes (`Cache-Control: public, max-age=300`).
+     * List the published questions and answers, in order
+     */
+    async publicFaqList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FaqList> {
+        const response = await this.publicFaqListRaw(initOverrides);
+        return await response.value();
+    }
 
     /**
      * One published page, in full.

@@ -10,10 +10,29 @@ import kotlinx.serialization.Serializable
 import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.FacilityCursorPage
 import com.servacode.directory.api.models.MapMarkerList
+import com.servacode.directory.api.models.PublicDutyRoster
 import com.servacode.directory.api.models.PublicFacilityDetail
 import com.servacode.directory.api.models.PublicHome
 
 interface PublicDiscoveryApi {
+    /**
+     * GET api/v1/public/duty/
+     * Pharmacies on duty on a given day (or up to 7 days)
+     * Days are Damascus calendar days starting at &#x60;date&#x60; (default today). A pharmacy is listed on every day one of its duty shifts overlaps. Same visibility as the public duty-now listing. Cacheable for one minute.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *
+     * @param provinceId 
+     * @param categoryId  (optional)
+     * @param cityId  (optional)
+     * @param date YYYY-MM-DD (optional)
+     * @param days 1 to 7. (optional)
+     * @return [PublicDutyRoster]
+     */
+    @GET("api/v1/public/duty/")
+    suspend fun publicDutyByDateList(@Query("provinceId") provinceId: kotlin.String, @Query("categoryId") categoryId: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("date") date: kotlin.String? = null, @Query("days") days: kotlin.Int? = null): Response<PublicDutyRoster>
+
     /**
      * GET api/v1/public/facilities/
      * List publicly visible facilities in a province, optionally in one category

@@ -19,15 +19,25 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.AdminSystemApi
+import com.servacode.directory.api.models.AdminAlertList
 import com.servacode.directory.api.models.AdminDashboard
 import com.servacode.directory.api.models.AdminMe
+import com.servacode.directory.api.models.AdminSearchResult
 import com.servacode.directory.api.models.AdminSystemStatus
+import com.servacode.directory.api.models.AdminTasks
 import com.servacode.directory.api.models.ApiError
 
 class AdminSystemApiTest : ShouldSpec() {
     init {
         // uncomment below to create an instance of AdminSystemApi
         //val apiInstance = AdminSystemApi()
+
+        // to test adminAlertsList
+        should("test adminAlertsList") {
+            // uncomment below to test adminAlertsList
+            //val result : AdminAlertList = apiInstance.adminAlertsList()
+            //result shouldBe ("TODO")
+        }
 
         // to test adminDashboardRetrieve
         should("test adminDashboardRetrieve") {
@@ -43,10 +53,25 @@ class AdminSystemApiTest : ShouldSpec() {
             //result shouldBe ("TODO")
         }
 
+        // to test adminSearchRetrieve
+        should("test adminSearchRetrieve") {
+            // uncomment below to test adminSearchRetrieve
+            //val q : kotlin.String = q_example // kotlin.String | At least 2 chars.
+            //val result : AdminSearchResult = apiInstance.adminSearchRetrieve(q)
+            //result shouldBe ("TODO")
+        }
+
         // to test adminSystemStatusRetrieve
         should("test adminSystemStatusRetrieve") {
             // uncomment below to test adminSystemStatusRetrieve
             //val result : AdminSystemStatus = apiInstance.adminSystemStatusRetrieve()
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminTasksRetrieve
+        should("test adminTasksRetrieve") {
+            // uncomment below to test adminTasksRetrieve
+            //val result : AdminTasks = apiInstance.adminTasksRetrieve()
             //result shouldBe ("TODO")
         }
 

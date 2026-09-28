@@ -5,6 +5,10 @@ All URIs are relative to *http://localhost*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**adminEvidenceContentRetrieve**](AdminReviewsAPI.md#adminevidencecontentretrieve) | **GET** /api/v1/admin/evidence/{evidence_id}/content/ | Stream one piece of private verification evidence
+[**adminRejectionTemplateCreate**](AdminReviewsAPI.md#adminrejectiontemplatecreate) | **POST** /api/v1/admin/rejection-templates/ | Create a rejection template
+[**adminRejectionTemplateDelete**](AdminReviewsAPI.md#adminrejectiontemplatedelete) | **DELETE** /api/v1/admin/rejection-templates/{template_id}/ | Delete a rejection template
+[**adminRejectionTemplateUpdate**](AdminReviewsAPI.md#adminrejectiontemplateupdate) | **PUT** /api/v1/admin/rejection-templates/{template_id}/ | Edit, reorder or retire a rejection template
+[**adminRejectionTemplatesList**](AdminReviewsAPI.md#adminrejectiontemplateslist) | **GET** /api/v1/admin/rejection-templates/ | List rejection templates
 [**adminReviewApprove**](AdminReviewsAPI.md#adminreviewapprove) | **POST** /api/v1/admin/applications/{application_id}/approve/ | Approve an application
 [**adminReviewReject**](AdminReviewsAPI.md#adminreviewreject) | **POST** /api/v1/admin/applications/{application_id}/reject/ | Reject an application
 [**adminReviewRetrieve**](AdminReviewsAPI.md#adminreviewretrieve) | **GET** /api/v1/admin/applications/{application_id}/ | Retrieve one application with its review context
@@ -47,6 +51,208 @@ Name | Type | Description  | Notes
 ### Return type
 
 **URL**
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminRejectionTemplateCreate**
+```swift
+    open class func adminRejectionTemplateCreate(adminRejectionTemplateRequest: AdminRejectionTemplateRequest, completion: @escaping (_ data: AdminRejectionTemplate?, _ error: Error?) -> Void)
+```
+
+Create a rejection template
+
+Requires admin.reviews.decide, re-checked inside the handler.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let adminRejectionTemplateRequest = AdminRejectionTemplateRequest(titleAr: "titleAr_example", bodyAr: "bodyAr_example", active: false, sortOrder: 123) // AdminRejectionTemplateRequest | 
+
+// Create a rejection template
+AdminReviewsAPI.adminRejectionTemplateCreate(adminRejectionTemplateRequest: adminRejectionTemplateRequest) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **adminRejectionTemplateRequest** | [**AdminRejectionTemplateRequest**](AdminRejectionTemplateRequest.md) |  | 
+
+### Return type
+
+[**AdminRejectionTemplate**](AdminRejectionTemplate.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminRejectionTemplateDelete**
+```swift
+    open class func adminRejectionTemplateDelete(templateId: UUID, completion: @escaping (_ data: Void?, _ error: Error?) -> Void)
+```
+
+Delete a rejection template
+
+Past rejections keep their text; a template is only a starting point.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let templateId = 987 // UUID | 
+
+// Delete a rejection template
+AdminReviewsAPI.adminRejectionTemplateDelete(templateId: templateId) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **templateId** | **UUID** |  | 
+
+### Return type
+
+Void (empty response body)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminRejectionTemplateUpdate**
+```swift
+    open class func adminRejectionTemplateUpdate(templateId: UUID, adminRejectionTemplateRequest: AdminRejectionTemplateRequest, completion: @escaping (_ data: AdminRejectionTemplate?, _ error: Error?) -> Void)
+```
+
+Edit, reorder or retire a rejection template
+
+Omitted fields keep their value.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let templateId = 987 // UUID | 
+let adminRejectionTemplateRequest = AdminRejectionTemplateRequest(titleAr: "titleAr_example", bodyAr: "bodyAr_example", active: false, sortOrder: 123) // AdminRejectionTemplateRequest | 
+
+// Edit, reorder or retire a rejection template
+AdminReviewsAPI.adminRejectionTemplateUpdate(templateId: templateId, adminRejectionTemplateRequest: adminRejectionTemplateRequest) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **templateId** | **UUID** |  | 
+ **adminRejectionTemplateRequest** | [**AdminRejectionTemplateRequest**](AdminRejectionTemplateRequest.md) |  | 
+
+### Return type
+
+[**AdminRejectionTemplate**](AdminRejectionTemplate.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminRejectionTemplatesList**
+```swift
+    open class func adminRejectionTemplatesList(active: Bool? = nil, completion: @escaping (_ data: AdminRejectionTemplateList?, _ error: Error?) -> Void)
+```
+
+List rejection templates
+
+Ordered by `sortOrder`. `active=true` keeps only the active ones.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let active = true // Bool |  (optional)
+
+// List rejection templates
+AdminReviewsAPI.adminRejectionTemplatesList(active: active) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **active** | **Bool** |  | [optional] 
+
+### Return type
+
+[**AdminRejectionTemplateList**](AdminRejectionTemplateList.md)
 
 ### Authorization
 

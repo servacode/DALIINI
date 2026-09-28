@@ -23,6 +23,9 @@ import com.servacode.directory.api.models.AdminApplication
 import com.servacode.directory.api.models.AdminApplicationDetail
 import com.servacode.directory.api.models.AdminApplicationList
 import com.servacode.directory.api.models.AdminDecisionRequest
+import com.servacode.directory.api.models.AdminRejectionTemplate
+import com.servacode.directory.api.models.AdminRejectionTemplateList
+import com.servacode.directory.api.models.AdminRejectionTemplateRequest
 import com.servacode.directory.api.models.ApiError
 
 class AdminReviewsApiTest : ShouldSpec() {
@@ -35,6 +38,38 @@ class AdminReviewsApiTest : ShouldSpec() {
             // uncomment below to test adminEvidenceContentRetrieve
             //val evidenceId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //val result : java.io.File = apiInstance.adminEvidenceContentRetrieve(evidenceId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminRejectionTemplateCreate
+        should("test adminRejectionTemplateCreate") {
+            // uncomment below to test adminRejectionTemplateCreate
+            //val adminRejectionTemplateRequest : AdminRejectionTemplateRequest =  // AdminRejectionTemplateRequest | 
+            //val result : AdminRejectionTemplate = apiInstance.adminRejectionTemplateCreate(adminRejectionTemplateRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminRejectionTemplateDelete
+        should("test adminRejectionTemplateDelete") {
+            // uncomment below to test adminRejectionTemplateDelete
+            //val templateId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //apiInstance.adminRejectionTemplateDelete(templateId)
+        }
+
+        // to test adminRejectionTemplateUpdate
+        should("test adminRejectionTemplateUpdate") {
+            // uncomment below to test adminRejectionTemplateUpdate
+            //val templateId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val adminRejectionTemplateRequest : AdminRejectionTemplateRequest =  // AdminRejectionTemplateRequest | 
+            //val result : AdminRejectionTemplate = apiInstance.adminRejectionTemplateUpdate(templateId, adminRejectionTemplateRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminRejectionTemplatesList
+        should("test adminRejectionTemplatesList") {
+            // uncomment below to test adminRejectionTemplatesList
+            //val active : kotlin.Boolean = true // kotlin.Boolean | 
+            //val result : AdminRejectionTemplateList = apiInstance.adminRejectionTemplatesList(active)
             //result shouldBe ("TODO")
         }
 

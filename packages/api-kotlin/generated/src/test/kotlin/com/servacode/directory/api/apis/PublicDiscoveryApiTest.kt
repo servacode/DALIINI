@@ -22,6 +22,7 @@ import com.servacode.directory.api.apis.PublicDiscoveryApi
 import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.FacilityCursorPage
 import com.servacode.directory.api.models.MapMarkerList
+import com.servacode.directory.api.models.PublicDutyRoster
 import com.servacode.directory.api.models.PublicFacilityDetail
 import com.servacode.directory.api.models.PublicHome
 
@@ -29,6 +30,18 @@ class PublicDiscoveryApiTest : ShouldSpec() {
     init {
         // uncomment below to create an instance of PublicDiscoveryApi
         //val apiInstance = PublicDiscoveryApi()
+
+        // to test publicDutyByDateList
+        should("test publicDutyByDateList") {
+            // uncomment below to test publicDutyByDateList
+            //val provinceId : kotlin.String = provinceId_example // kotlin.String | 
+            //val categoryId : kotlin.String = categoryId_example // kotlin.String | 
+            //val cityId : kotlin.String = cityId_example // kotlin.String | 
+            //val date : kotlin.String = date_example // kotlin.String | YYYY-MM-DD
+            //val days : kotlin.Int = 56 // kotlin.Int | 1 to 7.
+            //val result : PublicDutyRoster = apiInstance.publicDutyByDateList(provinceId, categoryId, cityId, date, days)
+            //result shouldBe ("TODO")
+        }
 
         // to test publicFacilitiesList
         should("test publicFacilitiesList") {

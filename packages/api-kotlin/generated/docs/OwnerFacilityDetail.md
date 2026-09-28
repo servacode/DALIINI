@@ -26,6 +26,7 @@
 | **serviceTagIds** | [**kotlin.collections.List&lt;java.util.UUID&gt;**](java.util.UUID.md) |  |  |
 | **evidence** | [**kotlin.collections.List&lt;OwnerEvidenceRef&gt;**](OwnerEvidenceRef.md) |  |  |
 | **hours** | [**kotlin.collections.List&lt;OwnerHoursEntry&gt;**](OwnerHoursEntry.md) |  |  |
+| **hoursConfirmedAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) | When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old. |  |
 | **application** | [**OwnerApplication**](OwnerApplication.md) |  |  |
 
 

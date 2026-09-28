@@ -19,6 +19,7 @@ import type {
   AdminCityAdminList,
   AdminCityUpdateRequest,
   AdminProvinceList,
+  AdminProvinceReadiness,
   AdminProvinceUpdateRequest,
   AdminProvinceUpdated,
   ApiError,
@@ -32,6 +33,8 @@ import {
     AdminCityUpdateRequestToJSON,
     AdminProvinceListFromJSON,
     AdminProvinceListToJSON,
+    AdminProvinceReadinessFromJSON,
+    AdminProvinceReadinessToJSON,
     AdminProvinceUpdateRequestFromJSON,
     AdminProvinceUpdateRequestToJSON,
     AdminProvinceUpdatedFromJSON,
@@ -48,6 +51,10 @@ export interface AdminProvinceCityUpdateRequest {
     cityId: string;
     provinceId: string;
     adminCityUpdateRequest: AdminCityUpdateRequest;
+}
+
+export interface AdminProvinceReadinessRetrieveRequest {
+    provinceId: string;
 }
 
 export interface AdminProvinceUpdateOperationRequest {
@@ -165,6 +172,53 @@ export class AdminProvincesApi extends runtime.BaseAPI {
      */
     async adminProvinceCityUpdate(requestParameters: AdminProvinceCityUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminCityAdmin> {
         const response = await this.adminProvinceCityUpdateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * PROVINCE_ACTIVE; CATEGORY_PUBLIC (at least one active category publicly enabled); MIN_ACTIVE_FACILITIES (platform setting `readiness.minActiveFacilities`, default 5); DUTY_COVERAGE (no DUTY_GAP in the next 14 days, or not applicable when the province offers no duty category); EMERGENCY_NUMBERS (an active national or provincial number).
+     * Launch checklist for a province
+     */
+    async adminProvinceReadinessRetrieveRaw(requestParameters: AdminProvinceReadinessRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminProvinceReadiness>> {
+        if (requestParameters['provinceId'] == null) {
+            throw new runtime.RequiredError(
+                'provinceId',
+                'Required parameter "provinceId" was null or undefined when calling adminProvinceReadinessRetrieve().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/provinces/{province_id}/readiness/`;
+        urlPath = urlPath.replace(`{${"province_id"}}`, encodeURIComponent(String(requestParameters['provinceId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminProvinceReadinessFromJSON(jsonValue));
+    }
+
+    /**
+     * PROVINCE_ACTIVE; CATEGORY_PUBLIC (at least one active category publicly enabled); MIN_ACTIVE_FACILITIES (platform setting `readiness.minActiveFacilities`, default 5); DUTY_COVERAGE (no DUTY_GAP in the next 14 days, or not applicable when the province offers no duty category); EMERGENCY_NUMBERS (an active national or provincial number).
+     * Launch checklist for a province
+     */
+    async adminProvinceReadinessRetrieve(requestParameters: AdminProvinceReadinessRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminProvinceReadiness> {
+        const response = await this.adminProvinceReadinessRetrieveRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

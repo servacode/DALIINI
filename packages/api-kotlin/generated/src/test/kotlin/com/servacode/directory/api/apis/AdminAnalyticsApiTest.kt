@@ -20,6 +20,7 @@ import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.AdminAnalyticsApi
 import com.servacode.directory.api.models.AdminAnalytics
+import com.servacode.directory.api.models.AdminStaffPerformance
 import com.servacode.directory.api.models.ApiError
 
 class AdminAnalyticsApiTest : ShouldSpec() {
@@ -30,7 +31,18 @@ class AdminAnalyticsApiTest : ShouldSpec() {
         // to test adminAnalyticsRetrieve
         should("test adminAnalyticsRetrieve") {
             // uncomment below to test adminAnalyticsRetrieve
-            //val result : AdminAnalytics = apiInstance.adminAnalyticsRetrieve()
+            //val from : kotlin.String = from_example // kotlin.String | ISO date or datetime; default 30 days before `to`.
+            //val to : kotlin.String = to_example // kotlin.String | ISO date or datetime; a bare date includes that whole day.
+            //val result : AdminAnalytics = apiInstance.adminAnalyticsRetrieve(from, to)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminAnalyticsStaffRetrieve
+        should("test adminAnalyticsStaffRetrieve") {
+            // uncomment below to test adminAnalyticsStaffRetrieve
+            //val from : kotlin.String = from_example // kotlin.String | 
+            //val to : kotlin.String = to_example // kotlin.String | 
+            //val result : AdminStaffPerformance = apiInstance.adminAnalyticsStaffRetrieve(from, to)
             //result shouldBe ("TODO")
         }
 

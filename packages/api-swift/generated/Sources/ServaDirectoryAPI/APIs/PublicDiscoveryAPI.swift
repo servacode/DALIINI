@@ -13,6 +13,57 @@ import AnyCodable
 open class PublicDiscoveryAPI {
 
     /**
+     Pharmacies on duty on a given day (or up to 7 days)
+     
+     - parameter provinceId: (query)  
+     - parameter categoryId: (query)  (optional)
+     - parameter cityId: (query)  (optional)
+     - parameter date: (query) YYYY-MM-DD (optional)
+     - parameter days: (query) 1 to 7. (optional)
+     - returns: PublicDutyRoster
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func publicDutyByDateList(provinceId: String, categoryId: String? = nil, cityId: String? = nil, date: String? = nil, days: Int? = nil) async throws -> PublicDutyRoster {
+        return try await publicDutyByDateListWithRequestBuilder(provinceId: provinceId, categoryId: categoryId, cityId: cityId, date: date, days: days).execute().body
+    }
+
+    /**
+     Pharmacies on duty on a given day (or up to 7 days)
+     - GET /api/v1/public/duty/
+     - Days are Damascus calendar days starting at `date` (default today). A pharmacy is listed on every day one of its duty shifts overlaps. Same visibility as the public duty-now listing. Cacheable for one minute.
+     - parameter provinceId: (query)  
+     - parameter categoryId: (query)  (optional)
+     - parameter cityId: (query)  (optional)
+     - parameter date: (query) YYYY-MM-DD (optional)
+     - parameter days: (query) 1 to 7. (optional)
+     - returns: RequestBuilder<PublicDutyRoster> 
+     */
+    open class func publicDutyByDateListWithRequestBuilder(provinceId: String, categoryId: String? = nil, cityId: String? = nil, date: String? = nil, days: Int? = nil) -> RequestBuilder<PublicDutyRoster> {
+        let localVariablePath = "/api/v1/public/duty/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "categoryId": (wrappedValue: categoryId?.encodeToJSON(), isExplode: true),
+            "cityId": (wrappedValue: cityId?.encodeToJSON(), isExplode: true),
+            "date": (wrappedValue: date?.encodeToJSON(), isExplode: true),
+            "days": (wrappedValue: days?.encodeToJSON(), isExplode: true),
+            "provinceId": (wrappedValue: provinceId.encodeToJSON(), isExplode: true),
+        ])
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<PublicDutyRoster>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false)
+    }
+
+    /**
      List publicly visible facilities in a province, optionally in one category
      
      - parameter provinceId: (query) Province to scope the query to. 

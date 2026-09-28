@@ -28,6 +28,8 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
     public var imageUrl: String?
     /** When an operator last approved this facility's details (trust signal). */
     public var lastVerifiedAt: Date?
+    /** The most recent of `lastVerifiedAt` and the owner's own confirmation that the opening hours are still right. Null when neither ever happened. */
+    public var infoConfirmedAt: Date?
     /** Last change to the facility record. */
     public var updatedAt: Date
     public var descriptionAr: String?
@@ -44,7 +46,7 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
     public var services: [NamedRef]
     public var hours: [PublicHoursEntry]
 
-    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, isFavorite: Bool, imageUrl: String?, lastVerifiedAt: Date?, updatedAt: Date, descriptionAr: String?, descriptionEn: String?, phone: String?, whatsapp: String?, addressAr: String?, addressEn: String?, neighborhood: NamedRef?, location: Coordinates?, images: [FacilityImage], specialties: [NamedRef], services: [NamedRef], hours: [PublicHoursEntry]) {
+    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, isFavorite: Bool, imageUrl: String?, lastVerifiedAt: Date?, infoConfirmedAt: Date?, updatedAt: Date, descriptionAr: String?, descriptionEn: String?, phone: String?, whatsapp: String?, addressAr: String?, addressEn: String?, neighborhood: NamedRef?, location: Coordinates?, images: [FacilityImage], specialties: [NamedRef], services: [NamedRef], hours: [PublicHoursEntry]) {
         self.id = id
         self.nameAr = nameAr
         self.nameEn = nameEn
@@ -57,6 +59,7 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
         self.isFavorite = isFavorite
         self.imageUrl = imageUrl
         self.lastVerifiedAt = lastVerifiedAt
+        self.infoConfirmedAt = infoConfirmedAt
         self.updatedAt = updatedAt
         self.descriptionAr = descriptionAr
         self.descriptionEn = descriptionEn
@@ -85,6 +88,7 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
         case isFavorite
         case imageUrl
         case lastVerifiedAt
+        case infoConfirmedAt
         case updatedAt
         case descriptionAr
         case descriptionEn
@@ -116,6 +120,7 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
         try container.encode(isFavorite, forKey: .isFavorite)
         try container.encode(imageUrl, forKey: .imageUrl)
         try container.encode(lastVerifiedAt, forKey: .lastVerifiedAt)
+        try container.encode(infoConfirmedAt, forKey: .infoConfirmedAt)
         try container.encode(updatedAt, forKey: .updatedAt)
         try container.encode(descriptionAr, forKey: .descriptionAr)
         try container.encode(descriptionEn, forKey: .descriptionEn)

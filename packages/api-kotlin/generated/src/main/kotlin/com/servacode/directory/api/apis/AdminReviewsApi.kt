@@ -12,6 +12,9 @@ import com.servacode.directory.api.models.AdminApplication
 import com.servacode.directory.api.models.AdminApplicationDetail
 import com.servacode.directory.api.models.AdminApplicationList
 import com.servacode.directory.api.models.AdminDecisionRequest
+import com.servacode.directory.api.models.AdminRejectionTemplate
+import com.servacode.directory.api.models.AdminRejectionTemplateList
+import com.servacode.directory.api.models.AdminRejectionTemplateRequest
 import com.servacode.directory.api.models.ApiError
 
 interface AdminReviewsApi {
@@ -30,6 +33,71 @@ interface AdminReviewsApi {
      */
     @GET("api/v1/admin/evidence/{evidence_id}/content/")
     suspend fun adminEvidenceContentRetrieve(@Path("evidence_id") evidenceId: java.util.UUID): Response<ResponseBody>
+
+    /**
+     * POST api/v1/admin/rejection-templates/
+     * Create a rejection template
+     * Requires admin.reviews.decide, re-checked inside the handler.
+     * Responses:
+     *  - 201: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param adminRejectionTemplateRequest 
+     * @return [AdminRejectionTemplate]
+     */
+    @POST("api/v1/admin/rejection-templates/")
+    suspend fun adminRejectionTemplateCreate(@Body adminRejectionTemplateRequest: AdminRejectionTemplateRequest): Response<AdminRejectionTemplate>
+
+    /**
+     * DELETE api/v1/admin/rejection-templates/{template_id}/
+     * Delete a rejection template
+     * Past rejections keep their text; a template is only a starting point.
+     * Responses:
+     *  - 204: No response body
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param templateId 
+     * @return [Unit]
+     */
+    @DELETE("api/v1/admin/rejection-templates/{template_id}/")
+    suspend fun adminRejectionTemplateDelete(@Path("template_id") templateId: java.util.UUID): Response<Unit>
+
+    /**
+     * PUT api/v1/admin/rejection-templates/{template_id}/
+     * Edit, reorder or retire a rejection template
+     * Omitted fields keep their value.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param templateId 
+     * @param adminRejectionTemplateRequest 
+     * @return [AdminRejectionTemplate]
+     */
+    @PUT("api/v1/admin/rejection-templates/{template_id}/")
+    suspend fun adminRejectionTemplateUpdate(@Path("template_id") templateId: java.util.UUID, @Body adminRejectionTemplateRequest: AdminRejectionTemplateRequest): Response<AdminRejectionTemplate>
+
+    /**
+     * GET api/v1/admin/rejection-templates/
+     * List rejection templates
+     * Ordered by &#x60;sortOrder&#x60;. &#x60;active&#x3D;true&#x60; keeps only the active ones.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param active  (optional)
+     * @return [AdminRejectionTemplateList]
+     */
+    @GET("api/v1/admin/rejection-templates/")
+    suspend fun adminRejectionTemplatesList(@Query("active") active: kotlin.Boolean? = null): Response<AdminRejectionTemplateList>
 
     /**
      * POST api/v1/admin/applications/{application_id}/approve/

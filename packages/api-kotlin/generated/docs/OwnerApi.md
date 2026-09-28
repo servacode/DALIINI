@@ -7,6 +7,7 @@ All URIs are relative to *http://localhost*
 | [**ownerConfigRetrieve**](OwnerApi.md#ownerConfigRetrieve) | **GET** api/v1/owner/config/ | List categories open for owner onboarding in a province |
 | [**ownerFacilitiesList**](OwnerApi.md#ownerFacilitiesList) | **GET** api/v1/owner/facilities/ | List the facilities the caller belongs to |
 | [**ownerFacilityCreate**](OwnerApi.md#ownerFacilityCreate) | **POST** api/v1/owner/facilities/ | Create a facility draft |
+| [**ownerFacilityHoursConfirm**](OwnerApi.md#ownerFacilityHoursConfirm) | **POST** api/v1/owner/facilities/{facility_id}/confirm-hours/ | Confirm that the facility&#39;s opening hours are still right |
 | [**ownerFacilityInsightsRetrieve**](OwnerApi.md#ownerFacilityInsightsRetrieve) | **GET** api/v1/owner/facilities/{facility_id}/insights/ | Engagement with a facility over the last 30 days |
 | [**ownerFacilityLocationReplace**](OwnerApi.md#ownerFacilityLocationReplace) | **PUT** api/v1/owner/facilities/{facility_id}/location/ | Set the map point of a facility |
 | [**ownerFacilityMemberDelete**](OwnerApi.md#ownerFacilityMemberDelete) | **DELETE** api/v1/owner/facilities/{facility_id}/members/{user_id}/ | Remove a member from a facility |
@@ -136,6 +137,48 @@ Configure bearerAccessToken:
 ### HTTP request headers
 
  - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+Confirm that the facility&#39;s opening hours are still right
+
+Any owner or manager may confirm. Sets &#x60;hoursConfirmedAt&#x60;, which also moves the public &#x60;infoConfirmedAt&#x60;; &#x60;lastVerifiedAt&#x60; keeps meaning an operator approval. Replacing the hours confirms them too. 409 HOURS_NOT_SUPPORTED when the category has no opening hours.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(OwnerApi::class.java)
+val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+
+launch(Dispatchers.IO) {
+    val result : OwnerHoursConfirmed = webService.ownerFacilityHoursConfirm(facilityId)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **facilityId** | **java.util.UUID**|  | |
+
+### Return type
+
+[**OwnerHoursConfirmed**](OwnerHoursConfirmed.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 

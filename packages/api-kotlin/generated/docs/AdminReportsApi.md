@@ -6,6 +6,7 @@ All URIs are relative to *http://localhost*
 | ------------- | ------------- | ------------- |
 | [**adminReportDismiss**](AdminReportsApi.md#adminReportDismiss) | **POST** api/v1/admin/reports/{report_id}/dismiss/ | Dismiss a report |
 | [**adminReportResolve**](AdminReportsApi.md#adminReportResolve) | **POST** api/v1/admin/reports/{report_id}/resolve/ | Mark a report resolved |
+| [**adminReportsBulkDecide**](AdminReportsApi.md#adminReportsBulkDecide) | **POST** api/v1/admin/reports/bulk/ | Resolve or dismiss many reports at once |
 | [**adminReportsList**](AdminReportsApi.md#adminReportsList) | **GET** api/v1/admin/reports/ | List facility problem reports |
 
 
@@ -85,6 +86,48 @@ launch(Dispatchers.IO) {
 ### Return type
 
 [**AdminFacilityReport**](AdminFacilityReport.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+Resolve or dismiss many reports at once
+
+Up to 100 ids, in one transaction: every OPEN report is decided and audited individually, exactly as the single-report endpoints do. An id that does not exist or is no longer OPEN is reported per id (NOT_FOUND, NOT_OPEN) and left alone; it does not fail the others.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminReportsApi::class.java)
+val adminReportBulkRequest : AdminReportBulkRequest =  // AdminReportBulkRequest | 
+
+launch(Dispatchers.IO) {
+    val result : AdminReportBulkResponse = webService.adminReportsBulkDecide(adminReportBulkRequest)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **adminReportBulkRequest** | [**AdminReportBulkRequest**](AdminReportBulkRequest.md)|  | |
+
+### Return type
+
+[**AdminReportBulkResponse**](AdminReportBulkResponse.md)
 
 ### Authorization
 

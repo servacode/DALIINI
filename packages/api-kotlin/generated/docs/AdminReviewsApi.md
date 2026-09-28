@@ -5,6 +5,10 @@ All URIs are relative to *http://localhost*
 | Method | HTTP request | Description |
 | ------------- | ------------- | ------------- |
 | [**adminEvidenceContentRetrieve**](AdminReviewsApi.md#adminEvidenceContentRetrieve) | **GET** api/v1/admin/evidence/{evidence_id}/content/ | Stream one piece of private verification evidence |
+| [**adminRejectionTemplateCreate**](AdminReviewsApi.md#adminRejectionTemplateCreate) | **POST** api/v1/admin/rejection-templates/ | Create a rejection template |
+| [**adminRejectionTemplateDelete**](AdminReviewsApi.md#adminRejectionTemplateDelete) | **DELETE** api/v1/admin/rejection-templates/{template_id}/ | Delete a rejection template |
+| [**adminRejectionTemplateUpdate**](AdminReviewsApi.md#adminRejectionTemplateUpdate) | **PUT** api/v1/admin/rejection-templates/{template_id}/ | Edit, reorder or retire a rejection template |
+| [**adminRejectionTemplatesList**](AdminReviewsApi.md#adminRejectionTemplatesList) | **GET** api/v1/admin/rejection-templates/ | List rejection templates |
 | [**adminReviewApprove**](AdminReviewsApi.md#adminReviewApprove) | **POST** api/v1/admin/applications/{application_id}/approve/ | Approve an application |
 | [**adminReviewReject**](AdminReviewsApi.md#adminReviewReject) | **POST** api/v1/admin/applications/{application_id}/reject/ | Reject an application |
 | [**adminReviewRetrieve**](AdminReviewsApi.md#adminReviewRetrieve) | **GET** api/v1/admin/applications/{application_id}/ | Retrieve one application with its review context |
@@ -39,6 +43,176 @@ launch(Dispatchers.IO) {
 ### Return type
 
 [**java.io.File**](java.io.File.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Create a rejection template
+
+Requires admin.reviews.decide, re-checked inside the handler.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminReviewsApi::class.java)
+val adminRejectionTemplateRequest : AdminRejectionTemplateRequest =  // AdminRejectionTemplateRequest | 
+
+launch(Dispatchers.IO) {
+    val result : AdminRejectionTemplate = webService.adminRejectionTemplateCreate(adminRejectionTemplateRequest)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **adminRejectionTemplateRequest** | [**AdminRejectionTemplateRequest**](AdminRejectionTemplateRequest.md)|  | |
+
+### Return type
+
+[**AdminRejectionTemplate**](AdminRejectionTemplate.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+Delete a rejection template
+
+Past rejections keep their text; a template is only a starting point.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminReviewsApi::class.java)
+val templateId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+
+launch(Dispatchers.IO) {
+    webService.adminRejectionTemplateDelete(templateId)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **templateId** | **java.util.UUID**|  | |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Edit, reorder or retire a rejection template
+
+Omitted fields keep their value.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminReviewsApi::class.java)
+val templateId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+val adminRejectionTemplateRequest : AdminRejectionTemplateRequest =  // AdminRejectionTemplateRequest | 
+
+launch(Dispatchers.IO) {
+    val result : AdminRejectionTemplate = webService.adminRejectionTemplateUpdate(templateId, adminRejectionTemplateRequest)
+}
+```
+
+### Parameters
+| **templateId** | **java.util.UUID**|  | |
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **adminRejectionTemplateRequest** | [**AdminRejectionTemplateRequest**](AdminRejectionTemplateRequest.md)|  | |
+
+### Return type
+
+[**AdminRejectionTemplate**](AdminRejectionTemplate.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+List rejection templates
+
+Ordered by &#x60;sortOrder&#x60;. &#x60;active&#x3D;true&#x60; keeps only the active ones.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminReviewsApi::class.java)
+val active : kotlin.Boolean = true // kotlin.Boolean | 
+
+launch(Dispatchers.IO) {
+    val result : AdminRejectionTemplateList = webService.adminRejectionTemplatesList(active)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **active** | **kotlin.Boolean**|  | [optional] |
+
+### Return type
+
+[**AdminRejectionTemplateList**](AdminRejectionTemplateList.md)
 
 ### Authorization
 

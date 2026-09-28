@@ -25,6 +25,7 @@ Name | Type | Description | Notes
 **serviceTagIds** | **[UUID]** |  | 
 **evidence** | [OwnerEvidenceRef] |  | 
 **hours** | [OwnerHoursEntry] |  | 
+**hoursConfirmedAt** | **Date** | When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old. | 
 **application** | [**OwnerApplication**](OwnerApplication.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

@@ -23,6 +23,7 @@ import type {
   OwnerFacilityDetail,
   OwnerFacilityInsights,
   OwnerFacilitySummaryList,
+  OwnerHoursConfirmed,
   OwnerMemberList,
   OwnerMemberUpserted,
   OwnerSubmitResult,
@@ -45,6 +46,8 @@ import {
     OwnerFacilityInsightsToJSON,
     OwnerFacilitySummaryListFromJSON,
     OwnerFacilitySummaryListToJSON,
+    OwnerHoursConfirmedFromJSON,
+    OwnerHoursConfirmedToJSON,
     OwnerMemberListFromJSON,
     OwnerMemberListToJSON,
     OwnerMemberUpsertedFromJSON,
@@ -61,6 +64,10 @@ export interface OwnerConfigRetrieveRequest {
 
 export interface OwnerFacilityCreateRequest {
     facilityCreate: FacilityCreate;
+}
+
+export interface OwnerFacilityHoursConfirmRequest {
+    facilityId: string;
 }
 
 export interface OwnerFacilityInsightsRetrieveRequest {
@@ -237,6 +244,53 @@ export class OwnerApi extends runtime.BaseAPI {
      */
     async ownerFacilityCreate(requestParameters: OwnerFacilityCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OwnerFacilityDetail> {
         const response = await this.ownerFacilityCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Any owner or manager may confirm. Sets `hoursConfirmedAt`, which also moves the public `infoConfirmedAt`; `lastVerifiedAt` keeps meaning an operator approval. Replacing the hours confirms them too. 409 HOURS_NOT_SUPPORTED when the category has no opening hours.
+     * Confirm that the facility\'s opening hours are still right
+     */
+    async ownerFacilityHoursConfirmRaw(requestParameters: OwnerFacilityHoursConfirmRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OwnerHoursConfirmed>> {
+        if (requestParameters['facilityId'] == null) {
+            throw new runtime.RequiredError(
+                'facilityId',
+                'Required parameter "facilityId" was null or undefined when calling ownerFacilityHoursConfirm().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/owner/facilities/{facility_id}/confirm-hours/`;
+        urlPath = urlPath.replace(`{${"facility_id"}}`, encodeURIComponent(String(requestParameters['facilityId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => OwnerHoursConfirmedFromJSON(jsonValue));
+    }
+
+    /**
+     * Any owner or manager may confirm. Sets `hoursConfirmedAt`, which also moves the public `infoConfirmedAt`; `lastVerifiedAt` keeps meaning an operator approval. Replacing the hours confirms them too. 409 HOURS_NOT_SUPPORTED when the category has no opening hours.
+     * Confirm that the facility\'s opening hours are still right
+     */
+    async ownerFacilityHoursConfirm(requestParameters: OwnerFacilityHoursConfirmRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OwnerHoursConfirmed> {
+        const response = await this.ownerFacilityHoursConfirmRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

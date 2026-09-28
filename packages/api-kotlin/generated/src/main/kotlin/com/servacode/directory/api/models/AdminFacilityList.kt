@@ -15,7 +15,7 @@
 
 package com.servacode.directory.api.models
 
-import com.servacode.directory.api.models.AdminFacility
+import com.servacode.directory.api.models.AdminFacilityQuality
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -31,7 +31,7 @@ import kotlinx.serialization.Contextual
 data class AdminFacilityList (
 
     @SerialName(value = "items")
-    val items: kotlin.collections.List<AdminFacility>
+    val items: kotlin.collections.List<AdminFacilityQuality>
 
 ) {
 

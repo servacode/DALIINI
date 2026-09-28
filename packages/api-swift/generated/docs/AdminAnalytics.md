@@ -3,15 +3,18 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**approvalMedianHours** | **Double** | Median submit-to-approval time, last 30 days. | 
-**searches** | **Int** | search_submitted events, last 30 days. | 
-**zeroResultSearches** | **Int** | search_zero_results, last 30 days. | 
-**facilityViews** | **Int** | facility_view events, last 30 days. | 
-**directionsRequests** | **Int** | directions_start, last 30 days. | 
+**from** | **Date** | Period start, inclusive. | 
+**to** | **Date** | Period end, exclusive. | 
+**approvalMedianHours** | **Double** | Median submit-to-approval time in the period. | 
+**searches** | **Int** | search_submitted events in the period. | 
+**zeroResultSearches** | **Int** | search_zero_results in the period. | 
+**facilityViews** | **Int** | facility_view events in the period. | 
+**directionsRequests** | **Int** | directions_start in the period. | 
+**previous** | [**AdminAnalyticsPeriodKpis**](AdminAnalyticsPeriodKpis.md) | The same KPIs for the equally long period just before &#x60;from&#x60;. | 
 **activeFacilities** | **Int** |  | 
 **pendingReviews** | **Int** |  | 
 **ratingAverage** | **Double** |  | 
-**events** | [AdminEventCount] |  | 
+**events** | [AdminEventCount] | All-time counts per event name. | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

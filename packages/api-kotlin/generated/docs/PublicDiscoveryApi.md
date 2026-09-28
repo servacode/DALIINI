@@ -4,12 +4,60 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 | ------------- | ------------- | ------------- |
+| [**publicDutyByDateList**](PublicDiscoveryApi.md#publicDutyByDateList) | **GET** api/v1/public/duty/ | Pharmacies on duty on a given day (or up to 7 days) |
 | [**publicFacilitiesList**](PublicDiscoveryApi.md#publicFacilitiesList) | **GET** api/v1/public/facilities/ | List publicly visible facilities in a province, optionally in one category |
 | [**publicFacilityRetrieve**](PublicDiscoveryApi.md#publicFacilityRetrieve) | **GET** api/v1/public/facilities/{facility_id}/ | Retrieve one publicly visible facility |
 | [**publicHomeRetrieve**](PublicDiscoveryApi.md#publicHomeRetrieve) | **GET** api/v1/public/home/ | Retrieve the home composition for a province |
 | [**publicMapFacilitiesList**](PublicDiscoveryApi.md#publicMapFacilitiesList) | **GET** api/v1/public/map/facilities/ | List compact map markers inside a viewport |
 | [**publicSearchList**](PublicDiscoveryApi.md#publicSearchList) | **GET** api/v1/public/search/ | Search facilities within a province |
 
+
+
+Pharmacies on duty on a given day (or up to 7 days)
+
+Days are Damascus calendar days starting at &#x60;date&#x60; (default today). A pharmacy is listed on every day one of its duty shifts overlaps. Same visibility as the public duty-now listing. Cacheable for one minute.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+val webService = apiClient.createWebservice(PublicDiscoveryApi::class.java)
+val provinceId : kotlin.String = provinceId_example // kotlin.String | 
+val categoryId : kotlin.String = categoryId_example // kotlin.String | 
+val cityId : kotlin.String = cityId_example // kotlin.String | 
+val date : kotlin.String = date_example // kotlin.String | YYYY-MM-DD
+val days : kotlin.Int = 56 // kotlin.Int | 1 to 7.
+
+launch(Dispatchers.IO) {
+    val result : PublicDutyRoster = webService.publicDutyByDateList(provinceId, categoryId, cityId, date, days)
+}
+```
+
+### Parameters
+| **provinceId** | **kotlin.String**|  | |
+| **categoryId** | **kotlin.String**|  | [optional] |
+| **cityId** | **kotlin.String**|  | [optional] |
+| **date** | **kotlin.String**| YYYY-MM-DD | [optional] |
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **days** | **kotlin.Int**| 1 to 7. | [optional] |
+
+### Return type
+
+[**PublicDutyRoster**](PublicDutyRoster.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
 
 
 List publicly visible facilities in a province, optionally in one category

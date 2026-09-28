@@ -65,32 +65,68 @@ All URIs are relative to *http://localhost*
 | *AccountApi* | [**accountRatingsList**](docs/AccountApi.md#accountratingslist) | **GET** api/v1/account/ratings/ | List the ratings written by the caller |
 | *AdminAdsApi* | [**adminAdCreate**](docs/AdminAdsApi.md#adminadcreate) | **POST** api/v1/admin/ads/ | Create an advertisement |
 | *AdminAdsApi* | [**adminAdDelete**](docs/AdminAdsApi.md#adminaddelete) | **DELETE** api/v1/admin/ads/{advertisement_id}/ | Delete an advertisement |
+| *AdminAdsApi* | [**adminAdImageUpload**](docs/AdminAdsApi.md#adminadimageupload) | **POST** api/v1/admin/ads/images/ | Upload an advertisement image |
 | *AdminAdsApi* | [**adminAdUpdate**](docs/AdminAdsApi.md#adminadupdate) | **PUT** api/v1/admin/ads/{advertisement_id}/ | Edit an advertisement, its schedule or its activation |
 | *AdminAdsApi* | [**adminAdsList**](docs/AdminAdsApi.md#adminadslist) | **GET** api/v1/admin/ads/ | List advertisements |
 | *AdminAnalyticsApi* | [**adminAnalyticsRetrieve**](docs/AdminAnalyticsApi.md#adminanalyticsretrieve) | **GET** api/v1/admin/analytics/ | Operational KPIs |
+| *AdminAnalyticsApi* | [**adminAnalyticsStaffRetrieve**](docs/AdminAnalyticsApi.md#adminanalyticsstaffretrieve) | **GET** api/v1/admin/analytics/staff/ | Reviewer performance in a period |
 | *AdminAuditApi* | [**adminAuditList**](docs/AdminAuditApi.md#adminauditlist) | **GET** api/v1/admin/audit/ | Search the audit trail |
+| *AdminContentApi* | [**adminContactMessageHandle**](docs/AdminContentApi.md#admincontactmessagehandle) | **POST** api/v1/admin/contact-messages/{message_id}/handle/ | Mark a contact message handled |
+| *AdminContentApi* | [**adminContactMessagesList**](docs/AdminContentApi.md#admincontactmessageslist) | **GET** api/v1/admin/contact-messages/ | The contact inbox, newest first |
+| *AdminContentApi* | [**adminContentPageCreate**](docs/AdminContentApi.md#admincontentpagecreate) | **POST** api/v1/admin/content/pages/ | Create a content page |
+| *AdminContentApi* | [**adminContentPageDelete**](docs/AdminContentApi.md#admincontentpagedelete) | **DELETE** api/v1/admin/content/pages/{slug}/ | Delete a content page and all its versions |
+| *AdminContentApi* | [**adminContentPageRetrieve**](docs/AdminContentApi.md#admincontentpageretrieve) | **GET** api/v1/admin/content/pages/{slug}/ | Retrieve a content page with its newest words |
+| *AdminContentApi* | [**adminContentPageUpdate**](docs/AdminContentApi.md#admincontentpageupdate) | **PUT** api/v1/admin/content/pages/{slug}/ | Edit, publish or unpublish a content page |
+| *AdminContentApi* | [**adminContentPagesList**](docs/AdminContentApi.md#admincontentpageslist) | **GET** api/v1/admin/content/pages/ | List content pages, including the built-in legal pages |
+| *AdminContentApi* | [**adminEmergencyNumberCreate**](docs/AdminContentApi.md#adminemergencynumbercreate) | **POST** api/v1/admin/emergency-numbers/ | Add an emergency number |
+| *AdminContentApi* | [**adminEmergencyNumberDelete**](docs/AdminContentApi.md#adminemergencynumberdelete) | **DELETE** api/v1/admin/emergency-numbers/{number_id}/ | Delete an emergency number |
+| *AdminContentApi* | [**adminEmergencyNumberUpdate**](docs/AdminContentApi.md#adminemergencynumberupdate) | **PUT** api/v1/admin/emergency-numbers/{number_id}/ | Edit, move, reorder or deactivate an emergency number |
+| *AdminContentApi* | [**adminEmergencyNumbersList**](docs/AdminContentApi.md#adminemergencynumberslist) | **GET** api/v1/admin/emergency-numbers/ | List emergency numbers, national and provincial, active or not |
+| *AdminContentApi* | [**adminFaqEntriesList**](docs/AdminContentApi.md#adminfaqentrieslist) | **GET** api/v1/admin/content/faq/ | List FAQ entries, published or not |
+| *AdminContentApi* | [**adminFaqEntryCreate**](docs/AdminContentApi.md#adminfaqentrycreate) | **POST** api/v1/admin/content/faq/ | Add a FAQ entry |
+| *AdminContentApi* | [**adminFaqEntryDelete**](docs/AdminContentApi.md#adminfaqentrydelete) | **DELETE** api/v1/admin/content/faq/{entry_id}/ | Delete a FAQ entry |
+| *AdminContentApi* | [**adminFaqEntryUpdate**](docs/AdminContentApi.md#adminfaqentryupdate) | **PUT** api/v1/admin/content/faq/{entry_id}/ | Edit, reorder, publish or unpublish a FAQ entry |
+| *AdminDutyApi* | [**adminDutyRosterRetrieve**](docs/AdminDutyApi.md#admindutyrosterretrieve) | **GET** api/v1/admin/duty/ | The duty roster of a province (or city), day by day |
+| *AdminDutyApi* | [**adminDutyShiftCreate**](docs/AdminDutyApi.md#admindutyshiftcreate) | **POST** api/v1/admin/duty/ | Put a duty shift on a pharmacy's roster |
+| *AdminDutyApi* | [**adminDutyShiftDelete**](docs/AdminDutyApi.md#admindutyshiftdelete) | **DELETE** api/v1/admin/duty/{shift_id}/ | Cancel a duty shift |
+| *AdminDutyApi* | [**adminDutyShiftUpdate**](docs/AdminDutyApi.md#admindutyshiftupdate) | **PATCH** api/v1/admin/duty/{shift_id}/ | Move a duty shift |
+| *AdminExportsApi* | [**adminExportAuditCsv**](docs/AdminExportsApi.md#adminexportauditcsv) | **GET** api/v1/admin/exports/audit.csv | Export the audit trail as CSV |
+| *AdminExportsApi* | [**adminExportFacilitiesCsv**](docs/AdminExportsApi.md#adminexportfacilitiescsv) | **GET** api/v1/admin/exports/facilities.csv | Export the facility list as CSV |
+| *AdminExportsApi* | [**adminExportReportsCsv**](docs/AdminExportsApi.md#adminexportreportscsv) | **GET** api/v1/admin/exports/reports.csv | Export problem reports as CSV |
 | *AdminFacilitiesApi* | [**adminFacilitiesList**](docs/AdminFacilitiesApi.md#adminfacilitieslist) | **GET** api/v1/admin/facilities/ | List facilities for operations |
 | *AdminFacilitiesApi* | [**adminFacilityClose**](docs/AdminFacilitiesApi.md#adminfacilityclose) | **POST** api/v1/admin/facilities/{facility_id}/close/ | Close a facility |
 | *AdminFacilitiesApi* | [**adminFacilityReactivate**](docs/AdminFacilitiesApi.md#adminfacilityreactivate) | **POST** api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility |
 | *AdminFacilitiesApi* | [**adminFacilityRetrieve**](docs/AdminFacilitiesApi.md#adminfacilityretrieve) | **GET** api/v1/admin/facilities/{facility_id}/ | Retrieve one facility |
 | *AdminFacilitiesApi* | [**adminFacilitySuspend**](docs/AdminFacilitiesApi.md#adminfacilitysuspend) | **POST** api/v1/admin/facilities/{facility_id}/suspend/ | Suspend a facility |
+| *AdminFacilitiesApi* | [**adminFacilityTimelineRetrieve**](docs/AdminFacilitiesApi.md#adminfacilitytimelineretrieve) | **GET** api/v1/admin/facilities/{facility_id}/timeline/ | Everything that happened to a facility, newest first |
+| *AdminNotificationsApi* | [**adminNotificationBroadcast**](docs/AdminNotificationsApi.md#adminnotificationbroadcast) | **POST** api/v1/admin/notifications/broadcast/ | Send a notification to many users |
+| *AdminNotificationsApi* | [**adminNotificationBroadcastsList**](docs/AdminNotificationsApi.md#adminnotificationbroadcastslist) | **GET** api/v1/admin/notifications/broadcasts/ | Broadcast history, newest first |
 | *AdminProvincesApi* | [**adminProvinceCitiesList**](docs/AdminProvincesApi.md#adminprovincecitieslist) | **GET** api/v1/admin/provinces/{province_id}/cities/ | List every city of a province, active or not |
 | *AdminProvincesApi* | [**adminProvinceCityUpdate**](docs/AdminProvincesApi.md#adminprovincecityupdate) | **PUT** api/v1/admin/provinces/{province_id}/cities/{city_id}/ | Activate or deactivate a city |
+| *AdminProvincesApi* | [**adminProvinceReadinessRetrieve**](docs/AdminProvincesApi.md#adminprovincereadinessretrieve) | **GET** api/v1/admin/provinces/{province_id}/readiness/ | Launch checklist for a province |
 | *AdminProvincesApi* | [**adminProvinceUpdate**](docs/AdminProvincesApi.md#adminprovinceupdate) | **PUT** api/v1/admin/provinces/{province_id}/ | Activate a province or change its order |
 | *AdminProvincesApi* | [**adminProvincesList**](docs/AdminProvincesApi.md#adminprovinceslist) | **GET** api/v1/admin/provinces/ | List every province |
 | *AdminReportsApi* | [**adminReportDismiss**](docs/AdminReportsApi.md#adminreportdismiss) | **POST** api/v1/admin/reports/{report_id}/dismiss/ | Dismiss a report |
 | *AdminReportsApi* | [**adminReportResolve**](docs/AdminReportsApi.md#adminreportresolve) | **POST** api/v1/admin/reports/{report_id}/resolve/ | Mark a report resolved |
+| *AdminReportsApi* | [**adminReportsBulkDecide**](docs/AdminReportsApi.md#adminreportsbulkdecide) | **POST** api/v1/admin/reports/bulk/ | Resolve or dismiss many reports at once |
 | *AdminReportsApi* | [**adminReportsList**](docs/AdminReportsApi.md#adminreportslist) | **GET** api/v1/admin/reports/ | List facility problem reports |
 | *AdminReviewsApi* | [**adminEvidenceContentRetrieve**](docs/AdminReviewsApi.md#adminevidencecontentretrieve) | **GET** api/v1/admin/evidence/{evidence_id}/content/ | Stream one piece of private verification evidence |
+| *AdminReviewsApi* | [**adminRejectionTemplateCreate**](docs/AdminReviewsApi.md#adminrejectiontemplatecreate) | **POST** api/v1/admin/rejection-templates/ | Create a rejection template |
+| *AdminReviewsApi* | [**adminRejectionTemplateDelete**](docs/AdminReviewsApi.md#adminrejectiontemplatedelete) | **DELETE** api/v1/admin/rejection-templates/{template_id}/ | Delete a rejection template |
+| *AdminReviewsApi* | [**adminRejectionTemplateUpdate**](docs/AdminReviewsApi.md#adminrejectiontemplateupdate) | **PUT** api/v1/admin/rejection-templates/{template_id}/ | Edit, reorder or retire a rejection template |
+| *AdminReviewsApi* | [**adminRejectionTemplatesList**](docs/AdminReviewsApi.md#adminrejectiontemplateslist) | **GET** api/v1/admin/rejection-templates/ | List rejection templates |
 | *AdminReviewsApi* | [**adminReviewApprove**](docs/AdminReviewsApi.md#adminreviewapprove) | **POST** api/v1/admin/applications/{application_id}/approve/ | Approve an application |
 | *AdminReviewsApi* | [**adminReviewReject**](docs/AdminReviewsApi.md#adminreviewreject) | **POST** api/v1/admin/applications/{application_id}/reject/ | Reject an application |
 | *AdminReviewsApi* | [**adminReviewRetrieve**](docs/AdminReviewsApi.md#adminreviewretrieve) | **GET** api/v1/admin/applications/{application_id}/ | Retrieve one application with its review context |
 | *AdminReviewsApi* | [**adminReviewsList**](docs/AdminReviewsApi.md#adminreviewslist) | **GET** api/v1/admin/applications/ | List facility applications awaiting or past review |
 | *AdminSettingsApi* | [**adminSettingWrite**](docs/AdminSettingsApi.md#adminsettingwrite) | **PUT** api/v1/admin/settings/ | Create or update a typed platform setting |
 | *AdminSettingsApi* | [**adminSettingsList**](docs/AdminSettingsApi.md#adminsettingslist) | **GET** api/v1/admin/settings/ | List typed platform settings |
+| *AdminSystemApi* | [**adminAlertsList**](docs/AdminSystemApi.md#adminalertslist) | **GET** api/v1/admin/alerts/ | Smart alerts: problems worth acting on now |
 | *AdminSystemApi* | [**adminDashboardRetrieve**](docs/AdminSystemApi.md#admindashboardretrieve) | **GET** api/v1/admin/dashboard/ | Operational counters for the review desk |
 | *AdminSystemApi* | [**adminMeRetrieve**](docs/AdminSystemApi.md#adminmeretrieve) | **GET** api/v1/admin/me/ | The current operator and the permissions they hold |
+| *AdminSystemApi* | [**adminSearchRetrieve**](docs/AdminSystemApi.md#adminsearchretrieve) | **GET** api/v1/admin/search/ | Search facilities, users and applications at once |
 | *AdminSystemApi* | [**adminSystemStatusRetrieve**](docs/AdminSystemApi.md#adminsystemstatusretrieve) | **GET** api/v1/admin/system/status/ | Runtime and configuration status |
+| *AdminSystemApi* | [**adminTasksRetrieve**](docs/AdminSystemApi.md#admintasksretrieve) | **GET** api/v1/admin/tasks/ | The operator's queue: what is waiting, oldest first |
 | *AdminTaxonomyApi* | [**adminCategoriesList**](docs/AdminTaxonomyApi.md#admincategorieslist) | **GET** api/v1/admin/categories/ | List categories |
 | *AdminTaxonomyApi* | [**adminCategoryCapabilitiesReplace**](docs/AdminTaxonomyApi.md#admincategorycapabilitiesreplace) | **PUT** api/v1/admin/categories/{category_id}/capabilities/ | Set the capability flags of a category |
 | *AdminTaxonomyApi* | [**adminCategoryCreate**](docs/AdminTaxonomyApi.md#admincategorycreate) | **POST** api/v1/admin/categories/create/ | Create a category |
@@ -126,6 +162,10 @@ All URIs are relative to *http://localhost*
 | *AvailabilityApi* | [**ownerFacilityTemporaryClosureCancel**](docs/AvailabilityApi.md#ownerfacilitytemporaryclosurecancel) | **DELETE** api/v1/owner/facilities/{facility_id}/temporary-closures/{closure_id}/ | Cancel a temporary closure |
 | *AvailabilityApi* | [**ownerFacilityTemporaryClosureCreate**](docs/AvailabilityApi.md#ownerfacilitytemporaryclosurecreate) | **POST** api/v1/owner/facilities/{facility_id}/temporary-closures/ | Open a temporary closure window |
 | *AvailabilityApi* | [**ownerFacilityTemporaryClosuresList**](docs/AvailabilityApi.md#ownerfacilitytemporaryclosureslist) | **GET** api/v1/owner/facilities/{facility_id}/temporary-closures/ | List temporary closures of a facility |
+| *ContentApi* | [**publicContactCreate**](docs/ContentApi.md#publiccontactcreate) | **POST** api/v1/contact/ | Send a message to the platform team |
+| *ContentApi* | [**publicContentPageRetrieve**](docs/ContentApi.md#publiccontentpageretrieve) | **GET** api/v1/content/pages/{slug}/ | Retrieve one published content page |
+| *ContentApi* | [**publicEmergencyNumbersList**](docs/ContentApi.md#publicemergencynumberslist) | **GET** api/v1/emergency-numbers/ | Emergency numbers: national, plus the province's own |
+| *ContentApi* | [**publicFaqList**](docs/ContentApi.md#publicfaqlist) | **GET** api/v1/content/faq/ | List the published questions and answers, in order |
 | *ContentApi* | [**publicLegalDocumentRetrieve**](docs/ContentApi.md#publiclegaldocumentretrieve) | **GET** api/v1/public/legal/{key}/ | Retrieve one published page |
 | *ContentApi* | [**publicLegalDocumentsList**](docs/ContentApi.md#publiclegaldocumentslist) | **GET** api/v1/public/legal/ | List the published pages |
 | *DutyApi* | [**ownerFacilityDutyCreate**](docs/DutyApi.md#ownerfacilitydutycreate) | **POST** api/v1/owner/facilities/{facility_id}/duty/ | Schedule a duty shift |
@@ -140,6 +180,7 @@ All URIs are relative to *http://localhost*
 | *OwnerApi* | [**ownerConfigRetrieve**](docs/OwnerApi.md#ownerconfigretrieve) | **GET** api/v1/owner/config/ | List categories open for owner onboarding in a province |
 | *OwnerApi* | [**ownerFacilitiesList**](docs/OwnerApi.md#ownerfacilitieslist) | **GET** api/v1/owner/facilities/ | List the facilities the caller belongs to |
 | *OwnerApi* | [**ownerFacilityCreate**](docs/OwnerApi.md#ownerfacilitycreate) | **POST** api/v1/owner/facilities/ | Create a facility draft |
+| *OwnerApi* | [**ownerFacilityHoursConfirm**](docs/OwnerApi.md#ownerfacilityhoursconfirm) | **POST** api/v1/owner/facilities/{facility_id}/confirm-hours/ | Confirm that the facility's opening hours are still right |
 | *OwnerApi* | [**ownerFacilityInsightsRetrieve**](docs/OwnerApi.md#ownerfacilityinsightsretrieve) | **GET** api/v1/owner/facilities/{facility_id}/insights/ | Engagement with a facility over the last 30 days |
 | *OwnerApi* | [**ownerFacilityLocationReplace**](docs/OwnerApi.md#ownerfacilitylocationreplace) | **PUT** api/v1/owner/facilities/{facility_id}/location/ | Set the map point of a facility |
 | *OwnerApi* | [**ownerFacilityMemberDelete**](docs/OwnerApi.md#ownerfacilitymemberdelete) | **DELETE** api/v1/owner/facilities/{facility_id}/members/{user_id}/ | Remove a member from a facility |
@@ -148,6 +189,7 @@ All URIs are relative to *http://localhost*
 | *OwnerApi* | [**ownerFacilityRetrieve**](docs/OwnerApi.md#ownerfacilityretrieve) | **GET** api/v1/owner/facilities/{facility_id}/ | Retrieve one facility the caller belongs to |
 | *OwnerApi* | [**ownerFacilitySubmit**](docs/OwnerApi.md#ownerfacilitysubmit) | **POST** api/v1/owner/facilities/{facility_id}/submit/ | Submit a facility for review |
 | *OwnerApi* | [**ownerFacilityUpdate**](docs/OwnerApi.md#ownerfacilityupdate) | **PATCH** api/v1/owner/facilities/{facility_id}/ | Update the core fields of a facility |
+| *PublicDiscoveryApi* | [**publicDutyByDateList**](docs/PublicDiscoveryApi.md#publicdutybydatelist) | **GET** api/v1/public/duty/ | Pharmacies on duty on a given day (or up to 7 days) |
 | *PublicDiscoveryApi* | [**publicFacilitiesList**](docs/PublicDiscoveryApi.md#publicfacilitieslist) | **GET** api/v1/public/facilities/ | List publicly visible facilities in a province, optionally in one category |
 | *PublicDiscoveryApi* | [**publicFacilityRetrieve**](docs/PublicDiscoveryApi.md#publicfacilityretrieve) | **GET** api/v1/public/facilities/{facility_id}/ | Retrieve one publicly visible facility |
 | *PublicDiscoveryApi* | [**publicHomeRetrieve**](docs/PublicDiscoveryApi.md#publichomeretrieve) | **GET** api/v1/public/home/ | Retrieve the home composition for a province |
@@ -170,17 +212,27 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AccountDeletionStatusEnum](docs/AccountDeletionStatusEnum.md)
  - [com.servacode.directory.api.models.AccountRating](docs/AccountRating.md)
  - [com.servacode.directory.api.models.AccountRatingList](docs/AccountRatingList.md)
+ - [com.servacode.directory.api.models.AdminAdImage](docs/AdminAdImage.md)
  - [com.servacode.directory.api.models.AdminAdvertisement](docs/AdminAdvertisement.md)
  - [com.servacode.directory.api.models.AdminAdvertisementList](docs/AdminAdvertisementList.md)
  - [com.servacode.directory.api.models.AdminAdvertisementRequest](docs/AdminAdvertisementRequest.md)
  - [com.servacode.directory.api.models.AdminAdvertisementUpdateRequest](docs/AdminAdvertisementUpdateRequest.md)
+ - [com.servacode.directory.api.models.AdminAlert](docs/AdminAlert.md)
+ - [com.servacode.directory.api.models.AdminAlertKindEnum](docs/AdminAlertKindEnum.md)
+ - [com.servacode.directory.api.models.AdminAlertLink](docs/AdminAlertLink.md)
+ - [com.servacode.directory.api.models.AdminAlertList](docs/AdminAlertList.md)
+ - [com.servacode.directory.api.models.AdminAlertSeverityEnum](docs/AdminAlertSeverityEnum.md)
  - [com.servacode.directory.api.models.AdminAnalytics](docs/AdminAnalytics.md)
+ - [com.servacode.directory.api.models.AdminAnalyticsPeriodKpis](docs/AdminAnalyticsPeriodKpis.md)
  - [com.servacode.directory.api.models.AdminApplication](docs/AdminApplication.md)
  - [com.servacode.directory.api.models.AdminApplicationDetail](docs/AdminApplicationDetail.md)
  - [com.servacode.directory.api.models.AdminApplicationList](docs/AdminApplicationList.md)
  - [com.servacode.directory.api.models.AdminAuditEntry](docs/AdminAuditEntry.md)
  - [com.servacode.directory.api.models.AdminAuditList](docs/AdminAuditList.md)
  - [com.servacode.directory.api.models.AdminAuditTrailEntry](docs/AdminAuditTrailEntry.md)
+ - [com.servacode.directory.api.models.AdminBroadcast](docs/AdminBroadcast.md)
+ - [com.servacode.directory.api.models.AdminBroadcastPage](docs/AdminBroadcastPage.md)
+ - [com.servacode.directory.api.models.AdminBroadcastRequest](docs/AdminBroadcastRequest.md)
  - [com.servacode.directory.api.models.AdminCapabilities](docs/AdminCapabilities.md)
  - [com.servacode.directory.api.models.AdminCapabilitiesRequest](docs/AdminCapabilitiesRequest.md)
  - [com.servacode.directory.api.models.AdminCategory](docs/AdminCategory.md)
@@ -194,32 +246,79 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminCityAdmin](docs/AdminCityAdmin.md)
  - [com.servacode.directory.api.models.AdminCityAdminList](docs/AdminCityAdminList.md)
  - [com.servacode.directory.api.models.AdminCityUpdateRequest](docs/AdminCityUpdateRequest.md)
+ - [com.servacode.directory.api.models.AdminContactHandleRequest](docs/AdminContactHandleRequest.md)
+ - [com.servacode.directory.api.models.AdminContactMessage](docs/AdminContactMessage.md)
+ - [com.servacode.directory.api.models.AdminContactMessagePage](docs/AdminContactMessagePage.md)
+ - [com.servacode.directory.api.models.AdminContentPage](docs/AdminContentPage.md)
+ - [com.servacode.directory.api.models.AdminContentPageCreateRequest](docs/AdminContentPageCreateRequest.md)
+ - [com.servacode.directory.api.models.AdminContentPageList](docs/AdminContentPageList.md)
+ - [com.servacode.directory.api.models.AdminContentPageUpdateRequest](docs/AdminContentPageUpdateRequest.md)
  - [com.servacode.directory.api.models.AdminDashboard](docs/AdminDashboard.md)
  - [com.servacode.directory.api.models.AdminDecisionRequest](docs/AdminDecisionRequest.md)
  - [com.servacode.directory.api.models.AdminDuplicateCandidate](docs/AdminDuplicateCandidate.md)
+ - [com.servacode.directory.api.models.AdminDutyDay](docs/AdminDutyDay.md)
+ - [com.servacode.directory.api.models.AdminDutyRoster](docs/AdminDutyRoster.md)
+ - [com.servacode.directory.api.models.AdminDutyShift](docs/AdminDutyShift.md)
+ - [com.servacode.directory.api.models.AdminDutyShiftCreateRequest](docs/AdminDutyShiftCreateRequest.md)
+ - [com.servacode.directory.api.models.AdminEmergencyNumber](docs/AdminEmergencyNumber.md)
+ - [com.servacode.directory.api.models.AdminEmergencyNumberList](docs/AdminEmergencyNumberList.md)
+ - [com.servacode.directory.api.models.AdminEmergencyNumberRequest](docs/AdminEmergencyNumberRequest.md)
  - [com.servacode.directory.api.models.AdminEventCount](docs/AdminEventCount.md)
  - [com.servacode.directory.api.models.AdminEvidenceRef](docs/AdminEvidenceRef.md)
  - [com.servacode.directory.api.models.AdminFacility](docs/AdminFacility.md)
  - [com.servacode.directory.api.models.AdminFacilityList](docs/AdminFacilityList.md)
+ - [com.servacode.directory.api.models.AdminFacilityQuality](docs/AdminFacilityQuality.md)
  - [com.servacode.directory.api.models.AdminFacilityReport](docs/AdminFacilityReport.md)
  - [com.servacode.directory.api.models.AdminFacilityReportList](docs/AdminFacilityReportList.md)
  - [com.servacode.directory.api.models.AdminFacilityStatusCount](docs/AdminFacilityStatusCount.md)
+ - [com.servacode.directory.api.models.AdminFaqEntry](docs/AdminFaqEntry.md)
+ - [com.servacode.directory.api.models.AdminFaqEntryList](docs/AdminFaqEntryList.md)
+ - [com.servacode.directory.api.models.AdminFaqEntryRequest](docs/AdminFaqEntryRequest.md)
  - [com.servacode.directory.api.models.AdminId](docs/AdminId.md)
+ - [com.servacode.directory.api.models.AdminLinkEntityTypeEnum](docs/AdminLinkEntityTypeEnum.md)
  - [com.servacode.directory.api.models.AdminMe](docs/AdminMe.md)
  - [com.servacode.directory.api.models.AdminProvince](docs/AdminProvince.md)
  - [com.servacode.directory.api.models.AdminProvinceList](docs/AdminProvinceList.md)
+ - [com.servacode.directory.api.models.AdminProvinceReadiness](docs/AdminProvinceReadiness.md)
  - [com.servacode.directory.api.models.AdminProvinceUpdateRequest](docs/AdminProvinceUpdateRequest.md)
  - [com.servacode.directory.api.models.AdminProvinceUpdated](docs/AdminProvinceUpdated.md)
  - [com.servacode.directory.api.models.AdminPublicImage](docs/AdminPublicImage.md)
+ - [com.servacode.directory.api.models.AdminReadinessCodeEnum](docs/AdminReadinessCodeEnum.md)
+ - [com.servacode.directory.api.models.AdminReadinessItem](docs/AdminReadinessItem.md)
  - [com.servacode.directory.api.models.AdminRecentAction](docs/AdminRecentAction.md)
+ - [com.servacode.directory.api.models.AdminRejectionTemplate](docs/AdminRejectionTemplate.md)
+ - [com.servacode.directory.api.models.AdminRejectionTemplateList](docs/AdminRejectionTemplateList.md)
+ - [com.servacode.directory.api.models.AdminRejectionTemplateRequest](docs/AdminRejectionTemplateRequest.md)
+ - [com.servacode.directory.api.models.AdminReportBulkActionEnum](docs/AdminReportBulkActionEnum.md)
+ - [com.servacode.directory.api.models.AdminReportBulkOutcomeEnum](docs/AdminReportBulkOutcomeEnum.md)
+ - [com.servacode.directory.api.models.AdminReportBulkRequest](docs/AdminReportBulkRequest.md)
+ - [com.servacode.directory.api.models.AdminReportBulkResponse](docs/AdminReportBulkResponse.md)
+ - [com.servacode.directory.api.models.AdminReportBulkResult](docs/AdminReportBulkResult.md)
  - [com.servacode.directory.api.models.AdminReportDecisionRequest](docs/AdminReportDecisionRequest.md)
  - [com.servacode.directory.api.models.AdminRole](docs/AdminRole.md)
  - [com.servacode.directory.api.models.AdminRoleList](docs/AdminRoleList.md)
+ - [com.servacode.directory.api.models.AdminSearchGroup](docs/AdminSearchGroup.md)
+ - [com.servacode.directory.api.models.AdminSearchHit](docs/AdminSearchHit.md)
+ - [com.servacode.directory.api.models.AdminSearchHitTypeEnum](docs/AdminSearchHitTypeEnum.md)
+ - [com.servacode.directory.api.models.AdminSearchResult](docs/AdminSearchResult.md)
  - [com.servacode.directory.api.models.AdminSetting](docs/AdminSetting.md)
  - [com.servacode.directory.api.models.AdminSettingList](docs/AdminSettingList.md)
  - [com.servacode.directory.api.models.AdminSettingWriteRequest](docs/AdminSettingWriteRequest.md)
  - [com.servacode.directory.api.models.AdminSettingWritten](docs/AdminSettingWritten.md)
+ - [com.servacode.directory.api.models.AdminStaffMember](docs/AdminStaffMember.md)
+ - [com.servacode.directory.api.models.AdminStaffPerformance](docs/AdminStaffPerformance.md)
  - [com.servacode.directory.api.models.AdminSystemStatus](docs/AdminSystemStatus.md)
+ - [com.servacode.directory.api.models.AdminTaskApplication](docs/AdminTaskApplication.md)
+ - [com.servacode.directory.api.models.AdminTaskApplicationBucket](docs/AdminTaskApplicationBucket.md)
+ - [com.servacode.directory.api.models.AdminTaskApplications](docs/AdminTaskApplications.md)
+ - [com.servacode.directory.api.models.AdminTaskReportGroup](docs/AdminTaskReportGroup.md)
+ - [com.servacode.directory.api.models.AdminTaskReports](docs/AdminTaskReports.md)
+ - [com.servacode.directory.api.models.AdminTaskReverification](docs/AdminTaskReverification.md)
+ - [com.servacode.directory.api.models.AdminTaskReverificationBucket](docs/AdminTaskReverificationBucket.md)
+ - [com.servacode.directory.api.models.AdminTasks](docs/AdminTasks.md)
+ - [com.servacode.directory.api.models.AdminTimeline](docs/AdminTimeline.md)
+ - [com.servacode.directory.api.models.AdminTimelineEvent](docs/AdminTimelineEvent.md)
+ - [com.servacode.directory.api.models.AdminTimelineEventKindEnum](docs/AdminTimelineEventKindEnum.md)
  - [com.servacode.directory.api.models.AdminUser](docs/AdminUser.md)
  - [com.servacode.directory.api.models.AdminUserDetail](docs/AdminUserDetail.md)
  - [com.servacode.directory.api.models.AdminUserList](docs/AdminUserList.md)
@@ -237,6 +336,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.Availability](docs/Availability.md)
  - [com.servacode.directory.api.models.AvailabilityStateEnum](docs/AvailabilityStateEnum.md)
  - [com.servacode.directory.api.models.BilingualRef](docs/BilingualRef.md)
+ - [com.servacode.directory.api.models.BroadcastAudienceEnum](docs/BroadcastAudienceEnum.md)
  - [com.servacode.directory.api.models.BusinessHour](docs/BusinessHour.md)
  - [com.servacode.directory.api.models.BusinessHourInput](docs/BusinessHourInput.md)
  - [com.servacode.directory.api.models.BusinessHoursList](docs/BusinessHoursList.md)
@@ -246,6 +346,11 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.ChallengeVerified](docs/ChallengeVerified.md)
  - [com.servacode.directory.api.models.ChallengeVerify](docs/ChallengeVerify.md)
  - [com.servacode.directory.api.models.CompactFacility](docs/CompactFacility.md)
+ - [com.servacode.directory.api.models.ContactMessageCreated](docs/ContactMessageCreated.md)
+ - [com.servacode.directory.api.models.ContactMessageKindEnum](docs/ContactMessageKindEnum.md)
+ - [com.servacode.directory.api.models.ContactMessageRequest](docs/ContactMessageRequest.md)
+ - [com.servacode.directory.api.models.ContentPage](docs/ContentPage.md)
+ - [com.servacode.directory.api.models.ContentPageKindEnum](docs/ContentPageKindEnum.md)
  - [com.servacode.directory.api.models.Coordinates](docs/Coordinates.md)
  - [com.servacode.directory.api.models.DatabaseHealthEnum](docs/DatabaseHealthEnum.md)
  - [com.servacode.directory.api.models.DeletionRequest](docs/DeletionRequest.md)
@@ -255,6 +360,12 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.DutyShift](docs/DutyShift.md)
  - [com.servacode.directory.api.models.DutyShiftInput](docs/DutyShiftInput.md)
  - [com.servacode.directory.api.models.DutyShiftList](docs/DutyShiftList.md)
+ - [com.servacode.directory.api.models.DutyShiftSourceEnum](docs/DutyShiftSourceEnum.md)
+ - [com.servacode.directory.api.models.DutyShiftStatusEnum](docs/DutyShiftStatusEnum.md)
+ - [com.servacode.directory.api.models.EmergencyNumber](docs/EmergencyNumber.md)
+ - [com.servacode.directory.api.models.EmergencyNumberKindEnum](docs/EmergencyNumberKindEnum.md)
+ - [com.servacode.directory.api.models.EmergencyNumberList](docs/EmergencyNumberList.md)
+ - [com.servacode.directory.api.models.EmergencyNumberScopeEnum](docs/EmergencyNumberScopeEnum.md)
  - [com.servacode.directory.api.models.FacilityApplicationKindEnum](docs/FacilityApplicationKindEnum.md)
  - [com.servacode.directory.api.models.FacilityApplicationStatusEnum](docs/FacilityApplicationStatusEnum.md)
  - [com.servacode.directory.api.models.FacilityCreate](docs/FacilityCreate.md)
@@ -263,12 +374,15 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.FacilityLocation](docs/FacilityLocation.md)
  - [com.servacode.directory.api.models.FacilityMember](docs/FacilityMember.md)
  - [com.servacode.directory.api.models.FacilityMemberRoleEnum](docs/FacilityMemberRoleEnum.md)
+ - [com.servacode.directory.api.models.FacilityQualityIssueEnum](docs/FacilityQualityIssueEnum.md)
  - [com.servacode.directory.api.models.FacilityRating](docs/FacilityRating.md)
  - [com.servacode.directory.api.models.FacilityReportCreated](docs/FacilityReportCreated.md)
  - [com.servacode.directory.api.models.FacilityReportReasonEnum](docs/FacilityReportReasonEnum.md)
  - [com.servacode.directory.api.models.FacilityReportRequest](docs/FacilityReportRequest.md)
  - [com.servacode.directory.api.models.FacilityReportStatusEnum](docs/FacilityReportStatusEnum.md)
  - [com.servacode.directory.api.models.FacilityStatusEnum](docs/FacilityStatusEnum.md)
+ - [com.servacode.directory.api.models.FaqEntry](docs/FaqEntry.md)
+ - [com.servacode.directory.api.models.FaqList](docs/FaqList.md)
  - [com.servacode.directory.api.models.FavoriteFacility](docs/FavoriteFacility.md)
  - [com.servacode.directory.api.models.FavoriteList](docs/FavoriteList.md)
  - [com.servacode.directory.api.models.FavoriteState](docs/FavoriteState.md)
@@ -299,6 +413,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.OwnerFacilityInsights](docs/OwnerFacilityInsights.md)
  - [com.servacode.directory.api.models.OwnerFacilitySummary](docs/OwnerFacilitySummary.md)
  - [com.servacode.directory.api.models.OwnerFacilitySummaryList](docs/OwnerFacilitySummaryList.md)
+ - [com.servacode.directory.api.models.OwnerHoursConfirmed](docs/OwnerHoursConfirmed.md)
  - [com.servacode.directory.api.models.OwnerHoursEntry](docs/OwnerHoursEntry.md)
  - [com.servacode.directory.api.models.OwnerMember](docs/OwnerMember.md)
  - [com.servacode.directory.api.models.OwnerMemberList](docs/OwnerMemberList.md)
@@ -307,6 +422,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.OwnerSubmitResult](docs/OwnerSubmitResult.md)
  - [com.servacode.directory.api.models.OwnerVerificationRequirement](docs/OwnerVerificationRequirement.md)
  - [com.servacode.directory.api.models.PasswordChange](docs/PasswordChange.md)
+ - [com.servacode.directory.api.models.PatchedAdminDutyShiftUpdateRequest](docs/PatchedAdminDutyShiftUpdateRequest.md)
  - [com.servacode.directory.api.models.PatchedDutyShiftInput](docs/PatchedDutyShiftInput.md)
  - [com.servacode.directory.api.models.PatchedFacilityPatch](docs/PatchedFacilityPatch.md)
  - [com.servacode.directory.api.models.PatchedProfilePatch](docs/PatchedProfilePatch.md)
@@ -319,6 +435,9 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.PublicCategoryList](docs/PublicCategoryList.md)
  - [com.servacode.directory.api.models.PublicCity](docs/PublicCity.md)
  - [com.servacode.directory.api.models.PublicCityList](docs/PublicCityList.md)
+ - [com.servacode.directory.api.models.PublicDutyDay](docs/PublicDutyDay.md)
+ - [com.servacode.directory.api.models.PublicDutyRoster](docs/PublicDutyRoster.md)
+ - [com.servacode.directory.api.models.PublicDutyShift](docs/PublicDutyShift.md)
  - [com.servacode.directory.api.models.PublicFacilityDetail](docs/PublicFacilityDetail.md)
  - [com.servacode.directory.api.models.PublicHome](docs/PublicHome.md)
  - [com.servacode.directory.api.models.PublicHoursEntry](docs/PublicHoursEntry.md)

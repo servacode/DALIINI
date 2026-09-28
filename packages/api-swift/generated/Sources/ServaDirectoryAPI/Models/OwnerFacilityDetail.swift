@@ -35,9 +35,11 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
     public var serviceTagIds: [UUID]
     public var evidence: [OwnerEvidenceRef]
     public var hours: [OwnerHoursEntry]
+    /** When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old. */
+    public var hoursConfirmedAt: Date?
     public var application: OwnerApplication?
 
-    public init(id: UUID, nameAr: String, category: NamedRef, province: NamedRef, status: FacilityStatusEnum, lastUpdate: Date, requiredAction: OwnerRequiredActionEnum?, capabilities: CategoryCapabilities, nameEn: String?, descriptionAr: String?, descriptionEn: String?, phone: String?, whatsapp: String?, addressAr: String?, addressEn: String?, cityId: UUID?, neighborhoodId: UUID?, location: Coordinates?, specialtyIds: [UUID], serviceTagIds: [UUID], evidence: [OwnerEvidenceRef], hours: [OwnerHoursEntry], application: OwnerApplication?) {
+    public init(id: UUID, nameAr: String, category: NamedRef, province: NamedRef, status: FacilityStatusEnum, lastUpdate: Date, requiredAction: OwnerRequiredActionEnum?, capabilities: CategoryCapabilities, nameEn: String?, descriptionAr: String?, descriptionEn: String?, phone: String?, whatsapp: String?, addressAr: String?, addressEn: String?, cityId: UUID?, neighborhoodId: UUID?, location: Coordinates?, specialtyIds: [UUID], serviceTagIds: [UUID], evidence: [OwnerEvidenceRef], hours: [OwnerHoursEntry], hoursConfirmedAt: Date?, application: OwnerApplication?) {
         self.id = id
         self.nameAr = nameAr
         self.category = category
@@ -60,6 +62,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
         self.serviceTagIds = serviceTagIds
         self.evidence = evidence
         self.hours = hours
+        self.hoursConfirmedAt = hoursConfirmedAt
         self.application = application
     }
 
@@ -86,6 +89,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
         case serviceTagIds
         case evidence
         case hours
+        case hoursConfirmedAt
         case application
     }
 
@@ -115,6 +119,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
         try container.encode(serviceTagIds, forKey: .serviceTagIds)
         try container.encode(evidence, forKey: .evidence)
         try container.encode(hours, forKey: .hours)
+        try container.encode(hoursConfirmedAt, forKey: .hoursConfirmedAt)
         try container.encode(application, forKey: .application)
     }
 }

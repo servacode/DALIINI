@@ -93,6 +93,50 @@ open class AdminAdsAPI {
     }
 
     /**
+     Upload an advertisement image
+     
+     - parameter file: (form) JPEG, PNG or WebP, at most 2 MB, 100-4096 px a side. 
+     - returns: AdminAdImage
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminAdImageUpload(file: URL) async throws -> AdminAdImage {
+        return try await adminAdImageUploadWithRequestBuilder(file: file).execute().body
+    }
+
+    /**
+     Upload an advertisement image
+     - POST /api/v1/admin/ads/images/
+     - multipart/form-data with `file`. JPEG, PNG or WebP only, at most 2 MB, each side 100 to 4096 px. The image is re-encoded to JPEG (metadata stripped) and stored in public media under a random key. Pass the returned `imageKey` when creating or updating the advertisement.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter file: (form) JPEG, PNG or WebP, at most 2 MB, 100-4096 px a side. 
+     - returns: RequestBuilder<AdminAdImage> 
+     */
+    open class func adminAdImageUploadWithRequestBuilder(file: URL) -> RequestBuilder<AdminAdImage> {
+        let localVariablePath = "/api/v1/admin/ads/images/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableFormParams: [String: Any?] = [
+            "file": file.encodeToJSON(),
+        ]
+
+        let localVariableNonNullParameters = APIHelper.rejectNil(localVariableFormParams)
+        let localVariableParameters = APIHelper.convertBoolToString(localVariableNonNullParameters)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "multipart/form-data",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminAdImage>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Edit an advertisement, its schedule or its activation
      
      - parameter advertisementId: (path)  

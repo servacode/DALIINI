@@ -165,6 +165,12 @@ class OwnerFacilityDetailTest : ShouldSpec() {
             //modelInstance.hours shouldBe ("TODO")
         }
 
+        // to test the property `hoursConfirmedAt` - When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old.
+        should("test hoursConfirmedAt") {
+            // uncomment below to test the property
+            //modelInstance.hoursConfirmedAt shouldBe ("TODO")
+        }
+
         // to test the property `application`
         should("test application") {
             // uncomment below to test the property

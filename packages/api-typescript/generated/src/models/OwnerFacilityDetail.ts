@@ -209,6 +209,12 @@ export interface OwnerFacilityDetail {
      */
     hours: Array<OwnerHoursEntry>;
     /**
+     * When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old.
+     * @type {Date}
+     * @memberof OwnerFacilityDetail
+     */
+    hoursConfirmedAt: Date | null;
+    /**
      * 
      * @type {OwnerApplication}
      * @memberof OwnerFacilityDetail
@@ -244,6 +250,7 @@ export function instanceOfOwnerFacilityDetail(value: object): value is OwnerFaci
     if (!('serviceTagIds' in value) || value['serviceTagIds'] === undefined) return false;
     if (!('evidence' in value) || value['evidence'] === undefined) return false;
     if (!('hours' in value) || value['hours'] === undefined) return false;
+    if (!('hoursConfirmedAt' in value) || value['hoursConfirmedAt'] === undefined) return false;
     if (!('application' in value) || value['application'] === undefined) return false;
     return true;
 }
@@ -280,6 +287,7 @@ export function OwnerFacilityDetailFromJSONTyped(json: any, ignoreDiscriminator:
         'serviceTagIds': json['serviceTagIds'],
         'evidence': ((json['evidence'] as Array<any>).map(OwnerEvidenceRefFromJSON)),
         'hours': ((json['hours'] as Array<any>).map(OwnerHoursEntryFromJSON)),
+        'hoursConfirmedAt': (json['hoursConfirmedAt'] == null ? null : new Date(json['hoursConfirmedAt'])),
         'application': OwnerApplicationFromJSON(json['application']),
     };
 }
@@ -317,6 +325,7 @@ export function OwnerFacilityDetailToJSONTyped(value?: OwnerFacilityDetail | nul
         'serviceTagIds': value['serviceTagIds'],
         'evidence': ((value['evidence'] as Array<any>).map(OwnerEvidenceRefToJSON)),
         'hours': ((value['hours'] as Array<any>).map(OwnerHoursEntryToJSON)),
+        'hoursConfirmedAt': ((value['hoursConfirmedAt'] as any).toISOString()),
         'application': OwnerApplicationToJSON(value['application']),
     };
 }

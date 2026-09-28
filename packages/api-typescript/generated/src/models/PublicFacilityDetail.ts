@@ -135,6 +135,12 @@ export interface PublicFacilityDetail {
      */
     lastVerifiedAt: Date | null;
     /**
+     * The most recent of `lastVerifiedAt` and the owner's own confirmation that the opening hours are still right. Null when neither ever happened.
+     * @type {Date}
+     * @memberof PublicFacilityDetail
+     */
+    infoConfirmedAt: Date | null;
+    /**
      * Last change to the facility record.
      * @type {Date}
      * @memberof PublicFacilityDetail
@@ -230,6 +236,7 @@ export function instanceOfPublicFacilityDetail(value: object): value is PublicFa
     if (!('isFavorite' in value) || value['isFavorite'] === undefined) return false;
     if (!('imageUrl' in value) || value['imageUrl'] === undefined) return false;
     if (!('lastVerifiedAt' in value) || value['lastVerifiedAt'] === undefined) return false;
+    if (!('infoConfirmedAt' in value) || value['infoConfirmedAt'] === undefined) return false;
     if (!('updatedAt' in value) || value['updatedAt'] === undefined) return false;
     if (!('descriptionAr' in value) || value['descriptionAr'] === undefined) return false;
     if (!('descriptionEn' in value) || value['descriptionEn'] === undefined) return false;
@@ -268,6 +275,7 @@ export function PublicFacilityDetailFromJSONTyped(json: any, ignoreDiscriminator
         'isFavorite': json['isFavorite'],
         'imageUrl': json['imageUrl'],
         'lastVerifiedAt': (json['lastVerifiedAt'] == null ? null : new Date(json['lastVerifiedAt'])),
+        'infoConfirmedAt': (json['infoConfirmedAt'] == null ? null : new Date(json['infoConfirmedAt'])),
         'updatedAt': (new Date(json['updatedAt'])),
         'descriptionAr': json['descriptionAr'],
         'descriptionEn': json['descriptionEn'],
@@ -307,6 +315,7 @@ export function PublicFacilityDetailToJSONTyped(value?: PublicFacilityDetail | n
         'isFavorite': value['isFavorite'],
         'imageUrl': value['imageUrl'],
         'lastVerifiedAt': ((value['lastVerifiedAt'] as any).toISOString()),
+        'infoConfirmedAt': ((value['infoConfirmedAt'] as any).toISOString()),
         'updatedAt': ((value['updatedAt']).toISOString()),
         'descriptionAr': value['descriptionAr'],
         'descriptionEn': value['descriptionEn'],

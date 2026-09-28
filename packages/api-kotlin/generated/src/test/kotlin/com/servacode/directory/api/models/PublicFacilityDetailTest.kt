@@ -103,6 +103,12 @@ class PublicFacilityDetailTest : ShouldSpec() {
             //modelInstance.lastVerifiedAt shouldBe ("TODO")
         }
 
+        // to test the property `infoConfirmedAt` - The most recent of `lastVerifiedAt` and the owner's own confirmation that the opening hours are still right. Null when neither ever happened.
+        should("test infoConfirmedAt") {
+            // uncomment below to test the property
+            //modelInstance.infoConfirmedAt shouldBe ("TODO")
+        }
+
         // to test the property `updatedAt` - Last change to the facility record.
         should("test updatedAt") {
             // uncomment below to test the property

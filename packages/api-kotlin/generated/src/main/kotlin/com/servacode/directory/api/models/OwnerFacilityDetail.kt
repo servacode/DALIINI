@@ -53,6 +53,7 @@ import kotlinx.serialization.Contextual
  * @param serviceTagIds 
  * @param evidence 
  * @param hours 
+ * @param hoursConfirmedAt When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old.
  * @param application 
  */
 @Serializable
@@ -125,6 +126,10 @@ data class OwnerFacilityDetail (
 
     @SerialName(value = "hours")
     val hours: kotlin.collections.List<OwnerHoursEntry>,
+
+    /* When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old. */
+    @Contextual @SerialName(value = "hoursConfirmedAt")
+    val hoursConfirmedAt: java.time.OffsetDateTime?,
 
     @SerialName(value = "application")
     val application: OwnerApplication?

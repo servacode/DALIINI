@@ -4,12 +4,71 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**publicDutyByDateList**](PublicDiscoveryAPI.md#publicdutybydatelist) | **GET** /api/v1/public/duty/ | Pharmacies on duty on a given day (or up to 7 days)
 [**publicFacilitiesList**](PublicDiscoveryAPI.md#publicfacilitieslist) | **GET** /api/v1/public/facilities/ | List publicly visible facilities in a province, optionally in one category
 [**publicFacilityRetrieve**](PublicDiscoveryAPI.md#publicfacilityretrieve) | **GET** /api/v1/public/facilities/{facility_id}/ | Retrieve one publicly visible facility
 [**publicHomeRetrieve**](PublicDiscoveryAPI.md#publichomeretrieve) | **GET** /api/v1/public/home/ | Retrieve the home composition for a province
 [**publicMapFacilitiesList**](PublicDiscoveryAPI.md#publicmapfacilitieslist) | **GET** /api/v1/public/map/facilities/ | List compact map markers inside a viewport
 [**publicSearchList**](PublicDiscoveryAPI.md#publicsearchlist) | **GET** /api/v1/public/search/ | Search facilities within a province
 
+
+# **publicDutyByDateList**
+```swift
+    open class func publicDutyByDateList(provinceId: String, categoryId: String? = nil, cityId: String? = nil, date: String? = nil, days: Int? = nil, completion: @escaping (_ data: PublicDutyRoster?, _ error: Error?) -> Void)
+```
+
+Pharmacies on duty on a given day (or up to 7 days)
+
+Days are Damascus calendar days starting at `date` (default today). A pharmacy is listed on every day one of its duty shifts overlaps. Same visibility as the public duty-now listing. Cacheable for one minute.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let provinceId = "provinceId_example" // String | 
+let categoryId = "categoryId_example" // String |  (optional)
+let cityId = "cityId_example" // String |  (optional)
+let date = "date_example" // String | YYYY-MM-DD (optional)
+let days = 987 // Int | 1 to 7. (optional)
+
+// Pharmacies on duty on a given day (or up to 7 days)
+PublicDiscoveryAPI.publicDutyByDateList(provinceId: provinceId, categoryId: categoryId, cityId: cityId, date: date, days: days) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **provinceId** | **String** |  | 
+ **categoryId** | **String** |  | [optional] 
+ **cityId** | **String** |  | [optional] 
+ **date** | **String** | YYYY-MM-DD | [optional] 
+ **days** | **Int** | 1 to 7. | [optional] 
+
+### Return type
+
+[**PublicDutyRoster**](PublicDutyRoster.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **publicFacilitiesList**
 ```swift

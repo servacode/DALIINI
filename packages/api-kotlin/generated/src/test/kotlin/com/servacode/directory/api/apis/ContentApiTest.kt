@@ -20,6 +20,11 @@ import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.ContentApi
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.ContactMessageCreated
+import com.servacode.directory.api.models.ContactMessageRequest
+import com.servacode.directory.api.models.ContentPage
+import com.servacode.directory.api.models.EmergencyNumberList
+import com.servacode.directory.api.models.FaqList
 import com.servacode.directory.api.models.LegalDocument
 import com.servacode.directory.api.models.LegalDocumentList
 
@@ -27,6 +32,37 @@ class ContentApiTest : ShouldSpec() {
     init {
         // uncomment below to create an instance of ContentApi
         //val apiInstance = ContentApi()
+
+        // to test publicContactCreate
+        should("test publicContactCreate") {
+            // uncomment below to test publicContactCreate
+            //val contactMessageRequest : ContactMessageRequest =  // ContactMessageRequest | 
+            //val result : ContactMessageCreated = apiInstance.publicContactCreate(contactMessageRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test publicContentPageRetrieve
+        should("test publicContentPageRetrieve") {
+            // uncomment below to test publicContentPageRetrieve
+            //val slug : kotlin.String = slug_example // kotlin.String | 
+            //val result : ContentPage = apiInstance.publicContentPageRetrieve(slug)
+            //result shouldBe ("TODO")
+        }
+
+        // to test publicEmergencyNumbersList
+        should("test publicEmergencyNumbersList") {
+            // uncomment below to test publicEmergencyNumbersList
+            //val provinceId : kotlin.String = provinceId_example // kotlin.String | Also include this province's numbers.
+            //val result : EmergencyNumberList = apiInstance.publicEmergencyNumbersList(provinceId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test publicFaqList
+        should("test publicFaqList") {
+            // uncomment below to test publicFaqList
+            //val result : FaqList = apiInstance.publicFaqList()
+            //result shouldBe ("TODO")
+        }
 
         // to test publicLegalDocumentRetrieve
         should("test publicLegalDocumentRetrieve") {

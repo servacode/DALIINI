@@ -27,6 +27,7 @@ import com.servacode.directory.api.models.OwnerConfig
 import com.servacode.directory.api.models.OwnerFacilityDetail
 import com.servacode.directory.api.models.OwnerFacilityInsights
 import com.servacode.directory.api.models.OwnerFacilitySummaryList
+import com.servacode.directory.api.models.OwnerHoursConfirmed
 import com.servacode.directory.api.models.OwnerMemberList
 import com.servacode.directory.api.models.OwnerMemberUpserted
 import com.servacode.directory.api.models.OwnerSubmitResult
@@ -57,6 +58,14 @@ class OwnerApiTest : ShouldSpec() {
             // uncomment below to test ownerFacilityCreate
             //val facilityCreate : FacilityCreate =  // FacilityCreate | 
             //val result : OwnerFacilityDetail = apiInstance.ownerFacilityCreate(facilityCreate)
+            //result shouldBe ("TODO")
+        }
+
+        // to test ownerFacilityHoursConfirm
+        should("test ownerFacilityHoursConfirm") {
+            // uncomment below to test ownerFacilityHoursConfirm
+            //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : OwnerHoursConfirmed = apiInstance.ownerFacilityHoursConfirm(facilityId)
             //result shouldBe ("TODO")
         }
 

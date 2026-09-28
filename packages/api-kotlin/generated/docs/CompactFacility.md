@@ -16,6 +16,7 @@
 | **isFavorite** | **kotlin.Boolean** | Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery. |  |
 | **imageUrl** | [**java.net.URI**](java.net.URI.md) | The facility&#39;s first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one. |  |
 | **lastVerifiedAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) | When an operator last approved this facility&#39;s details (trust signal). |  |
+| **infoConfirmedAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) | The most recent of &#x60;lastVerifiedAt&#x60; and the owner&#39;s own confirmation that the opening hours are still right. Null when neither ever happened. |  |
 | **updatedAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) | Last change to the facility record. |  |
 
 

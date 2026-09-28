@@ -23,6 +23,7 @@ import com.servacode.directory.api.models.AdminCityAdmin
 import com.servacode.directory.api.models.AdminCityAdminList
 import com.servacode.directory.api.models.AdminCityUpdateRequest
 import com.servacode.directory.api.models.AdminProvinceList
+import com.servacode.directory.api.models.AdminProvinceReadiness
 import com.servacode.directory.api.models.AdminProvinceUpdateRequest
 import com.servacode.directory.api.models.AdminProvinceUpdated
 import com.servacode.directory.api.models.ApiError
@@ -47,6 +48,14 @@ class AdminProvincesApiTest : ShouldSpec() {
             //val provinceId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //val adminCityUpdateRequest : AdminCityUpdateRequest =  // AdminCityUpdateRequest | 
             //val result : AdminCityAdmin = apiInstance.adminProvinceCityUpdate(cityId, provinceId, adminCityUpdateRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminProvinceReadinessRetrieve
+        should("test adminProvinceReadinessRetrieve") {
+            // uncomment below to test adminProvinceReadinessRetrieve
+            //val provinceId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : AdminProvinceReadiness = apiInstance.adminProvinceReadinessRetrieve(provinceId)
             //result shouldBe ("TODO")
         }
 

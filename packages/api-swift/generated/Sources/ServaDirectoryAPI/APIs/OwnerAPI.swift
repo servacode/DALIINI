@@ -130,6 +130,48 @@ open class OwnerAPI {
     }
 
     /**
+     Confirm that the facility's opening hours are still right
+     
+     - parameter facilityId: (path)  
+     - returns: OwnerHoursConfirmed
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func ownerFacilityHoursConfirm(facilityId: UUID) async throws -> OwnerHoursConfirmed {
+        return try await ownerFacilityHoursConfirmWithRequestBuilder(facilityId: facilityId).execute().body
+    }
+
+    /**
+     Confirm that the facility's opening hours are still right
+     - POST /api/v1/owner/facilities/{facility_id}/confirm-hours/
+     - Any owner or manager may confirm. Sets `hoursConfirmedAt`, which also moves the public `infoConfirmedAt`; `lastVerifiedAt` keeps meaning an operator approval. Replacing the hours confirms them too. 409 HOURS_NOT_SUPPORTED when the category has no opening hours.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter facilityId: (path)  
+     - returns: RequestBuilder<OwnerHoursConfirmed> 
+     */
+    open class func ownerFacilityHoursConfirmWithRequestBuilder(facilityId: UUID) -> RequestBuilder<OwnerHoursConfirmed> {
+        var localVariablePath = "/api/v1/owner/facilities/{facility_id}/confirm-hours/"
+        let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
+        let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{facility_id}", with: facilityIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<OwnerHoursConfirmed>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Engagement with a facility over the last 30 days
      
      - parameter facilityId: (path)  

@@ -18,6 +18,7 @@ import type {
   ApiError,
   FacilityCursorPage,
   MapMarkerList,
+  PublicDutyRoster,
   PublicFacilityDetail,
   PublicHome,
 } from '../models/index';
@@ -28,11 +29,21 @@ import {
     FacilityCursorPageToJSON,
     MapMarkerListFromJSON,
     MapMarkerListToJSON,
+    PublicDutyRosterFromJSON,
+    PublicDutyRosterToJSON,
     PublicFacilityDetailFromJSON,
     PublicFacilityDetailToJSON,
     PublicHomeFromJSON,
     PublicHomeToJSON,
 } from '../models/index';
+
+export interface PublicDutyByDateListRequest {
+    provinceId: string;
+    categoryId?: string;
+    cityId?: string;
+    date?: string;
+    days?: number;
+}
 
 export interface PublicFacilitiesListRequest {
     provinceId: string;
@@ -106,6 +117,64 @@ export interface PublicSearchListRequest {
  * 
  */
 export class PublicDiscoveryApi extends runtime.BaseAPI {
+
+    /**
+     * Days are Damascus calendar days starting at `date` (default today). A pharmacy is listed on every day one of its duty shifts overlaps. Same visibility as the public duty-now listing. Cacheable for one minute.
+     * Pharmacies on duty on a given day (or up to 7 days)
+     */
+    async publicDutyByDateListRaw(requestParameters: PublicDutyByDateListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PublicDutyRoster>> {
+        if (requestParameters['provinceId'] == null) {
+            throw new runtime.RequiredError(
+                'provinceId',
+                'Required parameter "provinceId" was null or undefined when calling publicDutyByDateList().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['categoryId'] != null) {
+            queryParameters['categoryId'] = requestParameters['categoryId'];
+        }
+
+        if (requestParameters['cityId'] != null) {
+            queryParameters['cityId'] = requestParameters['cityId'];
+        }
+
+        if (requestParameters['date'] != null) {
+            queryParameters['date'] = requestParameters['date'];
+        }
+
+        if (requestParameters['days'] != null) {
+            queryParameters['days'] = requestParameters['days'];
+        }
+
+        if (requestParameters['provinceId'] != null) {
+            queryParameters['provinceId'] = requestParameters['provinceId'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/v1/public/duty/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PublicDutyRosterFromJSON(jsonValue));
+    }
+
+    /**
+     * Days are Damascus calendar days starting at `date` (default today). A pharmacy is listed on every day one of its duty shifts overlaps. Same visibility as the public duty-now listing. Cacheable for one minute.
+     * Pharmacies on duty on a given day (or up to 7 days)
+     */
+    async publicDutyByDateList(requestParameters: PublicDutyByDateListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PublicDutyRoster> {
+        const response = await this.publicDutyByDateListRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend. The filters combine: openNow and dutyToday together mean facilities that are both, which is a different question from either alone.

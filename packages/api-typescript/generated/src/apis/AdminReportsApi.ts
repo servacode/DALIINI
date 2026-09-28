@@ -17,6 +17,8 @@ import * as runtime from '../runtime';
 import type {
   AdminFacilityReport,
   AdminFacilityReportList,
+  AdminReportBulkRequest,
+  AdminReportBulkResponse,
   AdminReportDecisionRequest,
   ApiError,
 } from '../models/index';
@@ -25,6 +27,10 @@ import {
     AdminFacilityReportToJSON,
     AdminFacilityReportListFromJSON,
     AdminFacilityReportListToJSON,
+    AdminReportBulkRequestFromJSON,
+    AdminReportBulkRequestToJSON,
+    AdminReportBulkResponseFromJSON,
+    AdminReportBulkResponseToJSON,
     AdminReportDecisionRequestFromJSON,
     AdminReportDecisionRequestToJSON,
     ApiErrorFromJSON,
@@ -39,6 +45,10 @@ export interface AdminReportDismissRequest {
 export interface AdminReportResolveRequest {
     reportId: string;
     adminReportDecisionRequest?: AdminReportDecisionRequest;
+}
+
+export interface AdminReportsBulkDecideRequest {
+    adminReportBulkRequest: AdminReportBulkRequest;
 }
 
 export interface AdminReportsListRequest {
@@ -148,6 +158,55 @@ export class AdminReportsApi extends runtime.BaseAPI {
      */
     async adminReportResolve(requestParameters: AdminReportResolveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacilityReport> {
         const response = await this.adminReportResolveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Up to 100 ids, in one transaction: every OPEN report is decided and audited individually, exactly as the single-report endpoints do. An id that does not exist or is no longer OPEN is reported per id (NOT_FOUND, NOT_OPEN) and left alone; it does not fail the others.
+     * Resolve or dismiss many reports at once
+     */
+    async adminReportsBulkDecideRaw(requestParameters: AdminReportsBulkDecideRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminReportBulkResponse>> {
+        if (requestParameters['adminReportBulkRequest'] == null) {
+            throw new runtime.RequiredError(
+                'adminReportBulkRequest',
+                'Required parameter "adminReportBulkRequest" was null or undefined when calling adminReportsBulkDecide().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/reports/bulk/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminReportBulkRequestToJSON(requestParameters['adminReportBulkRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminReportBulkResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Up to 100 ids, in one transaction: every OPEN report is decided and audited individually, exactly as the single-report endpoints do. An id that does not exist or is no longer OPEN is reported per id (NOT_FOUND, NOT_OPEN) and left alone; it does not fail the others.
+     * Resolve or dismiss many reports at once
+     */
+    async adminReportsBulkDecide(requestParameters: AdminReportsBulkDecideRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminReportBulkResponse> {
+        const response = await this.adminReportsBulkDecideRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

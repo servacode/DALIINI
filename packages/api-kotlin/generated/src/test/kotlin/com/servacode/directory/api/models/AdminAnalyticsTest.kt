@@ -19,6 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.models.AdminAnalytics
+import com.servacode.directory.api.models.AdminAnalyticsPeriodKpis
 import com.servacode.directory.api.models.AdminEventCount
 
 class AdminAnalyticsTest : ShouldSpec() {
@@ -26,34 +27,52 @@ class AdminAnalyticsTest : ShouldSpec() {
         // uncomment below to create an instance of AdminAnalytics
         //val modelInstance = AdminAnalytics()
 
-        // to test the property `approvalMedianHours` - Median submit-to-approval time, last 30 days.
+        // to test the property `from` - Period start, inclusive.
+        should("test from") {
+            // uncomment below to test the property
+            //modelInstance.from shouldBe ("TODO")
+        }
+
+        // to test the property `to` - Period end, exclusive.
+        should("test to") {
+            // uncomment below to test the property
+            //modelInstance.to shouldBe ("TODO")
+        }
+
+        // to test the property `approvalMedianHours` - Median submit-to-approval time in the period.
         should("test approvalMedianHours") {
             // uncomment below to test the property
             //modelInstance.approvalMedianHours shouldBe ("TODO")
         }
 
-        // to test the property `searches` - search_submitted events, last 30 days.
+        // to test the property `searches` - search_submitted events in the period.
         should("test searches") {
             // uncomment below to test the property
             //modelInstance.searches shouldBe ("TODO")
         }
 
-        // to test the property `zeroResultSearches` - search_zero_results, last 30 days.
+        // to test the property `zeroResultSearches` - search_zero_results in the period.
         should("test zeroResultSearches") {
             // uncomment below to test the property
             //modelInstance.zeroResultSearches shouldBe ("TODO")
         }
 
-        // to test the property `facilityViews` - facility_view events, last 30 days.
+        // to test the property `facilityViews` - facility_view events in the period.
         should("test facilityViews") {
             // uncomment below to test the property
             //modelInstance.facilityViews shouldBe ("TODO")
         }
 
-        // to test the property `directionsRequests` - directions_start, last 30 days.
+        // to test the property `directionsRequests` - directions_start in the period.
         should("test directionsRequests") {
             // uncomment below to test the property
             //modelInstance.directionsRequests shouldBe ("TODO")
+        }
+
+        // to test the property `previous` - The same KPIs for the equally long period just before `from`.
+        should("test previous") {
+            // uncomment below to test the property
+            //modelInstance.previous shouldBe ("TODO")
         }
 
         // to test the property `activeFacilities`
@@ -74,7 +93,7 @@ class AdminAnalyticsTest : ShouldSpec() {
             //modelInstance.ratingAverage shouldBe ("TODO")
         }
 
-        // to test the property `events`
+        // to test the property `events` - All-time counts per event name.
         should("test events") {
             // uncomment below to test the property
             //modelInstance.events shouldBe ("TODO")

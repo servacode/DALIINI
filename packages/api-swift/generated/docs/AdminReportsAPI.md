@@ -6,6 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**adminReportDismiss**](AdminReportsAPI.md#adminreportdismiss) | **POST** /api/v1/admin/reports/{report_id}/dismiss/ | Dismiss a report
 [**adminReportResolve**](AdminReportsAPI.md#adminreportresolve) | **POST** /api/v1/admin/reports/{report_id}/resolve/ | Mark a report resolved
+[**adminReportsBulkDecide**](AdminReportsAPI.md#adminreportsbulkdecide) | **POST** /api/v1/admin/reports/bulk/ | Resolve or dismiss many reports at once
 [**adminReportsList**](AdminReportsAPI.md#adminreportslist) | **GET** /api/v1/admin/reports/ | List facility problem reports
 
 
@@ -101,6 +102,56 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**AdminFacilityReport**](AdminFacilityReport.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminReportsBulkDecide**
+```swift
+    open class func adminReportsBulkDecide(adminReportBulkRequest: AdminReportBulkRequest, completion: @escaping (_ data: AdminReportBulkResponse?, _ error: Error?) -> Void)
+```
+
+Resolve or dismiss many reports at once
+
+Up to 100 ids, in one transaction: every OPEN report is decided and audited individually, exactly as the single-report endpoints do. An id that does not exist or is no longer OPEN is reported per id (NOT_FOUND, NOT_OPEN) and left alone; it does not fail the others.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let adminReportBulkRequest = AdminReportBulkRequest(ids: [123], action: AdminReportBulkActionEnum(), note: "note_example") // AdminReportBulkRequest | 
+
+// Resolve or dismiss many reports at once
+AdminReportsAPI.adminReportsBulkDecide(adminReportBulkRequest: adminReportBulkRequest) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **adminReportBulkRequest** | [**AdminReportBulkRequest**](AdminReportBulkRequest.md) |  | 
+
+### Return type
+
+[**AdminReportBulkResponse**](AdminReportBulkResponse.md)
 
 ### Authorization
 

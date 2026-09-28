@@ -21,6 +21,8 @@ import io.kotlintest.specs.ShouldSpec
 import com.servacode.directory.api.apis.AdminReportsApi
 import com.servacode.directory.api.models.AdminFacilityReport
 import com.servacode.directory.api.models.AdminFacilityReportList
+import com.servacode.directory.api.models.AdminReportBulkRequest
+import com.servacode.directory.api.models.AdminReportBulkResponse
 import com.servacode.directory.api.models.AdminReportDecisionRequest
 import com.servacode.directory.api.models.ApiError
 
@@ -44,6 +46,14 @@ class AdminReportsApiTest : ShouldSpec() {
             //val reportId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //val adminReportDecisionRequest : AdminReportDecisionRequest =  // AdminReportDecisionRequest | 
             //val result : AdminFacilityReport = apiInstance.adminReportResolve(reportId, adminReportDecisionRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminReportsBulkDecide
+        should("test adminReportsBulkDecide") {
+            // uncomment below to test adminReportsBulkDecide
+            //val adminReportBulkRequest : AdminReportBulkRequest =  // AdminReportBulkRequest | 
+            //val result : AdminReportBulkResponse = apiInstance.adminReportsBulkDecide(adminReportBulkRequest)
             //result shouldBe ("TODO")
         }
 

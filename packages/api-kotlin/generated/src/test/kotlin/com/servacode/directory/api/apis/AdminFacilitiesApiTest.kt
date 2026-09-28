@@ -22,6 +22,8 @@ import com.servacode.directory.api.apis.AdminFacilitiesApi
 import com.servacode.directory.api.models.AdminDecisionRequest
 import com.servacode.directory.api.models.AdminFacility
 import com.servacode.directory.api.models.AdminFacilityList
+import com.servacode.directory.api.models.AdminFacilityQuality
+import com.servacode.directory.api.models.AdminTimeline
 import com.servacode.directory.api.models.ApiError
 
 class AdminFacilitiesApiTest : ShouldSpec() {
@@ -33,10 +35,12 @@ class AdminFacilitiesApiTest : ShouldSpec() {
         should("test adminFacilitiesList") {
             // uncomment below to test adminFacilitiesList
             //val category : kotlin.String = category_example // kotlin.String | Category id.
+            //val issue : kotlin.String = issue_example // kotlin.String | Keep facilities that have this quality issue.
+            //val ordering : kotlin.String = ordering_example // kotlin.String | Sort order; the default is `-updatedAt` (most recently changed).
             //val province : kotlin.String = province_example // kotlin.String | Province id.
             //val q : kotlin.String = q_example // kotlin.String | Free text matched against the Arabic and English facility names.
             //val status : kotlin.String = status_example // kotlin.String | Facility status, for example ACTIVE or SUSPENDED.
-            //val result : AdminFacilityList = apiInstance.adminFacilitiesList(category, province, q, status)
+            //val result : AdminFacilityList = apiInstance.adminFacilitiesList(category, issue, ordering, province, q, status)
             //result shouldBe ("TODO")
         }
 
@@ -62,7 +66,7 @@ class AdminFacilitiesApiTest : ShouldSpec() {
         should("test adminFacilityRetrieve") {
             // uncomment below to test adminFacilityRetrieve
             //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-            //val result : AdminFacility = apiInstance.adminFacilityRetrieve(facilityId)
+            //val result : AdminFacilityQuality = apiInstance.adminFacilityRetrieve(facilityId)
             //result shouldBe ("TODO")
         }
 
@@ -72,6 +76,14 @@ class AdminFacilitiesApiTest : ShouldSpec() {
             //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //val adminDecisionRequest : AdminDecisionRequest =  // AdminDecisionRequest | 
             //val result : AdminFacility = apiInstance.adminFacilitySuspend(facilityId, adminDecisionRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminFacilityTimelineRetrieve
+        should("test adminFacilityTimelineRetrieve") {
+            // uncomment below to test adminFacilityTimelineRetrieve
+            //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : AdminTimeline = apiInstance.adminFacilityTimelineRetrieve(facilityId)
             //result shouldBe ("TODO")
         }
 

@@ -15,6 +15,7 @@
 
 package com.servacode.directory.api.models
 
+import com.servacode.directory.api.models.AdminAnalyticsPeriodKpis
 import com.servacode.directory.api.models.AdminEventCount
 
 import kotlinx.serialization.Serializable
@@ -24,39 +25,54 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param approvalMedianHours Median submit-to-approval time, last 30 days.
- * @param searches search_submitted events, last 30 days.
- * @param zeroResultSearches search_zero_results, last 30 days.
- * @param facilityViews facility_view events, last 30 days.
- * @param directionsRequests directions_start, last 30 days.
+ * @param from Period start, inclusive.
+ * @param to Period end, exclusive.
+ * @param approvalMedianHours Median submit-to-approval time in the period.
+ * @param searches search_submitted events in the period.
+ * @param zeroResultSearches search_zero_results in the period.
+ * @param facilityViews facility_view events in the period.
+ * @param directionsRequests directions_start in the period.
+ * @param previous The same KPIs for the equally long period just before `from`.
  * @param activeFacilities 
  * @param pendingReviews 
  * @param ratingAverage 
- * @param events 
+ * @param events All-time counts per event name.
  */
 @Serializable
 
 data class AdminAnalytics (
 
-    /* Median submit-to-approval time, last 30 days. */
+    /* Period start, inclusive. */
+    @Contextual @SerialName(value = "from")
+    val from: java.time.OffsetDateTime,
+
+    /* Period end, exclusive. */
+    @Contextual @SerialName(value = "to")
+    val to: java.time.OffsetDateTime,
+
+    /* Median submit-to-approval time in the period. */
     @SerialName(value = "approvalMedianHours")
     val approvalMedianHours: kotlin.Double?,
 
-    /* search_submitted events, last 30 days. */
+    /* search_submitted events in the period. */
     @SerialName(value = "searches")
     val searches: kotlin.Int,
 
-    /* search_zero_results, last 30 days. */
+    /* search_zero_results in the period. */
     @SerialName(value = "zeroResultSearches")
     val zeroResultSearches: kotlin.Int,
 
-    /* facility_view events, last 30 days. */
+    /* facility_view events in the period. */
     @SerialName(value = "facilityViews")
     val facilityViews: kotlin.Int,
 
-    /* directions_start, last 30 days. */
+    /* directions_start in the period. */
     @SerialName(value = "directionsRequests")
     val directionsRequests: kotlin.Int,
+
+    /* The same KPIs for the equally long period just before `from`. */
+    @SerialName(value = "previous")
+    val previous: AdminAnalyticsPeriodKpis,
 
     @SerialName(value = "activeFacilities")
     val activeFacilities: kotlin.Int,
@@ -67,6 +83,7 @@ data class AdminAnalytics (
     @SerialName(value = "ratingAverage")
     val ratingAverage: kotlin.Double?,
 
+    /* All-time counts per event name. */
     @SerialName(value = "events")
     val events: kotlin.collections.List<AdminEventCount>
 
