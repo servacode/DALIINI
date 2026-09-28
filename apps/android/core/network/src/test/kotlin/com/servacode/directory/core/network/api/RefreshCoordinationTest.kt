@@ -9,6 +9,8 @@ import com.servacode.directory.core.model.AppException
 import com.servacode.directory.core.network.AccessTokenInterceptor
 import com.servacode.directory.core.network.NetworkModule
 import com.servacode.directory.core.network.PublicApiBoundary
+import com.servacode.directory.core.network.MaintenanceInterceptor
+import com.servacode.directory.core.network.MaintenanceState
 import com.servacode.directory.core.network.RequestIdInterceptor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -57,9 +59,10 @@ class RefreshCoordinationTest {
 
     /** Builds the clients after the test has put the device in the state it needs. */
     private fun wire() {
+        val maintenance = MaintenanceInterceptor(MaintenanceState())
         val environment = ApiEnvironment(server.url("/").toString(), allowCleartext = true)
         val base = NetworkModule.provideBaseHttpClient()
-        val anonymousHttp = NetworkModule.provideAnonymousHttpClient(base, RequestIdInterceptor())
+        val anonymousHttp = NetworkModule.provideAnonymousHttpClient(base, RequestIdInterceptor(), maintenance)
         val anonymous = NetworkModule.provideAnonymousClient(environment, anonymousHttp)
         session = NetworkModule.provideSessionCoordinator(access, vault, anonymous)
         val authorizedHttp = NetworkModule.provideAuthorizedHttpClient(
@@ -67,6 +70,7 @@ class RefreshCoordinationTest {
             RequestIdInterceptor(),
             AccessTokenInterceptor(access),
             session,
+            maintenance,
         )
         val authorized = NetworkModule.provideAuthorizedClient(environment, authorizedHttp)
         publicApi = NetworkModule.providePublicApiBoundary(anonymous, authorized)

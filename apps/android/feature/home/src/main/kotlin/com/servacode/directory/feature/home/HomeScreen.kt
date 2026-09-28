@@ -1,5 +1,12 @@
 package com.servacode.directory.feature.home
 
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import com.servacode.directory.core.model.HomeAd
+import com.servacode.directory.core.model.AdAction
+import androidx.core.net.toUri
+import android.content.Intent
+import android.content.Context
+import android.content.ActivityNotFoundException
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -94,6 +101,7 @@ fun HomeScreen(
     val list by viewModel.list.collectAsStateWithLifecycle()
     val hasLocation by viewModel.hasLocation.collectAsStateWithLifecycle()
     val unread by viewModel.unread.collectAsStateWithLifecycle()
+    val ads by viewModel.ads.collectAsStateWithLifecycle()
     val context = LocalContext.current
     // The offer to use the location, and only while there is something to offer: a device that
     // already allowed it is never asked again from here.
@@ -153,6 +161,7 @@ fun HomeScreen(
                 filters = filters,
                 category = category,
                 list = list,
+                ads = ads,
                 hasLocation = hasLocation,
                 onChip = viewModel::toggle,
                 onCategory = viewModel::select,
@@ -269,7 +278,8 @@ private fun NotificationBell(unread: Int, onClick: () -> Unit, modifier: Modifie
     Box(modifier = modifier) {
         DirectoryIconButton(
             icon = DirectoryIcons.bell,
-            label = HomeCopy.NOTIFICATIONS,
+            // The count is part of what the bell says, not a stray number read after it.
+            label = if (unread > 0) HomeCopy.unreadNotifications(unread) else HomeCopy.NOTIFICATIONS,
             onClick = onClick,
             tint = MaterialTheme.colorScheme.primary,
         )
@@ -278,7 +288,8 @@ private fun NotificationBell(unread: Int, onClick: () -> Unit, modifier: Modifie
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .size(Space.lg)
-                    .background(BrandColors.danger, CircleShape),
+                    .background(BrandColors.danger, CircleShape)
+                    .clearAndSetSemantics { },
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -301,6 +312,7 @@ private fun HomeContent(
     filters: HomeFilters,
     category: Category?,
     list: HomeListState,
+    ads: List<HomeAd>,
     hasLocation: Boolean,
     onChip: (HomeChip) -> Unit,
     onCategory: (Category) -> Unit,
@@ -333,11 +345,23 @@ private fun HomeContent(
                     )
                 }
             }
-            if (snapshot.ads.isNotEmpty()) {
+            if (ads.isNotEmpty()) {
                 item(key = "ads") {
+                    val context = LocalContext.current
                     AdSlider(
-                        ads = snapshot.ads,
-                        onAd = { ad -> ad.facilityId?.let(onFacility) },
+                        ads = ads,
+                        onAd = { ad ->
+                            when (val action = ad.action) {
+                                AdAction.None -> Unit
+                                is AdAction.OpenFacility -> onFacility(action.facilityId)
+                                // A category the province serves is chosen on this page; one it
+                                // does not serve is not followed.
+                                is AdAction.OpenCategory -> snapshot.categories
+                                    .firstOrNull { it.id == action.categoryId }
+                                    ?.let(onCategory)
+                                is AdAction.OpenUrl -> openExternalPage(context, action.url)
+                            }
+                        },
                         modifier = Modifier.padding(horizontal = Space.base),
                     )
                 }
@@ -566,5 +590,22 @@ private fun LocationOffer(onUseLocation: () -> Unit, modifier: Modifier = Modifi
             )
             DirectoryTextButton(text = HomeCopy.LOCATION_ACTION, onClick = onUseLocation)
         }
+    }
+}
+
+/**
+ * Opens an advertisement's page in the browser. The mapper already admitted only `https`; it is
+ * checked again here, at the last moment, and a phone without a browser simply does nothing.
+ */
+private fun openExternalPage(context: Context, url: String) {
+    val uri = url.toUri()
+    if (uri.scheme != "https" || uri.host.isNullOrBlank()) return
+    val intent = Intent(Intent.ACTION_VIEW, uri)
+        .addCategory(Intent.CATEGORY_BROWSABLE)
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    try {
+        context.startActivity(intent)
+    } catch (_: ActivityNotFoundException) {
+        // Nothing can show it; the tap is a no-op rather than a crash.
     }
 }

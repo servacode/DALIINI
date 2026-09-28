@@ -1,5 +1,6 @@
 package com.servacode.directory.core.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /** A WGS84 position in decimal degrees, as the backend's `Coordinates`. */
@@ -88,15 +89,32 @@ data class HomeAd(
     val titleAr: String? = null,
     val subtitleAr: String? = null,
     val slideDurationMs: Int = 5000,
-    /**
-     * The facility this advertisement is about, when it is about one.
-     *
-     * The backend restricts what an advertisement may carry; of those, a facility is the only
-     * destination this app follows, because it is the only one that stays inside the app and
-     * means something the user already understands.
-     */
-    val facilityId: String? = null,
+    /** What a tap does. Older cached snapshots have none and decode as [AdAction.None]. */
+    val action: AdAction = AdAction.None,
 )
+
+/**
+ * Where a home advertisement leads, already checked by the mapper.
+ *
+ * Only destinations the app can open safely exist here: a facility or a category inside the
+ * app, or an `https` page opened outside it. Anything else the backend may send — an in-app
+ * route string, a malformed payload, any other scheme — becomes [None], and the slide is shown
+ * without being clickable.
+ */
+@Serializable
+sealed interface AdAction {
+    @Serializable @SerialName("none")
+    data object None : AdAction
+
+    @Serializable @SerialName("facility")
+    data class OpenFacility(val facilityId: String) : AdAction
+
+    @Serializable @SerialName("category")
+    data class OpenCategory(val categoryId: String) : AdAction
+
+    @Serializable @SerialName("url")
+    data class OpenUrl(val url: String) : AdAction
+}
 
 @Serializable
 data class HomeSnapshot(

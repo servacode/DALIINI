@@ -26,6 +26,10 @@ object HomeCopy {
     val YOU_ARE_IN: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_you_are_in)
     val NOTIFICATIONS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_notifications)
     val MANY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_many)
+
+    /** The bell as a screen reader says it when something is waiting. */
+    @Composable @ReadOnlyComposable
+    fun unreadNotifications(count: Int): String = stringResource(R.string.home_notifications_unread, count)
     val SEARCH: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_search)
     val FILTERS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_filters)
     val LOADING_MORE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_loading_more)

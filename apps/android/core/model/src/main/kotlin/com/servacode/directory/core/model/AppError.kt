@@ -70,6 +70,7 @@ enum class AppErrorMessage {
     EVIDENCE_MAX_FILES,
     EVIDENCE_LOCKED_DURING_REVIEW,
     LAST_OWNER_PROTECTED,
+    MAINTENANCE,
 
     /** The kinds that have no code of their own worth naming. */
     OFFLINE,
@@ -100,6 +101,7 @@ object AppErrorMessages {
         "EVIDENCE_MAX_FILES" to AppErrorMessage.EVIDENCE_MAX_FILES,
         "EVIDENCE_LOCKED_DURING_REVIEW" to AppErrorMessage.EVIDENCE_LOCKED_DURING_REVIEW,
         "LAST_OWNER_PROTECTED" to AppErrorMessage.LAST_OWNER_PROTECTED,
+        "MAINTENANCE" to AppErrorMessage.MAINTENANCE,
     )
 
     fun of(error: AppError): AppErrorMessage = error.code?.let(byCode::get) ?: byKind(error.kind)

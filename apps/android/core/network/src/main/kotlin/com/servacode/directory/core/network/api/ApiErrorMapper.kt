@@ -5,6 +5,8 @@ import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.AppException
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import retrofit2.Response
 import java.io.IOException
 
@@ -27,7 +29,7 @@ object ApiErrorMapper {
             ?.let { body ->
                 runCatching {
                     envelopeJson.decodeFromString(ApiError.serializer(), body)
-                }.getOrNull()
+                }.getOrNull() ?: lenientEnvelope(body)
             }
         return AppError(
             kind = kindFor(status),
@@ -39,6 +41,22 @@ object ApiErrorMapper {
             status = status,
         )
     }
+
+    /**
+     * The envelope when its `details` is not the field-error map the contract declares —
+     * maintenance sends `{"retryAfterSeconds": n}` there. Code, message and request id are
+     * still the backend's; the details are dropped rather than misread as field errors.
+     */
+    private fun lenientEnvelope(body: String): ApiError? = runCatching {
+        val root = envelopeJson.parseToJsonElement(body) as? JsonObject ?: return null
+        fun text(key: String) = (root[key] as? JsonPrimitive)?.takeIf { it.isString }?.content
+        ApiError(
+            code = text("code") ?: return null,
+            message = text("message").orEmpty(),
+            details = emptyMap(),
+            requestId = text("requestId").orEmpty(),
+        )
+    }.getOrNull()
 
     fun fromThrowable(error: Throwable): AppError = when (error) {
         is AppException -> error.error

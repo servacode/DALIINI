@@ -6,6 +6,7 @@ import com.servacode.directory.core.database.Loaded
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.Category
 import com.servacode.directory.core.model.FacilitySummary
+import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.HomeSnapshot
 import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.network.RealtimeInvalidation
@@ -15,6 +16,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -43,6 +45,7 @@ data class HomeListState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val loadHome: HomeUseCase,
+    private val loadAds: HomeAdsUseCase,
     private val invalidations: RealtimeInvalidationBus,
 ) : ViewModel() {
     private val _state = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
@@ -69,6 +72,15 @@ class HomeViewModel @Inject constructor(
     /** Unread messages behind the bell. Zero draws no badge at all. */
     private val _unread = MutableStateFlow(0)
     val unread: StateFlow<Int> = _unread.asStateFlow()
+
+    /**
+     * The slider's ads, from `public/ads` for the province on screen. Empty hides the slider,
+     * which is also what every failure shows: an advertisement is never worth an error.
+     */
+    private val _ads = MutableStateFlow<List<HomeAd>>(emptyList())
+    val ads: StateFlow<List<HomeAd>> = _ads.asStateFlow()
+    private var adsProvince: String? = null
+    private var loadingAds: Job? = null
 
     private var loading: Job? = null
     private var listing: Job? = null
@@ -187,6 +199,8 @@ class HomeViewModel @Inject constructor(
     private fun province(): String? = (_state.value as? HomeUiState.Content)?.snapshot?.province?.id
 
     fun refresh() {
+        // A refresh asks for the ads again too; the snapshot decides for which province.
+        adsProvince = null
         loading?.cancel()
         loading = viewModelScope.launch {
             if (_state.value !is HomeUiState.Content) _state.value = HomeUiState.Loading
@@ -219,5 +233,16 @@ class HomeViewModel @Inject constructor(
             _filters.value = _filters.value.withinReach(_hasLocation.value, _category.value)
         }
         if (_list.value.items.isEmpty() && _list.value.error == null) reload()
+        if (snapshot.province.id != adsProvince) refreshAds(snapshot.province.id)
+    }
+
+    private fun refreshAds(provinceId: String) {
+        adsProvince = provinceId
+        loadingAds?.cancel()
+        loadingAds = viewModelScope.launch {
+            loadAds(provinceId)
+                .catch { emit(emptyList()) }
+                .collect { _ads.value = it }
+        }
     }
 }

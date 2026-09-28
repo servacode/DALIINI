@@ -33,7 +33,9 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -43,6 +45,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import coil3.compose.AsyncImage
 import com.servacode.directory.core.model.AvailabilityState
 import com.servacode.directory.core.model.FacilitySummary
+import com.servacode.directory.core.model.AdAction
 import com.servacode.directory.core.model.HomeAd
 import kotlinx.coroutines.delay
 
@@ -196,6 +199,10 @@ fun FacilityRow(
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
+                // Without a ripple a screen reader is the only way to learn this row acts; it
+                // is announced as a button that opens the facility.
+                onClickLabel = stringResource(R.string.ds_open_details),
+                role = Role.Button,
                 onClick = onClick,
             )
             .padding(vertical = Space.md, horizontal = Space.base),
@@ -725,23 +732,38 @@ fun AdSlider(
             modifier = Modifier.fillMaxWidth(),
         ) { page ->
             val ad = ads[page]
+            // Read by its title; a slide with no words is still named, never skipped silently.
+            val label = ad.titleAr?.takeIf { it.isNotBlank() }
+                ?: ad.subtitleAr?.takeIf { it.isNotBlank() }
+                ?: stringResource(R.string.ds_ad_label)
+            // Only a slide that leads somewhere is announced and pressed as a button.
+            val tap = if (ad.action != AdAction.None) {
+                Modifier.clickable(
+                    onClickLabel = stringResource(R.string.ds_ad_open),
+                    role = Role.Button,
+                ) { onAd(ad) }
+            } else {
+                Modifier
+            }
             DirectoryImage(
                 url = ad.imageUrl,
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(AD_RATIO)
                     .clip(RoundedCornerShape(Radius.large))
-                    .clickable { onAd(ad) },
-                contentDescription = ad.titleAr,
+                    .then(tap),
+                contentDescription = label,
                 shape = RoundedCornerShape(Radius.large),
             )
         }
         if (ads.size > 1) {
+            val position = stringResource(R.string.ds_ad_position, pages.currentPage + 1, ads.size)
             Row(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(top = Space.sm)
-                    .clearAndSetSemantics { },
+                    // The dots are one statement: which slide of how many.
+                    .clearAndSetSemantics { contentDescription = position },
                 horizontalArrangement = Arrangement.spacedBy(Space.xs),
             ) {
                 ads.indices.forEach { index ->

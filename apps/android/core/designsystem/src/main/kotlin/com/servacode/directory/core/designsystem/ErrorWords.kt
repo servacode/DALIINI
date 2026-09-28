@@ -37,6 +37,7 @@ private fun AppErrorMessage.resource(): Int = when (this) {
     AppErrorMessage.EVIDENCE_MAX_FILES -> R.string.ds_error_evidence_max_files
     AppErrorMessage.EVIDENCE_LOCKED_DURING_REVIEW -> R.string.ds_error_evidence_locked
     AppErrorMessage.LAST_OWNER_PROTECTED -> R.string.ds_error_last_owner
+    AppErrorMessage.MAINTENANCE -> R.string.ds_error_maintenance
     AppErrorMessage.OFFLINE -> R.string.ds_error_offline
     AppErrorMessage.SESSION_EXPIRED -> R.string.ds_error_session_expired
     AppErrorMessage.CONFLICT -> R.string.ds_error_conflict

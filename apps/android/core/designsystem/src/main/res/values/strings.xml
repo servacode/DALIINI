@@ -24,6 +24,17 @@
     <!-- What the app is working from when the network is gone. -->
     <string name="ds_offline">غير متصل — تعرض بيانات محفوظة قد لا تكون محدثة</string>
 
+    <!-- The home advertisement slider, as a screen reader says it. -->
+    <string name="ds_ad_label">إعلان</string>
+    <string name="ds_ad_open">فتح الإعلان</string>
+    <string name="ds_ad_position">إعلان %1$d من %2$d</string>
+
+    <!-- The backend is in maintenance (product spec §17). Its own message is shown when it sends
+         one; these words stand in when it does not. -->
+    <string name="ds_maintenance_title">الخدمة قيد الصيانة</string>
+    <string name="ds_maintenance_body">نعمل على تحسين الخدمة وسنعود قريبًا. لا حاجة لإغلاق التطبيق.</string>
+    <string name="ds_maintenance_auto_retry">سيعيد التطبيق المحاولة تلقائيًا.</string>
+
     <!-- Whether the doors are open, and whether today's roster names this facility. -->
     <string name="ds_open_now">مفتوحة الآن</string>
     <string name="ds_closed_now">مغلقة الآن</string>
@@ -76,6 +87,7 @@
     <string name="ds_error_evidence_max_files">تجاوزت العدد المسموح من الملفات لهذا المتطلب.</string>
     <string name="ds_error_evidence_locked">لا يمكن تعديل المستندات أثناء المراجعة.</string>
     <string name="ds_error_last_owner">لا يمكن إزالة المالك الوحيد للمنشأة.</string>
+    <string name="ds_error_maintenance">الخدمة قيد الصيانة حاليًا. حاول بعد قليل.</string>
     <string name="ds_error_offline">لا يوجد اتصال بالإنترنت.</string>
     <string name="ds_error_session_expired">انتهت الجلسة. سجّل الدخول من جديد.</string>
     <string name="ds_error_conflict">لا يمكن تنفيذ هذا الإجراء الآن.</string>

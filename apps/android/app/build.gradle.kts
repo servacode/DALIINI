@@ -158,6 +158,14 @@ android {
         }
         getByName("release") {
             signingConfig = signingConfigs.getByName("release")
+            // R8 shrinks, optimises and obfuscates the release build. What reflection still
+            // needs is kept by the libraries' own consumer rules and by proguard-rules.pro.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 }

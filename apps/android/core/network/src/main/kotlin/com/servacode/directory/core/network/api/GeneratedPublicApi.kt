@@ -2,6 +2,7 @@ package com.servacode.directory.core.network.api
 
 import com.servacode.directory.api.apis.AccountApi
 import com.servacode.directory.api.apis.ContentApi
+import com.servacode.directory.api.apis.AdsApi
 import com.servacode.directory.api.apis.PublicDiscoveryApi
 import com.servacode.directory.api.apis.PublicTaxonomyApi
 import com.servacode.directory.api.apis.RatingsApi
@@ -20,6 +21,7 @@ import com.servacode.directory.core.model.AccountProfile
 import com.servacode.directory.core.model.Category
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.FacilitySummary
+import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.HomeSnapshot
 import com.servacode.directory.core.model.InboxPage
 import com.servacode.directory.core.model.LegalPage
@@ -44,6 +46,7 @@ import java.util.UUID
 class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient) : PublicApiBoundary {
     private val discovery by lazy { anonymous.create<PublicDiscoveryApi>() }
     private val taxonomy by lazy { anonymous.create<PublicTaxonomyApi>() }
+    private val adverts by lazy { anonymous.create<AdsApi>() }
     private val account by lazy { authorized.create<AccountApi>() }
     private val content by lazy { anonymous.create<ContentApi>() }
     private val ratings by lazy { authorized.create<RatingsApi>() }
@@ -63,6 +66,9 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
                 longitude = longitude?.toString(),
             )
         }.toDomain(province)
+
+    override suspend fun ads(provinceId: String): List<HomeAd> =
+        call { adverts.publicAdsList(provinceId = provinceId) }.items.map { it.toDomain() }
 
     override suspend fun search(
         provinceId: String,

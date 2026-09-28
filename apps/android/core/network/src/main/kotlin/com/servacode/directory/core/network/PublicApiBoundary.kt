@@ -8,6 +8,7 @@ import com.servacode.directory.core.model.ResolvedPlace
 import com.servacode.directory.core.model.Category
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.FacilitySummary
+import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.HomeSnapshot
 import com.servacode.directory.core.model.Page
 import com.servacode.directory.core.model.Province
@@ -59,6 +60,9 @@ interface PublicApiBoundary {
     suspend fun provinces(): List<Province>
     suspend fun categories(provinceId: String): List<Category>
     suspend fun home(province: Province, latitude: Double?, longitude: Double?): HomeSnapshot
+
+    /** The province's live home advertisements, in the backend's sort order. */
+    suspend fun ads(provinceId: String): List<HomeAd>
     suspend fun search(
         provinceId: String,
         query: String,

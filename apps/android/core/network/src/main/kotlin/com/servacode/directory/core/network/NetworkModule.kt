@@ -7,6 +7,7 @@ import com.servacode.directory.core.network.api.ApiEnvironment
 import com.servacode.directory.core.network.api.ClientIdentity
 import com.servacode.directory.core.network.api.GeneratedAuthApi
 import com.servacode.directory.core.network.api.GeneratedClient
+import com.servacode.directory.core.network.api.GeneratedMaintenanceProbe
 import com.servacode.directory.core.network.api.GeneratedOwnerApi
 import com.servacode.directory.core.network.api.GeneratedPublicApi
 import com.servacode.directory.core.network.api.GeneratedPushRegistration
@@ -55,10 +56,15 @@ object NetworkModule {
      * nothing would ever run again.
      */
     @Provides @Singleton @AnonymousApi
-    fun provideAnonymousHttpClient(base: OkHttpClient, requestIds: RequestIdInterceptor): OkHttpClient =
+    fun provideAnonymousHttpClient(
+        base: OkHttpClient,
+        requestIds: RequestIdInterceptor,
+        maintenance: MaintenanceInterceptor,
+    ): OkHttpClient =
         base.newBuilder()
             .dispatcher(Dispatcher())
             .addInterceptor(requestIds)
+            .addInterceptor(maintenance)
             .build()
 
     @Provides @Singleton @AnonymousApi
@@ -78,9 +84,11 @@ object NetworkModule {
         requestIds: RequestIdInterceptor,
         accessTokens: AccessTokenInterceptor,
         session: SessionCoordinator,
+        maintenance: MaintenanceInterceptor,
     ): OkHttpClient = base.newBuilder()
         .dispatcher(Dispatcher())
         .addInterceptor(requestIds)
+        .addInterceptor(maintenance)
         .addInterceptor(accessTokens)
         .authenticator(RefreshAuthenticator(session))
         .build()
@@ -109,4 +117,13 @@ object NetworkModule {
     @Provides @Singleton
     fun providePushRegistrationBoundary(@AuthorizedApi authorized: GeneratedClient): PushRegistrationBoundary =
         GeneratedPushRegistration(authorized)
+
+    /** Maintenance ends when this answers normally; see [MaintenanceCoordinator]. */
+    @Provides @Singleton
+    fun provideMaintenanceProbe(
+        environment: ApiEnvironment,
+        @AnonymousApi http: OkHttpClient,
+        @AnonymousApi anonymous: GeneratedClient,
+        state: MaintenanceState,
+    ): MaintenanceProbe = GeneratedMaintenanceProbe(environment, http, anonymous, state)
 }

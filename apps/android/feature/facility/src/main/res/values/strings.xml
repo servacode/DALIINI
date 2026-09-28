@@ -20,6 +20,8 @@
     <string name="facility_rating_remove">حذف تقييمي</string>
     <string name="facility_sign_in_to_rate">سجّل الدخول لتقييم المنشأة</string>
     <string name="facility_photos">الصور</string>
+    <string name="facility_photo">%1$s، صورة %2$d من %3$d</string>
+    <string name="facility_photo_open">عرض الصورة بحجم أكبر</string>
     <string name="facility_close">إغلاق</string>
     <!-- %1$d is how many stars, out of five. -->
     <string name="facility_rate_label">%1$d من 5</string>

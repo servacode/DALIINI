@@ -1,5 +1,9 @@
 package com.servacode.directory.feature.duty
 
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -72,7 +76,9 @@ fun DutyScreen(
                         text = DutyCopy.INVALID_TIMES,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(top = Space.sm),
+                        modifier = Modifier
+                            .padding(top = Space.sm)
+                            .semantics { liveRegion = LiveRegionMode.Polite },
                     )
                 }
                 value.failure?.let {
@@ -80,7 +86,9 @@ fun DutyScreen(
                         text = appErrorText(it),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = Space.sm),
+                        modifier = Modifier
+                            .padding(top = Space.sm)
+                            .semantics { liveRegion = LiveRegionMode.Polite },
                     )
                 }
                 DirectorySectionLabel(DutyCopy.NEW_SHIFT)
@@ -107,12 +115,12 @@ fun DutyScreen(
                 if (value.shifts.isNotEmpty()) DirectorySectionLabel(DutyCopy.SHIFTS)
                 value.shifts.forEach { shift ->
                     DirectoryCard(modifier = Modifier.padding(vertical = Space.xs)) {
+                        val period = DirectoryWords.period(shift.startsAtEpochMillis, shift.endsAtEpochMillis)
+                        val endEarly = DutyCopy.END_EARLY
+                        val cancel = DutyCopy.CANCEL
                         Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
                             Text(
-                                text = DirectoryWords.period(
-                                    shift.startsAtEpochMillis,
-                                    shift.endsAtEpochMillis,
-                                ),
+                                text = period,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
@@ -120,8 +128,17 @@ fun DutyScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(Space.sm),
                             ) {
-                                DirectoryTextButton(DutyCopy.END_EARLY, { viewModel.endEarly(shift) })
-                                DirectoryTextButton(DutyCopy.CANCEL, { viewModel.cancel(shift.id) })
+                                // Every shift has the same two buttons; each says which shift it acts on.
+                                DirectoryTextButton(
+                                    endEarly,
+                                    { viewModel.endEarly(shift) },
+                                    Modifier.semantics { contentDescription = "$endEarly: $period" },
+                                )
+                                DirectoryTextButton(
+                                    cancel,
+                                    { viewModel.cancel(shift.id) },
+                                    Modifier.semantics { contentDescription = "$cancel: $period" },
+                                )
                             }
                         }
                     }

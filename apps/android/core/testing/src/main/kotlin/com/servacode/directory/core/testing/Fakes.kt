@@ -13,6 +13,7 @@ import com.servacode.directory.core.model.AppException
 import com.servacode.directory.core.model.Category
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.FacilitySummary
+import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.HomeSnapshot
 import com.servacode.directory.core.model.Page
 import com.servacode.directory.core.model.Province
@@ -143,6 +144,7 @@ val offline = AppException(AppError(AppError.Kind.OFFLINE))
 class ScriptedPublicApi : PublicApiBoundary {
     var provincesAnswer: () -> List<Province> = { throw offline }
     var homeAnswer: (Province) -> HomeSnapshot = { throw offline }
+    var adsAnswer: (String) -> List<HomeAd> = { throw offline }
     var directoryAnswer: (DirectoryQuery, String?) -> Page<FacilitySummary> = { _, _ -> throw offline }
     var searchAnswer: (String, String?) -> Page<FacilitySummary> = { _, _ -> throw offline }
     var facilityAnswer: (String) -> FacilityDetail = { throw offline }
@@ -155,6 +157,11 @@ class ScriptedPublicApi : PublicApiBoundary {
     override suspend fun home(province: Province, latitude: Double?, longitude: Double?): HomeSnapshot {
         calls += "home:${province.id}:$latitude:$longitude"
         return homeAnswer(province)
+    }
+
+    override suspend fun ads(provinceId: String): List<HomeAd> {
+        calls += "ads:$provinceId"
+        return adsAnswer(provinceId)
     }
 
     override suspend fun search(

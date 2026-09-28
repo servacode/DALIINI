@@ -50,6 +50,7 @@ import com.servacode.directory.api.models.TemporaryClosure as WireTemporaryClosu
 import com.servacode.directory.api.models.UserSession
 import com.servacode.directory.core.auth.SessionTokens
 import com.servacode.directory.core.model.AccountProfile
+import com.servacode.directory.core.model.AdAction
 import com.servacode.directory.core.model.AccountSession
 import com.servacode.directory.core.model.AuthChallenge
 import com.servacode.directory.core.model.AvailabilityState
@@ -88,6 +89,7 @@ import com.servacode.directory.core.model.PublicMapFacility
 import com.servacode.directory.core.model.TemporaryClosure
 import com.servacode.directory.core.model.UserRating
 import com.servacode.directory.core.model.VerificationRequirementDescriptor
+import kotlinx.serialization.json.jsonPrimitive
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -321,19 +323,31 @@ internal fun PublicAdvertisement.toDomain() = HomeAd(
     titleAr = titleAr,
     subtitleAr = subtitleAr,
     slideDurationMs = slideDurationMs,
-    facilityId = action.facilityId(),
+    action = action.toDomain(),
 )
 
 /**
- * The facility an advertisement points at, or null.
- *
- * Only a FACILITY action is read. The contract also allows a category, an in-app route and an
- * external URL; this app follows none of them yet, and reading a payload it would not act on
- * would only invite it to act on one later by accident.
+ * The backend validates the payload per type; the app checks again, because a tap on an ad
+ * must never open anything but a facility, a category or an `https` page.
  */
-private fun AdvertisementAction.facilityId(): String? {
-    if (type != AdvertisementActionTypeEnum.FACILITY) return null
-    return (payload["facilityId"] as? JsonPrimitive)?.contentOrNull
+internal fun AdvertisementAction.toDomain(): AdAction {
+    fun text(key: String): String? =
+        runCatching { payload[key]?.jsonPrimitive?.contentOrNull }.getOrNull()?.trim()?.takeIf { it.isNotEmpty() }
+    return when (type) {
+        AdvertisementActionTypeEnum.FACILITY -> text("facilityId")?.let(AdAction::OpenFacility)
+        AdvertisementActionTypeEnum.CATEGORY -> text("categoryId")?.let(AdAction::OpenCategory)
+        AdvertisementActionTypeEnum.EXTERNAL_URL -> text("url")?.takeIf(::isSafeExternalUrl)?.let(AdAction::OpenUrl)
+        // App routes are typed; a path string from the backend has no safe mapping yet.
+        AdvertisementActionTypeEnum.IN_APP_ROUTE, AdvertisementActionTypeEnum.NONE -> null
+    } ?: AdAction.None
+}
+
+/** An absolute `https` address with a host and no credentials. */
+internal fun isSafeExternalUrl(value: String): Boolean {
+    val uri = runCatching { java.net.URI(value) }.getOrNull() ?: return false
+    return uri.scheme.equals("https", ignoreCase = true) &&
+        !uri.host.isNullOrBlank() &&
+        uri.rawUserInfo == null
 }
 
 internal fun PublicHome.toDomain(province: Province) = HomeSnapshot(

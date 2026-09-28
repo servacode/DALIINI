@@ -1,5 +1,6 @@
 package com.servacode.directory.feature.facility
 
+import androidx.compose.ui.semantics.Role
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -299,7 +300,8 @@ private fun Paragraph(text: String) {
 @Composable
 private fun HourRow(hour: BusinessHour) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        // The day and its hours are read as one line, not as two unrelated fragments.
+        modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) { },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Space.md),
     ) {
@@ -344,6 +346,12 @@ object FacilityCopy {
     val SIGN_IN_TO_RATE: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_sign_in_to_rate)
     val PHOTOS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_photos)
+    val PHOTO_OPEN: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_photo_open)
+
+    /** One photo of the gallery, named by the facility and its place among the others. */
+    @Composable @ReadOnlyComposable
+    fun photo(name: String, position: Int, count: Int): String =
+        stringResource(R.string.facility_photo, name, position, count)
     val CLOSE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_close)
 
     @Composable
@@ -398,8 +406,10 @@ private fun PhotosPage(urls: List<String>, name: String?, onBack: () -> Unit) {
                     url = url,
                     modifier = Modifier
                         .aspectRatio(1f)
-                        .clickable { opened = index },
-                    contentDescription = name,
+                        .clickable(onClickLabel = FacilityCopy.PHOTO_OPEN, role = Role.Button) {
+                            opened = index
+                        },
+                    contentDescription = FacilityCopy.photo(name ?: FacilityCopy.PHOTOS, index + 1, urls.size),
                 )
             }
         }
