@@ -1,3 +1,26 @@
+import { EmailLink } from "../../components/email-link";
 import { publicConfig } from "../../lib/config";
-export const metadata = { title: "حذف الحساب" };
-export default function DeleteAccountPage() { return <article className="shell legal"><h1>طلب حذف الحساب</h1><p>يمكن بدء حذف الحساب من داخل التطبيق. كما تمثل هذه الصفحة المورد الخارجي المخصص لشرح طلب الحذف والتواصل بشأنه.</p><h2>قبل الحذف</h2><p>قد تحتاج سجلات أمنية أو تدقيق أو معاملات مرتبطة بملكية منشآت إلى الاحتفاظ بها للمدة المطلوبة للغرض الأمني أو التشغيلي، مع تقليل البيانات الشخصية حسب السياسة المعتمدة.</p><h2>تعذر الوصول إلى التطبيق؟</h2><p>تواصل عبر {publicConfig.privacyEmail} من وسيلة يمكن استخدامها للتحقق من ملكية الحساب. لن نطلب كلمة المرور أو رمز OTP عبر البريد.</p></article>; }
+import { pageMetadata } from "../../lib/seo";
+
+/*
+ * Required by Google Play's account-deletion policy: this public URL is the
+ * listing's external deletion resource. Keep the content and path stable.
+ */
+export const metadata = pageMetadata({
+  title: "حذف الحساب",
+  description: "كيفية طلب حذف حساب دليني والبيانات المرتبطة به، من داخل التطبيق أو عبر البريد.",
+  path: "/delete-account",
+});
+
+export default function DeleteAccountPage() {
+  return (
+    <article className="shell legal">
+      <h1>طلب حذف الحساب</h1>
+      <p>يمكن بدء حذف الحساب من داخل التطبيق. كما تمثل هذه الصفحة المورد الخارجي المخصص لشرح طلب الحذف والتواصل بشأنه.</p>
+      <h2>قبل الحذف</h2>
+      <p>قد تحتاج سجلات أمنية أو تدقيق أو معاملات مرتبطة بملكية منشآت إلى الاحتفاظ بها للمدة المطلوبة للغرض الأمني أو التشغيلي، مع تقليل البيانات الشخصية حسب السياسة المعتمدة.</p>
+      <h2>تعذر الوصول إلى التطبيق؟</h2>
+      <p>تواصل عبر <EmailLink email={publicConfig.privacyEmail} /> من وسيلة يمكن استخدامها للتحقق من ملكية الحساب. لن نطلب كلمة المرور أو رمز OTP عبر البريد.</p>
+    </article>
+  );
+}
