@@ -2,8 +2,10 @@
 
 import {
   ErrorState,
+  KeyValueList,
   LoadingState,
   PageHeader,
+  Panel,
   StatusBadge,
   type Tone,
   formatDateTime,
@@ -60,9 +62,8 @@ export default function SystemPage() {
       {status.loading ? <LoadingState /> : null}
       {status.error ? <ErrorState error={status.error} onRetry={status.reload} /> : null}
       {status.data ? (
-        <>
-          <section className="panel stack">
-            <h2>الاعتماديات</h2>
+        <div className="grid-2">
+          <Panel title="الاعتماديات">
             {dependencies.map(([label, value]) => (
               <div key={label} className="switch-row">
                 <span>{label}</span>
@@ -71,27 +72,22 @@ export default function SystemPage() {
                 </StatusBadge>
               </div>
             ))}
-          </section>
-          <section className="panel stack">
-            <h2>الإصدار</h2>
-            <div className="switch-row">
-              <span>إصدار الواجهة البرمجية</span>
-              <span className="cell-ltr">{status.data.apiVersion}</span>
-            </div>
-            <div className="switch-row">
-              <span>البيئة</span>
-              <span className="cell-ltr">{status.data.environment}</span>
-            </div>
-            <div className="switch-row">
-              <span>بصمة العقد</span>
-              <code className="cell-ltr">{status.data.schemaHash.slice(0, 16)}…</code>
-            </div>
-            <div className="switch-row">
-              <span>وقت الفحص</span>
-              <span className="cell-ltr">{formatDateTime(status.data.checkedAt)}</span>
-            </div>
-          </section>
-        </>
+          </Panel>
+          <Panel title="الإصدار">
+            <KeyValueList
+              items={[
+                { label: "إصدار الواجهة البرمجية", value: status.data.apiVersion, ltr: true },
+                { label: "البيئة", value: status.data.environment, ltr: true },
+                {
+                  label: "بصمة العقد",
+                  value: <code>{status.data.schemaHash.slice(0, 16)}…</code>,
+                  ltr: true,
+                },
+                { label: "وقت الفحص", value: formatDateTime(status.data.checkedAt), ltr: true },
+              ]}
+            />
+          </Panel>
+        </div>
       ) : null}
     </div>
   );

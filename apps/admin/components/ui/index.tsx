@@ -1,6 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
+
+import { type IconName, Icons } from "../icons";
 
 import {
   type ApiErrorBody,
@@ -26,23 +29,147 @@ import {
 // Page furniture
 // --------------------------------------------------------------------------------------
 
+export function BrandMark() {
+  return (
+    <span className="brand-mark" aria-hidden="true">
+      د
+    </span>
+  );
+}
+
+/**
+ * The title block every screen opens with.
+ *
+ * `back` is for detail screens: it returns to the list the record came from, so the way
+ * out sits where the eye starts reading (the top inline-start corner) rather than in the
+ * browser chrome.
+ */
 export function PageHeader({
   title,
   description,
   actions,
+  eyebrow,
+  back,
 }: {
   title: string;
   description?: string;
   actions?: ReactNode;
+  eyebrow?: string;
+  back?: { href: string; label: string };
 }) {
   return (
     <header className="page-heading">
-      <div>
+      <div className="page-heading-text">
+        {back ? (
+          <Link href={back.href} className="back-link">
+            <Icons.arrowBack />
+            {back.label}
+          </Link>
+        ) : null}
+        {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
         <h1>{title}</h1>
         {description ? <p>{description}</p> : null}
       </div>
       {actions ? <div className="header-actions">{actions}</div> : null}
     </header>
+  );
+}
+
+/**
+ * A titled card. The one container for a block of related content, so every section on
+ * every screen has the same header rhythm, padding and edge.
+ */
+export function Panel({
+  title,
+  description,
+  actions,
+  flush,
+  children,
+  testId,
+}: {
+  title?: string;
+  description?: string;
+  actions?: ReactNode;
+  /** No inner padding; for a table that should run edge to edge. */
+  flush?: boolean;
+  children: ReactNode;
+  testId?: string;
+}) {
+  return (
+    <section className={flush ? "panel panel-flush" : "panel"} data-testid={testId}>
+      {title ? (
+        <header className="panel-header">
+          <div>
+            <h2>{title}</h2>
+            {description ? <p>{description}</p> : null}
+          </div>
+          {actions ? <div className="header-actions">{actions}</div> : null}
+        </header>
+      ) : null}
+      <div className="panel-body">{children}</div>
+    </section>
+  );
+}
+
+/** A headline number. Linked when there is a queue behind it to go and work. */
+export function StatCard({
+  label,
+  value,
+  icon,
+  hint,
+  href,
+  tone,
+  testId,
+}: {
+  label: string;
+  value: ReactNode;
+  icon?: IconName;
+  hint?: string;
+  href?: string;
+  tone?: "warning" | "info";
+  testId?: string;
+}) {
+  const Glyph = icon ? Icons[icon] : null;
+  const body = (
+    <>
+      <div className="kpi-head">
+        <span className="kpi-label">{label}</span>
+        {Glyph ? (
+          <span className="kpi-icon">
+            <Glyph />
+          </span>
+        ) : null}
+      </div>
+      <strong className="kpi-value">{value}</strong>
+      {hint ? <span className="kpi-hint">{hint}</span> : null}
+    </>
+  );
+  return href ? (
+    <Link href={href} className="kpi" data-tone={tone} data-testid={testId}>
+      {body}
+    </Link>
+  ) : (
+    <div className="kpi" data-tone={tone} data-testid={testId}>
+      {body}
+    </div>
+  );
+}
+
+/** Label/value pairs for a record's read-only facts. */
+export function KeyValueList({
+  items,
+}: {
+  items: readonly { label: string; value: ReactNode; ltr?: boolean }[];
+}) {
+  return (
+    <dl className="kv">
+      {items.map((item) => (
+        <div key={item.label} className="kv-row">
+          <dt>{item.label}</dt>
+          <dd className={item.ltr ? "cell-ltr" : undefined}>{item.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -429,6 +556,7 @@ export function ConfirmDialog({
             className={destructive ? "button-danger" : "button-primary"}
             onClick={onConfirm}
             disabled={pending}
+            aria-busy={pending || undefined}
             data-autofocus
             data-testid="confirm-accept"
           >

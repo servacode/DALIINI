@@ -4,9 +4,11 @@ import { useState } from "react";
 
 import { useCan } from "../../../components/admin-shell";
 import {
+  EmptyState,
   ErrorState,
   LoadingState,
   PageHeader,
+  Panel,
   StatusBadge,
   Toast,
   formatDateTime,
@@ -68,11 +70,9 @@ export default function SettingsPage() {
 
       {settings.data ? (
         settings.data.items.length === 0 ? (
-          <div className="state-block state-empty" data-testid="empty-state">
-            <strong>لا إعدادات مُهيّأة</strong>
-          </div>
+          <EmptyState title="لا إعدادات مُهيّأة" />
         ) : (
-          <section className="panel stack">
+          <Panel>
             {settings.data.items.map((setting) => (
               <div key={setting.key} className="switch-row">
                 <span>
@@ -131,7 +131,7 @@ export default function SettingsPage() {
                 </span>
               </div>
             ))}
-          </section>
+          </Panel>
         )
       ) : null}
 

@@ -1,12 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useResource } from "../../../lib/client/use-resource";
 import {
   AuditTimeline,
   ErrorState,
   LoadingState,
   PageHeader,
+  Panel,
+  StatCard,
   StatusBadge,
   type Tone,
 } from "../../../components/ui";
@@ -55,39 +56,50 @@ export default function DashboardPage() {
       {dashboard.data ? (
         <>
           <div className="kpi-grid">
-            <Link href="/reviews" className="kpi" data-testid="kpi-pending">
-              <strong>{dashboard.data.pendingReviews}</strong>
-              <span>طلبات بانتظار المراجعة</span>
-            </Link>
-            <div className="kpi">
-              <strong>{dashboard.data.reverification}</strong>
-              <span>منشآت تحتاج إعادة تحقق</span>
-            </div>
-            <div className="kpi">
-              <strong>{dashboard.data.activeUsers}</strong>
-              <span>حسابات فعّالة</span>
-            </div>
+            <StatCard
+              href="/reviews"
+              testId="kpi-pending"
+              label="طلبات بانتظار المراجعة"
+              value={dashboard.data.pendingReviews}
+              icon="inbox"
+              tone="info"
+              hint="فتح قائمة المراجعات"
+            />
+            <StatCard
+              label="منشآت تحتاج إعادة تحقق"
+              value={dashboard.data.reverification}
+              icon="shield"
+              tone="warning"
+            />
+            <StatCard
+              label="حسابات فعّالة"
+              value={dashboard.data.activeUsers}
+              icon="userCheck"
+            />
           </div>
 
-          <section className="panel stack">
-            <h2>المنشآت حسب الحالة</h2>
-            <div className="button-row">
+          <div className="grid-main-aside">
+            <Panel title="آخر الإجراءات" description="أحدث العمليات المسجّلة في سجل التدقيق.">
+              <AuditTimeline entries={dashboard.data.recentActions} />
+            </Panel>
+
+            <Panel title="المنشآت حسب الحالة">
               {dashboard.data.facilitiesByStatus.length === 0 ? (
                 <span className="muted">لا منشآت بعد.</span>
               ) : (
-                dashboard.data.facilitiesByStatus.map((row) => (
-                  <StatusBadge key={row.status} tone={STATUS_TONES[row.status] ?? "neutral"}>
-                    {STATUS_LABELS[row.status] ?? row.status} · {row.count}
-                  </StatusBadge>
-                ))
+                <div>
+                  {dashboard.data.facilitiesByStatus.map((row) => (
+                    <div key={row.status} className="switch-row">
+                      <StatusBadge tone={STATUS_TONES[row.status] ?? "neutral"}>
+                        {STATUS_LABELS[row.status] ?? row.status}
+                      </StatusBadge>
+                      <strong className="tabular">{row.count}</strong>
+                    </div>
+                  ))}
+                </div>
               )}
-            </div>
-          </section>
-
-          <section className="panel stack">
-            <h2>آخر الإجراءات</h2>
-            <AuditTimeline entries={dashboard.data.recentActions} />
-          </section>
+            </Panel>
+          </div>
         </>
       ) : null}
     </div>

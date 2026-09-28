@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { type ReactNode, createContext, useContext } from "react";
+import { type ReactNode, createContext, useContext, useState } from "react";
 
 import { logout } from "../lib/client/api";
 import { useResource } from "../lib/client/use-resource";
-import { ErrorState, LoadingState } from "./ui";
+import { type IconName, Icons } from "./icons";
+import { BrandMark, ErrorState, LoadingState } from "./ui";
 
 /**
  * The shell, and the one place the current operator is loaded.
@@ -39,26 +40,68 @@ export function useCan(permission: string): boolean {
   return useIdentity().permissions.includes(permission);
 }
 
-const NAVIGATION = [
-  ["/dashboard", "لوحة المتابعة", "admin.dashboard.read"],
-  ["/reviews", "المراجعات", "admin.reviews.read"],
-  ["/facilities", "المنشآت", "admin.facilities.read"],
-  ["/users", "المستخدمون", "admin.users.read"],
-  ["/taxonomy/groups", "مجموعات التصنيفات", "admin.taxonomy.read"],
-  ["/taxonomy/categories", "التصنيفات", "admin.taxonomy.read"],
-  ["/provinces", "المحافظات", "admin.provinces.read"],
-  ["/verification", "التحقق", "admin.verification.read"],
-  ["/ads", "الإعلانات", "admin.ads.read"],
-  ["/audit", "سجل التدقيق", "admin.audit.read"],
-  ["/analytics", "التحليلات", "admin.analytics.read"],
-  ["/settings", "الإعدادات", "admin.settings.read"],
-  ["/system", "النظام", "admin.system.read"],
-] as const;
+type NavItem = readonly [href: string, label: string, permission: string, icon: IconName];
+
+/**
+ * Grouped by the job an operator is doing, in the order they usually do it. The flat order
+ * inside each group is the old order, so muscle memory survives the regrouping.
+ */
+const NAVIGATION: readonly { label: string; items: readonly NavItem[] }[] = [
+  {
+    label: "التشغيل",
+    items: [
+      ["/dashboard", "لوحة المتابعة", "admin.dashboard.read", "dashboard"],
+      ["/reviews", "المراجعات", "admin.reviews.read", "inbox"],
+      ["/facilities", "المنشآت", "admin.facilities.read", "building"],
+      ["/users", "المستخدمون", "admin.users.read", "users"],
+    ],
+  },
+  {
+    label: "الكتالوج",
+    items: [
+      ["/taxonomy/groups", "مجموعات التصنيفات", "admin.taxonomy.read", "layers"],
+      ["/taxonomy/categories", "التصنيفات", "admin.taxonomy.read", "tag"],
+      ["/provinces", "المحافظات", "admin.provinces.read", "map"],
+    ],
+  },
+  {
+    label: "الثقة والمحتوى",
+    items: [
+      ["/verification", "التحقق", "admin.verification.read", "shield"],
+      ["/ads", "الإعلانات", "admin.ads.read", "megaphone"],
+      ["/audit", "سجل التدقيق", "admin.audit.read", "history"],
+    ],
+  },
+  {
+    label: "المنصة",
+    items: [
+      ["/analytics", "التحليلات", "admin.analytics.read", "chart"],
+      ["/settings", "الإعدادات", "admin.settings.read", "settings"],
+      ["/system", "النظام", "admin.system.read", "server"],
+    ],
+  },
+];
+
+const ALL_ITEMS = NAVIGATION.flatMap((group) => group.items);
+
+/** The section a path belongs to, so a detail page still highlights its list. */
+function sectionFor(pathname: string): NavItem | undefined {
+  return ALL_ITEMS.filter(([href]) => pathname === href || pathname.startsWith(`${href}/`)).sort(
+    (a, b) => b[0].length - a[0].length,
+  )[0];
+}
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return (parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "") || "؟";
+}
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const me = useResource<AdminIdentity>("me");
+  const [navOpen, setNavOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
   if (me.loading) {
     return (
@@ -79,53 +122,128 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }
 
   const identity = me.data;
-  const visible = NAVIGATION.filter(([, , permission]) =>
-    identity.permissions.includes(permission),
-  );
+  const groups = NAVIGATION.map((group) => ({
+    label: group.label,
+    items: group.items.filter(([, , permission]) => identity.permissions.includes(permission)),
+  })).filter((group) => group.items.length > 0);
+  const current = sectionFor(pathname);
+  const isDetail = current ? pathname !== current[0] : false;
 
   return (
     <IdentityContext.Provider value={identity}>
-      <div className="admin-shell">
-        <aside className="sidebar">
-          <strong>إدارة الدليل</strong>
-          <nav aria-label="أقسام اللوحة" data-testid="admin-nav">
-            {visible.map(([href, label]) => (
-              <Link
-                key={href}
-                href={href}
-                aria-current={pathname === href ? "page" : undefined}
-                data-testid={`nav-${href.replace(/\//g, "-").slice(1)}`}
-              >
-                {label}
-              </Link>
-            ))}
-          </nav>
-          {visible.length === 0 ? (
-            <p className="notice" data-testid="no-permissions">
-              لا توجد صلاحيات مرتبطة بحسابك بعد. راجع مدير النظام.
-            </p>
-          ) : null}
+      <div className="admin-shell" data-nav-open={navOpen}>
+        <aside className="sidebar" id="admin-sidebar">
+          <div className="sidebar-brand">
+            <BrandMark />
+            <div className="brand-text">
+              <strong>دليني</strong>
+              <span>لوحة الإدارة</span>
+            </div>
+          </div>
+          <div className="sidebar-scroll">
+            <nav aria-label="أقسام اللوحة" data-testid="admin-nav">
+              {groups.map((group) => (
+                <div key={group.label} className="nav-group" role="group" aria-label={group.label}>
+                  <span className="nav-group-label" aria-hidden="true">
+                    {group.label}
+                  </span>
+                  {group.items.map(([href, label, , icon]) => {
+                    const Glyph = Icons[icon];
+                    return (
+                      <Link
+                        key={href}
+                        href={href}
+                        className="nav-link"
+                        aria-current={current?.[0] === href ? "page" : undefined}
+                        data-testid={`nav-${href.replace(/\//g, "-").slice(1)}`}
+                        onClick={() => setNavOpen(false)}
+                      >
+                        <Glyph />
+                        <span>{label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ))}
+            </nav>
+            {groups.length === 0 ? (
+              <p className="notice" data-testid="no-permissions">
+                لا توجد صلاحيات مرتبطة بحسابك بعد. راجع مدير النظام.
+              </p>
+            ) : null}
+          </div>
           <div className="sidebar-footer">
-            <span className="muted">{identity.displayName}</span>
+            <span className="avatar" aria-hidden="true">
+              {initials(identity.displayName)}
+            </span>
+            <div className="sidebar-user">
+              <strong>{identity.displayName}</strong>
+              <span>فريق التشغيل</span>
+            </div>
             <button
               type="button"
-              className="button-ghost"
+              className="sidebar-logout"
               data-testid="logout"
+              aria-label="تسجيل الخروج"
+              title="تسجيل الخروج"
+              disabled={signingOut}
               onClick={async () => {
-                await logout();
-                router.replace("/login");
-                router.refresh();
+                setSigningOut(true);
+                try {
+                  await logout();
+                  router.replace("/login");
+                  router.refresh();
+                } finally {
+                  setSigningOut(false);
+                }
               }}
             >
-              تسجيل الخروج
+              <Icons.logout />
             </button>
           </div>
         </aside>
+        {navOpen ? (
+          <button
+            type="button"
+            className="sidebar-scrim"
+            aria-label="إغلاق القائمة"
+            onClick={() => setNavOpen(false)}
+          />
+        ) : null}
         <section className="admin-main">
           <header className="topbar">
-            <strong>لوحة الإدارة</strong>
+            <div className="topbar-start">
+              <button
+                type="button"
+                className="menu-toggle"
+                aria-label="القائمة"
+                aria-controls="admin-sidebar"
+                aria-expanded={navOpen}
+                onClick={() => setNavOpen(!navOpen)}
+              >
+                <Icons.menu />
+              </button>
+              <ol className="breadcrumb" aria-label="المسار">
+                <li>لوحة الإدارة</li>
+                {current ? (
+                  isDetail ? (
+                    <>
+                      <li>
+                        <Link href={current[0]}>{current[1]}</Link>
+                      </li>
+                      <li aria-current="page">التفاصيل</li>
+                    </>
+                  ) : (
+                    <li aria-current="page">{current[1]}</li>
+                  )
+                ) : null}
+              </ol>
+            </div>
             <div className="topbar-identity" data-testid="operator-name">
-              <span>{identity.displayName}</span>
+              <span className="identity-name">{identity.displayName}</span>
+              <span className="avatar" aria-hidden="true">
+                {initials(identity.displayName)}
+              </span>
             </div>
           </header>
           <main className="content">{children}</main>

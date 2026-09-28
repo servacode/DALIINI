@@ -10,6 +10,7 @@ import {
   ErrorState,
   LoadingState,
   PageHeader,
+  Panel,
   StatusBadge,
   Toast,
   type Tone,
@@ -76,6 +77,7 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
   return (
     <div className="stack">
       <PageHeader
+        back={{ href: "/reviews", label: "المراجعات" }}
         title="مراجعة طلب"
         description={detail.data?.facilityNameAr}
         actions={
@@ -113,8 +115,7 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
 
       {detail.data ? (
         <>
-          <section className="panel stack">
-            <h2>حالة الطلب</h2>
+          <Panel title="حالة الطلب">
             <div className="button-row">
               <StatusBadge tone={STATUS[detail.data.status]?.tone ?? "neutral"}>
                 {STATUS[detail.data.status]?.label ?? detail.data.status}
@@ -131,15 +132,13 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
             {detail.data.rejectionReason ? (
               <p className="notice">سبب الرفض السابق: {detail.data.rejectionReason}</p>
             ) : null}
-          </section>
+          </Panel>
 
-          <section className="panel stack">
-            <h2>لقطة الطلب</h2>
+          <Panel title="لقطة الطلب">
             <DiffViewer before={{}} after={detail.data.snapshot} />
-          </section>
+          </Panel>
 
-          <section className="panel stack">
-            <h2>أدلة التحقق</h2>
+          <Panel title="أدلة التحقق">
             {detail.data.evidence.length === 0 ? (
               <span className="muted">لا أدلة مرفوعة.</span>
             ) : (
@@ -167,12 +166,11 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
             <p className="muted">
               يُفتح المستند عبر مسار مُدقَّق ولمدة محدودة. لا يُعرض مفتاح التخزين ولا رابط دائم.
             </p>
-          </section>
+          </Panel>
 
-          <section className="panel stack">
-            <h2>سجل التدقيق</h2>
+          <Panel title="سجل التدقيق">
             <AuditTimeline entries={detail.data.audit} />
-          </section>
+          </Panel>
         </>
       ) : null}
 

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useCan } from "../../../components/admin-shell";
 import {
   ConfirmDialog,
+  EmptyState,
   ErrorState,
   LoadingState,
   PageHeader,
@@ -160,9 +161,7 @@ export default function AdsPage() {
 
       {ads.data ? (
         ads.data.items.length === 0 ? (
-          <div className="state-block state-empty" data-testid="empty-state">
-            <strong>لا إعلانات بعد</strong>
-          </div>
+          <EmptyState title="لا إعلانات بعد" />
         ) : (
           <div className="table-wrap">
             <table className="data-table" data-testid="data-table">
@@ -224,6 +223,7 @@ export default function AdsPage() {
                           <button
                             type="button"
                             className="button-ghost"
+                            data-tone="danger"
                             data-testid={`delete-ad-${ad.id}`}
                             onClick={() => {
                               mutation.reset();
