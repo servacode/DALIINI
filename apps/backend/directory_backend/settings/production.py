@@ -53,6 +53,19 @@ CHANNEL_LAYERS["default"]["CONFIG"]["hosts"] = [REDIS_URL]
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
 
+# The throttles and the maintenance gate count and cache through Django's cache. The
+# default local-memory cache is per process, so behind several workers a rate limit would
+# be multiplied by the worker count and a maintenance switch would take one TTL per process
+# to be seen. Redis is already required here, so the cache shares it.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": REDIS_URL,
+        "KEY_PREFIX": "directory",
+        "TIMEOUT": 300,
+    }
+}
+
 # 07-BACKEND-DJANGO: the interactive schema route is not served in production.
 OPENAPI_SCHEMA_EXPOSURE = "disabled"
 
