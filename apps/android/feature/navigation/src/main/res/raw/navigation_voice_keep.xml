@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Arabic voice pack is played through the generated NAVIGATION_CLIPS table. Release builds
+     shrink resources; this keeps every recording regardless of how the table reaches it. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@raw/nav_*" />

@@ -1,0 +1,41 @@
+{
+  "content": {
+    "primary": "{colorsDark.textPrimary}",
+    "secondary": "{colorsDark.textSecondary}",
+    "muted": "{colorsDark.textMuted}",
+    "onPrimary": "{colorsDark.onPrimary}",
+    "danger": "{colorsDark.danger}",
+    "onBar": "{colorsDark.barContent}",
+    "onBarMuted": "{colorsDark.barContentMuted}",
+    "warning": "{colorsDark.warning}"
+  },
+  "surface": {
+    "canvas": "{colorsDark.background}",
+    "default": "{colorsDark.surface}",
+    "subtle": "{colorsDark.surfaceAlt}",
+    "hover": "{colorsDark.surfaceHover}",
+    "selected": "{colorsDark.primarySofter}",
+    "brandSoft": "{colorsDark.primarySoft}",
+    "bar": "{colorsDark.barDeep}"
+  },
+  "action": {
+    "primary": "{colorsDark.primary}",
+    "primaryPressed": "{colorsDark.primaryStrong}",
+    "danger": "{colorsDark.danger}"
+  },
+  "stroke": {
+    "default": "{colorsDark.border}",
+    "subtle": "{colorsDark.borderSubtle}",
+    "strong": "{colorsDark.borderStrong}"
+  },
+  "feedback": {
+    "success": "{colorsDark.success}",
+    "warning": "{colorsDark.warning}",
+    "danger": "{colorsDark.danger}",
+    "info": "{colorsDark.info}",
+    "successSoft": "{colorsDark.successSoft}",
+    "warningSoft": "{colorsDark.warningSoft}",
+    "dangerSoft": "{colorsDark.dangerSoft}",
+    "infoSoft": "{colorsDark.infoSoft}"
+  }
+}

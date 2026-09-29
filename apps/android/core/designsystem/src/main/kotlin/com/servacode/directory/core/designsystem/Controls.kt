@@ -365,7 +365,11 @@ fun DirectoryCompactFilterChip(
     }
 }
 
-/** The filters a list carries at its head, where there is room for Material's own size. */
+/**
+ * The filters a list carries at its head, where there is room for Material's own size.
+ *
+ * Not [enabled], it stays on screen with its choice visible and dimmed, and the screen says why.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DirectoryFilterChip(
@@ -373,11 +377,13 @@ fun DirectoryFilterChip(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     FilterChip(
         selected = selected,
         onClick = onClick,
         modifier = modifier.heightIn(min = 40.dp),
+        enabled = enabled,
         label = { Text(text, style = MaterialTheme.typography.labelLarge) },
         shape = RoundedCornerShape(Radius.pill),
         colors = FilterChipDefaults.filterChipColors(
@@ -387,7 +393,7 @@ fun DirectoryFilterChip(
             selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
         ),
         border = FilterChipDefaults.filterChipBorder(
-            enabled = true,
+            enabled = enabled,
             selected = selected,
             borderColor = MaterialTheme.colorScheme.outline,
             selectedBorderColor = MaterialTheme.colorScheme.primary,

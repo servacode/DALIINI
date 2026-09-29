@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertsPanel, TaskCenter } from "../../../components/smart";
 import { useResource } from "../../../lib/client/use-resource";
 import {
   AuditTimeline,
@@ -10,12 +11,18 @@ import {
   StatCard,
   StatusBadge,
   type Tone,
+  termsFor,
+  labelsFor,
 } from "../../../components/ui";
 
 type Dashboard = Readonly<{
   pendingReviews: number;
   reverification: number;
   activeUsers: number;
+  dutyActiveNow: number;
+  newUsers7d: number;
+  openReports: number;
+  systemWarnings: readonly string[];
   facilitiesByStatus: readonly { status: string; count: number }[];
   recentActions: readonly {
     action: string;
@@ -25,25 +32,14 @@ type Dashboard = Readonly<{
   }[];
 }>;
 
-const STATUS_LABELS: Record<string, string> = {
-  DRAFT: "مسودة",
-  SUBMITTED: "قيد المراجعة",
-  ACTIVE: "فعّالة",
-  SUSPENDED: "موقوفة",
-  CLOSED: "مغلقة",
-  REVERIFICATION_REQUIRED: "تحتاج إعادة تحقق",
-};
+const STATUS_LABELS = labelsFor("facilityStatus");
 
-const STATUS_TONES: Record<string, Tone> = {
-  ACTIVE: "positive",
-  SUSPENDED: "warning",
-  CLOSED: "danger",
-  REVERIFICATION_REQUIRED: "warning",
-  SUBMITTED: "info",
-};
+const STATUS_TONES = Object.fromEntries(
+  Object.entries(termsFor("facilityStatus")).map(([key, meta]) => [key, meta.tone]),
+) as Record<string, Tone>;
 
 export default function DashboardPage() {
-  const dashboard = useResource<Dashboard>("dashboard");
+  const dashboard = useResource<Dashboard>("dashboard", {}, { refreshMs: 60_000 });
 
   return (
     <div className="stack">
@@ -51,10 +47,19 @@ export default function DashboardPage() {
         title="لوحة المتابعة"
         description="الحالة التشغيلية الحالية وآخر الإجراءات المسجّلة."
       />
+      <AlertsPanel />
       {dashboard.loading ? <LoadingState /> : null}
       {dashboard.error ? <ErrorState error={dashboard.error} onRetry={dashboard.reload} /> : null}
       {dashboard.data ? (
         <>
+          {dashboard.data.systemWarnings.length > 0 ? (
+            <div className="notice" role="status" data-testid="system-warnings">
+              <span>
+                <strong>تنبيهات الإعداد: </strong>
+                {dashboard.data.systemWarnings.join(" · ")}
+              </span>
+            </div>
+          ) : null}
           <div className="kpi-grid">
             <StatCard
               href="/reviews"
@@ -72,16 +77,28 @@ export default function DashboardPage() {
               tone="warning"
             />
             <StatCard
+              href="/reports"
+              label="بلاغات مفتوحة"
+              value={dashboard.data.openReports}
+              icon="flag"
+              tone="warning"
+              hint="فتح البلاغات"
+            />
+            <StatCard
+              label="صيدليات مناوبة الآن"
+              value={dashboard.data.dutyActiveNow}
+              icon="clock"
+            />
+            <StatCard
               label="حسابات فعّالة"
               value={dashboard.data.activeUsers}
               icon="userCheck"
+              hint={`${dashboard.data.newUsers7d} حساباً جديداً خلال ٧ أيام`}
             />
           </div>
 
           <div className="grid-main-aside">
-            <Panel title="آخر الإجراءات" description="أحدث العمليات المسجّلة في سجل التدقيق.">
-              <AuditTimeline entries={dashboard.data.recentActions} />
-            </Panel>
+            <TaskCenter />
 
             <Panel title="المنشآت حسب الحالة">
               {dashboard.data.facilitiesByStatus.length === 0 ? (
@@ -100,6 +117,10 @@ export default function DashboardPage() {
               )}
             </Panel>
           </div>
+
+          <Panel title="آخر الإجراءات" description="أحدث العمليات المسجّلة في سجل التدقيق.">
+            <AuditTimeline entries={dashboard.data.recentActions} />
+          </Panel>
         </>
       ) : null}
     </div>

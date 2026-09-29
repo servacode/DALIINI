@@ -39,6 +39,18 @@
             android:authorities="${applicationId}.firebaseinitprovider"
             tools:node="remove" />
 
+        <!-- Sentry would initialise itself from these at every start. CrashReporting initialises
+             it in Application.onCreate, and only when the build carries a DSN; without one no
+             Sentry code runs at all. -->
+        <provider
+            android:name="io.sentry.android.core.SentryInitProvider"
+            android:authorities="${applicationId}.SentryInitProvider"
+            tools:node="remove" />
+        <provider
+            android:name="io.sentry.android.core.SentryPerformanceProvider"
+            android:authorities="${applicationId}.SentryPerformanceProvider"
+            tools:node="remove" />
+
         <!-- Push arrives here. Firebase is initialised only when the build carries a
              configuration; see PushSetup. -->
         <service
@@ -57,6 +69,57 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- App Links: the site's own https addresses open here, verified against
+                 https://<host>/.well-known/assetlinks.json (play/app-links.md). No custom scheme:
+                 a link that is not verified opens the site in the browser, as it should.
+
+                 The paths are only the site's pages the app has: a facility (/f/{id}), who is on
+                 duty (/duty, /duty/today), and a province (/{code}). Provinces are listed one by
+                 one, from the backend's reference data (directory/reference_data/launch_v1.py),
+                 rather than as a pattern that would also take /privacy, /faq and every other
+                 page away from the browser. DeepLinks.parse reads what arrives.
+
+                 One host only, the one the site's own links use. Its other form (www. or bare)
+                 is usually a redirect, which cannot verify, and Android 7 to 11 then verify
+                 none of the app's links. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" />
+                <data android:host="${appLinkHost}" />
+                <data android:pathPrefix="/f/" />
+                <data android:path="/duty" />
+                <data android:path="/duty/today" />
+                <data android:path="/raqqa" />
+                <data android:path="/damascus" />
+                <data android:path="/rif-dimashq" />
+                <data android:path="/aleppo" />
+                <data android:path="/homs" />
+                <data android:path="/hama" />
+                <data android:path="/latakia" />
+                <data android:path="/tartus" />
+                <data android:path="/idlib" />
+                <data android:path="/deir-ez-zor" />
+                <data android:path="/al-hasakah" />
+                <data android:path="/daraa" />
+                <data android:path="/as-suwayda" />
+                <data android:path="/quneitra" />
+            </intent-filter>
         </activity>
+
+        <!-- «المناوب الآن» on the home screen (DutyWidget). -->
+        <receiver
+            android:name=".widget.DutyWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_duty_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/duty_widget_info" />
+        </receiver>
     </application>
 </manifest>

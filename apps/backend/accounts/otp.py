@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import secrets
 from dataclasses import dataclass
+from uuid import UUID
 
 from django.conf import settings
 
@@ -18,9 +19,9 @@ def generate_otp() -> str:
     return f"{secrets.randbelow(1_000_000):06d}"
 
 
-def otp_digest(*, challenge_id, code: str) -> str:
+def otp_digest(*, challenge_id: UUID, code: str) -> str:
     key = settings.RECOVERY_HMAC_SECRET.encode("utf-8")
-    message = f"otp:{challenge_id}:{code}".encode("utf-8")
+    message = f"otp:{challenge_id}:{code}".encode()
     return hmac.new(key, message, hashlib.sha256).hexdigest()
 
 

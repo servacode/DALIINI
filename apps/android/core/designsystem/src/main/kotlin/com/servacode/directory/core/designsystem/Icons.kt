@@ -11,58 +11,79 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 
 /**
- * The app's own icons: one line weight, one corner treatment, one place to change them.
+ * The app's icons: one line weight, one corner treatment, one place to change them.
  *
- * They are drawn in this module rather than taken from an icon library, so the set stays small,
- * matches the brand's line, and adds no dependency. Directional ones mirror themselves for Arabic.
+ * Wherever the shared set covers a concept (`packages/design-tokens/icons`, generated as
+ * `dl_ic_*`), the app draws that icon, so a phone, a pin or a bell looks the same in the app, on
+ * the site and in the console. The few this module still draws itself — the travel modes, a
+ * filled star, a camera — are concepts the shared set does not have yet. Directional icons mirror
+ * themselves for Arabic.
  */
 object DirectoryIcons {
-    @DrawableRes val search = R.drawable.ic_search
-    @DrawableRes val pin = R.drawable.ic_pin
-    @DrawableRes val star = R.drawable.ic_star
+    // From the shared set, with no module-drawn equivalent before.
+    @DrawableRes val whatsapp = R.drawable.dl_ic_whatsapp
+    @DrawableRes val heart = R.drawable.dl_ic_heart
+    @DrawableRes val share = R.drawable.dl_ic_share
+    @DrawableRes val calendar = R.drawable.dl_ic_calendar
+    @DrawableRes val flag = R.drawable.dl_ic_flag
+    @DrawableRes val emergency = R.drawable.dl_ic_emergency
+    @DrawableRes val trash = R.drawable.dl_ic_trash
+    @DrawableRes val settings = R.drawable.dl_ic_settings
+    @DrawableRes val offline = R.drawable.dl_ic_wifi_off
+    @DrawableRes val lock = R.drawable.dl_ic_lock
+    @DrawableRes val history = R.drawable.dl_ic_history
+    @DrawableRes val externalLink = R.drawable.dl_ic_external_link
+    @DrawableRes val checkCircle = R.drawable.dl_ic_check_circle
+    @DrawableRes val chart = R.drawable.dl_ic_chart
+    @DrawableRes val moon = R.drawable.dl_ic_moon
+    @DrawableRes val sun = R.drawable.dl_ic_sun
+
+
+    @DrawableRes val search = R.drawable.dl_ic_search
+    @DrawableRes val pin = R.drawable.dl_ic_map_pin
+    @DrawableRes val star = R.drawable.dl_ic_star
     @DrawableRes val starFilled = R.drawable.ic_star_filled
-    @DrawableRes val clock = R.drawable.ic_clock
-    @DrawableRes val phone = R.drawable.ic_phone
-    @DrawableRes val check = R.drawable.ic_check
-    @DrawableRes val chat = R.drawable.ic_chat
-    @DrawableRes val close = R.drawable.ic_close
+    @DrawableRes val clock = R.drawable.dl_ic_clock
+    @DrawableRes val phone = R.drawable.dl_ic_phone
+    @DrawableRes val check = R.drawable.dl_ic_check
+    @DrawableRes val close = R.drawable.dl_ic_close
     @DrawableRes val closeBox = R.drawable.ic_close_box
-    @DrawableRes val chevron = R.drawable.ic_chevron
-    @DrawableRes val back = R.drawable.ic_arrow_back
-    @DrawableRes val refresh = R.drawable.ic_refresh
-    @DrawableRes val warning = R.drawable.ic_warning
-    @DrawableRes val info = R.drawable.ic_info
-    @DrawableRes val person = R.drawable.ic_person
-    @DrawableRes val home = R.drawable.ic_home
-    @DrawableRes val map = R.drawable.ic_map
+    @DrawableRes val chevron = R.drawable.dl_ic_chevron
+    @DrawableRes val back = R.drawable.dl_ic_arrow_back
+    @DrawableRes val refresh = R.drawable.dl_ic_refresh
+    @DrawableRes val warning = R.drawable.dl_ic_alert
+    @DrawableRes val info = R.drawable.dl_ic_info
+    @DrawableRes val person = R.drawable.dl_ic_user
+    @DrawableRes val home = R.drawable.dl_ic_home
+    @DrawableRes val map = R.drawable.dl_ic_map
     @DrawableRes val myLocation = R.drawable.ic_my_location
-    @DrawableRes val bell = R.drawable.ic_bell
+    @DrawableRes val bell = R.drawable.dl_ic_bell
     @DrawableRes val camera = R.drawable.ic_camera
-    @DrawableRes val upload = R.drawable.ic_upload
-    @DrawableRes val edit = R.drawable.ic_edit
-    @DrawableRes val plus = R.drawable.ic_plus
+    @DrawableRes val upload = R.drawable.dl_ic_upload
+    @DrawableRes val edit = R.drawable.dl_ic_edit
+    @DrawableRes val plus = R.drawable.dl_ic_plus
     @DrawableRes val minus = R.drawable.ic_minus
-    @DrawableRes val filter = R.drawable.ic_filter
-    @DrawableRes val route = R.drawable.ic_route
+    @DrawableRes val filter = R.drawable.dl_ic_filter
+    @DrawableRes val route = R.drawable.dl_ic_directions
 
     /** The three ways someone gets to a facility, told apart at a glance on the route screen. */
     @DrawableRes val walk = R.drawable.ic_walk
     @DrawableRes val motorcycle = R.drawable.ic_motorcycle
     @DrawableRes val car = R.drawable.ic_car
-    @DrawableRes val verified = R.drawable.ic_shield_check
+    @DrawableRes val verified = R.drawable.dl_ic_verified
 
     /** Whether a password is being shown; the mark is the control, not a sentence. */
-    @DrawableRes val eye = R.drawable.ic_eye
+    @DrawableRes val eye = R.drawable.dl_ic_eye
     @DrawableRes val eyeOff = R.drawable.ic_eye_off
-    @DrawableRes val image = R.drawable.ic_image
+    @DrawableRes val image = R.drawable.dl_ic_image
     @DrawableRes val hospital = R.drawable.ic_hospital
-    @DrawableRes val pharmacy = R.drawable.ic_pharmacy
-    @DrawableRes val clinic = R.drawable.ic_clinic
-    @DrawableRes val laboratory = R.drawable.ic_laboratory
+    @DrawableRes val pharmacy = R.drawable.dl_ic_pharmacy
+    @DrawableRes val clinic = R.drawable.dl_ic_clinic
+    @DrawableRes val laboratory = R.drawable.dl_ic_lab
     @DrawableRes val nursing = R.drawable.ic_nursing
     @DrawableRes val supplies = R.drawable.ic_supplies
-    @DrawableRes val grid = R.drawable.ic_grid
-    @DrawableRes val logout = R.drawable.ic_logout
+    @DrawableRes val grid = R.drawable.dl_ic_grid
+    @DrawableRes val logout = R.drawable.dl_ic_logout
     @DrawableRes val document = R.drawable.ic_document
     @DrawableRes val schedule = R.drawable.ic_time_slot
 

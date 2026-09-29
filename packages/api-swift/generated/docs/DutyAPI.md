@@ -17,7 +17,7 @@ Method | HTTP request | Description
 
 Schedule a duty shift
 
-Overlapping shifts for the same facility are refused by a PostgreSQL exclusion constraint, not only by application code. Only categories that declare the duty capability accept this.
+Overlapping shifts for the same facility are refused by a PostgreSQL exclusion constraint, not only by application code. Only categories that declare the duty capability accept this, and a shift may not overlap a temporary closure of the facility (409 DUTY_DURING_CLOSURE).
 
 ### Example
 ```swift

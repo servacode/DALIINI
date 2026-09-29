@@ -13,17 +13,20 @@ import AnyCodable
 /** Create or update a category group. &#x60;code&#x60; is set once and never changes. */
 public struct AdminCategoryGroupRequest: Codable, JSONEncodable, Hashable {
 
+    public static let iconKeyRule = StringRule(minLength: nil, maxLength: 80, pattern: nil)
     /** Required on create. Refused on update; the group code is immutable. */
     public var code: String?
     public var nameAr: String?
     public var nameEn: String?
+    public var iconKey: String?
     public var active: Bool?
     public var sortOrder: Int?
 
-    public init(code: String? = nil, nameAr: String? = nil, nameEn: String? = nil, active: Bool? = nil, sortOrder: Int? = nil) {
+    public init(code: String? = nil, nameAr: String? = nil, nameEn: String? = nil, iconKey: String? = nil, active: Bool? = nil, sortOrder: Int? = nil) {
         self.code = code
         self.nameAr = nameAr
         self.nameEn = nameEn
+        self.iconKey = iconKey
         self.active = active
         self.sortOrder = sortOrder
     }
@@ -32,6 +35,7 @@ public struct AdminCategoryGroupRequest: Codable, JSONEncodable, Hashable {
         case code
         case nameAr
         case nameEn
+        case iconKey
         case active
         case sortOrder
     }
@@ -43,6 +47,7 @@ public struct AdminCategoryGroupRequest: Codable, JSONEncodable, Hashable {
         try container.encodeIfPresent(code, forKey: .code)
         try container.encodeIfPresent(nameAr, forKey: .nameAr)
         try container.encodeIfPresent(nameEn, forKey: .nameEn)
+        try container.encodeIfPresent(iconKey, forKey: .iconKey)
         try container.encodeIfPresent(active, forKey: .active)
         try container.encodeIfPresent(sortOrder, forKey: .sortOrder)
     }

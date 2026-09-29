@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-def test_push_tokens_are_encrypted_and_hashed_at_rest():
+def test_push_tokens_are_encrypted_and_hashed_at_rest() -> None:
     model_source = Path("notifications/models.py").read_text()
     service_source = Path("notifications/services.py").read_text()
     assert "token_ciphertext" in model_source
@@ -11,13 +11,15 @@ def test_push_tokens_are_encrypted_and_hashed_at_rest():
     assert "token = models." not in model_source
 
 
-def test_push_payload_contains_only_notification_reference_and_type():
+def test_push_payload_contains_only_notification_reference_and_type() -> None:
     source = Path("notifications/services.py").read_text()
     assert 'data = {"notificationId": str(notification.id), "type": notification.type}' in source
 
 
-def test_celery_push_delivery_has_retry_policy():
+def test_celery_push_delivery_has_retry_policy() -> None:
     source = Path("notifications/tasks.py").read_text()
-    assert "autoretry_for" in source
-    assert "retry_backoff=True" in source
-    assert "max_retries=5" in source
+    # Only transient failures retry (explicit self.retry with backoff), never every Exception.
+    assert "autoretry_for=(Exception,)" not in source
+    assert "acks_late=True" in source
+    assert "max_retries=MAX_RETRIES" in source
+    assert "except TransientPushError" in source

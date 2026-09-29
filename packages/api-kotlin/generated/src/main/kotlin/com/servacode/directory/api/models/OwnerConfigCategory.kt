@@ -16,6 +16,7 @@
 package com.servacode.directory.api.models
 
 import com.servacode.directory.api.models.CategoryCapabilities
+import com.servacode.directory.api.models.NamedIntRef
 import com.servacode.directory.api.models.OwnerCategory
 import com.servacode.directory.api.models.OwnerVerificationRequirement
 
@@ -29,6 +30,8 @@ import kotlinx.serialization.Contextual
  * @param category 
  * @param capabilities 
  * @param verificationRequirements 
+ * @param specialties The specialties an owner may pick, as publicCategoryTagsRetrieve lists them. Their ids are what `specialtyIds` takes.
+ * @param services The services an owner may pick, as publicCategoryTagsRetrieve lists them. Their ids are what `serviceTagIds` takes.
  */
 @Serializable
 
@@ -41,7 +44,15 @@ data class OwnerConfigCategory (
     val capabilities: CategoryCapabilities,
 
     @SerialName(value = "verificationRequirements")
-    val verificationRequirements: kotlin.collections.List<OwnerVerificationRequirement>
+    val verificationRequirements: kotlin.collections.List<OwnerVerificationRequirement>,
+
+    /* The specialties an owner may pick, as publicCategoryTagsRetrieve lists them. Their ids are what `specialtyIds` takes. */
+    @SerialName(value = "specialties")
+    val specialties: kotlin.collections.List<NamedIntRef>,
+
+    /* The services an owner may pick, as publicCategoryTagsRetrieve lists them. Their ids are what `serviceTagIds` takes. */
+    @SerialName(value = "services")
+    val services: kotlin.collections.List<NamedIntRef>
 
 ) {
 

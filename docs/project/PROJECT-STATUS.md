@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-09-19
+Last updated: 2026-09-29
 
 ## Baseline
 
@@ -26,6 +26,10 @@ earlier 556 was a host-side under-count and is corrected in DEBT-002), DEBT-003 
 `PermissionsMixin` evaluation. All are mandatory before
 staging or production closure and none of them blocks the Admin binding work. Standing rule: no new
 lint or type debt in a touched file.
+
+**2026-09-29: DEBT-001 and DEBT-002 are closed.** `ruff check .` reports 0 and `mypy .` (strict,
+plugin loaded) reports 0 errors in 308 source files. The backend CI job's six commands all pass
+locally, and `pytest` no longer needs object storage. DEBT-003 stands.
 
 ## Contract discipline
 
@@ -151,3 +155,56 @@ CI run 35937791094 is green on every gate: assemble, APK and certificate, 388 An
 Unchanged and still unverified: INT-096 (device), INT-089 (external), INT-084 (open, with the
 safe design recorded in `BLOCKERS.md`), FCM provider delivery, live navigation and voice guidance
 (road test), and `LAUNCH_POLICY_PENDING`.
+
+## One design system, a smart console, the site, Android phase 3 and push — 2026-09-29
+
+**Design.** One package (`packages/design-tokens`) now carries everything a surface shows:
+- colours, with a dark theme;
+- the Tajawal face;
+- one Arabic word and tone per state;
+- 59 icons and 7 illustrations;
+- the brand symbol.
+
+The console, the site and the Android app all read it. `docs/design/DESIGN-SYSTEM.md` is the
+guide; the console's «نظام التصميم» page is the live reference.
+
+**Admin console.** Eleven sections with tabs:
+- Operations: a task centre and alerts on the home page, a top-bar indicator and global
+  search, a quality score and timeline per facility.
+- Screens: the pharmacy duty roster, content (pages, FAQ, emergency numbers, the contact
+  inbox), broadcasts, rejection templates in the reject dialog, province readiness, and
+  analytics with periods, team performance and exports.
+- The review queue filters by submission day and by missing documents.
+- Ads upload their images from the browser and keep their target when edited.
+
+**Public web.** Adds search, the owners' guide, «كيف نتحقق», duty now / today / tomorrow / the
+week, published pages and FAQ, emergency numbers, a contact form, sharing, the trust line, and
+«افتح في التطبيق» through verified App Links.
+
+**Android.**
+- Phase 3: the «المناوب الآن» widget, emergency numbers, App Links on the site's one host,
+  optional Sentry, notification choices, recently viewed, data saver and owner tools.
+- A Play release configuration that is complete now passes `validatePlayRelease` under the
+  configuration cache, and the check requires the Firebase settings.
+
+**Backend.**
+- Push reaches phones: an FCM HTTP v1 transport, data-only messages, routing ids checked for
+  shape.
+- The inbox names the facility of an owner's notice.
+- The quality debt is closed (above).
+
+**Specialties and services.** They work end to end:
+- Integer ids throughout.
+- Public choices per category.
+- Owner choices in the app.
+- Console management with an audit trail.
+- Filter chips on the site and on Android's Home.
+
+**Local evidence.** The console's e2e suite ran against a real stack: 31 passed, 1 skipped.
+The Android workflow's gates also pass locally, including the six source qualifiers.
+
+**Still open, and why** (`BLOCKERS.md`, 2026-09-29 review):
+- OTP needs a provider chosen before owners can sign in in production.
+- GitHub Actions runs no job (EXT-006), so CI evidence is local.
+- Device checks are outstanding: the widget, App Link verification, and push delivery and taps.
+- The seeded emergency numbers await an operator's confirmation.

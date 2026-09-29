@@ -1,7 +1,9 @@
 package com.servacode.directory.feature.home
 
 import com.servacode.directory.core.model.Category
+import com.servacode.directory.core.model.CategoryTags
 import com.servacode.directory.core.model.FacilityCapabilities
+import com.servacode.directory.core.model.FacilityTag
 import com.servacode.directory.core.network.DirectorySort
 import com.servacode.directory.core.testing.fix
 import org.junit.Assert.assertEquals
@@ -18,18 +20,23 @@ import org.junit.Test
  * flag on the backend's own directory query, so nothing about hours or duty is worked out here.
  */
 class HomeFiltersTest {
-    private fun category(duty: Boolean) = Category(
+    private fun category(duty: Boolean, specialties: Boolean = false, services: Boolean = false) = Category(
         id = "category-1",
         nameAr = "صيدليات",
         capabilities = FacilityCapabilities(
             supportsHours = true,
             supportsPhotos = true,
             supportsDuty = duty,
-            supportsSpecialtyFilter = false,
-            supportsServiceFilter = false,
+            supportsSpecialtyFilter = specialties,
+            supportsServiceFilter = services,
             supportsTemporaryClosure = true,
             supportsOwnerOnboarding = true,
         ),
+    )
+
+    private val tags = CategoryTags(
+        specialties = listOf(FacilityTag("3", "قلبية"), FacilityTag("4", "أطفال")),
+        services = listOf(FacilityTag("12", "قياس ضغط")),
     )
 
     @Test fun `nothing chosen is all, and all is what the backend is asked for`() {
@@ -145,4 +152,77 @@ class HomeFiltersTest {
         assertEquals(HomeEmptyReason.CATEGORY, HomeFilters().emptyReason())
     }
 
+    @Test fun `a specialty and a service narrow the query, one of each, as ids`() {
+        val narrowed = HomeFilters().chooseSpecialty("3").chooseService("12")
+        val query = narrowed.query("province-1", "category-1", null)
+
+        assertEquals("3", query.specialtyId)
+        assertEquals("12", query.serviceTagId)
+        assertTrue(narrowed.hasTags)
+        assertFalse(narrowed.isAll)
+        // Nothing chosen sends neither.
+        assertNull(HomeFilters().query("province-1", "category-1", null).specialtyId)
+        assertNull(HomeFilters().query("province-1", "category-1", null).serviceTagId)
+    }
+
+    @Test fun `choosing another replaces the one before, since the backend takes one`() {
+        assertEquals("4", HomeFilters().chooseSpecialty("3").chooseSpecialty("4").specialtyId)
+    }
+
+    @Test fun `the chosen one again, or all, lets it go`() {
+        val chosen = HomeFilters().chooseSpecialty("3").chooseService("12")
+
+        assertNull(chosen.chooseSpecialty("3").specialtyId)
+        assertNull(chosen.chooseSpecialty(null).specialtyId)
+        assertEquals("12", chosen.chooseSpecialty(null).serviceTagId)
+        assertNull(chosen.chooseService(null).serviceTagId)
+    }
+
+    @Test fun `clearing lets both go and leaves the other chips as they were`() {
+        val chosen = HomeFilters(openNow = true, nearest = true).chooseSpecialty("3").chooseService("12")
+
+        assertEquals(HomeFilters(openNow = true, nearest = true), chosen.clearTags())
+    }
+
+    @Test fun `a category that does not filter by them drops them`() {
+        val chosen = HomeFilters(openNow = true).chooseSpecialty("3").chooseService("12")
+
+        val services = chosen.withinReach(hasLocation = false, category = category(duty = false, services = true))
+        val neither = chosen.withinReach(hasLocation = false, category = category(duty = false))
+
+        assertNull(services.specialtyId)
+        assertEquals("12", services.serviceTagId)
+        assertEquals(HomeFilters(openNow = true), neither)
+    }
+
+    @Test fun `a choice the category no longer offers is dropped rather than narrowing to nothing`() {
+        val chosen = HomeFilters().chooseSpecialty("9").chooseService("12")
+
+        val kept = chosen.withinTags(tags)
+
+        assertNull(kept.specialtyId)
+        assertEquals("12", kept.serviceTagId)
+        assertEquals(chosen.chooseSpecialty(null), kept)
+    }
+
+    @Test fun `rows are offered only where the category's capabilities filter by them`() {
+        assertEquals(tags, offeredTags(category(duty = false, specialties = true, services = true), tags))
+        assertEquals(
+            CategoryTags(specialties = tags.specialties),
+            offeredTags(category(duty = false, specialties = true), tags),
+        )
+        assertTrue(offeredTags(category(duty = true), tags).isEmpty)
+        assertTrue(offeredTags(null, tags).isEmpty)
+        assertTrue(filtersByTags(category(duty = false, services = true)))
+        assertFalse(filtersByTags(category(duty = true)))
+        assertFalse(filtersByTags(null))
+    }
+
+    @Test fun `an empty list narrowed by a choice says so, whatever else is on`() {
+        assertEquals(HomeEmptyReason.CHOICE, HomeFilters().chooseService("12").emptyReason())
+        assertEquals(
+            HomeEmptyReason.CHOICE,
+            HomeFilters(openNow = true, dutyToday = true).chooseSpecialty("3").emptyReason(),
+        )
+    }
 }

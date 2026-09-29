@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from io import BytesIO
-from uuid import uuid4
+from typing import IO
+from uuid import UUID, uuid4
 
 from django.core.exceptions import ValidationError
 from PIL import Image, UnidentifiedImageError
@@ -14,7 +15,7 @@ MAX_DIMENSION = 10_000
 JPEG_QUALITY = 88
 
 
-def _read_upload(upload) -> bytes:
+def _read_upload(upload: IO[bytes]) -> bytes:
     if getattr(upload, "size", 0) > MAX_UPLOAD_BYTES:
         raise ValidationError("Image exceeds the upload byte limit.")
     data = upload.read(MAX_UPLOAD_BYTES + 1)
@@ -25,7 +26,7 @@ def _read_upload(upload) -> bytes:
     return data
 
 
-def safe_reencode_image(upload) -> tuple[bytes, int, int]:
+def safe_reencode_image(upload: IO[bytes]) -> tuple[bytes, int, int]:
     raw = _read_upload(upload)
     try:
         with Image.open(BytesIO(raw)) as image:
@@ -45,7 +46,9 @@ def safe_reencode_image(upload) -> tuple[bytes, int, int]:
         raise ValidationError("Uploaded file is not a valid image.") from exc
 
 
-def save_public_image(*, facility_id, upload):
+def save_public_image(
+    *, facility_id: UUID, upload: IO[bytes]
+) -> tuple[PublicS3Storage, str, int, int]:
     data, width, height = safe_reencode_image(upload)
     key = f"facilities/{facility_id}/public/{uuid4().hex}.jpg"
     storage = PublicS3Storage()
@@ -55,7 +58,9 @@ def save_public_image(*, facility_id, upload):
     return storage, saved, width, height
 
 
-def save_private_evidence(*, facility_id, requirement_id, upload):
+def save_private_evidence(
+    *, facility_id: UUID, requirement_id: int, upload: IO[bytes]
+) -> tuple[PrivateS3Storage, str, int, int]:
     data, width, height = safe_reencode_image(upload)
     key = (
         f"facilities/{facility_id}/evidence/{requirement_id}/"

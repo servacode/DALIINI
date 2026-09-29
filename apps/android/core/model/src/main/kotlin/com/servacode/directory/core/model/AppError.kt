@@ -63,6 +63,7 @@ enum class AppErrorMessage {
     PHONE_ALREADY_REGISTERED,
     DUTY_NOT_SUPPORTED,
     DUTY_OVERLAP_OR_INVALID,
+    DUTY_DURING_CLOSURE,
     HOURS_NOT_SUPPORTED,
     INVALID_HOURS,
     PHOTOS_NOT_SUPPORTED,
@@ -70,6 +71,7 @@ enum class AppErrorMessage {
     EVIDENCE_MAX_FILES,
     EVIDENCE_LOCKED_DURING_REVIEW,
     LAST_OWNER_PROTECTED,
+    MAINTENANCE,
 
     /** The kinds that have no code of their own worth naming. */
     OFFLINE,
@@ -93,6 +95,7 @@ object AppErrorMessages {
         "PHONE_ALREADY_REGISTERED" to AppErrorMessage.PHONE_ALREADY_REGISTERED,
         "DUTY_NOT_SUPPORTED" to AppErrorMessage.DUTY_NOT_SUPPORTED,
         "DUTY_OVERLAP_OR_INVALID" to AppErrorMessage.DUTY_OVERLAP_OR_INVALID,
+        "DUTY_DURING_CLOSURE" to AppErrorMessage.DUTY_DURING_CLOSURE,
         "HOURS_NOT_SUPPORTED" to AppErrorMessage.HOURS_NOT_SUPPORTED,
         "INVALID_HOURS" to AppErrorMessage.INVALID_HOURS,
         "PHOTOS_NOT_SUPPORTED" to AppErrorMessage.PHOTOS_NOT_SUPPORTED,
@@ -100,6 +103,7 @@ object AppErrorMessages {
         "EVIDENCE_MAX_FILES" to AppErrorMessage.EVIDENCE_MAX_FILES,
         "EVIDENCE_LOCKED_DURING_REVIEW" to AppErrorMessage.EVIDENCE_LOCKED_DURING_REVIEW,
         "LAST_OWNER_PROTECTED" to AppErrorMessage.LAST_OWNER_PROTECTED,
+        "MAINTENANCE" to AppErrorMessage.MAINTENANCE,
     )
 
     fun of(error: AppError): AppErrorMessage = error.code?.let(byCode::get) ?: byKind(error.kind)

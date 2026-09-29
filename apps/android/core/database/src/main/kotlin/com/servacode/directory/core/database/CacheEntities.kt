@@ -12,6 +12,11 @@ data class ProvinceCacheEntity(
     val updatedAtEpochMillis: Long,
 )
 
+/**
+ * One row per category: what is kept about it beyond the home snapshot, which lists it. That is
+ * the specialties and services it offers, a `CategoryTags` as JSON; [provinceId] is the province
+ * it was listed in when stored.
+ */
 @Entity(tableName = "category_cache")
 data class CategoryCacheEntity(
     @PrimaryKey val id: String,

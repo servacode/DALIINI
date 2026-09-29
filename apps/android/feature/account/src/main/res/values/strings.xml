@@ -7,6 +7,10 @@
     <string name="account_edit_profile">المعلومات الشخصية</string>
     <string name="account_favorites">المفضلة</string>
     <string name="account_notifications">الإشعارات</string>
+    <string name="recent_title">شوهدت مؤخراً</string>
+    <string name="recent_clear">مسح السجل</string>
+    <string name="recent_empty">لم تفتح أي منشأة بعد</string>
+    <string name="recent_empty_body">المنشآت التي تفتحها تظهر هنا، على هذا الجهاز فقط.</string>
     <string name="account_settings">الإعدادات</string>
     <string name="account_facilities">منشآتي</string>
     <string name="account_join_as_owner">انضم كصاحب منشأة</string>

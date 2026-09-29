@@ -6,7 +6,7 @@ from rest_framework import serializers
 from .models import BusinessHour, TemporaryClosure
 
 
-class BusinessHourInputSerializer(serializers.Serializer):
+class BusinessHourInputSerializer(serializers.Serializer[Any]):
     weekday = serializers.IntegerField(min_value=0, max_value=6)
     opensAt = serializers.TimeField(source="opens_at")
     closesAt = serializers.TimeField(source="closes_at")
@@ -15,7 +15,7 @@ class BusinessHourInputSerializer(serializers.Serializer):
     # translation lives here, at the boundary, where it belongs.
     sequence = serializers.IntegerField(source="sort_order", min_value=0, default=0)
 
-    def validate(self, attrs):
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         if attrs["opens_at"] == attrs["closes_at"]:
             raise serializers.ValidationError(
                 "Opening and closing time cannot be equal."
@@ -23,7 +23,7 @@ class BusinessHourInputSerializer(serializers.Serializer):
         return attrs
 
 
-class TemporaryClosureSerializer(serializers.ModelSerializer):
+class TemporaryClosureSerializer(serializers.ModelSerializer[TemporaryClosure]):
     startsAt = serializers.DateTimeField(source="starts_at")
     endsAt = serializers.DateTimeField(source="ends_at")
 
@@ -31,7 +31,7 @@ class TemporaryClosureSerializer(serializers.ModelSerializer):
         model = TemporaryClosure
         fields = ["id", "startsAt", "endsAt", "reason"]
 
-    def validate(self, attrs):
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         if attrs["ends_at"] <= attrs["starts_at"]:
             raise serializers.ValidationError(
                 {"endsAt": "Must be after startsAt."}

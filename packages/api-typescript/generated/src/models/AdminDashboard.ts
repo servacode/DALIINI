@@ -35,6 +35,30 @@ import {
  */
 export interface AdminDashboard {
     /**
+     * Facilities on a duty shift right now.
+     * @type {number}
+     * @memberof AdminDashboard
+     */
+    dutyActiveNow: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AdminDashboard
+     */
+    newUsers7d: number;
+    /**
+     * Facility problem reports still OPEN.
+     * @type {number}
+     * @memberof AdminDashboard
+     */
+    openReports: number;
+    /**
+     * Arabic, configuration-level warnings.
+     * @type {Array<string>}
+     * @memberof AdminDashboard
+     */
+    systemWarnings: Array<string>;
+    /**
      * 
      * @type {number}
      * @memberof AdminDashboard
@@ -70,6 +94,10 @@ export interface AdminDashboard {
  * Check if a given object implements the AdminDashboard interface.
  */
 export function instanceOfAdminDashboard(value: object): value is AdminDashboard {
+    if (!('dutyActiveNow' in value) || value['dutyActiveNow'] === undefined) return false;
+    if (!('newUsers7d' in value) || value['newUsers7d'] === undefined) return false;
+    if (!('openReports' in value) || value['openReports'] === undefined) return false;
+    if (!('systemWarnings' in value) || value['systemWarnings'] === undefined) return false;
     if (!('pendingReviews' in value) || value['pendingReviews'] === undefined) return false;
     if (!('reverification' in value) || value['reverification'] === undefined) return false;
     if (!('facilitiesByStatus' in value) || value['facilitiesByStatus'] === undefined) return false;
@@ -88,6 +116,10 @@ export function AdminDashboardFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
+        'dutyActiveNow': json['dutyActiveNow'],
+        'newUsers7d': json['newUsers7d'],
+        'openReports': json['openReports'],
+        'systemWarnings': json['systemWarnings'],
         'pendingReviews': json['pendingReviews'],
         'reverification': json['reverification'],
         'facilitiesByStatus': ((json['facilitiesByStatus'] as Array<any>).map(AdminFacilityStatusCountFromJSON)),
@@ -107,6 +139,10 @@ export function AdminDashboardToJSONTyped(value?: AdminDashboard | null, ignoreD
 
     return {
         
+        'dutyActiveNow': value['dutyActiveNow'],
+        'newUsers7d': value['newUsers7d'],
+        'openReports': value['openReports'],
+        'systemWarnings': value['systemWarnings'],
         'pendingReviews': value['pendingReviews'],
         'reverification': value['reverification'],
         'facilitiesByStatus': ((value['facilitiesByStatus'] as Array<any>).map(AdminFacilityStatusCountToJSON)),

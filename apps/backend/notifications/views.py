@@ -14,8 +14,10 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.authentication import AuthenticatedRequest
 from core.openapi import NOT_FOUND_404, VALIDATION_400, protected
 from core.pagination import CursorPage
+from core.throttles import PushTokenThrottle
 from search.views import PAGE_PARAMS
 from sessions.models import UserSession
 
@@ -46,6 +48,7 @@ def _session(request: Request) -> UserSession | None:
 
 
 class PushTokenView(APIView):
+    throttle_classes = [PushTokenThrottle]
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
@@ -59,7 +62,7 @@ class PushTokenView(APIView):
         request=PushTokenRegisterSerializer,
         responses={204: None, 400: VALIDATION_400, **protected()},
     )
-    def put(self, request: Request) -> Response:
+    def put(self, request: AuthenticatedRequest) -> Response:
         serializer = PushTokenRegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         register_push_token(
@@ -82,7 +85,7 @@ class PushTokenUnregisterView(APIView):
         request=PushTokenSerializer,
         responses={204: None, 400: VALIDATION_400, **protected()},
     )
-    def post(self, request: Request) -> Response:
+    def post(self, request: AuthenticatedRequest) -> Response:
         serializer = PushTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         deactivate_push_token(user=request.user, token=serializer.validated_data["token"])
@@ -112,7 +115,7 @@ class NotificationsView(APIView):
         parameters=PAGE_PARAMS,
         responses={200: NotificationPageSerializer, **protected()},
     )
-    def get(self, request: Request) -> Response:
+    def get(self, request: AuthenticatedRequest) -> Response:
         inbox = Notification.objects.filter(user=request.user).order_by("-created_at", "id")
         paginator = NotificationCursorPagination()
         page = paginator.paginate_queryset(inbox, request, view=self) or []
@@ -130,7 +133,7 @@ class NotificationsUnreadCountView(APIView):
         summary="How many of the caller's notifications are unread",
         responses={200: UnreadCountSerializer, **protected()},
     )
-    def get(self, request: Request) -> Response:
+    def get(self, request: AuthenticatedRequest) -> Response:
         return Response({"unreadCount": unread_notification_count(user=request.user)})
 
 
@@ -145,7 +148,7 @@ class NotificationReadView(APIView):
         request=None,
         responses={200: UnreadCountSerializer, **protected(), 404: NOT_FOUND_404},
     )
-    def post(self, request: Request, notification_id: str) -> Response:
+    def post(self, request: AuthenticatedRequest, notification_id: str) -> Response:
         try:
             mark_notification_read(user=request.user, notification_id=notification_id)
         except Notification.DoesNotExist:
@@ -163,6 +166,6 @@ class NotificationsReadAllView(APIView):
         request=None,
         responses={200: UnreadCountSerializer, **protected()},
     )
-    def post(self, request: Request) -> Response:
+    def post(self, request: AuthenticatedRequest) -> Response:
         mark_all_notifications_read(user=request.user)
         return Response({"unreadCount": 0})

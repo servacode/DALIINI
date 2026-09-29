@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
+from typing import Any
 
 
 class EventName(StrEnum):
@@ -31,7 +32,7 @@ class RealtimeEvent:
     version: int = 1
     occurred_at: datetime | None = None
 
-    def payload(self):
+    def payload(self) -> dict[str, Any]:
         occurred_at = self.occurred_at or datetime.now(UTC)
         return {
             "version": self.version,

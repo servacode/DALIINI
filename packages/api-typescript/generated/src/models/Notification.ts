@@ -62,7 +62,7 @@ export interface Notification {
      */
     destination: DestinationEnum;
     /**
-     * Set only when the destination is FACILITY.
+     * The facility the message is about: set for a FACILITY destination, and for an OWNER_FACILITIES notice about one of the owner's facilities (an hours reminder, a duty change); null otherwise.
      * @type {string}
      * @memberof Notification
      */

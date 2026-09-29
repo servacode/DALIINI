@@ -89,3 +89,39 @@ That needs product decisions no specification answers yet:
 Until those are answered, the field stays as it is and now says plainly that it takes an account
 id and that the server offers no lookup by phone. The alternative — shipping a search endpoint —
 would trade a UX annoyance for an enumeration vulnerability.
+
+## Register review — 2026-09-29 (design system, smart console, site, Android phase 3, push)
+
+EXT-001, EXT-003 and EXT-005 stand as written. EXT-004 is superseded in practice: the work now
+lives in `servacode/DALIINI`, and every CI job there is blocked by EXT-006 below.
+
+**EXT-002, narrowed.** What each credential now unlocks, with the code already in place:
+
+- **FCM**: the HTTP v1 transport exists (`notifications/providers/fcm_http.py`). Push reaches
+  Android phones as soon as `PUSH_PROVIDER=fcm`, `FCM_PROJECT_ID` and `FCM_SERVICE_ACCOUNT_JSON`
+  are set on the API and worker, and the four `DIRECTORY_FIREBASE_*` values are set for the
+  Android build (`docs/runbooks/staging-deploy.md`). Production refuses to start half-configured.
+- **OTP**: still the one blocker for owner sign-in in production. The provider is not chosen
+  (SMS gateway, WhatsApp, or both), and `accounts/otp.py` has no adapter for any real provider,
+  because its request format, sender registration and delivery receipts depend on the choice.
+  Once chosen, the adapter is a single function behind `deliver_otp`.
+- **Sentry**: optional; the backend and the Android app both stay silent without a DSN.
+
+### EXT-006 — GitHub Actions does not run any job for this repository
+
+**State:** OPEN. Every job of every workflow (CI, CodeQL, security) fails within three to four
+seconds, before its first step, with empty logs — on `main` as well as on the working branch.
+That points at the account (Actions billing, spending limit or runner access), not at the code.
+**Owner action:** check Settings → Billing and plans → Actions, and the repository's Actions
+permissions. **Meanwhile:** every gate is run locally before each push, with the same commands
+the workflows use.
+
+### Operator actions before launch (not blockers, recorded so they are not forgotten)
+
+- **Emergency numbers**: 110 (ambulance), 113 (fire) and 112 (police) were seeded from commonly
+  cited lists and carry `OPERATOR_VERIFICATION_REQUIRED`. The console shows them first, under a
+  warning, until someone confirms each against an official source («تأكيد صحة الرقم»).
+- **Contact form**: the site's form posts from the visitor's browser, so the API's
+  `CORS_ALLOWED_ORIGINS` must include the site's origin.
+- **App Links**: set `DIRECTORY_APP_LINK_HOST` to the site's host and `ANDROID_CERT_SHA256` on the
+  site to the Play signing key's fingerprint (`apps/android/play/app-links.md`).

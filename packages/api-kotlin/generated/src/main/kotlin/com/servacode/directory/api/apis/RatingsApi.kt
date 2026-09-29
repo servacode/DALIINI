@@ -15,11 +15,12 @@ interface RatingsApi {
     /**
      * DELETE api/v1/facilities/{facility_id}/rating/
      * Remove the caller&#39;s rating for a facility
-     * 
+     * Idempotent for a publicly visible facility; a facility that is not publicly visible answers 404, exactly as the write does.
      * Responses:
      *  - 204: No response body
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
      *
      * @param facilityId 
      * @return [Unit]

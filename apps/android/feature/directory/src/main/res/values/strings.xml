@@ -5,8 +5,6 @@
     <string name="directory_title">المنشآت</string>
     <string name="directory_filters">الفلاتر</string>
     <string name="directory_reset">إعادة ضبط</string>
-    <string name="directory_open_now">مفتوح الآن</string>
-    <string name="directory_duty_now">مناوب الآن</string>
     <string name="directory_province">المحافظة</string>
     <string name="directory_error">تعذر تحميل المنشآت</string>
     <string name="directory_empty">لا توجد منشآت</string>

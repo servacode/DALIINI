@@ -23,7 +23,6 @@ import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
 import com.servacode.directory.core.designsystem.DirectoryErrorState
-import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryTextButton
@@ -75,7 +74,6 @@ fun RatingsScreen(
                         DirectoryEmptyState(
                             title = RatingsCopy.EMPTY,
                             body = RatingsCopy.EMPTY_BODY,
-                            icon = DirectoryIcons.star,
                             modifier = Modifier.padding(top = Space.xxl),
                         )
                     }

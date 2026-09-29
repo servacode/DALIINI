@@ -4,9 +4,162 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**adminProvinceCitiesList**](AdminProvincesAPI.md#adminprovincecitieslist) | **GET** /api/v1/admin/provinces/{province_id}/cities/ | List every city of a province, active or not
+[**adminProvinceCityUpdate**](AdminProvincesAPI.md#adminprovincecityupdate) | **PUT** /api/v1/admin/provinces/{province_id}/cities/{city_id}/ | Activate or deactivate a city
+[**adminProvinceReadinessRetrieve**](AdminProvincesAPI.md#adminprovincereadinessretrieve) | **GET** /api/v1/admin/provinces/{province_id}/readiness/ | Launch checklist for a province
 [**adminProvinceUpdate**](AdminProvincesAPI.md#adminprovinceupdate) | **PUT** /api/v1/admin/provinces/{province_id}/ | Activate a province or change its order
 [**adminProvincesList**](AdminProvincesAPI.md#adminprovinceslist) | **GET** /api/v1/admin/provinces/ | List every province
 
+
+# **adminProvinceCitiesList**
+```swift
+    open class func adminProvinceCitiesList(provinceId: UUID, completion: @escaping (_ data: AdminCityAdminList?, _ error: Error?) -> Void)
+```
+
+List every city of a province, active or not
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let provinceId = 987 // UUID | 
+
+// List every city of a province, active or not
+AdminProvincesAPI.adminProvinceCitiesList(provinceId: provinceId) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **provinceId** | **UUID** |  | 
+
+### Return type
+
+[**AdminCityAdminList**](AdminCityAdminList.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminProvinceCityUpdate**
+```swift
+    open class func adminProvinceCityUpdate(cityId: UUID, provinceId: UUID, adminCityUpdateRequest: AdminCityUpdateRequest, completion: @escaping (_ data: AdminCityAdmin?, _ error: Error?) -> Void)
+```
+
+Activate or deactivate a city
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let cityId = 987 // UUID | 
+let provinceId = 987 // UUID | 
+let adminCityUpdateRequest = AdminCityUpdateRequest(active: false) // AdminCityUpdateRequest | 
+
+// Activate or deactivate a city
+AdminProvincesAPI.adminProvinceCityUpdate(cityId: cityId, provinceId: provinceId, adminCityUpdateRequest: adminCityUpdateRequest) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **cityId** | **UUID** |  | 
+ **provinceId** | **UUID** |  | 
+ **adminCityUpdateRequest** | [**AdminCityUpdateRequest**](AdminCityUpdateRequest.md) |  | 
+
+### Return type
+
+[**AdminCityAdmin**](AdminCityAdmin.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminProvinceReadinessRetrieve**
+```swift
+    open class func adminProvinceReadinessRetrieve(provinceId: UUID, completion: @escaping (_ data: AdminProvinceReadiness?, _ error: Error?) -> Void)
+```
+
+Launch checklist for a province
+
+PROVINCE_ACTIVE; CATEGORY_PUBLIC (at least one active category publicly enabled); MIN_ACTIVE_FACILITIES (platform setting `readiness.minActiveFacilities`, default 5); DUTY_COVERAGE (no DUTY_GAP in the next 14 days, or not applicable when the province offers no duty category); EMERGENCY_NUMBERS (an active national or provincial number).
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let provinceId = 987 // UUID | 
+
+// Launch checklist for a province
+AdminProvincesAPI.adminProvinceReadinessRetrieve(provinceId: provinceId) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **provinceId** | **UUID** |  | 
+
+### Return type
+
+[**AdminProvinceReadiness**](AdminProvinceReadiness.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **adminProvinceUpdate**
 ```swift

@@ -13,6 +13,8 @@ from locations.models import City, Neighborhood, Province
 
 RESOLVE = "/api/v1/public/locations/resolve/"
 
+Geography = tuple[Province, City, Neighborhood]
+
 
 def _square(longitude: float, latitude: float, side: float = 0.1) -> MultiPolygon:
     half = side / 2
@@ -27,7 +29,7 @@ def _square(longitude: float, latitude: float, side: float = 0.1) -> MultiPolygo
 
 
 @pytest.fixture
-def geography(db):
+def geography(db: None) -> Geography:
     province = Province.objects.create(
         code="raqqa-resolve",
         name_ar="الرقة",
@@ -49,7 +51,7 @@ def geography(db):
 
 
 @pytest.mark.django_db
-def test_a_point_inside_a_neighbourhood_is_named_by_it(geography):
+def test_a_point_inside_a_neighbourhood_is_named_by_it(geography: Geography) -> None:
     province, city, neighborhood = geography
     body = APIClient().get(RESOLVE, {"latitude": 35.9600, "longitude": 39.0300}).json()
 
@@ -61,7 +63,9 @@ def test_a_point_inside_a_neighbourhood_is_named_by_it(geography):
 
 
 @pytest.mark.django_db
-def test_a_point_in_the_city_but_no_neighbourhood_is_named_by_the_city(geography):
+def test_a_point_in_the_city_but_no_neighbourhood_is_named_by_the_city(
+    geography: Geography
+) -> None:
     province, city, _ = geography
     body = APIClient().get(RESOLVE, {"latitude": 35.9000, "longitude": 38.9500}).json()
 
@@ -74,7 +78,7 @@ def test_a_point_in_the_city_but_no_neighbourhood_is_named_by_the_city(geography
 
 
 @pytest.mark.django_db
-def test_a_city_of_its_own_name_is_the_finer_half_of_the_label(geography):
+def test_a_city_of_its_own_name_is_the_finer_half_of_the_label(geography: Geography) -> None:
     """The whole point of the second half: a town that is not the province's own capital."""
     province, _, _ = geography
     tell_abyad = City.objects.create(
@@ -92,7 +96,7 @@ def test_a_city_of_its_own_name_is_the_finer_half_of_the_label(geography):
 
 
 @pytest.mark.django_db
-def test_a_neighbourhood_names_the_place_ahead_of_the_city_it_is_in(geography):
+def test_a_neighbourhood_names_the_place_ahead_of_the_city_it_is_in(geography: Geography) -> None:
     """Two halves, never three: the finest place the platform knows, and the province."""
     province, _, _ = geography
     outskirts = City.objects.create(
@@ -113,7 +117,9 @@ def test_a_neighbourhood_names_the_place_ahead_of_the_city_it_is_in(geography):
 
 
 @pytest.mark.django_db
-def test_a_point_outside_every_boundary_falls_back_to_the_nearest_province(geography):
+def test_a_point_outside_every_boundary_falls_back_to_the_nearest_province(
+    geography: Geography
+) -> None:
     # Sixty kilometres north-east of the boundaries, inside no city the platform has seeded.
     body = APIClient().get(RESOLVE, {"latitude": 36.5000, "longitude": 39.5000}).json()
 
@@ -125,7 +131,7 @@ def test_a_point_outside_every_boundary_falls_back_to_the_nearest_province(geogr
 
 
 @pytest.mark.django_db
-def test_a_point_in_another_country_resolves_to_nothing(geography):
+def test_a_point_in_another_country_resolves_to_nothing(geography: Geography) -> None:
     body = APIClient().get(RESOLVE, {"latitude": 48.8566, "longitude": 2.3522}).json()
 
     assert body["province"] is None
@@ -134,7 +140,7 @@ def test_a_point_in_another_country_resolves_to_nothing(geography):
 
 
 @pytest.mark.django_db
-def test_an_inactive_province_takes_its_boundaries_out_of_the_answer(geography):
+def test_an_inactive_province_takes_its_boundaries_out_of_the_answer(geography: Geography) -> None:
     province, _, _ = geography
     province.active = False
     province.save(update_fields=["active"])
@@ -149,9 +155,10 @@ def test_an_inactive_province_takes_its_boundaries_out_of_the_answer(geography):
 
 
 @pytest.mark.django_db
-def test_a_missing_or_impossible_coordinate_is_refused(geography):
+def test_a_missing_or_impossible_coordinate_is_refused(geography: Geography) -> None:
     client = APIClient()
 
     assert client.get(RESOLVE).status_code == 400
-    assert client.get(RESOLVE, {"latitude": 35.9, "longitude": "east"}).status_code == 400
+    not_a_number: dict[str, float | str] = {"latitude": 35.9, "longitude": "east"}
+    assert client.get(RESOLVE, not_a_number).status_code == 400
     assert client.get(RESOLVE, {"latitude": 99.0, "longitude": 39.0}).status_code == 400

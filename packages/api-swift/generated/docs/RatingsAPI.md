@@ -15,6 +15,8 @@ Method | HTTP request | Description
 
 Remove the caller's rating for a facility
 
+Idempotent for a publicly visible facility; a facility that is not publicly visible answers 404, exactly as the write does.
+
 ### Example
 ```swift
 // The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new

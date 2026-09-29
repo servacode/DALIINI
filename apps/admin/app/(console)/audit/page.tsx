@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { ExportButton } from "../../../components/export-button";
 import {
   DiffViewer,
   EmptyState,
@@ -46,13 +47,26 @@ export default function AuditPage() {
 
   return (
     <div className="stack">
-      <PageHeader title="سجل التدقيق" description="كل تغيير إداري، ومن نفّذه، ومتى." />
+      <PageHeader
+        title="سجل التدقيق"
+        description="كل تغيير إداري، ومن نفّذه، ومتى."
+        actions={
+          <ExportButton
+            name="audit"
+            params={filters}
+            label="تصدير النتائج إلى إكسل"
+            testId="export-audit"
+          />
+        }
+      />
       <FilterBar
         fields={[
           { name: "action", label: "الإجراء", placeholder: "facility.suspended" },
           { name: "resource", label: "العنصر", placeholder: "النوع أو المعرّف" },
           { name: "actor", label: "المنفّذ", placeholder: "معرّف المستخدم" },
           { name: "requestId", label: "معرّف الطلب", placeholder: "UUID" },
+          { name: "from", label: "من تاريخ", type: "date" },
+          { name: "to", label: "إلى تاريخ", type: "date" },
         ]}
         values={filters}
         onApply={setFilters}

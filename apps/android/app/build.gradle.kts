@@ -1,3 +1,5 @@
+import java.io.File
+
 plugins {
     id("serva.android.application")
     id("serva.android.compose")
@@ -60,6 +62,25 @@ val localRealtimeWebSocketUrl = providers.gradleProperty("DIRECTORY_LOCAL_REALTI
     .orElse(providers.environmentVariable("DIRECTORY_LOCAL_REALTIME_WS_URL"))
     .orElse("ws://10.0.2.2:8000/ws/v1/directory/")
 
+// The site's host, for App Links: https://<host>/f/{id}, /duty and /{province} open the app once
+// the site publishes /.well-known/assetlinks.json for this package (play/app-links.md). No scheme,
+// no path. The default is a reserved, never-resolving name (RFC 2606), so an unconfigured build
+// claims no real site; a Play release refuses it (validatePlayRelease).
+val appLinkHost = providers.gradleProperty("DIRECTORY_APP_LINK_HOST")
+    .orElse(providers.environmentVariable("DIRECTORY_APP_LINK_HOST"))
+    .orElse("root-domain.invalid")
+val stagingAppLinkHost = providers.gradleProperty("DIRECTORY_STAGING_APP_LINK_HOST")
+    .orElse(providers.environmentVariable("DIRECTORY_STAGING_APP_LINK_HOST"))
+    .orElse("staging.root-domain.invalid")
+val localAppLinkHost = providers.gradleProperty("DIRECTORY_LOCAL_APP_LINK_HOST")
+    .orElse(providers.environmentVariable("DIRECTORY_LOCAL_APP_LINK_HOST"))
+    .orElse(stagingAppLinkHost)
+
+// Crash reporting. Never committed; without a DSN the Sentry SDK is not initialised at all.
+val sentryDsn = providers.gradleProperty("DIRECTORY_SENTRY_DSN")
+    .orElse(providers.environmentVariable("DIRECTORY_SENTRY_DSN"))
+    .orElse("")
+
 // Firebase client configuration for push. Never committed: it comes from Gradle properties or
 // the environment, and when it is absent the app runs with push off.
 fun firebase(name: String) = providers.gradleProperty(name)
@@ -115,6 +136,7 @@ android {
         buildConfigField("String", "FIREBASE_APPLICATION_ID", "\"${firebaseApplicationId.get()}\"")
         buildConfigField("String", "FIREBASE_API_KEY", "\"${firebaseApiKey.get()}\"")
         buildConfigField("String", "FIREBASE_SENDER_ID", "\"${firebaseSenderId.get()}\"")
+        buildConfigField("String", "SENTRY_DSN", "\"${sentryDsn.get()}\"")
     }
 
     // Where the app finds its backend. Only `local` may use cleartext, and only towards the
@@ -130,6 +152,8 @@ android {
             buildConfigField("String", "MAP_STYLE_URL", "\"${localMapStyleUrl.get()}\"")
             buildConfigField("String", "ROUTING_BASE_URL", "\"${localRoutingBaseUrl.get()}\"")
             buildConfigField("String", "REALTIME_WS_URL", "\"${localRealtimeWebSocketUrl.get()}\"")
+            buildConfigField("String", "APP_LINK_HOST", "\"${localAppLinkHost.get()}\"")
+            manifestPlaceholders["appLinkHost"] = localAppLinkHost.get()
             buildConfigField("boolean", "ALLOW_CLEARTEXT", "true")
         }
         create("staging") {
@@ -139,6 +163,8 @@ android {
             buildConfigField("String", "API_BASE_URL", "\"${stagingApiBaseUrl.get()}\"")
             buildConfigField("String", "MAP_STYLE_URL", "\"${stagingMapStyleUrl.get()}\"")
             buildConfigField("String", "REALTIME_WS_URL", "\"${stagingRealtimeWebSocketUrl.get()}\"")
+            buildConfigField("String", "APP_LINK_HOST", "\"${stagingAppLinkHost.get()}\"")
+            manifestPlaceholders["appLinkHost"] = stagingAppLinkHost.get()
             buildConfigField("boolean", "ALLOW_CLEARTEXT", "false")
         }
         create("production") {
@@ -146,6 +172,8 @@ android {
             buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.get()}\"")
             buildConfigField("String", "MAP_STYLE_URL", "\"${mapStyleUrl.get()}\"")
             buildConfigField("String", "REALTIME_WS_URL", "\"${realtimeWebSocketUrl.get()}\"")
+            buildConfigField("String", "APP_LINK_HOST", "\"${appLinkHost.get()}\"")
+            manifestPlaceholders["appLinkHost"] = appLinkHost.get()
             buildConfigField("boolean", "ALLOW_CLEARTEXT", "false")
         }
     }
@@ -158,6 +186,14 @@ android {
         }
         getByName("release") {
             signingConfig = signingConfigs.getByName("release")
+            // R8 shrinks, optimises and obfuscates the release build. What reflection still
+            // needs is kept by the libraries' own consumer rules and by proguard-rules.pro.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 }
@@ -201,23 +237,50 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.maplibre.android)
     implementation(libs.firebase.messaging)
+    // The «المناوب الآن» home-screen widget and its half-hourly refresh.
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material3)
+    implementation(libs.androidx.work.runtime)
+    // Crash reporting, initialised only with a DSN (CrashReporting).
+    implementation(libs.sentry.android)
+    // The widget keeps its last answer as JSON (DutyWidgetState).
+    implementation(libs.kotlinx.serialization.json)
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(libs.junit)
 }
 
 
-val validatePlayRelease by tasks.registering {
+val validatePlayRelease = tasks.register("validatePlayRelease") {
     group = "verification"
     description = "Fails closed when Play release configuration is incomplete or unsafe."
+    // Everything the check reads is taken here, as providers, so the action below refers to
+    // nothing of this script: Gradle's configuration cache (gradle.properties) cannot store a
+    // task action that reaches back into the build script, and a release build would stop on it.
+    val endpoints = mapOf(
+        "DIRECTORY_API_BASE_URL" to apiBaseUrl,
+        "DIRECTORY_MAP_STYLE_URL" to mapStyleUrl,
+        "DIRECTORY_ROUTING_BASE_URL" to routingBaseUrl,
+        "DIRECTORY_GEOCODING_BASE_URL" to geocodingBaseUrl,
+        "DIRECTORY_REALTIME_WS_URL" to realtimeWebSocketUrl,
+    )
+    val signing = mapOf(
+        "ANDROID_UPLOAD_KEYSTORE_PATH" to uploadKeystorePath,
+        "ANDROID_UPLOAD_KEY_ALIAS" to uploadKeyAlias,
+        "ANDROID_UPLOAD_STORE_PASSWORD" to uploadStorePassword,
+        "ANDROID_UPLOAD_KEY_PASSWORD" to uploadKeyPassword,
+    )
+    // Without these the app runs with push off: no duty reminders, no application decisions.
+    val firebaseClient = mapOf(
+        "DIRECTORY_FIREBASE_PROJECT_ID" to firebaseProjectId,
+        "DIRECTORY_FIREBASE_APPLICATION_ID" to firebaseApplicationId,
+        "DIRECTORY_FIREBASE_API_KEY" to firebaseApiKey,
+        "DIRECTORY_FIREBASE_SENDER_ID" to firebaseSenderId,
+    )
+    val linkHost = appLinkHost
+    val keystorePath = uploadKeystorePath
     doLast {
-        val endpoints = mapOf(
-            "DIRECTORY_API_BASE_URL" to apiBaseUrl.get(),
-            "DIRECTORY_MAP_STYLE_URL" to mapStyleUrl.get(),
-            "DIRECTORY_ROUTING_BASE_URL" to routingBaseUrl.get(),
-            "DIRECTORY_GEOCODING_BASE_URL" to geocodingBaseUrl.get(),
-            "DIRECTORY_REALTIME_WS_URL" to realtimeWebSocketUrl.get(),
-        )
-        endpoints.forEach { (name, value) ->
+        endpoints.forEach { (name, provider) ->
+            val value = provider.get()
             require(!value.contains("<") && !value.contains(">")) {
                 "$name still contains a placeholder"
             }
@@ -227,16 +290,22 @@ val validatePlayRelease by tasks.registering {
                 "$name must not use a local endpoint"
             }
         }
-        val requiredSigning = mapOf(
-            "ANDROID_UPLOAD_KEYSTORE_PATH" to uploadKeystorePath.orNull,
-            "ANDROID_UPLOAD_KEY_ALIAS" to uploadKeyAlias.orNull,
-            "ANDROID_UPLOAD_STORE_PASSWORD" to uploadStorePassword.orNull,
-            "ANDROID_UPLOAD_KEY_PASSWORD" to uploadKeyPassword.orNull,
-        )
-        requiredSigning.forEach { (name, value) ->
-            require(!value.isNullOrBlank()) { "$name is required for a Play release" }
+        // The site the App Links claim: a host, never the unconfigured default.
+        val host = linkHost.get()
+        require(host.isNotBlank() && !host.endsWith(".invalid") && !host.contains("<")) {
+            "DIRECTORY_APP_LINK_HOST must be the site's real host"
         }
-        require(file(uploadKeystorePath.get()).isFile) {
+        require(Regex("^[a-z0-9.-]+$").matches(host)) {
+            "DIRECTORY_APP_LINK_HOST must be a host only (no scheme or path)"
+        }
+        signing.forEach { (name, provider) ->
+            require(!provider.orNull.isNullOrBlank()) { "$name is required for a Play release" }
+        }
+        firebaseClient.forEach { (name, provider) ->
+            val value = provider.get()
+            require(value.isNotBlank() && !value.contains("<")) { "$name is required for a Play release" }
+        }
+        require(File(keystorePath.get()).isFile) {
             "ANDROID_UPLOAD_KEYSTORE_PATH must point to an existing file outside the repository"
         }
     }

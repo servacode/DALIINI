@@ -221,12 +221,13 @@ open class AdminUsersAPI {
      Search user accounts
      
      - parameter q: (query) Free text matched against the account name and phone number. (optional)
+     - parameter role: (query) Admin role id or code; keeps accounts holding that role actively. The value &#x60;any&#x60; keeps every operator, &#x60;none&#x60; every non-operator. (optional)
      - parameter status: (query) &#x60;active&#x60; keeps active accounts; any other value keeps blocked accounts. (optional)
      - returns: AdminUserList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminUsersList(q: String? = nil, status: String? = nil) async throws -> AdminUserList {
-        return try await adminUsersListWithRequestBuilder(q: q, status: status).execute().body
+    open class func adminUsersList(q: String? = nil, role: String? = nil, status: String? = nil) async throws -> AdminUserList {
+        return try await adminUsersListWithRequestBuilder(q: q, role: role, status: status).execute().body
     }
 
     /**
@@ -237,10 +238,11 @@ open class AdminUsersAPI {
        - type: http
        - name: bearerAccessToken
      - parameter q: (query) Free text matched against the account name and phone number. (optional)
+     - parameter role: (query) Admin role id or code; keeps accounts holding that role actively. The value &#x60;any&#x60; keeps every operator, &#x60;none&#x60; every non-operator. (optional)
      - parameter status: (query) &#x60;active&#x60; keeps active accounts; any other value keeps blocked accounts. (optional)
      - returns: RequestBuilder<AdminUserList> 
      */
-    open class func adminUsersListWithRequestBuilder(q: String? = nil, status: String? = nil) -> RequestBuilder<AdminUserList> {
+    open class func adminUsersListWithRequestBuilder(q: String? = nil, role: String? = nil, status: String? = nil) -> RequestBuilder<AdminUserList> {
         let localVariablePath = "/api/v1/admin/users/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -248,6 +250,7 @@ open class AdminUsersAPI {
         var localVariableUrlComponents = URLComponents(string: localVariableURLString)
         localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
             "q": (wrappedValue: q?.encodeToJSON(), isExplode: true),
+            "role": (wrappedValue: role?.encodeToJSON(), isExplode: true),
             "status": (wrappedValue: status?.encodeToJSON(), isExplode: true),
         ])
 

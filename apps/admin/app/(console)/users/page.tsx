@@ -26,6 +26,9 @@ type AdminUser = Readonly<{
 export default function UsersPage() {
   const [filters, setFilters] = useState<Record<string, string>>({ q: "", status: "" });
   const users = useResource<{ items: AdminUser[] }>("users", filters);
+  // Roles sit behind their own permission; without it the filter still offers "any role"
+  // and "no role", which the backend answers from the user table alone.
+  const roles = useResource<{ items: { id: string; code: string; name: string }[] }>("roles");
 
   const columns: readonly Column<AdminUser>[] = [
     {
@@ -64,6 +67,16 @@ export default function UsersPage() {
             options: [
               { value: "active", label: "فعّال" },
               { value: "blocked", label: "محظور" },
+            ],
+          },
+          {
+            name: "role",
+            label: "الدور",
+            type: "select",
+            options: [
+              { value: "any", label: "أي دور إداري" },
+              { value: "none", label: "بلا دور إداري" },
+              ...(roles.data?.items ?? []).map((role) => ({ value: role.code, label: role.name })),
             ],
           },
         ]}

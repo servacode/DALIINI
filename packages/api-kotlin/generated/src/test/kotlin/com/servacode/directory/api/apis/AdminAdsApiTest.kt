@@ -19,6 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.AdminAdsApi
+import com.servacode.directory.api.models.AdminAdImage
 import com.servacode.directory.api.models.AdminAdvertisementList
 import com.servacode.directory.api.models.AdminAdvertisementRequest
 import com.servacode.directory.api.models.AdminAdvertisementUpdateRequest
@@ -43,6 +44,14 @@ class AdminAdsApiTest : ShouldSpec() {
             // uncomment below to test adminAdDelete
             //val advertisementId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //apiInstance.adminAdDelete(advertisementId)
+        }
+
+        // to test adminAdImageUpload
+        should("test adminAdImageUpload") {
+            // uncomment below to test adminAdImageUpload
+            //val file : java.io.File = BINARY_DATA_HERE // java.io.File | JPEG, PNG or WebP, at most 2 MB, 100-4096 px a side.
+            //val result : AdminAdImage = apiInstance.adminAdImageUpload(file)
+            //result shouldBe ("TODO")
         }
 
         // to test adminAdUpdate

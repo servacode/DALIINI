@@ -46,27 +46,68 @@ Class | Method | HTTP request | Description
 *AccountAPI* | [**accountRatingsList**](docs/AccountAPI.md#accountratingslist) | **GET** /api/v1/account/ratings/ | List the ratings written by the caller
 *AdminAdsAPI* | [**adminAdCreate**](docs/AdminAdsAPI.md#adminadcreate) | **POST** /api/v1/admin/ads/ | Create an advertisement
 *AdminAdsAPI* | [**adminAdDelete**](docs/AdminAdsAPI.md#adminaddelete) | **DELETE** /api/v1/admin/ads/{advertisement_id}/ | Delete an advertisement
+*AdminAdsAPI* | [**adminAdImageUpload**](docs/AdminAdsAPI.md#adminadimageupload) | **POST** /api/v1/admin/ads/images/ | Upload an advertisement image
 *AdminAdsAPI* | [**adminAdUpdate**](docs/AdminAdsAPI.md#adminadupdate) | **PUT** /api/v1/admin/ads/{advertisement_id}/ | Edit an advertisement, its schedule or its activation
 *AdminAdsAPI* | [**adminAdsList**](docs/AdminAdsAPI.md#adminadslist) | **GET** /api/v1/admin/ads/ | List advertisements
 *AdminAnalyticsAPI* | [**adminAnalyticsRetrieve**](docs/AdminAnalyticsAPI.md#adminanalyticsretrieve) | **GET** /api/v1/admin/analytics/ | Operational KPIs
+*AdminAnalyticsAPI* | [**adminAnalyticsStaffRetrieve**](docs/AdminAnalyticsAPI.md#adminanalyticsstaffretrieve) | **GET** /api/v1/admin/analytics/staff/ | Reviewer performance in a period
 *AdminAuditAPI* | [**adminAuditList**](docs/AdminAuditAPI.md#adminauditlist) | **GET** /api/v1/admin/audit/ | Search the audit trail
+*AdminContentAPI* | [**adminContactMessageHandle**](docs/AdminContentAPI.md#admincontactmessagehandle) | **POST** /api/v1/admin/contact-messages/{message_id}/handle/ | Mark a contact message handled
+*AdminContentAPI* | [**adminContactMessagesList**](docs/AdminContentAPI.md#admincontactmessageslist) | **GET** /api/v1/admin/contact-messages/ | The contact inbox, newest first
+*AdminContentAPI* | [**adminContentPageCreate**](docs/AdminContentAPI.md#admincontentpagecreate) | **POST** /api/v1/admin/content/pages/ | Create a content page
+*AdminContentAPI* | [**adminContentPageDelete**](docs/AdminContentAPI.md#admincontentpagedelete) | **DELETE** /api/v1/admin/content/pages/{slug}/ | Delete a content page and all its versions
+*AdminContentAPI* | [**adminContentPageRetrieve**](docs/AdminContentAPI.md#admincontentpageretrieve) | **GET** /api/v1/admin/content/pages/{slug}/ | Retrieve a content page with its newest words
+*AdminContentAPI* | [**adminContentPageUpdate**](docs/AdminContentAPI.md#admincontentpageupdate) | **PUT** /api/v1/admin/content/pages/{slug}/ | Edit, publish or unpublish a content page
+*AdminContentAPI* | [**adminContentPagesList**](docs/AdminContentAPI.md#admincontentpageslist) | **GET** /api/v1/admin/content/pages/ | List content pages, including the built-in legal pages
+*AdminContentAPI* | [**adminEmergencyNumberCreate**](docs/AdminContentAPI.md#adminemergencynumbercreate) | **POST** /api/v1/admin/emergency-numbers/ | Add an emergency number
+*AdminContentAPI* | [**adminEmergencyNumberDelete**](docs/AdminContentAPI.md#adminemergencynumberdelete) | **DELETE** /api/v1/admin/emergency-numbers/{number_id}/ | Delete an emergency number
+*AdminContentAPI* | [**adminEmergencyNumberUpdate**](docs/AdminContentAPI.md#adminemergencynumberupdate) | **PUT** /api/v1/admin/emergency-numbers/{number_id}/ | Edit, move, reorder or deactivate an emergency number
+*AdminContentAPI* | [**adminEmergencyNumbersList**](docs/AdminContentAPI.md#adminemergencynumberslist) | **GET** /api/v1/admin/emergency-numbers/ | List emergency numbers, national and provincial, active or not
+*AdminContentAPI* | [**adminFaqEntriesList**](docs/AdminContentAPI.md#adminfaqentrieslist) | **GET** /api/v1/admin/content/faq/ | List FAQ entries, published or not
+*AdminContentAPI* | [**adminFaqEntryCreate**](docs/AdminContentAPI.md#adminfaqentrycreate) | **POST** /api/v1/admin/content/faq/ | Add a FAQ entry
+*AdminContentAPI* | [**adminFaqEntryDelete**](docs/AdminContentAPI.md#adminfaqentrydelete) | **DELETE** /api/v1/admin/content/faq/{entry_id}/ | Delete a FAQ entry
+*AdminContentAPI* | [**adminFaqEntryUpdate**](docs/AdminContentAPI.md#adminfaqentryupdate) | **PUT** /api/v1/admin/content/faq/{entry_id}/ | Edit, reorder, publish or unpublish a FAQ entry
+*AdminDutyAPI* | [**adminDutyRosterRetrieve**](docs/AdminDutyAPI.md#admindutyrosterretrieve) | **GET** /api/v1/admin/duty/ | The duty roster of a province (or city), day by day
+*AdminDutyAPI* | [**adminDutyShiftCreate**](docs/AdminDutyAPI.md#admindutyshiftcreate) | **POST** /api/v1/admin/duty/ | Put a duty shift on a pharmacy&#39;s roster
+*AdminDutyAPI* | [**adminDutyShiftDelete**](docs/AdminDutyAPI.md#admindutyshiftdelete) | **DELETE** /api/v1/admin/duty/{shift_id}/ | Cancel a duty shift
+*AdminDutyAPI* | [**adminDutyShiftUpdate**](docs/AdminDutyAPI.md#admindutyshiftupdate) | **PATCH** /api/v1/admin/duty/{shift_id}/ | Move a duty shift
+*AdminExportsAPI* | [**adminExportAuditCsv**](docs/AdminExportsAPI.md#adminexportauditcsv) | **GET** /api/v1/admin/exports/audit.csv | Export the audit trail as CSV
+*AdminExportsAPI* | [**adminExportFacilitiesCsv**](docs/AdminExportsAPI.md#adminexportfacilitiescsv) | **GET** /api/v1/admin/exports/facilities.csv | Export the facility list as CSV
+*AdminExportsAPI* | [**adminExportReportsCsv**](docs/AdminExportsAPI.md#adminexportreportscsv) | **GET** /api/v1/admin/exports/reports.csv | Export problem reports as CSV
 *AdminFacilitiesAPI* | [**adminFacilitiesList**](docs/AdminFacilitiesAPI.md#adminfacilitieslist) | **GET** /api/v1/admin/facilities/ | List facilities for operations
 *AdminFacilitiesAPI* | [**adminFacilityClose**](docs/AdminFacilitiesAPI.md#adminfacilityclose) | **POST** /api/v1/admin/facilities/{facility_id}/close/ | Close a facility
 *AdminFacilitiesAPI* | [**adminFacilityReactivate**](docs/AdminFacilitiesAPI.md#adminfacilityreactivate) | **POST** /api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility
 *AdminFacilitiesAPI* | [**adminFacilityRetrieve**](docs/AdminFacilitiesAPI.md#adminfacilityretrieve) | **GET** /api/v1/admin/facilities/{facility_id}/ | Retrieve one facility
 *AdminFacilitiesAPI* | [**adminFacilitySuspend**](docs/AdminFacilitiesAPI.md#adminfacilitysuspend) | **POST** /api/v1/admin/facilities/{facility_id}/suspend/ | Suspend a facility
+*AdminFacilitiesAPI* | [**adminFacilityTimelineRetrieve**](docs/AdminFacilitiesAPI.md#adminfacilitytimelineretrieve) | **GET** /api/v1/admin/facilities/{facility_id}/timeline/ | Everything that happened to a facility, newest first
+*AdminNotificationsAPI* | [**adminNotificationBroadcast**](docs/AdminNotificationsAPI.md#adminnotificationbroadcast) | **POST** /api/v1/admin/notifications/broadcast/ | Send a notification to many users
+*AdminNotificationsAPI* | [**adminNotificationBroadcastsList**](docs/AdminNotificationsAPI.md#adminnotificationbroadcastslist) | **GET** /api/v1/admin/notifications/broadcasts/ | Broadcast history, newest first
+*AdminProvincesAPI* | [**adminProvinceCitiesList**](docs/AdminProvincesAPI.md#adminprovincecitieslist) | **GET** /api/v1/admin/provinces/{province_id}/cities/ | List every city of a province, active or not
+*AdminProvincesAPI* | [**adminProvinceCityUpdate**](docs/AdminProvincesAPI.md#adminprovincecityupdate) | **PUT** /api/v1/admin/provinces/{province_id}/cities/{city_id}/ | Activate or deactivate a city
+*AdminProvincesAPI* | [**adminProvinceReadinessRetrieve**](docs/AdminProvincesAPI.md#adminprovincereadinessretrieve) | **GET** /api/v1/admin/provinces/{province_id}/readiness/ | Launch checklist for a province
 *AdminProvincesAPI* | [**adminProvinceUpdate**](docs/AdminProvincesAPI.md#adminprovinceupdate) | **PUT** /api/v1/admin/provinces/{province_id}/ | Activate a province or change its order
 *AdminProvincesAPI* | [**adminProvincesList**](docs/AdminProvincesAPI.md#adminprovinceslist) | **GET** /api/v1/admin/provinces/ | List every province
+*AdminReportsAPI* | [**adminReportDismiss**](docs/AdminReportsAPI.md#adminreportdismiss) | **POST** /api/v1/admin/reports/{report_id}/dismiss/ | Dismiss a report
+*AdminReportsAPI* | [**adminReportResolve**](docs/AdminReportsAPI.md#adminreportresolve) | **POST** /api/v1/admin/reports/{report_id}/resolve/ | Mark a report resolved
+*AdminReportsAPI* | [**adminReportsBulkDecide**](docs/AdminReportsAPI.md#adminreportsbulkdecide) | **POST** /api/v1/admin/reports/bulk/ | Resolve or dismiss many reports at once
+*AdminReportsAPI* | [**adminReportsList**](docs/AdminReportsAPI.md#adminreportslist) | **GET** /api/v1/admin/reports/ | List facility problem reports
 *AdminReviewsAPI* | [**adminEvidenceContentRetrieve**](docs/AdminReviewsAPI.md#adminevidencecontentretrieve) | **GET** /api/v1/admin/evidence/{evidence_id}/content/ | Stream one piece of private verification evidence
+*AdminReviewsAPI* | [**adminRejectionTemplateCreate**](docs/AdminReviewsAPI.md#adminrejectiontemplatecreate) | **POST** /api/v1/admin/rejection-templates/ | Create a rejection template
+*AdminReviewsAPI* | [**adminRejectionTemplateDelete**](docs/AdminReviewsAPI.md#adminrejectiontemplatedelete) | **DELETE** /api/v1/admin/rejection-templates/{template_id}/ | Delete a rejection template
+*AdminReviewsAPI* | [**adminRejectionTemplateUpdate**](docs/AdminReviewsAPI.md#adminrejectiontemplateupdate) | **PUT** /api/v1/admin/rejection-templates/{template_id}/ | Edit, reorder or retire a rejection template
+*AdminReviewsAPI* | [**adminRejectionTemplatesList**](docs/AdminReviewsAPI.md#adminrejectiontemplateslist) | **GET** /api/v1/admin/rejection-templates/ | List rejection templates
 *AdminReviewsAPI* | [**adminReviewApprove**](docs/AdminReviewsAPI.md#adminreviewapprove) | **POST** /api/v1/admin/applications/{application_id}/approve/ | Approve an application
 *AdminReviewsAPI* | [**adminReviewReject**](docs/AdminReviewsAPI.md#adminreviewreject) | **POST** /api/v1/admin/applications/{application_id}/reject/ | Reject an application
 *AdminReviewsAPI* | [**adminReviewRetrieve**](docs/AdminReviewsAPI.md#adminreviewretrieve) | **GET** /api/v1/admin/applications/{application_id}/ | Retrieve one application with its review context
 *AdminReviewsAPI* | [**adminReviewsList**](docs/AdminReviewsAPI.md#adminreviewslist) | **GET** /api/v1/admin/applications/ | List facility applications awaiting or past review
 *AdminSettingsAPI* | [**adminSettingWrite**](docs/AdminSettingsAPI.md#adminsettingwrite) | **PUT** /api/v1/admin/settings/ | Create or update a typed platform setting
 *AdminSettingsAPI* | [**adminSettingsList**](docs/AdminSettingsAPI.md#adminsettingslist) | **GET** /api/v1/admin/settings/ | List typed platform settings
+*AdminSystemAPI* | [**adminAlertsList**](docs/AdminSystemAPI.md#adminalertslist) | **GET** /api/v1/admin/alerts/ | Smart alerts: problems worth acting on now
 *AdminSystemAPI* | [**adminDashboardRetrieve**](docs/AdminSystemAPI.md#admindashboardretrieve) | **GET** /api/v1/admin/dashboard/ | Operational counters for the review desk
 *AdminSystemAPI* | [**adminMeRetrieve**](docs/AdminSystemAPI.md#adminmeretrieve) | **GET** /api/v1/admin/me/ | The current operator and the permissions they hold
+*AdminSystemAPI* | [**adminSearchRetrieve**](docs/AdminSystemAPI.md#adminsearchretrieve) | **GET** /api/v1/admin/search/ | Search facilities, users and applications at once
 *AdminSystemAPI* | [**adminSystemStatusRetrieve**](docs/AdminSystemAPI.md#adminsystemstatusretrieve) | **GET** /api/v1/admin/system/status/ | Runtime and configuration status
+*AdminSystemAPI* | [**adminTasksRetrieve**](docs/AdminSystemAPI.md#admintasksretrieve) | **GET** /api/v1/admin/tasks/ | The operator&#39;s queue: what is waiting, oldest first
 *AdminTaxonomyAPI* | [**adminCategoriesList**](docs/AdminTaxonomyAPI.md#admincategorieslist) | **GET** /api/v1/admin/categories/ | List categories
 *AdminTaxonomyAPI* | [**adminCategoryCapabilitiesReplace**](docs/AdminTaxonomyAPI.md#admincategorycapabilitiesreplace) | **PUT** /api/v1/admin/categories/{category_id}/capabilities/ | Set the capability flags of a category
 *AdminTaxonomyAPI* | [**adminCategoryCreate**](docs/AdminTaxonomyAPI.md#admincategorycreate) | **POST** /api/v1/admin/categories/create/ | Create a category
@@ -74,7 +115,15 @@ Class | Method | HTTP request | Description
 *AdminTaxonomyAPI* | [**adminCategoryGroupUpdate**](docs/AdminTaxonomyAPI.md#admincategorygroupupdate) | **PUT** /api/v1/admin/category-groups/{group_id}/ | Rename, reorder or deactivate a category group
 *AdminTaxonomyAPI* | [**adminCategoryGroupsList**](docs/AdminTaxonomyAPI.md#admincategorygroupslist) | **GET** /api/v1/admin/category-groups/ | List category groups
 *AdminTaxonomyAPI* | [**adminCategoryProvinceReplace**](docs/AdminTaxonomyAPI.md#admincategoryprovincereplace) | **PUT** /api/v1/admin/categories/{category_id}/provinces/ | Set the per-province switches of a category
+*AdminTaxonomyAPI* | [**adminCategoryServiceTagCreate**](docs/AdminTaxonomyAPI.md#admincategoryservicetagcreate) | **POST** /api/v1/admin/categories/{category_id}/service-tags/ | Add a service to a category
+*AdminTaxonomyAPI* | [**adminCategoryServiceTagsList**](docs/AdminTaxonomyAPI.md#admincategoryservicetagslist) | **GET** /api/v1/admin/categories/{category_id}/service-tags/ | List the services of a category
+*AdminTaxonomyAPI* | [**adminCategorySpecialtiesList**](docs/AdminTaxonomyAPI.md#admincategoryspecialtieslist) | **GET** /api/v1/admin/categories/{category_id}/specialties/ | List the specialties a category offers, in both scopes
+*AdminTaxonomyAPI* | [**adminCategorySpecialtyCreate**](docs/AdminTaxonomyAPI.md#admincategoryspecialtycreate) | **POST** /api/v1/admin/categories/{category_id}/specialties/ | Add a specialty to a category or to its specialization
 *AdminTaxonomyAPI* | [**adminCategoryUpdate**](docs/AdminTaxonomyAPI.md#admincategoryupdate) | **PUT** /api/v1/admin/categories/{category_id}/ | Rename, move, reorder or deactivate a category
+*AdminTaxonomyAPI* | [**adminServiceTagDelete**](docs/AdminTaxonomyAPI.md#adminservicetagdelete) | **DELETE** /api/v1/admin/service-tags/{service_tag_id}/ | Delete a service no facility lists
+*AdminTaxonomyAPI* | [**adminServiceTagUpdate**](docs/AdminTaxonomyAPI.md#adminservicetagupdate) | **PUT** /api/v1/admin/service-tags/{service_tag_id}/ | Rename, reorder, retire or bring back a service
+*AdminTaxonomyAPI* | [**adminSpecialtyDelete**](docs/AdminTaxonomyAPI.md#adminspecialtydelete) | **DELETE** /api/v1/admin/specialties/{specialty_id}/ | Delete a specialty no facility lists
+*AdminTaxonomyAPI* | [**adminSpecialtyUpdate**](docs/AdminTaxonomyAPI.md#adminspecialtyupdate) | **PUT** /api/v1/admin/specialties/{specialty_id}/ | Rename, reorder, retire or bring back a specialty
 *AdminUsersAPI* | [**adminRolesList**](docs/AdminUsersAPI.md#adminroleslist) | **GET** /api/v1/admin/roles/ | List admin roles and their permission codes
 *AdminUsersAPI* | [**adminUserBlock**](docs/AdminUsersAPI.md#adminuserblock) | **POST** /api/v1/admin/users/{user_id}/block/ | Block a user account
 *AdminUsersAPI* | [**adminUserRetrieve**](docs/AdminUsersAPI.md#adminuserretrieve) | **GET** /api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned
@@ -102,6 +151,10 @@ Class | Method | HTTP request | Description
 *AvailabilityAPI* | [**ownerFacilityTemporaryClosureCancel**](docs/AvailabilityAPI.md#ownerfacilitytemporaryclosurecancel) | **DELETE** /api/v1/owner/facilities/{facility_id}/temporary-closures/{closure_id}/ | Cancel a temporary closure
 *AvailabilityAPI* | [**ownerFacilityTemporaryClosureCreate**](docs/AvailabilityAPI.md#ownerfacilitytemporaryclosurecreate) | **POST** /api/v1/owner/facilities/{facility_id}/temporary-closures/ | Open a temporary closure window
 *AvailabilityAPI* | [**ownerFacilityTemporaryClosuresList**](docs/AvailabilityAPI.md#ownerfacilitytemporaryclosureslist) | **GET** /api/v1/owner/facilities/{facility_id}/temporary-closures/ | List temporary closures of a facility
+*ContentAPI* | [**publicContactCreate**](docs/ContentAPI.md#publiccontactcreate) | **POST** /api/v1/contact/ | Send a message to the platform team
+*ContentAPI* | [**publicContentPageRetrieve**](docs/ContentAPI.md#publiccontentpageretrieve) | **GET** /api/v1/content/pages/{slug}/ | Retrieve one published content page
+*ContentAPI* | [**publicEmergencyNumbersList**](docs/ContentAPI.md#publicemergencynumberslist) | **GET** /api/v1/emergency-numbers/ | Emergency numbers: national, plus the province&#39;s own
+*ContentAPI* | [**publicFaqList**](docs/ContentAPI.md#publicfaqlist) | **GET** /api/v1/content/faq/ | List the published questions and answers, in order
 *ContentAPI* | [**publicLegalDocumentRetrieve**](docs/ContentAPI.md#publiclegaldocumentretrieve) | **GET** /api/v1/public/legal/{key}/ | Retrieve one published page
 *ContentAPI* | [**publicLegalDocumentsList**](docs/ContentAPI.md#publiclegaldocumentslist) | **GET** /api/v1/public/legal/ | List the published pages
 *DutyAPI* | [**ownerFacilityDutyCreate**](docs/DutyAPI.md#ownerfacilitydutycreate) | **POST** /api/v1/owner/facilities/{facility_id}/duty/ | Schedule a duty shift
@@ -116,6 +169,8 @@ Class | Method | HTTP request | Description
 *OwnerAPI* | [**ownerConfigRetrieve**](docs/OwnerAPI.md#ownerconfigretrieve) | **GET** /api/v1/owner/config/ | List categories open for owner onboarding in a province
 *OwnerAPI* | [**ownerFacilitiesList**](docs/OwnerAPI.md#ownerfacilitieslist) | **GET** /api/v1/owner/facilities/ | List the facilities the caller belongs to
 *OwnerAPI* | [**ownerFacilityCreate**](docs/OwnerAPI.md#ownerfacilitycreate) | **POST** /api/v1/owner/facilities/ | Create a facility draft
+*OwnerAPI* | [**ownerFacilityHoursConfirm**](docs/OwnerAPI.md#ownerfacilityhoursconfirm) | **POST** /api/v1/owner/facilities/{facility_id}/confirm-hours/ | Confirm that the facility&#39;s opening hours are still right
+*OwnerAPI* | [**ownerFacilityInsightsRetrieve**](docs/OwnerAPI.md#ownerfacilityinsightsretrieve) | **GET** /api/v1/owner/facilities/{facility_id}/insights/ | Engagement with a facility over the last 30 days
 *OwnerAPI* | [**ownerFacilityLocationReplace**](docs/OwnerAPI.md#ownerfacilitylocationreplace) | **PUT** /api/v1/owner/facilities/{facility_id}/location/ | Set the map point of a facility
 *OwnerAPI* | [**ownerFacilityMemberDelete**](docs/OwnerAPI.md#ownerfacilitymemberdelete) | **DELETE** /api/v1/owner/facilities/{facility_id}/members/{user_id}/ | Remove a member from a facility
 *OwnerAPI* | [**ownerFacilityMemberUpsert**](docs/OwnerAPI.md#ownerfacilitymemberupsert) | **POST** /api/v1/owner/facilities/{facility_id}/members/ | Add a member or change a member role
@@ -123,11 +178,15 @@ Class | Method | HTTP request | Description
 *OwnerAPI* | [**ownerFacilityRetrieve**](docs/OwnerAPI.md#ownerfacilityretrieve) | **GET** /api/v1/owner/facilities/{facility_id}/ | Retrieve one facility the caller belongs to
 *OwnerAPI* | [**ownerFacilitySubmit**](docs/OwnerAPI.md#ownerfacilitysubmit) | **POST** /api/v1/owner/facilities/{facility_id}/submit/ | Submit a facility for review
 *OwnerAPI* | [**ownerFacilityUpdate**](docs/OwnerAPI.md#ownerfacilityupdate) | **PATCH** /api/v1/owner/facilities/{facility_id}/ | Update the core fields of a facility
+*PublicDiscoveryAPI* | [**publicDutyByDateList**](docs/PublicDiscoveryAPI.md#publicdutybydatelist) | **GET** /api/v1/public/duty/ | Pharmacies on duty on a given day (or up to 7 days)
 *PublicDiscoveryAPI* | [**publicFacilitiesList**](docs/PublicDiscoveryAPI.md#publicfacilitieslist) | **GET** /api/v1/public/facilities/ | List publicly visible facilities in a province, optionally in one category
 *PublicDiscoveryAPI* | [**publicFacilityRetrieve**](docs/PublicDiscoveryAPI.md#publicfacilityretrieve) | **GET** /api/v1/public/facilities/{facility_id}/ | Retrieve one publicly visible facility
 *PublicDiscoveryAPI* | [**publicHomeRetrieve**](docs/PublicDiscoveryAPI.md#publichomeretrieve) | **GET** /api/v1/public/home/ | Retrieve the home composition for a province
 *PublicDiscoveryAPI* | [**publicMapFacilitiesList**](docs/PublicDiscoveryAPI.md#publicmapfacilitieslist) | **GET** /api/v1/public/map/facilities/ | List compact map markers inside a viewport
 *PublicDiscoveryAPI* | [**publicSearchList**](docs/PublicDiscoveryAPI.md#publicsearchlist) | **GET** /api/v1/public/search/ | Search facilities within a province
+*PublicFacilitiesAPI* | [**publicFacilityReportCreate**](docs/PublicFacilitiesAPI.md#publicfacilityreportcreate) | **POST** /api/v1/facilities/{facility_id}/reports/ | Report a problem with a facility&#39;s listing
+*PublicPlatformAPI* | [**publicPlatformStatusRetrieve**](docs/PublicPlatformAPI.md#publicplatformstatusretrieve) | **GET** /api/v1/platform/status/ | Platform availability (maintenance mode)
+*PublicTaxonomyAPI* | [**publicCategoryTagsRetrieve**](docs/PublicTaxonomyAPI.md#publiccategorytagsretrieve) | **GET** /api/v1/public/categories/{category_id}/tags/ | List the specialties and services a category offers
 *PublicTaxonomyAPI* | [**publicLocationResolve**](docs/PublicTaxonomyAPI.md#publiclocationresolve) | **GET** /api/v1/public/locations/resolve/ | Resolve a coordinate to a province, city and neighbourhood
 *PublicTaxonomyAPI* | [**publicProvinceCategoriesList**](docs/PublicTaxonomyAPI.md#publicprovincecategorieslist) | **GET** /api/v1/public/provinces/{province_id}/categories/ | List categories publicly enabled for a province
 *PublicTaxonomyAPI* | [**publicProvinceCitiesList**](docs/PublicTaxonomyAPI.md#publicprovincecitieslist) | **GET** /api/v1/public/provinces/{province_id}/cities/ | List active cities in a province
@@ -142,17 +201,27 @@ Class | Method | HTTP request | Description
  - [AccountDeletionStatusEnum](docs/AccountDeletionStatusEnum.md)
  - [AccountRating](docs/AccountRating.md)
  - [AccountRatingList](docs/AccountRatingList.md)
+ - [AdminAdImage](docs/AdminAdImage.md)
  - [AdminAdvertisement](docs/AdminAdvertisement.md)
  - [AdminAdvertisementList](docs/AdminAdvertisementList.md)
  - [AdminAdvertisementRequest](docs/AdminAdvertisementRequest.md)
  - [AdminAdvertisementUpdateRequest](docs/AdminAdvertisementUpdateRequest.md)
+ - [AdminAlert](docs/AdminAlert.md)
+ - [AdminAlertKindEnum](docs/AdminAlertKindEnum.md)
+ - [AdminAlertLink](docs/AdminAlertLink.md)
+ - [AdminAlertList](docs/AdminAlertList.md)
+ - [AdminAlertSeverityEnum](docs/AdminAlertSeverityEnum.md)
  - [AdminAnalytics](docs/AdminAnalytics.md)
+ - [AdminAnalyticsPeriodKpis](docs/AdminAnalyticsPeriodKpis.md)
  - [AdminApplication](docs/AdminApplication.md)
  - [AdminApplicationDetail](docs/AdminApplicationDetail.md)
  - [AdminApplicationList](docs/AdminApplicationList.md)
  - [AdminAuditEntry](docs/AdminAuditEntry.md)
  - [AdminAuditList](docs/AdminAuditList.md)
  - [AdminAuditTrailEntry](docs/AdminAuditTrailEntry.md)
+ - [AdminBroadcast](docs/AdminBroadcast.md)
+ - [AdminBroadcastPage](docs/AdminBroadcastPage.md)
+ - [AdminBroadcastRequest](docs/AdminBroadcastRequest.md)
  - [AdminCapabilities](docs/AdminCapabilities.md)
  - [AdminCapabilitiesRequest](docs/AdminCapabilitiesRequest.md)
  - [AdminCategory](docs/AdminCategory.md)
@@ -163,27 +232,89 @@ Class | Method | HTTP request | Description
  - [AdminCategoryList](docs/AdminCategoryList.md)
  - [AdminCategoryProvinceRequest](docs/AdminCategoryProvinceRequest.md)
  - [AdminCategoryUpdateRequest](docs/AdminCategoryUpdateRequest.md)
+ - [AdminCityAdmin](docs/AdminCityAdmin.md)
+ - [AdminCityAdminList](docs/AdminCityAdminList.md)
+ - [AdminCityUpdateRequest](docs/AdminCityUpdateRequest.md)
+ - [AdminContactHandleRequest](docs/AdminContactHandleRequest.md)
+ - [AdminContactMessage](docs/AdminContactMessage.md)
+ - [AdminContactMessagePage](docs/AdminContactMessagePage.md)
+ - [AdminContentPage](docs/AdminContentPage.md)
+ - [AdminContentPageCreateRequest](docs/AdminContentPageCreateRequest.md)
+ - [AdminContentPageList](docs/AdminContentPageList.md)
+ - [AdminContentPageUpdateRequest](docs/AdminContentPageUpdateRequest.md)
  - [AdminDashboard](docs/AdminDashboard.md)
  - [AdminDecisionRequest](docs/AdminDecisionRequest.md)
+ - [AdminDuplicateCandidate](docs/AdminDuplicateCandidate.md)
+ - [AdminDutyDay](docs/AdminDutyDay.md)
+ - [AdminDutyRoster](docs/AdminDutyRoster.md)
+ - [AdminDutyShift](docs/AdminDutyShift.md)
+ - [AdminDutyShiftCreateRequest](docs/AdminDutyShiftCreateRequest.md)
+ - [AdminEmergencyNumber](docs/AdminEmergencyNumber.md)
+ - [AdminEmergencyNumberList](docs/AdminEmergencyNumberList.md)
+ - [AdminEmergencyNumberRequest](docs/AdminEmergencyNumberRequest.md)
  - [AdminEventCount](docs/AdminEventCount.md)
  - [AdminEvidenceRef](docs/AdminEvidenceRef.md)
  - [AdminFacility](docs/AdminFacility.md)
  - [AdminFacilityList](docs/AdminFacilityList.md)
+ - [AdminFacilityQuality](docs/AdminFacilityQuality.md)
+ - [AdminFacilityReport](docs/AdminFacilityReport.md)
+ - [AdminFacilityReportList](docs/AdminFacilityReportList.md)
  - [AdminFacilityStatusCount](docs/AdminFacilityStatusCount.md)
+ - [AdminFaqEntry](docs/AdminFaqEntry.md)
+ - [AdminFaqEntryList](docs/AdminFaqEntryList.md)
+ - [AdminFaqEntryRequest](docs/AdminFaqEntryRequest.md)
  - [AdminId](docs/AdminId.md)
+ - [AdminLinkEntityTypeEnum](docs/AdminLinkEntityTypeEnum.md)
  - [AdminMe](docs/AdminMe.md)
  - [AdminProvince](docs/AdminProvince.md)
  - [AdminProvinceList](docs/AdminProvinceList.md)
+ - [AdminProvinceReadiness](docs/AdminProvinceReadiness.md)
  - [AdminProvinceUpdateRequest](docs/AdminProvinceUpdateRequest.md)
  - [AdminProvinceUpdated](docs/AdminProvinceUpdated.md)
+ - [AdminPublicImage](docs/AdminPublicImage.md)
+ - [AdminReadinessCodeEnum](docs/AdminReadinessCodeEnum.md)
+ - [AdminReadinessItem](docs/AdminReadinessItem.md)
  - [AdminRecentAction](docs/AdminRecentAction.md)
+ - [AdminRejectionTemplate](docs/AdminRejectionTemplate.md)
+ - [AdminRejectionTemplateList](docs/AdminRejectionTemplateList.md)
+ - [AdminRejectionTemplateRequest](docs/AdminRejectionTemplateRequest.md)
+ - [AdminReportBulkActionEnum](docs/AdminReportBulkActionEnum.md)
+ - [AdminReportBulkOutcomeEnum](docs/AdminReportBulkOutcomeEnum.md)
+ - [AdminReportBulkRequest](docs/AdminReportBulkRequest.md)
+ - [AdminReportBulkResponse](docs/AdminReportBulkResponse.md)
+ - [AdminReportBulkResult](docs/AdminReportBulkResult.md)
+ - [AdminReportDecisionRequest](docs/AdminReportDecisionRequest.md)
  - [AdminRole](docs/AdminRole.md)
  - [AdminRoleList](docs/AdminRoleList.md)
+ - [AdminSearchGroup](docs/AdminSearchGroup.md)
+ - [AdminSearchHit](docs/AdminSearchHit.md)
+ - [AdminSearchHitTypeEnum](docs/AdminSearchHitTypeEnum.md)
+ - [AdminSearchResult](docs/AdminSearchResult.md)
+ - [AdminServiceTag](docs/AdminServiceTag.md)
+ - [AdminServiceTagCreateRequest](docs/AdminServiceTagCreateRequest.md)
+ - [AdminServiceTagList](docs/AdminServiceTagList.md)
  - [AdminSetting](docs/AdminSetting.md)
  - [AdminSettingList](docs/AdminSettingList.md)
  - [AdminSettingWriteRequest](docs/AdminSettingWriteRequest.md)
  - [AdminSettingWritten](docs/AdminSettingWritten.md)
+ - [AdminSpecialty](docs/AdminSpecialty.md)
+ - [AdminSpecialtyCreateRequest](docs/AdminSpecialtyCreateRequest.md)
+ - [AdminSpecialtyList](docs/AdminSpecialtyList.md)
+ - [AdminStaffMember](docs/AdminStaffMember.md)
+ - [AdminStaffPerformance](docs/AdminStaffPerformance.md)
  - [AdminSystemStatus](docs/AdminSystemStatus.md)
+ - [AdminTagUpdateRequest](docs/AdminTagUpdateRequest.md)
+ - [AdminTaskApplication](docs/AdminTaskApplication.md)
+ - [AdminTaskApplicationBucket](docs/AdminTaskApplicationBucket.md)
+ - [AdminTaskApplications](docs/AdminTaskApplications.md)
+ - [AdminTaskReportGroup](docs/AdminTaskReportGroup.md)
+ - [AdminTaskReports](docs/AdminTaskReports.md)
+ - [AdminTaskReverification](docs/AdminTaskReverification.md)
+ - [AdminTaskReverificationBucket](docs/AdminTaskReverificationBucket.md)
+ - [AdminTasks](docs/AdminTasks.md)
+ - [AdminTimeline](docs/AdminTimeline.md)
+ - [AdminTimelineEvent](docs/AdminTimelineEvent.md)
+ - [AdminTimelineEventKindEnum](docs/AdminTimelineEventKindEnum.md)
  - [AdminUser](docs/AdminUser.md)
  - [AdminUserDetail](docs/AdminUserDetail.md)
  - [AdminUserList](docs/AdminUserList.md)
@@ -201,6 +332,7 @@ Class | Method | HTTP request | Description
  - [Availability](docs/Availability.md)
  - [AvailabilityStateEnum](docs/AvailabilityStateEnum.md)
  - [BilingualRef](docs/BilingualRef.md)
+ - [BroadcastAudienceEnum](docs/BroadcastAudienceEnum.md)
  - [BusinessHour](docs/BusinessHour.md)
  - [BusinessHourInput](docs/BusinessHourInput.md)
  - [BusinessHoursList](docs/BusinessHoursList.md)
@@ -210,14 +342,26 @@ Class | Method | HTTP request | Description
  - [ChallengeVerified](docs/ChallengeVerified.md)
  - [ChallengeVerify](docs/ChallengeVerify.md)
  - [CompactFacility](docs/CompactFacility.md)
+ - [ContactMessageCreated](docs/ContactMessageCreated.md)
+ - [ContactMessageKindEnum](docs/ContactMessageKindEnum.md)
+ - [ContactMessageRequest](docs/ContactMessageRequest.md)
+ - [ContentPage](docs/ContentPage.md)
+ - [ContentPageKindEnum](docs/ContentPageKindEnum.md)
  - [Coordinates](docs/Coordinates.md)
  - [DatabaseHealthEnum](docs/DatabaseHealthEnum.md)
  - [DeletionRequest](docs/DeletionRequest.md)
  - [DependencyConfiguredEnum](docs/DependencyConfiguredEnum.md)
  - [DestinationEnum](docs/DestinationEnum.md)
+ - [DuplicateReasonEnum](docs/DuplicateReasonEnum.md)
  - [DutyShift](docs/DutyShift.md)
  - [DutyShiftInput](docs/DutyShiftInput.md)
  - [DutyShiftList](docs/DutyShiftList.md)
+ - [DutyShiftSourceEnum](docs/DutyShiftSourceEnum.md)
+ - [DutyShiftStatusEnum](docs/DutyShiftStatusEnum.md)
+ - [EmergencyNumber](docs/EmergencyNumber.md)
+ - [EmergencyNumberKindEnum](docs/EmergencyNumberKindEnum.md)
+ - [EmergencyNumberList](docs/EmergencyNumberList.md)
+ - [EmergencyNumberScopeEnum](docs/EmergencyNumberScopeEnum.md)
  - [FacilityApplicationKindEnum](docs/FacilityApplicationKindEnum.md)
  - [FacilityApplicationStatusEnum](docs/FacilityApplicationStatusEnum.md)
  - [FacilityCreate](docs/FacilityCreate.md)
@@ -226,8 +370,15 @@ Class | Method | HTTP request | Description
  - [FacilityLocation](docs/FacilityLocation.md)
  - [FacilityMember](docs/FacilityMember.md)
  - [FacilityMemberRoleEnum](docs/FacilityMemberRoleEnum.md)
+ - [FacilityQualityIssueEnum](docs/FacilityQualityIssueEnum.md)
  - [FacilityRating](docs/FacilityRating.md)
+ - [FacilityReportCreated](docs/FacilityReportCreated.md)
+ - [FacilityReportReasonEnum](docs/FacilityReportReasonEnum.md)
+ - [FacilityReportRequest](docs/FacilityReportRequest.md)
+ - [FacilityReportStatusEnum](docs/FacilityReportStatusEnum.md)
  - [FacilityStatusEnum](docs/FacilityStatusEnum.md)
+ - [FaqEntry](docs/FaqEntry.md)
+ - [FaqList](docs/FaqList.md)
  - [FavoriteFacility](docs/FavoriteFacility.md)
  - [FavoriteList](docs/FavoriteList.md)
  - [FavoriteState](docs/FavoriteState.md)
@@ -242,6 +393,7 @@ Class | Method | HTTP request | Description
  - [LogoutRequest](docs/LogoutRequest.md)
  - [MapMarker](docs/MapMarker.md)
  - [MapMarkerList](docs/MapMarkerList.md)
+ - [NamedIntRef](docs/NamedIntRef.md)
  - [NamedRef](docs/NamedRef.md)
  - [Notification](docs/Notification.md)
  - [NotificationPage](docs/NotificationPage.md)
@@ -255,8 +407,10 @@ Class | Method | HTTP request | Description
  - [OwnerFacilityDetail](docs/OwnerFacilityDetail.md)
  - [OwnerFacilityImage](docs/OwnerFacilityImage.md)
  - [OwnerFacilityImageList](docs/OwnerFacilityImageList.md)
+ - [OwnerFacilityInsights](docs/OwnerFacilityInsights.md)
  - [OwnerFacilitySummary](docs/OwnerFacilitySummary.md)
  - [OwnerFacilitySummaryList](docs/OwnerFacilitySummaryList.md)
+ - [OwnerHoursConfirmed](docs/OwnerHoursConfirmed.md)
  - [OwnerHoursEntry](docs/OwnerHoursEntry.md)
  - [OwnerMember](docs/OwnerMember.md)
  - [OwnerMemberList](docs/OwnerMemberList.md)
@@ -265,17 +419,23 @@ Class | Method | HTTP request | Description
  - [OwnerSubmitResult](docs/OwnerSubmitResult.md)
  - [OwnerVerificationRequirement](docs/OwnerVerificationRequirement.md)
  - [PasswordChange](docs/PasswordChange.md)
+ - [PatchedAdminDutyShiftUpdateRequest](docs/PatchedAdminDutyShiftUpdateRequest.md)
  - [PatchedDutyShiftInput](docs/PatchedDutyShiftInput.md)
  - [PatchedFacilityPatch](docs/PatchedFacilityPatch.md)
  - [PatchedProfilePatch](docs/PatchedProfilePatch.md)
  - [PhoneChangeStart](docs/PhoneChangeStart.md)
+ - [PlatformStatus](docs/PlatformStatus.md)
  - [Profile](docs/Profile.md)
  - [PublicAdvertisement](docs/PublicAdvertisement.md)
  - [PublicAdvertisementList](docs/PublicAdvertisementList.md)
  - [PublicCategory](docs/PublicCategory.md)
  - [PublicCategoryList](docs/PublicCategoryList.md)
+ - [PublicCategoryTags](docs/PublicCategoryTags.md)
  - [PublicCity](docs/PublicCity.md)
  - [PublicCityList](docs/PublicCityList.md)
+ - [PublicDutyDay](docs/PublicDutyDay.md)
+ - [PublicDutyRoster](docs/PublicDutyRoster.md)
+ - [PublicDutyShift](docs/PublicDutyShift.md)
  - [PublicFacilityDetail](docs/PublicFacilityDetail.md)
  - [PublicHome](docs/PublicHome.md)
  - [PublicHoursEntry](docs/PublicHoursEntry.md)
@@ -294,6 +454,7 @@ Class | Method | HTTP request | Description
  - [RegisterStart](docs/RegisterStart.md)
  - [ResolvedByEnum](docs/ResolvedByEnum.md)
  - [SessionCredentials](docs/SessionCredentials.md)
+ - [SpecialtyScopeEnum](docs/SpecialtyScopeEnum.md)
  - [TemporaryClosure](docs/TemporaryClosure.md)
  - [TemporaryClosureInput](docs/TemporaryClosureInput.md)
  - [TemporaryClosureList](docs/TemporaryClosureList.md)

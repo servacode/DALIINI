@@ -31,7 +31,12 @@ class NotificationSerializer(serializers.Serializer):  # type: ignore[type-arg]
         ),
     )
     facilityId = serializers.UUIDField(
-        allow_null=True, help_text="Set only when the destination is FACILITY."
+        allow_null=True,
+        help_text=(
+            "The facility the message is about: set for a FACILITY destination, and for an "
+            "OWNER_FACILITIES notice about one of the owner's facilities (an hours reminder, "
+            "a duty change); null otherwise."
+        ),
     )
     isRead = serializers.BooleanField()
     createdAt = serializers.DateTimeField()

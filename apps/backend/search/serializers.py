@@ -1,15 +1,20 @@
+from collections.abc import Callable
+from typing import Any
+
 from business_hours.serializers import serialize_hours
 from business_hours.services import (
     get_facility_availability,
     is_on_duty_today,
     is_open_now,
 )
+from directory.tags import ORDER as TAG_ORDER
+from directory.tags import named
 from storage.backends import PublicS3Storage
 
 _UNSET = object()
 
 
-def _flag(facility, annotation, fallback):
+def _flag(facility: Any, annotation: str, fallback: Callable[[Any], object]) -> bool:
     """Prefer what the query already worked out; compute only when it did not.
 
     Views that page a list annotate these, so the common path costs nothing. The fallback
@@ -19,7 +24,11 @@ def _flag(facility, annotation, fallback):
     return bool(value) if value is not _UNSET else bool(fallback(facility))
 
 
-def _availability_payload(facility):
+def _iso(value: Any) -> str | None:
+    return value.isoformat() if value else None
+
+
+def _availability_payload(facility: Any) -> dict[str, Any]:
     result = get_facility_availability(facility)
     return {
         "state": result.state.value,
@@ -32,7 +41,7 @@ def _availability_payload(facility):
     }
 
 
-def _open_now(facility):
+def _open_now(facility: Any) -> bool:
     closed = getattr(facility, "_availability_closed", _UNSET)
     scheduled = getattr(facility, "_availability_scheduled", _UNSET)
     if closed is not _UNSET and scheduled is not _UNSET:
@@ -40,7 +49,7 @@ def _open_now(facility):
     return bool(is_open_now(facility))
 
 
-def _first_image_url(facility):
+def _first_image_url(facility: Any) -> str | None:
     """The one picture a list row shows, or nothing at all.
 
     `images` is prefetched in the ordering the owner chose, so this reads the list already in
@@ -52,7 +61,17 @@ def _first_image_url(facility):
     return PublicS3Storage().url(images[0].storage_key)
 
 
-def compact_facility(facility):
+def info_confirmed_at(facility: Any) -> Any:
+    """The later of an operator's approval and the owner's own confirmation of the hours."""
+    moments = [
+        value
+        for value in (facility.last_verified_at, getattr(facility, "hours_confirmed_at", None))
+        if value is not None
+    ]
+    return max(moments) if moments else None
+
+
+def compact_facility(facility: Any) -> dict[str, Any]:
     distance = getattr(facility, "distance_meters", None)
     return {
         "id": str(facility.id),
@@ -81,10 +100,13 @@ def compact_facility(facility):
         # The owner's own first photograph, or null. A list row shows the brand mark when it
         # is null; nothing stands in for a picture the facility never uploaded.
         "imageUrl": _first_image_url(facility),
+        "lastVerifiedAt": _iso(facility.last_verified_at),
+        "infoConfirmedAt": _iso(info_confirmed_at(facility)),
+        "updatedAt": _iso(facility.updated_at),
     }
 
 
-def facility_detail(facility):
+def facility_detail(facility: Any) -> dict[str, Any]:
     storage = PublicS3Storage()
     payload = compact_facility(facility)
     payload.update(
@@ -92,6 +114,7 @@ def facility_detail(facility):
             "descriptionAr": facility.description_ar or None,
             "descriptionEn": facility.description_en or None,
             "phone": facility.phone or None,
+            "whatsapp": facility.whatsapp or None,
             "addressAr": facility.address_ar or None,
             "addressEn": facility.address_en or None,
             "neighborhood": (
@@ -120,19 +143,20 @@ def facility_detail(facility):
                 }
                 for image in facility.images.order_by("sort_order", "created_at")
             ],
+            # Integer ids, as the rows are keyed (`NamedIntRef`). They were sent as text under
+            # a contract that called them UUIDs, so a client that trusted the contract could
+            # not open a facility that had one. A retired (inactive) item is not shown.
             "specialties": [
-                {
-                    "id": str(link.specialty_id),
-                    "nameAr": link.specialty.name_ar,
-                }
-                for link in facility.specialty_links.select_related("specialty")
+                named(link.specialty)
+                for link in facility.specialty_links.filter(specialty__active=True)
+                .select_related("specialty")
+                .order_by(*(f"specialty__{column}" for column in TAG_ORDER))
             ],
             "services": [
-                {
-                    "id": str(link.service_tag_id),
-                    "nameAr": link.service_tag.name_ar,
-                }
-                for link in facility.service_links.select_related("service_tag")
+                named(link.service_tag)
+                for link in facility.service_links.filter(service_tag__active=True)
+                .select_related("service_tag")
+                .order_by(*(f"service_tag__{column}" for column in TAG_ORDER))
             ],
             # The shape the contract declares: with the id and the `sequence` that orders a
             # day's spans. Both were missing, so a generated client could not read any

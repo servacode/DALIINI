@@ -1,7 +1,7 @@
 from realtime.events import EventName
 
 
-def test_required_event_catalog_is_present():
+def test_required_event_catalog_is_present() -> None:
     assert {item.value for item in EventName} == {
         "public.province.configuration_changed",
         "public.facility.changed",

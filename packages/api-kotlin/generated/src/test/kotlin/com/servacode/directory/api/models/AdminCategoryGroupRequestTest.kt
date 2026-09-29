@@ -43,6 +43,12 @@ class AdminCategoryGroupRequestTest : ShouldSpec() {
             //modelInstance.nameEn shouldBe ("TODO")
         }
 
+        // to test the property `iconKey`
+        should("test iconKey") {
+            // uncomment below to test the property
+            //modelInstance.iconKey shouldBe ("TODO")
+        }
+
         // to test the property `active`
         should("test active") {
             // uncomment below to test the property

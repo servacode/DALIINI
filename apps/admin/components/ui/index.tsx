@@ -1,9 +1,11 @@
 "use client";
 
+import { type VocabularyGroup, term, vocabulary } from "@servacode/design-tokens/vocabulary";
+import brandSymbol from "@servacode/design-tokens/brand/symbol-128.webp";
 import Link from "next/link";
-import { type ReactNode, useEffect, useId, useRef, useState } from "react";
+import { type ReactNode, useEffect, useEffectEvent, useId, useRef, useState } from "react";
 
-import { type IconName, Icons } from "../icons";
+import { type IconName, type IllustrationName, Icons, Illustration } from "../icons";
 
 import {
   type ApiErrorBody,
@@ -29,11 +31,11 @@ import {
 // Page furniture
 // --------------------------------------------------------------------------------------
 
+/** The approved brand symbol (the road and the pin inside the letter); the name is set beside it as text. */
 export function BrandMark() {
   return (
-    <span className="brand-mark" aria-hidden="true">
-      د
-    </span>
+    // eslint-disable-next-line @next/next/no-img-element -- a 128px static asset; no optimisation route needed
+    <img className="brand-mark" src={brandSymbol.src} width={40} height={40} alt="" aria-hidden="true" />
   );
 }
 
@@ -120,6 +122,7 @@ export function StatCard({
   href,
   tone,
   testId,
+  trend,
 }: {
   label: string;
   value: ReactNode;
@@ -128,6 +131,8 @@ export function StatCard({
   href?: string;
   tone?: "warning" | "info";
   testId?: string;
+  /** Change against a previous period, under the number (see `Trend` in `./extra`). */
+  trend?: ReactNode;
 }) {
   const Glyph = icon ? Icons[icon] : null;
   const body = (
@@ -141,6 +146,7 @@ export function StatCard({
         ) : null}
       </div>
       <strong className="kpi-value">{value}</strong>
+      {trend ? <span className="kpi-trend">{trend}</span> : null}
       {hint ? <span className="kpi-hint">{hint}</span> : null}
     </>
   );
@@ -182,11 +188,23 @@ export function LoadingState({ label = "جارٍ التحميل…" }: { label?:
   );
 }
 
-export function EmptyState({ title, hint }: { title: string; hint?: string }) {
+export function EmptyState({
+  title,
+  hint,
+  illustration = "empty",
+  action,
+}: {
+  title: string;
+  hint?: string;
+  illustration?: IllustrationName;
+  action?: ReactNode;
+}) {
   return (
     <div className="state-block state-empty" data-testid="empty-state">
+      <Illustration name={illustration} size={88} />
       <strong>{title}</strong>
       {hint ? <span className="muted">{hint}</span> : null}
+      {action ? <div className="state-action">{action}</div> : null}
     </div>
   );
 }
@@ -292,7 +310,7 @@ export function DataTable<T>({
 export type FilterField = Readonly<{
   name: string;
   label: string;
-  type?: "text" | "select";
+  type?: "text" | "select" | "date";
   options?: readonly { value: string; label: string }[];
   placeholder?: string;
 }>;
@@ -347,6 +365,17 @@ export function FilterBar({
                 </option>
               ))}
             </select>
+          ) : field.type === "date" ? (
+            <input
+              name={field.name}
+              type="date"
+              dir="ltr"
+              value={draft[field.name] ?? ""}
+              data-testid={`filter-${field.name}`}
+              onChange={(event) =>
+                setDraft({ ...draft, [field.name]: event.target.value })
+              }
+            />
           ) : (
             <input
               name={field.name}
@@ -433,7 +462,7 @@ export function Pagination({
 // Status and permissions
 // --------------------------------------------------------------------------------------
 
-export type Tone = "neutral" | "positive" | "warning" | "danger" | "info";
+export type Tone = "neutral" | "positive" | "warning" | "danger" | "info" | "brand";
 
 export function StatusBadge({ tone = "neutral", children }: { tone?: Tone; children: ReactNode }) {
   return (
@@ -441,6 +470,28 @@ export function StatusBadge({ tone = "neutral", children }: { tone?: Tone; child
       {children}
     </span>
   );
+}
+
+/**
+ * A state shown in the platform's shared words: the label and colour come from the design
+ * package's vocabulary, so "فعّالة" or "مناوب الآن" reads and looks the same in the console,
+ * the app and the site.
+ */
+/** A vocabulary group as `{ VALUE: { label, tone } }`, for tables, filters and badges. */
+export function termsFor(group: VocabularyGroup): Record<string, { label: string; tone: Tone }> {
+  return Object.fromEntries(
+    Object.entries(vocabulary[group]).map(([key, entry]) => [key, { label: entry.ar, tone: entry.tone }]),
+  );
+}
+
+/** A vocabulary group as `{ VALUE: label }`. */
+export function labelsFor(group: VocabularyGroup): Record<string, string> {
+  return Object.fromEntries(Object.entries(vocabulary[group]).map(([key, entry]) => [key, entry.ar]));
+}
+
+export function TermBadge({ group, value }: { group: VocabularyGroup; value: string | null | undefined }) {
+  const t = term(group, value);
+  return <StatusBadge tone={t.tone}>{t.ar}</StatusBadge>;
 }
 
 /**
@@ -523,16 +574,23 @@ export function ConfirmDialog({
 }) {
   const headingId = useId();
   const dialog = useRef<HTMLDivElement>(null);
+  // Read when Escape is pressed, so the effect below runs once per opening. With `onCancel`
+  // among its dependencies it re-ran on every render of the screen behind the dialog (an
+  // inline arrow is a new function each time) and pulled focus out of the field being typed in.
+  const escape = useEffectEvent(() => {
+    if (!pending) onCancel();
+  });
 
   useEffect(() => {
     if (!open) return;
-    dialog.current?.querySelector<HTMLElement>("[data-autofocus]")?.focus();
+    // Without scrolling, so a long form opens on its first field rather than on its buttons.
+    dialog.current?.querySelector<HTMLElement>("[data-autofocus]")?.focus({ preventScroll: true });
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !pending) onCancel();
+      if (event.key === "Escape") escape();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [open, pending, onCancel]);
+  }, [open]);
 
   if (!open) return null;
 

@@ -1,13 +1,18 @@
+import logging
 import mimetypes
+from datetime import datetime, timedelta
 from pathlib import PurePosixPath
+from typing import Any
+from uuid import UUID
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db import connection
+from django.db import connection, transaction
 from django.db.models import Avg, Count, Q
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.dateparse import parse_date, parse_datetime
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     OpenApiParameter,
@@ -20,7 +25,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import AdminRole, User
+from accounts.authentication import AuthenticatedRequest
+from accounts.models import AdminRole, User, UserAdminRole
 from accounts.rbac import admin_permissions_for
 from analytics.models import ProductAnalyticsEvent
 from audit.models import AuditEvent
@@ -50,12 +56,18 @@ from directory.services import (
     update_category_group,
     update_verification_requirement,
 )
-from facilities.models import Facility, FacilityApplication, VerificationEvidence
-from locations.models import Province
+from facilities.models import Facility, FacilityApplication, FacilityReport, VerificationEvidence
+from locations.models import City, Province
+from pharmacy_duty.models import DutyShift
+from platform_settings.maintenance import get_maintenance_state
 from platform_settings.models import PlatformSetting
+from platform_settings.operations import TYPED_SETTINGS as TYPED_SETTING_DEFAULTS
 from storage.backends import PrivateS3Storage
+from storage.public_media import public_media_url
 
 from .permissions import HasAdminPermission, IsAdminOperator
+from .quality import QUALITY_ISSUES, filter_issue, quality_payload, with_quality
+from .review import find_duplicates, missing_evidence, previous_snapshot, with_evidence_state
 from .schemas import (
     AdminAdvertisementListSerializer,
     AdminAdvertisementRequestSerializer,
@@ -75,9 +87,15 @@ from .schemas import (
     AdminCategoryProvinceRequestSerializer,
     AdminCategorySerializer,
     AdminCategoryUpdateRequestSerializer,
+    AdminCityAdminListSerializer,
+    AdminCityAdminSerializer,
+    AdminCityUpdateRequestSerializer,
     AdminDashboardSerializer,
     AdminDecisionRequestSerializer,
     AdminFacilityListSerializer,
+    AdminFacilityQualitySerializer,
+    AdminFacilityReportListSerializer,
+    AdminFacilityReportSerializer,
     AdminFacilitySerializer,
     AdminIdSerializer,
     AdminMeSerializer,
@@ -86,6 +104,7 @@ from .schemas import (
     AdminProvinceUpdatedSerializer,
     AdminProvinceUpdateRequestSerializer,
     AdminRecentActionSerializer,
+    AdminReportDecisionRequestSerializer,
     AdminRoleListSerializer,
     AdminSettingListSerializer,
     AdminSettingSerializer,
@@ -104,29 +123,238 @@ from .schemas import (
 from .schemas import AdminApplicationDetailSerializer as AppDetail
 from .schemas import AdminApplicationListSerializer as AppList
 from .schemas import AdminApplicationSerializer as App
-from .serializers import application_payload, facility_payload, user_payload
-from .services import decide_application, replace_user_roles, set_user_blocked, transition_facility
+from .serializers import (
+    application_payload,
+    facility_payload,
+    location_payload,
+    user_payload,
+    with_application_names,
+    with_facility_names,
+)
+from .services import (
+    decide_application,
+    decide_report,
+    replace_user_roles,
+    set_user_blocked,
+    transition_facility,
+)
+
+logger = logging.getLogger(__name__)
 
 
-def _request_id(request):
+def _request_id(request: Any) -> str:
     return getattr(request, "request_id", "")
 
 
-def _filter(name, description):
+def _filter(name: str, description: str) -> OpenApiParameter:
     """Declare an optional query filter. Every one below is already honoured by its view."""
     return OpenApiParameter(
         name, str, OpenApiParameter.QUERY, required=False, description=description
     )
 
 
-def _validation_error(exc):
+def _validation_error(exc: Any) -> ValidationError:
     if hasattr(exc, "message_dict"):
         return ValidationError(exc.message_dict)
     return ValidationError(getattr(exc, "messages", [str(exc)]))
 
 
+# Analytics KPI name -> registry event name. Only events the registry records are counted.
+KPI_EVENTS = {
+    "searches": "search_submitted",
+    "zeroResultSearches": "search_zero_results",
+    "facilityViews": "facility_view",
+    "directionsRequests": "directions_start",
+}
+
+
+# Wire ordering -> columns. Every ordering ends in the primary key so ties are stable.
+FACILITY_ORDERINGS: dict[str, tuple[str, ...]] = {
+    "qualityScore": ("quality_score", "-updated_at", "id"),
+    "-qualityScore": ("-quality_score", "-updated_at", "id"),
+    "updatedAt": ("updated_at", "id"),
+    "-updatedAt": ("-updated_at", "id"),
+}
+
+
+def filtered_facilities(params: Any) -> Any:
+    """The Admin facility list query, with quality annotations, filters and ordering.
+
+    Shared by the list endpoint and the CSV export so the two always select the same rows.
+    """
+    ordering = params.get("ordering") or "-updatedAt"
+    if ordering not in FACILITY_ORDERINGS:
+        raise ValidationError({"ordering": f"Use one of {', '.join(FACILITY_ORDERINGS)}."})
+    qs = with_quality(with_facility_names(Facility.objects.all()))
+    if value := params.get("status"):
+        qs = qs.filter(status=value)
+    if value := params.get("province"):
+        qs = qs.filter(province_id=value)
+    if value := params.get("category"):
+        qs = qs.filter(category_id=value)
+    if value := params.get("q"):
+        qs = qs.filter(Q(name_ar__icontains=value) | Q(name_en__icontains=value))
+    if value := params.get("issue"):
+        if value not in QUALITY_ISSUES:
+            raise ValidationError({"issue": f"Use one of {', '.join(QUALITY_ISSUES)}."})
+        qs = filter_issue(qs, value)
+    return qs.order_by(*FACILITY_ORDERINGS[ordering])
+
+
+def filtered_audit(params: Any) -> Any:
+    """The audit search query, shared by the list endpoint and the CSV export."""
+    qs = AuditEvent.objects.order_by("-created_at")
+    if value := params.get("actor"):
+        qs = qs.filter(actor_id=value)
+    if value := params.get("action"):
+        qs = qs.filter(action__icontains=value)
+    if value := params.get("resource"):
+        qs = qs.filter(Q(target_type__icontains=value) | Q(target_id=value))
+    if value := params.get("requestId"):
+        qs = qs.filter(request_id=value)
+    if value := params.get("from"):
+        qs = qs.filter(created_at__gte=_parse_bound(value, "from", end=False))
+    if value := params.get("to"):
+        bound = _parse_bound(value, "to", end=True)
+        qs = (
+            qs.filter(created_at__lt=bound)
+            if _is_date(value)
+            else qs.filter(created_at__lte=bound)
+        )
+    return qs
+
+
+def filtered_reports(params: Any) -> Any:
+    """The report list query, shared by the list endpoint and the CSV export."""
+    qs = FacilityReport.objects.select_related("facility").order_by("-created_at")
+    if value := params.get("status"):
+        qs = qs.filter(status=value.upper())
+    if value := params.get("facility"):
+        qs = qs.filter(facility_id=value)
+    return qs
+
+
+def _is_date(value: str) -> bool:
+    return len(value) == 10 and parse_date(value) is not None
+
+
+def _parse_bound(value: str, name: str, *, end: bool) -> datetime:
+    """Parse an ISO date or datetime query bound; a bare `to` date means the next midnight."""
+    day = parse_date(value) if _is_date(value) else None
+    if day is not None:
+        if end:
+            day = day + timedelta(days=1)
+        return timezone.make_aware(datetime.combine(day, datetime.min.time()))
+    try:
+        moment = parse_datetime(value)
+    except ValueError:
+        moment = None
+    if moment is None:
+        raise ValidationError({name: "Expected an ISO date or datetime."})
+    return moment if timezone.is_aware(moment) else timezone.make_aware(moment)
+
+
+def _approval_median_hours(since: datetime, until: datetime | None = None) -> float | None:
+    """Median hours from submission to approval, over applications approved in the period."""
+    until = until or timezone.now()
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT percentile_cont(0.5) WITHIN GROUP ("
+            "ORDER BY EXTRACT(EPOCH FROM (reviewed_at - submitted_at)) / 3600.0) "
+            "FROM facilities_facilityapplication "
+            "WHERE status = %s AND reviewed_at >= %s AND reviewed_at < %s "
+            "AND submitted_at IS NOT NULL",
+            [FacilityApplication.Status.APPROVED, since, until],
+        )
+        row = cursor.fetchone()
+    return round(float(row[0]), 2) if row and row[0] is not None else None
+
+
+ANALYTICS_DEFAULT_DAYS = 30
+ANALYTICS_MAX_DAYS = 366
+
+
+def analytics_period(request: Any) -> tuple[datetime, datetime]:
+    """`from`/`to` query bounds as a half-open period; the default is the last 30 days."""
+    now = timezone.now()
+    raw_to = request.query_params.get("to")
+    end = _parse_bound(raw_to, "to", end=True) if raw_to else now
+    raw_from = request.query_params.get("from")
+    start = (
+        _parse_bound(raw_from, "from", end=False)
+        if raw_from
+        else end - timedelta(days=ANALYTICS_DEFAULT_DAYS)
+    )
+    if start >= end:
+        raise ValidationError({"from": "Must be before `to`."})
+    if end - start > timedelta(days=ANALYTICS_MAX_DAYS):
+        raise ValidationError({"from": f"The period may span at most {ANALYTICS_MAX_DAYS} days."})
+    return start, end
+
+
+def _period_kpis(start: datetime, end: datetime) -> dict[str, Any]:
+    named = dict(
+        ProductAnalyticsEvent.objects.filter(
+            occurred_at__gte=start, occurred_at__lt=end, name__in=KPI_EVENTS.values()
+        )
+        .values_list("name")
+        .annotate(count=Count("id"))
+        .values_list("name", "count")
+    )
+    return {
+        "approvalMedianHours": _approval_median_hours(start, end),
+        **{key: named.get(name, 0) for key, name in KPI_EVENTS.items()},
+    }
+
+
+def _open_reports_count() -> int:
+    from facilities.models import FacilityReport
+
+    return FacilityReport.objects.filter(status=FacilityReport.Status.OPEN).count()
+
+
+def system_warnings() -> list[str]:
+    """Cheap, configuration-level warnings for the dashboard. No network calls."""
+    from django.conf import settings
+
+    warnings: list[str] = []
+    if get_maintenance_state().enabled:
+        warnings.append("وضع الصيانة مفعّل: الواجهات العامة ترد بـ 503.")
+    if not getattr(settings, "REDIS_URL", ""):
+        warnings.append("Redis غير مهيأ: المهام الخلفية والإشعارات اللحظية معطلة.")
+    if not getattr(settings, "CELERY_BROKER_URL", ""):
+        warnings.append("Celery غير مهيأ: لن تُنفّذ المهام المجدولة.")
+    push_provider = str(getattr(settings, "PUSH_PROVIDER", "")).lower()
+    if push_provider == "development":
+        warnings.append("مزود الإشعارات في وضع التطوير: لن تصل الإشعارات إلى الأجهزة.")
+    elif push_provider == "fcm" and not (
+        getattr(settings, "FCM_PROJECT_ID", "")
+        and str(getattr(settings, "FCM_SERVICE_ACCOUNT_JSON", "")).strip()
+    ):
+        warnings.append("إشعارات أندرويد غير مربوطة بحساب Firebase: لن تصل إلى الأجهزة.")
+    if str(getattr(settings, "OTP_PROVIDER", "")).lower() in {"development", "test"}:
+        warnings.append("رموز الدخول في وضع التطوير: لن تصل رسائل التحقق إلى الهواتف.")
+    if not getattr(settings, "SENTRY_DSN", ""):
+        warnings.append("تتبع الأخطاء (Sentry) غير مفعّل.")
+    return warnings
+
+
 class AdminView(APIView):
     permission_classes = [IsAuthenticated, HasAdminPermission]
+
+    def handle_exception(self, exc: Exception) -> Response:
+        # Failed admin mutations are operationally interesting even when they are 4xx.
+        if self.request.method not in ("GET", "HEAD", "OPTIONS"):
+            logger.warning(
+                "admin.mutation_failed",
+                extra={
+                    "view": type(self).__name__,
+                    "method": self.request.method,
+                    "error": type(exc).__name__,
+                    "actor_id": str(getattr(self.request.user, "pk", "") or ""),
+                },
+            )
+        return super().handle_exception(exc)
 
 
 class AdminMeView(APIView):
@@ -155,7 +383,7 @@ class AdminMeView(APIView):
         ),
         responses={200: AdminMeSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         return Response(
             {
                 "userId": str(request.user.pk),
@@ -174,9 +402,17 @@ class DashboardView(AdminView):
         summary="Operational counters for the review desk",
         responses={200: AdminDashboardSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
+        now = timezone.now()
         return Response(
             {
+                "dutyActiveNow": DutyShift.objects.filter(starts_at__lte=now, ends_at__gt=now)
+                .values("facility_id")
+                .distinct()
+                .count(),
+                "newUsers7d": User.objects.filter(created_at__gte=now - timedelta(days=7)).count(),
+                "openReports": _open_reports_count(),
+                "systemWarnings": system_warnings(),
                 "pendingReviews": FacilityApplication.objects.filter(
                     status=FacilityApplication.Status.SUBMITTED
                 ).count(),
@@ -210,11 +446,25 @@ class ApplicationListView(AdminView):
             _filter("status", "Application status, for example SUBMITTED or APPROVED."),
             _filter("province", "Province id of the facility the application belongs to."),
             _filter("category", "Category id of the facility the application belongs to."),
+            _filter(
+                "from",
+                "Submitted on or after this day (YYYY-MM-DD, Damascus) or this ISO datetime.",
+            ),
+            _filter(
+                "to",
+                "Submitted on or before this day (YYYY-MM-DD, Damascus) or before this datetime.",
+            ),
+            _filter(
+                "evidence",
+                "`complete` or `incomplete`: whether every required document is uploaded.",
+            ),
         ],
-        responses={200: AppList, **protected()},
+        responses={200: AppList, 400: VALIDATION_400, **protected()},
     )
-    def get(self, request):
-        qs = FacilityApplication.objects.select_related("facility").order_by("-submitted_at")
+    def get(self, request: AuthenticatedRequest) -> Response:
+        qs = with_evidence_state(
+            with_application_names(FacilityApplication.objects.all())
+        ).order_by("-submitted_at")
         for field, param in (("kind", "kind"), ("status", "status")):
             if value := request.query_params.get(param):
                 qs = qs.filter(**{field: value})
@@ -222,6 +472,17 @@ class ApplicationListView(AdminView):
             qs = qs.filter(facility__province_id=value)
         if value := request.query_params.get("category"):
             qs = qs.filter(facility__category_id=value)
+        if value := request.query_params.get("from"):
+            qs = qs.filter(submitted_at__gte=_parse_bound(value, "from", end=False))
+        if value := request.query_params.get("to"):
+            qs = qs.filter(submitted_at__lt=_parse_bound(value, "to", end=True))
+        evidence = request.query_params.get("evidence")
+        if evidence == "complete":
+            qs = qs.filter(~missing_evidence())
+        elif evidence == "incomplete":
+            qs = qs.filter(missing_evidence())
+        elif evidence:
+            raise ValidationError({"evidence": "Expected `complete` or `incomplete`."})
         return Response({"items": [application_payload(item) for item in qs[:200]]})
 
 
@@ -238,20 +499,25 @@ class ApplicationDetailView(AdminView):
         ),
         responses={200: AppDetail, **protected(), 404: NOT_FOUND_404},
     )
-    def get(self, request, application_id):
-        item = FacilityApplication.objects.select_related(
-            "facility__category", "facility__province"
-        ).get(pk=application_id)
+    def get(self, request: AuthenticatedRequest, application_id: UUID) -> Response:
+        item = get_object_or_404(
+            with_application_names(FacilityApplication.objects.all()), pk=application_id
+        )
         facility = item.facility
         evidence = facility.evidence.select_related("requirement").all()
+        images = list(facility.images.order_by("sort_order", "created_at"))
         return Response(
             {
                 **application_payload(item),
                 "facility": facility_payload(facility),
                 "snapshot": item.snapshot,
-                "publicImageIds": [
-                    str(value)
-                    for value in facility.images.values_list("id", flat=True)
+                "previous": previous_snapshot(item),
+                "location": location_payload(facility),
+                "duplicates": find_duplicates(facility),
+                "publicImageIds": [str(image.id) for image in images],
+                "publicImages": [
+                    {"id": str(image.id), "url": public_media_url(image.storage_key)}
+                    for image in images
                 ],
                 "evidence": [
                     {
@@ -282,7 +548,7 @@ class ApplicationDecisionView(AdminView):
         request=AdminDecisionRequestSerializer,
         responses={200: App, 400: VALIDATION_400, **protected(), 404: NOT_FOUND_404},
     )
-    def post(self, request, application_id):
+    def post(self, request: AuthenticatedRequest, application_id: UUID) -> Response:
         try:
             item = decide_application(
                 request=request,
@@ -350,7 +616,7 @@ class EvidenceContentView(AdminView):
             404: NOT_FOUND_404,
         },
     )
-    def get(self, request, evidence_id):
+    def get(self, request: AuthenticatedRequest, evidence_id: UUID) -> FileResponse:
         evidence = get_object_or_404(VerificationEvidence, pk=evidence_id)
         record_audit(
             actor=request.user,
@@ -359,7 +625,19 @@ class EvidenceContentView(AdminView):
             metadata={"facilityId": str(evidence.facility_id)},
             request_id=_request_id(request),
         )
-        stream = PrivateS3Storage().open(evidence.storage_key, "rb")
+        logger.info(
+            "evidence.accessed",
+            extra={
+                "evidence_id": str(evidence.pk),
+                "facility_id": str(evidence.facility_id),
+                "actor_id": str(request.user.pk),
+            },
+        )
+        try:
+            stream = PrivateS3Storage().open(evidence.storage_key, "rb")
+        except Exception:
+            logger.exception("evidence.open_failed", extra={"evidence_id": str(evidence.pk)})
+            raise
         # Evidence is re-encoded to JPEG on upload, and the stored name says so. Serving it as
         # octet-stream told the operator's browser nothing about what it received (INT-066).
         content_type = mimetypes.guess_type(evidence.storage_key)[0] or "application/octet-stream"
@@ -381,26 +659,40 @@ class FacilityListView(AdminView):
         operation_id="adminFacilitiesList",
         tags=["Admin Facilities"],
         summary="List facilities for operations",
-        description="Capped at 250 rows. Every filter is optional and combines with the rest.",
+        description=(
+            "Capped at 250 rows. Every filter is optional and combines with the rest. Each "
+            "row carries `qualityScore` (0-100) and `qualityIssues`, computed in the same "
+            "query."
+        ),
         parameters=[
             _filter("status", "Facility status, for example ACTIVE or SUSPENDED."),
             _filter("province", "Province id."),
             _filter("category", "Category id."),
             _filter("q", "Free text matched against the Arabic and English facility names."),
+            OpenApiParameter(
+                "issue",
+                str,
+                OpenApiParameter.QUERY,
+                required=False,
+                enum=QUALITY_ISSUES,
+                description="Keep facilities that have this quality issue.",
+            ),
+            OpenApiParameter(
+                "ordering",
+                str,
+                OpenApiParameter.QUERY,
+                required=False,
+                enum=list(FACILITY_ORDERINGS),
+                description="Sort order; the default is `-updatedAt` (most recently changed).",
+            ),
         ],
-        responses={200: AdminFacilityListSerializer, **protected()},
+        responses={200: AdminFacilityListSerializer, 400: VALIDATION_400, **protected()},
     )
-    def get(self, request):
-        qs = Facility.objects.select_related("category", "province").order_by("-updated_at")
-        if value := request.query_params.get("status"):
-            qs = qs.filter(status=value)
-        if value := request.query_params.get("province"):
-            qs = qs.filter(province_id=value)
-        if value := request.query_params.get("category"):
-            qs = qs.filter(category_id=value)
-        if value := request.query_params.get("q"):
-            qs = qs.filter(Q(name_ar__icontains=value) | Q(name_en__icontains=value))
-        return Response({"items": [facility_payload(item) for item in qs[:250]]})
+    def get(self, request: AuthenticatedRequest) -> Response:
+        qs = filtered_facilities(request.query_params)
+        return Response(
+            {"items": [{**facility_payload(item), **quality_payload(item)} for item in qs[:250]]}
+        )
 
 
 class FacilityDetailView(AdminView):
@@ -410,10 +702,13 @@ class FacilityDetailView(AdminView):
         operation_id="adminFacilityRetrieve",
         tags=["Admin Facilities"],
         summary="Retrieve one facility",
-        responses={200: AdminFacilitySerializer, **protected(), 404: NOT_FOUND_404},
+        responses={200: AdminFacilityQualitySerializer, **protected(), 404: NOT_FOUND_404},
     )
-    def get(self, request, facility_id):
-        return Response(facility_payload(get_object_or_404(Facility, pk=facility_id)))
+    def get(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
+        facility = get_object_or_404(
+            with_quality(with_facility_names(Facility.objects.all())), pk=facility_id
+        )
+        return Response({**facility_payload(facility), **quality_payload(facility)})
 
 
 class FacilityTransitionView(AdminView):
@@ -432,7 +727,7 @@ class FacilityTransitionView(AdminView):
             404: NOT_FOUND_404,
         },
     )
-    def post(self, request, facility_id):
+    def post(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         try:
             facility = transition_facility(
                 request=request,
@@ -521,15 +816,31 @@ class UserListView(AdminView):
                 "status",
                 "`active` keeps active accounts; any other value keeps blocked accounts.",
             ),
+            _filter(
+                "role",
+                "Admin role id or code; keeps accounts holding that role actively. The value "
+                "`any` keeps every operator, `none` every non-operator.",
+            ),
         ],
         responses={200: AdminUserListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         qs = User.objects.order_by("-created_at")
         if value := request.query_params.get("q"):
             qs = qs.filter(Q(name__icontains=value) | Q(phone__icontains=value))
         if value := request.query_params.get("status"):
             qs = qs.filter(is_active=value.lower() == "active")
+        if value := request.query_params.get("role"):
+            operators = UserAdminRole.objects.filter(active=True)
+            if value == "none":
+                qs = qs.exclude(pk__in=operators.values("user_id"))
+            else:
+                if value != "any":
+                    by = Q(role__code=value)
+                    if value.isdigit():
+                        by |= Q(role_id=int(value))
+                    operators = operators.filter(by)
+                qs = qs.filter(pk__in=operators.values("user_id"))
         return Response({"items": [user_payload(item) for item in qs[:250]]})
 
 
@@ -542,13 +853,13 @@ class UserDetailView(AdminView):
         summary="Retrieve one user with the roles assigned",
         responses={200: AdminUserDetailSerializer, **protected(), 404: NOT_FOUND_404},
     )
-    def get(self, request, user_id):
+    def get(self, request: AuthenticatedRequest, user_id: UUID) -> Response:
         user = get_object_or_404(User, pk=user_id)
         payload = user_payload(user)
-        payload["roleIds"] = [
-            str(value)
-            for value in user.admin_role_links.filter(active=True).values_list("role_id", flat=True)
-        ]
+        # Integers, as `AdminRole` is keyed and as the role list declares its ids.
+        payload["roleIds"] = list(
+            user.admin_role_links.filter(active=True).values_list("role_id", flat=True)
+        )
         return Response(payload)
 
 
@@ -564,7 +875,7 @@ class UserBlockView(AdminView):
         request=None,
         responses={200: AdminUserSerializer, **protected(), 404: NOT_FOUND_404},
     )
-    def post(self, request, user_id):
+    def post(self, request: AuthenticatedRequest, user_id: UUID) -> Response:
         user = get_object_or_404(User, pk=user_id)
         updated = set_user_blocked(
             request=request,
@@ -596,13 +907,14 @@ class RoleListView(AdminView):
         summary="List admin roles and their permission codes",
         responses={200: AdminRoleListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         items = AdminRole.objects.prefetch_related("permissions").order_by("name")
         return Response(
             {
                 "items": [
                     {
-                        "id": str(role.id),
+                        # An integer, as `AdminRoleSerializer` has always declared it.
+                        "id": role.id,
                         "code": role.code,
                         "name": role.name,
                         "permissions": list(role.permissions.values_list("code", flat=True)),
@@ -627,7 +939,7 @@ class UserRolesView(AdminView):
         request=AdminUserRolesRequestSerializer,
         responses={204: None, 400: VALIDATION_400, **protected(), 404: NOT_FOUND_404},
     )
-    def put(self, request, user_id):
+    def put(self, request: AuthenticatedRequest, user_id: UUID) -> Response:
         role_ids = request.data.get("roleIds", [])
         if not isinstance(role_ids, list):
             raise ValidationError({"roleIds": "Must be a list."})
@@ -640,7 +952,8 @@ class UserRolesView(AdminView):
 
 class TaxonomyView(AdminView):
     required_permission = "admin.taxonomy.read"
-    model = None
+    # CategoryGroup or Category, set by each subclass.
+    model: Any = None
 
     @extend_schema(
         operation_id="adminTaxonomyList",
@@ -648,10 +961,11 @@ class TaxonomyView(AdminView):
         summary="List taxonomy rows",
         responses={200: AdminCategoryListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
+        serializer: type[AdminCategoryGroupSerializer] | type[AdminCategorySerializer]
         if self.model is CategoryGroup:
             rows = self.model.objects.order_by("sort_order", "name_ar").values(
-                "id", "code", "name_ar", "name_en", "active", "sort_order"
+                "id", "code", "name_ar", "name_en", "icon_key", "active", "sort_order"
             )
             serializer = AdminCategoryGroupSerializer
         else:
@@ -707,7 +1021,7 @@ class CategoryGroupCreateView(AdminView):
         request=AdminCategoryGroupRequestSerializer,
         responses={201: AdminIdSerializer, 400: VALIDATION_400, **protected()},
     )
-    def post(self, request):
+    def post(self, request: AuthenticatedRequest) -> Response:
         payload = AdminCategoryGroupRequestSerializer(data=request.data)
         payload.is_valid(raise_exception=True)
         if not payload.validated_data.get("code") or not payload.validated_data.get("nameAr"):
@@ -735,7 +1049,7 @@ class CategoryGroupDetailView(AdminView):
             404: NOT_FOUND_404,
         },
     )
-    def put(self, request, group_id):
+    def put(self, request: AuthenticatedRequest, group_id: UUID) -> Response:
         payload = AdminCategoryGroupRequestSerializer(data=request.data, partial=True)
         payload.is_valid(raise_exception=True)
         try:
@@ -762,7 +1076,7 @@ class CategoryCreateView(AdminView):
         request=AdminCategoryCreateRequestSerializer,
         responses={201: AdminIdSerializer, 400: VALIDATION_400, **protected()},
     )
-    def post(self, request):
+    def post(self, request: AuthenticatedRequest) -> Response:
         payload = AdminCategoryCreateRequestSerializer(data=request.data)
         payload.is_valid(raise_exception=True)
         try:
@@ -792,7 +1106,7 @@ class CategoryDetailView(AdminView):
             404: NOT_FOUND_404,
         },
     )
-    def put(self, request, category_id):
+    def put(self, request: AuthenticatedRequest, category_id: UUID) -> Response:
         payload = AdminCategoryUpdateRequestSerializer(data=request.data, partial=True)
         payload.is_valid(raise_exception=True)
         data = dict(payload.validated_data)
@@ -824,7 +1138,7 @@ class CategoryCapabilitiesView(AdminView):
             404: NOT_FOUND_404,
         },
     )
-    def put(self, request, category_id):
+    def put(self, request: AuthenticatedRequest, category_id: UUID) -> Response:
         category = get_object_or_404(Category, pk=category_id)
         capabilities, _ = CategoryCapabilities.objects.get_or_create(category=category)
         payload = AdminCapabilitiesRequestSerializer(data=request.data, partial=True)
@@ -833,9 +1147,7 @@ class CategoryCapabilitiesView(AdminView):
         # INT-039: the wire is camelCase and the columns are not. The serializer's `source`
         # mapping is the translation, so `validated_data` already carries column names.
         columns = [
-            field.name
-            for field in capabilities._meta.fields
-            if field.name.startswith("supports_")
+            field.name for field in capabilities._meta.fields if field.name.startswith("supports_")
         ]
         before = {name: getattr(capabilities, name) for name in columns}
         for name, value in payload.validated_data.items():
@@ -865,7 +1177,7 @@ class ProvinceListView(AdminView):
         summary="List every province",
         responses={200: AdminProvinceListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         return Response(
             {
                 "items": AdminProvinceSerializer(
@@ -888,7 +1200,7 @@ class ProvinceDetailView(AdminView):
         request=AdminProvinceUpdateRequestSerializer,
         responses={200: AdminProvinceUpdatedSerializer, **protected(), 404: NOT_FOUND_404},
     )
-    def put(self, request, province_id):
+    def put(self, request: AuthenticatedRequest, province_id: UUID) -> Response:
         province = get_object_or_404(Province, pk=province_id)
         before = {"active": province.active, "sortOrder": province.sort_order}
         if "active" in request.data:
@@ -918,7 +1230,7 @@ class CategoryProvinceView(AdminView):
         request=AdminCategoryProvinceRequestSerializer,
         responses={200: AdminIdSerializer, 400: VALIDATION_400, **protected(), 404: NOT_FOUND_404},
     )
-    def put(self, request, category_id):
+    def put(self, request: AuthenticatedRequest, category_id: UUID) -> Response:
         province_id = request.data.get("provinceId")
         if not province_id:
             raise ValidationError({"provinceId": "Required."})
@@ -959,7 +1271,7 @@ class VerificationRequirementListView(AdminView):
         summary="List verification requirements",
         responses={200: AdminVerificationRequirementListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         qs = VerificationRequirement.objects.order_by("category_id", "sort_order")
         return Response(
             {
@@ -988,7 +1300,7 @@ class VerificationRequirementListView(AdminView):
         request=AdminVerificationRequirementRequestSerializer,
         responses={201: AdminIdSerializer, 400: VALIDATION_400, **protected()},
     )
-    def post(self, request):
+    def post(self, request: AuthenticatedRequest) -> Response:
         self.required_permission = "admin.verification.manage"
         if not HasAdminPermission().has_permission(request, self):
             self.permission_denied(request)
@@ -1023,7 +1335,7 @@ class VerificationRequirementDetailView(AdminView):
             404: NOT_FOUND_404,
         },
     )
-    def put(self, request, requirement_id):
+    def put(self, request: AuthenticatedRequest, requirement_id: int) -> Response:
         payload = AdminVerificationRequirementUpdateRequestSerializer(
             data=request.data, partial=True
         )
@@ -1049,7 +1361,7 @@ class AdvertisementListView(AdminView):
         summary="List advertisements",
         responses={200: AdminAdvertisementListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         return Response(
             {
                 "items": AdminAdvertisementSerializer(
@@ -1057,6 +1369,9 @@ class AdvertisementListView(AdminView):
                         "id",
                         "title_ar",
                         "target_scope",
+                        "province_id",
+                        "category_id",
+                        "image_key",
                         "enabled",
                         "starts_at",
                         "ends_at",
@@ -1079,7 +1394,7 @@ class AdvertisementListView(AdminView):
         request=AdminAdvertisementRequestSerializer,
         responses={201: AdminIdSerializer, 400: VALIDATION_400, **protected()},
     )
-    def post(self, request):
+    def post(self, request: AuthenticatedRequest) -> Response:
         self.required_permission = "admin.ads.manage"
         if not HasAdminPermission().has_permission(request, self):
             self.permission_denied(request)
@@ -1114,7 +1429,7 @@ class AdvertisementDetailView(AdminView):
             404: NOT_FOUND_404,
         },
     )
-    def put(self, request, advertisement_id):
+    def put(self, request: AuthenticatedRequest, advertisement_id: UUID) -> Response:
         payload = AdminAdvertisementUpdateRequestSerializer(data=request.data, partial=True)
         payload.is_valid(raise_exception=True)
         ad = get_object_or_404(Advertisement, pk=advertisement_id)
@@ -1130,7 +1445,7 @@ class AdvertisementDetailView(AdminView):
         summary="Delete an advertisement",
         responses={204: None, **protected(), 404: NOT_FOUND_404},
     )
-    def delete(self, request, advertisement_id):
+    def delete(self, request: AuthenticatedRequest, advertisement_id: UUID) -> Response:
         ad = get_object_or_404(Advertisement, pk=advertisement_id)
         delete_advertisement(actor=request.user, advertisement=ad)
         return Response(status=204)
@@ -1155,19 +1470,13 @@ class AuditListView(AdminView):
                 "Substring matched against the target type, or an exact target id.",
             ),
             _filter("requestId", "Exact request correlation id, as returned in an error body."),
+            _filter("from", "ISO date or datetime; keeps entries created at or after it."),
+            _filter("to", "ISO date or datetime; a bare date includes that whole day."),
         ],
-        responses={200: AdminAuditListSerializer, **protected()},
+        responses={200: AdminAuditListSerializer, 400: VALIDATION_400, **protected()},
     )
-    def get(self, request):
-        qs = AuditEvent.objects.order_by("-created_at")
-        if value := request.query_params.get("actor"):
-            qs = qs.filter(actor_id=value)
-        if value := request.query_params.get("action"):
-            qs = qs.filter(action__icontains=value)
-        if value := request.query_params.get("resource"):
-            qs = qs.filter(Q(target_type__icontains=value) | Q(target_id=value))
-        if value := request.query_params.get("requestId"):
-            qs = qs.filter(request_id=value)
+    def get(self, request: AuthenticatedRequest) -> Response:
+        qs = filtered_audit(request.query_params)
         return Response(
             {
                 "items": AdminAuditEntrySerializer(
@@ -1194,9 +1503,21 @@ class AnalyticsView(AdminView):
         operation_id="adminAnalyticsRetrieve",
         tags=["Admin Analytics"],
         summary="Operational KPIs",
-        responses={200: AdminAnalyticsSerializer, **protected()},
+        description=(
+            "Period-bound KPIs (approval median and the four event counts) cover `from` to "
+            "`to`, by default the last 30 days, and `previous` holds the same KPIs for the "
+            "equally long period just before, for comparison. The remaining fields are "
+            "current totals."
+        ),
+        parameters=[
+            _filter("from", "ISO date or datetime; default 30 days before `to`."),
+            _filter("to", "ISO date or datetime; a bare date includes that whole day."),
+        ],
+        responses={200: AdminAnalyticsSerializer, 400: VALIDATION_400, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
+        start, end = analytics_period(request)
+        span = end - start
         event_counts = list(
             ProductAnalyticsEvent.objects.values("name")
             .annotate(count=Count("id"))
@@ -1204,6 +1525,14 @@ class AnalyticsView(AdminView):
         )
         return Response(
             {
+                "from": start.isoformat(),
+                "to": end.isoformat(),
+                **_period_kpis(start, end),
+                "previous": {
+                    "from": (start - span).isoformat(),
+                    "to": start.isoformat(),
+                    **_period_kpis(start - span, start),
+                },
                 "activeFacilities": Facility.objects.filter(status=Facility.Status.ACTIVE).count(),
                 "pendingReviews": FacilityApplication.objects.filter(
                     status=FacilityApplication.Status.SUBMITTED
@@ -1223,7 +1552,7 @@ class SettingsView(AdminView):
         summary="List typed platform settings",
         responses={200: AdminSettingListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         return Response(
             {
                 "items": AdminSettingSerializer(
@@ -1243,13 +1572,16 @@ class SettingsView(AdminView):
         request=AdminSettingWriteRequestSerializer,
         responses={200: AdminSettingWrittenSerializer, 400: VALIDATION_400, **protected()},
     )
-    def put(self, request):
+    def put(self, request: AuthenticatedRequest) -> Response:
         self.required_permission = "admin.settings.manage"
         if not HasAdminPermission().has_permission(request, self):
             self.permission_denied(request)
         key = str(request.data.get("key", "")).strip()
         if not key:
             raise ValidationError({"key": "Required."})
+        typed = TYPED_SETTING_DEFAULTS.get(key)
+        if typed is not None and request.data.get("type", typed[0]) != typed[0]:
+            raise ValidationError({"type": f"{key} must be {typed[0]}."})
         setting, _ = PlatformSetting.objects.get_or_create(
             key=key,
             defaults={"value_type": request.data.get("type", "JSON"), "value": None},
@@ -1287,7 +1619,7 @@ class SystemStatusView(AdminView):
         ),
         responses={200: AdminSystemStatusSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         database = "unavailable"
         try:
             with connection.cursor() as cursor:
@@ -1305,16 +1637,161 @@ class SystemStatusView(AdminView):
                 "database": database,
                 "redis": "configured" if getattr(settings, "REDIS_URL", "") else "unconfigured",
                 "celery": (
-                    "configured"
-                    if getattr(settings, "CELERY_BROKER_URL", "")
-                    else "unconfigured"
+                    "configured" if getattr(settings, "CELERY_BROKER_URL", "") else "unconfigured"
                 ),
                 "storage": (
-                    "configured"
-                    if getattr(settings, "S3_ENDPOINT_URL", "")
-                    else "unconfigured"
+                    "configured" if getattr(settings, "S3_ENDPOINT_URL", "") else "unconfigured"
                 ),
                 "schemaHash": getattr(settings, "OPENAPI_SCHEMA_HASH", "unavailable"),
                 "checkedAt": timezone.now().isoformat(),
             }
         )
+
+
+def _report_payload(report: Any) -> dict[str, Any]:
+    return {
+        "id": str(report.pk),
+        "facilityId": str(report.facility_id),
+        "facilityNameAr": report.facility.name_ar,
+        "reporterId": str(report.reporter_id) if report.reporter_id else None,
+        "reason": report.reason,
+        "note": report.note,
+        "status": report.status,
+        "createdAt": report.created_at.isoformat(),
+        "resolvedById": str(report.resolved_by_id) if report.resolved_by_id else None,
+        "resolvedAt": report.resolved_at.isoformat() if report.resolved_at else None,
+    }
+
+
+class ReportListView(AdminView):
+    required_permission = "admin.reports.read"
+
+    @extend_schema(
+        operation_id="adminReportsList",
+        tags=["Admin Reports"],
+        summary="List facility problem reports",
+        description="Newest first, capped at 250 rows.",
+        parameters=[
+            _filter("status", "OPEN, RESOLVED or DISMISSED."),
+            _filter("facility", "Facility id."),
+        ],
+        responses={200: AdminFacilityReportListSerializer, **protected()},
+    )
+    def get(self, request: Any) -> Response:
+        qs = filtered_reports(request.query_params)
+        return Response({"items": [_report_payload(item) for item in qs[:250]]})
+
+
+class ReportDecisionView(AdminView):
+    required_permission = "admin.reports.manage"
+    target_status = FacilityReport.Status.RESOLVED
+
+    @extend_schema(
+        operation_id="adminReportResolve",
+        tags=["Admin Reports"],
+        summary="Mark a report resolved",
+        description="Only OPEN reports can be decided; the decision is audited.",
+        request=AdminReportDecisionRequestSerializer,
+        responses={
+            200: AdminFacilityReportSerializer,
+            400: VALIDATION_400,
+            **protected(),
+            404: NOT_FOUND_404,
+        },
+    )
+    def post(self, request: Any, report_id: Any) -> Response:
+        payload = AdminReportDecisionRequestSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        with transaction.atomic():
+            report = get_object_or_404(
+                FacilityReport.objects.select_for_update().select_related("facility"),
+                pk=report_id,
+            )
+            try:
+                decide_report(
+                    report=report,
+                    target_status=self.target_status,
+                    actor=request.user,
+                    note=payload.validated_data.get("note", ""),
+                    request_id=_request_id(request),
+                )
+            except DjangoValidationError as exc:
+                raise _validation_error(exc) from exc
+        return Response(_report_payload(report))
+
+
+@extend_schema_view(
+    post=extend_schema(
+        operation_id="adminReportDismiss",
+        tags=["Admin Reports"],
+        summary="Dismiss a report",
+        description="Only OPEN reports can be decided; the decision is audited.",
+        request=AdminReportDecisionRequestSerializer,
+        responses={
+            200: AdminFacilityReportSerializer,
+            400: VALIDATION_400,
+            **protected(),
+            404: NOT_FOUND_404,
+        },
+    )
+)
+class ReportDismissView(ReportDecisionView):
+    target_status = FacilityReport.Status.DISMISSED
+
+
+def _city_payload(city: Any) -> dict[str, Any]:
+    return {
+        "id": str(city.pk),
+        "code": city.code,
+        "nameAr": city.name_ar,
+        "nameEn": city.name_en or None,
+        "active": city.active,
+    }
+
+
+class ProvinceCityListView(AdminView):
+    required_permission = "admin.provinces.read"
+
+    @extend_schema(
+        operation_id="adminProvinceCitiesList",
+        tags=["Admin Provinces"],
+        summary="List every city of a province, active or not",
+        responses={200: AdminCityAdminListSerializer, **protected(), 404: NOT_FOUND_404},
+    )
+    def get(self, request: Any, province_id: Any) -> Response:
+        province = get_object_or_404(Province, pk=province_id)
+        cities = City.objects.filter(province=province).order_by("name_ar")
+        return Response({"items": [_city_payload(city) for city in cities]})
+
+
+class ProvinceCityDetailView(AdminView):
+    required_permission = "admin.provinces.manage"
+
+    @extend_schema(
+        operation_id="adminProvinceCityUpdate",
+        tags=["Admin Provinces"],
+        summary="Activate or deactivate a city",
+        request=AdminCityUpdateRequestSerializer,
+        responses={
+            200: AdminCityAdminSerializer,
+            400: VALIDATION_400,
+            **protected(),
+            404: NOT_FOUND_404,
+        },
+    )
+    def put(self, request: Any, province_id: Any, city_id: Any) -> Response:
+        payload = AdminCityUpdateRequestSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        city = get_object_or_404(City, pk=city_id, province_id=province_id)
+        before = {"active": city.active}
+        city.active = payload.validated_data["active"]
+        city.save(update_fields=["active"])
+        record_audit(
+            actor=request.user,
+            action="city.updated",
+            target=city,
+            before_snapshot=before,
+            after_snapshot={"active": city.active},
+            request_id=_request_id(request),
+        )
+        return Response(_city_payload(city))

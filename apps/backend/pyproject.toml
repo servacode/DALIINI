@@ -15,10 +15,11 @@ dependencies = [
   "redis>=6,<7",
   "psycopg[binary]>=3.2,<4",
   "argon2-cffi>=25,<26",
-  "Pillow>=11,<12",
+  "Pillow>=12.3.0,<13",
   "django-storages[s3]>=1.14,<2",
   "dj-database-url>=3,<4",
   "cryptography>=46,<47",
+  "sentry-sdk>=2,<3",
 ]
 
 [dependency-groups]
@@ -45,6 +46,22 @@ plugins = ["mypy_django_plugin.main"]
 strict = true
 warn_unused_ignores = true
 exclude = ["migrations/"]
+
+# Installed packages that ship no type information (no py.typed marker, and no stub
+# package in the lock). Only the modules the code imports are listed; what comes from
+# them is typed Any.
+[[tool.mypy.overrides]]
+module = [
+  "celery",
+  "celery.exceptions",
+  "celery.schedules",
+  "channels.generic.websocket",
+  "channels.layers",
+  "channels.routing",
+  "channels.testing",
+  "storages.backends.s3",
+]
+ignore_missing_imports = true
 
 [tool.django-stubs]
 django_settings_module = "directory_backend.settings.test"

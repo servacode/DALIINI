@@ -7,12 +7,11 @@ import com.servacode.directory.core.network.api.ApiEnvironment
 import com.servacode.directory.core.network.api.ClientIdentity
 import com.servacode.directory.core.network.api.GeneratedAuthApi
 import com.servacode.directory.core.network.api.GeneratedClient
+import com.servacode.directory.core.network.api.GeneratedMaintenanceProbe
 import com.servacode.directory.core.network.api.GeneratedOwnerApi
 import com.servacode.directory.core.network.api.GeneratedPublicApi
 import com.servacode.directory.core.network.api.GeneratedPushRegistration
 import com.servacode.directory.core.network.api.GeneratedRefreshGateway
-import com.servacode.directory.core.observability.NoOpObservability
-import com.servacode.directory.core.observability.Observability
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,8 +35,8 @@ annotation class AuthorizedApi
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    @Provides @Singleton
-    fun provideObservability(): Observability = NoOpObservability
+    // Observability is bound by the app (ObservabilityModule): crash reporting when the build
+    // carries a DSN, nothing otherwise.
 
     /** The shared base: timeouts and the connection pool. Used as-is by the WebSocket. */
     @Provides @Singleton
@@ -55,10 +54,15 @@ object NetworkModule {
      * nothing would ever run again.
      */
     @Provides @Singleton @AnonymousApi
-    fun provideAnonymousHttpClient(base: OkHttpClient, requestIds: RequestIdInterceptor): OkHttpClient =
+    fun provideAnonymousHttpClient(
+        base: OkHttpClient,
+        requestIds: RequestIdInterceptor,
+        maintenance: MaintenanceInterceptor,
+    ): OkHttpClient =
         base.newBuilder()
             .dispatcher(Dispatcher())
             .addInterceptor(requestIds)
+            .addInterceptor(maintenance)
             .build()
 
     @Provides @Singleton @AnonymousApi
@@ -78,9 +82,11 @@ object NetworkModule {
         requestIds: RequestIdInterceptor,
         accessTokens: AccessTokenInterceptor,
         session: SessionCoordinator,
+        maintenance: MaintenanceInterceptor,
     ): OkHttpClient = base.newBuilder()
         .dispatcher(Dispatcher())
         .addInterceptor(requestIds)
+        .addInterceptor(maintenance)
         .addInterceptor(accessTokens)
         .authenticator(RefreshAuthenticator(session))
         .build()
@@ -109,4 +115,11 @@ object NetworkModule {
     @Provides @Singleton
     fun providePushRegistrationBoundary(@AuthorizedApi authorized: GeneratedClient): PushRegistrationBoundary =
         GeneratedPushRegistration(authorized)
+
+    /** Maintenance ends when this answers normally; see [MaintenanceCoordinator]. */
+    @Provides @Singleton
+    fun provideMaintenanceProbe(
+        @AnonymousApi anonymous: GeneratedClient,
+        state: MaintenanceState,
+    ): MaintenanceProbe = GeneratedMaintenanceProbe(anonymous, state)
 }

@@ -105,10 +105,11 @@ interface AdminUsersApi {
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *
      * @param q Free text matched against the account name and phone number. (optional)
+     * @param role Admin role id or code; keeps accounts holding that role actively. The value &#x60;any&#x60; keeps every operator, &#x60;none&#x60; every non-operator. (optional)
      * @param status &#x60;active&#x60; keeps active accounts; any other value keeps blocked accounts. (optional)
      * @return [AdminUserList]
      */
     @GET("api/v1/admin/users/")
-    suspend fun adminUsersList(@Query("q") q: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminUserList>
+    suspend fun adminUsersList(@Query("q") q: kotlin.String? = null, @Query("role") role: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminUserList>
 
 }

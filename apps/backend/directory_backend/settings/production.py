@@ -1,6 +1,7 @@
 from django.core.exceptions import ImproperlyConfigured
 
 from .base import *  # noqa: F403
+from .base import CHANNEL_LAYERS
 from .env import env, env_bool, env_csv
 
 DEBUG = env_bool("DEBUG", False)
@@ -25,6 +26,7 @@ PUSH_PROVIDER = env("PUSH_PROVIDER", required=True)
 PUSH_TOKEN_ENCRYPTION_KEY = env("PUSH_TOKEN_ENCRYPTION_KEY", required=True)
 ANALYTICS_HASH_SALT = env("ANALYTICS_HASH_SALT", required=True)
 FCM_PROJECT_ID = env("FCM_PROJECT_ID", "")
+FCM_SERVICE_ACCOUNT_JSON = env("FCM_SERVICE_ACCOUNT_JSON", "")
 
 if DEBUG:
     raise ImproperlyConfigured("Production DEBUG must be false")
@@ -48,10 +50,25 @@ if len(ANALYTICS_HASH_SALT) < 32:
     raise ImproperlyConfigured("Production ANALYTICS_HASH_SALT is too short")
 if PUSH_PROVIDER.lower() == "fcm" and not FCM_PROJECT_ID:
     raise ImproperlyConfigured("FCM_PROJECT_ID is required when PUSH_PROVIDER=fcm")
+if PUSH_PROVIDER.lower() == "fcm" and not FCM_SERVICE_ACCOUNT_JSON.strip():
+    raise ImproperlyConfigured("FCM_SERVICE_ACCOUNT_JSON is required when PUSH_PROVIDER=fcm")
 
 CHANNEL_LAYERS["default"]["CONFIG"]["hosts"] = [REDIS_URL]
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
+
+# The throttles and the maintenance gate count and cache through Django's cache. The
+# default local-memory cache is per process, so behind several workers a rate limit would
+# be multiplied by the worker count and a maintenance switch would take one TTL per process
+# to be seen. Redis is already required here, so the cache shares it.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": REDIS_URL,
+        "KEY_PREFIX": "directory",
+        "TIMEOUT": 300,
+    }
+}
 
 # 07-BACKEND-DJANGO: the interactive schema route is not served in production.
 OPENAPI_SCHEMA_EXPOSURE = "disabled"

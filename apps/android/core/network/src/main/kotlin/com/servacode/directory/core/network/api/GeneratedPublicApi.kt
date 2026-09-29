@@ -1,7 +1,13 @@
 package com.servacode.directory.core.network.api
 
+import com.servacode.directory.core.model.EmergencyNumber
+import com.servacode.directory.core.model.DutyDay
+import com.servacode.directory.api.apis.PublicFacilitiesApi
+import com.servacode.directory.api.models.FacilityReportRequest
+import com.servacode.directory.core.model.FacilityReportReason
 import com.servacode.directory.api.apis.AccountApi
 import com.servacode.directory.api.apis.ContentApi
+import com.servacode.directory.api.apis.AdsApi
 import com.servacode.directory.api.apis.PublicDiscoveryApi
 import com.servacode.directory.api.apis.PublicTaxonomyApi
 import com.servacode.directory.api.apis.RatingsApi
@@ -18,8 +24,10 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import com.servacode.directory.core.model.AccountProfile
 import com.servacode.directory.core.model.Category
+import com.servacode.directory.core.model.CategoryTags
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.FacilitySummary
+import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.HomeSnapshot
 import com.servacode.directory.core.model.InboxPage
 import com.servacode.directory.core.model.LegalPage
@@ -44,9 +52,14 @@ import java.util.UUID
 class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient) : PublicApiBoundary {
     private val discovery by lazy { anonymous.create<PublicDiscoveryApi>() }
     private val taxonomy by lazy { anonymous.create<PublicTaxonomyApi>() }
+    private val adverts by lazy { anonymous.create<AdsApi>() }
     private val account by lazy { authorized.create<AccountApi>() }
     private val content by lazy { anonymous.create<ContentApi>() }
     private val ratings by lazy { authorized.create<RatingsApi>() }
+
+    // Through the signed-in client so a report is attributed when there is a session; with none
+    // it goes out without a token, which the endpoint accepts.
+    private val reports by lazy { authorized.create<PublicFacilitiesApi>() }
 
     override suspend fun provinces(): List<Province> =
         call { taxonomy.publicProvincesList() }.items.map { it.toDomain() }
@@ -54,6 +67,9 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
     override suspend fun categories(provinceId: String): List<Category> =
         call { taxonomy.publicProvinceCategoriesList(UUID.fromString(provinceId)) }
             .items.map { it.toDomain() }
+
+    override suspend fun categoryTags(categoryId: String): CategoryTags =
+        call { taxonomy.publicCategoryTagsRetrieve(UUID.fromString(categoryId)) }.toDomain()
 
     override suspend fun home(province: Province, latitude: Double?, longitude: Double?): HomeSnapshot =
         call {
@@ -63,6 +79,18 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
                 longitude = longitude?.toString(),
             )
         }.toDomain(province)
+
+    override suspend fun emergencyNumbers(provinceId: String?): List<EmergencyNumber> =
+        call { content.publicEmergencyNumbersList(provinceId = provinceId) }.items
+            .sortedBy { it.sortOrder }
+            .map { it.toDomain() }
+
+    override suspend fun dutyRoster(provinceId: String, date: String?, days: Int): List<DutyDay> =
+        call { discovery.publicDutyByDateList(provinceId = provinceId, date = date, days = days.coerceIn(1, 7)) }
+            .days.map { it.toDomain() }
+
+    override suspend fun ads(provinceId: String): List<HomeAd> =
+        call { adverts.publicAdsList(provinceId = provinceId) }.items.map { it.toDomain() }
 
     override suspend fun search(
         provinceId: String,
@@ -98,6 +126,9 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
             latitude = query.latitude?.toString(),
             longitude = query.longitude?.toString(),
             limit = query.pageSize,
+            // Integer keys on the wire; the domain keeps every id as a String.
+            specialtyId = query.specialtyId?.toInt(),
+            serviceTagId = query.serviceTagId?.toInt(),
         )
     }.toDomain()
 
@@ -123,6 +154,18 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
 
     override suspend fun facility(id: String): FacilityDetail =
         call { discovery.publicFacilityRetrieve(UUID.fromString(id)) }.toDomain()
+
+    override suspend fun reportFacility(facilityId: String, reason: FacilityReportReason, note: String?) {
+        call {
+            reports.publicFacilityReportCreate(
+                facilityId = UUID.fromString(facilityId),
+                facilityReportRequest = FacilityReportRequest(
+                    reason = reason.toWire(),
+                    note = note?.trim()?.takeIf { it.isNotEmpty() },
+                ),
+            )
+        }
+    }
 
     override suspend fun profile(): AccountProfile = call { account.accountProfileRetrieve() }.toDomain()
 

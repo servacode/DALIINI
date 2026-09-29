@@ -6,8 +6,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
- * The colour a status is read in. The word beside it is always the backend's own label, so the
- * tone may never be the only thing carrying the meaning — but it must never contradict it.
+ * The colour a status is read in: the tone the shared vocabulary gives it
+ * (`packages/design-tokens/vocabulary.json`, `facilityStatus`), so the owner's app and the
+ * operators' console colour a facility the same way. The word beside it always carries the
+ * meaning; the tone must never contradict it.
  */
 class OwnerStatusToneTest {
     @Test
@@ -16,15 +18,15 @@ class OwnerStatusToneTest {
     }
 
     @Test
-    fun `waiting on a reviewer reads as pending`() {
-        assertEquals(StatusTone.PENDING, OwnerFacilityStatus.SUBMITTED.tone())
-        assertEquals(StatusTone.PENDING, OwnerFacilityStatus.REVERIFICATION_REQUIRED.tone())
+    fun `waiting on a reviewer is information, a request to reverify is a warning`() {
+        assertEquals(StatusTone.INFO, OwnerFacilityStatus.SUBMITTED.tone())
+        assertEquals(StatusTone.WARNING, OwnerFacilityStatus.REVERIFICATION_REQUIRED.tone())
     }
 
     @Test
-    fun `only a suspension reads as wrong`() {
-        assertEquals(StatusTone.DANGER, OwnerFacilityStatus.SUSPENDED.tone())
-        assertEquals(StatusTone.NEUTRAL, OwnerFacilityStatus.CLOSED.tone())
+    fun `a suspension warns, a closure is final, a draft is a fact`() {
+        assertEquals(StatusTone.WARNING, OwnerFacilityStatus.SUSPENDED.tone())
+        assertEquals(StatusTone.DANGER, OwnerFacilityStatus.CLOSED.tone())
         assertEquals(StatusTone.NEUTRAL, OwnerFacilityStatus.DRAFT.tone())
     }
 

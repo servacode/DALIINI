@@ -15,4 +15,17 @@
          message carried no words of its own. -->
     <string name="app_notification_channel">التحديثات</string>
     <string name="app_notification_body">لديك تحديث جديد</string>
+
+    <!-- The home-screen widget: its name in the launcher's list, what the list says about it,
+         and its own words. Offline and distances are the design system's shared words. -->
+    <string name="widget_duty_label">المناوب الآن</string>
+    <string name="widget_duty_description">أقرب المنشآت المناوبة الآن في محافظتك، والاتصال بها بلمسة.</string>
+    <string name="widget_duty_title">المناوب الآن</string>
+    <string name="widget_duty_no_province">افتح التطبيق واختر محافظتك لعرض المناوب الآن.</string>
+    <string name="widget_duty_loading">جارٍ التحميل…</string>
+    <string name="widget_duty_empty">لا توجد منشأة مناوبة الآن.</string>
+    <!-- %1$s is a time on Damascus clocks, "14:30". -->
+    <string name="widget_duty_updated">آخر تحديث %1$s</string>
+    <!-- The call button, as a screen reader says it. %1$s is the facility's name. -->
+    <string name="widget_duty_call">اتصال بـ%1$s</string>
 </resources>

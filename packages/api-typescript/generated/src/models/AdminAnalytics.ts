@@ -20,6 +20,13 @@ import {
     AdminEventCountToJSON,
     AdminEventCountToJSONTyped,
 } from './AdminEventCount';
+import type { AdminAnalyticsPeriodKpis } from './AdminAnalyticsPeriodKpis';
+import {
+    AdminAnalyticsPeriodKpisFromJSON,
+    AdminAnalyticsPeriodKpisFromJSONTyped,
+    AdminAnalyticsPeriodKpisToJSON,
+    AdminAnalyticsPeriodKpisToJSONTyped,
+} from './AdminAnalyticsPeriodKpis';
 
 /**
  * 
@@ -27,6 +34,54 @@ import {
  * @interface AdminAnalytics
  */
 export interface AdminAnalytics {
+    /**
+     * Period start, inclusive.
+     * @type {Date}
+     * @memberof AdminAnalytics
+     */
+    from: Date;
+    /**
+     * Period end, exclusive.
+     * @type {Date}
+     * @memberof AdminAnalytics
+     */
+    to: Date;
+    /**
+     * Median submit-to-approval time in the period.
+     * @type {number}
+     * @memberof AdminAnalytics
+     */
+    approvalMedianHours: number | null;
+    /**
+     * search_submitted events in the period.
+     * @type {number}
+     * @memberof AdminAnalytics
+     */
+    searches: number;
+    /**
+     * search_zero_results in the period.
+     * @type {number}
+     * @memberof AdminAnalytics
+     */
+    zeroResultSearches: number;
+    /**
+     * facility_view events in the period.
+     * @type {number}
+     * @memberof AdminAnalytics
+     */
+    facilityViews: number;
+    /**
+     * directions_start in the period.
+     * @type {number}
+     * @memberof AdminAnalytics
+     */
+    directionsRequests: number;
+    /**
+     * The same KPIs for the equally long period just before `from`.
+     * @type {AdminAnalyticsPeriodKpis}
+     * @memberof AdminAnalytics
+     */
+    previous: AdminAnalyticsPeriodKpis;
     /**
      * 
      * @type {number}
@@ -46,7 +101,7 @@ export interface AdminAnalytics {
      */
     ratingAverage: number | null;
     /**
-     * 
+     * All-time counts per event name.
      * @type {Array<AdminEventCount>}
      * @memberof AdminAnalytics
      */
@@ -57,6 +112,14 @@ export interface AdminAnalytics {
  * Check if a given object implements the AdminAnalytics interface.
  */
 export function instanceOfAdminAnalytics(value: object): value is AdminAnalytics {
+    if (!('from' in value) || value['from'] === undefined) return false;
+    if (!('to' in value) || value['to'] === undefined) return false;
+    if (!('approvalMedianHours' in value) || value['approvalMedianHours'] === undefined) return false;
+    if (!('searches' in value) || value['searches'] === undefined) return false;
+    if (!('zeroResultSearches' in value) || value['zeroResultSearches'] === undefined) return false;
+    if (!('facilityViews' in value) || value['facilityViews'] === undefined) return false;
+    if (!('directionsRequests' in value) || value['directionsRequests'] === undefined) return false;
+    if (!('previous' in value) || value['previous'] === undefined) return false;
     if (!('activeFacilities' in value) || value['activeFacilities'] === undefined) return false;
     if (!('pendingReviews' in value) || value['pendingReviews'] === undefined) return false;
     if (!('ratingAverage' in value) || value['ratingAverage'] === undefined) return false;
@@ -74,6 +137,14 @@ export function AdminAnalyticsFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
+        'from': (new Date(json['from'])),
+        'to': (new Date(json['to'])),
+        'approvalMedianHours': json['approvalMedianHours'],
+        'searches': json['searches'],
+        'zeroResultSearches': json['zeroResultSearches'],
+        'facilityViews': json['facilityViews'],
+        'directionsRequests': json['directionsRequests'],
+        'previous': AdminAnalyticsPeriodKpisFromJSON(json['previous']),
         'activeFacilities': json['activeFacilities'],
         'pendingReviews': json['pendingReviews'],
         'ratingAverage': json['ratingAverage'],
@@ -92,6 +163,14 @@ export function AdminAnalyticsToJSONTyped(value?: AdminAnalytics | null, ignoreD
 
     return {
         
+        'from': ((value['from']).toISOString()),
+        'to': ((value['to']).toISOString()),
+        'approvalMedianHours': value['approvalMedianHours'],
+        'searches': value['searches'],
+        'zeroResultSearches': value['zeroResultSearches'],
+        'facilityViews': value['facilityViews'],
+        'directionsRequests': value['directionsRequests'],
+        'previous': AdminAnalyticsPeriodKpisToJSON(value['previous']),
         'activeFacilities': value['activeFacilities'],
         'pendingReviews': value['pendingReviews'],
         'ratingAverage': value['ratingAverage'],

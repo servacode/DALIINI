@@ -22,7 +22,7 @@ def publish_after_commit(event: RealtimeEvent) -> None:
     payload = event.payload()
     group = _group_for(event)
 
-    def publish():
+    def publish() -> None:
         channel_layer = get_channel_layer()
         if channel_layer is None:
             return

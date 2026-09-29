@@ -1,11 +1,13 @@
 """Response contract for opening hours and temporary closures."""
 
+from typing import Any
+
 from rest_framework import serializers
 
 from .serializers import TemporaryClosureSerializer
 
 
-class BusinessHourSerializer(serializers.Serializer):
+class BusinessHourSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     weekday = serializers.IntegerField(
         min_value=0, max_value=6, help_text="0 is Monday, matching Python weekday numbering."
@@ -19,9 +21,9 @@ class BusinessHourSerializer(serializers.Serializer):
     )
 
 
-class BusinessHoursListSerializer(serializers.Serializer):
+class BusinessHoursListSerializer(serializers.Serializer[Any]):
     items = BusinessHourSerializer(many=True)
 
 
-class TemporaryClosureListSerializer(serializers.Serializer):
+class TemporaryClosureListSerializer(serializers.Serializer[Any]):
     items = TemporaryClosureSerializer(many=True)

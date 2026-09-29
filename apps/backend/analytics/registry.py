@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -57,7 +58,7 @@ FORBIDDEN_FIELD_NAMES = frozenset(
 )
 
 
-def validate_event(name: str, properties: dict) -> dict:
+def validate_event(name: str, properties: dict[str, Any]) -> dict[str, Any]:
     spec = EVENT_REGISTRY.get(name)
     if spec is None:
         raise ValueError("Unknown analytics event")

@@ -19,7 +19,7 @@ neither, because a badge that appears on everything says nothing.
 
 import uuid
 from datetime import datetime, time, timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from zoneinfo import ZoneInfo
 
 from django.contrib.gis.geos import Point
@@ -34,6 +34,9 @@ from directory.models import Category, CategoryProvince
 from facilities.models import Facility
 from locations.models import Province
 from pharmacy_duty.models import DutyShift
+
+if TYPE_CHECKING:
+    from django.core.files.storage import Storage
 
 #: The geography a coordinate resolves to is not invented here any more.
 #:
@@ -149,7 +152,7 @@ class Command(BaseCommand):
 
         raqqa = Province.objects.get(code="raqqa")
         now = timezone.now()
-        counts = {}
+        counts: dict[str, int] = {}
 
         for code, rows in SECTIONS:
             category = Category.objects.select_related("capabilities").get(code=code)
@@ -173,7 +176,7 @@ class Command(BaseCommand):
         for category_name, total in counts.items():
             self.stdout.write(f"{category_name}: {total}")
 
-    def _ads(self, province):
+    def _ads(self, province: Province) -> None:
         """Three banners, with an image each, so the slider on Home has something to show.
 
         The picture is generated and written to the public bucket here rather than kept in
@@ -201,7 +204,9 @@ class Command(BaseCommand):
             )
         self.stdout.write(f"إعلانات: {len(ADS)}")
 
-    def _ad_image(self, slug, title, subtitle, colour):
+    def _ad_image(
+        self, slug: str, title: str, subtitle: str, colour: tuple[int, int, int]
+    ) -> str:
         """Draw the banner and store it, returning the key the serializer turns into a URL."""
         from io import BytesIO
 
@@ -227,7 +232,7 @@ class Command(BaseCommand):
         buffer = BytesIO()
         image.save(buffer, format="JPEG", quality=85)
 
-        storage = PublicS3Storage()
+        storage: Storage = PublicS3Storage()
         key = f"ads/{slug}.jpg"
         # A fixed key, so a second run replaces the picture instead of leaving a new one
         # beside it; the storage would otherwise rename rather than overwrite.
@@ -235,7 +240,17 @@ class Command(BaseCommand):
             storage.delete(key)
         return storage.save(key, ContentFile(buffer.getvalue(), name="ad.jpg"))
 
-    def _facility(self, slug, category, province, name, address, north, east, now):
+    def _facility(
+        self,
+        slug: str,
+        category: Category,
+        province: Province,
+        name: str,
+        address: str,
+        north: float,
+        east: float,
+        now: datetime,
+    ) -> Facility:
         facility, _ = Facility.objects.update_or_create(
             id=uuid.uuid5(NAMESPACE, slug),
             defaults={
@@ -251,7 +266,7 @@ class Command(BaseCommand):
         )
         return facility
 
-    def _hours(self, facility, kind):
+    def _hours(self, facility: Facility, kind: str) -> None:
         BusinessHour.objects.filter(facility=facility).delete()
         if kind == SHUT:
             return
@@ -263,7 +278,7 @@ class Command(BaseCommand):
             for weekday in range(7)
         )
 
-    def _duty(self, now):
+    def _duty(self, now: datetime) -> None:
         """Today's roster: two pharmacies on it, one open and one shut.
 
         The shut one is the case the whole feature exists for — somebody looking for a pharmacy

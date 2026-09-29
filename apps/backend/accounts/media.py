@@ -8,7 +8,8 @@ that should publish where someone lives.
 
 from __future__ import annotations
 
-from uuid import uuid4
+from typing import IO
+from uuid import UUID, uuid4
 
 from django.core.files.base import ContentFile
 
@@ -16,7 +17,7 @@ from facilities.media import safe_reencode_image
 from storage.backends import PublicS3Storage
 
 
-def save_profile_image(*, user_id, upload) -> tuple[PublicS3Storage, str]:
+def save_profile_image(*, user_id: UUID, upload: IO[bytes]) -> tuple[PublicS3Storage, str]:
     """Re-encode the upload and store it under a key nobody can guess.
 
     The key carries a random name rather than the user's, so the URL of a profile picture does

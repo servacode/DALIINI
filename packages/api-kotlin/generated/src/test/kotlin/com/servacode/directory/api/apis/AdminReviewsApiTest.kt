@@ -23,6 +23,9 @@ import com.servacode.directory.api.models.AdminApplication
 import com.servacode.directory.api.models.AdminApplicationDetail
 import com.servacode.directory.api.models.AdminApplicationList
 import com.servacode.directory.api.models.AdminDecisionRequest
+import com.servacode.directory.api.models.AdminRejectionTemplate
+import com.servacode.directory.api.models.AdminRejectionTemplateList
+import com.servacode.directory.api.models.AdminRejectionTemplateRequest
 import com.servacode.directory.api.models.ApiError
 
 class AdminReviewsApiTest : ShouldSpec() {
@@ -35,6 +38,38 @@ class AdminReviewsApiTest : ShouldSpec() {
             // uncomment below to test adminEvidenceContentRetrieve
             //val evidenceId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //val result : java.io.File = apiInstance.adminEvidenceContentRetrieve(evidenceId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminRejectionTemplateCreate
+        should("test adminRejectionTemplateCreate") {
+            // uncomment below to test adminRejectionTemplateCreate
+            //val adminRejectionTemplateRequest : AdminRejectionTemplateRequest =  // AdminRejectionTemplateRequest | 
+            //val result : AdminRejectionTemplate = apiInstance.adminRejectionTemplateCreate(adminRejectionTemplateRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminRejectionTemplateDelete
+        should("test adminRejectionTemplateDelete") {
+            // uncomment below to test adminRejectionTemplateDelete
+            //val templateId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //apiInstance.adminRejectionTemplateDelete(templateId)
+        }
+
+        // to test adminRejectionTemplateUpdate
+        should("test adminRejectionTemplateUpdate") {
+            // uncomment below to test adminRejectionTemplateUpdate
+            //val templateId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val adminRejectionTemplateRequest : AdminRejectionTemplateRequest =  // AdminRejectionTemplateRequest | 
+            //val result : AdminRejectionTemplate = apiInstance.adminRejectionTemplateUpdate(templateId, adminRejectionTemplateRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminRejectionTemplatesList
+        should("test adminRejectionTemplatesList") {
+            // uncomment below to test adminRejectionTemplatesList
+            //val active : kotlin.Boolean = true // kotlin.Boolean | 
+            //val result : AdminRejectionTemplateList = apiInstance.adminRejectionTemplatesList(active)
             //result shouldBe ("TODO")
         }
 
@@ -68,10 +103,13 @@ class AdminReviewsApiTest : ShouldSpec() {
         should("test adminReviewsList") {
             // uncomment below to test adminReviewsList
             //val category : kotlin.String = category_example // kotlin.String | Category id of the facility the application belongs to.
+            //val evidence : kotlin.String = evidence_example // kotlin.String | `complete` or `incomplete`: whether every required document is uploaded.
+            //val from : kotlin.String = from_example // kotlin.String | Submitted on or after this day (YYYY-MM-DD, Damascus) or this ISO datetime.
             //val kind : kotlin.String = kind_example // kotlin.String | Application kind, for example REGISTRATION or REVERIFICATION.
             //val province : kotlin.String = province_example // kotlin.String | Province id of the facility the application belongs to.
             //val status : kotlin.String = status_example // kotlin.String | Application status, for example SUBMITTED or APPROVED.
-            //val result : AdminApplicationList = apiInstance.adminReviewsList(category, kind, province, status)
+            //val to : kotlin.String = to_example // kotlin.String | Submitted on or before this day (YYYY-MM-DD, Damascus) or before this datetime.
+            //val result : AdminApplicationList = apiInstance.adminReviewsList(category, evidence, from, kind, province, status, to)
             //result shouldBe ("TODO")
         }
 

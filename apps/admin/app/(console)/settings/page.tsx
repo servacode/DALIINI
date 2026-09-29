@@ -24,6 +24,22 @@ type Setting = Readonly<{
 }>;
 
 /**
+ * Human names for the settings the platform itself reads. Any other key still renders with
+ * its raw name; this only makes the ones operators act on under pressure readable.
+ */
+const KNOWN: Record<string, { label: string; hint?: string }> = {
+  "maintenance.enabled": {
+    label: "وضع الصيانة",
+    hint: "عند التفعيل يتوقف التطبيق العام ويعرض شاشة الصيانة. لوحة الإدارة تبقى متاحة.",
+  },
+  "maintenance.messageAr": { label: "رسالة الصيانة", hint: "تظهر للمستخدمين في شاشة الصيانة." },
+  "maintenance.retryAfterSeconds": {
+    label: "إعادة المحاولة بعد (ثوانٍ)",
+    hint: "المدة التي تنتظرها التطبيقات قبل إعادة المحاولة تلقائياً.",
+  },
+};
+
+/**
  * Typed platform settings.
  *
  * The control matches the declared type: a boolean gets a switch, a number gets a numeric
@@ -76,6 +92,16 @@ export default function SettingsPage() {
             {settings.data.items.map((setting) => (
               <div key={setting.key} className="switch-row">
                 <span>
+                  {KNOWN[setting.key] ? (
+                    <>
+                      <strong>{KNOWN[setting.key]!.label}</strong>
+                      {KNOWN[setting.key]!.hint ? (
+                        <span className="field-hint setting-hint">
+                          {KNOWN[setting.key]!.hint}
+                        </span>
+                      ) : null}
+                    </>
+                  ) : null}
                   <code className="cell-ltr">{setting.key}</code>{" "}
                   <StatusBadge tone="neutral">{setting.valueType}</StatusBadge>
                   <br />

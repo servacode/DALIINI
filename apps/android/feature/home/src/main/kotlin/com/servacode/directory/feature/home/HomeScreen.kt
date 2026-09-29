@@ -1,5 +1,23 @@
 package com.servacode.directory.feature.home
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.selectableGroup
+import androidx.compose.ui.semantics.semantics
+import com.servacode.directory.core.designsystem.LocalDirectoryTones
+import com.servacode.directory.core.designsystem.Sizes
+import com.servacode.directory.core.model.RecentFacility
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import com.servacode.directory.core.model.HomeAd
+import com.servacode.directory.core.model.AdAction
+import androidx.core.net.toUri
+import android.content.Intent
+import android.content.Context
+import android.content.ActivityNotFoundException
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -48,6 +66,8 @@ import com.servacode.directory.core.designsystem.DirectoryBrandHeader
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryCompactFilterChip
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
+import com.servacode.directory.core.designsystem.DirectoryFilterChip
+import com.servacode.directory.core.designsystem.DirectoryIllustrations
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIconButton
@@ -66,6 +86,8 @@ import com.servacode.directory.core.designsystem.Radius
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.location.FOREGROUND_LOCATION_PERMISSIONS
 import com.servacode.directory.core.model.Category
+import com.servacode.directory.core.model.CategoryTags
+import com.servacode.directory.core.model.FacilityTag
 
 /**
  * Screen 04. The app's front door.
@@ -85,15 +107,22 @@ fun HomeScreen(
     onFacility: (String) -> Unit,
     onNotifications: () -> Unit,
     bottomBar: @Composable () -> Unit = {},
+    onEmergencyNumbers: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
+    extras: HomeExtrasViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val recent by extras.recent.collectAsStateWithLifecycle()
+    val dataSaver by extras.dataSaver.collectAsStateWithLifecycle()
+    val offerDataSaver by extras.offerDataSaver.collectAsStateWithLifecycle()
     val place by viewModel.place.collectAsStateWithLifecycle()
     val filters by viewModel.filters.collectAsStateWithLifecycle()
     val category by viewModel.category.collectAsStateWithLifecycle()
+    val tags by viewModel.tags.collectAsStateWithLifecycle()
     val list by viewModel.list.collectAsStateWithLifecycle()
     val hasLocation by viewModel.hasLocation.collectAsStateWithLifecycle()
     val unread by viewModel.unread.collectAsStateWithLifecycle()
+    val ads by viewModel.ads.collectAsStateWithLifecycle()
     val context = LocalContext.current
     // The offer to use the location, and only while there is something to offer: a device that
     // already allowed it is never asked again from here.
@@ -135,14 +164,14 @@ fun HomeScreen(
                 title = HomeCopy.PROVINCE_REQUIRED,
                 modifier = Modifier.padding(padding),
                 body = HomeCopy.PROVINCE_REQUIRED_BODY,
-                icon = DirectoryIcons.pin,
+                illustration = DirectoryIllustrations.location,
                 action = HomeCopy.PROVINCE_CHOOSE,
                 onAction = onProvince,
             )
             is HomeUiState.Error -> DirectoryErrorState(
                 title = HomeCopy.ERROR,
                 modifier = Modifier.padding(padding),
-                body = appErrorText(value.error),
+                error = value.error,
                 onRetry = viewModel::refresh,
             )
             is HomeUiState.Content -> HomeContent(
@@ -152,10 +181,33 @@ fun HomeScreen(
                 offerLocation = offerLocation,
                 filters = filters,
                 category = category,
+                tags = tags,
                 list = list,
+                // Data saver: no slider, so none of its pictures are fetched.
+                ads = if (dataSaver) emptyList() else ads,
                 hasLocation = hasLocation,
+                extraItems = {
+                    if (offerDataSaver) {
+                        item(key = "data-saver") {
+                            DataSaverOffer(
+                                onAccept = extras::acceptDataSaver,
+                                onDismiss = extras::dismissDataSaver,
+                                modifier = Modifier.padding(horizontal = Space.base),
+                            )
+                        }
+                    }
+                    item(key = "emergency") {
+                        EmergencyShortcut(onEmergencyNumbers, Modifier.padding(horizontal = Space.base))
+                    }
+                    if (recent.isNotEmpty()) {
+                        item(key = "recent") { RecentRail(recent, onFacility) }
+                    }
+                },
                 onChip = viewModel::toggle,
                 onCategory = viewModel::select,
+                onSpecialty = viewModel::chooseSpecialty,
+                onService = viewModel::chooseService,
+                onClearTags = viewModel::clearTags,
                 onLoadMore = viewModel::loadMore,
                 onUseLocation = { askLocation.launch(FOREGROUND_LOCATION_PERMISSIONS.toTypedArray()) },
                 onRefresh = viewModel::refresh,
@@ -269,7 +321,8 @@ private fun NotificationBell(unread: Int, onClick: () -> Unit, modifier: Modifie
     Box(modifier = modifier) {
         DirectoryIconButton(
             icon = DirectoryIcons.bell,
-            label = HomeCopy.NOTIFICATIONS,
+            // The count is part of what the bell says, not a stray number read after it.
+            label = if (unread > 0) HomeCopy.unreadNotifications(unread) else HomeCopy.NOTIFICATIONS,
             onClick = onClick,
             tint = MaterialTheme.colorScheme.primary,
         )
@@ -278,7 +331,8 @@ private fun NotificationBell(unread: Int, onClick: () -> Unit, modifier: Modifie
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .size(Space.lg)
-                    .background(BrandColors.danger, CircleShape),
+                    .background(BrandColors.danger, CircleShape)
+                    .clearAndSetSemantics { },
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -300,10 +354,16 @@ private fun HomeContent(
     offerLocation: Boolean,
     filters: HomeFilters,
     category: Category?,
+    tags: CategoryTags,
     list: HomeListState,
+    ads: List<HomeAd>,
     hasLocation: Boolean,
+    extraItems: LazyListScope.() -> Unit,
     onChip: (HomeChip) -> Unit,
     onCategory: (Category) -> Unit,
+    onSpecialty: (String?) -> Unit,
+    onService: (String?) -> Unit,
+    onClearTags: () -> Unit,
     onLoadMore: () -> Unit,
     onUseLocation: () -> Unit,
     onRefresh: () -> Unit,
@@ -333,11 +393,23 @@ private fun HomeContent(
                     )
                 }
             }
-            if (snapshot.ads.isNotEmpty()) {
+            if (ads.isNotEmpty()) {
                 item(key = "ads") {
+                    val context = LocalContext.current
                     AdSlider(
-                        ads = snapshot.ads,
-                        onAd = { ad -> ad.facilityId?.let(onFacility) },
+                        ads = ads,
+                        onAd = { ad ->
+                            when (val action = ad.action) {
+                                AdAction.None -> Unit
+                                is AdAction.OpenFacility -> onFacility(action.facilityId)
+                                // A category the province serves is chosen on this page; one it
+                                // does not serve is not followed.
+                                is AdAction.OpenCategory -> snapshot.categories
+                                    .firstOrNull { it.id == action.categoryId }
+                                    ?.let(onCategory)
+                                is AdAction.OpenUrl -> openExternalPage(context, action.url)
+                            }
+                        },
                         modifier = Modifier.padding(horizontal = Space.base),
                     )
                 }
@@ -347,6 +419,7 @@ private fun HomeContent(
                     LocationOffer(onUseLocation, Modifier.padding(horizontal = Space.base))
                 }
             }
+            extraItems()
             if (snapshot.categories.isNotEmpty()) {
                 item(key = "categories") {
                     CategoryRail(
@@ -366,7 +439,105 @@ private fun HomeContent(
                     modifier = Modifier.padding(horizontal = Space.md),
                 )
             }
-            facilityList(list, filters, place, onFacility, onLoadMore)
+            if (!tags.isEmpty) {
+                item(key = "tags") {
+                    TagFilters(
+                        tags = tags,
+                        filters = filters,
+                        onSpecialty = onSpecialty,
+                        onService = onService,
+                        onClear = onClearTags,
+                    )
+                }
+            }
+            facilityList(list, filters, place, onFacility, onLoadMore, onClearTags)
+        }
+    }
+}
+
+/**
+ * The chosen category's specialties and services, a row of each, under the chips.
+ *
+ * One of each at a time, as the backend narrows by one of each. «كل التخصصات» and «كل الخدمات»
+ * lead their rows because nothing chosen is a state the reader can see and return to, and
+ * «امسح التصفية» appears once something is chosen, for when the choice has scrolled out of
+ * sight. The rows scroll rather than wrap: a clinic may offer twenty specialties, and wrapped
+ * they would push the list off the screen.
+ */
+@Composable
+private fun TagFilters(
+    tags: CategoryTags,
+    filters: HomeFilters,
+    onSpecialty: (String?) -> Unit,
+    onService: (String?) -> Unit,
+    onClear: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        if (tags.specialties.isNotEmpty()) {
+            TagRow(
+                label = HomeCopy.SPECIALTIES,
+                all = HomeCopy.ALL_SPECIALTIES,
+                choices = tags.specialties,
+                chosen = filters.specialtyId,
+                onChoose = onSpecialty,
+            )
+        }
+        if (tags.services.isNotEmpty()) {
+            TagRow(
+                label = HomeCopy.SERVICES,
+                all = HomeCopy.ALL_SERVICES,
+                choices = tags.services,
+                chosen = filters.serviceTagId,
+                onChoose = onService,
+            )
+        }
+        if (filters.hasTags) {
+            DirectoryCompactFilterChip(
+                text = HomeCopy.CLEAR_TAGS,
+                selected = false,
+                onClick = onClear,
+                icon = DirectoryIcons.close,
+                modifier = Modifier.padding(horizontal = Space.base),
+            )
+        }
+    }
+}
+
+/**
+ * One labelled row: «all» first, then each choice in the operators' order. A screen reader hears
+ * the label as a heading, then each chip with whether it is the one chosen.
+ */
+@Composable
+private fun TagRow(
+    label: String,
+    all: String,
+    choices: List<FacilityTag>,
+    chosen: String?,
+    onChoose: (String?) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = Space.base).semantics { heading() },
+        )
+        LazyRow(
+            modifier = Modifier.semantics { selectableGroup() },
+            contentPadding = PaddingValues(horizontal = Space.base),
+            horizontalArrangement = Arrangement.spacedBy(Space.xs),
+        ) {
+            item(key = "all") {
+                DirectoryFilterChip(text = all, selected = chosen == null, onClick = { onChoose(null) })
+            }
+            items(choices, key = { it.id }) { choice ->
+                DirectoryFilterChip(
+                    text = choice.nameAr,
+                    selected = choice.id == chosen,
+                    onClick = { onChoose(choice.id) },
+                )
+            }
         }
     }
 }
@@ -474,6 +645,7 @@ private fun LazyListScope.facilityList(
     place: String?,
     onFacility: (String) -> Unit,
     onLoadMore: () -> Unit,
+    onClearTags: () -> Unit,
 ) {
     if (list.loading) {
         item(key = "list-loading") { DirectoryLoading(Modifier.padding(top = Space.xxl)) }
@@ -483,7 +655,7 @@ private fun LazyListScope.facilityList(
         item(key = "list-error") {
             DirectoryErrorState(
                 title = HomeCopy.ERROR,
-                body = appErrorText(list.error),
+                error = list.error,
                 onRetry = onLoadMore,
                 modifier = Modifier.padding(top = Space.lg),
             )
@@ -492,11 +664,15 @@ private fun LazyListScope.facilityList(
     }
     if (list.items.isEmpty()) {
         item(key = "list-empty") {
+            // A specialty or a service is the one choice here that can be undone in place, so
+            // the empty list says so and offers to.
             DirectoryEmptyState(
                 title = HomeCopy.emptyFor(filters),
                 modifier = Modifier.padding(top = Space.lg),
-                body = HomeCopy.emptyBodyFor(place),
-                icon = DirectoryIcons.hospital,
+                body = if (filters.hasTags) HomeCopy.EMPTY_CHOICE_BODY else HomeCopy.emptyBodyFor(place),
+                illustration = DirectoryIllustrations.noResults,
+                action = if (filters.hasTags) HomeCopy.CLEAR_TAGS else null,
+                onAction = if (filters.hasTags) onClearTags else null,
             )
         }
         return
@@ -566,5 +742,117 @@ private fun LocationOffer(onUseLocation: () -> Unit, modifier: Modifier = Modifi
             )
             DirectoryTextButton(text = HomeCopy.LOCATION_ACTION, onClick = onUseLocation)
         }
+    }
+}
+
+/** «أرقام الطوارئ», one tap from Home: the numbers someone may need before anything else. */
+@Composable
+private fun EmergencyShortcut(onOpen: () -> Unit, modifier: Modifier = Modifier) {
+    val danger = LocalDirectoryTones.current.danger
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(Radius.large))
+            .background(danger.container)
+            .clickable(role = Role.Button, onClick = onOpen)
+            .heightIn(min = Sizes.touchTarget)
+            .padding(horizontal = Space.base, vertical = Space.sm),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.md),
+    ) {
+        DirectoryIcon(DirectoryIcons.emergency, null, tint = danger.content)
+        Text(
+            text = HomeCopy.EMERGENCY,
+            style = MaterialTheme.typography.titleSmall,
+            color = danger.content,
+            modifier = Modifier.weight(1f),
+        )
+        DirectoryIcon(DirectoryIcons.chevron, null, size = IconSize.small, tint = danger.content)
+    }
+}
+
+/** «شوهدت مؤخراً»: the last facilities opened on this device, a swipe across. */
+@Composable
+private fun RecentRail(recent: List<RecentFacility>, onFacility: (String) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+        Text(
+            text = HomeCopy.RECENT,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(horizontal = Space.base).semantics { heading() },
+        )
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = Space.base),
+            horizontalArrangement = Arrangement.spacedBy(Space.sm),
+        ) {
+            items(recent, key = { "recent-" + it.id }) { facility ->
+                DirectoryPill(onClick = { onFacility(facility.id) }) {
+                    Column(
+                        modifier = Modifier
+                            .widthIn(max = RECENT_WIDTH)
+                            .heightIn(min = Sizes.touchTarget)
+                            .padding(horizontal = Space.md, vertical = Space.sm),
+                    ) {
+                        Text(
+                            text = facility.nameAr,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        facility.categoryNameAr?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private val RECENT_WIDTH = 200.dp
+
+/** Offered once, on a metered connection: save data from now on, or not. */
+@Composable
+private fun DataSaverOffer(onAccept: () -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+    DirectoryCard(modifier = modifier) {
+        Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+            Text(
+                text = HomeCopy.DATA_SAVER_TITLE,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = HomeCopy.DATA_SAVER_BODY,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                DirectoryTextButton(text = HomeCopy.DATA_SAVER_ACCEPT, onClick = onAccept)
+                DirectoryTextButton(text = HomeCopy.DATA_SAVER_DISMISS, onClick = onDismiss)
+            }
+        }
+    }
+}
+
+/**
+ * Opens an advertisement's page in the browser. The mapper already admitted only `https`; it is
+ * checked again here, at the last moment, and a phone without a browser simply does nothing.
+ */
+private fun openExternalPage(context: Context, url: String) {
+    val uri = url.toUri()
+    if (uri.scheme != "https" || uri.host.isNullOrBlank()) return
+    val intent = Intent(Intent.ACTION_VIEW, uri)
+        .addCategory(Intent.CATEGORY_BROWSABLE)
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    try {
+        context.startActivity(intent)
+    } catch (_: ActivityNotFoundException) {
+        // Nothing can show it; the tap is a no-op rather than a crash.
     }
 }

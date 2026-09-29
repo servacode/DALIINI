@@ -6,6 +6,7 @@ All URIs are relative to *http://localhost*
 | ------------- | ------------- | ------------- |
 | [**adminAdCreate**](AdminAdsApi.md#adminAdCreate) | **POST** api/v1/admin/ads/ | Create an advertisement |
 | [**adminAdDelete**](AdminAdsApi.md#adminAdDelete) | **DELETE** api/v1/admin/ads/{advertisement_id}/ | Delete an advertisement |
+| [**adminAdImageUpload**](AdminAdsApi.md#adminAdImageUpload) | **POST** api/v1/admin/ads/images/ | Upload an advertisement image |
 | [**adminAdUpdate**](AdminAdsApi.md#adminAdUpdate) | **PUT** api/v1/admin/ads/{advertisement_id}/ | Edit an advertisement, its schedule or its activation |
 | [**adminAdsList**](AdminAdsApi.md#adminAdsList) | **GET** api/v1/admin/ads/ | List advertisements |
 
@@ -90,6 +91,48 @@ Configure bearerAccessToken:
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Upload an advertisement image
+
+multipart/form-data with &#x60;file&#x60;. JPEG, PNG or WebP only, at most 2 MB, each side 100 to 4096 px. The image is re-encoded to JPEG (metadata stripped) and stored in public media under a random key. Pass the returned &#x60;imageKey&#x60; when creating or updating the advertisement.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminAdsApi::class.java)
+val file : java.io.File = BINARY_DATA_HERE // java.io.File | JPEG, PNG or WebP, at most 2 MB, 100-4096 px a side.
+
+launch(Dispatchers.IO) {
+    val result : AdminAdImage = webService.adminAdImageUpload(file)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **file** | **java.io.File**| JPEG, PNG or WebP, at most 2 MB, 100-4096 px a side. | |
+
+### Return type
+
+[**AdminAdImage**](AdminAdImage.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
  - **Accept**: application/json
 
 

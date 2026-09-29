@@ -21,3 +21,7 @@ class UserSession(models.Model):
     expires_at = models.DateTimeField()
     revoked_at = models.DateTimeField(null=True, blank=True)
     compromised_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        # Never a refresh digest: a repr can reach logs and error reports.
+        return f"{self.user_id} {self.id}"

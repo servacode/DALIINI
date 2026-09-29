@@ -1,5 +1,6 @@
 package com.servacode.directory.core.network
 
+import com.servacode.directory.core.model.HoursConfirmation
 import com.servacode.directory.core.model.BusinessHour
 import com.servacode.directory.core.model.DutyShift
 import com.servacode.directory.core.model.FacilityMember
@@ -8,6 +9,7 @@ import com.servacode.directory.core.model.OwnerConfig
 import com.servacode.directory.core.model.OwnerEvidence
 import com.servacode.directory.core.model.OwnerFacilityDetail
 import com.servacode.directory.core.model.OwnerFacilityImage
+import com.servacode.directory.core.model.OwnerFacilityInsights
 import com.servacode.directory.core.model.OwnerFacilitySummary
 import com.servacode.directory.core.model.OwnerSubmission
 import com.servacode.directory.core.model.TemporaryClosure
@@ -25,6 +27,8 @@ data class OwnerFacilityPatch(
     val descriptionAr: String? = null,
     val descriptionEn: String? = null,
     val phone: String? = null,
+    /** Blank clears it; the backend normalises a Syrian mobile to E.164 or refuses it. */
+    val whatsapp: String? = null,
     val addressAr: String? = null,
     val addressEn: String? = null,
     val cityId: String? = null,
@@ -61,6 +65,12 @@ interface OwnerApiBoundary {
     suspend fun createFacility(input: OwnerFacilityDraftInput): OwnerFacilityDetail
     suspend fun facility(id: String): OwnerFacilityDetail
     suspend fun patchFacility(id: String, input: OwnerFacilityPatch): OwnerFacilityDetail
+
+    /** The owner confirms the facility's opening hours are still right. 409 HOURS_NOT_SUPPORTED otherwise. */
+    suspend fun confirmHours(id: String): HoursConfirmation
+
+    /** Views, calls and directions for the facility over the backend's window (30 days). */
+    suspend fun insights(id: String): OwnerFacilityInsights
     suspend fun submitFacility(id: String): OwnerSubmission
     suspend fun updateLocation(id: String, latitude: Double, longitude: Double): OwnerFacilityDetail
     suspend fun replaceHours(id: String, hours: List<BusinessHour>): List<BusinessHour>

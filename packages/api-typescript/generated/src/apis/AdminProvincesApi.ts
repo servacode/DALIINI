@@ -15,14 +15,26 @@
 
 import * as runtime from '../runtime';
 import type {
+  AdminCityAdmin,
+  AdminCityAdminList,
+  AdminCityUpdateRequest,
   AdminProvinceList,
+  AdminProvinceReadiness,
   AdminProvinceUpdateRequest,
   AdminProvinceUpdated,
   ApiError,
 } from '../models/index';
 import {
+    AdminCityAdminFromJSON,
+    AdminCityAdminToJSON,
+    AdminCityAdminListFromJSON,
+    AdminCityAdminListToJSON,
+    AdminCityUpdateRequestFromJSON,
+    AdminCityUpdateRequestToJSON,
     AdminProvinceListFromJSON,
     AdminProvinceListToJSON,
+    AdminProvinceReadinessFromJSON,
+    AdminProvinceReadinessToJSON,
     AdminProvinceUpdateRequestFromJSON,
     AdminProvinceUpdateRequestToJSON,
     AdminProvinceUpdatedFromJSON,
@@ -30,6 +42,20 @@ import {
     ApiErrorFromJSON,
     ApiErrorToJSON,
 } from '../models/index';
+
+export interface AdminProvinceCitiesListRequest {
+    provinceId: string;
+}
+
+export interface AdminProvinceCityUpdateRequest {
+    cityId: string;
+    provinceId: string;
+    adminCityUpdateRequest: AdminCityUpdateRequest;
+}
+
+export interface AdminProvinceReadinessRetrieveRequest {
+    provinceId: string;
+}
 
 export interface AdminProvinceUpdateOperationRequest {
     provinceId: string;
@@ -40,6 +66,161 @@ export interface AdminProvinceUpdateOperationRequest {
  * 
  */
 export class AdminProvincesApi extends runtime.BaseAPI {
+
+    /**
+     * List every city of a province, active or not
+     */
+    async adminProvinceCitiesListRaw(requestParameters: AdminProvinceCitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminCityAdminList>> {
+        if (requestParameters['provinceId'] == null) {
+            throw new runtime.RequiredError(
+                'provinceId',
+                'Required parameter "provinceId" was null or undefined when calling adminProvinceCitiesList().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/provinces/{province_id}/cities/`;
+        urlPath = urlPath.replace(`{${"province_id"}}`, encodeURIComponent(String(requestParameters['provinceId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminCityAdminListFromJSON(jsonValue));
+    }
+
+    /**
+     * List every city of a province, active or not
+     */
+    async adminProvinceCitiesList(requestParameters: AdminProvinceCitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminCityAdminList> {
+        const response = await this.adminProvinceCitiesListRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Activate or deactivate a city
+     */
+    async adminProvinceCityUpdateRaw(requestParameters: AdminProvinceCityUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminCityAdmin>> {
+        if (requestParameters['cityId'] == null) {
+            throw new runtime.RequiredError(
+                'cityId',
+                'Required parameter "cityId" was null or undefined when calling adminProvinceCityUpdate().'
+            );
+        }
+
+        if (requestParameters['provinceId'] == null) {
+            throw new runtime.RequiredError(
+                'provinceId',
+                'Required parameter "provinceId" was null or undefined when calling adminProvinceCityUpdate().'
+            );
+        }
+
+        if (requestParameters['adminCityUpdateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'adminCityUpdateRequest',
+                'Required parameter "adminCityUpdateRequest" was null or undefined when calling adminProvinceCityUpdate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/provinces/{province_id}/cities/{city_id}/`;
+        urlPath = urlPath.replace(`{${"city_id"}}`, encodeURIComponent(String(requestParameters['cityId'])));
+        urlPath = urlPath.replace(`{${"province_id"}}`, encodeURIComponent(String(requestParameters['provinceId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminCityUpdateRequestToJSON(requestParameters['adminCityUpdateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminCityAdminFromJSON(jsonValue));
+    }
+
+    /**
+     * Activate or deactivate a city
+     */
+    async adminProvinceCityUpdate(requestParameters: AdminProvinceCityUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminCityAdmin> {
+        const response = await this.adminProvinceCityUpdateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * PROVINCE_ACTIVE; CATEGORY_PUBLIC (at least one active category publicly enabled); MIN_ACTIVE_FACILITIES (platform setting `readiness.minActiveFacilities`, default 5); DUTY_COVERAGE (no DUTY_GAP in the next 14 days, or not applicable when the province offers no duty category); EMERGENCY_NUMBERS (an active national or provincial number).
+     * Launch checklist for a province
+     */
+    async adminProvinceReadinessRetrieveRaw(requestParameters: AdminProvinceReadinessRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminProvinceReadiness>> {
+        if (requestParameters['provinceId'] == null) {
+            throw new runtime.RequiredError(
+                'provinceId',
+                'Required parameter "provinceId" was null or undefined when calling adminProvinceReadinessRetrieve().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/provinces/{province_id}/readiness/`;
+        urlPath = urlPath.replace(`{${"province_id"}}`, encodeURIComponent(String(requestParameters['provinceId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminProvinceReadinessFromJSON(jsonValue));
+    }
+
+    /**
+     * PROVINCE_ACTIVE; CATEGORY_PUBLIC (at least one active category publicly enabled); MIN_ACTIVE_FACILITIES (platform setting `readiness.minActiveFacilities`, default 5); DUTY_COVERAGE (no DUTY_GAP in the next 14 days, or not applicable when the province offers no duty category); EMERGENCY_NUMBERS (an active national or provincial number).
+     * Launch checklist for a province
+     */
+    async adminProvinceReadinessRetrieve(requestParameters: AdminProvinceReadinessRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminProvinceReadiness> {
+        const response = await this.adminProvinceReadinessRetrieveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Activate a province or change its order

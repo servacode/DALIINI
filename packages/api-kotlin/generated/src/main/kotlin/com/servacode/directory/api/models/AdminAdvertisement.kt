@@ -27,6 +27,9 @@ import kotlinx.serialization.Contextual
  * @param id 
  * @param titleAr 
  * @param targetScope 
+ * @param provinceId 
+ * @param categoryId 
+ * @param imageUrl Where the slide's image is served from, to preview it while editing.
  * @param enabled 
  * @param startsAt 
  * @param endsAt 
@@ -45,6 +48,16 @@ data class AdminAdvertisement (
 
     @Contextual @SerialName(value = "targetScope")
     val targetScope: AdvertisementTargetScopeEnum,
+
+    @Contextual @SerialName(value = "provinceId")
+    val provinceId: java.util.UUID?,
+
+    @Contextual @SerialName(value = "categoryId")
+    val categoryId: java.util.UUID?,
+
+    /* Where the slide's image is served from, to preview it while editing. */
+    @SerialName(value = "imageUrl")
+    val imageUrl: kotlin.String?,
 
     @SerialName(value = "enabled")
     val enabled: kotlin.Boolean,

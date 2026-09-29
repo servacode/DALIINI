@@ -15,17 +15,25 @@ public struct OwnerConfigCategory: Codable, JSONEncodable, Hashable {
     public var category: OwnerCategory
     public var capabilities: CategoryCapabilities
     public var verificationRequirements: [OwnerVerificationRequirement]
+    /** The specialties an owner may pick, as publicCategoryTagsRetrieve lists them. Their ids are what `specialtyIds` takes. */
+    public var specialties: [NamedIntRef]
+    /** The services an owner may pick, as publicCategoryTagsRetrieve lists them. Their ids are what `serviceTagIds` takes. */
+    public var services: [NamedIntRef]
 
-    public init(category: OwnerCategory, capabilities: CategoryCapabilities, verificationRequirements: [OwnerVerificationRequirement]) {
+    public init(category: OwnerCategory, capabilities: CategoryCapabilities, verificationRequirements: [OwnerVerificationRequirement], specialties: [NamedIntRef], services: [NamedIntRef]) {
         self.category = category
         self.capabilities = capabilities
         self.verificationRequirements = verificationRequirements
+        self.specialties = specialties
+        self.services = services
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case category
         case capabilities
         case verificationRequirements
+        case specialties
+        case services
     }
 
     // Encodable protocol methods
@@ -35,6 +43,8 @@ public struct OwnerConfigCategory: Codable, JSONEncodable, Hashable {
         try container.encode(category, forKey: .category)
         try container.encode(capabilities, forKey: .capabilities)
         try container.encode(verificationRequirements, forKey: .verificationRequirements)
+        try container.encode(specialties, forKey: .specialties)
+        try container.encode(services, forKey: .services)
     }
 }
 

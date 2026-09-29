@@ -105,6 +105,12 @@ class OwnerFacilityDetailTest : ShouldSpec() {
             //modelInstance.phone shouldBe ("TODO")
         }
 
+        // to test the property `whatsapp` - E.164 Syrian mobile.
+        should("test whatsapp") {
+            // uncomment below to test the property
+            //modelInstance.whatsapp shouldBe ("TODO")
+        }
+
         // to test the property `addressAr`
         should("test addressAr") {
             // uncomment below to test the property
@@ -135,13 +141,13 @@ class OwnerFacilityDetailTest : ShouldSpec() {
             //modelInstance.location shouldBe ("TODO")
         }
 
-        // to test the property `specialtyIds`
+        // to test the property `specialtyIds` - The facility's active specialties, in order; retired ones are left out.
         should("test specialtyIds") {
             // uncomment below to test the property
             //modelInstance.specialtyIds shouldBe ("TODO")
         }
 
-        // to test the property `serviceTagIds`
+        // to test the property `serviceTagIds` - The facility's active services, in order; retired ones are left out.
         should("test serviceTagIds") {
             // uncomment below to test the property
             //modelInstance.serviceTagIds shouldBe ("TODO")
@@ -157,6 +163,12 @@ class OwnerFacilityDetailTest : ShouldSpec() {
         should("test hours") {
             // uncomment below to test the property
             //modelInstance.hours shouldBe ("TODO")
+        }
+
+        // to test the property `hoursConfirmedAt` - When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old.
+        should("test hoursConfirmedAt") {
+            // uncomment below to test the property
+            //modelInstance.hoursConfirmedAt shouldBe ("TODO")
         }
 
         // to test the property `application`

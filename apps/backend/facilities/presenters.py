@@ -1,8 +1,13 @@
+from typing import Any
+
 from business_hours.serializers import serialize_hours
 from directory.presenters import category_capabilities
+from directory.tags import active_in_order
+
+from .models import Facility, FacilityApplication
 
 
-def facility_summary(facility):
+def facility_summary(facility: Facility) -> dict[str, Any]:
     latest = facility.applications.order_by("-updated_at").first()
     return {
         "id": str(facility.pk),
@@ -24,7 +29,7 @@ def facility_summary(facility):
     }
 
 
-def _required_action(facility, application):
+def _required_action(facility: Facility, application: FacilityApplication | None) -> str | None:
     if application and application.status == application.Status.REJECTED:
         return "REVIEW_REJECTION"
     if facility.status == facility.Status.DRAFT:
@@ -38,7 +43,7 @@ def _required_action(facility, application):
     return None
 
 
-def facility_detail(facility):
+def facility_detail(facility: Facility) -> dict[str, Any]:
     point = facility.location
     latest = facility.applications.order_by("-updated_at").first()
     return {
@@ -47,6 +52,7 @@ def facility_detail(facility):
         "descriptionAr": facility.description_ar or None,
         "descriptionEn": facility.description_en or None,
         "phone": facility.phone or None,
+        "whatsapp": facility.whatsapp or None,
         "addressAr": facility.address_ar or None,
         "addressEn": facility.address_en or None,
         "cityId": str(facility.city_id) if facility.city_id else None,
@@ -56,11 +62,17 @@ def facility_detail(facility):
         "location": (
             {"latitude": point.y, "longitude": point.x} if point else None
         ),
+        # Integer ids, as the choices in the owner configuration carry them. A retired item
+        # is left out: it is no longer offered, so an owner could neither see nor send it.
         "specialtyIds": [
-            str(item.specialty_id) for item in facility.specialty_links.all()
+            row.pk
+            for row in active_in_order(link.specialty for link in facility.specialty_links.all())
         ],
         "serviceTagIds": [
-            str(item.service_tag_id) for item in facility.service_links.all()
+            row.pk
+            for row in active_in_order(
+                link.service_tag for link in facility.service_links.all()
+            )
         ],
         "evidence": [
             {
@@ -71,6 +83,9 @@ def facility_detail(facility):
             for item in facility.evidence.all()
         ],
         "hours": serialize_hours(facility.business_hours.order_by("weekday", "sort_order")),
+        "hoursConfirmedAt": (
+            facility.hours_confirmed_at.isoformat() if facility.hours_confirmed_at else None
+        ),
         "application": (
             {
                 "id": str(latest.pk),

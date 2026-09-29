@@ -1,4 +1,6 @@
+from rest_framework.request import Request
 from rest_framework.throttling import SimpleRateThrottle
+from rest_framework.views import APIView
 
 from .phone import normalize_syrian_phone
 
@@ -6,7 +8,7 @@ from .phone import normalize_syrian_phone
 class PhoneAndIpThrottle(SimpleRateThrottle):
     phone_field = "phone"
 
-    def get_cache_key(self, request, view):
+    def get_cache_key(self, request: Request, view: APIView) -> str:
         ident = self.get_ident(request)
         raw_phone = str(request.data.get(self.phone_field, ""))
         try:
@@ -31,7 +33,7 @@ class RecoveryThrottle(PhoneAndIpThrottle):
 class OtpVerifyThrottle(SimpleRateThrottle):
     scope = "otp_verify"
 
-    def get_cache_key(self, request, view):
+    def get_cache_key(self, request: Request, view: APIView) -> str:
         ident = self.get_ident(request)
         challenge = str(request.data.get("challengeId", "missing"))
         return self.cache_format % {"scope": self.scope, "ident": f"{ident}:{challenge}"}

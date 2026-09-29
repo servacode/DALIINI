@@ -1,9 +1,14 @@
+from django.contrib.auth.models import AnonymousUser
 from rest_framework.exceptions import PermissionDenied
 
-from .models import FacilityMembership
+from accounts.models import User
+
+from .models import Facility, FacilityMembership
 
 
-def require_facility_member(user, facility):
+def require_facility_member(
+    user: User | AnonymousUser | None, facility: Facility
+) -> FacilityMembership:
     if not user or not user.is_authenticated:
         raise PermissionDenied("Authentication required.")
     membership = FacilityMembership.objects.filter(
@@ -16,7 +21,9 @@ def require_facility_member(user, facility):
     return membership
 
 
-def require_facility_owner(user, facility):
+def require_facility_owner(
+    user: User | AnonymousUser | None, facility: Facility
+) -> FacilityMembership:
     if not user or not user.is_authenticated:
         raise PermissionDenied("Authentication required.")
     membership = FacilityMembership.objects.filter(

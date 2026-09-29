@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 import { useCan } from "../../../components/admin-shell";
+import { Icons } from "../../../components/icons";
 import {
   ConfirmDialog,
   EmptyState,
@@ -13,14 +15,19 @@ import {
   Toast,
   formatDateTime,
 } from "../../../components/ui";
+import { SlidePreview } from "../../../components/ui/extra";
+import { uploadAdImage } from "../../../lib/client/files";
 import { useMutation } from "../../../lib/client/use-mutation";
 import { useResource } from "../../../lib/client/use-resource";
-import { fieldErrorsFor } from "../../../lib/errors/messages";
+import { fieldErrorsFor, isSessionExpired, messageFor } from "../../../lib/errors/messages";
 
 type Advertisement = Readonly<{
   id: string;
   titleAr: string;
   targetScope: string;
+  provinceId: string | null;
+  categoryId: string | null;
+  imageUrl: string | null;
   enabled: boolean;
   startsAt: string | null;
   endsAt: string | null;
@@ -51,7 +58,6 @@ function toIso(value: string): string | null {
 
 type Draft = {
   id?: string;
-  imageKey: string;
   titleAr: string;
   targetScope: string;
   provinceId: string;
@@ -64,7 +70,6 @@ type Draft = {
 };
 
 const BLANK: Draft = {
-  imageKey: "",
   titleAr: "",
   targetScope: "GLOBAL",
   provinceId: "",
@@ -75,6 +80,45 @@ const BLANK: Draft = {
   sortOrder: "0",
   slideDurationMs: "5000",
 };
+
+/**
+ * The slide image being edited. `key` is what the save sends (kept in a hidden field);
+ * `url` is where the uploaded image is served from; `local` is the picked file itself, shown
+ * at once and kept as the fallback if the public media origin cannot be reached.
+ */
+type SlideImage = Readonly<{
+  key: string;
+  url: string | null;
+  local: string | null;
+  uploading: boolean;
+  error: string | null;
+}>;
+
+const NO_IMAGE: SlideImage = { key: "", url: null, local: null, uploading: false, error: null };
+
+const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
+const MAX_BYTES = 2 * 1024 * 1024;
+const MIN_SIDE = 100;
+const MAX_SIDE = 4096;
+
+const IMAGE_MESSAGES = {
+  format: "الصورة يجب أن تكون بصيغة JPEG أو PNG أو WebP.",
+  tooLarge: "حجم الصورة أكبر من ٢ ميغابايت. صغّرها ثم أعد المحاولة.",
+  unreadable: "تعذّرت قراءة الملف كصورة. اختر صورة أخرى.",
+  dimensions: "طول كل ضلع في الصورة يجب أن يكون بين ١٠٠ و٤٠٩٦ بكسل.",
+  required: "اختر صورة الإعلان.",
+  uploading: "انتظر حتى يكتمل رفع الصورة.",
+};
+
+/** The picked image's pixel size, read by the browser before anything is uploaded. */
+function imageSize(url: string): Promise<{ width: number; height: number } | null> {
+  return new Promise((resolve) => {
+    const probe = new Image();
+    probe.onload = () => resolve({ width: probe.naturalWidth, height: probe.naturalHeight });
+    probe.onerror = () => resolve(null);
+    probe.src = url;
+  });
+}
 
 /**
  * Advertisement lifecycle: create, edit, schedule, activate, remove.
@@ -89,16 +133,103 @@ export default function AdsPage() {
   const categories = useResource<{ items: { id: string; nameAr: string }[] }>("categories");
   const mutation = useMutation();
   const canManage = useCan("admin.ads.manage");
+  const router = useRouter();
 
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [image, setImage] = useState<SlideImage>(NO_IMAGE);
+  // The object URL of the picked file, so it can be released when replaced, when the
+  // editor closes, or when the screen goes away.
+  const localUrl = useRef<string | null>(null);
+  useEffect(
+    () => () => {
+      if (localUrl.current) URL.revokeObjectURL(localUrl.current);
+    },
+    [],
+  );
   const [removing, setRemoving] = useState<Advertisement | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const errors = fieldErrorsFor(mutation.error);
 
+  function releaseLocal(): void {
+    if (localUrl.current) URL.revokeObjectURL(localUrl.current);
+    localUrl.current = null;
+  }
+
+  /** `currentImage` is the slide's image as published, shown until a new one is picked. */
+  function openEditor(next: Draft, currentImage: string | null = null): void {
+    mutation.reset();
+    releaseLocal();
+    setImage(currentImage ? { ...NO_IMAGE, url: currentImage } : NO_IMAGE);
+    setDraft(next);
+  }
+
+  function closeEditor(): void {
+    releaseLocal();
+    setImage(NO_IMAGE);
+    setDraft(null);
+  }
+
+  /**
+   * Check the file here first (type, size, pixel size), show it at once, then upload it.
+   * A second pick while the first is still uploading wins: the first answer is ignored.
+   */
+  async function pick(file: File): Promise<void> {
+    if (!ACCEPTED.includes(file.type)) {
+      setImage((current) => ({ ...current, error: IMAGE_MESSAGES.format }));
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      setImage((current) => ({ ...current, error: IMAGE_MESSAGES.tooLarge }));
+      return;
+    }
+    const local = URL.createObjectURL(file);
+    const size = await imageSize(local);
+    if (
+      !size ||
+      size.width < MIN_SIDE ||
+      size.height < MIN_SIDE ||
+      size.width > MAX_SIDE ||
+      size.height > MAX_SIDE
+    ) {
+      URL.revokeObjectURL(local);
+      setImage((current) => ({
+        ...current,
+        error: size ? IMAGE_MESSAGES.dimensions : IMAGE_MESSAGES.unreadable,
+      }));
+      return;
+    }
+    releaseLocal();
+    localUrl.current = local;
+    setImage({ key: "", url: null, local, uploading: true, error: null });
+
+    const result = await uploadAdImage(file);
+    if (!result.ok && isSessionExpired(result.error)) {
+      router.replace("/login");
+      return;
+    }
+    // A newer pick, or closing the editor, has replaced this one: its answer no longer applies.
+    if (localUrl.current !== local) return;
+    if (result.ok) {
+      setImage({ key: result.data.imageKey, url: result.data.url, local, uploading: false, error: null });
+      return;
+    }
+    // A refused image leaves the preview, so nothing on screen looks accepted.
+    releaseLocal();
+    setImage({ ...NO_IMAGE, error: fieldErrorsFor(result.error).file ?? messageFor(result.error) });
+  }
+
   async function save(): Promise<void> {
     if (!draft) return;
+    if (image.uploading) {
+      setImage({ ...image, error: IMAGE_MESSAGES.uploading });
+      return;
+    }
+    if (!draft.id && !image.key) {
+      // Keep the reason a picked image was refused, if there is one; it is the useful message.
+      setImage({ ...image, error: image.error ?? IMAGE_MESSAGES.required });
+      return;
+    }
     const payload: Record<string, unknown> = {
-      imageKey: draft.imageKey.trim(),
       titleAr: draft.titleAr.trim(),
       targetScope: draft.targetScope,
       startsAt: toIso(draft.startsAt),
@@ -110,9 +241,11 @@ export default function AdsPage() {
       categoryId: draft.targetScope === "CATEGORY" ? draft.categoryId || null : null,
     };
     if (draft.id) payload.id = draft.id;
+    // An edit without a new picture keeps the current one: the key is simply not sent.
+    if (image.key) payload.imageKey = image.key;
     const ok = await mutation.run(draft.id ? "adUpdate" : "adCreate", payload);
     if (!ok) return;
-    setDraft(null);
+    closeEditor();
     setToast(draft.id ? "تم تحديث الإعلان." : "تمت إضافة الإعلان.");
     ads.reload();
   }
@@ -144,10 +277,7 @@ export default function AdsPage() {
               type="button"
               className="button-primary"
               data-testid="new-ad"
-              onClick={() => {
-                mutation.reset();
-                setDraft({ ...BLANK });
-              }}
+              onClick={() => openEditor({ ...BLANK })}
             >
               إعلان جديد
             </button>
@@ -195,20 +325,24 @@ export default function AdsPage() {
                             type="button"
                             className="button-ghost"
                             data-testid={`edit-ad-${ad.id}`}
-                            onClick={() => {
-                              mutation.reset();
-                              setDraft({
-                                ...BLANK,
-                                id: ad.id,
-                                titleAr: ad.titleAr,
-                                targetScope: ad.targetScope,
-                                startsAt: toLocalInput(ad.startsAt),
-                                endsAt: toLocalInput(ad.endsAt),
-                                enabled: ad.enabled,
-                                sortOrder: String(ad.sortOrder),
-                                slideDurationMs: String(ad.slideDurationMs),
-                              });
-                            }}
+                            onClick={() =>
+                              openEditor(
+                                {
+                                  ...BLANK,
+                                  id: ad.id,
+                                  titleAr: ad.titleAr,
+                                  targetScope: ad.targetScope,
+                                  provinceId: ad.provinceId ?? "",
+                                  categoryId: ad.categoryId ?? "",
+                                  startsAt: toLocalInput(ad.startsAt),
+                                  endsAt: toLocalInput(ad.endsAt),
+                                  enabled: ad.enabled,
+                                  sortOrder: String(ad.sortOrder),
+                                  slideDurationMs: String(ad.slideDurationMs),
+                                },
+                                ad.imageUrl,
+                              )
+                            }
                           >
                             تعديل
                           </button>
@@ -250,21 +384,67 @@ export default function AdsPage() {
         pending={mutation.pending}
         error={mutation.error}
         onConfirm={save}
-        onCancel={() => setDraft(null)}
+        onCancel={closeEditor}
       >
         {draft ? (
           <>
-            <label className="field">
-              <span>مفتاح الصورة</span>
-              <input
-                dir="ltr"
-                value={draft.imageKey}
-                data-testid="ad-image"
-                aria-invalid={Boolean(errors.imageKey)}
-                onChange={(event) => setDraft({ ...draft, imageKey: event.target.value })}
+            <div className="field ad-image-field">
+              <span className="field-label-row">
+                معاينة
+                <span className="field-hint">كما يظهر في شريط الإعلانات في التطبيق</span>
+              </span>
+              <SlidePreview
+                src={image.url || image.local}
+                fallback={image.local}
+                title={draft.titleAr}
+                busy={image.uploading}
+                emptyLabel={
+                  draft.id
+                    ? "تبقى الصورة الحالية ما لم تختر صورة جديدة"
+                    : "اختر صورة لتظهر هنا كما يراها المستخدم"
+                }
               />
-              {errors.imageKey ? <span className="field-error">{errors.imageKey}</span> : null}
-            </label>
+              <label className="file-picker" data-busy={image.uploading || undefined}>
+                <input
+                  type="file"
+                  accept={ACCEPTED.join(",")}
+                  data-testid="ad-image-file"
+                  aria-describedby="ad-image-hint"
+                  aria-invalid={Boolean(image.error || errors.imageKey)}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    // Cleared so choosing the same file again after an error still fires.
+                    event.target.value = "";
+                    if (file) void pick(file);
+                  }}
+                />
+                <Icons.upload />
+                <span>
+                  {image.local
+                    ? "اختيار صورة أخرى"
+                    : draft.id
+                      ? "استبدال الصورة"
+                      : "اختيار صورة"}
+                </span>
+              </label>
+              <span className="field-hint" id="ad-image-hint">
+                صورة أفقية بنسبة ١٦:٩ (مثلاً ١٦٠٠×٩٠٠)، بصيغة JPEG أو PNG أو WebP، حتى ٢ ميغابايت.
+              </span>
+              {image.error ? (
+                <span className="field-error" role="alert" data-testid="ad-image-error">
+                  {image.error}
+                </span>
+              ) : errors.imageKey ? (
+                <span className="field-error">{IMAGE_MESSAGES.required}</span>
+              ) : null}
+              {image.key ? (
+                <span className="field-hint ad-image-ready">
+                  <Icons.checkCircle />
+                  رُفعت الصورة، وتُحفظ مع الإعلان.
+                </span>
+              ) : null}
+              <input type="hidden" name="imageKey" value={image.key} data-testid="ad-image" />
+            </div>
             <label className="field">
               <span>العنوان</span>
               <input
@@ -343,6 +523,41 @@ export default function AdsPage() {
               />
               {errors.ends_at || errors.endsAt ? (
                 <span className="field-error">{errors.ends_at ?? errors.endsAt}</span>
+              ) : null}
+            </label>
+            <label className="field">
+              <span>الترتيب</span>
+              <input
+                type="number"
+                dir="ltr"
+                min={0}
+                value={draft.sortOrder}
+                data-testid="ad-sort"
+                aria-invalid={Boolean(errors.sortOrder)}
+                onChange={(event) => setDraft({ ...draft, sortOrder: event.target.value })}
+              />
+              <span className="field-hint">الأصغر يظهر أولاً في الشريط.</span>
+              {errors.sortOrder ? <span className="field-error">{errors.sortOrder}</span> : null}
+            </label>
+            <label className="field">
+              <span>مدة العرض (ثوانٍ)</span>
+              <input
+                type="number"
+                dir="ltr"
+                min={1}
+                step={0.5}
+                value={String(Number(draft.slideDurationMs) / 1000 || "")}
+                data-testid="ad-duration"
+                aria-invalid={Boolean(errors.slideDurationMs)}
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    slideDurationMs: String(Math.round(Number(event.target.value) * 1000)),
+                  })
+                }
+              />
+              {errors.slideDurationMs ? (
+                <span className="field-error">{errors.slideDurationMs}</span>
               ) : null}
             </label>
             <label className="switch-row">

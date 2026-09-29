@@ -1,22 +1,46 @@
 from collections import Counter
+from typing import Any
+from uuid import UUID
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 
-from accounts.models import UserAdminRole
+from accounts.models import User, UserAdminRole
 from audit.services import record_audit
-from facilities.models import Facility, FacilityApplication, VerificationEvidence
+from facilities.models import Facility, FacilityApplication, FacilityReport, VerificationEvidence
 from notifications.models import Notification
 from notifications.services import create_notification
 from sessions.models import UserSession
 
 
-def _request_id(request):
+def _request_id(request: Any) -> str:
     return getattr(request, "request_id", "")
 
 
-def _facility_snapshot(facility):
+def decide_report(
+    *, report: FacilityReport, target_status: str, actor: Any, note: str = "", request_id: str = ""
+) -> FacilityReport:
+    """Resolve or dismiss one OPEN report the caller has already locked. Audited."""
+    if report.status != FacilityReport.Status.OPEN:
+        raise ValidationError({"status": "Only open reports can be decided."})
+    report.status = target_status
+    report.resolved_by = actor
+    report.resolved_at = timezone.now()
+    report.save(update_fields=["status", "resolved_by", "resolved_at"])
+    record_audit(
+        actor=actor,
+        action=f"facility_report.{target_status.lower()}",
+        target=report,
+        before_snapshot={"status": FacilityReport.Status.OPEN},
+        after_snapshot={"status": report.status},
+        metadata={"facilityId": str(report.facility_id), "note": (note or "").strip()},
+        request_id=request_id,
+    )
+    return report
+
+
+def _facility_snapshot(facility: Facility) -> dict[str, Any]:
     return {
         "status": facility.status,
         "nameAr": facility.name_ar,
@@ -25,7 +49,7 @@ def _facility_snapshot(facility):
     }
 
 
-def _required_evidence_is_complete(facility):
+def _required_evidence_is_complete(facility: Facility) -> bool:
     requirements = list(
         facility.category.verification_requirements.filter(active=True, required=True)
     )
@@ -38,7 +62,9 @@ def _required_evidence_is_complete(facility):
 
 
 @transaction.atomic
-def decide_application(*, request, application_id, approve, reason=""):
+def decide_application(
+    *, request: Any, application_id: UUID, approve: bool, reason: str = ""
+) -> FacilityApplication:
     application = (
         FacilityApplication.objects.select_for_update()
         .select_related("facility__category")
@@ -58,10 +84,17 @@ def decide_application(*, request, application_id, approve, reason=""):
         facility.status = Facility.Status.ACTIVE
         if facility.activated_at is None:
             facility.activated_at = timezone.now()
+        facility.last_verified_at = timezone.now()
     else:
         application.status = FacilityApplication.Status.REJECTED
         application.rejection_reason = reason.strip()
-        facility.status = Facility.Status.DRAFT
+        # A facility that was live before goes back to needing re-verification rather than
+        # being demoted to a never-published draft.
+        facility.status = (
+            Facility.Status.REVERIFICATION_REQUIRED
+            if facility.activated_at is not None
+            else Facility.Status.DRAFT
+        )
     application.reviewed_by = request.user
     application.reviewed_at = timezone.now()
     application.save(
@@ -73,7 +106,7 @@ def decide_application(*, request, application_id, approve, reason=""):
             "updated_at",
         ]
     )
-    facility.save(update_fields=["status", "activated_at", "updated_at"])
+    facility.save(update_fields=["status", "activated_at", "last_verified_at", "updated_at"])
     record_audit(
         actor=request.user,
         action="facility_application.approved" if approve else "facility_application.rejected",
@@ -87,7 +120,7 @@ def decide_application(*, request, application_id, approve, reason=""):
     return application
 
 
-def _tell_the_owners(facility, *, approve: bool, reason: str) -> None:
+def _tell_the_owners(facility: Facility, *, approve: bool, reason: str) -> None:
     """A review decision reaches the people responsible for the facility.
 
     The message goes to the account's own inbox, which is the record; whether a push also
@@ -115,9 +148,11 @@ def _tell_the_owners(facility, *, approve: bool, reason: str) -> None:
 
 
 @transaction.atomic
-def transition_facility(*, request, facility_id, target_status, reason=""):
+def transition_facility(
+    *, request: Any, facility_id: UUID, target_status: str, reason: str = ""
+) -> Facility:
     facility = Facility.objects.select_for_update().get(pk=facility_id)
-    allowed = {
+    allowed: dict[str, set[str]] = {
         Facility.Status.SUSPENDED: {Facility.Status.ACTIVE},
         Facility.Status.ACTIVE: {Facility.Status.SUSPENDED},
         Facility.Status.CLOSED: {
@@ -144,7 +179,7 @@ def transition_facility(*, request, facility_id, target_status, reason=""):
 
 
 @transaction.atomic
-def set_user_blocked(*, request, user, blocked):
+def set_user_blocked(*, request: Any, user: User, blocked: bool) -> User:
     before = {"active": user.is_active}
     user.is_active = not blocked
     user.save(update_fields=["is_active", "updated_at"])
@@ -164,7 +199,7 @@ def set_user_blocked(*, request, user, blocked):
 
 
 @transaction.atomic
-def replace_user_roles(*, request, user, role_ids):
+def replace_user_roles(*, request: Any, user: User, role_ids: list[Any]) -> None:
     before = list(
         UserAdminRole.objects.filter(user=user, active=True).values_list("role_id", flat=True)
     )

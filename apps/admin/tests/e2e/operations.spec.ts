@@ -1,4 +1,6 @@
-import { expect, test } from "@playwright/test";
+import { crc32, deflateSync } from "node:zlib";
+
+import { type Page, expect, test } from "@playwright/test";
 
 import {
   FULL_STATE,
@@ -308,13 +310,62 @@ test.describe("verification policy", () => {
   });
 });
 
+/** A plain 160×90 PNG built in memory: a real image the picker's own checks accept. */
+// 16:9 and at least 100 px a side, the smallest image the picker and the backend both accept.
+function testPng(width = 320, height = 180): Buffer {
+  const chunk = (type: string, data: Buffer) => {
+    const length = Buffer.alloc(4);
+    length.writeUInt32BE(data.length);
+    const body = Buffer.concat([Buffer.from(type, "ascii"), data]);
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(crc32(body));
+    return Buffer.concat([length, body, crc]);
+  };
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(width, 0);
+  header.writeUInt32BE(height, 4);
+  header[8] = 8; // bit depth
+  header[9] = 2; // truecolour
+  const row = Buffer.concat([Buffer.from([0]), Buffer.alloc(width * 3, 0x3c)]);
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk("IHDR", header),
+    chunk("IDAT", deflateSync(Buffer.concat(Array.from({ length: height }, () => row)))),
+    chunk("IEND", Buffer.alloc(0)),
+  ]);
+}
+
+/**
+ * Choose the slide image through the picker.
+ *
+ * The upload itself is answered here: this stack runs Django without object storage, so a
+ * real upload has nowhere to land. The BFF upload route and its checks are covered by
+ * `tests/unit/upload-route.test.ts`; what this proves is the rest of the path — the picker,
+ * the preview and the key the save then sends to the real backend.
+ */
+async function pickAdImage(page: Page): Promise<void> {
+  await page.route("**/api/admin/ads/images", (route) =>
+    route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({ imageKey: "ads/e2e.jpg", url: "", width: 320, height: 180 }),
+    }),
+  );
+  await page.getByTestId("ad-image-file").setInputFiles({
+    name: "e2e.png",
+    mimeType: "image/png",
+    buffer: testPng(),
+  });
+  await expect(page.getByTestId("ad-image")).toHaveValue("ads/e2e.jpg");
+}
+
 test.describe("advertisements", () => {
   test("an end before its start is refused by the backend", async ({ page }) => {
     await openConsole(page);
     await page.goto("/ads");
 
     await page.getByTestId("new-ad").click();
-    await page.getByTestId("ad-image").fill("ads/e2e.jpg");
+    await pickAdImage(page);
     await page.getByTestId("ad-title").fill("e2e-إعلان");
     await page.getByTestId("ad-starts").fill("2026-10-01T10:00");
     await page.getByTestId("ad-ends").fill("2026-09-01T10:00");
@@ -329,7 +380,7 @@ test.describe("advertisements", () => {
     await page.goto("/ads");
 
     await page.getByTestId("new-ad").click();
-    await page.getByTestId("ad-image").fill("ads/e2e.jpg");
+    await pickAdImage(page);
     await page.getByTestId("ad-title").fill("e2e-إعلان");
     await page.getByTestId("ad-starts").fill("2026-09-01T10:00");
     await page.getByTestId("ad-ends").fill("2026-10-01T10:00");

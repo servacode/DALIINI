@@ -1,31 +1,21 @@
-from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db import IntegrityError, transaction
+from uuid import UUID
+
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.authentication import AuthenticatedRequest
 from business_hours.permissions import require_facility_manager
-from core.exceptions import ConflictError
 from core.openapi import CONFLICT_409, NOT_FOUND_404, VALIDATION_400, protected
 from facilities.models import Facility
 
 from .models import DutyShift
 from .schemas import DutyShiftListSerializer
 from .serializers import DutyShiftInputSerializer, DutyShiftSerializer
-
-
-def _duty_error():
-    """Build the shared duty rejection.
-
-    Overlap and an invalid range report the same code on purpose: telling the caller
-    which of the two it was would disclose that another facility already holds the slot.
-    """
-    return ConflictError(
-        "DUTY_OVERLAP_OR_INVALID",
-        message="الوردية تتعارض مع وردية أخرى أو أن بياناتها غير صالحة.",
-    )
+from .services import require_duty_capability, save_shift
 
 
 class DutyListCreateView(APIView):
@@ -37,7 +27,7 @@ class DutyListCreateView(APIView):
         summary="List duty shifts of a facility",
         responses={200: DutyShiftListSerializer, **protected(), 404: NOT_FOUND_404},
     )
-    def get(self, request, facility_id):
+    def get(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
         shifts = facility.duty_shifts.order_by("starts_at")
@@ -50,7 +40,8 @@ class DutyListCreateView(APIView):
         description=(
             "Overlapping shifts for the same facility are refused by a PostgreSQL "
             "exclusion constraint, not only by application code. Only categories that "
-            "declare the duty capability accept this."
+            "declare the duty capability accept this, and a shift may not overlap a "
+            "temporary closure of the facility (409 DUTY_DURING_CLOSURE)."
         ),
         request=DutyShiftInputSerializer,
         responses={
@@ -62,22 +53,17 @@ class DutyListCreateView(APIView):
         },
     )
     @transaction.atomic
-    def post(self, request, facility_id):
+    def post(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
-        if not facility.category.capabilities.supports_duty:
-            raise ConflictError(
-                "DUTY_NOT_SUPPORTED",
-                message="هذا التصنيف لا يدعم ورديات المناوبة.",
-            )
+        require_duty_capability(facility)
         serializer = DutyShiftInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        row = DutyShift(facility=facility, **serializer.validated_data)
-        try:
-            row.full_clean()
-            row.save()
-        except (DjangoValidationError, IntegrityError) as exc:
-            raise _duty_error() from exc
+        row = save_shift(
+            DutyShift(
+                facility=facility, source=DutyShift.Source.OWNER, **serializer.validated_data
+            )
+        )
         return Response(DutyShiftSerializer(row).data, status=201)
 
 
@@ -98,7 +84,7 @@ class DutyDetailView(APIView):
         },
     )
     @transaction.atomic
-    def patch(self, request, facility_id, shift_id):
+    def patch(self, request: AuthenticatedRequest, facility_id: UUID, shift_id: UUID) -> Response:
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
         row = get_object_or_404(
@@ -110,11 +96,7 @@ class DutyDetailView(APIView):
         serializer.is_valid(raise_exception=True)
         for key, value in serializer.validated_data.items():
             setattr(row, key, value)
-        try:
-            row.full_clean()
-            row.save()
-        except (DjangoValidationError, IntegrityError) as exc:
-            raise _duty_error() from exc
+        save_shift(row)
         return Response(DutyShiftSerializer(row).data)
 
     @extend_schema(
@@ -123,7 +105,7 @@ class DutyDetailView(APIView):
         summary="Remove a duty shift",
         responses={204: None, **protected(), 404: NOT_FOUND_404},
     )
-    def delete(self, request, facility_id, shift_id):
+    def delete(self, request: AuthenticatedRequest, facility_id: UUID, shift_id: UUID) -> Response:
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
         row = get_object_or_404(DutyShift, pk=shift_id, facility=facility)

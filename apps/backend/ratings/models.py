@@ -34,3 +34,6 @@ class Rating(models.Model):
                 name="rating_stars_1_5",
             ),
         ]
+
+    def __str__(self) -> str:
+        return f"{self.user_id}->{self.facility_id}: {self.stars}"

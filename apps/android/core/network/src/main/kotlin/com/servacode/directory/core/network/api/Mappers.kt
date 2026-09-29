@@ -1,5 +1,16 @@
 package com.servacode.directory.core.network.api
 
+import com.servacode.directory.api.models.EmergencyNumber as WireEmergencyNumber
+import com.servacode.directory.api.models.EmergencyNumberScopeEnum
+import com.servacode.directory.api.models.PublicDutyDay
+import com.servacode.directory.core.model.DutyDay
+import com.servacode.directory.core.model.DutyWindow
+import com.servacode.directory.core.model.EmergencyNumber
+import com.servacode.directory.core.model.EmergencyScope
+import com.servacode.directory.api.models.FacilityReportReasonEnum
+import com.servacode.directory.api.models.OwnerFacilityInsights as WireOwnerFacilityInsights
+import com.servacode.directory.core.model.FacilityReportReason
+import com.servacode.directory.core.model.OwnerFacilityInsights
 import com.servacode.directory.api.models.AccountRating
 import com.servacode.directory.api.models.AdvertisementAction
 import com.servacode.directory.api.models.AdvertisementActionTypeEnum
@@ -26,6 +37,7 @@ import com.servacode.directory.api.models.FacilityMemberRoleEnum
 import com.servacode.directory.api.models.FacilityStatusEnum
 import com.servacode.directory.api.models.HomeCategory
 import com.servacode.directory.api.models.MapMarker
+import com.servacode.directory.api.models.NamedIntRef
 import com.servacode.directory.api.models.NamedRef
 import com.servacode.directory.api.models.OwnerApplication as WireOwnerApplication
 import com.servacode.directory.api.models.OwnerConfig as WireOwnerConfig
@@ -41,6 +53,7 @@ import com.servacode.directory.api.models.OwnerVerificationRequirement
 import com.servacode.directory.api.models.Profile
 import com.servacode.directory.api.models.PublicAdvertisement
 import com.servacode.directory.api.models.PublicCategory
+import com.servacode.directory.api.models.PublicCategoryTags
 import com.servacode.directory.api.models.PublicFacilityDetail
 import com.servacode.directory.api.models.PublicHome
 import com.servacode.directory.api.models.PublicHoursEntry
@@ -50,17 +63,20 @@ import com.servacode.directory.api.models.TemporaryClosure as WireTemporaryClosu
 import com.servacode.directory.api.models.UserSession
 import com.servacode.directory.core.auth.SessionTokens
 import com.servacode.directory.core.model.AccountProfile
+import com.servacode.directory.core.model.AdAction
 import com.servacode.directory.core.model.AccountSession
 import com.servacode.directory.core.model.AuthChallenge
 import com.servacode.directory.core.model.AvailabilityState
 import com.servacode.directory.core.model.BusinessHour
 import com.servacode.directory.core.model.Category
+import com.servacode.directory.core.model.CategoryTags
 import com.servacode.directory.core.model.DutyShift
 import com.servacode.directory.core.model.FacilityCapabilities
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.FacilityMember
 import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.model.FacilitySummary
+import com.servacode.directory.core.model.FacilityTag
 import com.servacode.directory.core.model.GeoPoint
 import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.HomeSnapshot
@@ -88,6 +104,7 @@ import com.servacode.directory.core.model.PublicMapFacility
 import com.servacode.directory.core.model.TemporaryClosure
 import com.servacode.directory.core.model.UserRating
 import com.servacode.directory.core.model.VerificationRequirementDescriptor
+import kotlinx.serialization.json.jsonPrimitive
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -122,6 +139,7 @@ internal fun PublicProvince.toDomain() = Province(
     nameAr = nameAr,
     nameEn = nameEn,
     mapCenter = mapCenter?.toGeoPoint(),
+    code = code.trim().lowercase().takeIf { it.isNotEmpty() },
 )
 
 internal fun OwnerConfigProvince.toDomain() = Province(
@@ -153,6 +171,15 @@ internal fun PublicCategory.toDomain() = Category(
     nameEn = nameEn,
     iconKey = iconKey,
     capabilities = capabilities.toDomain(),
+)
+
+/** A specialty or a service. Its integer key becomes a string id, as every id is in the domain. */
+internal fun NamedIntRef.toDomain() = FacilityTag(id = id.toString(), nameAr = nameAr)
+
+/** The backend's order is the operators' order, so neither list is sorted here. */
+internal fun PublicCategoryTags.toDomain() = CategoryTags(
+    specialties = specialties.map { it.toDomain() },
+    services = services.map { it.toDomain() },
 )
 
 /** The home payload carries the capabilities a home screen needs, not the owner-side ones. */
@@ -313,6 +340,28 @@ internal fun PublicFacilityDetail.toDomain() = FacilityDetail(
     hours = hours.map { it.toDomain() }.sortedWith(hourOrder),
     specialties = specialties.map { it.nameAr },
     services = services.map { it.nameAr },
+    whatsapp = whatsapp?.takeIf { it.isNotBlank() },
+    lastVerifiedAtEpochMillis = lastVerifiedAt?.toEpochMillis(),
+    updatedAtEpochMillis = updatedAt.toEpochMillis(),
+    infoConfirmedAtEpochMillis = infoConfirmedAt?.toEpochMillis(),
+)
+
+internal fun WireEmergencyNumber.toDomain() = EmergencyNumber(
+    nameAr = labelAr,
+    number = phone.filter { it.isDigit() || it == '+' },
+    scope = when (scope) {
+        EmergencyNumberScopeEnum.NATIONAL -> EmergencyScope.NATIONAL
+        EmergencyNumberScopeEnum.PROVINCE -> EmergencyScope.PROVINCE
+    },
+    provinceId = provinceId?.toString(),
+)
+
+internal fun PublicDutyDay.toDomain() = DutyDay(
+    date = date.toString(),
+    facilities = items.map { it.toDomain() },
+    shifts = shifts.map {
+        DutyWindow(it.facilityId.toString(), it.startsAt.toEpochMillis(), it.endsAt.toEpochMillis())
+    },
 )
 
 internal fun PublicAdvertisement.toDomain() = HomeAd(
@@ -321,19 +370,31 @@ internal fun PublicAdvertisement.toDomain() = HomeAd(
     titleAr = titleAr,
     subtitleAr = subtitleAr,
     slideDurationMs = slideDurationMs,
-    facilityId = action.facilityId(),
+    action = action.toDomain(),
 )
 
 /**
- * The facility an advertisement points at, or null.
- *
- * Only a FACILITY action is read. The contract also allows a category, an in-app route and an
- * external URL; this app follows none of them yet, and reading a payload it would not act on
- * would only invite it to act on one later by accident.
+ * The backend validates the payload per type; the app checks again, because a tap on an ad
+ * must never open anything but a facility, a category or an `https` page.
  */
-private fun AdvertisementAction.facilityId(): String? {
-    if (type != AdvertisementActionTypeEnum.FACILITY) return null
-    return (payload["facilityId"] as? JsonPrimitive)?.contentOrNull
+internal fun AdvertisementAction.toDomain(): AdAction {
+    fun text(key: String): String? =
+        runCatching { payload[key]?.jsonPrimitive?.contentOrNull }.getOrNull()?.trim()?.takeIf { it.isNotEmpty() }
+    return when (type) {
+        AdvertisementActionTypeEnum.FACILITY -> text("facilityId")?.let(AdAction::OpenFacility)
+        AdvertisementActionTypeEnum.CATEGORY -> text("categoryId")?.let(AdAction::OpenCategory)
+        AdvertisementActionTypeEnum.EXTERNAL_URL -> text("url")?.takeIf(::isSafeExternalUrl)?.let(AdAction::OpenUrl)
+        // App routes are typed; a path string from the backend has no safe mapping yet.
+        AdvertisementActionTypeEnum.IN_APP_ROUTE, AdvertisementActionTypeEnum.NONE -> null
+    } ?: AdAction.None
+}
+
+/** An absolute `https` address with a host and no credentials. */
+internal fun isSafeExternalUrl(value: String): Boolean {
+    val uri = runCatching { java.net.URI(value) }.getOrNull() ?: return false
+    return uri.scheme.equals("https", ignoreCase = true) &&
+        !uri.host.isNullOrBlank() &&
+        uri.rawUserInfo == null
 }
 
 internal fun PublicHome.toDomain(province: Province) = HomeSnapshot(
@@ -441,6 +502,10 @@ internal fun WireOwnerConfig.toDomain() = OwnerConfig(
             specialization = item.category.specialization.value,
             capabilities = item.capabilities.toDomain(),
             verificationRequirements = item.verificationRequirements.map { it.toDomain() },
+            tags = CategoryTags(
+                specialties = item.specialties.map { it.toDomain() },
+                services = item.services.map { it.toDomain() },
+            ),
         )
     },
 )
@@ -491,6 +556,8 @@ internal fun WireOwnerFacilityDetail.toDomain() = OwnerFacilityDetail(
     descriptionAr = descriptionAr,
     descriptionEn = descriptionEn,
     phone = phone,
+    hoursConfirmedAtEpochMillis = hoursConfirmedAt?.toEpochMillis(),
+    whatsapp = whatsapp?.takeIf { it.isNotBlank() },
     addressAr = addressAr,
     addressEn = addressEn,
     cityId = cityId?.toString(),
@@ -503,6 +570,24 @@ internal fun WireOwnerFacilityDetail.toDomain() = OwnerFacilityDetail(
     evidence = evidence.map { it.toDomain() },
     application = application?.toDomain(),
 )
+
+internal fun WireOwnerFacilityInsights.toDomain() = OwnerFacilityInsights(
+    facilityId = facilityId.toString(),
+    windowDays = windowDays,
+    sinceEpochMillis = since.toEpochMillis(),
+    views = views,
+    calls = calls,
+    directions = directions,
+)
+
+internal fun FacilityReportReason.toWire(): FacilityReportReasonEnum = when (this) {
+    FacilityReportReason.WRONG_INFO -> FacilityReportReasonEnum.WRONG_INFO
+    FacilityReportReason.CLOSED_PERMANENTLY -> FacilityReportReasonEnum.CLOSED_PERMANENTLY
+    FacilityReportReason.WRONG_LOCATION -> FacilityReportReasonEnum.WRONG_LOCATION
+    FacilityReportReason.WRONG_HOURS -> FacilityReportReasonEnum.WRONG_HOURS
+    FacilityReportReason.NOT_ON_DUTY -> FacilityReportReasonEnum.NOT_ON_DUTY
+    FacilityReportReason.OTHER -> FacilityReportReasonEnum.OTHER
+}
 
 internal fun OwnerSubmitResult.toDomain() = OwnerSubmission(
     applicationId = applicationId.toString(),

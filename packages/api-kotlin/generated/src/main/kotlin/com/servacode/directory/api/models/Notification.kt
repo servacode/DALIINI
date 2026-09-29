@@ -29,7 +29,7 @@ import kotlinx.serialization.Contextual
  * @param titleAr 
  * @param bodyAr 
  * @param destination Where opening this message takes the reader. The set is closed on purpose: a notification can never carry an arbitrary link.  * `NONE` - NONE * `FACILITY` - FACILITY * `OWNER_FACILITIES` - OWNER_FACILITIES
- * @param facilityId Set only when the destination is FACILITY.
+ * @param facilityId The facility the message is about: set for a FACILITY destination, and for an OWNER_FACILITIES notice about one of the owner's facilities (an hours reminder, a duty change); null otherwise.
  * @param isRead 
  * @param createdAt 
  */
@@ -54,7 +54,7 @@ data class Notification (
     @Contextual @SerialName(value = "destination")
     val destination: DestinationEnum,
 
-    /* Set only when the destination is FACILITY. */
+    /* The facility the message is about: set for a FACILITY destination, and for an OWNER_FACILITIES notice about one of the owner's facilities (an hours reminder, a duty change); null otherwise. */
     @Contextual @SerialName(value = "facilityId")
     val facilityId: java.util.UUID?,
 

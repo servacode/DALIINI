@@ -23,6 +23,7 @@ import com.servacode.directory.api.models.Availability
 import com.servacode.directory.api.models.BilingualRef
 import com.servacode.directory.api.models.Coordinates
 import com.servacode.directory.api.models.FacilityImage
+import com.servacode.directory.api.models.NamedIntRef
 import com.servacode.directory.api.models.NamedRef
 import com.servacode.directory.api.models.PublicHoursEntry
 
@@ -97,6 +98,24 @@ class PublicFacilityDetailTest : ShouldSpec() {
             //modelInstance.imageUrl shouldBe ("TODO")
         }
 
+        // to test the property `lastVerifiedAt` - When an operator last approved this facility's details (trust signal).
+        should("test lastVerifiedAt") {
+            // uncomment below to test the property
+            //modelInstance.lastVerifiedAt shouldBe ("TODO")
+        }
+
+        // to test the property `infoConfirmedAt` - The most recent of `lastVerifiedAt` and the owner's own confirmation that the opening hours are still right. Null when neither ever happened.
+        should("test infoConfirmedAt") {
+            // uncomment below to test the property
+            //modelInstance.infoConfirmedAt shouldBe ("TODO")
+        }
+
+        // to test the property `updatedAt` - Last change to the facility record.
+        should("test updatedAt") {
+            // uncomment below to test the property
+            //modelInstance.updatedAt shouldBe ("TODO")
+        }
+
         // to test the property `descriptionAr`
         should("test descriptionAr") {
             // uncomment below to test the property
@@ -113,6 +132,12 @@ class PublicFacilityDetailTest : ShouldSpec() {
         should("test phone") {
             // uncomment below to test the property
             //modelInstance.phone shouldBe ("TODO")
+        }
+
+        // to test the property `whatsapp` - WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX).
+        should("test whatsapp") {
+            // uncomment below to test the property
+            //modelInstance.whatsapp shouldBe ("TODO")
         }
 
         // to test the property `addressAr`
@@ -145,13 +170,13 @@ class PublicFacilityDetailTest : ShouldSpec() {
             //modelInstance.images shouldBe ("TODO")
         }
 
-        // to test the property `specialties`
+        // to test the property `specialties` - Active specialties, in the operators' order.
         should("test specialties") {
             // uncomment below to test the property
             //modelInstance.specialties shouldBe ("TODO")
         }
 
-        // to test the property `services`
+        // to test the property `services` - Active services, in the operators' order.
         should("test services") {
             // uncomment below to test the property
             //modelInstance.services shouldBe ("TODO")

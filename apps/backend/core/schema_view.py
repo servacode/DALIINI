@@ -11,9 +11,14 @@ Controlled by `OPENAPI_SCHEMA_EXPOSURE`:
     disabled    not routed at all
 """
 
+from typing import TYPE_CHECKING
+
 from django.conf import settings
 from drf_spectacular.views import SpectacularAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import BasePermission, IsAuthenticated
+
+if TYPE_CHECKING:
+    from django.urls import URLPattern
 
 PUBLIC = "public"
 PRIVILEGED = "privileged"
@@ -25,13 +30,13 @@ class PrivilegedSchemaView(SpectacularAPIView):
 
     required_permission = "admin.system.read"
 
-    def get_permissions(self):
+    def get_permissions(self) -> list[BasePermission]:
         from admin_console.permissions import HasAdminPermission
 
         return [IsAuthenticated(), HasAdminPermission()]
 
 
-def schema_urlpatterns():
+def schema_urlpatterns() -> "list[URLPattern]":
     """Return the schema route for the current environment, or nothing."""
     from django.urls import path
 

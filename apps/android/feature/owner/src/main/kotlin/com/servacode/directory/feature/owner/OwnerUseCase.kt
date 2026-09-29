@@ -1,5 +1,6 @@
 package com.servacode.directory.feature.owner
 
+import com.servacode.directory.core.model.CategoryTags
 import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.network.OwnerFacilityPatch
 import com.servacode.directory.core.network.TemporaryClosureInput
@@ -20,6 +21,34 @@ class LoadManageFacilityUseCase @Inject constructor(
         repository.members(id),
     )
 
+}
+
+/** How people engaged with one of the owner's facilities over the last 30 days. */
+class LoadOwnerInsightsUseCase @Inject constructor(
+    private val repository: OwnerRepository,
+) {
+    suspend operator fun invoke(id: String) = repository.insights(id)
+}
+
+/**
+ * What an owner may pick for a facility: the specialties and services of its category's entry in
+ * its province's owner configuration. Null when the category is not listed there, which is when
+ * the province does not take owners for it.
+ */
+class LoadTagChoicesUseCase @Inject constructor(
+    private val repository: OwnerRepository,
+) {
+    suspend operator fun invoke(provinceId: String, categoryId: String): Result<CategoryTags?> =
+        repository.config(provinceId).map { config ->
+            config.categories.firstOrNull { it.category.id == categoryId }?.tags
+        }
+}
+
+/** The weekly «تأكيد أوقات الدوام». */
+class ConfirmHoursUseCase @Inject constructor(
+    private val repository: OwnerRepository,
+) {
+    suspend operator fun invoke(id: String) = repository.confirmHours(id)
 }
 
 class ManageFacilityUseCase @Inject constructor(

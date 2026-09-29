@@ -26,6 +26,13 @@ import type {
   AdminCategoryProvinceRequest,
   AdminCategoryUpdateRequest,
   AdminId,
+  AdminServiceTag,
+  AdminServiceTagCreateRequest,
+  AdminServiceTagList,
+  AdminSpecialty,
+  AdminSpecialtyCreateRequest,
+  AdminSpecialtyList,
+  AdminTagUpdateRequest,
   ApiError,
 } from '../models/index';
 import {
@@ -51,6 +58,20 @@ import {
     AdminCategoryUpdateRequestToJSON,
     AdminIdFromJSON,
     AdminIdToJSON,
+    AdminServiceTagFromJSON,
+    AdminServiceTagToJSON,
+    AdminServiceTagCreateRequestFromJSON,
+    AdminServiceTagCreateRequestToJSON,
+    AdminServiceTagListFromJSON,
+    AdminServiceTagListToJSON,
+    AdminSpecialtyFromJSON,
+    AdminSpecialtyToJSON,
+    AdminSpecialtyCreateRequestFromJSON,
+    AdminSpecialtyCreateRequestToJSON,
+    AdminSpecialtyListFromJSON,
+    AdminSpecialtyListToJSON,
+    AdminTagUpdateRequestFromJSON,
+    AdminTagUpdateRequestToJSON,
     ApiErrorFromJSON,
     ApiErrorToJSON,
 } from '../models/index';
@@ -78,9 +99,45 @@ export interface AdminCategoryProvinceReplaceRequest {
     adminCategoryProvinceRequest: AdminCategoryProvinceRequest;
 }
 
+export interface AdminCategoryServiceTagCreateRequest {
+    categoryId: string;
+    adminServiceTagCreateRequest: AdminServiceTagCreateRequest;
+}
+
+export interface AdminCategoryServiceTagsListRequest {
+    categoryId: string;
+}
+
+export interface AdminCategorySpecialtiesListRequest {
+    categoryId: string;
+}
+
+export interface AdminCategorySpecialtyCreateRequest {
+    categoryId: string;
+    adminSpecialtyCreateRequest: AdminSpecialtyCreateRequest;
+}
+
 export interface AdminCategoryUpdateOperationRequest {
     categoryId: string;
     adminCategoryUpdateRequest?: AdminCategoryUpdateRequest;
+}
+
+export interface AdminServiceTagDeleteRequest {
+    serviceTagId: number;
+}
+
+export interface AdminServiceTagUpdateRequest {
+    serviceTagId: number;
+    adminTagUpdateRequest?: AdminTagUpdateRequest;
+}
+
+export interface AdminSpecialtyDeleteRequest {
+    specialtyId: number;
+}
+
+export interface AdminSpecialtyUpdateRequest {
+    specialtyId: number;
+    adminTagUpdateRequest?: AdminTagUpdateRequest;
 }
 
 /**
@@ -411,6 +468,214 @@ export class AdminTaxonomyApi extends runtime.BaseAPI {
     }
 
     /**
+     * Requires admin.taxonomy.manage, re-checked inside the handler. A name already used in the category is refused, retired services included.
+     * Add a service to a category
+     */
+    async adminCategoryServiceTagCreateRaw(requestParameters: AdminCategoryServiceTagCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminServiceTag>> {
+        if (requestParameters['categoryId'] == null) {
+            throw new runtime.RequiredError(
+                'categoryId',
+                'Required parameter "categoryId" was null or undefined when calling adminCategoryServiceTagCreate().'
+            );
+        }
+
+        if (requestParameters['adminServiceTagCreateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'adminServiceTagCreateRequest',
+                'Required parameter "adminServiceTagCreateRequest" was null or undefined when calling adminCategoryServiceTagCreate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/categories/{category_id}/service-tags/`;
+        urlPath = urlPath.replace(`{${"category_id"}}`, encodeURIComponent(String(requestParameters['categoryId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminServiceTagCreateRequestToJSON(requestParameters['adminServiceTagCreateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminServiceTagFromJSON(jsonValue));
+    }
+
+    /**
+     * Requires admin.taxonomy.manage, re-checked inside the handler. A name already used in the category is refused, retired services included.
+     * Add a service to a category
+     */
+    async adminCategoryServiceTagCreate(requestParameters: AdminCategoryServiceTagCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminServiceTag> {
+        const response = await this.adminCategoryServiceTagCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retired ones included, in the order the public sees them.
+     * List the services of a category
+     */
+    async adminCategoryServiceTagsListRaw(requestParameters: AdminCategoryServiceTagsListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminServiceTagList>> {
+        if (requestParameters['categoryId'] == null) {
+            throw new runtime.RequiredError(
+                'categoryId',
+                'Required parameter "categoryId" was null or undefined when calling adminCategoryServiceTagsList().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/categories/{category_id}/service-tags/`;
+        urlPath = urlPath.replace(`{${"category_id"}}`, encodeURIComponent(String(requestParameters['categoryId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminServiceTagListFromJSON(jsonValue));
+    }
+
+    /**
+     * Retired ones included, in the order the public sees them.
+     * List the services of a category
+     */
+    async adminCategoryServiceTagsList(requestParameters: AdminCategoryServiceTagsListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminServiceTagList> {
+        const response = await this.adminCategoryServiceTagsListRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * The category\'s own specialties and those its specialization shares, retired ones included, in the order the public sees them.
+     * List the specialties a category offers, in both scopes
+     */
+    async adminCategorySpecialtiesListRaw(requestParameters: AdminCategorySpecialtiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminSpecialtyList>> {
+        if (requestParameters['categoryId'] == null) {
+            throw new runtime.RequiredError(
+                'categoryId',
+                'Required parameter "categoryId" was null or undefined when calling adminCategorySpecialtiesList().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/categories/{category_id}/specialties/`;
+        urlPath = urlPath.replace(`{${"category_id"}}`, encodeURIComponent(String(requestParameters['categoryId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminSpecialtyListFromJSON(jsonValue));
+    }
+
+    /**
+     * The category\'s own specialties and those its specialization shares, retired ones included, in the order the public sees them.
+     * List the specialties a category offers, in both scopes
+     */
+    async adminCategorySpecialtiesList(requestParameters: AdminCategorySpecialtiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminSpecialtyList> {
+        const response = await this.adminCategorySpecialtiesListRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Requires admin.taxonomy.manage, re-checked inside the handler. `scope` CATEGORY scopes it to this category; SPECIALIZATION shares it with every category of this category\'s specialization and is refused for a GENERIC category. A name already used in the same scope is refused, retired items included.
+     * Add a specialty to a category or to its specialization
+     */
+    async adminCategorySpecialtyCreateRaw(requestParameters: AdminCategorySpecialtyCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminSpecialty>> {
+        if (requestParameters['categoryId'] == null) {
+            throw new runtime.RequiredError(
+                'categoryId',
+                'Required parameter "categoryId" was null or undefined when calling adminCategorySpecialtyCreate().'
+            );
+        }
+
+        if (requestParameters['adminSpecialtyCreateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'adminSpecialtyCreateRequest',
+                'Required parameter "adminSpecialtyCreateRequest" was null or undefined when calling adminCategorySpecialtyCreate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/categories/{category_id}/specialties/`;
+        urlPath = urlPath.replace(`{${"category_id"}}`, encodeURIComponent(String(requestParameters['categoryId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminSpecialtyCreateRequestToJSON(requestParameters['adminSpecialtyCreateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminSpecialtyFromJSON(jsonValue));
+    }
+
+    /**
+     * Requires admin.taxonomy.manage, re-checked inside the handler. `scope` CATEGORY scopes it to this category; SPECIALIZATION shares it with every category of this category\'s specialization and is refused for a GENERIC category. A name already used in the same scope is refused, retired items included.
+     * Add a specialty to a category or to its specialization
+     */
+    async adminCategorySpecialtyCreate(requestParameters: AdminCategorySpecialtyCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminSpecialty> {
+        const response = await this.adminCategorySpecialtyCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * `code` and `slug` are immutable and are not accepted. Changing the specialization re-validates the capability set, so a category that carries duty cannot be moved off PHARMACY while it does.
      * Rename, move, reorder or deactivate a category
      */
@@ -457,6 +722,198 @@ export class AdminTaxonomyApi extends runtime.BaseAPI {
      */
     async adminCategoryUpdate(requestParameters: AdminCategoryUpdateOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminCategory> {
         const response = await this.adminCategoryUpdateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * One that a facility lists answers 409 `SERVICE_TAG_IN_USE`; retire it with `active = false` instead.
+     * Delete a service no facility lists
+     */
+    async adminServiceTagDeleteRaw(requestParameters: AdminServiceTagDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['serviceTagId'] == null) {
+            throw new runtime.RequiredError(
+                'serviceTagId',
+                'Required parameter "serviceTagId" was null or undefined when calling adminServiceTagDelete().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/service-tags/{service_tag_id}/`;
+        urlPath = urlPath.replace(`{${"service_tag_id"}}`, encodeURIComponent(String(requestParameters['serviceTagId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * One that a facility lists answers 409 `SERVICE_TAG_IN_USE`; retire it with `active = false` instead.
+     * Delete a service no facility lists
+     */
+    async adminServiceTagDelete(requestParameters: AdminServiceTagDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.adminServiceTagDeleteRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Omitted fields keep their value. The category is fixed: `categoryId` is refused.
+     * Rename, reorder, retire or bring back a service
+     */
+    async adminServiceTagUpdateRaw(requestParameters: AdminServiceTagUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminServiceTag>> {
+        if (requestParameters['serviceTagId'] == null) {
+            throw new runtime.RequiredError(
+                'serviceTagId',
+                'Required parameter "serviceTagId" was null or undefined when calling adminServiceTagUpdate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/service-tags/{service_tag_id}/`;
+        urlPath = urlPath.replace(`{${"service_tag_id"}}`, encodeURIComponent(String(requestParameters['serviceTagId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminTagUpdateRequestToJSON(requestParameters['adminTagUpdateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminServiceTagFromJSON(jsonValue));
+    }
+
+    /**
+     * Omitted fields keep their value. The category is fixed: `categoryId` is refused.
+     * Rename, reorder, retire or bring back a service
+     */
+    async adminServiceTagUpdate(requestParameters: AdminServiceTagUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminServiceTag> {
+        const response = await this.adminServiceTagUpdateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * One that a facility lists answers 409 `SPECIALTY_IN_USE`; retire it with `active = false` instead.
+     * Delete a specialty no facility lists
+     */
+    async adminSpecialtyDeleteRaw(requestParameters: AdminSpecialtyDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['specialtyId'] == null) {
+            throw new runtime.RequiredError(
+                'specialtyId',
+                'Required parameter "specialtyId" was null or undefined when calling adminSpecialtyDelete().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/specialties/{specialty_id}/`;
+        urlPath = urlPath.replace(`{${"specialty_id"}}`, encodeURIComponent(String(requestParameters['specialtyId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * One that a facility lists answers 409 `SPECIALTY_IN_USE`; retire it with `active = false` instead.
+     * Delete a specialty no facility lists
+     */
+    async adminSpecialtyDelete(requestParameters: AdminSpecialtyDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.adminSpecialtyDeleteRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Omitted fields keep their value. The scope is fixed: `scope`, `categoryId` and `specialization` are refused. A specialization\'s specialty changes for every category of that specialization.
+     * Rename, reorder, retire or bring back a specialty
+     */
+    async adminSpecialtyUpdateRaw(requestParameters: AdminSpecialtyUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminSpecialty>> {
+        if (requestParameters['specialtyId'] == null) {
+            throw new runtime.RequiredError(
+                'specialtyId',
+                'Required parameter "specialtyId" was null or undefined when calling adminSpecialtyUpdate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/specialties/{specialty_id}/`;
+        urlPath = urlPath.replace(`{${"specialty_id"}}`, encodeURIComponent(String(requestParameters['specialtyId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminTagUpdateRequestToJSON(requestParameters['adminTagUpdateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminSpecialtyFromJSON(jsonValue));
+    }
+
+    /**
+     * Omitted fields keep their value. The scope is fixed: `scope`, `categoryId` and `specialization` are refused. A specialization\'s specialty changes for every category of that specialization.
+     * Rename, reorder, retire or bring back a specialty
+     */
+    async adminSpecialtyUpdate(requestParameters: AdminSpecialtyUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminSpecialty> {
+        const response = await this.adminSpecialtyUpdateRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

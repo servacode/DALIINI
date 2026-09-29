@@ -8,6 +8,7 @@ order, with its own words, and belonging to exactly one account.
 import pytest
 from rest_framework.test import APIClient
 
+from accounts.models import User
 from notifications.models import Notification
 from notifications.services import create_notification
 
@@ -17,14 +18,14 @@ READ_ALL = "/api/v1/account/notifications/read-all/"
 
 
 @pytest.fixture
-def signed_in(db, user):
+def signed_in(db: None, user: User) -> APIClient:
     client = APIClient()
     client.force_authenticate(user=user)
     return client
 
 
 @pytest.mark.django_db
-def test_a_message_carries_its_own_words(signed_in, user):
+def test_a_message_carries_its_own_words(signed_in: APIClient, user: User) -> None:
     create_notification(
         user=user,
         type="facility.application.approved",
@@ -46,7 +47,7 @@ def test_a_message_carries_its_own_words(signed_in, user):
 
 
 @pytest.mark.django_db
-def test_the_newest_message_is_first(signed_in, user):
+def test_the_newest_message_is_first(signed_in: APIClient, user: User) -> None:
     for index in range(3):
         create_notification(user=user, type="t", title_ar=f"رسالة {index}", payload={})
 
@@ -56,7 +57,7 @@ def test_the_newest_message_is_first(signed_in, user):
 
 
 @pytest.mark.django_db
-def test_reading_one_message_lowers_the_unread_count(signed_in, user):
+def test_reading_one_message_lowers_the_unread_count(signed_in: APIClient, user: User) -> None:
     first = create_notification(user=user, type="t", title_ar="أ", payload={})
     create_notification(user=user, type="t", title_ar="ب", payload={})
 
@@ -69,7 +70,9 @@ def test_reading_one_message_lowers_the_unread_count(signed_in, user):
 
 
 @pytest.mark.django_db
-def test_reading_the_same_message_twice_keeps_the_first_time(signed_in, user):
+def test_reading_the_same_message_twice_keeps_the_first_time(
+    signed_in: APIClient, user: User
+) -> None:
     message = create_notification(user=user, type="t", title_ar="أ", payload={})
 
     signed_in.post(f"{INBOX}{message.id}/read/")
@@ -82,7 +85,7 @@ def test_reading_the_same_message_twice_keeps_the_first_time(signed_in, user):
 
 
 @pytest.mark.django_db
-def test_marking_all_read_empties_the_count(signed_in, user):
+def test_marking_all_read_empties_the_count(signed_in: APIClient, user: User) -> None:
     for index in range(4):
         create_notification(user=user, type="t", title_ar=str(index), payload={})
 
@@ -91,7 +94,9 @@ def test_marking_all_read_empties_the_count(signed_in, user):
 
 
 @pytest.mark.django_db
-def test_one_account_cannot_read_or_see_anothers_messages(signed_in, user, db):
+def test_one_account_cannot_read_or_see_anothers_messages(
+    signed_in: APIClient, user: User, db: None
+) -> None:
     from accounts.models import User
 
     mine = create_notification(user=user, type="t", title_ar="لي", payload={})
@@ -108,7 +113,7 @@ def test_one_account_cannot_read_or_see_anothers_messages(signed_in, user, db):
 
 
 @pytest.mark.django_db
-def test_a_destination_outside_the_closed_set_is_refused(user):
+def test_a_destination_outside_the_closed_set_is_refused(user: User) -> None:
     with pytest.raises(ValueError):
         create_notification(
             user=user, type="t", title_ar="أ", payload={}, destination="EXTERNAL_URL"
@@ -116,9 +121,42 @@ def test_a_destination_outside_the_closed_set_is_refused(user):
 
 
 @pytest.mark.django_db
-def test_the_inbox_needs_an_account():
+def test_the_inbox_needs_an_account() -> None:
     anonymous = APIClient()
 
     assert anonymous.get(INBOX).status_code in (401, 403)
     assert anonymous.get(UNREAD).status_code in (401, 403)
     assert anonymous.post(READ_ALL).status_code in (401, 403)
+
+
+@pytest.mark.django_db
+def test_an_owner_notice_names_the_facility_it_is_about(signed_in: APIClient, user: User) -> None:
+    create_notification(
+        user=user,
+        type="facility.hours.confirm_request",
+        title_ar="أكّد أوقات الدوام",
+        destination=Notification.Destination.OWNER_FACILITIES,
+        payload={"facilityId": "3F2B1C62-0000-4000-8000-000000000002"},
+    )
+    create_notification(
+        user=user,
+        type="platform.broadcast",
+        title_ar="إعلان",
+        payload={"facilityId": "3f2b1c62-0000-4000-8000-000000000003"},
+    )
+    create_notification(
+        user=user,
+        type="duty.shift.admin_changed",
+        title_ar="تغيّرت مناوبة",
+        destination=Notification.Destination.OWNER_FACILITIES,
+        payload={"facilityId": "not-an-id"},
+    )
+
+    items = {item["type"]: item for item in signed_in.get(INBOX).json()["items"]}
+
+    assert items["facility.hours.confirm_request"]["facilityId"] == (
+        "3f2b1c62-0000-4000-8000-000000000002"
+    )
+    # No destination means no facility, whatever the payload holds; a malformed id is dropped.
+    assert items["platform.broadcast"]["facilityId"] is None
+    assert items["duty.shift.admin_changed"]["facilityId"] is None

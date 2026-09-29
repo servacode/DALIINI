@@ -8,17 +8,17 @@
  */
 :root {
   /* Brand */
-  --ad-brand: var(--sd-colors-primary);
-  --ad-brand-strong: var(--sd-colors-primary-strong);
-  --ad-brand-soft: var(--sd-colors-primary-soft);
-  --ad-brand-softer: var(--sd-colors-primary-softer);
+  --ad-brand: var(--sd-semantic-action-primary);
+  --ad-brand-strong: var(--sd-semantic-action-primary-pressed);
+  --ad-brand-soft: var(--sd-semantic-surface-brand-soft);
+  --ad-brand-softer: var(--sd-semantic-surface-selected);
 
   /* Surfaces */
   --ad-canvas: var(--sd-semantic-surface-canvas);
   --ad-surface: var(--sd-semantic-surface-default);
   --ad-surface-subtle: var(--sd-semantic-surface-subtle);
-  --ad-surface-hover: #F5F7F6;
-  --ad-surface-selected: var(--sd-colors-primary-softer);
+  --ad-surface-hover: var(--sd-semantic-surface-hover);
+  --ad-surface-selected: var(--sd-semantic-surface-selected);
 
   /* Shell (sidebar) — the brand's deep bar colour */
   --ad-shell: var(--sd-semantic-surface-bar);
@@ -38,27 +38,26 @@
 
   /* Strokes */
   --ad-stroke: var(--sd-semantic-stroke-default);
-  --ad-stroke-subtle: #E8EDEA;
+  --ad-stroke-subtle: var(--sd-semantic-stroke-subtle);
   --ad-stroke-strong: var(--sd-semantic-stroke-strong);
 
   /* Feedback: foreground, tinted surface, border */
   --ad-success: var(--sd-semantic-feedback-success);
-  --ad-success-bg: #E7F5EE;
-  --ad-success-border: #B9E2CE;
-  --ad-warning: #A86A0C;
-  --ad-warning-bg: #FDF4E4;
-  --ad-warning-border: #F1D6A6;
+  --ad-success-bg: var(--sd-semantic-feedback-success-soft);
+  --ad-success-border: color-mix(in srgb, var(--ad-success) 32%, var(--ad-surface));
+  --ad-warning: var(--sd-semantic-content-warning);
+  --ad-warning-bg: var(--sd-semantic-feedback-warning-soft);
+  --ad-warning-border: color-mix(in srgb, var(--sd-semantic-feedback-warning) 38%, var(--ad-surface));
   --ad-danger: var(--sd-semantic-feedback-danger);
-  --ad-danger-strong: #A32F2F;
-  --ad-danger-bg: #FBECEC;
-  --ad-danger-border: #F0C4C4;
+  --ad-danger-strong: color-mix(in srgb, var(--ad-danger) 82%, var(--ad-text));
+  --ad-danger-bg: var(--sd-semantic-feedback-danger-soft);
+  --ad-danger-border: color-mix(in srgb, var(--ad-danger) 32%, var(--ad-surface));
   --ad-info: var(--sd-semantic-feedback-info);
-  --ad-info-bg: #EAF1FA;
-  --ad-info-border: #C3D6EE;
+  --ad-info-bg: var(--sd-semantic-feedback-info-soft);
+  --ad-info-border: color-mix(in srgb, var(--ad-info) 32%, var(--ad-surface));
 
   /* Typography */
-  --ad-font: var(--sd-typography-font-family-primary), "Tajawal", "Segoe UI", Tahoma,
-    var(--sd-typography-font-family-fallback);
+  --ad-font: "Tajawal", "Segoe UI", Tahoma, var(--sd-typography-font-family-fallback);
   --ad-font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --ad-text-xs: 12px;
   --ad-text-sm: 13px;
@@ -94,8 +93,8 @@
   --ad-shadow-sm: 0 1px 3px rgba(21, 35, 28, 0.06), 0 1px 2px rgba(21, 35, 28, 0.04);
   --ad-shadow-md: 0 4px 12px rgba(21, 35, 28, 0.08);
   --ad-shadow-lg: 0 16px 40px rgba(4, 38, 35, 0.16), 0 2px 6px rgba(4, 38, 35, 0.06);
-  --ad-focus-ring: 0 0 0 3px rgba(11, 107, 71, 0.22);
-  --ad-focus-ring-danger: 0 0 0 3px rgba(194, 59, 59, 0.22);
+  --ad-focus-ring: 0 0 0 3px color-mix(in srgb, var(--ad-brand) 28%, transparent);
+  --ad-focus-ring-danger: 0 0 0 3px color-mix(in srgb, var(--ad-danger) 28%, transparent);
 
   /* Controls */
   --ad-control-h: 38px;
@@ -111,9 +110,38 @@
   --ad-fast: 120ms;
   --ad-standard: 200ms;
 
+  /* Topbar glass and dialog scrim follow the theme. */
+  --ad-topbar-bg: color-mix(in srgb, var(--ad-surface) 88%, transparent);
+  --ad-scrim: rgba(4, 38, 35, 0.42);
+  --ad-skeleton-shine: color-mix(in srgb, var(--ad-stroke) 70%, var(--ad-surface-subtle));
+
+  color-scheme: light dark;
+
   /* Layers */
   --ad-z-sticky: 20;
   --ad-z-drawer: 40;
   --ad-z-dialog: 50;
   --ad-z-toast: 60;
+}
+
+/* An operator who pins a theme gets it regardless of the device setting. */
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+/* In the dark the shadows have nothing to fall on; borders do the separating. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ad-shadow-xs: none;
+    --ad-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --ad-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+    --ad-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+    --ad-scrim: rgba(0, 0, 0, 0.6);
+  }
+}
+:root[data-theme="dark"] {
+  --ad-shadow-xs: none;
+  --ad-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --ad-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --ad-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+  --ad-scrim: rgba(0, 0, 0, 0.6);
 }

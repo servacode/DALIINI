@@ -9,16 +9,17 @@ Method | HTTP request | Description
 [**adminFacilityReactivate**](AdminFacilitiesAPI.md#adminfacilityreactivate) | **POST** /api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility
 [**adminFacilityRetrieve**](AdminFacilitiesAPI.md#adminfacilityretrieve) | **GET** /api/v1/admin/facilities/{facility_id}/ | Retrieve one facility
 [**adminFacilitySuspend**](AdminFacilitiesAPI.md#adminfacilitysuspend) | **POST** /api/v1/admin/facilities/{facility_id}/suspend/ | Suspend a facility
+[**adminFacilityTimelineRetrieve**](AdminFacilitiesAPI.md#adminfacilitytimelineretrieve) | **GET** /api/v1/admin/facilities/{facility_id}/timeline/ | Everything that happened to a facility, newest first
 
 
 # **adminFacilitiesList**
 ```swift
-    open class func adminFacilitiesList(category: String? = nil, province: String? = nil, q: String? = nil, status: String? = nil, completion: @escaping (_ data: AdminFacilityList?, _ error: Error?) -> Void)
+    open class func adminFacilitiesList(category: String? = nil, issue: Issue_adminFacilitiesList? = nil, ordering: Ordering_adminFacilitiesList? = nil, province: String? = nil, q: String? = nil, status: String? = nil, completion: @escaping (_ data: AdminFacilityList?, _ error: Error?) -> Void)
 ```
 
 List facilities for operations
 
-Capped at 250 rows. Every filter is optional and combines with the rest.
+Capped at 250 rows. Every filter is optional and combines with the rest. Each row carries `qualityScore` (0-100) and `qualityIssues`, computed in the same query.
 
 ### Example
 ```swift
@@ -26,12 +27,14 @@ Capped at 250 rows. Every filter is optional and combines with the rest.
 import ServaDirectoryAPI
 
 let category = "category_example" // String | Category id. (optional)
+let issue = "issue_example" // String | Keep facilities that have this quality issue. (optional)
+let ordering = "ordering_example" // String | Sort order; the default is `-updatedAt` (most recently changed). (optional)
 let province = "province_example" // String | Province id. (optional)
 let q = "q_example" // String | Free text matched against the Arabic and English facility names. (optional)
 let status = "status_example" // String | Facility status, for example ACTIVE or SUSPENDED. (optional)
 
 // List facilities for operations
-AdminFacilitiesAPI.adminFacilitiesList(category: category, province: province, q: q, status: status) { (response, error) in
+AdminFacilitiesAPI.adminFacilitiesList(category: category, issue: issue, ordering: ordering, province: province, q: q, status: status) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -48,6 +51,8 @@ AdminFacilitiesAPI.adminFacilitiesList(category: category, province: province, q
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **category** | **String** | Category id. | [optional] 
+ **issue** | **String** | Keep facilities that have this quality issue. | [optional] 
+ **ordering** | **String** | Sort order; the default is &#x60;-updatedAt&#x60; (most recently changed). | [optional] 
  **province** | **String** | Province id. | [optional] 
  **q** | **String** | Free text matched against the Arabic and English facility names. | [optional] 
  **status** | **String** | Facility status, for example ACTIVE or SUSPENDED. | [optional] 
@@ -169,7 +174,7 @@ Name | Type | Description  | Notes
 
 # **adminFacilityRetrieve**
 ```swift
-    open class func adminFacilityRetrieve(facilityId: UUID, completion: @escaping (_ data: AdminFacility?, _ error: Error?) -> Void)
+    open class func adminFacilityRetrieve(facilityId: UUID, completion: @escaping (_ data: AdminFacilityQuality?, _ error: Error?) -> Void)
 ```
 
 Retrieve one facility
@@ -202,7 +207,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**AdminFacility**](AdminFacility.md)
+[**AdminFacilityQuality**](AdminFacilityQuality.md)
 
 ### Authorization
 
@@ -263,6 +268,56 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminFacilityTimelineRetrieve**
+```swift
+    open class func adminFacilityTimelineRetrieve(facilityId: UUID, completion: @escaping (_ data: AdminTimeline?, _ error: Error?) -> Void)
+```
+
+Everything that happened to a facility, newest first
+
+Merges applications (submitted, decided), problem reports (created, resolved or dismissed), audited changes to the facility and its applications, reports, images, evidence and duty shifts, and a summary of the next 14 days of duty. Up to 200 events.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let facilityId = 987 // UUID | 
+
+// Everything that happened to a facility, newest first
+AdminFacilitiesAPI.adminFacilityTimelineRetrieve(facilityId: facilityId) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **facilityId** | **UUID** |  | 
+
+### Return type
+
+[**AdminTimeline**](AdminTimeline.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

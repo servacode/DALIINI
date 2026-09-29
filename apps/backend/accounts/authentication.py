@@ -1,4 +1,4 @@
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import QuerySet
@@ -11,6 +11,19 @@ from accounts.models import User
 from sessions.models import UserSession
 
 from .tokens import decode_access_token
+
+if TYPE_CHECKING:
+
+    class AuthenticatedRequest(Request):
+        """The request a view behind IsAuthenticated receives: its user is an account.
+
+        For the type checker only. At runtime the name is DRF's own Request.
+        """
+
+        user: User
+
+else:
+    AuthenticatedRequest = Request
 
 
 def live_sessions_for(claims: dict[str, Any]) -> QuerySet[UserSession]:

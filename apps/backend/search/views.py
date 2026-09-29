@@ -1,9 +1,15 @@
+import re
+from collections.abc import Mapping
 from datetime import UTC
+from typing import TYPE_CHECKING, cast
+from uuid import UUID
 
+from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.exceptions import ValidationError
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -12,7 +18,9 @@ from business_hours.services import get_facility_availability
 from content_services.selectors import active_ads
 from content_services.serializers import public_ad
 from core.openapi import NOT_FOUND_404, VALIDATION_400
+from core.throttles import SearchThrottle, WebServerThrottle
 from directory.models import CategoryProvince
+from facilities.models import Facility
 from locations.models import Province
 
 from .pagination import FacilityCursorPagination
@@ -32,9 +40,20 @@ from .selectors import (
 )
 from .serializers import compact_facility, facility_detail
 
+if TYPE_CHECKING:
+    from django.contrib.auth.models import AnonymousUser
 
-def _q(name, description, required=False):
+    from accounts.models import User
+
+
+def _q(name: str, description: str, required: bool = False) -> OpenApiParameter:
     return OpenApiParameter(name, str, OpenApiParameter.QUERY, required=required,
+                            description=description)
+
+
+def _tag_q(name: str, description: str) -> OpenApiParameter:
+    """A specialty or service filter: integer keys, like the rows they name."""
+    return OpenApiParameter(name, int, OpenApiParameter.QUERY, required=False,
                             description=description)
 
 
@@ -42,10 +61,14 @@ SCOPE_PARAMS = [
     _q("provinceId", "Province to scope the query to.", required=True),
     _q("cityId", "Optional city filter."),
     _q("neighborhoodId", "Optional neighbourhood filter."),
-    _q("specialtyId", "Optional specialty filter; only meaningful when the category "
-       "declares specialtyFilter."),
-    _q("serviceId", "Optional service-tag filter; only meaningful when the category "
-       "declares serviceFilter."),
+    _tag_q("specialtyId", "Optional specialty filter, an id from publicCategoryTagsRetrieve. "
+           "Only facilities whose category declares specialtyFilter can match. Anything "
+           "but a positive whole number is refused with 400."),
+    _tag_q("serviceTagId", "Optional service filter, an id from publicCategoryTagsRetrieve. "
+           "Only facilities whose category declares serviceFilter can match. Anything but "
+           "a positive whole number is refused with 400."),
+    _tag_q("serviceId", "The earlier name of serviceTagId, still accepted; it behaves the "
+           "same way."),
     _q("search", "Free-text term matched against facility text."),
     _q("bbox", "Viewport as west,south,east,north in WGS84 decimal degrees."),
     _q("latitude", "Caller latitude in WGS84 decimal degrees. Must be sent with longitude."),
@@ -59,16 +82,35 @@ PAGE_PARAMS = [
 ]
 
 
-def _parse_float(value, name):
+_TAG_ID = re.compile(r"[0-9]{1,18}")
+
+
+def _tag_id(params: Mapping[str, str], name: str) -> int | None:
+    """A specialty or service id from the query string, or None when it is absent.
+
+    The keys are integers. Anything else used to reach the database and fail there as a
+    server error; it is refused here as a validation error instead.
+    """
+    raw = (params.get(name) or "").strip()
+    if not raw:
+        return None
+    if not _TAG_ID.fullmatch(raw) or int(raw) == 0:
+        raise ValidationError({name: "Must be a positive whole number."})
+    return int(raw)
+
+
+def _parse_float(value: str | None, name: str) -> float | None:
     if value in (None, ""):
         return None
     try:
-        return float(value)
+        return float(cast(str, value))
     except (TypeError, ValueError) as exc:
         raise ValidationError({name: "Invalid number."}) from exc
 
 
-def _base_from_params(params, user=None):
+def _base_from_params(
+    params: Mapping[str, str], user: "User | AnonymousUser | None" = None
+) -> QuerySet[Facility]:
     province_id = params.get("provinceId")
     category_id = params.get("categoryId")
     if not province_id:
@@ -80,10 +122,23 @@ def _base_from_params(params, user=None):
         queryset = queryset.filter(city_id=params["cityId"])
     if params.get("neighborhoodId"):
         queryset = queryset.filter(neighborhood_id=params["neighborhoodId"])
-    if params.get("specialtyId"):
-        queryset = queryset.filter(specialty_links__specialty_id=params["specialtyId"])
-    if params.get("serviceId"):
-        queryset = queryset.filter(service_links__service_tag_id=params["serviceId"])
+    # Each filter matches only where the category offers it, and only an item still in
+    # use: filtering by a retired specialty or service finds nothing.
+    specialty_id = _tag_id(params, "specialtyId")
+    if specialty_id is not None:
+        queryset = queryset.filter(
+            category__capabilities__supports_specialty_filter=True,
+            specialty_links__specialty_id=specialty_id,
+            specialty_links__specialty__active=True,
+        )
+    for name in ("serviceTagId", "serviceId"):
+        service_tag_id = _tag_id(params, name)
+        if service_tag_id is not None:
+            queryset = queryset.filter(
+                category__capabilities__supports_service_filter=True,
+                service_links__service_tag_id=service_tag_id,
+                service_links__service_tag__active=True,
+            )
     queryset = apply_text_search(queryset, params.get("search"))
     try:
         queryset = within_bbox(queryset, params.get("bbox"))
@@ -101,7 +156,7 @@ def _base_from_params(params, user=None):
     return with_rating_summary(queryset)
 
 
-def _orders_by_distance(params):
+def _orders_by_distance(params: Mapping[str, str]) -> bool:
     """Whether this request wants the nearest first.
 
     Coordinates alone used to decide it, which left a client no way to ask for the whole
@@ -117,7 +172,7 @@ def _orders_by_distance(params):
     return located
 
 
-def _with_flags(params, queryset):
+def _with_flags(params: Mapping[str, str], queryset: QuerySet[Facility]) -> QuerySet[Facility]:
     """Apply the availability filters, and carry the flags on every row either way.
 
     The annotation is unconditional so that a row can say whether it is open and whether it is
@@ -135,6 +190,7 @@ def _with_flags(params, queryset):
 
 
 class PublicFacilityListView(APIView):
+    throttle_classes = [SearchThrottle, WebServerThrottle]
     @extend_schema(
         operation_id="publicFacilitiesList",
         tags=["Public Discovery"],
@@ -162,7 +218,7 @@ class PublicFacilityListView(APIView):
         ],
         responses={200: FacilityCursorPageSerializer, 400: VALIDATION_400},
     )
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         base = _base_from_params(request.query_params, request.user)
         queryset = _with_flags(request.query_params, base)
         paginator = FacilityCursorPagination()
@@ -170,7 +226,8 @@ class PublicFacilityListView(APIView):
         # queryset as well would only give the two a chance to disagree.
         if _orders_by_distance(request.query_params):
             paginator.ordering = ("distance_meters", "id")
-        page = paginator.paginate_queryset(queryset, request)
+        # CursorPage always has a page size, so a page is never None.
+        page = cast("list[Facility]", paginator.paginate_queryset(queryset, request))
         return paginator.get_paginated_response([compact_facility(row) for row in page])
 
 
@@ -185,7 +242,7 @@ class PublicFacilityDetailView(APIView):
         ),
         responses={200: PublicFacilityDetailSerializer, 404: NOT_FOUND_404},
     )
-    def get(self, request, facility_id):
+    def get(self, request: Request, facility_id: UUID) -> Response:
         queryset = with_availability_flags(
             with_favorite_state(with_rating_summary(public_facilities()), request.user)
         )
@@ -194,6 +251,7 @@ class PublicFacilityDetailView(APIView):
 
 
 class PublicMapFacilitiesView(APIView):
+    throttle_classes = [SearchThrottle, WebServerThrottle]
     @extend_schema(
         operation_id="publicMapFacilitiesList",
         tags=["Public Discovery"],
@@ -212,7 +270,7 @@ class PublicMapFacilitiesView(APIView):
         ],
         responses={200: MapMarkerListSerializer, 400: VALIDATION_400},
     )
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         if not request.query_params.get("bbox"):
             raise ValidationError({"bbox": "Required for map queries."})
         base = _base_from_params(request.query_params, request.user)
@@ -238,6 +296,7 @@ class PublicMapFacilitiesView(APIView):
 
 
 class PublicSearchView(APIView):
+    throttle_classes = [SearchThrottle, WebServerThrottle]
     @extend_schema(
         operation_id="publicSearchList",
         tags=["Public Discovery"],
@@ -250,14 +309,15 @@ class PublicSearchView(APIView):
         ],
         responses={200: FacilityCursorPageSerializer, 400: VALIDATION_400},
     )
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         term = (request.query_params.get("q") or "").strip()
         if len(term) < 2:
             raise ValidationError({"q": "At least 2 characters are required."})
         queryset = _base_from_params(request.query_params, request.user)
         queryset = apply_text_search(queryset, term)
         paginator = FacilityCursorPagination()
-        page = paginator.paginate_queryset(queryset, request)
+        # CursorPage always has a page size, so a page is never None.
+        page = cast("list[Facility]", paginator.paginate_queryset(queryset, request))
         return paginator.get_paginated_response([compact_facility(row) for row in page])
 
 
@@ -273,7 +333,7 @@ class PublicHomeView(APIView):
         parameters=[*SCOPE_PARAMS, _q("categoryId", "Optional category filter.")],
         responses={200: PublicHomeSerializer, 400: VALIDATION_400, 404: NOT_FOUND_404},
     )
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         province_id = request.query_params.get("provinceId")
         if not province_id:
             raise ValidationError({"provinceId": "Required."})

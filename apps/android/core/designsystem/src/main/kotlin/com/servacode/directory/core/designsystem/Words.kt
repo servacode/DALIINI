@@ -27,16 +27,16 @@ import com.servacode.directory.core.model.shownReason
  * Read in composition, so the words follow the phone's language without anything being restarted.
  */
 object DirectoryWords {
-    /** Monday first, matching the backend's weekday numbering. */
+    /** Monday first, matching the backend's weekday numbering; the shared vocabulary's names. */
     @Composable
     @ReadOnlyComposable
-    fun weekdays(): List<String> = stringArrayResource(R.array.directory_weekdays).toList()
+    fun weekdays(): List<String> = DirectoryVocabulary.weekdays()
 
     /** One day by its backend number, or a dash where the number means nothing. */
     @Composable
     @ReadOnlyComposable
     fun weekday(weekday: Int): String =
-        weekdays().getOrNull(weekday) ?: stringResource(R.string.directory_weekday_unknown)
+        DirectoryVocabulary.weekday(weekday) ?: stringResource(R.string.directory_weekday_unknown)
 
     val LIST_SEPARATOR: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_list_separator)
@@ -77,14 +77,7 @@ object DirectoryWords {
 object AvailabilityWords {
     @Composable
     @ReadOnlyComposable
-    fun of(state: AvailabilityState): String = stringResource(
-        when (state) {
-            AvailabilityState.OPEN -> R.string.ds_availability_open
-            AvailabilityState.DUTY -> R.string.ds_availability_duty
-            AvailabilityState.TEMP_CLOSED -> R.string.ds_availability_temp_closed
-            AvailabilityState.CLOSED -> R.string.ds_availability_closed
-        },
-    )
+    fun of(state: AvailabilityState): String = DirectoryVocabulary.availability(state)
 
     /** "closed, opens 08:00" where the backend said when; the bare state otherwise. */
     @Composable
@@ -107,16 +100,7 @@ object AvailabilityWords {
 object OwnerWords {
     @Composable
     @ReadOnlyComposable
-    fun status(value: OwnerFacilityStatus): String = stringResource(
-        when (value) {
-            OwnerFacilityStatus.DRAFT -> R.string.ds_owner_status_draft
-            OwnerFacilityStatus.SUBMITTED -> R.string.ds_owner_status_submitted
-            OwnerFacilityStatus.ACTIVE -> R.string.ds_owner_status_active
-            OwnerFacilityStatus.REVERIFICATION_REQUIRED -> R.string.ds_owner_status_reverification
-            OwnerFacilityStatus.SUSPENDED -> R.string.ds_owner_status_suspended
-            OwnerFacilityStatus.CLOSED -> R.string.ds_owner_status_closed
-        },
-    )
+    fun status(value: OwnerFacilityStatus): String = DirectoryVocabulary.facilityStatus(value)
 
     @Composable
     @ReadOnlyComposable

@@ -17,7 +17,7 @@ interface DutyApi {
     /**
      * POST api/v1/owner/facilities/{facility_id}/duty/
      * Schedule a duty shift
-     * Overlapping shifts for the same facility are refused by a PostgreSQL exclusion constraint, not only by application code. Only categories that declare the duty capability accept this.
+     * Overlapping shifts for the same facility are refused by a PostgreSQL exclusion constraint, not only by application code. Only categories that declare the duty capability accept this, and a shift may not overlap a temporary closure of the facility (409 DUTY_DURING_CLOSURE).
      * Responses:
      *  - 201: 
      *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.

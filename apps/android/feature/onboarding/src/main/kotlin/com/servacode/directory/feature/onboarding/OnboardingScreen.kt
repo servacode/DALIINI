@@ -1,5 +1,7 @@
 package com.servacode.directory.feature.onboarding
 
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import android.content.pm.PackageManager
 import android.Manifest
 import android.os.Build
@@ -38,6 +40,7 @@ import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DirectoryActionBar
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
+import com.servacode.directory.core.designsystem.DirectoryIllustrations
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIcons
@@ -56,7 +59,7 @@ import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.MetaRow
 import com.servacode.directory.core.designsystem.OwnerWords
 import com.servacode.directory.core.designsystem.Space
-import com.servacode.directory.core.designsystem.StatusPill
+import com.servacode.directory.core.designsystem.StatusChip
 import com.servacode.directory.core.designsystem.StatusTone
 import com.servacode.directory.core.designsystem.StepIndicator
 import com.servacode.directory.core.maps.MapPoint
@@ -133,7 +136,7 @@ fun OnboardingScreen(
             OnboardingUiState.ProvinceRequired -> DirectoryEmptyState(
                 title = OnboardingCopy.PROVINCE_REQUIRED,
                 modifier = Modifier.padding(padding),
-                icon = DirectoryIcons.pin,
+                illustration = DirectoryIllustrations.location,
                 action = OnboardingCopy.PROVINCE_CHOOSE,
                 onAction = onChooseProvince,
             )
@@ -257,7 +260,23 @@ private fun BasicInfoStep(value: OnboardingUiState.Content, viewModel: Onboardin
             singleLine = false,
             minLines = 3,
         )
-        DirectoryTextField(value.form.phone, viewModel::updatePhone, OnboardingCopy.PHONE)
+        // The backend names the fields it refused; each says so under itself, in Arabic.
+        val refused = OnboardingField.named(value.message?.error)
+        DirectoryTextField(
+            value = value.form.phone,
+            onValueChange = viewModel::updatePhone,
+            label = OnboardingCopy.PHONE,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            error = if (OnboardingField.PHONE in refused) OnboardingCopy.PHONE_INVALID else null,
+        )
+        DirectoryTextField(
+            value = value.form.whatsapp,
+            onValueChange = viewModel::updateWhatsapp,
+            label = OnboardingCopy.WHATSAPP,
+            placeholder = OnboardingCopy.WHATSAPP_HINT,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            error = if (OnboardingField.WHATSAPP in refused) OnboardingCopy.WHATSAPP_INVALID else null,
+        )
         DirectoryTextField(value.form.addressAr, viewModel::updateAddressAr, OnboardingCopy.ADDRESS)
     }
 }
@@ -354,13 +373,13 @@ private fun EvidenceStep(value: OnboardingUiState.Content, onUpload: (String) ->
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f),
                         )
-                        StatusPill(
+                        StatusChip(
                             text = if (requirement.required) {
                                 OnboardingCopy.REQUIRED
                             } else {
                                 OnboardingCopy.OPTIONAL
                             },
-                            tone = if (requirement.required) StatusTone.PENDING else StatusTone.NEUTRAL,
+                            tone = if (requirement.required) StatusTone.WARNING else StatusTone.NEUTRAL,
                         )
                     }
                     requirement.instructionsAr?.let {
@@ -672,6 +691,13 @@ object OnboardingCopy {
     val DESCRIPTION: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_description)
     val PHONE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_phone)
+    val PHONE_INVALID: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_phone_invalid)
+    val WHATSAPP: String @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_whatsapp)
+    val WHATSAPP_HINT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_whatsapp_hint)
+    val WHATSAPP_INVALID: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_whatsapp_invalid)
     val ADDRESS: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_address)
     val MAP_NOTE: String

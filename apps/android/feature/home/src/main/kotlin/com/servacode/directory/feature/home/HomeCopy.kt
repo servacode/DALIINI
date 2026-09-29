@@ -1,5 +1,8 @@
 package com.servacode.directory.feature.home
 
+import com.servacode.directory.core.designsystem.DirectoryVocabulary
+import com.servacode.directory.core.designsystem.StatusText
+import com.servacode.directory.core.model.AvailabilityState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.res.stringResource
@@ -26,9 +29,33 @@ object HomeCopy {
     val YOU_ARE_IN: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_you_are_in)
     val NOTIFICATIONS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_notifications)
     val MANY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_many)
+    val EMERGENCY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_emergency)
+    val RECENT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_recent)
+    val DATA_SAVER_TITLE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.home_data_saver_title)
+    val DATA_SAVER_BODY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.home_data_saver_body)
+    val DATA_SAVER_ACCEPT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.home_data_saver_accept)
+    val DATA_SAVER_DISMISS: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.home_data_saver_dismiss)
+
+    /** The bell as a screen reader says it when something is waiting. */
+    @Composable @ReadOnlyComposable
+    fun unreadNotifications(count: Int): String = stringResource(R.string.home_notifications_unread, count)
     val SEARCH: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_search)
     val FILTERS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_filters)
     val LOADING_MORE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_loading_more)
+
+    /** The rows of a category's specialties and services, and the chips that undo them. */
+    val SPECIALTIES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_specialties)
+    val SERVICES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_services)
+    val ALL_SPECIALTIES: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.home_all_specialties)
+    val ALL_SERVICES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_all_services)
+    val CLEAR_TAGS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_clear_tags)
+    val EMPTY_CHOICE_BODY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.home_empty_choice_body)
 
     val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_error)
     val PROVINCE_REQUIRED: String
@@ -47,13 +74,11 @@ object HomeCopy {
 
     @Composable
     @ReadOnlyComposable
-    fun chip(chip: HomeChip): String = stringResource(
-        when (chip) {
-            HomeChip.NEAREST -> R.string.home_chip_nearest
-            HomeChip.OPEN_NOW -> R.string.home_chip_open_now
-            HomeChip.DUTY_TODAY -> R.string.home_chip_duty_today
-        },
-    )
+    fun chip(chip: HomeChip): String = when (chip) {
+        HomeChip.NEAREST -> stringResource(R.string.home_chip_nearest)
+        HomeChip.OPEN_NOW -> DirectoryVocabulary.availability(AvailabilityState.OPEN)
+        HomeChip.DUTY_TODAY -> StatusText.ON_DUTY_TODAY
+    }
 
     /**
      * Why the list is empty, in terms of what was asked.
@@ -65,6 +90,7 @@ object HomeCopy {
     @ReadOnlyComposable
     fun emptyFor(filters: HomeFilters): String = stringResource(
         when (filters.emptyReason()) {
+            HomeEmptyReason.CHOICE -> R.string.home_empty_choice
             HomeEmptyReason.DUTY_AND_OPEN -> R.string.home_empty_duty_and_open
             HomeEmptyReason.DUTY -> R.string.home_empty_duty
             HomeEmptyReason.OPEN -> R.string.home_empty_open

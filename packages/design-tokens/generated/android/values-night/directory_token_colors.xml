@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GENERATED — DO NOT EDIT -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <color name="token_semantic_content_primary">#E7EEEA</color>
+    <color name="token_semantic_content_secondary">#A9B8B0</color>
+    <color name="token_semantic_content_muted">#8A9A92</color>
+    <color name="token_semantic_content_on_primary">#04170F</color>
+    <color name="token_semantic_content_danger">#F07A7A</color>
+    <color name="token_semantic_content_on_bar">#FFFFFF</color>
+    <color name="token_semantic_content_on_bar_muted">#9FBDB6</color>
+    <color name="token_semantic_content_warning">#E8A93A</color>
+    <color name="token_semantic_surface_canvas">#0E1512</color>
+    <color name="token_semantic_surface_default">#151E1A</color>
+    <color name="token_semantic_surface_subtle">#1B2621</color>
+    <color name="token_semantic_surface_hover">#1F2B25</color>
+    <color name="token_semantic_surface_selected">#12251D</color>
+    <color name="token_semantic_surface_brand_soft">#173A2C</color>
+    <color name="token_semantic_surface_bar">#07120F</color>
+    <color name="token_semantic_action_primary">#4CC08A</color>
+    <color name="token_semantic_action_primary_pressed">#6FD3A3</color>
+    <color name="token_semantic_action_danger">#F07A7A</color>
+    <color name="token_semantic_stroke_default">#26332D</color>
+    <color name="token_semantic_stroke_subtle">#1F2A25</color>
+    <color name="token_semantic_stroke_strong">#36463E</color>
+    <color name="token_semantic_feedback_success">#4CC08A</color>
+    <color name="token_semantic_feedback_warning">#E8A93A</color>
+    <color name="token_semantic_feedback_danger">#F07A7A</color>
+    <color name="token_semantic_feedback_info">#6FA8E8</color>
+    <color name="token_semantic_feedback_success_soft">#133426</color>
+    <color name="token_semantic_feedback_warning_soft">#3A2C12</color>
+    <color name="token_semantic_feedback_danger_soft">#3D1B1B</color>
+    <color name="token_semantic_feedback_info_soft">#162A40</color>
+</resources>

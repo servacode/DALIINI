@@ -17,16 +17,19 @@ interface AdminAuditApi {
      * Capped at 250 rows. Snapshots and metadata are stored redacted. Every filter is optional and combines with the rest.
      * Responses:
      *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *
      * @param action Substring matched against the action code, case-insensitive. (optional)
      * @param actor Actor user id. (optional)
+     * @param from ISO date or datetime; keeps entries created at or after it. (optional)
      * @param requestId Exact request correlation id, as returned in an error body. (optional)
      * @param resource Substring matched against the target type, or an exact target id. (optional)
+     * @param to ISO date or datetime; a bare date includes that whole day. (optional)
      * @return [AdminAuditList]
      */
     @GET("api/v1/admin/audit/")
-    suspend fun adminAuditList(@Query("action") action: kotlin.String? = null, @Query("actor") actor: kotlin.String? = null, @Query("requestId") requestId: kotlin.String? = null, @Query("resource") resource: kotlin.String? = null): Response<AdminAuditList>
+    suspend fun adminAuditList(@Query("action") action: kotlin.String? = null, @Query("actor") actor: kotlin.String? = null, @Query("from") from: kotlin.String? = null, @Query("requestId") requestId: kotlin.String? = null, @Query("resource") resource: kotlin.String? = null, @Query("to") to: kotlin.String? = null): Response<AdminAuditList>
 
 }

@@ -7,6 +7,14 @@
 <resources>
     <string name="home_you_are_in">أنت الآن في</string>
     <string name="home_notifications">الإشعارات</string>
+    <string name="home_emergency">أرقام الطوارئ</string>
+    <string name="home_recent">شوهدت مؤخراً</string>
+    <string name="home_data_saver_title">توفير البيانات؟</string>
+    <string name="home_data_saver_body">أنت على اتصال بالباقة.
+        يمكن للتطبيق أن يتجنب تحميل الصور غير الضرورية والإعلانات.</string>
+    <string name="home_data_saver_accept">تفعيل توفير البيانات</string>
+    <string name="home_data_saver_dismiss">ليس الآن</string>
+    <string name="home_notifications_unread">الإشعارات، %1$d غير مقروءة</string>
     <string name="home_many">99+</string>
     <string name="home_search">ابحث عن صيدلية، طبيب أو خدمة صحية…</string>
     <string name="home_filters">تصفية</string>
@@ -22,9 +30,17 @@
     <string name="home_location_action">السماح بالموقع</string>
 
     <string name="home_chip_nearest">الأقرب إليك</string>
-    <string name="home_chip_open_now">مفتوح الآن</string>
-    <string name="home_chip_duty_today">مناوبة اليوم</string>
 
+    <!-- A category's specialties and services, a row of each under the chips, where the category
+         filters by them. One of each at a time; «كل …» is the row with nothing chosen. -->
+    <string name="home_specialties">التخصصات</string>
+    <string name="home_services">الخدمات</string>
+    <string name="home_all_specialties">كل التخصصات</string>
+    <string name="home_all_services">كل الخدمات</string>
+    <string name="home_clear_tags">امسح التصفية</string>
+
+    <string name="home_empty_choice">لا توجد منشآت تطابق هذا الاختيار</string>
+    <string name="home_empty_choice_body">جرّب تخصصاً أو خدمة أخرى.</string>
     <string name="home_empty_duty_and_open">لا توجد منشآت مناوبة اليوم ومفتوحة الآن</string>
     <string name="home_empty_duty">لا توجد منشآت مناوبة اليوم</string>
     <string name="home_empty_open">لا توجد منشآت مفتوحة حالياً</string>

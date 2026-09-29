@@ -56,7 +56,7 @@ class NotificationTest : ShouldSpec() {
             //modelInstance.destination shouldBe ("TODO")
         }
 
-        // to test the property `facilityId` - Set only when the destination is FACILITY.
+        // to test the property `facilityId` - The facility the message is about: set for a FACILITY destination, and for an OWNER_FACILITIES notice about one of the owner's facilities (an hours reminder, a duty change); null otherwise.
         should("test facilityId") {
             // uncomment below to test the property
             //modelInstance.facilityId shouldBe ("TODO")

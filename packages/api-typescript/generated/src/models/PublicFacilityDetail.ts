@@ -48,6 +48,13 @@ import {
     FacilityImageToJSON,
     FacilityImageToJSONTyped,
 } from './FacilityImage';
+import type { NamedIntRef } from './NamedIntRef';
+import {
+    NamedIntRefFromJSON,
+    NamedIntRefFromJSONTyped,
+    NamedIntRefToJSON,
+    NamedIntRefToJSONTyped,
+} from './NamedIntRef';
 import type { NamedRef } from './NamedRef';
 import {
     NamedRefFromJSON,
@@ -129,6 +136,24 @@ export interface PublicFacilityDetail {
      */
     imageUrl: string | null;
     /**
+     * When an operator last approved this facility's details (trust signal).
+     * @type {Date}
+     * @memberof PublicFacilityDetail
+     */
+    lastVerifiedAt: Date | null;
+    /**
+     * The most recent of `lastVerifiedAt` and the owner's own confirmation that the opening hours are still right. Null when neither ever happened.
+     * @type {Date}
+     * @memberof PublicFacilityDetail
+     */
+    infoConfirmedAt: Date | null;
+    /**
+     * Last change to the facility record.
+     * @type {Date}
+     * @memberof PublicFacilityDetail
+     */
+    updatedAt: Date;
+    /**
      * 
      * @type {string}
      * @memberof PublicFacilityDetail
@@ -146,6 +171,12 @@ export interface PublicFacilityDetail {
      * @memberof PublicFacilityDetail
      */
     phone: string | null;
+    /**
+     * WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX).
+     * @type {string}
+     * @memberof PublicFacilityDetail
+     */
+    whatsapp: string | null;
     /**
      * 
      * @type {string}
@@ -177,17 +208,17 @@ export interface PublicFacilityDetail {
      */
     images: Array<FacilityImage>;
     /**
-     * 
-     * @type {Array<NamedRef>}
+     * Active specialties, in the operators' order.
+     * @type {Array<NamedIntRef>}
      * @memberof PublicFacilityDetail
      */
-    specialties: Array<NamedRef>;
+    specialties: Array<NamedIntRef>;
     /**
-     * 
-     * @type {Array<NamedRef>}
+     * Active services, in the operators' order.
+     * @type {Array<NamedIntRef>}
      * @memberof PublicFacilityDetail
      */
-    services: Array<NamedRef>;
+    services: Array<NamedIntRef>;
     /**
      * 
      * @type {Array<PublicHoursEntry>}
@@ -211,9 +242,13 @@ export function instanceOfPublicFacilityDetail(value: object): value is PublicFa
     if (!('availability' in value) || value['availability'] === undefined) return false;
     if (!('isFavorite' in value) || value['isFavorite'] === undefined) return false;
     if (!('imageUrl' in value) || value['imageUrl'] === undefined) return false;
+    if (!('lastVerifiedAt' in value) || value['lastVerifiedAt'] === undefined) return false;
+    if (!('infoConfirmedAt' in value) || value['infoConfirmedAt'] === undefined) return false;
+    if (!('updatedAt' in value) || value['updatedAt'] === undefined) return false;
     if (!('descriptionAr' in value) || value['descriptionAr'] === undefined) return false;
     if (!('descriptionEn' in value) || value['descriptionEn'] === undefined) return false;
     if (!('phone' in value) || value['phone'] === undefined) return false;
+    if (!('whatsapp' in value) || value['whatsapp'] === undefined) return false;
     if (!('addressAr' in value) || value['addressAr'] === undefined) return false;
     if (!('addressEn' in value) || value['addressEn'] === undefined) return false;
     if (!('neighborhood' in value) || value['neighborhood'] === undefined) return false;
@@ -246,16 +281,20 @@ export function PublicFacilityDetailFromJSONTyped(json: any, ignoreDiscriminator
         'availability': AvailabilityFromJSON(json['availability']),
         'isFavorite': json['isFavorite'],
         'imageUrl': json['imageUrl'],
+        'lastVerifiedAt': (json['lastVerifiedAt'] == null ? null : new Date(json['lastVerifiedAt'])),
+        'infoConfirmedAt': (json['infoConfirmedAt'] == null ? null : new Date(json['infoConfirmedAt'])),
+        'updatedAt': (new Date(json['updatedAt'])),
         'descriptionAr': json['descriptionAr'],
         'descriptionEn': json['descriptionEn'],
         'phone': json['phone'],
+        'whatsapp': json['whatsapp'],
         'addressAr': json['addressAr'],
         'addressEn': json['addressEn'],
         'neighborhood': NamedRefFromJSON(json['neighborhood']),
         'location': CoordinatesFromJSON(json['location']),
         'images': ((json['images'] as Array<any>).map(FacilityImageFromJSON)),
-        'specialties': ((json['specialties'] as Array<any>).map(NamedRefFromJSON)),
-        'services': ((json['services'] as Array<any>).map(NamedRefFromJSON)),
+        'specialties': ((json['specialties'] as Array<any>).map(NamedIntRefFromJSON)),
+        'services': ((json['services'] as Array<any>).map(NamedIntRefFromJSON)),
         'hours': ((json['hours'] as Array<any>).map(PublicHoursEntryFromJSON)),
     };
 }
@@ -282,16 +321,20 @@ export function PublicFacilityDetailToJSONTyped(value?: PublicFacilityDetail | n
         'availability': AvailabilityToJSON(value['availability']),
         'isFavorite': value['isFavorite'],
         'imageUrl': value['imageUrl'],
+        'lastVerifiedAt': ((value['lastVerifiedAt'] as any).toISOString()),
+        'infoConfirmedAt': ((value['infoConfirmedAt'] as any).toISOString()),
+        'updatedAt': ((value['updatedAt']).toISOString()),
         'descriptionAr': value['descriptionAr'],
         'descriptionEn': value['descriptionEn'],
         'phone': value['phone'],
+        'whatsapp': value['whatsapp'],
         'addressAr': value['addressAr'],
         'addressEn': value['addressEn'],
         'neighborhood': NamedRefToJSON(value['neighborhood']),
         'location': CoordinatesToJSON(value['location']),
         'images': ((value['images'] as Array<any>).map(FacilityImageToJSON)),
-        'specialties': ((value['specialties'] as Array<any>).map(NamedRefToJSON)),
-        'services': ((value['services'] as Array<any>).map(NamedRefToJSON)),
+        'specialties': ((value['specialties'] as Array<any>).map(NamedIntRefToJSON)),
+        'services': ((value['services'] as Array<any>).map(NamedIntRefToJSON)),
         'hours': ((value['hours'] as Array<any>).map(PublicHoursEntryToJSON)),
     };
 }

@@ -43,15 +43,17 @@ import kotlinx.serialization.Contextual
  * @param descriptionAr 
  * @param descriptionEn 
  * @param phone 
+ * @param whatsapp E.164 Syrian mobile.
  * @param addressAr 
  * @param addressEn 
  * @param cityId 
  * @param neighborhoodId 
  * @param location 
- * @param specialtyIds 
- * @param serviceTagIds 
+ * @param specialtyIds The facility's active specialties, in order; retired ones are left out.
+ * @param serviceTagIds The facility's active services, in order; retired ones are left out.
  * @param evidence 
  * @param hours 
+ * @param hoursConfirmedAt When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old.
  * @param application 
  */
 @Serializable
@@ -94,6 +96,10 @@ data class OwnerFacilityDetail (
     @SerialName(value = "phone")
     val phone: kotlin.String?,
 
+    /* E.164 Syrian mobile. */
+    @SerialName(value = "whatsapp")
+    val whatsapp: kotlin.String?,
+
     @SerialName(value = "addressAr")
     val addressAr: kotlin.String?,
 
@@ -109,17 +115,23 @@ data class OwnerFacilityDetail (
     @SerialName(value = "location")
     val location: Coordinates?,
 
+    /* The facility's active specialties, in order; retired ones are left out. */
     @SerialName(value = "specialtyIds")
-    val specialtyIds: kotlin.collections.List<@Contextual java.util.UUID>,
+    val specialtyIds: kotlin.collections.List<kotlin.Int>,
 
+    /* The facility's active services, in order; retired ones are left out. */
     @SerialName(value = "serviceTagIds")
-    val serviceTagIds: kotlin.collections.List<@Contextual java.util.UUID>,
+    val serviceTagIds: kotlin.collections.List<kotlin.Int>,
 
     @SerialName(value = "evidence")
     val evidence: kotlin.collections.List<OwnerEvidenceRef>,
 
     @SerialName(value = "hours")
     val hours: kotlin.collections.List<OwnerHoursEntry>,
+
+    /* When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old. */
+    @Contextual @SerialName(value = "hoursConfirmedAt")
+    val hoursConfirmedAt: java.time.OffsetDateTime?,
 
     @SerialName(value = "application")
     val application: OwnerApplication?

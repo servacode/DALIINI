@@ -13,33 +13,60 @@ import AnyCodable
 open class AdminFacilitiesAPI {
 
     /**
+     * enum for parameter issue
+     */
+    public enum Issue_adminFacilitiesList: String, CaseIterable {
+        case notVerifiedRecently = "NOT_VERIFIED_RECENTLY"
+        case noHours = "NO_HOURS"
+        case noLocation = "NO_LOCATION"
+        case noPhone = "NO_PHONE"
+        case noPhotos = "NO_PHOTOS"
+        case openReports = "OPEN_REPORTS"
+        case stale = "STALE"
+    }
+
+    /**
+     * enum for parameter ordering
+     */
+    public enum Ordering_adminFacilitiesList: String, CaseIterable {
+        case qualityscore = "-qualityScore"
+        case updatedat = "-updatedAt"
+        case qualityscore2 = "qualityScore"
+        case updatedat2 = "updatedAt"
+    }
+
+    /**
      List facilities for operations
      
      - parameter category: (query) Category id. (optional)
+     - parameter issue: (query) Keep facilities that have this quality issue. (optional)
+     - parameter ordering: (query) Sort order; the default is &#x60;-updatedAt&#x60; (most recently changed). (optional)
      - parameter province: (query) Province id. (optional)
      - parameter q: (query) Free text matched against the Arabic and English facility names. (optional)
      - parameter status: (query) Facility status, for example ACTIVE or SUSPENDED. (optional)
      - returns: AdminFacilityList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminFacilitiesList(category: String? = nil, province: String? = nil, q: String? = nil, status: String? = nil) async throws -> AdminFacilityList {
-        return try await adminFacilitiesListWithRequestBuilder(category: category, province: province, q: q, status: status).execute().body
+    open class func adminFacilitiesList(category: String? = nil, issue: Issue_adminFacilitiesList? = nil, ordering: Ordering_adminFacilitiesList? = nil, province: String? = nil, q: String? = nil, status: String? = nil) async throws -> AdminFacilityList {
+        return try await adminFacilitiesListWithRequestBuilder(category: category, issue: issue, ordering: ordering, province: province, q: q, status: status).execute().body
     }
 
     /**
      List facilities for operations
      - GET /api/v1/admin/facilities/
-     - Capped at 250 rows. Every filter is optional and combines with the rest.
+     - Capped at 250 rows. Every filter is optional and combines with the rest. Each row carries `qualityScore` (0-100) and `qualityIssues`, computed in the same query.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken
      - parameter category: (query) Category id. (optional)
+     - parameter issue: (query) Keep facilities that have this quality issue. (optional)
+     - parameter ordering: (query) Sort order; the default is &#x60;-updatedAt&#x60; (most recently changed). (optional)
      - parameter province: (query) Province id. (optional)
      - parameter q: (query) Free text matched against the Arabic and English facility names. (optional)
      - parameter status: (query) Facility status, for example ACTIVE or SUSPENDED. (optional)
      - returns: RequestBuilder<AdminFacilityList> 
      */
-    open class func adminFacilitiesListWithRequestBuilder(category: String? = nil, province: String? = nil, q: String? = nil, status: String? = nil) -> RequestBuilder<AdminFacilityList> {
+    open class func adminFacilitiesListWithRequestBuilder(category: String? = nil, issue: Issue_adminFacilitiesList? = nil, ordering: Ordering_adminFacilitiesList? = nil, province: String? = nil, q: String? = nil, status: String? = nil) -> RequestBuilder<AdminFacilityList> {
         let localVariablePath = "/api/v1/admin/facilities/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -47,6 +74,8 @@ open class AdminFacilitiesAPI {
         var localVariableUrlComponents = URLComponents(string: localVariableURLString)
         localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
             "category": (wrappedValue: category?.encodeToJSON(), isExplode: true),
+            "issue": (wrappedValue: issue?.encodeToJSON(), isExplode: true),
+            "ordering": (wrappedValue: ordering?.encodeToJSON(), isExplode: true),
             "province": (wrappedValue: province?.encodeToJSON(), isExplode: true),
             "q": (wrappedValue: q?.encodeToJSON(), isExplode: true),
             "status": (wrappedValue: status?.encodeToJSON(), isExplode: true),
@@ -153,10 +182,10 @@ open class AdminFacilitiesAPI {
      Retrieve one facility
      
      - parameter facilityId: (path)  
-     - returns: AdminFacility
+     - returns: AdminFacilityQuality
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminFacilityRetrieve(facilityId: UUID) async throws -> AdminFacility {
+    open class func adminFacilityRetrieve(facilityId: UUID) async throws -> AdminFacilityQuality {
         return try await adminFacilityRetrieveWithRequestBuilder(facilityId: facilityId).execute().body
     }
 
@@ -167,9 +196,9 @@ open class AdminFacilitiesAPI {
        - type: http
        - name: bearerAccessToken
      - parameter facilityId: (path)  
-     - returns: RequestBuilder<AdminFacility> 
+     - returns: RequestBuilder<AdminFacilityQuality> 
      */
-    open class func adminFacilityRetrieveWithRequestBuilder(facilityId: UUID) -> RequestBuilder<AdminFacility> {
+    open class func adminFacilityRetrieveWithRequestBuilder(facilityId: UUID) -> RequestBuilder<AdminFacilityQuality> {
         var localVariablePath = "/api/v1/admin/facilities/{facility_id}/"
         let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
         let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -185,7 +214,7 @@ open class AdminFacilitiesAPI {
 
         let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
 
-        let localVariableRequestBuilder: RequestBuilder<AdminFacility>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+        let localVariableRequestBuilder: RequestBuilder<AdminFacilityQuality>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
 
         return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
     }
@@ -232,5 +261,47 @@ open class AdminFacilitiesAPI {
         let localVariableRequestBuilder: RequestBuilder<AdminFacility>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
 
         return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Everything that happened to a facility, newest first
+     
+     - parameter facilityId: (path)  
+     - returns: AdminTimeline
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminFacilityTimelineRetrieve(facilityId: UUID) async throws -> AdminTimeline {
+        return try await adminFacilityTimelineRetrieveWithRequestBuilder(facilityId: facilityId).execute().body
+    }
+
+    /**
+     Everything that happened to a facility, newest first
+     - GET /api/v1/admin/facilities/{facility_id}/timeline/
+     - Merges applications (submitted, decided), problem reports (created, resolved or dismissed), audited changes to the facility and its applications, reports, images, evidence and duty shifts, and a summary of the next 14 days of duty. Up to 200 events.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter facilityId: (path)  
+     - returns: RequestBuilder<AdminTimeline> 
+     */
+    open class func adminFacilityTimelineRetrieveWithRequestBuilder(facilityId: UUID) -> RequestBuilder<AdminTimeline> {
+        var localVariablePath = "/api/v1/admin/facilities/{facility_id}/timeline/"
+        let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
+        let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{facility_id}", with: facilityIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminTimeline>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
     }
 }

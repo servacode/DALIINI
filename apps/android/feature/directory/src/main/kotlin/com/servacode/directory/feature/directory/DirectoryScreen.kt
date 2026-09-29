@@ -1,5 +1,7 @@
 package com.servacode.directory.feature.directory
 
+import com.servacode.directory.core.designsystem.DirectoryVocabulary
+import com.servacode.directory.core.model.AvailabilityState
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +26,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
+import com.servacode.directory.core.designsystem.DirectoryIllustrations
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
@@ -85,14 +88,14 @@ fun DirectoryScreen(
             DirectoryUiState.ProvinceRequired -> DirectoryEmptyState(
                 title = DirectoryCopy.PROVINCE_REQUIRED,
                 modifier = Modifier.padding(padding),
-                icon = DirectoryIcons.pin,
+                illustration = DirectoryIllustrations.location,
                 action = DirectoryCopy.PROVINCE_CHOOSE,
                 onAction = onProvince,
             )
             is DirectoryUiState.Error -> DirectoryErrorState(
                 title = DirectoryCopy.ERROR,
                 modifier = Modifier.padding(padding),
-                body = appErrorText(value.error),
+                error = value.error,
                 onRetry = viewModel::refresh,
             )
             is DirectoryUiState.Content -> LazyColumn(
@@ -122,6 +125,7 @@ fun DirectoryScreen(
                         DirectoryEmptyState(
                             title = DirectoryCopy.EMPTY,
                             body = DirectoryCopy.EMPTY_BODY,
+                            illustration = DirectoryIllustrations.noResults,
                             modifier = Modifier.padding(top = Space.xxl),
                         )
                     }
@@ -223,8 +227,10 @@ object DirectoryCopy {
     val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_title)
     val FILTERS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_filters)
     val RESET: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_reset)
-    val OPEN_NOW: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_open_now)
-    val DUTY_NOW: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_duty_now)
+    val OPEN_NOW: String
+        @Composable @ReadOnlyComposable get() = DirectoryVocabulary.availability(AvailabilityState.OPEN)
+    val DUTY_NOW: String
+        @Composable @ReadOnlyComposable get() = DirectoryVocabulary.availability(AvailabilityState.DUTY)
     val PROVINCE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_province)
     val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_error)
     val EMPTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.directory_empty)

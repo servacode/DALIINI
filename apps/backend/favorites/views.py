@@ -7,17 +7,18 @@ without producing an error the user did not cause.
 """
 
 from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.openapi import NOT_FOUND_404, VALIDATION_400, protected
+from core.throttles import FavoritesWriteThrottle
 from search.pagination import FacilityCursorPagination
-from search.views import PAGE_PARAMS
 from search.selectors import public_facilities, with_rating_summary
 from search.serializers import compact_facility
+from search.views import PAGE_PARAMS
 
 from .models import Favorite
 from .schemas import (
@@ -34,6 +35,7 @@ class FavoriteCursorPagination(FacilityCursorPagination):
 
 
 class AccountFavoritesView(APIView):
+    throttle_classes = [FavoritesWriteThrottle]
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
@@ -86,11 +88,12 @@ class AccountFavoritesView(APIView):
         body = FavoriteWriteSerializer(data=request.data)
         body.is_valid(raise_exception=True)
         facility = get_object_or_404(public_facilities(), pk=body.validated_data["facilityId"])
-        Favorite.objects.get_or_create(user=request.user, facility=facility)  # type: ignore[misc]
+        Favorite.objects.get_or_create(user=request.user, facility=facility)
         return Response({"facilityId": str(facility.id), "isFavorite": True})
 
 
 class AccountFavoriteDetailView(APIView):
+    throttle_classes = [FavoritesWriteThrottle]
     permission_classes = [IsAuthenticated]
 
     @extend_schema(

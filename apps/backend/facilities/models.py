@@ -42,11 +42,21 @@ class Facility(models.Model):
     description_ar = models.TextField(blank=True)
     description_en = models.TextField(blank=True)
     phone = models.CharField(max_length=16, blank=True)
+    # Optional WhatsApp contact, a Syrian mobile in E.164 (+9639XXXXXXXX), shown publicly.
+    whatsapp = models.CharField(max_length=16, blank=True)
     address_ar = models.CharField(max_length=255, blank=True)
     address_en = models.CharField(max_length=255, blank=True)
     location = models.PointField(srid=4326, null=True, blank=True)
     status = models.CharField(max_length=40, choices=Status.choices, default=Status.DRAFT)
     activated_at = models.DateTimeField(null=True, blank=True)
+    # When an operator last approved an application of this facility (trust signal).
+    last_verified_at = models.DateTimeField(null=True, blank=True)
+    # When a member last confirmed the opening hours are still right, or replaced them. Feeds
+    # the public `infoConfirmedAt` together with `last_verified_at`, which keeps its meaning.
+    hours_confirmed_at = models.DateTimeField(null=True, blank=True)
+    # When the weekly "are your hours still right?" reminder last went out, so a rerun of the
+    # weekly task in the same week sends nothing twice.
+    hours_reminder_sent_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -85,7 +95,7 @@ class FacilityMembership(models.Model):
             )
         ]
 
-    def clean(self):
+    def clean(self) -> None:
         if self.pk and self.role != self.Role.OWNER:
             original = type(self).objects.get(pk=self.pk)
             another_owner_exists = (
@@ -221,3 +231,65 @@ class FacilityServiceTag(models.Model):
                 name="uniq_facility_service_tag",
             )
         ]
+
+
+class FacilityReport(models.Model):
+    """A public "report a problem" about a facility, triaged by operators."""
+
+    class Reason(models.TextChoices):
+        WRONG_INFO = "WRONG_INFO", "Wrong information"
+        CLOSED_PERMANENTLY = "CLOSED_PERMANENTLY", "Closed permanently"
+        WRONG_LOCATION = "WRONG_LOCATION", "Wrong location"
+        WRONG_HOURS = "WRONG_HOURS", "Wrong hours"
+        NOT_ON_DUTY = "NOT_ON_DUTY", "Not on duty"
+        OTHER = "OTHER", "Other"
+
+    class Status(models.TextChoices):
+        OPEN = "OPEN", "Open"
+        RESOLVED = "RESOLVED", "Resolved"
+        DISMISSED = "DISMISSED", "Dismissed"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    facility = models.ForeignKey(Facility, on_delete=models.CASCADE, related_name="reports")
+    reporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    reason = models.CharField(max_length=24, choices=Reason.choices)
+    note = models.CharField(max_length=500, blank=True)
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.OPEN)
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["status", "-created_at"], name="facility_report_status_idx"),
+        ]
+
+
+class RejectionTemplate(models.Model):
+    """A reviewer's ready-made rejection reason; picking one fills the reason, nothing more."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title_ar = models.CharField(max_length=120)
+    body_ar = models.CharField(max_length=1000)
+    active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["sort_order", "title_ar"]
+
+    def __str__(self) -> str:
+        return self.title_ar

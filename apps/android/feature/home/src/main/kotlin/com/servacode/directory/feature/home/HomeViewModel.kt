@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.servacode.directory.core.database.Loaded
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.Category
+import com.servacode.directory.core.model.CategoryTags
 import com.servacode.directory.core.model.FacilitySummary
+import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.HomeSnapshot
 import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.network.RealtimeInvalidation
@@ -15,6 +17,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -43,6 +46,7 @@ data class HomeListState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val loadHome: HomeUseCase,
+    private val loadAds: HomeAdsUseCase,
     private val invalidations: RealtimeInvalidationBus,
 ) : ViewModel() {
     private val _state = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
@@ -59,6 +63,15 @@ class HomeViewModel @Inject constructor(
     private val _category = MutableStateFlow<Category?>(null)
     val category: StateFlow<Category?> = _category.asStateFlow()
 
+    /**
+     * The specialties and services the chosen category lets its list be narrowed by, for the rows
+     * under the chips. Empty draws no rows: a category that does not filter by them, one that has
+     * none, and every failure to read them.
+     */
+    private val _tags = MutableStateFlow(CategoryTags())
+    val tags: StateFlow<CategoryTags> = _tags.asStateFlow()
+    private var loadingTags: Job? = null
+
     private val _list = MutableStateFlow(HomeListState())
     val list: StateFlow<HomeListState> = _list.asStateFlow()
 
@@ -69,6 +82,15 @@ class HomeViewModel @Inject constructor(
     /** Unread messages behind the bell. Zero draws no badge at all. */
     private val _unread = MutableStateFlow(0)
     val unread: StateFlow<Int> = _unread.asStateFlow()
+
+    /**
+     * The slider's ads, from `public/ads` for the province on screen. Empty hides the slider,
+     * which is also what every failure shows: an advertisement is never worth an error.
+     */
+    private val _ads = MutableStateFlow<List<HomeAd>>(emptyList())
+    val ads: StateFlow<List<HomeAd>> = _ads.asStateFlow()
+    private var adsProvince: String? = null
+    private var loadingAds: Job? = null
 
     private var loading: Job? = null
     private var listing: Job? = null
@@ -116,7 +138,9 @@ class HomeViewModel @Inject constructor(
     fun select(category: Category?) {
         if (category?.id == _category.value?.id) return
         _category.value = category
-        _filters.value = _filters.value.withinReach(_hasLocation.value, category)
+        // A specialty or a service was chosen among one category's own; it goes with it.
+        _filters.value = _filters.value.clearTags().withinReach(_hasLocation.value, category)
+        refreshTags()
         reload()
     }
 
@@ -124,6 +148,45 @@ class HomeViewModel @Inject constructor(
     fun toggle(chip: HomeChip) {
         _filters.value = _filters.value.toggle(chip).withinReach(_hasLocation.value, _category.value)
         reload()
+    }
+
+    /** One specialty, or every one again with null or with the one already chosen. */
+    fun chooseSpecialty(id: String?) = narrow { it.chooseSpecialty(id) }
+
+    /** One service, the same way. */
+    fun chooseService(id: String?) = narrow { it.chooseService(id) }
+
+    /** «امسح التصفية»: every specialty and service again. */
+    fun clearTags() = narrow { it.clearTags() }
+
+    /** Change the filters, and ask for the list again only when the question actually changed. */
+    private fun narrow(change: (HomeFilters) -> HomeFilters) {
+        val next = change(_filters.value)
+        if (next == _filters.value) return
+        _filters.value = next
+        reload()
+    }
+
+    /**
+     * The newly chosen category's specialties and services, cached first.
+     *
+     * The previous category's rows go at once rather than showing under the wrong one. Nothing
+     * is asked for a category whose capabilities filter by neither. Each answer also drops a
+     * choice the category no longer offers, so the list is never narrowed by a missing chip.
+     */
+    private fun refreshTags() {
+        loadingTags?.cancel()
+        _tags.value = CategoryTags()
+        val category = _category.value
+        val provinceId = province() ?: return
+        if (category == null || !filtersByTags(category)) return
+        loadingTags = viewModelScope.launch {
+            loadHome.tags(provinceId, category.id).collect { tags ->
+                val offered = offeredTags(category, tags)
+                _tags.value = offered
+                narrow { it.withinTags(offered) }
+            }
+        }
     }
 
     /**
@@ -187,6 +250,8 @@ class HomeViewModel @Inject constructor(
     private fun province(): String? = (_state.value as? HomeUiState.Content)?.snapshot?.province?.id
 
     fun refresh() {
+        // A refresh asks for the ads again too; the snapshot decides for which province.
+        adsProvince = null
         loading?.cancel()
         loading = viewModelScope.launch {
             if (_state.value !is HomeUiState.Content) _state.value = HomeUiState.Loading
@@ -217,7 +282,19 @@ class HomeViewModel @Inject constructor(
         if (_category.value == null && snapshot.categories.isNotEmpty()) {
             _category.value = snapshot.categories.first()
             _filters.value = _filters.value.withinReach(_hasLocation.value, _category.value)
+            refreshTags()
         }
         if (_list.value.items.isEmpty() && _list.value.error == null) reload()
+        if (snapshot.province.id != adsProvince) refreshAds(snapshot.province.id)
+    }
+
+    private fun refreshAds(provinceId: String) {
+        adsProvince = provinceId
+        loadingAds?.cancel()
+        loadingAds = viewModelScope.launch {
+            loadAds(provinceId)
+                .catch { emit(emptyList()) }
+                .collect { _ads.value = it }
+        }
     }
 }

@@ -17,13 +17,15 @@ open class AdminAuditAPI {
      
      - parameter action: (query) Substring matched against the action code, case-insensitive. (optional)
      - parameter actor: (query) Actor user id. (optional)
+     - parameter from: (query) ISO date or datetime; keeps entries created at or after it. (optional)
      - parameter requestId: (query) Exact request correlation id, as returned in an error body. (optional)
      - parameter resource: (query) Substring matched against the target type, or an exact target id. (optional)
+     - parameter to: (query) ISO date or datetime; a bare date includes that whole day. (optional)
      - returns: AdminAuditList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminAuditList(action: String? = nil, actor: String? = nil, requestId: String? = nil, resource: String? = nil) async throws -> AdminAuditList {
-        return try await adminAuditListWithRequestBuilder(action: action, actor: actor, requestId: requestId, resource: resource).execute().body
+    open class func adminAuditList(action: String? = nil, actor: String? = nil, from: String? = nil, requestId: String? = nil, resource: String? = nil, to: String? = nil) async throws -> AdminAuditList {
+        return try await adminAuditListWithRequestBuilder(action: action, actor: actor, from: from, requestId: requestId, resource: resource, to: to).execute().body
     }
 
     /**
@@ -35,11 +37,13 @@ open class AdminAuditAPI {
        - name: bearerAccessToken
      - parameter action: (query) Substring matched against the action code, case-insensitive. (optional)
      - parameter actor: (query) Actor user id. (optional)
+     - parameter from: (query) ISO date or datetime; keeps entries created at or after it. (optional)
      - parameter requestId: (query) Exact request correlation id, as returned in an error body. (optional)
      - parameter resource: (query) Substring matched against the target type, or an exact target id. (optional)
+     - parameter to: (query) ISO date or datetime; a bare date includes that whole day. (optional)
      - returns: RequestBuilder<AdminAuditList> 
      */
-    open class func adminAuditListWithRequestBuilder(action: String? = nil, actor: String? = nil, requestId: String? = nil, resource: String? = nil) -> RequestBuilder<AdminAuditList> {
+    open class func adminAuditListWithRequestBuilder(action: String? = nil, actor: String? = nil, from: String? = nil, requestId: String? = nil, resource: String? = nil, to: String? = nil) -> RequestBuilder<AdminAuditList> {
         let localVariablePath = "/api/v1/admin/audit/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -48,8 +52,10 @@ open class AdminAuditAPI {
         localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
             "action": (wrappedValue: action?.encodeToJSON(), isExplode: true),
             "actor": (wrappedValue: actor?.encodeToJSON(), isExplode: true),
+            "from": (wrappedValue: from?.encodeToJSON(), isExplode: true),
             "requestId": (wrappedValue: requestId?.encodeToJSON(), isExplode: true),
             "resource": (wrappedValue: resource?.encodeToJSON(), isExplode: true),
+            "to": (wrappedValue: to?.encodeToJSON(), isExplode: true),
         ])
 
         let localVariableNillableHeaders: [String: Any?] = [

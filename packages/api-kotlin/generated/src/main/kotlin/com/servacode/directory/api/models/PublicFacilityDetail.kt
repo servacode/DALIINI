@@ -19,6 +19,7 @@ import com.servacode.directory.api.models.Availability
 import com.servacode.directory.api.models.BilingualRef
 import com.servacode.directory.api.models.Coordinates
 import com.servacode.directory.api.models.FacilityImage
+import com.servacode.directory.api.models.NamedIntRef
 import com.servacode.directory.api.models.NamedRef
 import com.servacode.directory.api.models.PublicHoursEntry
 
@@ -40,16 +41,20 @@ import kotlinx.serialization.Contextual
  * @param availability 
  * @param isFavorite Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery.
  * @param imageUrl The facility's first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one.
+ * @param lastVerifiedAt When an operator last approved this facility's details (trust signal).
+ * @param infoConfirmedAt The most recent of `lastVerifiedAt` and the owner's own confirmation that the opening hours are still right. Null when neither ever happened.
+ * @param updatedAt Last change to the facility record.
  * @param descriptionAr 
  * @param descriptionEn 
  * @param phone 
+ * @param whatsapp WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX).
  * @param addressAr 
  * @param addressEn 
  * @param neighborhood 
  * @param location 
  * @param images 
- * @param specialties 
- * @param services 
+ * @param specialties Active specialties, in the operators' order.
+ * @param services Active services, in the operators' order.
  * @param hours 
  */
 @Serializable
@@ -92,6 +97,18 @@ data class PublicFacilityDetail (
     @Contextual @SerialName(value = "imageUrl")
     val imageUrl: java.net.URI?,
 
+    /* When an operator last approved this facility's details (trust signal). */
+    @Contextual @SerialName(value = "lastVerifiedAt")
+    val lastVerifiedAt: java.time.OffsetDateTime?,
+
+    /* The most recent of `lastVerifiedAt` and the owner's own confirmation that the opening hours are still right. Null when neither ever happened. */
+    @Contextual @SerialName(value = "infoConfirmedAt")
+    val infoConfirmedAt: java.time.OffsetDateTime?,
+
+    /* Last change to the facility record. */
+    @Contextual @SerialName(value = "updatedAt")
+    val updatedAt: java.time.OffsetDateTime,
+
     @SerialName(value = "descriptionAr")
     val descriptionAr: kotlin.String?,
 
@@ -100,6 +117,10 @@ data class PublicFacilityDetail (
 
     @SerialName(value = "phone")
     val phone: kotlin.String?,
+
+    /* WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX). */
+    @SerialName(value = "whatsapp")
+    val whatsapp: kotlin.String?,
 
     @SerialName(value = "addressAr")
     val addressAr: kotlin.String?,
@@ -116,11 +137,13 @@ data class PublicFacilityDetail (
     @SerialName(value = "images")
     val images: kotlin.collections.List<FacilityImage>,
 
+    /* Active specialties, in the operators' order. */
     @SerialName(value = "specialties")
-    val specialties: kotlin.collections.List<NamedRef>,
+    val specialties: kotlin.collections.List<NamedIntRef>,
 
+    /* Active services, in the operators' order. */
     @SerialName(value = "services")
-    val services: kotlin.collections.List<NamedRef>,
+    val services: kotlin.collections.List<NamedIntRef>,
 
     @SerialName(value = "hours")
     val hours: kotlin.collections.List<PublicHoursEntry>

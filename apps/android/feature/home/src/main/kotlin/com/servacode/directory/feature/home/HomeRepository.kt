@@ -10,6 +10,7 @@ import com.servacode.directory.core.location.LocationResult
 import com.servacode.directory.core.location.metresTo
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.AppException
+import com.servacode.directory.core.model.CategoryTags
 import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.HomeSnapshot
 import com.servacode.directory.core.model.Page
@@ -119,6 +120,26 @@ class HomeRepository @Inject constructor(
     ): Page<FacilitySummary> {
         val fix = locationProvider.lastKnown()
         return api.directory(filters.query(provinceId, categoryId, fix), cursor)
+    }
+
+    /**
+     * The specialties and services [categoryId] offers, for the rows under the chips: what was
+     * kept for it first, then the backend's answer, kept in its place.
+     *
+     * The rows are an aid to the list, not the list: a failure with nothing kept is no rows at
+     * all, never an error on Home.
+     */
+    fun tags(provinceId: String, categoryId: String): Flow<CategoryTags> = cacheFirst(
+        read = { cache.categoryTags(categoryId) },
+        fetch = { api.categoryTags(categoryId) },
+        write = { cache.putCategoryTags(it, categoryId, provinceId) },
+    ).map { loaded ->
+        when (loaded) {
+            is Loaded.Cached -> loaded.value
+            is Loaded.Fresh -> loaded.value
+            is Loaded.Stale -> loaded.value
+            is Loaded.Failed -> CategoryTags()
+        }
     }
 
     /** Whether a position is known at all, which is what decides if "nearest" can be offered. */

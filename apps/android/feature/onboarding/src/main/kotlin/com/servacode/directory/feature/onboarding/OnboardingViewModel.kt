@@ -52,6 +52,8 @@ data class OnboardingForm(
     val nameEn: String = "",
     val descriptionAr: String = "",
     val phone: String = "",
+    /** Optional. Blank clears it on the backend. */
+    val whatsapp: String = "",
     val addressAr: String = "",
 )
 
@@ -125,6 +127,7 @@ class OnboardingViewModel @Inject constructor(
                     nameEn = existing?.nameEn.orEmpty(),
                     descriptionAr = existing?.descriptionAr.orEmpty(),
                     phone = existing?.phone.orEmpty(),
+                    whatsapp = existing?.whatsapp.orEmpty(),
                     addressAr = existing?.addressAr.orEmpty(),
                 ),
             )
@@ -148,6 +151,7 @@ class OnboardingViewModel @Inject constructor(
     fun updateNameEn(value: String) = updateForm { copy(nameEn = value) }
     fun updateDescriptionAr(value: String) = updateForm { copy(descriptionAr = value) }
     fun updatePhone(value: String) = updateForm { copy(phone = value) }
+    fun updateWhatsapp(value: String) = updateForm { copy(whatsapp = value) }
     fun updateAddressAr(value: String) = updateForm { copy(addressAr = value) }
 
     private fun updateForm(change: OnboardingForm.() -> OnboardingForm) {
@@ -189,6 +193,7 @@ class OnboardingViewModel @Inject constructor(
                     nameEn = current.form.nameEn.trim(),
                     descriptionAr = current.form.descriptionAr.trim(),
                     phone = current.form.phone.trim(),
+                    whatsapp = current.form.whatsapp.trim(),
                     addressAr = current.form.addressAr.trim(),
                 ),
             )

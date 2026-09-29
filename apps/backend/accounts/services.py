@@ -5,16 +5,16 @@ import hmac
 import secrets
 from datetime import timedelta
 from typing import Any
+from uuid import UUID
 
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.db import transaction
 from django.utils import timezone
-
-from core.exceptions import ConflictError
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 
 from audit.services import record_audit
+from core.exceptions import ConflictError
 from facilities.models import Facility, FacilityMembership
 from locations.models import Province
 from notifications.services import (
@@ -67,7 +67,9 @@ def create_session(*, user: User, platform: str, device_name: str) -> dict[str, 
     return _session_payload(user, session, raw)
 
 
-def start_challenge(*, phone: str, purpose: str, metadata: dict | None = None) -> OTPChallenge:
+def start_challenge(
+    *, phone: str, purpose: str, metadata: dict[str, Any] | None = None
+) -> OTPChallenge:
     challenge = OTPChallenge.objects.create(
         phone=phone,
         purpose=purpose,
@@ -83,7 +85,7 @@ def start_challenge(*, phone: str, purpose: str, metadata: dict | None = None) -
 
 
 @transaction.atomic
-def verify_challenge(*, challenge_id, code: str, purpose: str) -> OTPChallenge:
+def verify_challenge(*, challenge_id: UUID, code: str, purpose: str) -> OTPChallenge:
     challenge = OTPChallenge.objects.select_for_update().filter(pk=challenge_id).first()
     if challenge is None or challenge.purpose != purpose:
         raise ValidationError({"challengeId": "Invalid or expired challenge."})
@@ -102,7 +104,7 @@ def verify_challenge(*, challenge_id, code: str, purpose: str) -> OTPChallenge:
     return challenge
 
 
-def _verified_challenge(*, challenge_id, purpose: str) -> OTPChallenge:
+def _verified_challenge(*, challenge_id: UUID, purpose: str) -> OTPChallenge:
     challenge = OTPChallenge.objects.select_for_update().filter(pk=challenge_id).first()
     now = timezone.now()
     if (
@@ -119,12 +121,12 @@ def _verified_challenge(*, challenge_id, purpose: str) -> OTPChallenge:
 @transaction.atomic
 def complete_registration(
     *,
-    challenge_id,
+    challenge_id: UUID,
     display_name: str,
     password: str,
     platform: str,
     device_name: str,
-) -> dict:
+) -> dict[str, Any]:
     """Open the account, now that the number has been shown to be theirs.
 
     The name arrives here rather than with the code, so nothing about a person is
@@ -241,7 +243,7 @@ def _rotate_refresh(*, raw_refresh: str) -> dict[str, Any] | None:
     return _session_payload(session.user, session, raw_new)
 
 
-def revoke_session(*, user: User, session_id) -> None:
+def revoke_session(*, user: User, session_id: UUID | str) -> None:
     updated = UserSession.objects.filter(pk=session_id, user=user, revoked_at__isnull=True).update(
         revoked_at=timezone.now()
     )
@@ -256,7 +258,7 @@ def revoke_all_sessions(*, user: User) -> None:
 
 
 @transaction.atomic
-def reset_password(*, challenge_id, password: str) -> None:
+def reset_password(*, challenge_id: UUID, password: str) -> None:
     challenge = _verified_challenge(
         challenge_id=challenge_id,
         purpose=OTPChallenge.Purpose.RECOVERY,
@@ -311,7 +313,7 @@ def start_phone_change(*, user: User, phone: str) -> OTPChallenge:
 
 
 @transaction.atomic
-def complete_phone_change(*, user: User, challenge_id, code: str) -> User:
+def complete_phone_change(*, user: User, challenge_id: UUID, code: str) -> User:
     """Move the account to the number whose code has just been proved.
 
     Every session ends, this one included. The phone is how this account signs in, so

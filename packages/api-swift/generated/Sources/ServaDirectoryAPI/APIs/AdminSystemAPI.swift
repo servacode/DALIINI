@@ -13,6 +13,43 @@ import AnyCodable
 open class AdminSystemAPI {
 
     /**
+     Smart alerts: problems worth acting on now
+     
+     - returns: AdminAlertList
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminAlertsList() async throws -> AdminAlertList {
+        return try await adminAlertsListWithRequestBuilder().execute().body
+    }
+
+    /**
+     Smart alerts: problems worth acting on now
+     - GET /api/v1/admin/alerts/
+     - DUTY_GAP: per province offering a duty category, the Damascus days of the next 14 with no duty shift of any ACTIVE pharmacy (critical when the first gap is today or tomorrow). STALE_FACILITY: ACTIVE facilities with no change, owner confirmation or approval for 90 days. REPORTED_FACILITY: 3 or more open reports (critical from 5). ZERO_RESULT_SEARCH: searches without results in the last 7 days, grouped by province and category because search text is never recorded. REVIEW_OVERDUE: submitted applications past the SLA (critical past twice it). MAINTENANCE_ON.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<AdminAlertList> 
+     */
+    open class func adminAlertsListWithRequestBuilder() -> RequestBuilder<AdminAlertList> {
+        let localVariablePath = "/api/v1/admin/alerts/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminAlertList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Operational counters for the review desk
      
      - returns: AdminDashboard
@@ -86,6 +123,48 @@ open class AdminSystemAPI {
     }
 
     /**
+     Search facilities, users and applications at once
+     
+     - parameter q: (query) At least 2 chars. 
+     - returns: AdminSearchResult
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminSearchRetrieve(q: String) async throws -> AdminSearchResult {
+        return try await adminSearchRetrieveWithRequestBuilder(q: q).execute().body
+    }
+
+    /**
+     Search facilities, users and applications at once
+     - GET /api/v1/admin/search/
+     - Up to 5 hits per group. FACILITY (admin.facilities.read): Arabic or English name, or phone digits. USER (admin.users.read, or admin.facilities.read with the phone masked to its last 4 digits): name or phone digits. APPLICATION (admin.reviews.read): facility name. A group the caller may not read is left out, not returned empty.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter q: (query) At least 2 chars. 
+     - returns: RequestBuilder<AdminSearchResult> 
+     */
+    open class func adminSearchRetrieveWithRequestBuilder(q: String) -> RequestBuilder<AdminSearchResult> {
+        let localVariablePath = "/api/v1/admin/search/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "q": (wrappedValue: q.encodeToJSON(), isExplode: true),
+        ])
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminSearchResult>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Runtime and configuration status
      
      - returns: AdminSystemStatus
@@ -118,6 +197,43 @@ open class AdminSystemAPI {
         let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
 
         let localVariableRequestBuilder: RequestBuilder<AdminSystemStatus>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     The operator's queue: what is waiting, oldest first
+     
+     - returns: AdminTasks
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminTasksRetrieve() async throws -> AdminTasks {
+        return try await adminTasksRetrieveWithRequestBuilder().execute().body
+    }
+
+    /**
+     The operator's queue: what is waiting, oldest first
+     - GET /api/v1/admin/tasks/
+     - Submitted applications split into INITIAL and REVERIFICATION, open problem reports grouped by facility (facilities with 2 or more open reports first) and facilities waiting in REVERIFICATION_REQUIRED. Each bucket has its count, how many are past the SLA (platform setting `review.slaHours`, default 48) and up to 10 oldest items with their age in hours and an `overdue` flag.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<AdminTasks> 
+     */
+    open class func adminTasksRetrieveWithRequestBuilder() -> RequestBuilder<AdminTasks> {
+        let localVariablePath = "/api/v1/admin/tasks/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminTasks>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
 
         return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
     }

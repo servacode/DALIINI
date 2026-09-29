@@ -16,6 +16,10 @@ Three rules the specification fixes and this module enforces:
 * **Capability invariants stay in the model.** `CategoryCapabilities.clean()` decides
   whether duty is allowed; this module calls `full_clean()` and lets it.
 
+Specialties and services are the one exception to "no hard delete": an item no facility
+lists yet can be deleted, since a facility listing it is the only thing that points at one.
+An item in use is refused with 409 and retired with `active = False` instead.
+
 Realtime invalidation is not called from here. `realtime/hooks.py` already listens on
 `post_save` and `post_delete` for `Category`, `CategoryGroup`, `VerificationRequirement`
 and `CategoryProvince`, so a save inside these transactions publishes after commit. Calling
@@ -26,10 +30,12 @@ from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models import ProtectedError, QuerySet
 
 from audit.services import record_audit
+from core.exceptions import ConflictError
 
-from .models import Category, CategoryGroup, VerificationRequirement
+from .models import Category, CategoryGroup, ServiceTag, Specialty, VerificationRequirement
 
 IMMUTABLE_CATEGORY_FIELDS = ("code", "slug")
 
@@ -43,6 +49,7 @@ def _group_snapshot(group: CategoryGroup) -> dict[str, Any]:
         "code": group.code,
         "nameAr": group.name_ar,
         "nameEn": group.name_en,
+        "iconKey": group.icon_key,
         "active": group.active,
         "sortOrder": group.sort_order,
     }
@@ -86,6 +93,7 @@ def create_category_group(*, request: Any, data: dict[str, Any]) -> CategoryGrou
         code=data["code"],
         name_ar=data["nameAr"],
         name_en=data.get("nameEn", ""),
+        icon_key=data.get("iconKey", ""),
         active=data.get("active", True),
         sort_order=data.get("sortOrder", 0),
     )
@@ -109,7 +117,7 @@ def update_category_group(
     if "code" in data and data["code"] != group.code:
         raise ValidationError({"code": "The group code is immutable."})
     before = _group_snapshot(group)
-    for wire, field in (("nameAr", "name_ar"), ("nameEn", "name_en")):
+    for wire, field in (("nameAr", "name_ar"), ("nameEn", "name_en"), ("iconKey", "icon_key")):
         if wire in data:
             setattr(group, field, data[wire])
     if "active" in data:
@@ -287,3 +295,212 @@ def update_verification_requirement(
         request_id=_request_id(request),
     )
     return requirement
+
+
+# --------------------------------------------------------------------------------------
+# Specialties and services
+#
+# The choices behind the public specialty and service filters, and what an owner picks
+# from. A specialty is scoped to one category or to a specialization, never both
+# (`Specialty.clean`); a service belongs to one category. The scope is fixed at creation:
+# moving an item would carry the facilities that list it somewhere they may not belong.
+# --------------------------------------------------------------------------------------
+
+SCOPE_CATEGORY = "CATEGORY"
+SCOPE_SPECIALIZATION = "SPECIALIZATION"
+#: The two scopes of a specialty, as the wire names them (`SpecialtyScopeEnum`).
+SPECIALTY_SCOPES = [
+    (SCOPE_CATEGORY, "One category"),
+    (SCOPE_SPECIALIZATION, "Every category of a specialization"),
+]
+
+#: Wire name -> column, for the fields an operator may change after creation.
+TAG_FIELDS = (
+    ("nameAr", "name_ar"),
+    ("nameEn", "name_en"),
+    ("active", "active"),
+    ("sortOrder", "sort_order"),
+)
+
+
+def specialty_scope(specialty: Specialty) -> str:
+    return SCOPE_CATEGORY if specialty.category_id else SCOPE_SPECIALIZATION
+
+
+def _specialty_snapshot(specialty: Specialty) -> dict[str, Any]:
+    return {
+        "scope": specialty_scope(specialty),
+        "categoryId": str(specialty.category_id) if specialty.category_id else None,
+        "specialization": specialty.specialization or None,
+        "nameAr": specialty.name_ar,
+        "nameEn": specialty.name_en,
+        "active": specialty.active,
+        "sortOrder": specialty.sort_order,
+    }
+
+
+def _service_tag_snapshot(tag: ServiceTag) -> dict[str, Any]:
+    return {
+        "categoryId": str(tag.category_id),
+        "nameAr": tag.name_ar,
+        "nameEn": tag.name_en,
+        "active": tag.active,
+        "sortOrder": tag.sort_order,
+    }
+
+
+def _apply_tag_fields(row: Specialty | ServiceTag, data: dict[str, Any]) -> None:
+    for wire, column in TAG_FIELDS:
+        if wire in data:
+            setattr(row, column, data[wire])
+
+
+def _refuse_duplicate_name(
+    row: Specialty | ServiceTag, siblings: QuerySet[Specialty] | QuerySet[ServiceTag]
+) -> None:
+    """Two items of one name in one scope would be two identical filter choices.
+
+    Retired items count too: bringing one back is the operator's way to reuse its name.
+    """
+    if siblings.exclude(pk=row.pk).filter(name_ar__iexact=row.name_ar.strip()).exists():
+        raise ValidationError(
+            {"nameAr": "An item with this name already exists here; reactivate it instead."}
+        )
+
+
+def _specialty_siblings(specialty: Specialty) -> QuerySet[Specialty]:
+    if specialty.category_id:
+        return Specialty.objects.filter(category_id=specialty.category_id)
+    return Specialty.objects.filter(
+        category__isnull=True, specialization=specialty.specialization
+    )
+
+
+@transaction.atomic
+def create_specialty(*, request: Any, category: Category, data: dict[str, Any]) -> Specialty:
+    """A specialty for `category` alone, or for every category of its specialization."""
+    if data["scope"] == SCOPE_SPECIALIZATION:
+        if category.specialization == Category.Specialization.GENERIC:
+            raise ValidationError(
+                {"scope": "A general category has no specialization to share with."}
+            )
+        specialty = Specialty(specialization=category.specialization)
+    else:
+        specialty = Specialty(category=category)
+    _apply_tag_fields(specialty, data)
+    specialty.full_clean()
+    _refuse_duplicate_name(specialty, _specialty_siblings(specialty))
+    specialty.save()
+    record_audit(
+        actor=request.user,
+        action="specialty.created",
+        target=specialty,
+        after_snapshot=_specialty_snapshot(specialty),
+        request_id=_request_id(request),
+    )
+    return specialty
+
+
+@transaction.atomic
+def update_specialty(*, request: Any, specialty_id: int, data: dict[str, Any]) -> Specialty:
+    specialty = Specialty.objects.select_for_update().get(pk=specialty_id)
+    before = _specialty_snapshot(specialty)
+    _apply_tag_fields(specialty, data)
+    specialty.full_clean()
+    if "nameAr" in data:
+        _refuse_duplicate_name(specialty, _specialty_siblings(specialty))
+    specialty.save()
+    record_audit(
+        actor=request.user,
+        action="specialty.updated",
+        target=specialty,
+        before_snapshot=before,
+        after_snapshot=_specialty_snapshot(specialty),
+        request_id=_request_id(request),
+    )
+    return specialty
+
+
+@transaction.atomic
+def delete_specialty(*, request: Any, specialty_id: int) -> None:
+    """Delete a specialty no facility lists; one in use is refused with SPECIALTY_IN_USE."""
+    # Locked, so a facility cannot start listing it between the check and the delete.
+    specialty = Specialty.objects.select_for_update().get(pk=specialty_id)
+    in_use = ConflictError(
+        "SPECIALTY_IN_USE",
+        message="هذا التخصص مسجّل لدى منشآت ولا يمكن حذفه. أوقفه بدلاً من ذلك.",
+    )
+    if specialty.facility_links.exists():
+        raise in_use
+    # Recorded first, while the row still has its id; a failed delete rolls it back.
+    record_audit(
+        actor=request.user,
+        action="specialty.deleted",
+        target=specialty,
+        before_snapshot=_specialty_snapshot(specialty),
+        request_id=_request_id(request),
+    )
+    try:
+        specialty.delete()
+    except ProtectedError as exc:
+        raise in_use from exc
+
+
+@transaction.atomic
+def create_service_tag(*, request: Any, category: Category, data: dict[str, Any]) -> ServiceTag:
+    tag = ServiceTag(category=category)
+    _apply_tag_fields(tag, data)
+    tag.full_clean()
+    _refuse_duplicate_name(tag, ServiceTag.objects.filter(category=category))
+    tag.save()
+    record_audit(
+        actor=request.user,
+        action="service_tag.created",
+        target=tag,
+        after_snapshot=_service_tag_snapshot(tag),
+        request_id=_request_id(request),
+    )
+    return tag
+
+
+@transaction.atomic
+def update_service_tag(*, request: Any, service_tag_id: int, data: dict[str, Any]) -> ServiceTag:
+    tag = ServiceTag.objects.select_for_update().get(pk=service_tag_id)
+    before = _service_tag_snapshot(tag)
+    _apply_tag_fields(tag, data)
+    tag.full_clean()
+    if "nameAr" in data:
+        _refuse_duplicate_name(tag, ServiceTag.objects.filter(category_id=tag.category_id))
+    tag.save()
+    record_audit(
+        actor=request.user,
+        action="service_tag.updated",
+        target=tag,
+        before_snapshot=before,
+        after_snapshot=_service_tag_snapshot(tag),
+        request_id=_request_id(request),
+    )
+    return tag
+
+
+@transaction.atomic
+def delete_service_tag(*, request: Any, service_tag_id: int) -> None:
+    """Delete a service no facility lists; one in use is refused with SERVICE_TAG_IN_USE."""
+    tag = ServiceTag.objects.select_for_update().get(pk=service_tag_id)
+    in_use = ConflictError(
+        "SERVICE_TAG_IN_USE",
+        message="هذه الخدمة مسجّلة لدى منشآت ولا يمكن حذفها. أوقفها بدلاً من ذلك.",
+    )
+    if tag.facility_links.exists():
+        raise in_use
+    record_audit(
+        actor=request.user,
+        action="service_tag.deleted",
+        target=tag,
+        before_snapshot=_service_tag_snapshot(tag),
+        request_id=_request_id(request),
+    )
+    try:
+        tag.delete()
+    except ProtectedError as exc:
+        raise in_use from exc

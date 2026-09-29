@@ -14,6 +14,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
+import com.servacode.directory.core.designsystem.DirectoryIllustrations
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
@@ -70,7 +71,7 @@ fun SearchScreen(
                 is SearchUiState.Error -> item(key = "error") {
                     DirectoryErrorState(
                         title = SearchCopy.ERROR,
-                        body = appErrorText(value.error),
+                        error = value.error,
                         modifier = Modifier.padding(top = Space.xxl),
                         onRetry = { viewModel.updateQuery(query) },
                     )
@@ -81,6 +82,7 @@ fun SearchScreen(
                             DirectoryEmptyState(
                                 title = SearchCopy.EMPTY,
                                 body = SearchCopy.EMPTY_BODY,
+                                illustration = DirectoryIllustrations.noResults,
                                 modifier = Modifier.padding(top = Space.xxl),
                             )
                         }

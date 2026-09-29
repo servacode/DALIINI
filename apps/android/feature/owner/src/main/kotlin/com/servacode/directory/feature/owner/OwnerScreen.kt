@@ -1,5 +1,14 @@
 package com.servacode.directory.feature.owner
 
+import com.servacode.directory.core.designsystem.StatusTones
+import com.servacode.directory.core.designsystem.StatusChip
+import androidx.annotation.DrawableRes
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import com.servacode.directory.core.designsystem.DirectoryIcon
+import com.servacode.directory.core.designsystem.DirectoryInlineLoading
+import com.servacode.directory.core.designsystem.IconSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,11 +42,14 @@ import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.closureText
 import com.servacode.directory.core.designsystem.DateTimeField
 import com.servacode.directory.core.designsystem.DirectoryCard
+import com.servacode.directory.core.designsystem.DirectoryChipRow
 import com.servacode.directory.core.designsystem.DirectoryConfirmDialog
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
 import com.servacode.directory.core.designsystem.DirectoryErrorState
+import com.servacode.directory.core.designsystem.DirectoryFilterChip
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
+import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryPill
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
@@ -49,9 +61,9 @@ import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.MetaRow
 import com.servacode.directory.core.designsystem.OwnerWords
 import com.servacode.directory.core.designsystem.Space
-import com.servacode.directory.core.designsystem.StatusPill
 import com.servacode.directory.core.designsystem.StatusTone
 import com.servacode.directory.core.model.FacilityMemberRole
+import com.servacode.directory.core.model.FacilityTag
 import com.servacode.directory.core.model.OwnerFacilityStatus
 import com.servacode.directory.core.model.OwnerFacilitySummary
 
@@ -93,7 +105,7 @@ fun MyFacilitiesScreen(
             is MyFacilitiesUiState.Error -> DirectoryErrorState(
                 title = OwnerCopy.LIST_ERROR,
                 modifier = Modifier.padding(padding),
-                body = appErrorText(value.error),
+                error = value.error,
                 onRetry = viewModel::refresh,
             )
             is MyFacilitiesUiState.Content -> if (value.items.isEmpty()) {
@@ -101,7 +113,6 @@ fun MyFacilitiesScreen(
                     title = OwnerCopy.EMPTY,
                     modifier = Modifier.padding(padding),
                     body = OwnerCopy.EMPTY_BODY,
-                    icon = DirectoryIcons.hospital,
                     action = OwnerCopy.ADD,
                     onAction = onAdd,
                 )
@@ -155,7 +166,7 @@ private fun OwnerFacilityCard(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f).semantics { heading() },
                 )
-                StatusPill(OwnerWords.status(item.status), item.status.tone())
+                StatusChip(OwnerWords.status(item.status), item.status.tone())
             }
             Text(
                 text = "${item.category.nameAr} - ${item.province.nameAr}",
@@ -212,8 +223,18 @@ fun ManageFacilityScreen(
     onDuty: (String) -> Unit,
     onBack: () -> Unit,
     viewModel: ManageFacilityViewModel = hiltViewModel(),
+    insightsViewModel: OwnerInsightsViewModel = hiltViewModel(),
+    hoursViewModel: HoursConfirmationViewModel = hiltViewModel(),
+    tagsViewModel: FacilityTagsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val insights by insightsViewModel.state.collectAsStateWithLifecycle()
+    val hours by hoursViewModel.state.collectAsStateWithLifecycle()
+    val tags by tagsViewModel.state.collectAsStateWithLifecycle()
+    // Saved choices are an edit like any other: the facility is read again, and whatever the
+    // backend made of it — a review, for one already published — shows on its card above.
+    val tagsSaved = (tags as? FacilityTagsUiState.Content)?.saved == true
+    LaunchedEffect(tagsSaved) { if (tagsSaved) viewModel.refresh() }
     var managerId by remember { mutableStateOf("") }
     var closureStart by remember { mutableStateOf<Long?>(null) }
     var closureEnd by remember { mutableStateOf<Long?>(null) }
@@ -228,7 +249,7 @@ fun ManageFacilityScreen(
             is ManageFacilityUiState.Error -> DirectoryErrorState(
                 title = OwnerCopy.MANAGE_ERROR,
                 modifier = Modifier.padding(padding),
-                body = appErrorText(value.error),
+                error = value.error,
                 onRetry = viewModel::refresh,
             )
             is ManageFacilityUiState.Content -> Column(
@@ -253,7 +274,7 @@ fun ManageFacilityScreen(
                                 color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.weight(1f).semantics { heading() },
                             )
-                            StatusPill(OwnerWords.status(summary.status), summary.status.tone())
+                            StatusChip(OwnerWords.status(summary.status), summary.status.tone())
                         }
                         Text(
                             text = "${summary.category.nameAr} - ${summary.province.nameAr}",
@@ -287,6 +308,25 @@ fun ManageFacilityScreen(
                         }
                     }
                 }
+
+                LaunchedEffect(value.facility) { hoursViewModel.show(value.facility) }
+                HoursConfirmationSection(
+                    state = hours,
+                    onConfirm = hoursViewModel::confirm,
+                    onEdit = { onEdit(summary.id) },
+                )
+
+                LaunchedEffect(summary.id) { insightsViewModel.show(summary.id) }
+                InsightsSection(insights, onRetry = insightsViewModel::refresh)
+
+                LaunchedEffect(value.facility) { tagsViewModel.show(value.facility) }
+                FacilityTagsSection(
+                    state = tags,
+                    onToggleSpecialty = tagsViewModel::toggleSpecialty,
+                    onToggleService = tagsViewModel::toggleService,
+                    onSave = tagsViewModel::save,
+                    onRetry = tagsViewModel::retry,
+                )
 
                 if (OwnerCapabilities.supportsTemporaryClosure(summary)) {
                     DirectorySection(OwnerCopy.CLOSURES) {
@@ -435,23 +475,314 @@ fun ManageFacilityScreen(
     }
 }
 
-/** The colour a status is read in; the word itself is the backend's. */
-internal fun OwnerFacilityStatus.tone(): StatusTone = when (this) {
-    OwnerFacilityStatus.ACTIVE -> StatusTone.POSITIVE
-    OwnerFacilityStatus.SUBMITTED -> StatusTone.PENDING
-    OwnerFacilityStatus.REVERIFICATION_REQUIRED -> StatusTone.PENDING
-    OwnerFacilityStatus.SUSPENDED -> StatusTone.DANGER
-    OwnerFacilityStatus.DRAFT -> StatusTone.NEUTRAL
-    OwnerFacilityStatus.CLOSED -> StatusTone.NEUTRAL
-}
+/** The colour a status is read in: the shared vocabulary's tone for it. */
+internal fun OwnerFacilityStatus.tone(): StatusTone = StatusTones.facilityStatus(this)
 
 /** The words of the owner's screens, provisional until product copy is approved. */
+/**
+ * Views, calls and directions over the last 30 days: what the listing has done for the owner.
+ * Loading, failure and an empty window each say so in their own words.
+ */
+@Composable
+private fun InsightsSection(state: OwnerInsightsUiState, onRetry: () -> Unit) {
+    DirectorySection(OwnerCopy.INSIGHTS) {
+        when (state) {
+            OwnerInsightsUiState.Loading -> DirectoryInlineLoading(OwnerCopy.INSIGHTS_LOADING)
+            is OwnerInsightsUiState.Error -> {
+                Text(
+                    text = OwnerCopy.INSIGHTS_ERROR,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                )
+                DirectoryTextButton(OwnerCopy.RETRY, onRetry)
+            }
+            is OwnerInsightsUiState.Empty -> Text(
+                text = OwnerCopy.insightsEmpty(state.windowDays),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            is OwnerInsightsUiState.Content -> {
+                Text(
+                    text = OwnerCopy.insightsWindow(state.insights.windowDays),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                ) {
+                    InsightFigure(state.insights.views, OwnerCopy.INSIGHTS_VIEWS, DirectoryIcons.eye)
+                    InsightFigure(state.insights.calls, OwnerCopy.INSIGHTS_CALLS, DirectoryIcons.phone)
+                    InsightFigure(state.insights.directions, OwnerCopy.INSIGHTS_DIRECTIONS, DirectoryIcons.route)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * «تأكيد أوقات الدوام», once a week: one tap says the hours are still right, and the public page's
+ * «آخر تأكيد للمعلومات» moves with it. Hours that changed are edited instead.
+ */
+@Composable
+private fun HoursConfirmationSection(
+    state: HoursConfirmationUiState,
+    onConfirm: () -> Unit,
+    onEdit: () -> Unit,
+) {
+    when (state) {
+        HoursConfirmationUiState.Hidden -> Unit
+        HoursConfirmationUiState.Confirmed -> Text(
+            text = OwnerCopy.HOURS_CONFIRMED,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+        )
+        is HoursConfirmationUiState.Due -> DirectorySection(OwnerCopy.HOURS_CONFIRM_TITLE) {
+            Text(
+                text = OwnerCopy.HOURS_CONFIRM_BODY,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            state.failure?.let {
+                Text(
+                    text = appErrorText(it),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                )
+            }
+            Spacer(Modifier.height(Space.sm))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Space.sm),
+            ) {
+                DirectoryPrimaryButton(
+                    text = OwnerCopy.HOURS_CONFIRM_ACTION,
+                    onClick = onConfirm,
+                    modifier = Modifier.weight(1f),
+                    loading = state.sending,
+                )
+                DirectorySecondaryButton(
+                    text = OwnerCopy.HOURS_CONFIRM_EDIT,
+                    onClick = onEdit,
+                    modifier = Modifier.weight(1f),
+                    enabled = !state.sending,
+                )
+            }
+        }
+    }
+}
+
+/**
+ * «التخصصات والخدمات»: what the facility offers, ticked from what its category lets owners pick,
+ * so that people narrowing a list by a specialty or a service find it.
+ *
+ * Its own card with its own states, like the statistics: loading, a failure with a retry, no
+ * connection (the ticks stay in sight and cannot change), and saving. A group without choices is
+ * not drawn, and neither is the card when the category offers none.
+ */
+@Composable
+private fun FacilityTagsSection(
+    state: FacilityTagsUiState,
+    onToggleSpecialty: (String) -> Unit,
+    onToggleService: (String) -> Unit,
+    onSave: () -> Unit,
+    onRetry: () -> Unit,
+) {
+    when (state) {
+        FacilityTagsUiState.Hidden -> Unit
+        FacilityTagsUiState.Loading -> DirectorySection(OwnerCopy.TAGS) {
+            DirectoryInlineLoading(OwnerCopy.TAGS_LOADING)
+        }
+        is FacilityTagsUiState.Error -> DirectorySection(OwnerCopy.TAGS) {
+            Text(
+                text = OwnerCopy.TAGS_ERROR,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+            )
+            Text(
+                text = appErrorText(state.error),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            DirectoryTextButton(OwnerCopy.RETRY, onRetry)
+        }
+        is FacilityTagsUiState.Content -> DirectorySection(OwnerCopy.TAGS) {
+            val form = state.form
+            Text(
+                text = OwnerCopy.TAGS_HINT,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (state.offline) {
+                DirectoryOfflineNotice(text = OwnerCopy.TAGS_OFFLINE)
+            }
+            if (form.choices.specialties.isNotEmpty()) {
+                TagChoices(
+                    label = OwnerCopy.SPECIALTIES,
+                    choices = form.choices.specialties,
+                    ticked = form.specialties,
+                    enabled = state.editable,
+                    onToggle = onToggleSpecialty,
+                )
+            }
+            if (form.choices.services.isNotEmpty()) {
+                TagChoices(
+                    label = OwnerCopy.SERVICES,
+                    choices = form.choices.services,
+                    ticked = form.services,
+                    enabled = state.editable,
+                    onToggle = onToggleService,
+                )
+            }
+            TagsStatus(state, onRefresh = onRetry)
+            DirectoryPrimaryButton(
+                text = OwnerCopy.TAGS_SAVE,
+                onClick = onSave,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = state.canSave,
+                loading = state.saving,
+            )
+        }
+    }
+}
+
+/** One group, every choice in sight and each ticked on its own, as a checklist is. */
+@Composable
+private fun TagChoices(
+    label: String,
+    choices: List<FacilityTag>,
+    ticked: Set<String>,
+    enabled: Boolean,
+    onToggle: (String) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.semantics { heading() },
+        )
+        DirectoryChipRow {
+            choices.forEach { choice ->
+                DirectoryFilterChip(
+                    text = choice.nameAr,
+                    selected = choice.id in ticked,
+                    onClick = { onToggle(choice.id) },
+                    enabled = enabled,
+                )
+            }
+        }
+    }
+}
+
+/**
+ * The one line that says how the save went: under way, done, or refused and why. A screen reader
+ * hears it when it changes, because the button it follows says nothing while it spins.
+ */
+@Composable
+private fun TagsStatus(state: FacilityTagsUiState.Content, onRefresh: () -> Unit) {
+    val failure = state.failure
+    val (text, color) = when {
+        state.saving -> OwnerCopy.TAGS_SAVING to MaterialTheme.colorScheme.onSurfaceVariant
+        failure == FacilityTagsFailure.ChoicesOutdated -> OwnerCopy.TAGS_OUTDATED to MaterialTheme.colorScheme.error
+        failure is FacilityTagsFailure.Failed ->
+            OwnerCopy.tagsSaveFailed(appErrorText(failure.error)) to MaterialTheme.colorScheme.error
+        state.saved && !state.form.changed -> OwnerCopy.TAGS_SAVED to MaterialTheme.colorScheme.primary
+        else -> return
+    }
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        color = color,
+        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+    )
+    if (failure == FacilityTagsFailure.ChoicesOutdated) {
+        DirectoryTextButton(OwnerCopy.TAGS_REFRESH, onRefresh)
+    }
+}
+
+@Composable
+private fun InsightFigure(count: Int, label: String, @DrawableRes icon: Int) {
+    Column(
+        // "١٢ مشاهدة" as one statement, not a number and a word read apart.
+        modifier = Modifier.semantics(mergeDescendants = true) { },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Space.xs),
+    ) {
+        DirectoryIcon(
+            icon = icon,
+            contentDescription = null,
+            size = IconSize.medium,
+            tint = MaterialTheme.colorScheme.primary,
+        )
+        Text(
+            text = OwnerCopy.count(count),
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
 object OwnerCopy {
     val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_title)
     val ADD: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_add)
     val MANAGE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_manage)
     val DUTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_duty)
     val EDIT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_edit)
+    val INSIGHTS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights)
+    val HOURS_CONFIRM_TITLE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_hours_confirm_title)
+    val HOURS_CONFIRM_BODY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_hours_confirm_body)
+    val HOURS_CONFIRM_ACTION: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_hours_confirm_action)
+    val HOURS_CONFIRM_EDIT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_hours_confirm_edit)
+    val HOURS_CONFIRMED: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_hours_confirmed)
+    val INSIGHTS_LOADING: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights_loading)
+    val INSIGHTS_ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights_error)
+    val INSIGHTS_VIEWS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights_views)
+    val INSIGHTS_CALLS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights_calls)
+    val INSIGHTS_DIRECTIONS: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights_directions)
+    val RETRY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_retry)
+    val TAGS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags)
+    val TAGS_HINT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_hint)
+    val SPECIALTIES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_specialties)
+    val SERVICES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_services)
+    val TAGS_LOADING: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_loading)
+    val TAGS_ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_error)
+    val TAGS_OFFLINE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_offline)
+    val TAGS_SAVE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_save)
+    val TAGS_SAVING: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_saving)
+    val TAGS_SAVED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_saved)
+    val TAGS_OUTDATED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_outdated)
+    val TAGS_REFRESH: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_refresh)
+
+    /** A refused save, with the error's own sentence after it. */
+    @Composable @ReadOnlyComposable
+    fun tagsSaveFailed(reason: String): String = stringResource(R.string.owner_tags_save_failed, reason)
+
+    @Composable @ReadOnlyComposable
+    fun insightsWindow(days: Int): String = stringResource(R.string.owner_insights_window, days)
+
+    @Composable @ReadOnlyComposable
+    fun insightsEmpty(days: Int): String = stringResource(R.string.owner_insights_empty, days)
+
+    /** A count in the reader's own digits. */
+    @Composable @ReadOnlyComposable
+    fun count(value: Int): String = stringResource(R.string.owner_count, value)
     val LIST_ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_list_error)
     val EMPTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_empty)
     val EMPTY_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_empty_body)

@@ -1,6 +1,8 @@
 """Response shapes shared by every endpoint that returns a province."""
 
-from .models import Province
+from typing import Any
+
+from .models import City, Neighborhood, Province
 
 
 def map_center(province: Province) -> dict[str, float] | None:
@@ -9,7 +11,7 @@ def map_center(province: Province) -> dict[str, float] | None:
     return {"latitude": point.y, "longitude": point.x} if point else None
 
 
-def province_payload(province: Province | None) -> dict | None:
+def province_payload(province: Province | None) -> dict[str, Any] | None:
     """A province as every public endpoint returns it."""
     if province is None:
         return None
@@ -22,7 +24,7 @@ def province_payload(province: Province | None) -> dict | None:
     }
 
 
-def place(row) -> dict | None:
+def place(row: City | Neighborhood | None) -> dict[str, Any] | None:
     """A city or a neighbourhood, named and nothing more."""
     if row is None:
         return None

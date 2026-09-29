@@ -1,10 +1,17 @@
-from django.db.models import Q
+from datetime import datetime
+
+from django.db.models import Q, QuerySet
 from django.utils import timezone
 
 from .models import Advertisement
 
 
-def active_ads(*, province_id=None, category_id=None, now=None):
+def active_ads(
+    *,
+    province_id: str | None = None,
+    category_id: str | None = None,
+    now: datetime | None = None,
+) -> QuerySet[Advertisement]:
     now = now or timezone.now()
     schedule = (Q(starts_at__isnull=True) | Q(starts_at__lte=now)) & (
         Q(ends_at__isnull=True) | Q(ends_at__gt=now)

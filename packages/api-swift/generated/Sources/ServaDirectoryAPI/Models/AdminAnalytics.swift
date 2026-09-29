@@ -12,12 +12,37 @@ import AnyCodable
 
 public struct AdminAnalytics: Codable, JSONEncodable, Hashable {
 
+    /** Period start, inclusive. */
+    public var from: Date
+    /** Period end, exclusive. */
+    public var to: Date
+    /** Median submit-to-approval time in the period. */
+    public var approvalMedianHours: Double?
+    /** search_submitted events in the period. */
+    public var searches: Int
+    /** search_zero_results in the period. */
+    public var zeroResultSearches: Int
+    /** facility_view events in the period. */
+    public var facilityViews: Int
+    /** directions_start in the period. */
+    public var directionsRequests: Int
+    /** The same KPIs for the equally long period just before `from`. */
+    public var previous: AdminAnalyticsPeriodKpis
     public var activeFacilities: Int
     public var pendingReviews: Int
     public var ratingAverage: Double?
+    /** All-time counts per event name. */
     public var events: [AdminEventCount]
 
-    public init(activeFacilities: Int, pendingReviews: Int, ratingAverage: Double?, events: [AdminEventCount]) {
+    public init(from: Date, to: Date, approvalMedianHours: Double?, searches: Int, zeroResultSearches: Int, facilityViews: Int, directionsRequests: Int, previous: AdminAnalyticsPeriodKpis, activeFacilities: Int, pendingReviews: Int, ratingAverage: Double?, events: [AdminEventCount]) {
+        self.from = from
+        self.to = to
+        self.approvalMedianHours = approvalMedianHours
+        self.searches = searches
+        self.zeroResultSearches = zeroResultSearches
+        self.facilityViews = facilityViews
+        self.directionsRequests = directionsRequests
+        self.previous = previous
         self.activeFacilities = activeFacilities
         self.pendingReviews = pendingReviews
         self.ratingAverage = ratingAverage
@@ -25,6 +50,14 @@ public struct AdminAnalytics: Codable, JSONEncodable, Hashable {
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
+        case from
+        case to
+        case approvalMedianHours
+        case searches
+        case zeroResultSearches
+        case facilityViews
+        case directionsRequests
+        case previous
         case activeFacilities
         case pendingReviews
         case ratingAverage
@@ -35,6 +68,14 @@ public struct AdminAnalytics: Codable, JSONEncodable, Hashable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(from, forKey: .from)
+        try container.encode(to, forKey: .to)
+        try container.encode(approvalMedianHours, forKey: .approvalMedianHours)
+        try container.encode(searches, forKey: .searches)
+        try container.encode(zeroResultSearches, forKey: .zeroResultSearches)
+        try container.encode(facilityViews, forKey: .facilityViews)
+        try container.encode(directionsRequests, forKey: .directionsRequests)
+        try container.encode(previous, forKey: .previous)
         try container.encode(activeFacilities, forKey: .activeFacilities)
         try container.encode(pendingReviews, forKey: .pendingReviews)
         try container.encode(ratingAverage, forKey: .ratingAverage)

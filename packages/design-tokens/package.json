@@ -3,11 +3,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "generate": "node scripts/generate.mjs",
-    "check": "node scripts/validate.mjs && node scripts/generate.mjs --check"
+    "generate": "node scripts/generate.mjs && node scripts/vocabulary.mjs && node scripts/icons.mjs",
+    "check": "node scripts/validate.mjs && node scripts/generate.mjs --check && node scripts/vocabulary.mjs --check && node scripts/icons.mjs --check"
   },
   "exports": {
     "./tokens.css": "./generated/tokens.css",
-    "./tokens": "./generated/tokens.ts"
+    "./tokens": "./generated/tokens.ts",
+    "./fonts.css": "./fonts/fonts.css",
+    "./vocabulary": "./generated/vocabulary.ts",
+    "./icons": "./generated/icons.ts",
+    "./brand/*": "./brand/*"
   }
 }

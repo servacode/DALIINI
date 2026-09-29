@@ -19,6 +19,9 @@ import type {
   AdminApplicationDetail,
   AdminApplicationList,
   AdminDecisionRequest,
+  AdminRejectionTemplate,
+  AdminRejectionTemplateList,
+  AdminRejectionTemplateRequest,
   ApiError,
 } from '../models/index';
 import {
@@ -30,12 +33,35 @@ import {
     AdminApplicationListToJSON,
     AdminDecisionRequestFromJSON,
     AdminDecisionRequestToJSON,
+    AdminRejectionTemplateFromJSON,
+    AdminRejectionTemplateToJSON,
+    AdminRejectionTemplateListFromJSON,
+    AdminRejectionTemplateListToJSON,
+    AdminRejectionTemplateRequestFromJSON,
+    AdminRejectionTemplateRequestToJSON,
     ApiErrorFromJSON,
     ApiErrorToJSON,
 } from '../models/index';
 
 export interface AdminEvidenceContentRetrieveRequest {
     evidenceId: string;
+}
+
+export interface AdminRejectionTemplateCreateRequest {
+    adminRejectionTemplateRequest: AdminRejectionTemplateRequest;
+}
+
+export interface AdminRejectionTemplateDeleteRequest {
+    templateId: string;
+}
+
+export interface AdminRejectionTemplateUpdateRequest {
+    templateId: string;
+    adminRejectionTemplateRequest: AdminRejectionTemplateRequest;
+}
+
+export interface AdminRejectionTemplatesListRequest {
+    active?: boolean;
 }
 
 export interface AdminReviewApproveRequest {
@@ -54,9 +80,12 @@ export interface AdminReviewRetrieveRequest {
 
 export interface AdminReviewsListRequest {
     category?: string;
+    evidence?: string;
+    from?: string;
     kind?: string;
     province?: string;
     status?: string;
+    to?: string;
 }
 
 /**
@@ -106,6 +135,201 @@ export class AdminReviewsApi extends runtime.BaseAPI {
      */
     async adminEvidenceContentRetrieve(requestParameters: AdminEvidenceContentRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Blob> {
         const response = await this.adminEvidenceContentRetrieveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Requires admin.reviews.decide, re-checked inside the handler.
+     * Create a rejection template
+     */
+    async adminRejectionTemplateCreateRaw(requestParameters: AdminRejectionTemplateCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminRejectionTemplate>> {
+        if (requestParameters['adminRejectionTemplateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'adminRejectionTemplateRequest',
+                'Required parameter "adminRejectionTemplateRequest" was null or undefined when calling adminRejectionTemplateCreate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/rejection-templates/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminRejectionTemplateRequestToJSON(requestParameters['adminRejectionTemplateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminRejectionTemplateFromJSON(jsonValue));
+    }
+
+    /**
+     * Requires admin.reviews.decide, re-checked inside the handler.
+     * Create a rejection template
+     */
+    async adminRejectionTemplateCreate(requestParameters: AdminRejectionTemplateCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminRejectionTemplate> {
+        const response = await this.adminRejectionTemplateCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Past rejections keep their text; a template is only a starting point.
+     * Delete a rejection template
+     */
+    async adminRejectionTemplateDeleteRaw(requestParameters: AdminRejectionTemplateDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['templateId'] == null) {
+            throw new runtime.RequiredError(
+                'templateId',
+                'Required parameter "templateId" was null or undefined when calling adminRejectionTemplateDelete().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/rejection-templates/{template_id}/`;
+        urlPath = urlPath.replace(`{${"template_id"}}`, encodeURIComponent(String(requestParameters['templateId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Past rejections keep their text; a template is only a starting point.
+     * Delete a rejection template
+     */
+    async adminRejectionTemplateDelete(requestParameters: AdminRejectionTemplateDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.adminRejectionTemplateDeleteRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Omitted fields keep their value.
+     * Edit, reorder or retire a rejection template
+     */
+    async adminRejectionTemplateUpdateRaw(requestParameters: AdminRejectionTemplateUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminRejectionTemplate>> {
+        if (requestParameters['templateId'] == null) {
+            throw new runtime.RequiredError(
+                'templateId',
+                'Required parameter "templateId" was null or undefined when calling adminRejectionTemplateUpdate().'
+            );
+        }
+
+        if (requestParameters['adminRejectionTemplateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'adminRejectionTemplateRequest',
+                'Required parameter "adminRejectionTemplateRequest" was null or undefined when calling adminRejectionTemplateUpdate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/rejection-templates/{template_id}/`;
+        urlPath = urlPath.replace(`{${"template_id"}}`, encodeURIComponent(String(requestParameters['templateId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminRejectionTemplateRequestToJSON(requestParameters['adminRejectionTemplateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminRejectionTemplateFromJSON(jsonValue));
+    }
+
+    /**
+     * Omitted fields keep their value.
+     * Edit, reorder or retire a rejection template
+     */
+    async adminRejectionTemplateUpdate(requestParameters: AdminRejectionTemplateUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminRejectionTemplate> {
+        const response = await this.adminRejectionTemplateUpdateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Ordered by `sortOrder`. `active=true` keeps only the active ones.
+     * List rejection templates
+     */
+    async adminRejectionTemplatesListRaw(requestParameters: AdminRejectionTemplatesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminRejectionTemplateList>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['active'] != null) {
+            queryParameters['active'] = requestParameters['active'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/rejection-templates/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminRejectionTemplateListFromJSON(jsonValue));
+    }
+
+    /**
+     * Ordered by `sortOrder`. `active=true` keeps only the active ones.
+     * List rejection templates
+     */
+    async adminRejectionTemplatesList(requestParameters: AdminRejectionTemplatesListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminRejectionTemplateList> {
+        const response = await this.adminRejectionTemplatesListRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -267,6 +491,14 @@ export class AdminReviewsApi extends runtime.BaseAPI {
             queryParameters['category'] = requestParameters['category'];
         }
 
+        if (requestParameters['evidence'] != null) {
+            queryParameters['evidence'] = requestParameters['evidence'];
+        }
+
+        if (requestParameters['from'] != null) {
+            queryParameters['from'] = requestParameters['from'];
+        }
+
         if (requestParameters['kind'] != null) {
             queryParameters['kind'] = requestParameters['kind'];
         }
@@ -277,6 +509,10 @@ export class AdminReviewsApi extends runtime.BaseAPI {
 
         if (requestParameters['status'] != null) {
             queryParameters['status'] = requestParameters['status'];
+        }
+
+        if (requestParameters['to'] != null) {
+            queryParameters['to'] = requestParameters['to'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

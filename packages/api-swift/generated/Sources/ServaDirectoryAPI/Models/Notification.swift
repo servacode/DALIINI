@@ -20,7 +20,7 @@ public struct Notification: Codable, JSONEncodable, Hashable {
     public var bodyAr: String
     /** Where opening this message takes the reader. The set is closed on purpose: a notification can never carry an arbitrary link.  * `NONE` - NONE * `FACILITY` - FACILITY * `OWNER_FACILITIES` - OWNER_FACILITIES */
     public var destination: DestinationEnum
-    /** Set only when the destination is FACILITY. */
+    /** The facility the message is about: set for a FACILITY destination, and for an OWNER_FACILITIES notice about one of the owner's facilities (an hours reminder, a duty change); null otherwise. */
     public var facilityId: UUID?
     public var isRead: Bool
     public var createdAt: Date

@@ -1603,3 +1603,239 @@ strict are clean on the new modules.
 
 Known and not mine: `core/tests/test_openapi_contract.py` has two failures on this branch before
 this batch — the committed schema and its hash have drifted from the source.
+
+## 2026-09-28 — Backend hardening: reliability, maintenance mode, abuse limits, trust signals
+
+Backend, in six commits on top of 394f99a:
+
+- Reliability. `CELERY_BEAT_SCHEDULE` runs the analytics retention purge and new purges of
+  sessions ended more than 30 days ago and OTP challenges expired more than a day ago. Push
+  delivery is `acks_late` and idempotent per device (`NotificationPushDelivery`); an invalid
+  token deactivates the device and a misconfigured provider is logged, neither retried; only
+  `TransientPushError` retries, with capped exponential backoff and jitter. Every JSON log line
+  carries the request id; Sentry starts only when `SENTRY_DSN` is set, with
+  `send_default_pii=False`.
+- Maintenance mode. Typed settings `maintenance.enabled`, `maintenance.messageAr` and
+  `maintenance.retryAfterSeconds` are seeded. While enabled, gated `/api/v1/` paths answer 503
+  `MAINTENANCE` with `details.retryAfterSeconds` and `Retry-After`; admin, auth
+  login/refresh/logout, health, the schema and the new public `GET /api/v1/platform/status/`
+  stay open. The state is cached for 15 s, invalidated on write, and fails open on a database
+  error.
+- Abuse limits. Scoped per-account or per-IP throttles on ratings, favorites and push-token
+  writes, analytics ingest, public search, list and map, owner submit, evidence upload and
+  problem reports, each overridable by a `THROTTLE_*` variable. Rating upserts are race-safe,
+  and a rating DELETE is now 404 for a facility the public cannot see, as the write already was.
+- Fixes found by the new duty, lifecycle, audit and session tests: a suspended or closed
+  facility could be resubmitted and approved back to ACTIVE; rejecting a reverification demoted
+  a once-live facility to DRAFT; `record_audit` missed camelCase secrets such as `storageKey`; a
+  duty shift on a category without a capability row was a 500.
+- Additive contract. Admin lists and details show category, province and owner names; the review
+  detail adds the previous approved snapshot, location, likely duplicates (same phone, or the
+  same normalised Arabic name within 200 m) and image URLs. Audit gains `from`/`to`, users a
+  `role` filter; the dashboard gains duty-now, new-users, open-reports and configuration
+  warnings; analytics gains approval median hours and 30-day search, zero-result, view and
+  directions counts. Category groups gain `iconKey`; provinces gain a city list with an active
+  toggle. Public facilities gain `lastVerifiedAt`, `updatedAt` and an optional `whatsapp`. The new
+  "report a problem" flow is `POST /facilities/<id>/reports/` plus admin list, resolve and
+  dismiss under `admin.reports.read|manage`. Owners get `GET /owner/facilities/<id>/insights/`.
+- Pillow is now >=12.3.0, which clears the 8 PYSEC advisories pip-audit reported against 11.3.0.
+
+Verified on this machine: 414 passed, and the 10 S3-dependent seed tests still error without
+object storage, as before. ruff has no new findings; mypy strict is at 829, down from 900, with no
+new errors in any touched file. `makemigrations --check` finds nothing to add, and
+`check-openapi-drift.sh` passes with the three clients regenerated. Not verified: a live Celery
+worker against Redis, and a real Sentry DSN. Production should point `CACHES` at Redis, because
+throttle counts and the maintenance cache are per process on the default local memory cache.
+
+## 2026-09-28 — Admin, public web and delivery hardening (same batch)
+
+- Admin console rebuilt on one design system (`app/styles/{tokens,base,layout,components}.css`,
+  `--ad-*` tokens over the brand tokens), with a grouped sidebar, a top bar with breadcrumbs, an
+  off-canvas drawer below 1024 px and shared `Panel`, `StatCard`, `KeyValueList` components.
+  Screens now show names instead of ids and pick provinces and categories from lists. New:
+  `/reports` queue, review context (owner, location, photos, duplicates, diff against the last
+  approved version), dashboard warnings and counts, 30-day analytics, audit date range, user role
+  filter, cities per province, category-group editing, readable maintenance settings. The review
+  queue and the dashboard refresh in place every 60 s while the tab is visible. `img-src` admits
+  only the public-media origin (`ADMIN_PUBLIC_MEDIA_ORIGIN`). 74 unit tests pass; lint, typecheck
+  and build are clean. The e2e nav count is 14 now that `/reports` exists (not run here: needs the
+  backend).
+- Public web (`apps/web`): landing, province, category-in-province, facility (`/f/[id]`) and duty
+  pages with ISR, sitemap, robots, per-page metadata, OpenGraph image and JSON-LD. Pages degrade to
+  a noindex "unavailable" state without the API. The CSP allows inline scripts because cached
+  pages cannot carry a per-request nonce (verified in Chromium: no violations after the change).
+- Delivery: CI gains a frontend job, Docker builds, concurrency and timeouts; CodeQL, pip-audit,
+  pnpm audit and Trivy workflows; Dependabot. Images run non-root with health checks and frozen
+  lockfiles (fixing an admin image that could not start and a backend image that installed dev
+  tools at boot). Render gains Celery beat, web/admin health checks, a shared env group and a
+  nightly `pg_dump` backup job (`scripts/db-backup.sh`, `scripts/db-restore.sh`,
+  `infrastructure/BACKUP-RESTORE.md`). Production `CACHES` now use Redis. vitest is 3.2.6
+  (critical GHSA-5xrq-8626-4rwp).
+
+Not verified: every GitHub Actions job on this branch fails within seconds before any step runs,
+on `main` too, which points at the Actions account (billing or runner access), not the code. The
+new workflows are therefore checked only as YAML and by running their commands locally.
+
+## 2026-09-28 — Backend phase 2: smart admin console, content, duty operations
+
+- Operator queue and alerts. `GET /admin/tasks/` (oldest submitted INITIAL/REVERIFICATION
+  applications, open reports grouped by facility with repeat-reported first, facilities waiting
+  in REVERIFICATION_REQUIRED, each with age and `overdue` against the new setting
+  `review.slaHours`, default 48). `GET /admin/alerts/`: DUTY_GAP, STALE_FACILITY,
+  REPORTED_FACILITY, ZERO_RESULT_SEARCH, REVIEW_OVERDUE, MAINTENANCE_ON. Search text is never
+  recorded (the registry keeps `queryLength` only), so zero-result searches are grouped by
+  province and category; no new personal data is stored.
+- One duty-gap rule (`pharmacy_duty.coverage`): a Damascus day is covered when a shift of an
+  ACTIVE duty pharmacy overlaps it; duty is per facility, so gaps are per province, or per city
+  on request. Alerts, the admin roster (`GET/POST /admin/duty/`, `PATCH/DELETE
+  /admin/duty/<id>/`), province readiness and the daily gap nudge all use it. Every duty write
+  goes through `upsert_duty_shifts(rows, source)` (OWNER, ADMIN, IMPORT; new `DutyShift.source`),
+  which also refuses a shift inside a temporary closure (409 DUTY_DURING_CLOSURE, owners too).
+  Admin changes are audited and notify the pharmacy's owners.
+- Facility quality: `qualityScore` and `qualityIssues` on admin facility rows, computed as SQL
+  annotations (constant query count), with `ordering` and `issue` filters. "Fresh" is the latest
+  of `updated_at`, the new `hours_confirmed_at` and `last_verified_at`.
+- Admin: global search, facility timeline, bulk report decisions, rejection templates (6
+  seeded), broadcasts (new `admin.notifications.send`, 5 per operator per hour, bulk inbox rows
+  and a push fan-out task), province readiness (`readiness.minActiveFacilities`, default 5),
+  analytics `from`/`to` with a `previous` period, reviewer statistics, streamed CSV exports
+  (UTF-8 BOM, 50 000 rows, formula cells neutralised), ad image upload into public media.
+- Content: pages are the existing versioned `LegalDocument` rows, now with a `kind` and free
+  slugs; editing a published page writes a new version. New FAQ entries, emergency numbers and
+  a contact inbox under `admin.content.read|manage`; public `/content/pages/<slug>/`,
+  `/content/faq/`, `/emergency-numbers/`, `/contact/` (3/hour, X-Forwarded-For honoured only
+  when `DRF_NUM_PROXIES` is set). New permissions are granted with the nearest existing ones
+  (accounts 0008). `OPERATOR_VERIFICATION_REQUIRED`: the seeded national numbers 110
+  (ambulance), 113 (fire) and 112 (police) are the commonly cited ones and were not checked
+  against an official source; each row carries an operator note saying so.
+- Owners: `POST /owner/facilities/<id>/confirm-hours/`; replacing the hours also confirms them.
+  Public facilities gain `infoConfirmedAt` (later of approval and confirmation);
+  `lastVerifiedAt` is unchanged. Beat: Monday hours reminders (once per ISO week) and daily gap
+  nudges (once per province and gap day, at most one per owner per day).
+- Website: `GET /public/duty/?provinceId&date&days` (compact rows, cacheable). Optional
+  `WEB_SERVER_API_KEY`: anonymous public reads carrying it in `X-Daliini-Web-Key` are counted
+  under `THROTTLE_WEB_SERVER` (default 3000/minute) instead of per address; it grants nothing
+  else, and writes stay per address. The env contract and `render.yaml` still need the new
+  variables (`WEB_SERVER_API_KEY`, `THROTTLE_WEB_SERVER`, `THROTTLE_CONTACT`,
+  `DRF_NUM_PROXIES`).
+
+Verified here: 453 passed, and the same 10 S3-dependent seed tests error without object
+storage. ruff has no new findings (106 before and after); mypy strict has no new errors in any
+touched file. `makemigrations --check` is clean and `check-openapi-drift.sh` passes with the
+three clients regenerated. Not verified: a Celery worker and beat against Redis, real push
+delivery, and a TypeScript compile of the regenerated client (no node_modules here).
+
+## 2026-09-29 — One design system everywhere, a smart console, the site's second half, Android phase 3, push delivery
+
+- **One design system for app, site and console** (`packages/design-tokens`): a dark theme
+  (`colorsDark`, `semanticDark`; CSS follows the device and can be pinned with `data-theme`,
+  Android gets `values-night`), softer feedback surfaces, Tajawal as the one face (web woff2 and
+  Android TTFs, SIL OFL), `vocabulary.json` (one Arabic word and tone per state, generated for
+  TypeScript, Android strings and Swift; now also contact, emergency, page, duty-source and
+  evidence kinds), 59 icons and 7 illustrations, and the approved brand symbol. The console,
+  the site and the Android app all read it; the console's «نظام التصميم» page shows it live.
+  Guide: `docs/design/DESIGN-SYSTEM.md`.
+- **Admin console**:
+  - Eleven sections with tabs instead of fifteen entries.
+  - Home: a task centre (oldest first, past-SLA marked) and alerts the platform raises by
+    itself, with a bell and a maintenance pill in the top bar.
+  - A keyboard-driven global search; facility quality score, data-problem filter and timeline;
+    filters kept in the address.
+  - New screens: a two-week duty roster per province with gap days and add/edit/cancel on the
+    Damascus clock; content (pages with preview and versions, FAQ, emergency numbers with a
+    verification queue, the contact inbox); broadcasts with a recipient count and preview;
+    rejection templates, offered in the reject dialog; province launch readiness; analytics
+    with period comparison, team performance and CSV exports; audit export; ad images
+    uploaded from the browser with a 16:9 slide preview.
+  - The review queue filters by submission day and by missing documents (both asked by
+    09-ADMIN), and shows each application's document state.
+  - Editing an ad opens with its target and current image; before, a province- or
+    category-targeted ad was saved with an empty target.
+  - A dialog no longer loses the caret after the first keystroke.
+- **Public web**: search, the owners' guide, «كيف نتحقق», duty now / today / tomorrow / the
+  week from `public/duty/`, published pages and FAQ from the console, emergency numbers, a
+  contact form, sharing, the trust line, `/.well-known/assetlinks.json` and «افتح في التطبيق»
+  on Android only (an https intent for `/f/{id}`). Server-side reads carry
+  `WEB_SERVER_API_KEY` so the API counts the site under its own limit.
+- **Android**:
+  - A maintenance screen, ads from `public/ads`, an R8 release build and an accessibility pass.
+  - The trust line, WhatsApp, problem reports and owner insights.
+  - The shared design system, with a theme choice in Settings.
+  - Phase 3:
+    - The «المناوب الآن» home-screen widget.
+    - «أرقام الطوارئ» (cached, with a marked fallback).
+    - App Links for `/f/{id}`, `/duty`, `/duty/today` and the 14 province paths, claiming the
+      site's one host so Android 7–11 do not drop every link over a redirecting `www.`.
+    - Sentry only with a DSN and with no personal data.
+    - Notification choices kept on the device, «شوهدت مؤخراً» (Room v2) and «توفير البيانات».
+    - The weekly hours confirmation, duty presets and named conflicts for owners, and the
+      public roster.
+  - `validatePlayRelease` now works with the configuration cache (a complete configuration
+    used to stop the bundle after the check) and requires the Firebase client settings.
+- **Backend**:
+  - Push reaches phones: an FCM HTTP v1 transport over the standard library, signed with a
+    service account (`FCM_SERVICE_ACCOUNT_JSON`).
+    - Messages are data-only and high priority; the words never leave the server.
+    - Refusals map to deactivate, retry, or configuration error.
+    - A push carries `facilityId`, `provinceId` and `gapDate`, each checked for shape, so a
+      tap lands on the right screen.
+    - Production refuses to start with push half-configured.
+  - The inbox names the facility of an owner's notice. The dashboard warns when push has no
+    Firebase key and when sign-in codes are in development mode.
+- **Quality gates**: the backend now passes its own CI gates: `ruff check .` 0
+  (from 106), `mypy .` strict 0 in 308 files (from 824), and the ten seed tests that needed
+  object storage run against an in-memory store, so `pytest` passes in full with nothing on
+  `localhost:9000` (DEBT-001 and DEBT-002 closed in `DECISIONS.md`).
+
+Verified here:
+- Admin: lint and typecheck clean, 133 unit tests, production build.
+- Web: lint and typecheck clean; the production build passes without any settings, as CI
+  builds it.
+- Android phase 3: 409 unit tests, R8 release builds with and without a DSN, and lint.
+- Backend: 493 tests, ruff 0, mypy strict 0, `manage.py check` and
+  `makemigrations --check` clean; the OpenAPI drift check and the three regenerated
+  clients.
+- Screenshots in Chromium of the new console screens, light and dark, against mocked data.
+
+Not verified:
+- Every GitHub Actions job still fails before its first step (EXT-006).
+- Nothing was run on a device: the widget, App Link verification, push delivery and taps.
+- A real FCM send, which needs the Firebase project.
+- The admin e2e suite, which needs the full stack.
+
+## 2026-09-29 — Specialties and services, end to end; the console's e2e suite on a real stack
+
+- **Specialties and services work end to end.** Before this, they were half built.
+  - Their ids are integers in the database, but the contract called them UUIDs. So the app could not load a facility that had any specialty, and an owner's save could not set them.
+  - Nothing listed the choices anywhere: not in public, not for owners, and not in the console.
+- **Fixed now:**
+  - Integer ids everywhere: `NamedIntRef` in details, integer lists for the owner, and integer filters. `specialtyId` and `serviceTagId` (with the older `serviceId` kept as an alias) are validated, and gated by the category's capability.
+  - `publicCategoryTagsRetrieve` returns the active choices of a public category.
+  - `ownerConfigRetrieve` offers the same choices to owners.
+  - The console has an admin API and a «التخصصات والخدمات» tab: add, edit, order and pause. Delete works only while an item is unused. Every write is audited.
+  - The site shows specialty and service chips on a category page, and the facility page names them.
+  - Android:
+    - Owners choose their facility's specialties and services on the management screen. The
+      new «التخصصات والخدمات» card takes its choices from the owner config and sends only the
+      list that changed. When a choice has been withdrawn, it says so and offers to refresh.
+    - Home narrows a category's list by one specialty and one service. The chip rows appear
+      only where the capability is on, and the choices are cached per category.
+    - Search has no category picker yet, and the map keeps its own filters, so both are
+      unchanged.
+- **Role ids** are integers in the admin contract as well, which is what the backend already returned.
+- **One vocabulary:** the last state words written inside console screens (contact message, page, emergency number, documents) moved into the shared vocabulary.
+- **Console e2e suite, run here against a real stack** (PostGIS, Redis, Django, the production Admin build):
+  - Result: 31 passed, 1 skipped. The skipped test is the Android handoff, which runs inside the Android flow.
+  - Two ad tests had never been able to pass: their test image was under the 100 px minimum side. It is 320×180 now.
+- **A live check on the same stack:** an operator added a specialty and a service in the console, and the public endpoint offered both.
+
+Verified here:
+- Backend: ruff 0, mypy strict 0 in 314 files, 578 tests, `manage.py check`, `makemigrations --check`, the OpenAPI drift check, and the regenerated clients matching what is committed.
+- Admin: lint and typecheck clean, 143 unit tests, and the production build.
+- Web: lint and typecheck clean, and the build without settings.
+- Android: `assembleLocalDebug`, every module's unit tests and the app's,
+  `lintDebug` with `:app:lintLocalDebug`, the JVM harness, and all six source qualifiers of the
+  Android workflow's Gate 4. That gate had drifted red over the recent batches: Arabic words
+  spelled in Kotlin (the built-in emergency lines, now resources), 23 lines over 120 characters,
+  and a push-policy check that predated the routing identifiers (it now reads the allowlist and
+  requires identifiers only).

@@ -33,7 +33,9 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -43,6 +45,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import coil3.compose.AsyncImage
 import com.servacode.directory.core.model.AvailabilityState
 import com.servacode.directory.core.model.FacilitySummary
+import com.servacode.directory.core.model.AdAction
 import com.servacode.directory.core.model.HomeAd
 import kotlinx.coroutines.delay
 
@@ -92,27 +95,7 @@ fun AvailabilityPill(state: AvailabilityState, modifier: Modifier = Modifier) {
 
 @Composable
 private fun AvailabilityPill(state: AvailabilityState, text: String, modifier: Modifier) {
-    val colour = when (state) {
-        AvailabilityState.OPEN -> BrandColors.success
-        AvailabilityState.DUTY -> BrandColors.info
-        AvailabilityState.TEMP_CLOSED -> BrandColors.warning
-        AvailabilityState.CLOSED -> BrandColors.contentMuted
-    }
-    Row(
-        modifier = modifier
-            .background(colour.copy(alpha = 0.10f), RoundedCornerShape(Radius.pill))
-            .padding(horizontal = Space.md, vertical = Space.xs),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Space.xs),
-    ) {
-        Box(Modifier.size(Space.sm).clip(RoundedCornerShape(Radius.pill)).background(colour))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelMedium,
-            color = colour,
-            maxLines = 1,
-        )
-    }
+    StatusChip(text = text, tone = StatusTones.availability(state), modifier = modifier)
 }
 
 /** How far away the backend said a facility is. Shown only when it said. */
@@ -196,6 +179,10 @@ fun FacilityRow(
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
+                // Without a ripple a screen reader is the only way to learn this row acts; it
+                // is announced as a button that opens the facility.
+                onClickLabel = stringResource(R.string.ds_open_details),
+                role = Role.Button,
                 onClick = onClick,
             )
             .padding(vertical = Space.md, horizontal = Space.base),
@@ -315,35 +302,19 @@ fun StatusBadges(facility: FacilitySummary, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
-        StatusBadge(
-            text = if (facility.isOpenNow) StatusText.OPEN_NOW else StatusText.CLOSED_NOW,
-            colour = if (facility.isOpenNow) BrandColors.success else BrandColors.danger,
-        )
+        val state = if (facility.isOpenNow) AvailabilityState.OPEN else AvailabilityState.CLOSED
+        StatusChip(text = DirectoryVocabulary.availability(state), tone = StatusTones.availability(state))
         if (facility.isOnDutyToday) {
-            StatusBadge(text = StatusText.ON_DUTY_TODAY, colour = BrandColors.info)
+            StatusChip(text = StatusText.ON_DUTY_TODAY, tone = StatusTones.availability(AvailabilityState.DUTY))
         }
     }
 }
 
-@Composable
-private fun StatusBadge(text: String, colour: Color) {
-    Row(
-        modifier = Modifier
-            .background(colour.copy(alpha = 0.10f), RoundedCornerShape(Radius.pill))
-            .padding(horizontal = Space.md, vertical = Space.xs),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Space.xs),
-    ) {
-        Box(Modifier.size(Space.sm).clip(CircleShape).background(colour))
-        Text(text = text, style = MaterialTheme.typography.labelMedium, color = colour)
-    }
-}
-
-/** Whether the doors are open, in words, read from the design system's resources. */
+/**
+ * On today's roster: a different fact from "on duty now", so it keeps its own words. Open and
+ * closed are the shared vocabulary's.
+ */
 object StatusText {
-    val OPEN_NOW: String @Composable @ReadOnlyComposable get() = stringResource(R.string.ds_open_now)
-    val CLOSED_NOW: String
-        @Composable @ReadOnlyComposable get() = stringResource(R.string.ds_closed_now)
     val ON_DUTY_TODAY: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.ds_on_duty_today)
 }
@@ -356,7 +327,8 @@ object StatusText {
  */
 @Composable
 fun FacilityThumbnail(imageUrl: String? = null, modifier: Modifier = Modifier) {
-    if (imageUrl != null) {
+    // With data saver on, a list costs no pictures: the placeholder stands in for every one.
+    if (imageUrl != null && !LocalDataSaver.current) {
         DirectoryImage(url = imageUrl, modifier = modifier)
         return
     }
@@ -484,7 +456,12 @@ fun PhotoPager(
     }
     val pages = rememberPagerState(pageCount = { urls.size })
     Box(modifier = modifier.fillMaxWidth()) {
-        HorizontalPager(state = pages, modifier = Modifier.fillMaxSize()) { page ->
+        // The next photo is fetched ahead of the swipe, unless the reader is saving data.
+        HorizontalPager(
+            state = pages,
+            modifier = Modifier.fillMaxSize(),
+            beyondViewportPageCount = if (LocalDataSaver.current) 0 else 1,
+        ) { page ->
             val photo = Modifier
                 .fillMaxSize()
                 .let { if (onPhoto == null) it else it.clickable { onPhoto(page) } }
@@ -659,32 +636,6 @@ fun averageText(average: Double): String {
 
 const val MAX_STARS = 5
 
-/** How a state reads: settled, waiting, wrong, or merely a fact. */
-enum class StatusTone { POSITIVE, PENDING, DANGER, NEUTRAL }
-
-/**
- * A state in one word, in the colour that agrees with it: what an owner's facility is going
- * through, or where a submission stands. The word comes from the backend's own labels.
- */
-@Composable
-fun StatusPill(text: String, tone: StatusTone, modifier: Modifier = Modifier) {
-    val colour = when (tone) {
-        StatusTone.POSITIVE -> BrandColors.success
-        StatusTone.PENDING -> BrandColors.warning
-        StatusTone.DANGER -> BrandColors.danger
-        StatusTone.NEUTRAL -> BrandColors.contentMuted
-    }
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelMedium,
-        color = colour,
-        maxLines = 1,
-        modifier = modifier
-            .background(colour.copy(alpha = 0.12f), RoundedCornerShape(Radius.pill))
-            .padding(horizontal = Space.md, vertical = Space.xs),
-    )
-}
-
 /**
  * The advertisements a province wants seen first.
  *
@@ -725,23 +676,38 @@ fun AdSlider(
             modifier = Modifier.fillMaxWidth(),
         ) { page ->
             val ad = ads[page]
+            // Read by its title; a slide with no words is still named, never skipped silently.
+            val label = ad.titleAr?.takeIf { it.isNotBlank() }
+                ?: ad.subtitleAr?.takeIf { it.isNotBlank() }
+                ?: stringResource(R.string.ds_ad_label)
+            // Only a slide that leads somewhere is announced and pressed as a button.
+            val tap = if (ad.action != AdAction.None) {
+                Modifier.clickable(
+                    onClickLabel = stringResource(R.string.ds_ad_open),
+                    role = Role.Button,
+                ) { onAd(ad) }
+            } else {
+                Modifier
+            }
             DirectoryImage(
                 url = ad.imageUrl,
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(AD_RATIO)
                     .clip(RoundedCornerShape(Radius.large))
-                    .clickable { onAd(ad) },
-                contentDescription = ad.titleAr,
+                    .then(tap),
+                contentDescription = label,
                 shape = RoundedCornerShape(Radius.large),
             )
         }
         if (ads.size > 1) {
+            val position = stringResource(R.string.ds_ad_position, pages.currentPage + 1, ads.size)
             Row(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(top = Space.sm)
-                    .clearAndSetSemantics { },
+                    // The dots are one statement: which slide of how many.
+                    .clearAndSetSemantics { contentDescription = position },
                 horizontalArrangement = Arrangement.spacedBy(Space.xs),
             ) {
                 ads.indices.forEach { index ->

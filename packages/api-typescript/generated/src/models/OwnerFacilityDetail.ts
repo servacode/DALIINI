@@ -149,6 +149,12 @@ export interface OwnerFacilityDetail {
      */
     phone: string | null;
     /**
+     * E.164 Syrian mobile.
+     * @type {string}
+     * @memberof OwnerFacilityDetail
+     */
+    whatsapp: string | null;
+    /**
      * 
      * @type {string}
      * @memberof OwnerFacilityDetail
@@ -179,17 +185,17 @@ export interface OwnerFacilityDetail {
      */
     location: Coordinates | null;
     /**
-     * 
-     * @type {Array<string>}
+     * The facility's active specialties, in order; retired ones are left out.
+     * @type {Array<number>}
      * @memberof OwnerFacilityDetail
      */
-    specialtyIds: Array<string>;
+    specialtyIds: Array<number>;
     /**
-     * 
-     * @type {Array<string>}
+     * The facility's active services, in order; retired ones are left out.
+     * @type {Array<number>}
      * @memberof OwnerFacilityDetail
      */
-    serviceTagIds: Array<string>;
+    serviceTagIds: Array<number>;
     /**
      * 
      * @type {Array<OwnerEvidenceRef>}
@@ -202,6 +208,12 @@ export interface OwnerFacilityDetail {
      * @memberof OwnerFacilityDetail
      */
     hours: Array<OwnerHoursEntry>;
+    /**
+     * When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old.
+     * @type {Date}
+     * @memberof OwnerFacilityDetail
+     */
+    hoursConfirmedAt: Date | null;
     /**
      * 
      * @type {OwnerApplication}
@@ -228,6 +240,7 @@ export function instanceOfOwnerFacilityDetail(value: object): value is OwnerFaci
     if (!('descriptionAr' in value) || value['descriptionAr'] === undefined) return false;
     if (!('descriptionEn' in value) || value['descriptionEn'] === undefined) return false;
     if (!('phone' in value) || value['phone'] === undefined) return false;
+    if (!('whatsapp' in value) || value['whatsapp'] === undefined) return false;
     if (!('addressAr' in value) || value['addressAr'] === undefined) return false;
     if (!('addressEn' in value) || value['addressEn'] === undefined) return false;
     if (!('cityId' in value) || value['cityId'] === undefined) return false;
@@ -237,6 +250,7 @@ export function instanceOfOwnerFacilityDetail(value: object): value is OwnerFaci
     if (!('serviceTagIds' in value) || value['serviceTagIds'] === undefined) return false;
     if (!('evidence' in value) || value['evidence'] === undefined) return false;
     if (!('hours' in value) || value['hours'] === undefined) return false;
+    if (!('hoursConfirmedAt' in value) || value['hoursConfirmedAt'] === undefined) return false;
     if (!('application' in value) || value['application'] === undefined) return false;
     return true;
 }
@@ -263,6 +277,7 @@ export function OwnerFacilityDetailFromJSONTyped(json: any, ignoreDiscriminator:
         'descriptionAr': json['descriptionAr'],
         'descriptionEn': json['descriptionEn'],
         'phone': json['phone'],
+        'whatsapp': json['whatsapp'],
         'addressAr': json['addressAr'],
         'addressEn': json['addressEn'],
         'cityId': json['cityId'],
@@ -272,6 +287,7 @@ export function OwnerFacilityDetailFromJSONTyped(json: any, ignoreDiscriminator:
         'serviceTagIds': json['serviceTagIds'],
         'evidence': ((json['evidence'] as Array<any>).map(OwnerEvidenceRefFromJSON)),
         'hours': ((json['hours'] as Array<any>).map(OwnerHoursEntryFromJSON)),
+        'hoursConfirmedAt': (json['hoursConfirmedAt'] == null ? null : new Date(json['hoursConfirmedAt'])),
         'application': OwnerApplicationFromJSON(json['application']),
     };
 }
@@ -299,6 +315,7 @@ export function OwnerFacilityDetailToJSONTyped(value?: OwnerFacilityDetail | nul
         'descriptionAr': value['descriptionAr'],
         'descriptionEn': value['descriptionEn'],
         'phone': value['phone'],
+        'whatsapp': value['whatsapp'],
         'addressAr': value['addressAr'],
         'addressEn': value['addressEn'],
         'cityId': value['cityId'],
@@ -308,6 +325,7 @@ export function OwnerFacilityDetailToJSONTyped(value?: OwnerFacilityDetail | nul
         'serviceTagIds': value['serviceTagIds'],
         'evidence': ((value['evidence'] as Array<any>).map(OwnerEvidenceRefToJSON)),
         'hours': ((value['hours'] as Array<any>).map(OwnerHoursEntryToJSON)),
+        'hoursConfirmedAt': ((value['hoursConfirmedAt'] as any).toISOString()),
         'application': OwnerApplicationToJSON(value['application']),
     };
 }

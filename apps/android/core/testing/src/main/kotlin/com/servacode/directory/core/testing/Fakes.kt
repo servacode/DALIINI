@@ -1,9 +1,14 @@
 package com.servacode.directory.core.testing
 
+import com.servacode.directory.core.model.EmergencyNumber
+import com.servacode.directory.core.model.DutyDay
+import com.servacode.directory.core.model.FacilityReportReason
 import com.servacode.directory.core.database.PublicCache
 import com.servacode.directory.core.datastore.DirectoryPreferences
 import com.servacode.directory.core.datastore.DirectoryPreferencesStore
 import com.servacode.directory.core.datastore.LocationPreference
+import com.servacode.directory.core.datastore.NotificationPreferences
+import com.servacode.directory.core.datastore.ThemePreference
 import com.servacode.directory.core.location.LocationFix
 import com.servacode.directory.core.location.LocationProvider
 import com.servacode.directory.core.location.LocationResult
@@ -11,8 +16,10 @@ import com.servacode.directory.core.model.AccountProfile
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.AppException
 import com.servacode.directory.core.model.Category
+import com.servacode.directory.core.model.CategoryTags
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.FacilitySummary
+import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.HomeSnapshot
 import com.servacode.directory.core.model.Page
 import com.servacode.directory.core.model.Province
@@ -72,6 +79,14 @@ class FakePublicCache : PublicCache {
         writes += "facility:${value.summary.id}"
         details[value.summary.id] = value
     }
+
+    val tags = mutableMapOf<String, CategoryTags>()
+
+    override suspend fun categoryTags(categoryId: String): CategoryTags? = tags[categoryId]
+    override suspend fun putCategoryTags(value: CategoryTags, categoryId: String, provinceId: String) {
+        writes += "tags:$categoryId"
+        tags[categoryId] = value
+    }
 }
 
 class FakePreferences(
@@ -109,6 +124,22 @@ class FakePreferences(
     override suspend fun setOfflineMapDeclined(value: Boolean) {
         state.value = state.value.copy(offlineMapDeclined = value)
     }
+
+    override suspend fun setThemePreference(value: ThemePreference) {
+        state.value = state.value.copy(themePreference = value)
+    }
+
+    override suspend fun setNotificationPreferences(value: NotificationPreferences) {
+        state.value = state.value.copy(notifications = value)
+    }
+
+    override suspend fun setDataSaver(enabled: Boolean) {
+        state.value = state.value.copy(dataSaver = enabled)
+    }
+
+    override suspend fun setDataSaverSuggested() {
+        state.value = state.value.copy(dataSaverSuggested = true)
+    }
 }
 
 /** Location as the user left it: [fix] when they allowed it, nothing otherwise. */
@@ -143,6 +174,10 @@ val offline = AppException(AppError(AppError.Kind.OFFLINE))
 class ScriptedPublicApi : PublicApiBoundary {
     var provincesAnswer: () -> List<Province> = { throw offline }
     var homeAnswer: (Province) -> HomeSnapshot = { throw offline }
+    var adsAnswer: (String) -> List<HomeAd> = { throw offline }
+    var emergencyAnswer: (String?) -> List<EmergencyNumber> = { throw offline }
+    var rosterAnswer: (String, String?, Int) -> List<DutyDay> = { _, _, _ -> throw offline }
+    var reportAnswer: (String, FacilityReportReason, String?) -> Unit = { _, _, _ -> throw offline }
     var directoryAnswer: (DirectoryQuery, String?) -> Page<FacilitySummary> = { _, _ -> throw offline }
     var searchAnswer: (String, String?) -> Page<FacilitySummary> = { _, _ -> throw offline }
     var facilityAnswer: (String) -> FacilityDetail = { throw offline }
@@ -152,9 +187,37 @@ class ScriptedPublicApi : PublicApiBoundary {
 
     override suspend fun provinces(): List<Province> = provincesAnswer().also { calls += "provinces" }
     override suspend fun categories(provinceId: String): List<Category> = throw offline
+
+    var tagsAnswer: (String) -> CategoryTags = { throw offline }
+
+    override suspend fun categoryTags(categoryId: String): CategoryTags {
+        calls += "tags:$categoryId"
+        return tagsAnswer(categoryId)
+    }
+
     override suspend fun home(province: Province, latitude: Double?, longitude: Double?): HomeSnapshot {
         calls += "home:${province.id}:$latitude:$longitude"
         return homeAnswer(province)
+    }
+
+    override suspend fun reportFacility(facilityId: String, reason: FacilityReportReason, note: String?) {
+        calls += "report:$facilityId:$reason:${note.orEmpty()}"
+        reportAnswer(facilityId, reason, note)
+    }
+
+    override suspend fun emergencyNumbers(provinceId: String?): List<EmergencyNumber> {
+        calls += "emergency:$provinceId"
+        return emergencyAnswer(provinceId)
+    }
+
+    override suspend fun dutyRoster(provinceId: String, date: String?, days: Int): List<DutyDay> {
+        calls += "roster:$provinceId:$date:$days"
+        return rosterAnswer(provinceId, date, days)
+    }
+
+    override suspend fun ads(provinceId: String): List<HomeAd> {
+        calls += "ads:$provinceId"
+        return adsAnswer(provinceId)
     }
 
     override suspend fun search(

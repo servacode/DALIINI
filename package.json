@@ -6,6 +6,12 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "governance:check": "node scripts/check-governance.mjs"
+    "governance:check": "node scripts/check-governance.mjs",
+    "lint": "pnpm --filter ./apps/admin --filter ./apps/web lint",
+    "typecheck": "pnpm --filter ./apps/admin --filter ./apps/web typecheck",
+    "test": "pnpm --filter ./apps/admin --filter ./apps/web run --if-present test",
+    "build": "pnpm --filter ./apps/admin --filter ./apps/web build",
+    "db:backup": "bash scripts/db-backup.sh",
+    "db:restore": "bash scripts/db-restore.sh"
   }
 }

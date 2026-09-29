@@ -9,10 +9,11 @@ to publish yet.
 """
 
 import pytest
-from content_services.models import LegalDocument
 from django.db import IntegrityError
 from django.utils import timezone
 from rest_framework.test import APIClient
+
+from content_services.models import LegalDocument
 
 LIST = "/api/v1/public/legal/"
 
@@ -29,7 +30,7 @@ def _publish(key: str, *, title: str, body: str, version: int = 1) -> LegalDocum
 
 
 @pytest.mark.django_db
-def test_the_launch_baseline_publishes_the_pages_the_app_shows():
+def test_the_launch_baseline_publishes_the_pages_the_app_shows() -> None:
     keys = {item["key"] for item in APIClient().get(LIST).json()["items"]}
 
     assert {"ABOUT", "PRIVACY", "TERMS", "INSTRUCTIONS", "FAQ"} <= keys
@@ -38,7 +39,7 @@ def test_the_launch_baseline_publishes_the_pages_the_app_shows():
 
 
 @pytest.mark.django_db
-def test_a_draft_is_not_listed_and_not_served():
+def test_a_draft_is_not_listed_and_not_served() -> None:
     LegalDocument.objects.create(
         key=LegalDocument.Key.CONTACT,
         title_ar="تواصل معنا",
@@ -53,7 +54,7 @@ def test_a_draft_is_not_listed_and_not_served():
 
 
 @pytest.mark.django_db
-def test_the_list_carries_titles_and_versions_but_not_the_words():
+def test_the_list_carries_titles_and_versions_but_not_the_words() -> None:
     item = next(
         row for row in APIClient().get(LIST).json()["items"] if row["key"] == "ABOUT"
     )
@@ -65,7 +66,7 @@ def test_the_list_carries_titles_and_versions_but_not_the_words():
 
 
 @pytest.mark.django_db
-def test_a_published_page_is_served_in_full():
+def test_a_published_page_is_served_in_full() -> None:
     body = APIClient().get(f"{LIST}PRIVACY/").json()
 
     assert body["key"] == "PRIVACY"
@@ -75,12 +76,12 @@ def test_a_published_page_is_served_in_full():
 
 
 @pytest.mark.django_db
-def test_an_unknown_page_is_not_found():
+def test_an_unknown_page_is_not_found() -> None:
     assert APIClient().get(f"{LIST}NOTHING/").status_code == 404
 
 
 @pytest.mark.django_db
-def test_one_version_of_a_page_is_active_at_a_time():
+def test_one_version_of_a_page_is_active_at_a_time() -> None:
     _publish(LegalDocument.Key.CONTACT, title="تواصل معنا", body="النسخة الأولى", version=1)
 
     with pytest.raises(IntegrityError):
@@ -88,7 +89,7 @@ def test_one_version_of_a_page_is_active_at_a_time():
 
 
 @pytest.mark.django_db
-def test_a_new_version_replaces_the_one_before_it():
+def test_a_new_version_replaces_the_one_before_it() -> None:
     first = _publish(
         LegalDocument.Key.CONTACT, title="تواصل معنا", body="النسخة الأولى", version=1
     )
@@ -103,6 +104,6 @@ def test_a_new_version_replaces_the_one_before_it():
 
 
 @pytest.mark.django_db
-def test_the_pages_are_public():
+def test_the_pages_are_public() -> None:
     assert APIClient().get(LIST).status_code == 200
     assert APIClient().get(f"{LIST}ABOUT/").status_code == 200

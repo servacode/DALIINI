@@ -2,6 +2,8 @@ package com.servacode.directory.feature.home
 
 import com.servacode.directory.core.database.Loaded
 import com.servacode.directory.core.model.AppError
+import com.servacode.directory.core.model.CategoryTags
+import com.servacode.directory.core.model.FacilityTag
 import com.servacode.directory.core.model.HomeSnapshot
 import com.servacode.directory.core.model.Province
 import com.servacode.directory.core.testing.FakeLocation
@@ -88,5 +90,33 @@ class HomeRepositoryTest {
         repository(location = FakeLocation()).load().toList()
 
         assertEquals(listOf("home:raqqa:35.95:39.01", "home:raqqa:null:null"), api.calls)
+    }
+
+    private val kept = CategoryTags(specialties = listOf(FacilityTag("3", "قلبية")))
+    private val fresh = CategoryTags(
+        specialties = listOf(FacilityTag("3", "قلبية"), FacilityTag("4", "أطفال")),
+        services = listOf(FacilityTag("12", "قياس ضغط")),
+    )
+
+    @Test fun `a category's choices come from what was kept first, then the backend, and are kept`() = runTest {
+        cache.tags["clinics"] = kept
+        api.tagsAnswer = { fresh }
+
+        val emitted = repository().tags("raqqa", "clinics").toList()
+
+        assertEquals(listOf(kept, fresh), emitted)
+        assertEquals(fresh, cache.tags["clinics"])
+        assertEquals(listOf("tags:clinics"), api.calls)
+    }
+
+    @Test fun `offline, the kept choices stay`() = runTest {
+        cache.tags["clinics"] = kept
+
+        assertEquals(kept, repository().tags("raqqa", "clinics").toList().last())
+    }
+
+    @Test fun `offline with nothing kept there are no rows, and no error`() = runTest {
+        assertEquals(listOf(CategoryTags()), repository().tags("raqqa", "clinics").toList())
+        assertTrue(cache.tags.isEmpty())
     }
 }

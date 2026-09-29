@@ -73,6 +73,9 @@ services:
       dockerfile: Dockerfile
     command: uv run celery -A directory_backend worker -l INFO
     working_dir: /app
+    # The image HEALTHCHECK probes HTTP /health/live/; the worker serves no HTTP.
+    healthcheck:
+      disable: true
     environment:
       DJANGO_SETTINGS_MODULE: directory_backend.settings.development
       ENVIRONMENT: development

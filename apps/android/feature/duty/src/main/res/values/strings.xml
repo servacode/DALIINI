@@ -13,5 +13,22 @@
     <string name="duty_shifts">المناوبات</string>
     <string name="duty_end_early">إنهاء مبكر</string>
     <string name="duty_cancel">إلغاء</string>
-    <string name="duty_invalid_times">وقت المناوبة غير صالح</string>
+    <string name="duty_invalid_times">وقت نهاية المناوبة يجب أن يكون بعد وقت بدايتها</string>
+    <string name="duty_in_past">هذه المناوبة انتهت بالفعل؛ اختر وقتاً قادماً</string>
+    <!-- %1$s is the clashing shift's period. -->
+    <string name="duty_overlaps">تتداخل مع مناوبة مسجلة: %1$s</string>
+    <!-- %1$s is the closure's period. -->
+    <string name="duty_during_closure">تقع ضمن إغلاق مؤقت للمنشأة: %1$s</string>
+    <string name="duty_tonight">مناوبة الليلة</string>
+    <string name="duty_tomorrow">غداً</string>
+
+    <!-- The public roster: who is on duty, by day. -->
+    <string name="roster_title">المناوبات</string>
+    <string name="roster_today">اليوم</string>
+    <string name="roster_tomorrow">غداً</string>
+    <string name="roster_week">الأسبوع</string>
+    <string name="roster_error">تعذر تحميل المناوبات</string>
+    <string name="roster_empty">لا توجد مناوبات مسجلة لهذه الفترة</string>
+    <string name="roster_province">اختر محافظتك لعرض المناوبات</string>
+    <string name="roster_province_action">اختيار المحافظة</string>
 </resources>

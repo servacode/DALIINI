@@ -37,6 +37,9 @@ import kotlinx.serialization.Contextual
  * @param availability 
  * @param isFavorite Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery.
  * @param imageUrl The facility's first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one.
+ * @param lastVerifiedAt When an operator last approved this facility's details (trust signal).
+ * @param infoConfirmedAt The most recent of `lastVerifiedAt` and the owner's own confirmation that the opening hours are still right. Null when neither ever happened.
+ * @param updatedAt Last change to the facility record.
  * @param favoritedAt When the caller saved this facility.
  */
 @Serializable
@@ -78,6 +81,18 @@ data class FavoriteFacility (
     /* The facility's first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one. */
     @Contextual @SerialName(value = "imageUrl")
     val imageUrl: java.net.URI?,
+
+    /* When an operator last approved this facility's details (trust signal). */
+    @Contextual @SerialName(value = "lastVerifiedAt")
+    val lastVerifiedAt: java.time.OffsetDateTime?,
+
+    /* The most recent of `lastVerifiedAt` and the owner's own confirmation that the opening hours are still right. Null when neither ever happened. */
+    @Contextual @SerialName(value = "infoConfirmedAt")
+    val infoConfirmedAt: java.time.OffsetDateTime?,
+
+    /* Last change to the facility record. */
+    @Contextual @SerialName(value = "updatedAt")
+    val updatedAt: java.time.OffsetDateTime,
 
     /* When the caller saved this facility. */
     @Contextual @SerialName(value = "favoritedAt")

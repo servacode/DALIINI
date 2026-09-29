@@ -101,7 +101,8 @@ def test_category_list_is_camel_case(admin_client: APIClient, facility: Facility
 def test_category_group_list_is_camel_case(admin_client: APIClient, facility: Facility) -> None:
     body = admin_client.get("/api/v1/admin/category-groups/").json()
 
-    assert _keys(body["items"]) == {"id", "code", "nameAr", "nameEn", "active", "sortOrder"}
+    expected = {"id", "code", "nameAr", "nameEn", "iconKey", "active", "sortOrder"}
+    assert _keys(body["items"]) == expected
 
 
 @pytest.mark.django_db
@@ -145,6 +146,9 @@ def test_advertisement_list_is_camel_case(admin_client: APIClient, facility: Fac
         "id",
         "titleAr",
         "targetScope",
+        "provinceId",
+        "categoryId",
+        "imageUrl",
         "enabled",
         "startsAt",
         "endsAt",

@@ -36,7 +36,20 @@ sealed interface DirectoryRoute {
     @Serializable data object MyFacilities : DirectoryRoute
     @Serializable data class Onboarding(val draftId: String? = null) : DirectoryRoute
     @Serializable data class ManageFacility(val id: String) : DirectoryRoute
-    @Serializable data class Duty(val id: String) : DirectoryRoute
+    /**
+     * An owner's duty roster. [date] ("YYYY-MM-DD") prefills a night shift on that day — a gap
+     * nudge from the platform opens it this way.
+     */
+    @Serializable data class Duty(val id: String, val date: String? = null) : DirectoryRoute
+
+    /** Who is on duty now, as the site's `/duty` link opens it: Home with the duty filter on. */
+    @Serializable data object DutyNow : DirectoryRoute
+
+    /** The country's and the province's emergency numbers. */
+    @Serializable data object EmergencyNumbers : DirectoryRoute
+
+    /** The facilities opened on this device, newest first. */
+    @Serializable data object RecentlyViewed : DirectoryRoute
     @Serializable data object Settings : DirectoryRoute
 
     /** The account's own saved facilities and the messages the platform sent it. */

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GENERATED — DO NOT EDIT (source: illustrations/location.svg). Colours follow night mode. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    <path
+        android:pathData="M16 62a44 44 0 1 0 88 0a44 44 0 1 0 -88 0z"
+        android:fillColor="@color/token_semantic_surface_brand_soft" />
+    <path
+        android:pathData="M60 92s-22-19-22-36a22 22 0 0 1 44 0c0 17-22 36-22 36z"
+        android:fillColor="#00000000"
+        android:strokeColor="@color/token_semantic_content_muted"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M52 56a8 8 0 1 0 16 0a8 8 0 1 0 -16 0z"
+        android:fillColor="#00000000"
+        android:strokeColor="@color/token_semantic_action_primary"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

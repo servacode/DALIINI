@@ -7,6 +7,7 @@ Name | Type | Description | Notes
 **code** | **String** |  | 
 **nameAr** | **String** |  | 
 **nameEn** | **String** |  | 
+**iconKey** | **String** |  | 
 **active** | **Bool** |  | 
 **sortOrder** | **Int** |  | 
 
