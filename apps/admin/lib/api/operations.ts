@@ -103,6 +103,12 @@ export const READS = {
     apis.notifications.adminNotificationBroadcastsList(filled(p, ["cursor"])),
   rejectionTemplates: (apis: AdminApis, p: Params) =>
     apis.reviews.adminRejectionTemplatesList(p.active === "true" ? { active: true } : {}),
+
+  // Specialties and services, one category at a time
+  categorySpecialties: (apis: AdminApis, p: Params) =>
+    apis.taxonomy.adminCategorySpecialtiesList({ categoryId: p.id ?? "" }),
+  categoryServiceTags: (apis: AdminApis, p: Params) =>
+    apis.taxonomy.adminCategoryServiceTagsList({ categoryId: p.id ?? "" }),
 } as const satisfies Record<string, ReadFn>;
 
 /**
@@ -164,7 +170,8 @@ export const WRITES = {
   userRoles: (apis: AdminApis, b: Body) =>
     apis.users.adminUserRolesReplace({
       userId: String(b.id),
-      adminUserRolesRequest: { roleIds: (b.roleIds as string[]) ?? [] },
+      // `AdminRole` is keyed by an integer; the screen holds the ids as checkbox strings.
+      adminUserRolesRequest: { roleIds: ((b.roleIds as unknown[] | undefined) ?? []).map(Number) },
     }),
 
   categoryGroupCreate: (apis: AdminApis, b: Body) =>
@@ -323,6 +330,32 @@ export const WRITES = {
     }),
   rejectionTemplateDelete: (apis: AdminApis, b: Body) =>
     apis.reviews.adminRejectionTemplateDelete({ templateId: String(b.id) }),
+
+  // Specialties and services. Their keys are integers; the category travels as `categoryId`.
+  specialtyCreate: (apis: AdminApis, b: Body) =>
+    apis.taxonomy.adminCategorySpecialtyCreate({
+      categoryId: String(b.categoryId ?? ""),
+      adminSpecialtyCreateRequest: sent(b, [...TAG_FIELDS, "scope"]) as never,
+    }),
+  specialtyUpdate: (apis: AdminApis, b: Body) =>
+    apis.taxonomy.adminSpecialtyUpdate({
+      specialtyId: Number(b.id),
+      adminTagUpdateRequest: sent(b, TAG_FIELDS),
+    }),
+  specialtyDelete: (apis: AdminApis, b: Body) =>
+    apis.taxonomy.adminSpecialtyDelete({ specialtyId: Number(b.id) }),
+  serviceTagCreate: (apis: AdminApis, b: Body) =>
+    apis.taxonomy.adminCategoryServiceTagCreate({
+      categoryId: String(b.categoryId ?? ""),
+      adminServiceTagCreateRequest: sent(b, TAG_FIELDS) as never,
+    }),
+  serviceTagUpdate: (apis: AdminApis, b: Body) =>
+    apis.taxonomy.adminServiceTagUpdate({
+      serviceTagId: Number(b.id),
+      adminTagUpdateRequest: sent(b, TAG_FIELDS),
+    }),
+  serviceTagDelete: (apis: AdminApis, b: Body) =>
+    apis.taxonomy.adminServiceTagDelete({ serviceTagId: Number(b.id) }),
 } as const satisfies Record<string, WriteFn>;
 
 export type ReadOperation = keyof typeof READS;
@@ -367,3 +400,5 @@ const NUMBER_FIELDS = [
   "adminNote",
 ] as const;
 const TEMPLATE_FIELDS = ["titleAr", "bodyAr", "active", "sortOrder"] as const;
+/** What a specialty or a service carries besides its scope, which is set once on creation. */
+const TAG_FIELDS = ["nameAr", "nameEn", "active", "sortOrder"] as const;

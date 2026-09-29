@@ -23,7 +23,7 @@ type UserDetail = Readonly<{
   phone: string;
   active: boolean;
   createdAt: string | null;
-  roleIds: readonly string[];
+  roleIds: readonly number[];
 }>;
 
 type Role = Readonly<{ id: number; code: string; name: string; permissions: readonly string[] }>;

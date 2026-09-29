@@ -434,3 +434,90 @@ describe("operations screens: writes", () => {
     });
   });
 });
+
+describe("specialties and services", () => {
+  it("reaches the reads over GET and the writes over POST only", () => {
+    for (const name of ["categorySpecialties", "categoryServiceTags"]) {
+      expect(isReadOperation(name)).toBe(true);
+      expect(isWriteOperation(name)).toBe(false);
+    }
+    for (const name of [
+      "specialtyCreate",
+      "specialtyUpdate",
+      "specialtyDelete",
+      "serviceTagCreate",
+      "serviceTagUpdate",
+      "serviceTagDelete",
+    ]) {
+      expect(isWriteOperation(name)).toBe(true);
+      expect(isReadOperation(name)).toBe(false);
+    }
+  });
+
+  it("lists a category's specialties and services by its id", async () => {
+    const { apis, calls } = spyApis();
+
+    await READS.categorySpecialties(apis, { id: "c-1", stray: "x" });
+    await READS.categoryServiceTags(apis, { id: "c-1" });
+
+    expect(calls.map((call) => [call.name, call.args[0]])).toEqual([
+      ["taxonomy.adminCategorySpecialtiesList", { categoryId: "c-1" }],
+      ["taxonomy.adminCategoryServiceTagsList", { categoryId: "c-1" }],
+    ]);
+  });
+
+  it("creates in the category, with the scope for a specialty and nothing the contract lacks", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.specialtyCreate(apis, {
+      categoryId: "c-1",
+      scope: "SPECIALIZATION",
+      nameAr: "عامة",
+      sortOrder: 10,
+      facilityCount: 3,
+    });
+    await WRITES.serviceTagCreate(apis, { categoryId: "c-1", nameAr: "تحاليل", scope: "CATEGORY" });
+
+    expect(calls).toEqual([
+      {
+        name: "taxonomy.adminCategorySpecialtyCreate",
+        args: [
+          {
+            categoryId: "c-1",
+            adminSpecialtyCreateRequest: { nameAr: "عامة", sortOrder: 10, scope: "SPECIALIZATION" },
+          },
+        ],
+      },
+      {
+        name: "taxonomy.adminCategoryServiceTagCreate",
+        args: [{ categoryId: "c-1", adminServiceTagCreateRequest: { nameAr: "تحاليل" } }],
+      },
+    ]);
+  });
+
+  it("addresses an edit or a delete by the integer key, and keeps an edit partial", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.specialtyUpdate(apis, { id: "7", active: false, scope: "CATEGORY" });
+    await WRITES.serviceTagUpdate(apis, { id: 9, sortOrder: 20 });
+    await WRITES.specialtyDelete(apis, { id: "7" });
+    await WRITES.serviceTagDelete(apis, { id: "9" });
+
+    expect(calls.map((call) => [call.name, call.args[0]])).toEqual([
+      ["taxonomy.adminSpecialtyUpdate", { specialtyId: 7, adminTagUpdateRequest: { active: false } }],
+      ["taxonomy.adminServiceTagUpdate", { serviceTagId: 9, adminTagUpdateRequest: { sortOrder: 20 } }],
+      ["taxonomy.adminSpecialtyDelete", { specialtyId: 7 }],
+      ["taxonomy.adminServiceTagDelete", { serviceTagId: 9 }],
+    ]);
+  });
+
+  it("sends role ids as the integers the roles are keyed by", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.userRoles(apis, { id: "u-1", roleIds: ["3", "12"] });
+    await WRITES.userRoles(apis, { id: "u-2" });
+
+    expect(calls[0]?.args[0]).toEqual({ userId: "u-1", adminUserRolesRequest: { roleIds: [3, 12] } });
+    expect(calls[1]?.args[0]).toEqual({ userId: "u-2", adminUserRolesRequest: { roleIds: [] } });
+  });
+});

@@ -106,6 +106,7 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
         pages: [
           { href: "/taxonomy/categories", label: "التصنيفات", permission: "admin.taxonomy.read" },
           { href: "/taxonomy/groups", label: "المجموعات", permission: "admin.taxonomy.read" },
+          { href: "/taxonomy/tags", label: "التخصصات والخدمات", permission: "admin.taxonomy.read" },
           { href: "/verification", label: "متطلبات التحقق", permission: "admin.verification.read" },
         ],
       },

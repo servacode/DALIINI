@@ -891,15 +891,16 @@ label.switch-row { cursor: pointer; }
 .faq-item[data-published="false"] .faq-question { color: var(--ad-text-secondary); }
 .faq-item[data-editing="true"] { grid-template-columns: minmax(0, 1fr); background: var(--ad-surface-subtle); }
 .faq-new { padding: var(--ad-space-4) var(--ad-space-6); border-block-end: 1px solid var(--ad-stroke-subtle); background: var(--ad-surface-subtle); }
-.faq-order { display: flex; align-items: center; gap: var(--ad-space-2); }
-.faq-index {
+/* The position and move arrows, shared with the ordered tables (specialties and services). */
+.faq-order, .order-cell { display: flex; align-items: center; gap: var(--ad-space-2); }
+.faq-index, .order-index {
   min-width: 28px; height: 28px; display: grid; place-items: center;
   border-radius: 50%; background: var(--ad-brand-softer); color: var(--ad-brand-strong);
   font-size: var(--ad-text-sm); font-weight: 800;
 }
-.faq-move { display: grid; gap: 2px; }
-.faq-move .icon-button { width: 28px; height: 24px; font-size: var(--ad-text-sm); font-weight: 700; }
-.faq-move .icon-button:disabled { opacity: 0.35; cursor: not-allowed; }
+.faq-move, .order-move { display: grid; gap: 2px; }
+.faq-move .icon-button, .order-move .icon-button { width: 28px; height: 24px; font-size: var(--ad-text-sm); font-weight: 700; }
+.faq-move .icon-button:disabled, .order-move .icon-button:disabled { opacity: 0.35; cursor: not-allowed; }
 .faq-text { display: grid; gap: 4px; min-width: 0; }
 .faq-answer {
   margin: 0; font-size: var(--ad-text-sm); color: var(--ad-text-secondary); white-space: pre-line;
