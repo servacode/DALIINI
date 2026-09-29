@@ -141,13 +141,13 @@ class OwnerFacilityDetailTest : ShouldSpec() {
             //modelInstance.location shouldBe ("TODO")
         }
 
-        // to test the property `specialtyIds`
+        // to test the property `specialtyIds` - The facility's active specialties, in order; retired ones are left out.
         should("test specialtyIds") {
             // uncomment below to test the property
             //modelInstance.specialtyIds shouldBe ("TODO")
         }
 
-        // to test the property `serviceTagIds`
+        // to test the property `serviceTagIds` - The facility's active services, in order; retired ones are left out.
         should("test serviceTagIds") {
             // uncomment below to test the property
             //modelInstance.serviceTagIds shouldBe ("TODO")

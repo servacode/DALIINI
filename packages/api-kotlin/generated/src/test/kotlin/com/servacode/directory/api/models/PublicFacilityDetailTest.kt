@@ -23,6 +23,7 @@ import com.servacode.directory.api.models.Availability
 import com.servacode.directory.api.models.BilingualRef
 import com.servacode.directory.api.models.Coordinates
 import com.servacode.directory.api.models.FacilityImage
+import com.servacode.directory.api.models.NamedIntRef
 import com.servacode.directory.api.models.NamedRef
 import com.servacode.directory.api.models.PublicHoursEntry
 
@@ -169,13 +170,13 @@ class PublicFacilityDetailTest : ShouldSpec() {
             //modelInstance.images shouldBe ("TODO")
         }
 
-        // to test the property `specialties`
+        // to test the property `specialties` - Active specialties, in the operators' order.
         should("test specialties") {
             // uncomment below to test the property
             //modelInstance.specialties shouldBe ("TODO")
         }
 
-        // to test the property `services`
+        // to test the property `services` - Active services, in the operators' order.
         should("test services") {
             // uncomment below to test the property
             //modelInstance.services shouldBe ("TODO")

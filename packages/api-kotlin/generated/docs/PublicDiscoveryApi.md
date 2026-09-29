@@ -87,12 +87,13 @@ val longitude : kotlin.String = longitude_example // kotlin.String | Caller long
 val neighborhoodId : kotlin.String = neighborhoodId_example // kotlin.String | Optional neighbourhood filter.
 val openNow : kotlin.String = openNow_example // kotlin.String | Pass true to keep only facilities open at this moment.
 val search : kotlin.String = search_example // kotlin.String | Free-text term matched against facility text.
-val serviceId : kotlin.String = serviceId_example // kotlin.String | Optional service-tag filter; only meaningful when the category declares serviceFilter.
+val serviceId : kotlin.Int = 56 // kotlin.Int | The earlier name of serviceTagId, still accepted; it behaves the same way.
+val serviceTagId : kotlin.Int = 56 // kotlin.Int | Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400.
 val sort : kotlin.String = sort_example // kotlin.String | nearest orders by distance and needs coordinates; name orders by Arabic name. Omitted keeps the historical behaviour: nearest whenever coordinates are supplied, name otherwise. Distances are returned whenever coordinates are supplied, whichever ordering is asked for.
-val specialtyId : kotlin.String = specialtyId_example // kotlin.String | Optional specialty filter; only meaningful when the category declares specialtyFilter.
+val specialtyId : kotlin.Int = 56 // kotlin.Int | Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400.
 
 launch(Dispatchers.IO) {
-    val result : FacilityCursorPage = webService.publicFacilitiesList(provinceId, bbox, categoryId, cityId, cursor, dutyNow, dutyToday, latitude, limit, longitude, neighborhoodId, openNow, search, serviceId, sort, specialtyId)
+    val result : FacilityCursorPage = webService.publicFacilitiesList(provinceId, bbox, categoryId, cityId, cursor, dutyNow, dutyToday, latitude, limit, longitude, neighborhoodId, openNow, search, serviceId, serviceTagId, sort, specialtyId)
 }
 ```
 
@@ -110,11 +111,12 @@ launch(Dispatchers.IO) {
 | **neighborhoodId** | **kotlin.String**| Optional neighbourhood filter. | [optional] |
 | **openNow** | **kotlin.String**| Pass true to keep only facilities open at this moment. | [optional] |
 | **search** | **kotlin.String**| Free-text term matched against facility text. | [optional] |
-| **serviceId** | **kotlin.String**| Optional service-tag filter; only meaningful when the category declares serviceFilter. | [optional] |
+| **serviceId** | **kotlin.Int**| The earlier name of serviceTagId, still accepted; it behaves the same way. | [optional] |
+| **serviceTagId** | **kotlin.Int**| Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. | [optional] |
 | **sort** | **kotlin.String**| nearest orders by distance and needs coordinates; name orders by Arabic name. Omitted keeps the historical behaviour: nearest whenever coordinates are supplied, name otherwise. Distances are returned whenever coordinates are supplied, whichever ordering is asked for. | [optional] |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
-| **specialtyId** | **kotlin.String**| Optional specialty filter; only meaningful when the category declares specialtyFilter. | [optional] |
+| **specialtyId** | **kotlin.Int**| Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. | [optional] |
 
 ### Return type
 
@@ -196,11 +198,12 @@ val latitude : kotlin.String = latitude_example // kotlin.String | Caller latitu
 val longitude : kotlin.String = longitude_example // kotlin.String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude.
 val neighborhoodId : kotlin.String = neighborhoodId_example // kotlin.String | Optional neighbourhood filter.
 val search : kotlin.String = search_example // kotlin.String | Free-text term matched against facility text.
-val serviceId : kotlin.String = serviceId_example // kotlin.String | Optional service-tag filter; only meaningful when the category declares serviceFilter.
-val specialtyId : kotlin.String = specialtyId_example // kotlin.String | Optional specialty filter; only meaningful when the category declares specialtyFilter.
+val serviceId : kotlin.Int = 56 // kotlin.Int | The earlier name of serviceTagId, still accepted; it behaves the same way.
+val serviceTagId : kotlin.Int = 56 // kotlin.Int | Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400.
+val specialtyId : kotlin.Int = 56 // kotlin.Int | Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400.
 
 launch(Dispatchers.IO) {
-    val result : PublicHome = webService.publicHomeRetrieve(provinceId, bbox, categoryId, cityId, latitude, longitude, neighborhoodId, search, serviceId, specialtyId)
+    val result : PublicHome = webService.publicHomeRetrieve(provinceId, bbox, categoryId, cityId, latitude, longitude, neighborhoodId, search, serviceId, serviceTagId, specialtyId)
 }
 ```
 
@@ -213,10 +216,11 @@ launch(Dispatchers.IO) {
 | **longitude** | **kotlin.String**| Caller longitude in WGS84 decimal degrees. Must be sent with latitude. | [optional] |
 | **neighborhoodId** | **kotlin.String**| Optional neighbourhood filter. | [optional] |
 | **search** | **kotlin.String**| Free-text term matched against facility text. | [optional] |
-| **serviceId** | **kotlin.String**| Optional service-tag filter; only meaningful when the category declares serviceFilter. | [optional] |
+| **serviceId** | **kotlin.Int**| The earlier name of serviceTagId, still accepted; it behaves the same way. | [optional] |
+| **serviceTagId** | **kotlin.Int**| Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. | [optional] |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
-| **specialtyId** | **kotlin.String**| Optional specialty filter; only meaningful when the category declares specialtyFilter. | [optional] |
+| **specialtyId** | **kotlin.Int**| Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. | [optional] |
 
 ### Return type
 
@@ -259,11 +263,12 @@ val longitude : kotlin.String = longitude_example // kotlin.String | Caller long
 val neighborhoodId : kotlin.String = neighborhoodId_example // kotlin.String | Optional neighbourhood filter.
 val openNow : kotlin.String = openNow_example // kotlin.String | Pass true to keep only facilities open at this moment.
 val search : kotlin.String = search_example // kotlin.String | Free-text term matched against facility text.
-val serviceId : kotlin.String = serviceId_example // kotlin.String | Optional service-tag filter; only meaningful when the category declares serviceFilter.
-val specialtyId : kotlin.String = specialtyId_example // kotlin.String | Optional specialty filter; only meaningful when the category declares specialtyFilter.
+val serviceId : kotlin.Int = 56 // kotlin.Int | The earlier name of serviceTagId, still accepted; it behaves the same way.
+val serviceTagId : kotlin.Int = 56 // kotlin.Int | Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400.
+val specialtyId : kotlin.Int = 56 // kotlin.Int | Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400.
 
 launch(Dispatchers.IO) {
-    val result : MapMarkerList = webService.publicMapFacilitiesList(provinceId, bbox, categoryId, cityId, dutyNow, dutyToday, latitude, longitude, neighborhoodId, openNow, search, serviceId, specialtyId)
+    val result : MapMarkerList = webService.publicMapFacilitiesList(provinceId, bbox, categoryId, cityId, dutyNow, dutyToday, latitude, longitude, neighborhoodId, openNow, search, serviceId, serviceTagId, specialtyId)
 }
 ```
 
@@ -279,10 +284,11 @@ launch(Dispatchers.IO) {
 | **neighborhoodId** | **kotlin.String**| Optional neighbourhood filter. | [optional] |
 | **openNow** | **kotlin.String**| Pass true to keep only facilities open at this moment. | [optional] |
 | **search** | **kotlin.String**| Free-text term matched against facility text. | [optional] |
-| **serviceId** | **kotlin.String**| Optional service-tag filter; only meaningful when the category declares serviceFilter. | [optional] |
+| **serviceId** | **kotlin.Int**| The earlier name of serviceTagId, still accepted; it behaves the same way. | [optional] |
+| **serviceTagId** | **kotlin.Int**| Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. | [optional] |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
-| **specialtyId** | **kotlin.String**| Optional specialty filter; only meaningful when the category declares specialtyFilter. | [optional] |
+| **specialtyId** | **kotlin.Int**| Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. | [optional] |
 
 ### Return type
 
@@ -323,11 +329,12 @@ val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 100, default 30.
 val longitude : kotlin.String = longitude_example // kotlin.String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude.
 val neighborhoodId : kotlin.String = neighborhoodId_example // kotlin.String | Optional neighbourhood filter.
 val search : kotlin.String = search_example // kotlin.String | Free-text term matched against facility text.
-val serviceId : kotlin.String = serviceId_example // kotlin.String | Optional service-tag filter; only meaningful when the category declares serviceFilter.
-val specialtyId : kotlin.String = specialtyId_example // kotlin.String | Optional specialty filter; only meaningful when the category declares specialtyFilter.
+val serviceId : kotlin.Int = 56 // kotlin.Int | The earlier name of serviceTagId, still accepted; it behaves the same way.
+val serviceTagId : kotlin.Int = 56 // kotlin.Int | Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400.
+val specialtyId : kotlin.Int = 56 // kotlin.Int | Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400.
 
 launch(Dispatchers.IO) {
-    val result : FacilityCursorPage = webService.publicSearchList(provinceId, q, bbox, categoryId, cityId, cursor, latitude, limit, longitude, neighborhoodId, search, serviceId, specialtyId)
+    val result : FacilityCursorPage = webService.publicSearchList(provinceId, q, bbox, categoryId, cityId, cursor, latitude, limit, longitude, neighborhoodId, search, serviceId, serviceTagId, specialtyId)
 }
 ```
 
@@ -343,10 +350,11 @@ launch(Dispatchers.IO) {
 | **longitude** | **kotlin.String**| Caller longitude in WGS84 decimal degrees. Must be sent with latitude. | [optional] |
 | **neighborhoodId** | **kotlin.String**| Optional neighbourhood filter. | [optional] |
 | **search** | **kotlin.String**| Free-text term matched against facility text. | [optional] |
-| **serviceId** | **kotlin.String**| Optional service-tag filter; only meaningful when the category declares serviceFilter. | [optional] |
+| **serviceId** | **kotlin.Int**| The earlier name of serviceTagId, still accepted; it behaves the same way. | [optional] |
+| **serviceTagId** | **kotlin.Int**| Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. | [optional] |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
-| **specialtyId** | **kotlin.String**| Optional specialty filter; only meaningful when the category declares specialtyFilter. | [optional] |
+| **specialtyId** | **kotlin.Int**| Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. | [optional] |
 
 ### Return type
 

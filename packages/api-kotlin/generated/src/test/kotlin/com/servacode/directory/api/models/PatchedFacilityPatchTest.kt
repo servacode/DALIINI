@@ -85,13 +85,13 @@ class PatchedFacilityPatchTest : ShouldSpec() {
             //modelInstance.neighborhoodId shouldBe ("TODO")
         }
 
-        // to test the property `specialtyIds`
+        // to test the property `specialtyIds` - Replaces the facility's specialties. Ids come from the category's `specialties` in ownerConfigRetrieve; an empty list clears them.
         should("test specialtyIds") {
             // uncomment below to test the property
             //modelInstance.specialtyIds shouldBe ("TODO")
         }
 
-        // to test the property `serviceTagIds`
+        // to test the property `serviceTagIds` - Replaces the facility's services. Ids come from the category's `services` in ownerConfigRetrieve; an empty list clears them.
         should("test serviceTagIds") {
             // uncomment below to test the property
             //modelInstance.serviceTagIds shouldBe ("TODO")

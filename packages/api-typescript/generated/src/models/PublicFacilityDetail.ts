@@ -48,6 +48,13 @@ import {
     FacilityImageToJSON,
     FacilityImageToJSONTyped,
 } from './FacilityImage';
+import type { NamedIntRef } from './NamedIntRef';
+import {
+    NamedIntRefFromJSON,
+    NamedIntRefFromJSONTyped,
+    NamedIntRefToJSON,
+    NamedIntRefToJSONTyped,
+} from './NamedIntRef';
 import type { NamedRef } from './NamedRef';
 import {
     NamedRefFromJSON,
@@ -201,17 +208,17 @@ export interface PublicFacilityDetail {
      */
     images: Array<FacilityImage>;
     /**
-     * 
-     * @type {Array<NamedRef>}
+     * Active specialties, in the operators' order.
+     * @type {Array<NamedIntRef>}
      * @memberof PublicFacilityDetail
      */
-    specialties: Array<NamedRef>;
+    specialties: Array<NamedIntRef>;
     /**
-     * 
-     * @type {Array<NamedRef>}
+     * Active services, in the operators' order.
+     * @type {Array<NamedIntRef>}
      * @memberof PublicFacilityDetail
      */
-    services: Array<NamedRef>;
+    services: Array<NamedIntRef>;
     /**
      * 
      * @type {Array<PublicHoursEntry>}
@@ -286,8 +293,8 @@ export function PublicFacilityDetailFromJSONTyped(json: any, ignoreDiscriminator
         'neighborhood': NamedRefFromJSON(json['neighborhood']),
         'location': CoordinatesFromJSON(json['location']),
         'images': ((json['images'] as Array<any>).map(FacilityImageFromJSON)),
-        'specialties': ((json['specialties'] as Array<any>).map(NamedRefFromJSON)),
-        'services': ((json['services'] as Array<any>).map(NamedRefFromJSON)),
+        'specialties': ((json['specialties'] as Array<any>).map(NamedIntRefFromJSON)),
+        'services': ((json['services'] as Array<any>).map(NamedIntRefFromJSON)),
         'hours': ((json['hours'] as Array<any>).map(PublicHoursEntryFromJSON)),
     };
 }
@@ -326,8 +333,8 @@ export function PublicFacilityDetailToJSONTyped(value?: PublicFacilityDetail | n
         'neighborhood': NamedRefToJSON(value['neighborhood']),
         'location': CoordinatesToJSON(value['location']),
         'images': ((value['images'] as Array<any>).map(FacilityImageToJSON)),
-        'specialties': ((value['specialties'] as Array<any>).map(NamedRefToJSON)),
-        'services': ((value['services'] as Array<any>).map(NamedRefToJSON)),
+        'specialties': ((value['specialties'] as Array<any>).map(NamedIntRefToJSON)),
+        'services': ((value['services'] as Array<any>).map(NamedIntRefToJSON)),
         'hours': ((value['hours'] as Array<any>).map(PublicHoursEntryToJSON)),
     };
 }

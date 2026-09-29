@@ -58,7 +58,7 @@ data class AdminUserDetail (
     val updatedAt: java.time.OffsetDateTime?,
 
     @SerialName(value = "roleIds")
-    val roleIds: kotlin.collections.List<@Contextual java.util.UUID>
+    val roleIds: kotlin.collections.List<kotlin.Int>
 
 ) {
 

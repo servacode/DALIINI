@@ -115,7 +115,15 @@ Class | Method | HTTP request | Description
 *AdminTaxonomyAPI* | [**adminCategoryGroupUpdate**](docs/AdminTaxonomyAPI.md#admincategorygroupupdate) | **PUT** /api/v1/admin/category-groups/{group_id}/ | Rename, reorder or deactivate a category group
 *AdminTaxonomyAPI* | [**adminCategoryGroupsList**](docs/AdminTaxonomyAPI.md#admincategorygroupslist) | **GET** /api/v1/admin/category-groups/ | List category groups
 *AdminTaxonomyAPI* | [**adminCategoryProvinceReplace**](docs/AdminTaxonomyAPI.md#admincategoryprovincereplace) | **PUT** /api/v1/admin/categories/{category_id}/provinces/ | Set the per-province switches of a category
+*AdminTaxonomyAPI* | [**adminCategoryServiceTagCreate**](docs/AdminTaxonomyAPI.md#admincategoryservicetagcreate) | **POST** /api/v1/admin/categories/{category_id}/service-tags/ | Add a service to a category
+*AdminTaxonomyAPI* | [**adminCategoryServiceTagsList**](docs/AdminTaxonomyAPI.md#admincategoryservicetagslist) | **GET** /api/v1/admin/categories/{category_id}/service-tags/ | List the services of a category
+*AdminTaxonomyAPI* | [**adminCategorySpecialtiesList**](docs/AdminTaxonomyAPI.md#admincategoryspecialtieslist) | **GET** /api/v1/admin/categories/{category_id}/specialties/ | List the specialties a category offers, in both scopes
+*AdminTaxonomyAPI* | [**adminCategorySpecialtyCreate**](docs/AdminTaxonomyAPI.md#admincategoryspecialtycreate) | **POST** /api/v1/admin/categories/{category_id}/specialties/ | Add a specialty to a category or to its specialization
 *AdminTaxonomyAPI* | [**adminCategoryUpdate**](docs/AdminTaxonomyAPI.md#admincategoryupdate) | **PUT** /api/v1/admin/categories/{category_id}/ | Rename, move, reorder or deactivate a category
+*AdminTaxonomyAPI* | [**adminServiceTagDelete**](docs/AdminTaxonomyAPI.md#adminservicetagdelete) | **DELETE** /api/v1/admin/service-tags/{service_tag_id}/ | Delete a service no facility lists
+*AdminTaxonomyAPI* | [**adminServiceTagUpdate**](docs/AdminTaxonomyAPI.md#adminservicetagupdate) | **PUT** /api/v1/admin/service-tags/{service_tag_id}/ | Rename, reorder, retire or bring back a service
+*AdminTaxonomyAPI* | [**adminSpecialtyDelete**](docs/AdminTaxonomyAPI.md#adminspecialtydelete) | **DELETE** /api/v1/admin/specialties/{specialty_id}/ | Delete a specialty no facility lists
+*AdminTaxonomyAPI* | [**adminSpecialtyUpdate**](docs/AdminTaxonomyAPI.md#adminspecialtyupdate) | **PUT** /api/v1/admin/specialties/{specialty_id}/ | Rename, reorder, retire or bring back a specialty
 *AdminUsersAPI* | [**adminRolesList**](docs/AdminUsersAPI.md#adminroleslist) | **GET** /api/v1/admin/roles/ | List admin roles and their permission codes
 *AdminUsersAPI* | [**adminUserBlock**](docs/AdminUsersAPI.md#adminuserblock) | **POST** /api/v1/admin/users/{user_id}/block/ | Block a user account
 *AdminUsersAPI* | [**adminUserRetrieve**](docs/AdminUsersAPI.md#adminuserretrieve) | **GET** /api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned
@@ -178,6 +186,7 @@ Class | Method | HTTP request | Description
 *PublicDiscoveryAPI* | [**publicSearchList**](docs/PublicDiscoveryAPI.md#publicsearchlist) | **GET** /api/v1/public/search/ | Search facilities within a province
 *PublicFacilitiesAPI* | [**publicFacilityReportCreate**](docs/PublicFacilitiesAPI.md#publicfacilityreportcreate) | **POST** /api/v1/facilities/{facility_id}/reports/ | Report a problem with a facility&#39;s listing
 *PublicPlatformAPI* | [**publicPlatformStatusRetrieve**](docs/PublicPlatformAPI.md#publicplatformstatusretrieve) | **GET** /api/v1/platform/status/ | Platform availability (maintenance mode)
+*PublicTaxonomyAPI* | [**publicCategoryTagsRetrieve**](docs/PublicTaxonomyAPI.md#publiccategorytagsretrieve) | **GET** /api/v1/public/categories/{category_id}/tags/ | List the specialties and services a category offers
 *PublicTaxonomyAPI* | [**publicLocationResolve**](docs/PublicTaxonomyAPI.md#publiclocationresolve) | **GET** /api/v1/public/locations/resolve/ | Resolve a coordinate to a province, city and neighbourhood
 *PublicTaxonomyAPI* | [**publicProvinceCategoriesList**](docs/PublicTaxonomyAPI.md#publicprovincecategorieslist) | **GET** /api/v1/public/provinces/{province_id}/categories/ | List categories publicly enabled for a province
 *PublicTaxonomyAPI* | [**publicProvinceCitiesList**](docs/PublicTaxonomyAPI.md#publicprovincecitieslist) | **GET** /api/v1/public/provinces/{province_id}/cities/ | List active cities in a province
@@ -281,13 +290,20 @@ Class | Method | HTTP request | Description
  - [AdminSearchHit](docs/AdminSearchHit.md)
  - [AdminSearchHitTypeEnum](docs/AdminSearchHitTypeEnum.md)
  - [AdminSearchResult](docs/AdminSearchResult.md)
+ - [AdminServiceTag](docs/AdminServiceTag.md)
+ - [AdminServiceTagCreateRequest](docs/AdminServiceTagCreateRequest.md)
+ - [AdminServiceTagList](docs/AdminServiceTagList.md)
  - [AdminSetting](docs/AdminSetting.md)
  - [AdminSettingList](docs/AdminSettingList.md)
  - [AdminSettingWriteRequest](docs/AdminSettingWriteRequest.md)
  - [AdminSettingWritten](docs/AdminSettingWritten.md)
+ - [AdminSpecialty](docs/AdminSpecialty.md)
+ - [AdminSpecialtyCreateRequest](docs/AdminSpecialtyCreateRequest.md)
+ - [AdminSpecialtyList](docs/AdminSpecialtyList.md)
  - [AdminStaffMember](docs/AdminStaffMember.md)
  - [AdminStaffPerformance](docs/AdminStaffPerformance.md)
  - [AdminSystemStatus](docs/AdminSystemStatus.md)
+ - [AdminTagUpdateRequest](docs/AdminTagUpdateRequest.md)
  - [AdminTaskApplication](docs/AdminTaskApplication.md)
  - [AdminTaskApplicationBucket](docs/AdminTaskApplicationBucket.md)
  - [AdminTaskApplications](docs/AdminTaskApplications.md)
@@ -377,6 +393,7 @@ Class | Method | HTTP request | Description
  - [LogoutRequest](docs/LogoutRequest.md)
  - [MapMarker](docs/MapMarker.md)
  - [MapMarkerList](docs/MapMarkerList.md)
+ - [NamedIntRef](docs/NamedIntRef.md)
  - [NamedRef](docs/NamedRef.md)
  - [Notification](docs/Notification.md)
  - [NotificationPage](docs/NotificationPage.md)
@@ -413,6 +430,7 @@ Class | Method | HTTP request | Description
  - [PublicAdvertisementList](docs/PublicAdvertisementList.md)
  - [PublicCategory](docs/PublicCategory.md)
  - [PublicCategoryList](docs/PublicCategoryList.md)
+ - [PublicCategoryTags](docs/PublicCategoryTags.md)
  - [PublicCity](docs/PublicCity.md)
  - [PublicCityList](docs/PublicCityList.md)
  - [PublicDutyDay](docs/PublicDutyDay.md)
@@ -436,6 +454,7 @@ Class | Method | HTTP request | Description
  - [RegisterStart](docs/RegisterStart.md)
  - [ResolvedByEnum](docs/ResolvedByEnum.md)
  - [SessionCredentials](docs/SessionCredentials.md)
+ - [SpecialtyScopeEnum](docs/SpecialtyScopeEnum.md)
  - [TemporaryClosure](docs/TemporaryClosure.md)
  - [TemporaryClosureInput](docs/TemporaryClosureInput.md)
  - [TemporaryClosureList](docs/TemporaryClosureList.md)

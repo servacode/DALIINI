@@ -72,7 +72,7 @@ No authorization required
 
 # **publicFacilitiesList**
 ```swift
-    open class func publicFacilitiesList(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, cursor: String? = nil, dutyNow: String? = nil, dutyToday: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: String? = nil, sort: String? = nil, specialtyId: String? = nil, completion: @escaping (_ data: FacilityCursorPage?, _ error: Error?) -> Void)
+    open class func publicFacilitiesList(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, cursor: String? = nil, dutyNow: String? = nil, dutyToday: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: Int? = nil, serviceTagId: Int? = nil, sort: String? = nil, specialtyId: Int? = nil, completion: @escaping (_ data: FacilityCursorPage?, _ error: Error?) -> Void)
 ```
 
 List publicly visible facilities in a province, optionally in one category
@@ -97,12 +97,13 @@ let longitude = "longitude_example" // String | Caller longitude in WGS84 decima
 let neighborhoodId = "neighborhoodId_example" // String | Optional neighbourhood filter. (optional)
 let openNow = "openNow_example" // String | Pass true to keep only facilities open at this moment. (optional)
 let search = "search_example" // String | Free-text term matched against facility text. (optional)
-let serviceId = "serviceId_example" // String | Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
+let serviceId = 987 // Int | The earlier name of serviceTagId, still accepted; it behaves the same way. (optional)
+let serviceTagId = 987 // Int | Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. (optional)
 let sort = "sort_example" // String | nearest orders by distance and needs coordinates; name orders by Arabic name. Omitted keeps the historical behaviour: nearest whenever coordinates are supplied, name otherwise. Distances are returned whenever coordinates are supplied, whichever ordering is asked for. (optional)
-let specialtyId = "specialtyId_example" // String | Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
+let specialtyId = 987 // Int | Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. (optional)
 
 // List publicly visible facilities in a province, optionally in one category
-PublicDiscoveryAPI.publicFacilitiesList(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, cursor: cursor, dutyNow: dutyNow, dutyToday: dutyToday, latitude: latitude, limit: limit, longitude: longitude, neighborhoodId: neighborhoodId, openNow: openNow, search: search, serviceId: serviceId, sort: sort, specialtyId: specialtyId) { (response, error) in
+PublicDiscoveryAPI.publicFacilitiesList(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, cursor: cursor, dutyNow: dutyNow, dutyToday: dutyToday, latitude: latitude, limit: limit, longitude: longitude, neighborhoodId: neighborhoodId, openNow: openNow, search: search, serviceId: serviceId, serviceTagId: serviceTagId, sort: sort, specialtyId: specialtyId) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -131,9 +132,10 @@ Name | Type | Description  | Notes
  **neighborhoodId** | **String** | Optional neighbourhood filter. | [optional] 
  **openNow** | **String** | Pass true to keep only facilities open at this moment. | [optional] 
  **search** | **String** | Free-text term matched against facility text. | [optional] 
- **serviceId** | **String** | Optional service-tag filter; only meaningful when the category declares serviceFilter. | [optional] 
+ **serviceId** | **Int** | The earlier name of serviceTagId, still accepted; it behaves the same way. | [optional] 
+ **serviceTagId** | **Int** | Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. | [optional] 
  **sort** | **String** | nearest orders by distance and needs coordinates; name orders by Arabic name. Omitted keeps the historical behaviour: nearest whenever coordinates are supplied, name otherwise. Distances are returned whenever coordinates are supplied, whichever ordering is asked for. | [optional] 
- **specialtyId** | **String** | Optional specialty filter; only meaningful when the category declares specialtyFilter. | [optional] 
+ **specialtyId** | **Int** | Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. | [optional] 
 
 ### Return type
 
@@ -202,7 +204,7 @@ Name | Type | Description  | Notes
 
 # **publicHomeRetrieve**
 ```swift
-    open class func publicHomeRetrieve(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, latitude: String? = nil, longitude: String? = nil, neighborhoodId: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil, completion: @escaping (_ data: PublicHome?, _ error: Error?) -> Void)
+    open class func publicHomeRetrieve(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, latitude: String? = nil, longitude: String? = nil, neighborhoodId: String? = nil, search: String? = nil, serviceId: Int? = nil, serviceTagId: Int? = nil, specialtyId: Int? = nil, completion: @escaping (_ data: PublicHome?, _ error: Error?) -> Void)
 ```
 
 Retrieve the home composition for a province
@@ -222,11 +224,12 @@ let latitude = "latitude_example" // String | Caller latitude in WGS84 decimal d
 let longitude = "longitude_example" // String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
 let neighborhoodId = "neighborhoodId_example" // String | Optional neighbourhood filter. (optional)
 let search = "search_example" // String | Free-text term matched against facility text. (optional)
-let serviceId = "serviceId_example" // String | Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
-let specialtyId = "specialtyId_example" // String | Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
+let serviceId = 987 // Int | The earlier name of serviceTagId, still accepted; it behaves the same way. (optional)
+let serviceTagId = 987 // Int | Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. (optional)
+let specialtyId = 987 // Int | Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. (optional)
 
 // Retrieve the home composition for a province
-PublicDiscoveryAPI.publicHomeRetrieve(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, latitude: latitude, longitude: longitude, neighborhoodId: neighborhoodId, search: search, serviceId: serviceId, specialtyId: specialtyId) { (response, error) in
+PublicDiscoveryAPI.publicHomeRetrieve(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, latitude: latitude, longitude: longitude, neighborhoodId: neighborhoodId, search: search, serviceId: serviceId, serviceTagId: serviceTagId, specialtyId: specialtyId) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -250,8 +253,9 @@ Name | Type | Description  | Notes
  **longitude** | **String** | Caller longitude in WGS84 decimal degrees. Must be sent with latitude. | [optional] 
  **neighborhoodId** | **String** | Optional neighbourhood filter. | [optional] 
  **search** | **String** | Free-text term matched against facility text. | [optional] 
- **serviceId** | **String** | Optional service-tag filter; only meaningful when the category declares serviceFilter. | [optional] 
- **specialtyId** | **String** | Optional specialty filter; only meaningful when the category declares specialtyFilter. | [optional] 
+ **serviceId** | **Int** | The earlier name of serviceTagId, still accepted; it behaves the same way. | [optional] 
+ **serviceTagId** | **Int** | Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. | [optional] 
+ **specialtyId** | **Int** | Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. | [optional] 
 
 ### Return type
 
@@ -270,7 +274,7 @@ Name | Type | Description  | Notes
 
 # **publicMapFacilitiesList**
 ```swift
-    open class func publicMapFacilitiesList(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, dutyNow: String? = nil, dutyToday: String? = nil, latitude: String? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil, completion: @escaping (_ data: MapMarkerList?, _ error: Error?) -> Void)
+    open class func publicMapFacilitiesList(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, dutyNow: String? = nil, dutyToday: String? = nil, latitude: String? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: Int? = nil, serviceTagId: Int? = nil, specialtyId: Int? = nil, completion: @escaping (_ data: MapMarkerList?, _ error: Error?) -> Void)
 ```
 
 List compact map markers inside a viewport
@@ -293,11 +297,12 @@ let longitude = "longitude_example" // String | Caller longitude in WGS84 decima
 let neighborhoodId = "neighborhoodId_example" // String | Optional neighbourhood filter. (optional)
 let openNow = "openNow_example" // String | Pass true to keep only facilities open at this moment. (optional)
 let search = "search_example" // String | Free-text term matched against facility text. (optional)
-let serviceId = "serviceId_example" // String | Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
-let specialtyId = "specialtyId_example" // String | Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
+let serviceId = 987 // Int | The earlier name of serviceTagId, still accepted; it behaves the same way. (optional)
+let serviceTagId = 987 // Int | Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. (optional)
+let specialtyId = 987 // Int | Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. (optional)
 
 // List compact map markers inside a viewport
-PublicDiscoveryAPI.publicMapFacilitiesList(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, dutyNow: dutyNow, dutyToday: dutyToday, latitude: latitude, longitude: longitude, neighborhoodId: neighborhoodId, openNow: openNow, search: search, serviceId: serviceId, specialtyId: specialtyId) { (response, error) in
+PublicDiscoveryAPI.publicMapFacilitiesList(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, dutyNow: dutyNow, dutyToday: dutyToday, latitude: latitude, longitude: longitude, neighborhoodId: neighborhoodId, openNow: openNow, search: search, serviceId: serviceId, serviceTagId: serviceTagId, specialtyId: specialtyId) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -324,8 +329,9 @@ Name | Type | Description  | Notes
  **neighborhoodId** | **String** | Optional neighbourhood filter. | [optional] 
  **openNow** | **String** | Pass true to keep only facilities open at this moment. | [optional] 
  **search** | **String** | Free-text term matched against facility text. | [optional] 
- **serviceId** | **String** | Optional service-tag filter; only meaningful when the category declares serviceFilter. | [optional] 
- **specialtyId** | **String** | Optional specialty filter; only meaningful when the category declares specialtyFilter. | [optional] 
+ **serviceId** | **Int** | The earlier name of serviceTagId, still accepted; it behaves the same way. | [optional] 
+ **serviceTagId** | **Int** | Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. | [optional] 
+ **specialtyId** | **Int** | Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. | [optional] 
 
 ### Return type
 
@@ -344,7 +350,7 @@ Name | Type | Description  | Notes
 
 # **publicSearchList**
 ```swift
-    open class func publicSearchList(provinceId: String, q: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, cursor: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil, completion: @escaping (_ data: FacilityCursorPage?, _ error: Error?) -> Void)
+    open class func publicSearchList(provinceId: String, q: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, cursor: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, search: String? = nil, serviceId: Int? = nil, serviceTagId: Int? = nil, specialtyId: Int? = nil, completion: @escaping (_ data: FacilityCursorPage?, _ error: Error?) -> Void)
 ```
 
 Search facilities within a province
@@ -365,11 +371,12 @@ let limit = 987 // Int | Page size, maximum 100, default 30. (optional)
 let longitude = "longitude_example" // String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
 let neighborhoodId = "neighborhoodId_example" // String | Optional neighbourhood filter. (optional)
 let search = "search_example" // String | Free-text term matched against facility text. (optional)
-let serviceId = "serviceId_example" // String | Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
-let specialtyId = "specialtyId_example" // String | Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
+let serviceId = 987 // Int | The earlier name of serviceTagId, still accepted; it behaves the same way. (optional)
+let serviceTagId = 987 // Int | Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. (optional)
+let specialtyId = 987 // Int | Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. (optional)
 
 // Search facilities within a province
-PublicDiscoveryAPI.publicSearchList(provinceId: provinceId, q: q, bbox: bbox, categoryId: categoryId, cityId: cityId, cursor: cursor, latitude: latitude, limit: limit, longitude: longitude, neighborhoodId: neighborhoodId, search: search, serviceId: serviceId, specialtyId: specialtyId) { (response, error) in
+PublicDiscoveryAPI.publicSearchList(provinceId: provinceId, q: q, bbox: bbox, categoryId: categoryId, cityId: cityId, cursor: cursor, latitude: latitude, limit: limit, longitude: longitude, neighborhoodId: neighborhoodId, search: search, serviceId: serviceId, serviceTagId: serviceTagId, specialtyId: specialtyId) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -396,8 +403,9 @@ Name | Type | Description  | Notes
  **longitude** | **String** | Caller longitude in WGS84 decimal degrees. Must be sent with latitude. | [optional] 
  **neighborhoodId** | **String** | Optional neighbourhood filter. | [optional] 
  **search** | **String** | Free-text term matched against facility text. | [optional] 
- **serviceId** | **String** | Optional service-tag filter; only meaningful when the category declares serviceFilter. | [optional] 
- **specialtyId** | **String** | Optional specialty filter; only meaningful when the category declares specialtyFilter. | [optional] 
+ **serviceId** | **Int** | The earlier name of serviceTagId, still accepted; it behaves the same way. | [optional] 
+ **serviceTagId** | **Int** | Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. | [optional] 
+ **specialtyId** | **Int** | Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. | [optional] 
 
 ### Return type
 

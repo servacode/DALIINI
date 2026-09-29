@@ -295,6 +295,178 @@ open class AdminTaxonomyAPI {
     }
 
     /**
+     Add a service to a category
+     
+     - parameter categoryId: (path)  
+     - parameter adminServiceTagCreateRequest: (body)  
+     - returns: AdminServiceTag
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminCategoryServiceTagCreate(categoryId: UUID, adminServiceTagCreateRequest: AdminServiceTagCreateRequest) async throws -> AdminServiceTag {
+        return try await adminCategoryServiceTagCreateWithRequestBuilder(categoryId: categoryId, adminServiceTagCreateRequest: adminServiceTagCreateRequest).execute().body
+    }
+
+    /**
+     Add a service to a category
+     - POST /api/v1/admin/categories/{category_id}/service-tags/
+     - Requires admin.taxonomy.manage, re-checked inside the handler. A name already used in the category is refused, retired services included.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter categoryId: (path)  
+     - parameter adminServiceTagCreateRequest: (body)  
+     - returns: RequestBuilder<AdminServiceTag> 
+     */
+    open class func adminCategoryServiceTagCreateWithRequestBuilder(categoryId: UUID, adminServiceTagCreateRequest: AdminServiceTagCreateRequest) -> RequestBuilder<AdminServiceTag> {
+        var localVariablePath = "/api/v1/admin/categories/{category_id}/service-tags/"
+        let categoryIdPreEscape = "\(APIHelper.mapValueToPathItem(categoryId))"
+        let categoryIdPostEscape = categoryIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{category_id}", with: categoryIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminServiceTagCreateRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminServiceTag>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     List the services of a category
+     
+     - parameter categoryId: (path)  
+     - returns: AdminServiceTagList
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminCategoryServiceTagsList(categoryId: UUID) async throws -> AdminServiceTagList {
+        return try await adminCategoryServiceTagsListWithRequestBuilder(categoryId: categoryId).execute().body
+    }
+
+    /**
+     List the services of a category
+     - GET /api/v1/admin/categories/{category_id}/service-tags/
+     - Retired ones included, in the order the public sees them.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter categoryId: (path)  
+     - returns: RequestBuilder<AdminServiceTagList> 
+     */
+    open class func adminCategoryServiceTagsListWithRequestBuilder(categoryId: UUID) -> RequestBuilder<AdminServiceTagList> {
+        var localVariablePath = "/api/v1/admin/categories/{category_id}/service-tags/"
+        let categoryIdPreEscape = "\(APIHelper.mapValueToPathItem(categoryId))"
+        let categoryIdPostEscape = categoryIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{category_id}", with: categoryIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminServiceTagList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     List the specialties a category offers, in both scopes
+     
+     - parameter categoryId: (path)  
+     - returns: AdminSpecialtyList
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminCategorySpecialtiesList(categoryId: UUID) async throws -> AdminSpecialtyList {
+        return try await adminCategorySpecialtiesListWithRequestBuilder(categoryId: categoryId).execute().body
+    }
+
+    /**
+     List the specialties a category offers, in both scopes
+     - GET /api/v1/admin/categories/{category_id}/specialties/
+     - The category's own specialties and those its specialization shares, retired ones included, in the order the public sees them.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter categoryId: (path)  
+     - returns: RequestBuilder<AdminSpecialtyList> 
+     */
+    open class func adminCategorySpecialtiesListWithRequestBuilder(categoryId: UUID) -> RequestBuilder<AdminSpecialtyList> {
+        var localVariablePath = "/api/v1/admin/categories/{category_id}/specialties/"
+        let categoryIdPreEscape = "\(APIHelper.mapValueToPathItem(categoryId))"
+        let categoryIdPostEscape = categoryIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{category_id}", with: categoryIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminSpecialtyList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Add a specialty to a category or to its specialization
+     
+     - parameter categoryId: (path)  
+     - parameter adminSpecialtyCreateRequest: (body)  
+     - returns: AdminSpecialty
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminCategorySpecialtyCreate(categoryId: UUID, adminSpecialtyCreateRequest: AdminSpecialtyCreateRequest) async throws -> AdminSpecialty {
+        return try await adminCategorySpecialtyCreateWithRequestBuilder(categoryId: categoryId, adminSpecialtyCreateRequest: adminSpecialtyCreateRequest).execute().body
+    }
+
+    /**
+     Add a specialty to a category or to its specialization
+     - POST /api/v1/admin/categories/{category_id}/specialties/
+     - Requires admin.taxonomy.manage, re-checked inside the handler. `scope` CATEGORY scopes it to this category; SPECIALIZATION shares it with every category of this category's specialization and is refused for a GENERIC category. A name already used in the same scope is refused, retired items included.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter categoryId: (path)  
+     - parameter adminSpecialtyCreateRequest: (body)  
+     - returns: RequestBuilder<AdminSpecialty> 
+     */
+    open class func adminCategorySpecialtyCreateWithRequestBuilder(categoryId: UUID, adminSpecialtyCreateRequest: AdminSpecialtyCreateRequest) -> RequestBuilder<AdminSpecialty> {
+        var localVariablePath = "/api/v1/admin/categories/{category_id}/specialties/"
+        let categoryIdPreEscape = "\(APIHelper.mapValueToPathItem(categoryId))"
+        let categoryIdPostEscape = categoryIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{category_id}", with: categoryIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminSpecialtyCreateRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminSpecialty>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Rename, move, reorder or deactivate a category
      
      - parameter categoryId: (path)  
@@ -334,6 +506,178 @@ open class AdminTaxonomyAPI {
         let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
 
         let localVariableRequestBuilder: RequestBuilder<AdminCategory>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Delete a service no facility lists
+     
+     - parameter serviceTagId: (path)  
+     - returns: Void
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminServiceTagDelete(serviceTagId: Int) async throws {
+        return try await adminServiceTagDeleteWithRequestBuilder(serviceTagId: serviceTagId).execute().body
+    }
+
+    /**
+     Delete a service no facility lists
+     - DELETE /api/v1/admin/service-tags/{service_tag_id}/
+     - One that a facility lists answers 409 `SERVICE_TAG_IN_USE`; retire it with `active = false` instead.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter serviceTagId: (path)  
+     - returns: RequestBuilder<Void> 
+     */
+    open class func adminServiceTagDeleteWithRequestBuilder(serviceTagId: Int) -> RequestBuilder<Void> {
+        var localVariablePath = "/api/v1/admin/service-tags/{service_tag_id}/"
+        let serviceTagIdPreEscape = "\(APIHelper.mapValueToPathItem(serviceTagId))"
+        let serviceTagIdPostEscape = serviceTagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{service_tag_id}", with: serviceTagIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return localVariableRequestBuilder.init(method: "DELETE", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Rename, reorder, retire or bring back a service
+     
+     - parameter serviceTagId: (path)  
+     - parameter adminTagUpdateRequest: (body)  (optional)
+     - returns: AdminServiceTag
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminServiceTagUpdate(serviceTagId: Int, adminTagUpdateRequest: AdminTagUpdateRequest? = nil) async throws -> AdminServiceTag {
+        return try await adminServiceTagUpdateWithRequestBuilder(serviceTagId: serviceTagId, adminTagUpdateRequest: adminTagUpdateRequest).execute().body
+    }
+
+    /**
+     Rename, reorder, retire or bring back a service
+     - PUT /api/v1/admin/service-tags/{service_tag_id}/
+     - Omitted fields keep their value. The category is fixed: `categoryId` is refused.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter serviceTagId: (path)  
+     - parameter adminTagUpdateRequest: (body)  (optional)
+     - returns: RequestBuilder<AdminServiceTag> 
+     */
+    open class func adminServiceTagUpdateWithRequestBuilder(serviceTagId: Int, adminTagUpdateRequest: AdminTagUpdateRequest? = nil) -> RequestBuilder<AdminServiceTag> {
+        var localVariablePath = "/api/v1/admin/service-tags/{service_tag_id}/"
+        let serviceTagIdPreEscape = "\(APIHelper.mapValueToPathItem(serviceTagId))"
+        let serviceTagIdPostEscape = serviceTagIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{service_tag_id}", with: serviceTagIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminTagUpdateRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminServiceTag>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Delete a specialty no facility lists
+     
+     - parameter specialtyId: (path)  
+     - returns: Void
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminSpecialtyDelete(specialtyId: Int) async throws {
+        return try await adminSpecialtyDeleteWithRequestBuilder(specialtyId: specialtyId).execute().body
+    }
+
+    /**
+     Delete a specialty no facility lists
+     - DELETE /api/v1/admin/specialties/{specialty_id}/
+     - One that a facility lists answers 409 `SPECIALTY_IN_USE`; retire it with `active = false` instead.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter specialtyId: (path)  
+     - returns: RequestBuilder<Void> 
+     */
+    open class func adminSpecialtyDeleteWithRequestBuilder(specialtyId: Int) -> RequestBuilder<Void> {
+        var localVariablePath = "/api/v1/admin/specialties/{specialty_id}/"
+        let specialtyIdPreEscape = "\(APIHelper.mapValueToPathItem(specialtyId))"
+        let specialtyIdPostEscape = specialtyIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{specialty_id}", with: specialtyIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return localVariableRequestBuilder.init(method: "DELETE", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Rename, reorder, retire or bring back a specialty
+     
+     - parameter specialtyId: (path)  
+     - parameter adminTagUpdateRequest: (body)  (optional)
+     - returns: AdminSpecialty
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminSpecialtyUpdate(specialtyId: Int, adminTagUpdateRequest: AdminTagUpdateRequest? = nil) async throws -> AdminSpecialty {
+        return try await adminSpecialtyUpdateWithRequestBuilder(specialtyId: specialtyId, adminTagUpdateRequest: adminTagUpdateRequest).execute().body
+    }
+
+    /**
+     Rename, reorder, retire or bring back a specialty
+     - PUT /api/v1/admin/specialties/{specialty_id}/
+     - Omitted fields keep their value. The scope is fixed: `scope`, `categoryId` and `specialization` are refused. A specialization's specialty changes for every category of that specialization.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter specialtyId: (path)  
+     - parameter adminTagUpdateRequest: (body)  (optional)
+     - returns: RequestBuilder<AdminSpecialty> 
+     */
+    open class func adminSpecialtyUpdateWithRequestBuilder(specialtyId: Int, adminTagUpdateRequest: AdminTagUpdateRequest? = nil) -> RequestBuilder<AdminSpecialty> {
+        var localVariablePath = "/api/v1/admin/specialties/{specialty_id}/"
+        let specialtyIdPreEscape = "\(APIHelper.mapValueToPathItem(specialtyId))"
+        let specialtyIdPostEscape = specialtyIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{specialty_id}", with: specialtyIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminTagUpdateRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminSpecialty>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
 
         return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
     }

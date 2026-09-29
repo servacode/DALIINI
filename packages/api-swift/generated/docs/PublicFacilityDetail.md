@@ -26,8 +26,8 @@ Name | Type | Description | Notes
 **neighborhood** | [**NamedRef**](NamedRef.md) |  | 
 **location** | [**Coordinates**](Coordinates.md) |  | 
 **images** | [FacilityImage] |  | 
-**specialties** | [NamedRef] |  | 
-**services** | [NamedRef] |  | 
+**specialties** | [NamedIntRef] | Active specialties, in the operators&#39; order. | 
+**services** | [NamedIntRef] | Active services, in the operators&#39; order. | 
 **hours** | [PublicHoursEntry] |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

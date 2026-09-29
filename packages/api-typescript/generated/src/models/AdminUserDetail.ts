@@ -63,10 +63,10 @@ export interface AdminUserDetail {
     updatedAt: Date | null;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<number>}
      * @memberof AdminUserDetail
      */
-    roleIds: Array<string>;
+    roleIds: Array<number>;
 }
 
 /**

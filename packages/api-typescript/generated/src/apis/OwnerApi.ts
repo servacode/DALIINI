@@ -112,7 +112,7 @@ export interface OwnerFacilityUpdateRequest {
 export class OwnerApi extends runtime.BaseAPI {
 
     /**
-     * Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy.
+     * Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy, and the specialties and services the owner may pick for a facility of each.
      * List categories open for owner onboarding in a province
      */
     async ownerConfigRetrieveRaw(requestParameters: OwnerConfigRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OwnerConfig>> {
@@ -153,7 +153,7 @@ export class OwnerApi extends runtime.BaseAPI {
     }
 
     /**
-     * Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy.
+     * Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy, and the specialties and services the owner may pick for a facility of each.
      * List categories open for owner onboarding in a province
      */
     async ownerConfigRetrieve(requestParameters: OwnerConfigRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OwnerConfig> {

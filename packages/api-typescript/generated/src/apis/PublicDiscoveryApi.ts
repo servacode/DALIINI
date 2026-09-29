@@ -59,9 +59,10 @@ export interface PublicFacilitiesListRequest {
     neighborhoodId?: string;
     openNow?: string;
     search?: string;
-    serviceId?: string;
+    serviceId?: number;
+    serviceTagId?: number;
     sort?: string;
-    specialtyId?: string;
+    specialtyId?: number;
 }
 
 export interface PublicFacilityRetrieveRequest {
@@ -77,8 +78,9 @@ export interface PublicHomeRetrieveRequest {
     longitude?: string;
     neighborhoodId?: string;
     search?: string;
-    serviceId?: string;
-    specialtyId?: string;
+    serviceId?: number;
+    serviceTagId?: number;
+    specialtyId?: number;
 }
 
 export interface PublicMapFacilitiesListRequest {
@@ -93,8 +95,9 @@ export interface PublicMapFacilitiesListRequest {
     neighborhoodId?: string;
     openNow?: string;
     search?: string;
-    serviceId?: string;
-    specialtyId?: string;
+    serviceId?: number;
+    serviceTagId?: number;
+    specialtyId?: number;
 }
 
 export interface PublicSearchListRequest {
@@ -109,8 +112,9 @@ export interface PublicSearchListRequest {
     longitude?: string;
     neighborhoodId?: string;
     search?: string;
-    serviceId?: string;
-    specialtyId?: string;
+    serviceId?: number;
+    serviceTagId?: number;
+    specialtyId?: number;
 }
 
 /**
@@ -244,6 +248,10 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
 
         if (requestParameters['serviceId'] != null) {
             queryParameters['serviceId'] = requestParameters['serviceId'];
+        }
+
+        if (requestParameters['serviceTagId'] != null) {
+            queryParameters['serviceTagId'] = requestParameters['serviceTagId'];
         }
 
         if (requestParameters['sort'] != null) {
@@ -383,6 +391,10 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
             queryParameters['serviceId'] = requestParameters['serviceId'];
         }
 
+        if (requestParameters['serviceTagId'] != null) {
+            queryParameters['serviceTagId'] = requestParameters['serviceTagId'];
+        }
+
         if (requestParameters['specialtyId'] != null) {
             queryParameters['specialtyId'] = requestParameters['specialtyId'];
         }
@@ -479,6 +491,10 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
 
         if (requestParameters['serviceId'] != null) {
             queryParameters['serviceId'] = requestParameters['serviceId'];
+        }
+
+        if (requestParameters['serviceTagId'] != null) {
+            queryParameters['serviceTagId'] = requestParameters['serviceTagId'];
         }
 
         if (requestParameters['specialtyId'] != null) {
@@ -583,6 +599,10 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
 
         if (requestParameters['serviceId'] != null) {
             queryParameters['serviceId'] = requestParameters['serviceId'];
+        }
+
+        if (requestParameters['serviceTagId'] != null) {
+            queryParameters['serviceTagId'] = requestParameters['serviceTagId'];
         }
 
         if (requestParameters['specialtyId'] != null) {

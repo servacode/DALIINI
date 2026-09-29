@@ -14,8 +14,8 @@
 | **addressEn** | **kotlin.String** |  |  [optional] |
 | **cityId** | [**java.util.UUID**](java.util.UUID.md) |  |  [optional] |
 | **neighborhoodId** | [**java.util.UUID**](java.util.UUID.md) |  |  [optional] |
-| **specialtyIds** | [**kotlin.collections.List&lt;java.util.UUID&gt;**](java.util.UUID.md) |  |  [optional] |
-| **serviceTagIds** | [**kotlin.collections.List&lt;java.util.UUID&gt;**](java.util.UUID.md) |  |  [optional] |
+| **specialtyIds** | **kotlin.collections.List&lt;kotlin.Int&gt;** | Replaces the facility&#39;s specialties. Ids come from the category&#39;s &#x60;specialties&#x60; in ownerConfigRetrieve; an empty list clears them. |  [optional] |
+| **serviceTagIds** | **kotlin.collections.List&lt;kotlin.Int&gt;** | Replaces the facility&#39;s services. Ids come from the category&#39;s &#x60;services&#x60; in ownerConfigRetrieve; an empty list clears them. |  [optional] |
 
 
 

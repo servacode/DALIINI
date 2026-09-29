@@ -19,6 +19,7 @@ import com.servacode.directory.api.models.Availability
 import com.servacode.directory.api.models.BilingualRef
 import com.servacode.directory.api.models.Coordinates
 import com.servacode.directory.api.models.FacilityImage
+import com.servacode.directory.api.models.NamedIntRef
 import com.servacode.directory.api.models.NamedRef
 import com.servacode.directory.api.models.PublicHoursEntry
 
@@ -52,8 +53,8 @@ import kotlinx.serialization.Contextual
  * @param neighborhood 
  * @param location 
  * @param images 
- * @param specialties 
- * @param services 
+ * @param specialties Active specialties, in the operators' order.
+ * @param services Active services, in the operators' order.
  * @param hours 
  */
 @Serializable
@@ -136,11 +137,13 @@ data class PublicFacilityDetail (
     @SerialName(value = "images")
     val images: kotlin.collections.List<FacilityImage>,
 
+    /* Active specialties, in the operators' order. */
     @SerialName(value = "specialties")
-    val specialties: kotlin.collections.List<NamedRef>,
+    val specialties: kotlin.collections.List<NamedIntRef>,
 
+    /* Active services, in the operators' order. */
     @SerialName(value = "services")
-    val services: kotlin.collections.List<NamedRef>,
+    val services: kotlin.collections.List<NamedIntRef>,
 
     @SerialName(value = "hours")
     val hours: kotlin.collections.List<PublicHoursEntry>

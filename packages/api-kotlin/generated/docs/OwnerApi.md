@@ -21,7 +21,7 @@ All URIs are relative to *http://localhost*
 
 List categories open for owner onboarding in a province
 
-Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy.
+Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy, and the specialties and services the owner may pick for a facility of each.
 
 ### Example
 ```kotlin

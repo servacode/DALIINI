@@ -30,7 +30,7 @@ import kotlinx.serialization.Contextual
 data class AdminUserRolesRequest (
 
     @SerialName(value = "roleIds")
-    val roleIds: kotlin.collections.List<@Contextual java.util.UUID>
+    val roleIds: kotlin.collections.List<kotlin.Int>
 
 ) {
 

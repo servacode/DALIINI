@@ -31,15 +31,17 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
     public var cityId: UUID?
     public var neighborhoodId: UUID?
     public var location: Coordinates?
-    public var specialtyIds: [UUID]
-    public var serviceTagIds: [UUID]
+    /** The facility's active specialties, in order; retired ones are left out. */
+    public var specialtyIds: [Int]
+    /** The facility's active services, in order; retired ones are left out. */
+    public var serviceTagIds: [Int]
     public var evidence: [OwnerEvidenceRef]
     public var hours: [OwnerHoursEntry]
     /** When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old. */
     public var hoursConfirmedAt: Date?
     public var application: OwnerApplication?
 
-    public init(id: UUID, nameAr: String, category: NamedRef, province: NamedRef, status: FacilityStatusEnum, lastUpdate: Date, requiredAction: OwnerRequiredActionEnum?, capabilities: CategoryCapabilities, nameEn: String?, descriptionAr: String?, descriptionEn: String?, phone: String?, whatsapp: String?, addressAr: String?, addressEn: String?, cityId: UUID?, neighborhoodId: UUID?, location: Coordinates?, specialtyIds: [UUID], serviceTagIds: [UUID], evidence: [OwnerEvidenceRef], hours: [OwnerHoursEntry], hoursConfirmedAt: Date?, application: OwnerApplication?) {
+    public init(id: UUID, nameAr: String, category: NamedRef, province: NamedRef, status: FacilityStatusEnum, lastUpdate: Date, requiredAction: OwnerRequiredActionEnum?, capabilities: CategoryCapabilities, nameEn: String?, descriptionAr: String?, descriptionEn: String?, phone: String?, whatsapp: String?, addressAr: String?, addressEn: String?, cityId: UUID?, neighborhoodId: UUID?, location: Coordinates?, specialtyIds: [Int], serviceTagIds: [Int], evidence: [OwnerEvidenceRef], hours: [OwnerHoursEntry], hoursConfirmedAt: Date?, application: OwnerApplication?) {
         self.id = id
         self.nameAr = nameAr
         self.category = category

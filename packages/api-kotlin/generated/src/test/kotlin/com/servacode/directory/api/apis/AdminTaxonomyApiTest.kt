@@ -30,6 +30,13 @@ import com.servacode.directory.api.models.AdminCategoryList
 import com.servacode.directory.api.models.AdminCategoryProvinceRequest
 import com.servacode.directory.api.models.AdminCategoryUpdateRequest
 import com.servacode.directory.api.models.AdminId
+import com.servacode.directory.api.models.AdminServiceTag
+import com.servacode.directory.api.models.AdminServiceTagCreateRequest
+import com.servacode.directory.api.models.AdminServiceTagList
+import com.servacode.directory.api.models.AdminSpecialty
+import com.servacode.directory.api.models.AdminSpecialtyCreateRequest
+import com.servacode.directory.api.models.AdminSpecialtyList
+import com.servacode.directory.api.models.AdminTagUpdateRequest
 import com.servacode.directory.api.models.ApiError
 
 class AdminTaxonomyApiTest : ShouldSpec() {
@@ -94,12 +101,78 @@ class AdminTaxonomyApiTest : ShouldSpec() {
             //result shouldBe ("TODO")
         }
 
+        // to test adminCategoryServiceTagCreate
+        should("test adminCategoryServiceTagCreate") {
+            // uncomment below to test adminCategoryServiceTagCreate
+            //val categoryId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val adminServiceTagCreateRequest : AdminServiceTagCreateRequest =  // AdminServiceTagCreateRequest | 
+            //val result : AdminServiceTag = apiInstance.adminCategoryServiceTagCreate(categoryId, adminServiceTagCreateRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminCategoryServiceTagsList
+        should("test adminCategoryServiceTagsList") {
+            // uncomment below to test adminCategoryServiceTagsList
+            //val categoryId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : AdminServiceTagList = apiInstance.adminCategoryServiceTagsList(categoryId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminCategorySpecialtiesList
+        should("test adminCategorySpecialtiesList") {
+            // uncomment below to test adminCategorySpecialtiesList
+            //val categoryId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : AdminSpecialtyList = apiInstance.adminCategorySpecialtiesList(categoryId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminCategorySpecialtyCreate
+        should("test adminCategorySpecialtyCreate") {
+            // uncomment below to test adminCategorySpecialtyCreate
+            //val categoryId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val adminSpecialtyCreateRequest : AdminSpecialtyCreateRequest =  // AdminSpecialtyCreateRequest | 
+            //val result : AdminSpecialty = apiInstance.adminCategorySpecialtyCreate(categoryId, adminSpecialtyCreateRequest)
+            //result shouldBe ("TODO")
+        }
+
         // to test adminCategoryUpdate
         should("test adminCategoryUpdate") {
             // uncomment below to test adminCategoryUpdate
             //val categoryId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //val adminCategoryUpdateRequest : AdminCategoryUpdateRequest =  // AdminCategoryUpdateRequest | 
             //val result : AdminCategory = apiInstance.adminCategoryUpdate(categoryId, adminCategoryUpdateRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminServiceTagDelete
+        should("test adminServiceTagDelete") {
+            // uncomment below to test adminServiceTagDelete
+            //val serviceTagId : kotlin.Int = 56 // kotlin.Int | 
+            //apiInstance.adminServiceTagDelete(serviceTagId)
+        }
+
+        // to test adminServiceTagUpdate
+        should("test adminServiceTagUpdate") {
+            // uncomment below to test adminServiceTagUpdate
+            //val serviceTagId : kotlin.Int = 56 // kotlin.Int | 
+            //val adminTagUpdateRequest : AdminTagUpdateRequest =  // AdminTagUpdateRequest | 
+            //val result : AdminServiceTag = apiInstance.adminServiceTagUpdate(serviceTagId, adminTagUpdateRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminSpecialtyDelete
+        should("test adminSpecialtyDelete") {
+            // uncomment below to test adminSpecialtyDelete
+            //val specialtyId : kotlin.Int = 56 // kotlin.Int | 
+            //apiInstance.adminSpecialtyDelete(specialtyId)
+        }
+
+        // to test adminSpecialtyUpdate
+        should("test adminSpecialtyUpdate") {
+            // uncomment below to test adminSpecialtyUpdate
+            //val specialtyId : kotlin.Int = 56 // kotlin.Int | 
+            //val adminTagUpdateRequest : AdminTagUpdateRequest =  // AdminTagUpdateRequest | 
+            //val result : AdminSpecialty = apiInstance.adminSpecialtyUpdate(specialtyId, adminTagUpdateRequest)
             //result shouldBe ("TODO")
         }
 

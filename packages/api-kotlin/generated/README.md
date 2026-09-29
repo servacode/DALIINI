@@ -134,7 +134,15 @@ All URIs are relative to *http://localhost*
 | *AdminTaxonomyApi* | [**adminCategoryGroupUpdate**](docs/AdminTaxonomyApi.md#admincategorygroupupdate) | **PUT** api/v1/admin/category-groups/{group_id}/ | Rename, reorder or deactivate a category group |
 | *AdminTaxonomyApi* | [**adminCategoryGroupsList**](docs/AdminTaxonomyApi.md#admincategorygroupslist) | **GET** api/v1/admin/category-groups/ | List category groups |
 | *AdminTaxonomyApi* | [**adminCategoryProvinceReplace**](docs/AdminTaxonomyApi.md#admincategoryprovincereplace) | **PUT** api/v1/admin/categories/{category_id}/provinces/ | Set the per-province switches of a category |
+| *AdminTaxonomyApi* | [**adminCategoryServiceTagCreate**](docs/AdminTaxonomyApi.md#admincategoryservicetagcreate) | **POST** api/v1/admin/categories/{category_id}/service-tags/ | Add a service to a category |
+| *AdminTaxonomyApi* | [**adminCategoryServiceTagsList**](docs/AdminTaxonomyApi.md#admincategoryservicetagslist) | **GET** api/v1/admin/categories/{category_id}/service-tags/ | List the services of a category |
+| *AdminTaxonomyApi* | [**adminCategorySpecialtiesList**](docs/AdminTaxonomyApi.md#admincategoryspecialtieslist) | **GET** api/v1/admin/categories/{category_id}/specialties/ | List the specialties a category offers, in both scopes |
+| *AdminTaxonomyApi* | [**adminCategorySpecialtyCreate**](docs/AdminTaxonomyApi.md#admincategoryspecialtycreate) | **POST** api/v1/admin/categories/{category_id}/specialties/ | Add a specialty to a category or to its specialization |
 | *AdminTaxonomyApi* | [**adminCategoryUpdate**](docs/AdminTaxonomyApi.md#admincategoryupdate) | **PUT** api/v1/admin/categories/{category_id}/ | Rename, move, reorder or deactivate a category |
+| *AdminTaxonomyApi* | [**adminServiceTagDelete**](docs/AdminTaxonomyApi.md#adminservicetagdelete) | **DELETE** api/v1/admin/service-tags/{service_tag_id}/ | Delete a service no facility lists |
+| *AdminTaxonomyApi* | [**adminServiceTagUpdate**](docs/AdminTaxonomyApi.md#adminservicetagupdate) | **PUT** api/v1/admin/service-tags/{service_tag_id}/ | Rename, reorder, retire or bring back a service |
+| *AdminTaxonomyApi* | [**adminSpecialtyDelete**](docs/AdminTaxonomyApi.md#adminspecialtydelete) | **DELETE** api/v1/admin/specialties/{specialty_id}/ | Delete a specialty no facility lists |
+| *AdminTaxonomyApi* | [**adminSpecialtyUpdate**](docs/AdminTaxonomyApi.md#adminspecialtyupdate) | **PUT** api/v1/admin/specialties/{specialty_id}/ | Rename, reorder, retire or bring back a specialty |
 | *AdminUsersApi* | [**adminRolesList**](docs/AdminUsersApi.md#adminroleslist) | **GET** api/v1/admin/roles/ | List admin roles and their permission codes |
 | *AdminUsersApi* | [**adminUserBlock**](docs/AdminUsersApi.md#adminuserblock) | **POST** api/v1/admin/users/{user_id}/block/ | Block a user account |
 | *AdminUsersApi* | [**adminUserRetrieve**](docs/AdminUsersApi.md#adminuserretrieve) | **GET** api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned |
@@ -197,6 +205,7 @@ All URIs are relative to *http://localhost*
 | *PublicDiscoveryApi* | [**publicSearchList**](docs/PublicDiscoveryApi.md#publicsearchlist) | **GET** api/v1/public/search/ | Search facilities within a province |
 | *PublicFacilitiesApi* | [**publicFacilityReportCreate**](docs/PublicFacilitiesApi.md#publicfacilityreportcreate) | **POST** api/v1/facilities/{facility_id}/reports/ | Report a problem with a facility's listing |
 | *PublicPlatformApi* | [**publicPlatformStatusRetrieve**](docs/PublicPlatformApi.md#publicplatformstatusretrieve) | **GET** api/v1/platform/status/ | Platform availability (maintenance mode) |
+| *PublicTaxonomyApi* | [**publicCategoryTagsRetrieve**](docs/PublicTaxonomyApi.md#publiccategorytagsretrieve) | **GET** api/v1/public/categories/{category_id}/tags/ | List the specialties and services a category offers |
 | *PublicTaxonomyApi* | [**publicLocationResolve**](docs/PublicTaxonomyApi.md#publiclocationresolve) | **GET** api/v1/public/locations/resolve/ | Resolve a coordinate to a province, city and neighbourhood |
 | *PublicTaxonomyApi* | [**publicProvinceCategoriesList**](docs/PublicTaxonomyApi.md#publicprovincecategorieslist) | **GET** api/v1/public/provinces/{province_id}/categories/ | List categories publicly enabled for a province |
 | *PublicTaxonomyApi* | [**publicProvinceCitiesList**](docs/PublicTaxonomyApi.md#publicprovincecitieslist) | **GET** api/v1/public/provinces/{province_id}/cities/ | List active cities in a province |
@@ -301,13 +310,20 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminSearchHit](docs/AdminSearchHit.md)
  - [com.servacode.directory.api.models.AdminSearchHitTypeEnum](docs/AdminSearchHitTypeEnum.md)
  - [com.servacode.directory.api.models.AdminSearchResult](docs/AdminSearchResult.md)
+ - [com.servacode.directory.api.models.AdminServiceTag](docs/AdminServiceTag.md)
+ - [com.servacode.directory.api.models.AdminServiceTagCreateRequest](docs/AdminServiceTagCreateRequest.md)
+ - [com.servacode.directory.api.models.AdminServiceTagList](docs/AdminServiceTagList.md)
  - [com.servacode.directory.api.models.AdminSetting](docs/AdminSetting.md)
  - [com.servacode.directory.api.models.AdminSettingList](docs/AdminSettingList.md)
  - [com.servacode.directory.api.models.AdminSettingWriteRequest](docs/AdminSettingWriteRequest.md)
  - [com.servacode.directory.api.models.AdminSettingWritten](docs/AdminSettingWritten.md)
+ - [com.servacode.directory.api.models.AdminSpecialty](docs/AdminSpecialty.md)
+ - [com.servacode.directory.api.models.AdminSpecialtyCreateRequest](docs/AdminSpecialtyCreateRequest.md)
+ - [com.servacode.directory.api.models.AdminSpecialtyList](docs/AdminSpecialtyList.md)
  - [com.servacode.directory.api.models.AdminStaffMember](docs/AdminStaffMember.md)
  - [com.servacode.directory.api.models.AdminStaffPerformance](docs/AdminStaffPerformance.md)
  - [com.servacode.directory.api.models.AdminSystemStatus](docs/AdminSystemStatus.md)
+ - [com.servacode.directory.api.models.AdminTagUpdateRequest](docs/AdminTagUpdateRequest.md)
  - [com.servacode.directory.api.models.AdminTaskApplication](docs/AdminTaskApplication.md)
  - [com.servacode.directory.api.models.AdminTaskApplicationBucket](docs/AdminTaskApplicationBucket.md)
  - [com.servacode.directory.api.models.AdminTaskApplications](docs/AdminTaskApplications.md)
@@ -397,6 +413,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.LogoutRequest](docs/LogoutRequest.md)
  - [com.servacode.directory.api.models.MapMarker](docs/MapMarker.md)
  - [com.servacode.directory.api.models.MapMarkerList](docs/MapMarkerList.md)
+ - [com.servacode.directory.api.models.NamedIntRef](docs/NamedIntRef.md)
  - [com.servacode.directory.api.models.NamedRef](docs/NamedRef.md)
  - [com.servacode.directory.api.models.Notification](docs/Notification.md)
  - [com.servacode.directory.api.models.NotificationPage](docs/NotificationPage.md)
@@ -433,6 +450,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.PublicAdvertisementList](docs/PublicAdvertisementList.md)
  - [com.servacode.directory.api.models.PublicCategory](docs/PublicCategory.md)
  - [com.servacode.directory.api.models.PublicCategoryList](docs/PublicCategoryList.md)
+ - [com.servacode.directory.api.models.PublicCategoryTags](docs/PublicCategoryTags.md)
  - [com.servacode.directory.api.models.PublicCity](docs/PublicCity.md)
  - [com.servacode.directory.api.models.PublicCityList](docs/PublicCityList.md)
  - [com.servacode.directory.api.models.PublicDutyDay](docs/PublicDutyDay.md)
@@ -456,6 +474,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.RegisterStart](docs/RegisterStart.md)
  - [com.servacode.directory.api.models.ResolvedByEnum](docs/ResolvedByEnum.md)
  - [com.servacode.directory.api.models.SessionCredentials](docs/SessionCredentials.md)
+ - [com.servacode.directory.api.models.SpecialtyScopeEnum](docs/SpecialtyScopeEnum.md)
  - [com.servacode.directory.api.models.TemporaryClosure](docs/TemporaryClosure.md)
  - [com.servacode.directory.api.models.TemporaryClosureInput](docs/TemporaryClosureInput.md)
  - [com.servacode.directory.api.models.TemporaryClosureList](docs/TemporaryClosureList.md)

@@ -22,8 +22,8 @@
 | **cityId** | [**java.util.UUID**](java.util.UUID.md) |  |  |
 | **neighborhoodId** | [**java.util.UUID**](java.util.UUID.md) |  |  |
 | **location** | [**Coordinates**](Coordinates.md) |  |  |
-| **specialtyIds** | [**kotlin.collections.List&lt;java.util.UUID&gt;**](java.util.UUID.md) |  |  |
-| **serviceTagIds** | [**kotlin.collections.List&lt;java.util.UUID&gt;**](java.util.UUID.md) |  |  |
+| **specialtyIds** | **kotlin.collections.List&lt;kotlin.Int&gt;** | The facility&#39;s active specialties, in order; retired ones are left out. |  |
+| **serviceTagIds** | **kotlin.collections.List&lt;kotlin.Int&gt;** | The facility&#39;s active services, in order; retired ones are left out. |  |
 | **evidence** | [**kotlin.collections.List&lt;OwnerEvidenceRef&gt;**](OwnerEvidenceRef.md) |  |  |
 | **hours** | [**kotlin.collections.List&lt;OwnerHoursEntry&gt;**](OwnerHoursEntry.md) |  |  |
 | **hoursConfirmedAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) | When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old. |  |

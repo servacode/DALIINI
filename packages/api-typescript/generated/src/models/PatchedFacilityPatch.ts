@@ -80,17 +80,17 @@ export interface PatchedFacilityPatch {
      */
     neighborhoodId?: string | null;
     /**
-     * 
-     * @type {Array<string>}
+     * Replaces the facility's specialties. Ids come from the category's `specialties` in ownerConfigRetrieve; an empty list clears them.
+     * @type {Array<number>}
      * @memberof PatchedFacilityPatch
      */
-    specialtyIds?: Array<string>;
+    specialtyIds?: Array<number>;
     /**
-     * 
-     * @type {Array<string>}
+     * Replaces the facility's services. Ids come from the category's `services` in ownerConfigRetrieve; an empty list clears them.
+     * @type {Array<number>}
      * @memberof PatchedFacilityPatch
      */
-    serviceTagIds?: Array<string>;
+    serviceTagIds?: Array<number>;
 }
 
 /**

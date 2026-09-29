@@ -25,7 +25,7 @@ interface OwnerApi {
     /**
      * GET api/v1/owner/config/
      * List categories open for owner onboarding in a province
-     * Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy.
+     * Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy, and the specialties and services the owner may pick for a facility of each.
      * Responses:
      *  - 200: 
      *  - 400: A domain rule rejected the request; `code` names the rule.

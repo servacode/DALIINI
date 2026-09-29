@@ -42,11 +42,13 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
     public var neighborhood: NamedRef?
     public var location: Coordinates?
     public var images: [FacilityImage]
-    public var specialties: [NamedRef]
-    public var services: [NamedRef]
+    /** Active specialties, in the operators' order. */
+    public var specialties: [NamedIntRef]
+    /** Active services, in the operators' order. */
+    public var services: [NamedIntRef]
     public var hours: [PublicHoursEntry]
 
-    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, isFavorite: Bool, imageUrl: String?, lastVerifiedAt: Date?, infoConfirmedAt: Date?, updatedAt: Date, descriptionAr: String?, descriptionEn: String?, phone: String?, whatsapp: String?, addressAr: String?, addressEn: String?, neighborhood: NamedRef?, location: Coordinates?, images: [FacilityImage], specialties: [NamedRef], services: [NamedRef], hours: [PublicHoursEntry]) {
+    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, isFavorite: Bool, imageUrl: String?, lastVerifiedAt: Date?, infoConfirmedAt: Date?, updatedAt: Date, descriptionAr: String?, descriptionEn: String?, phone: String?, whatsapp: String?, addressAr: String?, addressEn: String?, neighborhood: NamedRef?, location: Coordinates?, images: [FacilityImage], specialties: [NamedIntRef], services: [NamedIntRef], hours: [PublicHoursEntry]) {
         self.id = id
         self.nameAr = nameAr
         self.nameEn = nameEn

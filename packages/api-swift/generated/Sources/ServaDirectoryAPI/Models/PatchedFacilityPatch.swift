@@ -29,10 +29,12 @@ public struct PatchedFacilityPatch: Codable, JSONEncodable, Hashable {
     public var addressEn: String?
     public var cityId: UUID?
     public var neighborhoodId: UUID?
-    public var specialtyIds: [UUID]?
-    public var serviceTagIds: [UUID]?
+    /** Replaces the facility's specialties. Ids come from the category's `specialties` in ownerConfigRetrieve; an empty list clears them. */
+    public var specialtyIds: [Int]?
+    /** Replaces the facility's services. Ids come from the category's `services` in ownerConfigRetrieve; an empty list clears them. */
+    public var serviceTagIds: [Int]?
 
-    public init(nameAr: String? = nil, nameEn: String? = nil, descriptionAr: String? = nil, descriptionEn: String? = nil, phone: String? = nil, whatsapp: String? = nil, addressAr: String? = nil, addressEn: String? = nil, cityId: UUID? = nil, neighborhoodId: UUID? = nil, specialtyIds: [UUID]? = nil, serviceTagIds: [UUID]? = nil) {
+    public init(nameAr: String? = nil, nameEn: String? = nil, descriptionAr: String? = nil, descriptionEn: String? = nil, phone: String? = nil, whatsapp: String? = nil, addressAr: String? = nil, addressEn: String? = nil, cityId: UUID? = nil, neighborhoodId: UUID? = nil, specialtyIds: [Int]? = nil, serviceTagIds: [Int]? = nil) {
         self.nameAr = nameAr
         self.nameEn = nameEn
         self.descriptionAr = descriptionAr

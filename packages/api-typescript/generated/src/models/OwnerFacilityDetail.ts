@@ -185,17 +185,17 @@ export interface OwnerFacilityDetail {
      */
     location: Coordinates | null;
     /**
-     * 
-     * @type {Array<string>}
+     * The facility's active specialties, in order; retired ones are left out.
+     * @type {Array<number>}
      * @memberof OwnerFacilityDetail
      */
-    specialtyIds: Array<string>;
+    specialtyIds: Array<number>;
     /**
-     * 
-     * @type {Array<string>}
+     * The facility's active services, in order; retired ones are left out.
+     * @type {Array<number>}
      * @memberof OwnerFacilityDetail
      */
-    serviceTagIds: Array<string>;
+    serviceTagIds: Array<number>;
     /**
      * 
      * @type {Array<OwnerEvidenceRef>}

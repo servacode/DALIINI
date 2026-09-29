@@ -27,8 +27,8 @@
 | **neighborhood** | [**NamedRef**](NamedRef.md) |  |  |
 | **location** | [**Coordinates**](Coordinates.md) |  |  |
 | **images** | [**kotlin.collections.List&lt;FacilityImage&gt;**](FacilityImage.md) |  |  |
-| **specialties** | [**kotlin.collections.List&lt;NamedRef&gt;**](NamedRef.md) |  |  |
-| **services** | [**kotlin.collections.List&lt;NamedRef&gt;**](NamedRef.md) |  |  |
+| **specialties** | [**kotlin.collections.List&lt;NamedIntRef&gt;**](NamedIntRef.md) | Active specialties, in the operators&#39; order. |  |
+| **services** | [**kotlin.collections.List&lt;NamedIntRef&gt;**](NamedIntRef.md) | Active services, in the operators&#39; order. |  |
 | **hours** | [**kotlin.collections.List&lt;PublicHoursEntry&gt;**](PublicHoursEntry.md) |  |  |
 
 

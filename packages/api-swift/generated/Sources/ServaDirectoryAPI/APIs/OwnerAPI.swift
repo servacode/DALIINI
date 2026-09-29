@@ -26,7 +26,7 @@ open class OwnerAPI {
     /**
      List categories open for owner onboarding in a province
      - GET /api/v1/owner/config/
-     - Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy.
+     - Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy, and the specialties and services the owner may pick for a facility of each.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken

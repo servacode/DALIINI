@@ -49,8 +49,8 @@ import kotlinx.serialization.Contextual
  * @param cityId 
  * @param neighborhoodId 
  * @param location 
- * @param specialtyIds 
- * @param serviceTagIds 
+ * @param specialtyIds The facility's active specialties, in order; retired ones are left out.
+ * @param serviceTagIds The facility's active services, in order; retired ones are left out.
  * @param evidence 
  * @param hours 
  * @param hoursConfirmedAt When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old.
@@ -115,11 +115,13 @@ data class OwnerFacilityDetail (
     @SerialName(value = "location")
     val location: Coordinates?,
 
+    /* The facility's active specialties, in order; retired ones are left out. */
     @SerialName(value = "specialtyIds")
-    val specialtyIds: kotlin.collections.List<@Contextual java.util.UUID>,
+    val specialtyIds: kotlin.collections.List<kotlin.Int>,
 
+    /* The facility's active services, in order; retired ones are left out. */
     @SerialName(value = "serviceTagIds")
-    val serviceTagIds: kotlin.collections.List<@Contextual java.util.UUID>,
+    val serviceTagIds: kotlin.collections.List<kotlin.Int>,
 
     @SerialName(value = "evidence")
     val evidence: kotlin.collections.List<OwnerEvidenceRef>,

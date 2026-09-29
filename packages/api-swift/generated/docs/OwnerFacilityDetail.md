@@ -21,8 +21,8 @@ Name | Type | Description | Notes
 **cityId** | **UUID** |  | 
 **neighborhoodId** | **UUID** |  | 
 **location** | [**Coordinates**](Coordinates.md) |  | 
-**specialtyIds** | **[UUID]** |  | 
-**serviceTagIds** | **[UUID]** |  | 
+**specialtyIds** | **[Int]** | The facility&#39;s active specialties, in order; retired ones are left out. | 
+**serviceTagIds** | **[Int]** | The facility&#39;s active services, in order; retired ones are left out. | 
 **evidence** | [OwnerEvidenceRef] |  | 
 **hours** | [OwnerHoursEntry] |  | 
 **hoursConfirmedAt** | **Date** | When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old. | 

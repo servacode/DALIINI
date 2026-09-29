@@ -54,13 +54,14 @@ interface PublicDiscoveryApi {
      * @param neighborhoodId Optional neighbourhood filter. (optional)
      * @param openNow Pass true to keep only facilities open at this moment. (optional)
      * @param search Free-text term matched against facility text. (optional)
-     * @param serviceId Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
+     * @param serviceId The earlier name of serviceTagId, still accepted; it behaves the same way. (optional)
+     * @param serviceTagId Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. (optional)
      * @param sort nearest orders by distance and needs coordinates; name orders by Arabic name. Omitted keeps the historical behaviour: nearest whenever coordinates are supplied, name otherwise. Distances are returned whenever coordinates are supplied, whichever ordering is asked for. (optional)
-     * @param specialtyId Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
+     * @param specialtyId Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. (optional)
      * @return [FacilityCursorPage]
      */
     @GET("api/v1/public/facilities/")
-    suspend fun publicFacilitiesList(@Query("provinceId") provinceId: kotlin.String, @Query("bbox") bbox: kotlin.String? = null, @Query("categoryId") categoryId: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("cursor") cursor: kotlin.String? = null, @Query("dutyNow") dutyNow: kotlin.String? = null, @Query("dutyToday") dutyToday: kotlin.String? = null, @Query("latitude") latitude: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null, @Query("longitude") longitude: kotlin.String? = null, @Query("neighborhoodId") neighborhoodId: kotlin.String? = null, @Query("openNow") openNow: kotlin.String? = null, @Query("search") search: kotlin.String? = null, @Query("serviceId") serviceId: kotlin.String? = null, @Query("sort") sort: kotlin.String? = null, @Query("specialtyId") specialtyId: kotlin.String? = null): Response<FacilityCursorPage>
+    suspend fun publicFacilitiesList(@Query("provinceId") provinceId: kotlin.String, @Query("bbox") bbox: kotlin.String? = null, @Query("categoryId") categoryId: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("cursor") cursor: kotlin.String? = null, @Query("dutyNow") dutyNow: kotlin.String? = null, @Query("dutyToday") dutyToday: kotlin.String? = null, @Query("latitude") latitude: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null, @Query("longitude") longitude: kotlin.String? = null, @Query("neighborhoodId") neighborhoodId: kotlin.String? = null, @Query("openNow") openNow: kotlin.String? = null, @Query("search") search: kotlin.String? = null, @Query("serviceId") serviceId: kotlin.Int? = null, @Query("serviceTagId") serviceTagId: kotlin.Int? = null, @Query("sort") sort: kotlin.String? = null, @Query("specialtyId") specialtyId: kotlin.Int? = null): Response<FacilityCursorPage>
 
     /**
      * GET api/v1/public/facilities/{facility_id}/
@@ -93,12 +94,13 @@ interface PublicDiscoveryApi {
      * @param longitude Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
      * @param neighborhoodId Optional neighbourhood filter. (optional)
      * @param search Free-text term matched against facility text. (optional)
-     * @param serviceId Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
-     * @param specialtyId Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
+     * @param serviceId The earlier name of serviceTagId, still accepted; it behaves the same way. (optional)
+     * @param serviceTagId Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. (optional)
+     * @param specialtyId Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. (optional)
      * @return [PublicHome]
      */
     @GET("api/v1/public/home/")
-    suspend fun publicHomeRetrieve(@Query("provinceId") provinceId: kotlin.String, @Query("bbox") bbox: kotlin.String? = null, @Query("categoryId") categoryId: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("latitude") latitude: kotlin.String? = null, @Query("longitude") longitude: kotlin.String? = null, @Query("neighborhoodId") neighborhoodId: kotlin.String? = null, @Query("search") search: kotlin.String? = null, @Query("serviceId") serviceId: kotlin.String? = null, @Query("specialtyId") specialtyId: kotlin.String? = null): Response<PublicHome>
+    suspend fun publicHomeRetrieve(@Query("provinceId") provinceId: kotlin.String, @Query("bbox") bbox: kotlin.String? = null, @Query("categoryId") categoryId: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("latitude") latitude: kotlin.String? = null, @Query("longitude") longitude: kotlin.String? = null, @Query("neighborhoodId") neighborhoodId: kotlin.String? = null, @Query("search") search: kotlin.String? = null, @Query("serviceId") serviceId: kotlin.Int? = null, @Query("serviceTagId") serviceTagId: kotlin.Int? = null, @Query("specialtyId") specialtyId: kotlin.Int? = null): Response<PublicHome>
 
     /**
      * GET api/v1/public/map/facilities/
@@ -119,12 +121,13 @@ interface PublicDiscoveryApi {
      * @param neighborhoodId Optional neighbourhood filter. (optional)
      * @param openNow Pass true to keep only facilities open at this moment. (optional)
      * @param search Free-text term matched against facility text. (optional)
-     * @param serviceId Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
-     * @param specialtyId Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
+     * @param serviceId The earlier name of serviceTagId, still accepted; it behaves the same way. (optional)
+     * @param serviceTagId Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. (optional)
+     * @param specialtyId Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. (optional)
      * @return [MapMarkerList]
      */
     @GET("api/v1/public/map/facilities/")
-    suspend fun publicMapFacilitiesList(@Query("provinceId") provinceId: kotlin.String, @Query("bbox") bbox: kotlin.String? = null, @Query("categoryId") categoryId: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("dutyNow") dutyNow: kotlin.String? = null, @Query("dutyToday") dutyToday: kotlin.String? = null, @Query("latitude") latitude: kotlin.String? = null, @Query("longitude") longitude: kotlin.String? = null, @Query("neighborhoodId") neighborhoodId: kotlin.String? = null, @Query("openNow") openNow: kotlin.String? = null, @Query("search") search: kotlin.String? = null, @Query("serviceId") serviceId: kotlin.String? = null, @Query("specialtyId") specialtyId: kotlin.String? = null): Response<MapMarkerList>
+    suspend fun publicMapFacilitiesList(@Query("provinceId") provinceId: kotlin.String, @Query("bbox") bbox: kotlin.String? = null, @Query("categoryId") categoryId: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("dutyNow") dutyNow: kotlin.String? = null, @Query("dutyToday") dutyToday: kotlin.String? = null, @Query("latitude") latitude: kotlin.String? = null, @Query("longitude") longitude: kotlin.String? = null, @Query("neighborhoodId") neighborhoodId: kotlin.String? = null, @Query("openNow") openNow: kotlin.String? = null, @Query("search") search: kotlin.String? = null, @Query("serviceId") serviceId: kotlin.Int? = null, @Query("serviceTagId") serviceTagId: kotlin.Int? = null, @Query("specialtyId") specialtyId: kotlin.Int? = null): Response<MapMarkerList>
 
     /**
      * GET api/v1/public/search/
@@ -145,11 +148,12 @@ interface PublicDiscoveryApi {
      * @param longitude Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
      * @param neighborhoodId Optional neighbourhood filter. (optional)
      * @param search Free-text term matched against facility text. (optional)
-     * @param serviceId Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
-     * @param specialtyId Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
+     * @param serviceId The earlier name of serviceTagId, still accepted; it behaves the same way. (optional)
+     * @param serviceTagId Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. (optional)
+     * @param specialtyId Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. (optional)
      * @return [FacilityCursorPage]
      */
     @GET("api/v1/public/search/")
-    suspend fun publicSearchList(@Query("provinceId") provinceId: kotlin.String, @Query("q") q: kotlin.String, @Query("bbox") bbox: kotlin.String? = null, @Query("categoryId") categoryId: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("cursor") cursor: kotlin.String? = null, @Query("latitude") latitude: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null, @Query("longitude") longitude: kotlin.String? = null, @Query("neighborhoodId") neighborhoodId: kotlin.String? = null, @Query("search") search: kotlin.String? = null, @Query("serviceId") serviceId: kotlin.String? = null, @Query("specialtyId") specialtyId: kotlin.String? = null): Response<FacilityCursorPage>
+    suspend fun publicSearchList(@Query("provinceId") provinceId: kotlin.String, @Query("q") q: kotlin.String, @Query("bbox") bbox: kotlin.String? = null, @Query("categoryId") categoryId: kotlin.String? = null, @Query("cityId") cityId: kotlin.String? = null, @Query("cursor") cursor: kotlin.String? = null, @Query("latitude") latitude: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null, @Query("longitude") longitude: kotlin.String? = null, @Query("neighborhoodId") neighborhoodId: kotlin.String? = null, @Query("search") search: kotlin.String? = null, @Query("serviceId") serviceId: kotlin.Int? = null, @Query("serviceTagId") serviceTagId: kotlin.Int? = null, @Query("specialtyId") specialtyId: kotlin.Int? = null): Response<FacilityCursorPage>
 
 }
