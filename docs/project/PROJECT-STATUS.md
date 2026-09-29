@@ -193,6 +193,16 @@ week, published pages and FAQ, emergency numbers, a contact form, sharing, the t
 - The inbox names the facility of an owner's notice.
 - The quality debt is closed (above).
 
+**Specialties and services.** They work end to end:
+- Integer ids throughout.
+- Public choices per category.
+- Owner choices in the app.
+- Console management with an audit trail.
+- Filter chips on the site and on Android's Home.
+
+**Local evidence.** The console's e2e suite ran against a real stack: 31 passed, 1 skipped.
+The Android workflow's gates also pass locally, including the six source qualifiers.
+
 **Still open, and why** (`BLOCKERS.md`, 2026-09-29 review):
 - OTP needs a provider chosen before owners can sign in in production.
 - GitHub Actions runs no job (EXT-006), so CI evidence is local.

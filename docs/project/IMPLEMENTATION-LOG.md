@@ -1802,3 +1802,40 @@ Not verified:
 - Nothing was run on a device: the widget, App Link verification, push delivery and taps.
 - A real FCM send, which needs the Firebase project.
 - The admin e2e suite, which needs the full stack.
+
+## 2026-09-29 — Specialties and services, end to end; the console's e2e suite on a real stack
+
+- **Specialties and services work end to end.** Before this, they were half built.
+  - Their ids are integers in the database, but the contract called them UUIDs. So the app could not load a facility that had any specialty, and an owner's save could not set them.
+  - Nothing listed the choices anywhere: not in public, not for owners, and not in the console.
+- **Fixed now:**
+  - Integer ids everywhere: `NamedIntRef` in details, integer lists for the owner, and integer filters. `specialtyId` and `serviceTagId` (with the older `serviceId` kept as an alias) are validated, and gated by the category's capability.
+  - `publicCategoryTagsRetrieve` returns the active choices of a public category.
+  - `ownerConfigRetrieve` offers the same choices to owners.
+  - The console has an admin API and a «التخصصات والخدمات» tab: add, edit, order and pause. Delete works only while an item is unused. Every write is audited.
+  - The site shows specialty and service chips on a category page, and the facility page names them.
+  - Android:
+    - Owners choose their facility's specialties and services on the management screen. The
+      new «التخصصات والخدمات» card takes its choices from the owner config and sends only the
+      list that changed. When a choice has been withdrawn, it says so and offers to refresh.
+    - Home narrows a category's list by one specialty and one service. The chip rows appear
+      only where the capability is on, and the choices are cached per category.
+    - Search has no category picker yet, and the map keeps its own filters, so both are
+      unchanged.
+- **Role ids** are integers in the admin contract as well, which is what the backend already returned.
+- **One vocabulary:** the last state words written inside console screens (contact message, page, emergency number, documents) moved into the shared vocabulary.
+- **Console e2e suite, run here against a real stack** (PostGIS, Redis, Django, the production Admin build):
+  - Result: 31 passed, 1 skipped. The skipped test is the Android handoff, which runs inside the Android flow.
+  - Two ad tests had never been able to pass: their test image was under the 100 px minimum side. It is 320×180 now.
+- **A live check on the same stack:** an operator added a specialty and a service in the console, and the public endpoint offered both.
+
+Verified here:
+- Backend: ruff 0, mypy strict 0 in 314 files, 578 tests, `manage.py check`, `makemigrations --check`, the OpenAPI drift check, and the regenerated clients matching what is committed.
+- Admin: lint and typecheck clean, 143 unit tests, and the production build.
+- Web: lint and typecheck clean, and the build without settings.
+- Android: `assembleLocalDebug`, every module's unit tests and the app's,
+  `lintDebug` with `:app:lintLocalDebug`, the JVM harness, and all six source qualifiers of the
+  Android workflow's Gate 4. That gate had drifted red over the recent batches: Arabic words
+  spelled in Kotlin (the built-in emergency lines, now resources), 23 lines over 120 characters,
+  and a push-policy check that predated the routing identifiers (it now reads the allowlist and
+  requires identifiers only).
