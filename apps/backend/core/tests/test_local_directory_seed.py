@@ -6,6 +6,7 @@ otherwise have to make by hand, once per category, every time the data is rebuil
 """
 
 import pytest
+from django.core.files.storage import InMemoryStorage
 from django.core.management import call_command
 from rest_framework.test import APIClient
 
@@ -28,13 +29,20 @@ SECTIONS = [
 
 
 @pytest.fixture
-def seeded(db):
+def seeded(db: None, monkeypatch: pytest.MonkeyPatch) -> Province:
+    # The seed draws each banner and writes it to the public bucket through
+    # storage.backends.PublicS3Storage, which it looks up when it runs. No object storage is
+    # running here, so for this test that name gives one bucket held in memory, shared by
+    # every run of the seed like the real one. The command itself is unchanged, and run by
+    # hand it still uploads.
+    bucket = InMemoryStorage()
+    monkeypatch.setattr("storage.backends.PublicS3Storage", lambda: bucket)
     call_command("seed_local_directory", "--allow-any-database")
     return Province.objects.get(code="raqqa")
 
 
 @pytest.mark.django_db
-def test_every_seeded_section_is_public_in_raqqa(seeded):
+def test_every_seeded_section_is_public_in_raqqa(seeded: Province) -> None:
     body = APIClient().get(CATEGORIES.format(seeded.id)).json()
 
     offered = {item["nameAr"] for item in body["items"]}
@@ -45,7 +53,7 @@ def test_every_seeded_section_is_public_in_raqqa(seeded):
 
 
 @pytest.mark.django_db
-def test_no_section_is_left_empty(seeded):
+def test_no_section_is_left_empty(seeded: Province) -> None:
     client = APIClient()
     for code in SECTIONS:
         category = Category.objects.get(code=code)
@@ -57,7 +65,7 @@ def test_no_section_is_left_empty(seeded):
 
 
 @pytest.mark.django_db
-def test_a_section_never_shows_another_section_facilities(seeded):
+def test_a_section_never_shows_another_section_facilities(seeded: Province) -> None:
     client = APIClient()
     for code in SECTIONS:
         category = Category.objects.get(code=code)
@@ -69,7 +77,7 @@ def test_a_section_never_shows_another_section_facilities(seeded):
 
 
 @pytest.mark.django_db
-def test_running_the_seed_twice_does_not_double_anything(seeded):
+def test_running_the_seed_twice_does_not_double_anything(seeded: Province) -> None:
     before = Facility.objects.count()
 
     call_command("seed_local_directory", "--allow-any-database")
@@ -78,7 +86,7 @@ def test_running_the_seed_twice_does_not_double_anything(seeded):
 
 
 @pytest.mark.django_db
-def test_only_the_pharmacy_section_carries_a_duty_roster(seeded):
+def test_only_the_pharmacy_section_carries_a_duty_roster(seeded: Province) -> None:
     """A duty filter offered where no roster exists would be a chip that does nothing."""
     body = APIClient().get(CATEGORIES.format(seeded.id)).json()
 
@@ -87,7 +95,7 @@ def test_only_the_pharmacy_section_carries_a_duty_roster(seeded):
 
 
 @pytest.mark.django_db
-def test_the_pharmacies_cover_all_three_states_the_product_distinguishes(seeded):
+def test_the_pharmacies_cover_all_three_states_the_product_distinguishes(seeded: Province) -> None:
     pharmacy = Category.objects.get(code="pharmacy")
     body = APIClient().get(
         FACILITIES, {"provinceId": str(seeded.id), "categoryId": str(pharmacy.id), "limit": "50"}
@@ -104,11 +112,11 @@ def test_the_pharmacies_cover_all_three_states_the_product_distinguishes(seeded)
 
 
 @pytest.mark.django_db
-def test_open_now_and_duty_today_narrow_the_seeded_pharmacies_differently(seeded):
+def test_open_now_and_duty_today_narrow_the_seeded_pharmacies_differently(seeded: Province) -> None:
     pharmacy = Category.objects.get(code="pharmacy")
     client = APIClient()
 
-    def names(**params):
+    def names(**params: str) -> set[str]:
         body = client.get(
             FACILITIES,
             {"provinceId": str(seeded.id), "categoryId": str(pharmacy.id), "limit": "50", **params},
@@ -122,7 +130,7 @@ def test_open_now_and_duty_today_narrow_the_seeded_pharmacies_differently(seeded
 
 
 @pytest.mark.django_db
-def test_a_section_without_a_roster_still_answers_open_now(seeded):
+def test_a_section_without_a_roster_still_answers_open_now(seeded: Province) -> None:
     lab = Category.objects.get(code="medical-laboratory")
     body = APIClient().get(
         FACILITIES,
@@ -133,7 +141,7 @@ def test_a_section_without_a_roster_still_answers_open_now(seeded):
 
 
 @pytest.mark.django_db
-def test_every_seeded_facility_can_be_placed_on_a_map(seeded):
+def test_every_seeded_facility_can_be_placed_on_a_map(seeded: Province) -> None:
     """Without coordinates there is no distance, no nearest, and nothing to show on a map."""
     seeded_ids = CategoryProvince.objects.filter(
         province=seeded, public_enabled=True
@@ -150,7 +158,7 @@ def test_every_seeded_facility_can_be_placed_on_a_map(seeded):
 
 
 @pytest.mark.django_db
-def test_search_stays_inside_the_chosen_section(seeded):
+def test_search_stays_inside_the_chosen_section(seeded: Province) -> None:
     lab = Category.objects.get(code="medical-laboratory")
     body = APIClient().get(
         FACILITIES,
