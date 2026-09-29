@@ -1,6 +1,7 @@
+import re
 from collections.abc import Mapping
 from datetime import UTC
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
 from django.db.models import QuerySet
@@ -50,14 +51,24 @@ def _q(name: str, description: str, required: bool = False) -> OpenApiParameter:
                             description=description)
 
 
+def _tag_q(name: str, description: str) -> OpenApiParameter:
+    """A specialty or service filter: integer keys, like the rows they name."""
+    return OpenApiParameter(name, int, OpenApiParameter.QUERY, required=False,
+                            description=description)
+
+
 SCOPE_PARAMS = [
     _q("provinceId", "Province to scope the query to.", required=True),
     _q("cityId", "Optional city filter."),
     _q("neighborhoodId", "Optional neighbourhood filter."),
-    _q("specialtyId", "Optional specialty filter; only meaningful when the category "
-       "declares specialtyFilter."),
-    _q("serviceId", "Optional service-tag filter; only meaningful when the category "
-       "declares serviceFilter."),
+    _tag_q("specialtyId", "Optional specialty filter, an id from publicCategoryTagsRetrieve. "
+           "Only facilities whose category declares specialtyFilter can match. Anything "
+           "but a positive whole number is refused with 400."),
+    _tag_q("serviceTagId", "Optional service filter, an id from publicCategoryTagsRetrieve. "
+           "Only facilities whose category declares serviceFilter can match. Anything but "
+           "a positive whole number is refused with 400."),
+    _tag_q("serviceId", "The earlier name of serviceTagId, still accepted; it behaves the "
+           "same way."),
     _q("search", "Free-text term matched against facility text."),
     _q("bbox", "Viewport as west,south,east,north in WGS84 decimal degrees."),
     _q("latitude", "Caller latitude in WGS84 decimal degrees. Must be sent with longitude."),
@@ -69,6 +80,23 @@ PAGE_PARAMS = [
     OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False,
                      description="Page size, maximum 100, default 30."),
 ]
+
+
+_TAG_ID = re.compile(r"[0-9]{1,18}")
+
+
+def _tag_id(params: Mapping[str, str], name: str) -> int | None:
+    """A specialty or service id from the query string, or None when it is absent.
+
+    The keys are integers. Anything else used to reach the database and fail there as a
+    server error; it is refused here as a validation error instead.
+    """
+    raw = (params.get(name) or "").strip()
+    if not raw:
+        return None
+    if not _TAG_ID.fullmatch(raw) or int(raw) == 0:
+        raise ValidationError({name: "Must be a positive whole number."})
+    return int(raw)
 
 
 def _parse_float(value: str | None, name: str) -> float | None:
@@ -94,12 +122,23 @@ def _base_from_params(
         queryset = queryset.filter(city_id=params["cityId"])
     if params.get("neighborhoodId"):
         queryset = queryset.filter(neighborhood_id=params["neighborhoodId"])
-    if params.get("specialtyId"):
-        queryset = queryset.filter(specialty_links__specialty_id=params["specialtyId"])
-    if params.get("serviceId"):
-        # Text from the query string; the lookup converts it to the integer key itself.
-        service_id: Any = params["serviceId"]
-        queryset = queryset.filter(service_links__service_tag_id=service_id)
+    # Each filter matches only where the category offers it, and only an item still in
+    # use: filtering by a retired specialty or service finds nothing.
+    specialty_id = _tag_id(params, "specialtyId")
+    if specialty_id is not None:
+        queryset = queryset.filter(
+            category__capabilities__supports_specialty_filter=True,
+            specialty_links__specialty_id=specialty_id,
+            specialty_links__specialty__active=True,
+        )
+    for name in ("serviceTagId", "serviceId"):
+        service_tag_id = _tag_id(params, name)
+        if service_tag_id is not None:
+            queryset = queryset.filter(
+                category__capabilities__supports_service_filter=True,
+                service_links__service_tag_id=service_tag_id,
+                service_links__service_tag__active=True,
+            )
     queryset = apply_text_search(queryset, params.get("search"))
     try:
         queryset = within_bbox(queryset, params.get("bbox"))

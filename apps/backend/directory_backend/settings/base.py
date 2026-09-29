@@ -176,6 +176,7 @@ SPECTACULAR_SETTINGS = {
         "EmergencyNumberKindEnum": "content_services.models.EmergencyNumber.Kind",
         "EmergencyNumberScopeEnum": "content_services.content_schemas.EMERGENCY_SCOPES",
         "ContactMessageKindEnum": "content_services.models.ContactMessage.Kind",
+        "SpecialtyScopeEnum": "directory.services.SPECIALTY_SCOPES",
     },
     # A nullable choice field is otherwise described as `oneOf: [<Enum>, NullEnum]`, where
     # NullEnum is an enum whose only value is null. The Kotlin generator renders that as an

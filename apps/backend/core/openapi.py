@@ -182,6 +182,16 @@ class NamedRefSerializer(serializers.Serializer[Any]):
     nameAr = serializers.CharField()
 
 
+class NamedIntRefSerializer(serializers.Serializer[Any]):
+    """An integer id plus its Arabic display name: a specialty or a service."""
+
+    # Specialties and services are keyed by integers, unlike the other references. Described
+    # as a `NamedRef`, the id was declared a UUID, and a generated client that parsed it as
+    # one could not open any facility that had a specialty or a service.
+    id = serializers.IntegerField()
+    nameAr = serializers.CharField()
+
+
 class BilingualRefSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     nameAr = serializers.CharField()

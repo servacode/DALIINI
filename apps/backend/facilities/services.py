@@ -53,12 +53,9 @@ def application_snapshot(facility: Facility) -> dict[str, Any]:
         "addressAr": facility.address_ar or None,
         "addressEn": facility.address_en or None,
         "location": {"latitude": point.y, "longitude": point.x} if point else None,
-        "specialtyIds": sorted(
-            str(value) for value in facility.specialty_links.values_list("specialty_id", flat=True)
-        ),
+        "specialtyIds": sorted(facility.specialty_links.values_list("specialty_id", flat=True)),
         "serviceTagIds": sorted(
-            str(value)
-            for value in facility.service_links.values_list("service_tag_id", flat=True)
+            facility.service_links.values_list("service_tag_id", flat=True)
         ),
         "imageIds": [
             str(value)
@@ -148,7 +145,7 @@ def _resolve_neighborhood(
         ) from exc
 
 
-def _replace_specialties(facility: Facility, specialty_ids: list[UUID] | None) -> None:
+def _replace_specialties(facility: Facility, specialty_ids: list[int] | None) -> None:
     if specialty_ids is None:
         return
     specialties = list(Specialty.objects.filter(pk__in=set(specialty_ids), active=True))
@@ -168,7 +165,7 @@ def _replace_specialties(facility: Facility, specialty_ids: list[UUID] | None) -
     )
 
 
-def _replace_service_tags(facility: Facility, tag_ids: list[UUID] | None) -> None:
+def _replace_service_tags(facility: Facility, tag_ids: list[int] | None) -> None:
     if tag_ids is None:
         return
     tags = list(

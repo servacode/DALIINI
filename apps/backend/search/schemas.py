@@ -10,7 +10,12 @@ from rest_framework import serializers
 
 from business_hours.services import AvailabilityState
 from content_services.schemas import PublicAdvertisementSerializer
-from core.openapi import BilingualRefSerializer, CoordinatesSerializer, NamedRefSerializer
+from core.openapi import (
+    BilingualRefSerializer,
+    CoordinatesSerializer,
+    NamedIntRefSerializer,
+    NamedRefSerializer,
+)
 
 
 class AvailabilitySerializer(serializers.Serializer[Any]):
@@ -107,8 +112,12 @@ class PublicFacilityDetailSerializer(CompactFacilitySerializer):
     neighborhood = NamedRefSerializer(allow_null=True)
     location = CoordinatesSerializer(allow_null=True)
     images = FacilityImageSerializer(many=True)
-    specialties = NamedRefSerializer(many=True)
-    services = NamedRefSerializer(many=True)
+    specialties = NamedIntRefSerializer(
+        many=True, help_text="Active specialties, in the operators' order."
+    )
+    services = NamedIntRefSerializer(
+        many=True, help_text="Active services, in the operators' order."
+    )
     hours = PublicHoursEntrySerializer(many=True)
 
 

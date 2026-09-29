@@ -59,6 +59,8 @@ NO_CONTENT_OPERATIONS = {
     ("/api/v1/admin/duty/{shift_id}/", "delete"),
     ("/api/v1/admin/emergency-numbers/{number_id}/", "delete"),
     ("/api/v1/admin/rejection-templates/{template_id}/", "delete"),
+    ("/api/v1/admin/service-tags/{service_tag_id}/", "delete"),
+    ("/api/v1/admin/specialties/{specialty_id}/", "delete"),
     ("/api/v1/admin/users/{user_id}/roles/", "put"),
     ("/api/v1/auth/logout-all/", "post"),
     ("/api/v1/auth/logout/", "post"),

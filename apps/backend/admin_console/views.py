@@ -856,10 +856,10 @@ class UserDetailView(AdminView):
     def get(self, request: AuthenticatedRequest, user_id: UUID) -> Response:
         user = get_object_or_404(User, pk=user_id)
         payload = user_payload(user)
-        payload["roleIds"] = [
-            str(value)
-            for value in user.admin_role_links.filter(active=True).values_list("role_id", flat=True)
-        ]
+        # Integers, as `AdminRole` is keyed and as the role list declares its ids.
+        payload["roleIds"] = list(
+            user.admin_role_links.filter(active=True).values_list("role_id", flat=True)
+        )
         return Response(payload)
 
 
@@ -913,7 +913,8 @@ class RoleListView(AdminView):
             {
                 "items": [
                     {
-                        "id": str(role.id),
+                        # An integer, as `AdminRoleSerializer` has always declared it.
+                        "id": role.id,
                         "code": role.code,
                         "name": role.name,
                         "permissions": list(role.permissions.values_list("code", flat=True)),

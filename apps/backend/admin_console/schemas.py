@@ -18,6 +18,7 @@ from rest_framework import serializers
 from content_services.models import Advertisement
 from core.openapi import CoordinatesSerializer
 from directory.models import Category
+from directory.services import SPECIALTY_SCOPES
 from facilities.models import Facility, FacilityApplication, FacilityReport
 from storage.public_media import public_media_url
 
@@ -36,7 +37,8 @@ class AdminUserSerializer(serializers.Serializer[Any]):
 
 
 class AdminUserDetailSerializer(AdminUserSerializer):
-    roleIds = serializers.ListField(child=serializers.UUIDField())
+    # `AdminRole` is keyed by an integer, as `AdminRoleSerializer.id` says; this said UUID.
+    roleIds = serializers.ListField(child=serializers.IntegerField())
 
 
 class AdminUserListSerializer(serializers.Serializer[Any]):
@@ -204,7 +206,7 @@ class AdminRoleListSerializer(serializers.Serializer[Any]):
 
 
 class AdminUserRolesRequestSerializer(serializers.Serializer[Any]):
-    roleIds = serializers.ListField(child=serializers.UUIDField())
+    roleIds = serializers.ListField(child=serializers.IntegerField())
 
 
 class AdminCategoryGroupSerializer(serializers.Serializer[Any]):
@@ -644,3 +646,108 @@ class AdminCityAdminListSerializer(serializers.Serializer[Any]):
 
 class AdminCityUpdateRequestSerializer(serializers.Serializer[Any]):
     active = serializers.BooleanField()
+
+
+# --------------------------------------------------------------------------------------
+# Specialties and services
+#
+# Integer keys, like the rows. A specialty belongs to one category or to a specialization;
+# a service to one category. Neither can move once created.
+# --------------------------------------------------------------------------------------
+
+TAG_NAME_MAX = 120
+SORT_ORDER_MAX = 2_147_483_647
+
+
+class AdminSpecialtySerializer(serializers.Serializer[Any]):
+    """A specialty a category offers, with how many facilities list it."""
+
+    id = serializers.IntegerField()
+    scope = serializers.ChoiceField(
+        choices=SPECIALTY_SCOPES,
+        help_text=(
+            "CATEGORY: offered by one category. SPECIALIZATION: offered by every category "
+            "of the specialization."
+        ),
+    )
+    categoryId = serializers.UUIDField(allow_null=True, help_text="Set for the CATEGORY scope.")
+    specialization = serializers.ChoiceField(
+        choices=Category.Specialization.choices,
+        allow_null=True,
+        help_text="Set for the SPECIALIZATION scope.",
+    )
+    nameAr = serializers.CharField()
+    nameEn = serializers.CharField(allow_blank=True)
+    active = serializers.BooleanField(
+        help_text="False retires it: off the public pages and filters, and out of owners' choices."
+    )
+    sortOrder = serializers.IntegerField()
+    facilityCount = serializers.IntegerField(
+        help_text=(
+            "Facilities that list it. Only an item no facility lists can be deleted; one in "
+            "use is retired with `active = false`."
+        )
+    )
+
+
+class AdminSpecialtyListSerializer(serializers.Serializer[Any]):
+    items = AdminSpecialtySerializer(many=True)
+
+
+class AdminServiceTagSerializer(serializers.Serializer[Any]):
+    """A service of one category, with how many facilities list it."""
+
+    id = serializers.IntegerField()
+    categoryId = serializers.UUIDField()
+    nameAr = serializers.CharField()
+    nameEn = serializers.CharField(allow_blank=True)
+    active = serializers.BooleanField(
+        help_text="False retires it: off the public pages and filters, and out of owners' choices."
+    )
+    sortOrder = serializers.IntegerField()
+    facilityCount = serializers.IntegerField(
+        help_text=(
+            "Facilities that list it. Only an item no facility lists can be deleted; one in "
+            "use is retired with `active = false`."
+        )
+    )
+
+
+class AdminServiceTagListSerializer(serializers.Serializer[Any]):
+    items = AdminServiceTagSerializer(many=True)
+
+
+class AdminServiceTagCreateRequestSerializer(serializers.Serializer[Any]):
+    nameAr = serializers.CharField(
+        max_length=TAG_NAME_MAX, help_text="Unique within its scope, retired items included."
+    )
+    nameEn = serializers.CharField(max_length=TAG_NAME_MAX, required=False, allow_blank=True)
+    active = serializers.BooleanField(required=False, default=True)
+    sortOrder = serializers.IntegerField(
+        required=False, default=0, min_value=0, max_value=SORT_ORDER_MAX
+    )
+
+
+class AdminSpecialtyCreateRequestSerializer(AdminServiceTagCreateRequestSerializer):
+    scope = serializers.ChoiceField(
+        choices=SPECIALTY_SCOPES,
+        help_text=(
+            "CATEGORY scopes it to the category in the path. SPECIALIZATION shares it with "
+            "every category of that category's specialization, and is refused for a GENERIC one."
+        ),
+    )
+
+
+class AdminTagUpdateRequestSerializer(serializers.Serializer[Any]):
+    """Rename, reorder, retire or bring back a specialty or a service.
+
+    Omitted fields keep their value. The scope is not here: sending `scope`, `categoryId` or
+    `specialization` is refused rather than ignored.
+    """
+
+    nameAr = serializers.CharField(max_length=TAG_NAME_MAX, required=False)
+    nameEn = serializers.CharField(max_length=TAG_NAME_MAX, required=False, allow_blank=True)
+    active = serializers.BooleanField(required=False)
+    sortOrder = serializers.IntegerField(
+        required=False, min_value=0, max_value=SORT_ORDER_MAX
+    )

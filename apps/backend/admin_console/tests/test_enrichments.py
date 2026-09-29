@@ -150,6 +150,18 @@ def test_users_role_filter(admin_api: Any, user: User) -> None:
 
 
 @pytest.mark.django_db
+def test_role_ids_are_the_integers_the_roles_are_keyed_by(admin_api: Any) -> None:
+    client = admin_api("admin.users.read", "admin.roles.read")
+    role = AdminRole.objects.get(code="fixture-1")
+
+    detail = client.get(f"/api/v1/admin/users/{client.user.pk}/").json()
+    roles = client.get("/api/v1/admin/roles/").json()["items"]
+
+    assert detail["roleIds"] == [role.pk]
+    assert [item["id"] for item in roles if item["code"] == role.code] == [role.pk]
+
+
+@pytest.mark.django_db
 def test_dashboard_and_analytics_kpis(admin_api: Any, owned: Facility, user: User) -> None:
     client = admin_api("admin.dashboard.read", "admin.analytics.read")
     now = timezone.now()

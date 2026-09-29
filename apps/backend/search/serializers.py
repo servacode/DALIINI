@@ -7,6 +7,8 @@ from business_hours.services import (
     is_on_duty_today,
     is_open_now,
 )
+from directory.tags import ORDER as TAG_ORDER
+from directory.tags import named
 from storage.backends import PublicS3Storage
 
 _UNSET = object()
@@ -141,19 +143,20 @@ def facility_detail(facility: Any) -> dict[str, Any]:
                 }
                 for image in facility.images.order_by("sort_order", "created_at")
             ],
+            # Integer ids, as the rows are keyed (`NamedIntRef`). They were sent as text under
+            # a contract that called them UUIDs, so a client that trusted the contract could
+            # not open a facility that had one. A retired (inactive) item is not shown.
             "specialties": [
-                {
-                    "id": str(link.specialty_id),
-                    "nameAr": link.specialty.name_ar,
-                }
-                for link in facility.specialty_links.select_related("specialty")
+                named(link.specialty)
+                for link in facility.specialty_links.filter(specialty__active=True)
+                .select_related("specialty")
+                .order_by(*(f"specialty__{column}" for column in TAG_ORDER))
             ],
             "services": [
-                {
-                    "id": str(link.service_tag_id),
-                    "nameAr": link.service_tag.name_ar,
-                }
-                for link in facility.service_links.select_related("service_tag")
+                named(link.service_tag)
+                for link in facility.service_links.filter(service_tag__active=True)
+                .select_related("service_tag")
+                .order_by(*(f"service_tag__{column}" for column in TAG_ORDER))
             ],
             # The shape the contract declares: with the id and the `sequence` that orders a
             # day's spans. Both were missing, so a generated client could not read any

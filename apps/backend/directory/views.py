@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from django.db.models import Exists, OuterRef, QuerySet
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from rest_framework.request import Request
@@ -9,9 +10,13 @@ from rest_framework.views import APIView
 from core.openapi import NOT_FOUND_404
 from locations.models import Province
 
-from .models import CategoryProvince
+from .models import Category, CategoryProvince
 from .presenters import category_capabilities
-from .schemas import PublicCategoryListSerializer
+from .schemas import PublicCategoryListSerializer, PublicCategoryTagsSerializer
+from .tags import category_tag_choices
+
+#: Taxonomy changes rarely and is the same for everyone, as the public content reads are.
+PUBLIC_CACHE = "public, max-age=300"
 
 
 class PublicProvinceCategoriesView(APIView):
@@ -56,3 +61,40 @@ class PublicProvinceCategoriesView(APIView):
             for switch in switches
         ]
         return Response({"items": items})
+
+
+def public_categories() -> QuerySet[Category]:
+    """Categories the public can see somewhere: the rule of the province list, any province.
+
+    Active, in an active group, and switched on for the public in at least one active
+    province. Anything else answers 404, as an unknown category would.
+    """
+    switched_on = CategoryProvince.objects.filter(
+        category=OuterRef("pk"), public_enabled=True, province__active=True
+    )
+    return Category.objects.filter(Exists(switched_on), active=True, group__active=True)
+
+
+class PublicCategoryTagsView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    @extend_schema(
+        operation_id="publicCategoryTagsRetrieve",
+        tags=["Public Taxonomy"],
+        summary="List the specialties and services a category offers",
+        description=(
+            "The choices behind the specialty and service filters: active items only, in "
+            "the operators' order. Specialties are the category's own plus those shared by "
+            "its specialization. Whether to offer each filter is still decided by the "
+            "category's `specialtyFilter` and `serviceFilter` capabilities. A category that "
+            "is not public in any province is 404. Cacheable for five minutes "
+            "(`Cache-Control: public, max-age=300`)."
+        ),
+        responses={200: PublicCategoryTagsSerializer, 404: NOT_FOUND_404},
+    )
+    def get(self, request: Request, category_id: UUID) -> Response:
+        category = get_object_or_404(public_categories(), pk=category_id)
+        response = Response(category_tag_choices(category))
+        response["Cache-Control"] = PUBLIC_CACHE
+        return response

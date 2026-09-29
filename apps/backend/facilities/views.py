@@ -27,6 +27,7 @@ from core.openapi import (
 from core.throttles import EvidenceUploadThrottle, OwnerSubmitThrottle
 from directory.models import CategoryProvince, VerificationRequirement
 from directory.presenters import category_capabilities
+from directory.tags import TagChoices, tag_choices
 from locations.models import Province
 from locations.presenters import map_center
 from storage.backends import PrivateS3Storage, PublicS3Storage
@@ -95,15 +96,16 @@ def _owned_facilities(user: User) -> QuerySet[Facility]:
         .prefetch_related(
             "applications",
             "business_hours",
-            "specialty_links",
-            "service_links",
+            # With the rows themselves: the detail leaves retired ones out.
+            "specialty_links__specialty",
+            "service_links__service_tag",
             "evidence",
         )
         .distinct()
     )
 
 
-def _owner_config_item(switch: CategoryProvince) -> dict[str, Any]:
+def _owner_config_item(switch: CategoryProvince, choices: TagChoices) -> dict[str, Any]:
     category = switch.category
     requirements = category.verification_requirements.filter(active=True).order_by("sort_order")
     return {
@@ -127,6 +129,8 @@ def _owner_config_item(switch: CategoryProvince) -> dict[str, Any]:
             }
             for item in requirements
         ],
+        "specialties": choices["specialties"],
+        "services": choices["services"],
     }
 
 
@@ -140,7 +144,8 @@ class OwnerConfigView(APIView):
         description=(
             "Returns only categories whose per-province owner switch is on and whose "
             "capability set allows onboarding, together with the safe descriptors of the "
-            "verification requirements the owner will have to satisfy."
+            "verification requirements the owner will have to satisfy, and the specialties "
+            "and services the owner may pick for a facility of each."
         ),
         parameters=[
             OpenApiParameter(
@@ -166,7 +171,7 @@ class OwnerConfigView(APIView):
                 message="معرّف المحافظة مطلوب.",
             )
         province = get_object_or_404(Province.objects.filter(active=True), pk=province_id)
-        switches = (
+        switches = list(
             CategoryProvince.objects.filter(
                 province=province,
                 owner_registration_enabled=True,
@@ -178,6 +183,7 @@ class OwnerConfigView(APIView):
             .prefetch_related("category__verification_requirements")
             .order_by("sort_order", "category__sort_order")
         )
+        choices = tag_choices(switch.category for switch in switches)
         return Response(
             {
                 "province": {
@@ -185,7 +191,9 @@ class OwnerConfigView(APIView):
                     "nameAr": province.name_ar,
                     "mapCenter": map_center(province),
                 },
-                "categories": [_owner_config_item(item) for item in switches],
+                "categories": [
+                    _owner_config_item(item, choices[item.category_id]) for item in switches
+                ],
             }
         )
 

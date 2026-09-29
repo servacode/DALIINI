@@ -2,6 +2,7 @@ from typing import Any
 
 from business_hours.serializers import serialize_hours
 from directory.presenters import category_capabilities
+from directory.tags import active_in_order
 
 from .models import Facility, FacilityApplication
 
@@ -61,11 +62,17 @@ def facility_detail(facility: Facility) -> dict[str, Any]:
         "location": (
             {"latitude": point.y, "longitude": point.x} if point else None
         ),
+        # Integer ids, as the choices in the owner configuration carry them. A retired item
+        # is left out: it is no longer offered, so an owner could neither see nor send it.
         "specialtyIds": [
-            str(item.specialty_id) for item in facility.specialty_links.all()
+            row.pk
+            for row in active_in_order(link.specialty for link in facility.specialty_links.all())
         ],
         "serviceTagIds": [
-            str(item.service_tag_id) for item in facility.service_links.all()
+            row.pk
+            for row in active_in_order(
+                link.service_tag for link in facility.service_links.all()
+            )
         ],
         "evidence": [
             {

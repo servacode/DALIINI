@@ -43,11 +43,22 @@ class FacilityPatchSerializer(serializers.Serializer[Any]):
     addressEn = serializers.CharField(max_length=255, required=False, allow_blank=True)
     cityId = serializers.UUIDField(required=False, allow_null=True)
     neighborhoodId = serializers.UUIDField(required=False, allow_null=True)
+    # Integer keys, as the rows are. Declared as UUIDs before, which no real id could pass.
     specialtyIds = serializers.ListField(
-        child=serializers.UUIDField(), required=False
+        child=serializers.IntegerField(min_value=1),
+        required=False,
+        help_text=(
+            "Replaces the facility's specialties. Ids come from the category's `specialties` "
+            "in ownerConfigRetrieve; an empty list clears them."
+        ),
     )
     serviceTagIds = serializers.ListField(
-        child=serializers.UUIDField(), required=False
+        child=serializers.IntegerField(min_value=1),
+        required=False,
+        help_text=(
+            "Replaces the facility's services. Ids come from the category's `services` in "
+            "ownerConfigRetrieve; an empty list clears them."
+        ),
     )
 
 

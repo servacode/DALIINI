@@ -9,7 +9,7 @@ from typing import Any
 
 from rest_framework import serializers
 
-from core.openapi import CoordinatesSerializer, NamedRefSerializer
+from core.openapi import CoordinatesSerializer, NamedIntRefSerializer, NamedRefSerializer
 from directory.models import Category
 from directory.schemas import CategoryCapabilitiesSerializer
 
@@ -51,6 +51,20 @@ class OwnerConfigCategorySerializer(serializers.Serializer[Any]):
     category = OwnerCategorySerializer()
     capabilities = CategoryCapabilitiesSerializer()
     verificationRequirements = OwnerVerificationRequirementSerializer(many=True)
+    specialties = NamedIntRefSerializer(
+        many=True,
+        help_text=(
+            "The specialties an owner may pick, as publicCategoryTagsRetrieve lists them. "
+            "Their ids are what `specialtyIds` takes."
+        ),
+    )
+    services = NamedIntRefSerializer(
+        many=True,
+        help_text=(
+            "The services an owner may pick, as publicCategoryTagsRetrieve lists them. "
+            "Their ids are what `serviceTagIds` takes."
+        ),
+    )
 
 
 class OwnerConfigProvinceSerializer(serializers.Serializer[Any]):
@@ -118,8 +132,14 @@ class OwnerFacilityDetailSerializer(OwnerFacilitySummarySerializer):
     cityId = serializers.UUIDField(allow_null=True)
     neighborhoodId = serializers.UUIDField(allow_null=True)
     location = CoordinatesSerializer(allow_null=True)
-    specialtyIds = serializers.ListField(child=serializers.UUIDField())
-    serviceTagIds = serializers.ListField(child=serializers.UUIDField())
+    specialtyIds = serializers.ListField(
+        child=serializers.IntegerField(),
+        help_text="The facility's active specialties, in order; retired ones are left out.",
+    )
+    serviceTagIds = serializers.ListField(
+        child=serializers.IntegerField(),
+        help_text="The facility's active services, in order; retired ones are left out.",
+    )
     evidence = OwnerEvidenceRefSerializer(many=True)
     hours = OwnerHoursEntrySerializer(many=True)
     hoursConfirmedAt = serializers.DateTimeField(

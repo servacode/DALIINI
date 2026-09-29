@@ -4,7 +4,7 @@ from typing import Any
 
 from rest_framework import serializers
 
-from core.openapi import NamedRefSerializer
+from core.openapi import NamedIntRefSerializer, NamedRefSerializer
 
 
 class CategoryCapabilitiesSerializer(serializers.Serializer[Any]):
@@ -35,3 +35,19 @@ class PublicCategorySerializer(serializers.Serializer[Any]):
 
 class PublicCategoryListSerializer(serializers.Serializer[Any]):
     items = PublicCategorySerializer(many=True)
+
+
+class PublicCategoryTagsSerializer(serializers.Serializer[Any]):
+    """What a category's facilities can be filtered by, and what an owner can pick."""
+
+    specialties = NamedIntRefSerializer(
+        many=True,
+        help_text=(
+            "Active specialties, in the operators' order: the category's own and those of "
+            "its specialization. Send an id back as `specialtyId`."
+        ),
+    )
+    services = NamedIntRefSerializer(
+        many=True,
+        help_text="Active services of the category, in order. Send an id back as `serviceTagId`.",
+    )

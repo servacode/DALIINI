@@ -1637,6 +1637,220 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/admin/categories/{category_id}/service-tags/:
+    get:
+      operationId: adminCategoryServiceTagsList
+      description: Retired ones included, in the order the public sees them.
+      summary: List the services of a category
+      parameters:
+      - in: path
+        name: category_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Taxonomy
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminServiceTagList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+    post:
+      operationId: adminCategoryServiceTagCreate
+      description: Requires admin.taxonomy.manage, re-checked inside the handler.
+        A name already used in the category is refused, retired services included.
+      summary: Add a service to a category
+      parameters:
+      - in: path
+        name: category_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Taxonomy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminServiceTagCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminServiceTagCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminServiceTagCreateRequest'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminServiceTag'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+  /api/v1/admin/categories/{category_id}/specialties/:
+    get:
+      operationId: adminCategorySpecialtiesList
+      description: The category's own specialties and those its specialization shares,
+        retired ones included, in the order the public sees them.
+      summary: List the specialties a category offers, in both scopes
+      parameters:
+      - in: path
+        name: category_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Taxonomy
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSpecialtyList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+    post:
+      operationId: adminCategorySpecialtyCreate
+      description: Requires admin.taxonomy.manage, re-checked inside the handler.
+        `scope` CATEGORY scopes it to this category; SPECIALIZATION shares it with
+        every category of this category's specialization and is refused for a GENERIC
+        category. A name already used in the same scope is refused, retired items
+        included.
+      summary: Add a specialty to a category or to its specialization
+      parameters:
+      - in: path
+        name: category_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Taxonomy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminSpecialtyCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminSpecialtyCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminSpecialtyCreateRequest'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSpecialty'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
   /api/v1/admin/categories/create/:
     post:
       operationId: adminCategoryCreate
@@ -4240,6 +4454,112 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+  /api/v1/admin/service-tags/{service_tag_id}/:
+    put:
+      operationId: adminServiceTagUpdate
+      description: 'Omitted fields keep their value. The category is fixed: `categoryId`
+        is refused.'
+      summary: Rename, reorder, retire or bring back a service
+      parameters:
+      - in: path
+        name: service_tag_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Admin Taxonomy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminTagUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminTagUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminTagUpdateRequest'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminServiceTag'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+    delete:
+      operationId: adminServiceTagDelete
+      description: One that a facility lists answers 409 `SERVICE_TAG_IN_USE`; retire
+        it with `active = false` instead.
+      summary: Delete a service no facility lists
+      parameters:
+      - in: path
+        name: service_tag_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Admin Taxonomy
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
   /api/v1/admin/settings/:
     get:
       operationId: adminSettingsList
@@ -4316,6 +4636,113 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+  /api/v1/admin/specialties/{specialty_id}/:
+    put:
+      operationId: adminSpecialtyUpdate
+      description: 'Omitted fields keep their value. The scope is fixed: `scope`,
+        `categoryId` and `specialization` are refused. A specialization''s specialty
+        changes for every category of that specialization.'
+      summary: Rename, reorder, retire or bring back a specialty
+      parameters:
+      - in: path
+        name: specialty_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Admin Taxonomy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminTagUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminTagUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminTagUpdateRequest'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSpecialty'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+    delete:
+      operationId: adminSpecialtyDelete
+      description: One that a facility lists answers 409 `SPECIALTY_IN_USE`; retire
+        it with `active = false` instead.
+      summary: Delete a specialty no facility lists
+      parameters:
+      - in: path
+        name: specialty_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Admin Taxonomy
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
   /api/v1/admin/system/status/:
     get:
       operationId: adminSystemStatusRetrieve
@@ -5522,7 +5949,8 @@ paths:
       operationId: ownerConfigRetrieve
       description: Returns only categories whose per-province owner switch is on and
         whose capability set allows onboarding, together with the safe descriptors
-        of the verification requirements the owner will have to satisfy.
+        of the verification requirements the owner will have to satisfy, and the specialties
+        and services the owner may pick for a facility of each.
       summary: List categories open for owner onboarding in a province
       parameters:
       - in: query
@@ -6884,6 +7312,39 @@ paths:
               schema:
                 $ref: '#/components/schemas/PublicAdvertisementList'
           description: ''
+  /api/v1/public/categories/{category_id}/tags/:
+    get:
+      operationId: publicCategoryTagsRetrieve
+      description: 'The choices behind the specialty and service filters: active items
+        only, in the operators'' order. Specialties are the category''s own plus those
+        shared by its specialization. Whether to offer each filter is still decided
+        by the category''s `specialtyFilter` and `serviceFilter` capabilities. A category
+        that is not public in any province is 404. Cacheable for five minutes (`Cache-Control:
+        public, max-age=300`).'
+      summary: List the specialties and services a category offers
+      parameters:
+      - in: path
+        name: category_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Public Taxonomy
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicCategoryTags'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
   /api/v1/public/duty/:
     get:
       operationId: publicDutyByDateList
@@ -7010,9 +7471,16 @@ paths:
       - in: query
         name: serviceId
         schema:
-          type: string
-        description: Optional service-tag filter; only meaningful when the category
-          declares serviceFilter.
+          type: integer
+        description: The earlier name of serviceTagId, still accepted; it behaves
+          the same way.
+      - in: query
+        name: serviceTagId
+        schema:
+          type: integer
+        description: Optional service filter, an id from publicCategoryTagsRetrieve.
+          Only facilities whose category declares serviceFilter can match. Anything
+          but a positive whole number is refused with 400.
       - in: query
         name: sort
         schema:
@@ -7024,9 +7492,10 @@ paths:
       - in: query
         name: specialtyId
         schema:
-          type: string
-        description: Optional specialty filter; only meaningful when the category
-          declares specialtyFilter.
+          type: integer
+        description: Optional specialty filter, an id from publicCategoryTagsRetrieve.
+          Only facilities whose category declares specialtyFilter can match. Anything
+          but a positive whole number is refused with 400.
       tags:
       - Public Discovery
       security:
@@ -7131,15 +7600,23 @@ paths:
       - in: query
         name: serviceId
         schema:
-          type: string
-        description: Optional service-tag filter; only meaningful when the category
-          declares serviceFilter.
+          type: integer
+        description: The earlier name of serviceTagId, still accepted; it behaves
+          the same way.
+      - in: query
+        name: serviceTagId
+        schema:
+          type: integer
+        description: Optional service filter, an id from publicCategoryTagsRetrieve.
+          Only facilities whose category declares serviceFilter can match. Anything
+          but a positive whole number is refused with 400.
       - in: query
         name: specialtyId
         schema:
-          type: string
-        description: Optional specialty filter; only meaningful when the category
-          declares specialtyFilter.
+          type: integer
+        description: Optional specialty filter, an id from publicCategoryTagsRetrieve.
+          Only facilities whose category declares specialtyFilter can match. Anything
+          but a positive whole number is refused with 400.
       tags:
       - Public Discovery
       security:
@@ -7312,15 +7789,23 @@ paths:
       - in: query
         name: serviceId
         schema:
-          type: string
-        description: Optional service-tag filter; only meaningful when the category
-          declares serviceFilter.
+          type: integer
+        description: The earlier name of serviceTagId, still accepted; it behaves
+          the same way.
+      - in: query
+        name: serviceTagId
+        schema:
+          type: integer
+        description: Optional service filter, an id from publicCategoryTagsRetrieve.
+          Only facilities whose category declares serviceFilter can match. Anything
+          but a positive whole number is refused with 400.
       - in: query
         name: specialtyId
         schema:
-          type: string
-        description: Optional specialty filter; only meaningful when the category
-          declares specialtyFilter.
+          type: integer
+        description: Optional specialty filter, an id from publicCategoryTagsRetrieve.
+          Only facilities whose category declares specialtyFilter can match. Anything
+          but a positive whole number is refused with 400.
       tags:
       - Public Discovery
       security:
@@ -7479,15 +7964,23 @@ paths:
       - in: query
         name: serviceId
         schema:
-          type: string
-        description: Optional service-tag filter; only meaningful when the category
-          declares serviceFilter.
+          type: integer
+        description: The earlier name of serviceTagId, still accepted; it behaves
+          the same way.
+      - in: query
+        name: serviceTagId
+        schema:
+          type: integer
+        description: Optional service filter, an id from publicCategoryTagsRetrieve.
+          Only facilities whose category declares serviceFilter can match. Anything
+          but a positive whole number is refused with 400.
       - in: query
         name: specialtyId
         schema:
-          type: string
-        description: Optional specialty filter; only meaningful when the category
-          declares specialtyFilter.
+          type: integer
+        description: Optional specialty filter, an id from publicCategoryTagsRetrieve.
+          Only facilities whose category declares specialtyFilter can match. Anything
+          but a positive whole number is refused with 400.
       tags:
       - Public Discovery
       security:
@@ -9560,6 +10053,66 @@ components:
       required:
       - groups
       - query
+    AdminServiceTag:
+      type: object
+      description: A service of one category, with how many facilities list it.
+      properties:
+        id:
+          type: integer
+        categoryId:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+        active:
+          type: boolean
+          description: 'False retires it: off the public pages and filters, and out
+            of owners'' choices.'
+        sortOrder:
+          type: integer
+        facilityCount:
+          type: integer
+          description: Facilities that list it. Only an item no facility lists can
+            be deleted; one in use is retired with `active = false`.
+      required:
+      - active
+      - categoryId
+      - facilityCount
+      - id
+      - nameAr
+      - nameEn
+      - sortOrder
+    AdminServiceTagCreateRequest:
+      type: object
+      properties:
+        nameAr:
+          type: string
+          description: Unique within its scope, retired items included.
+          maxLength: 120
+        nameEn:
+          type: string
+          maxLength: 120
+        active:
+          type: boolean
+          default: true
+        sortOrder:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          default: 0
+      required:
+      - nameAr
+    AdminServiceTagList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminServiceTag'
+      required:
+      - items
     AdminSetting:
       type: object
       properties:
@@ -9610,6 +10163,98 @@ components:
       - key
       - type
       - value
+    AdminSpecialty:
+      type: object
+      description: A specialty a category offers, with how many facilities list it.
+      properties:
+        id:
+          type: integer
+        scope:
+          allOf:
+          - $ref: '#/components/schemas/SpecialtyScopeEnum'
+          description: |-
+            CATEGORY: offered by one category. SPECIALIZATION: offered by every category of the specialization.
+
+            * `CATEGORY` - One category
+            * `SPECIALIZATION` - Every category of a specialization
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Set for the CATEGORY scope.
+        specialization:
+          allOf:
+          - $ref: '#/components/schemas/CategorySpecializationEnum'
+          nullable: true
+          description: |-
+            Set for the SPECIALIZATION scope.
+
+            * `GENERIC` - Generic
+            * `PHARMACY` - Pharmacy
+            * `MEDICAL_CLINIC` - Medical clinic
+            * `NURSING_CENTER` - Nursing center
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+        active:
+          type: boolean
+          description: 'False retires it: off the public pages and filters, and out
+            of owners'' choices.'
+        sortOrder:
+          type: integer
+        facilityCount:
+          type: integer
+          description: Facilities that list it. Only an item no facility lists can
+            be deleted; one in use is retired with `active = false`.
+      required:
+      - active
+      - categoryId
+      - facilityCount
+      - id
+      - nameAr
+      - nameEn
+      - scope
+      - sortOrder
+      - specialization
+    AdminSpecialtyCreateRequest:
+      type: object
+      properties:
+        nameAr:
+          type: string
+          description: Unique within its scope, retired items included.
+          maxLength: 120
+        nameEn:
+          type: string
+          maxLength: 120
+        active:
+          type: boolean
+          default: true
+        sortOrder:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          default: 0
+        scope:
+          allOf:
+          - $ref: '#/components/schemas/SpecialtyScopeEnum'
+          description: |-
+            CATEGORY scopes it to the category in the path. SPECIALIZATION shares it with every category of that category's specialization, and is refused for a GENERIC one.
+
+            * `CATEGORY` - One category
+            * `SPECIALIZATION` - Every category of a specialization
+      required:
+      - nameAr
+      - scope
+    AdminSpecialtyList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminSpecialty'
+      required:
+      - items
     AdminStaffMember:
       type: object
       properties:
@@ -9690,6 +10335,26 @@ components:
       - redis
       - schemaHash
       - storage
+    AdminTagUpdateRequest:
+      type: object
+      description: |-
+        Rename, reorder, retire or bring back a specialty or a service.
+
+        Omitted fields keep their value. The scope is not here: sending `scope`, `categoryId` or
+        `specialization` is refused rather than ignored.
+      properties:
+        nameAr:
+          type: string
+          maxLength: 120
+        nameEn:
+          type: string
+          maxLength: 120
+        active:
+          type: boolean
+        sortOrder:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
     AdminTaskApplication:
       type: object
       properties:
@@ -9987,8 +10652,7 @@ components:
         roleIds:
           type: array
           items:
-            type: string
-            format: uuid
+            type: integer
       required:
       - active
       - createdAt
@@ -10013,8 +10677,7 @@ components:
         roleIds:
           type: array
           items:
-            type: string
-            format: uuid
+            type: integer
       required:
       - roleIds
     AdminVerificationRequirement:
@@ -11298,6 +11961,17 @@ components:
             $ref: '#/components/schemas/MapMarker'
       required:
       - items
+    NamedIntRef:
+      type: object
+      description: 'An integer id plus its Arabic display name: a specialty or a service.'
+      properties:
+        id:
+          type: integer
+        nameAr:
+          type: string
+      required:
+      - id
+      - nameAr
     NamedRef:
       type: object
       description: An id plus its Arabic display name, the shape used for inline references.
@@ -11442,9 +12116,23 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OwnerVerificationRequirement'
+        specialties:
+          type: array
+          items:
+            $ref: '#/components/schemas/NamedIntRef'
+          description: The specialties an owner may pick, as publicCategoryTagsRetrieve
+            lists them. Their ids are what `specialtyIds` takes.
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/NamedIntRef'
+          description: The services an owner may pick, as publicCategoryTagsRetrieve
+            lists them. Their ids are what `serviceTagIds` takes.
       required:
       - capabilities
       - category
+      - services
+      - specialties
       - verificationRequirements
     OwnerConfigProvince:
       type: object
@@ -11550,13 +12238,15 @@ components:
         specialtyIds:
           type: array
           items:
-            type: string
-            format: uuid
+            type: integer
+          description: The facility's active specialties, in order; retired ones are
+            left out.
         serviceTagIds:
           type: array
           items:
-            type: string
-            format: uuid
+            type: integer
+          description: The facility's active services, in order; retired ones are
+            left out.
         evidence:
           type: array
           items:
@@ -11911,13 +12601,17 @@ components:
         specialtyIds:
           type: array
           items:
-            type: string
-            format: uuid
+            type: integer
+            minimum: 1
+          description: Replaces the facility's specialties. Ids come from the category's
+            `specialties` in ownerConfigRetrieve; an empty list clears them.
         serviceTagIds:
           type: array
           items:
-            type: string
-            format: uuid
+            type: integer
+            minimum: 1
+          description: Replaces the facility's services. Ids come from the category's
+            `services` in ownerConfigRetrieve; an empty list clears them.
     PatchedProfilePatch:
       type: object
       properties:
@@ -12076,6 +12770,26 @@ components:
             $ref: '#/components/schemas/PublicCategory'
       required:
       - items
+    PublicCategoryTags:
+      type: object
+      description: What a category's facilities can be filtered by, and what an owner
+        can pick.
+      properties:
+        specialties:
+          type: array
+          items:
+            $ref: '#/components/schemas/NamedIntRef'
+          description: 'Active specialties, in the operators'' order: the category''s
+            own and those of its specialization. Send an id back as `specialtyId`.'
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/NamedIntRef'
+          description: Active services of the category, in order. Send an id back
+            as `serviceTagId`.
+      required:
+      - services
+      - specialties
     PublicCity:
       type: object
       properties:
@@ -12245,11 +12959,13 @@ components:
         specialties:
           type: array
           items:
-            $ref: '#/components/schemas/NamedRef'
+            $ref: '#/components/schemas/NamedIntRef'
+          description: Active specialties, in the operators' order.
         services:
           type: array
           items:
-            $ref: '#/components/schemas/NamedRef'
+            $ref: '#/components/schemas/NamedIntRef'
+          description: Active services, in the operators' order.
         hours:
           type: array
           items:
@@ -12571,6 +13287,14 @@ components:
       - expiresAt
       - refreshToken
       - sessionId
+    SpecialtyScopeEnum:
+      enum:
+      - CATEGORY
+      - SPECIALIZATION
+      type: string
+      description: |-
+        * `CATEGORY` - One category
+        * `SPECIALIZATION` - Every category of a specialization
     TemporaryClosure:
       type: object
       properties:

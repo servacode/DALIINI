@@ -119,6 +119,14 @@ def apply_text_search(queryset: QuerySet[Facility], term: str | None) -> QuerySe
         | Q(city__name_ar__icontains=normalized)
         | Q(neighborhood__name_ar__icontains=normalized)
         | Q(category__name_ar__icontains=normalized)
-        | Q(specialty_links__specialty__name_ar__icontains=normalized)
-        | Q(service_links__service_tag__name_ar__icontains=normalized)
+        # A retired specialty or service is not shown on the facility, so its name must not
+        # be what finds it either. Each pair names one linked row.
+        | Q(
+            specialty_links__specialty__name_ar__icontains=normalized,
+            specialty_links__specialty__active=True,
+        )
+        | Q(
+            service_links__service_tag__name_ar__icontains=normalized,
+            service_links__service_tag__active=True,
+        )
     ).distinct()

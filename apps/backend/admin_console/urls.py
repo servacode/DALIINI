@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import exports, views, views_content, views_duty, views_smart
+from . import exports, views, views_content, views_duty, views_smart, views_tags
 
 urlpatterns = [
     path("admin/me/", views.AdminMeView.as_view()),
@@ -75,6 +75,19 @@ urlpatterns = [
         views.CategoryCapabilitiesView.as_view(),
     ),
     path("admin/categories/<uuid:category_id>/provinces/", views.CategoryProvinceView.as_view()),
+    path(
+        "admin/categories/<uuid:category_id>/specialties/",
+        views_tags.CategorySpecialtiesView.as_view(),
+    ),
+    path(
+        "admin/categories/<uuid:category_id>/service-tags/",
+        views_tags.CategoryServiceTagsView.as_view(),
+    ),
+    path("admin/specialties/<int:specialty_id>/", views_tags.SpecialtyDetailView.as_view()),
+    path(
+        "admin/service-tags/<int:service_tag_id>/",
+        views_tags.ServiceTagDetailView.as_view(),
+    ),
     path("admin/provinces/", views.ProvinceListView.as_view()),
     path("admin/provinces/<uuid:province_id>/", views.ProvinceDetailView.as_view()),
     path("admin/provinces/<uuid:province_id>/cities/", views.ProvinceCityListView.as_view()),
