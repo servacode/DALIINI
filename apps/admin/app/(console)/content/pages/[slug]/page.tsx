@@ -11,7 +11,7 @@ import {
   LoadingState,
   PageHeader,
   Panel,
-  StatusBadge,
+  TermBadge,
   Toast,
   formatDateTime,
 } from "../../../../../components/ui";
@@ -278,13 +278,9 @@ function Editor({
         <div className="stack">
           <Panel title="النشر">
             <div className="button-row">
-              <StatusBadge tone={page.published ? "positive" : "neutral"}>
-                {page.published ? "منشورة" : "غير منشورة"}
-              </StatusBadge>
-              {page.hasUnpublishedChanges ? (
-                <StatusBadge tone="warning">تعديلات لم تُنشر</StatusBadge>
-              ) : null}
-              {dirty ? <StatusBadge tone="info">تغييرات لم تُحفظ</StatusBadge> : null}
+              <TermBadge group="pageState" value={page.published ? "PUBLISHED" : "UNPUBLISHED"} />
+              {page.hasUnpublishedChanges ? <TermBadge group="pageState" value="CHANGES" /> : null}
+              {dirty ? <TermBadge group="pageState" value="UNSAVED" /> : null}
             </div>
             {canManage ? (
               <label className="switch-row">

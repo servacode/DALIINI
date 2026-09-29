@@ -51,6 +51,15 @@
     <string name="vocab_page_kind_faq">أسئلة شائعة</string>
     <string name="vocab_evidence_state_complete">الوثائق مكتملة</string>
     <string name="vocab_evidence_state_incomplete">وثائق ناقصة</string>
+    <string name="vocab_contact_state_pending">بانتظار المعالجة</string>
+    <string name="vocab_contact_state_handled">تمت المعالجة</string>
+    <string name="vocab_page_state_published">منشورة</string>
+    <string name="vocab_page_state_unpublished">غير منشورة</string>
+    <string name="vocab_page_state_changes">تعديلات لم تُنشر</string>
+    <string name="vocab_page_state_unsaved">تغييرات لم تُحفظ</string>
+    <string name="vocab_number_state_public">ظاهر للعامة</string>
+    <string name="vocab_number_state_hidden">مخفي</string>
+    <string name="vocab_number_state_needs_check">يحتاج تحققاً</string>
     <string name="vocab_duty_source_admin">الإدارة</string>
     <string name="vocab_duty_source_owner">المالك</string>
     <string name="vocab_duty_source_import">استيراد</string>

@@ -13,7 +13,7 @@ import {
   LoadingState,
   PageHeader,
   Panel,
-  StatusBadge,
+  TermBadge,
   Toast,
 } from "../../../../components/ui";
 import { CharCount } from "../../../../components/ui/extra";
@@ -228,10 +228,8 @@ export default function EmergencyNumbersPage() {
       width: "22%",
       render: (row) => (
         <span className="button-row">
-          <StatusBadge tone={row.active ? "positive" : "neutral"}>
-            {row.active ? "ظاهر للعامة" : "مخفي"}
-          </StatusBadge>
-          {row.adminNote.trim() ? <StatusBadge tone="warning">يحتاج تحققاً</StatusBadge> : null}
+          <TermBadge group="numberState" value={row.active ? "PUBLIC" : "HIDDEN"} />
+          {row.adminNote.trim() ? <TermBadge group="numberState" value="NEEDS_CHECK" /> : null}
         </span>
       ),
     },

@@ -78,6 +78,21 @@
     "COMPLETE": {"ar": "الوثائق مكتملة", "tone": "positive"},
     "INCOMPLETE": {"ar": "وثائق ناقصة", "tone": "warning"}
   },
+  "contactState": {
+    "PENDING": {"ar": "بانتظار المعالجة", "tone": "warning"},
+    "HANDLED": {"ar": "تمت المعالجة", "tone": "positive"}
+  },
+  "pageState": {
+    "PUBLISHED": {"ar": "منشورة", "tone": "positive"},
+    "UNPUBLISHED": {"ar": "غير منشورة", "tone": "neutral"},
+    "CHANGES": {"ar": "تعديلات لم تُنشر", "tone": "warning"},
+    "UNSAVED": {"ar": "تغييرات لم تُحفظ", "tone": "info"}
+  },
+  "numberState": {
+    "PUBLIC": {"ar": "ظاهر للعامة", "tone": "positive"},
+    "HIDDEN": {"ar": "مخفي", "tone": "neutral"},
+    "NEEDS_CHECK": {"ar": "يحتاج تحققاً", "tone": "warning"}
+  },
   "dutySource": {
     "ADMIN": {"ar": "الإدارة", "tone": "info"},
     "OWNER": {"ar": "المالك", "tone": "neutral"},

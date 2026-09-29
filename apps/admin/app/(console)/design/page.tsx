@@ -67,6 +67,10 @@ const GROUP_TITLES: Record<string, string> = {
   emergencyKind: "نوع رقم الطوارئ",
   pageKind: "نوع الصفحة",
   dutySource: "مصدر المناوبة",
+  evidenceState: "الوثائق المطلوبة",
+  contactState: "رسالة التواصل",
+  pageState: "حالة الصفحة",
+  numberState: "رقم الطوارئ",
 };
 
 /**

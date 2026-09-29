@@ -13,8 +13,8 @@ import {
   ErrorState,
   LoadingState,
   PageHeader,
-  StatusBadge,
   formatDateTime,
+  TermBadge,
 } from "../../../../components/ui";
 import { CharCount } from "../../../../components/ui/extra";
 import { PAGE_KINDS, SLUG_PATTERN } from "../../../../lib/client/content";
@@ -117,12 +117,8 @@ export default function ContentPagesPage() {
       header: "الحالة",
       render: (row) => (
         <span className="button-row">
-          <StatusBadge tone={row.published ? "positive" : "neutral"}>
-            {row.published ? "منشورة" : "غير منشورة"}
-          </StatusBadge>
-          {row.hasUnpublishedChanges ? (
-            <StatusBadge tone="warning">تعديلات لم تُنشر</StatusBadge>
-          ) : null}
+          <TermBadge group="pageState" value={row.published ? "PUBLISHED" : "UNPUBLISHED"} />
+          {row.hasUnpublishedChanges ? <TermBadge group="pageState" value="CHANGES" /> : null}
         </span>
       ),
     },

@@ -12,7 +12,6 @@ import {
   LoadingState,
   PageHeader,
   Pagination,
-  StatusBadge,
   TermBadge,
   Toast,
   formatDateTime,
@@ -134,11 +133,11 @@ export default function ContactMessagesPage() {
                 <footer className="message-foot">
                   {item.handled ? (
                     <span className="button-row">
-                      <StatusBadge tone="positive">تمت المعالجة</StatusBadge>
+                      <TermBadge group="contactState" value="HANDLED" />
                       <span className="muted cell-ltr">{formatDateTime(item.handledAt)}</span>
                     </span>
                   ) : (
-                    <StatusBadge tone="warning">بانتظار المعالجة</StatusBadge>
+                    <TermBadge group="contactState" value="PENDING" />
                   )}
                   {canManage && !item.handled ? (
                     <button

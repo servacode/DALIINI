@@ -80,6 +80,21 @@ enum DirectoryVocabulary {
         "COMPLETE": ("الوثائق مكتملة", "positive"),
         "INCOMPLETE": ("وثائق ناقصة", "warning")
     ]
+    static let contactState: [String: (ar: String, tone: String)] = [
+        "PENDING": ("بانتظار المعالجة", "warning"),
+        "HANDLED": ("تمت المعالجة", "positive")
+    ]
+    static let pageState: [String: (ar: String, tone: String)] = [
+        "PUBLISHED": ("منشورة", "positive"),
+        "UNPUBLISHED": ("غير منشورة", "neutral"),
+        "CHANGES": ("تعديلات لم تُنشر", "warning"),
+        "UNSAVED": ("تغييرات لم تُحفظ", "info")
+    ]
+    static let numberState: [String: (ar: String, tone: String)] = [
+        "PUBLIC": ("ظاهر للعامة", "positive"),
+        "HIDDEN": ("مخفي", "neutral"),
+        "NEEDS_CHECK": ("يحتاج تحققاً", "warning")
+    ]
     static let dutySource: [String: (ar: String, tone: String)] = [
         "ADMIN": ("الإدارة", "info"),
         "OWNER": ("المالك", "neutral"),
