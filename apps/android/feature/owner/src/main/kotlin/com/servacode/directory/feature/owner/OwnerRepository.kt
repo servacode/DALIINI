@@ -4,6 +4,7 @@ import com.servacode.directory.core.model.HoursConfirmation
 import com.servacode.directory.core.model.OwnerFacilityInsights
 import com.servacode.directory.core.model.FacilityMember
 import com.servacode.directory.core.model.FacilityMemberRole
+import com.servacode.directory.core.model.OwnerConfig
 import com.servacode.directory.core.model.OwnerFacilityDetail
 import com.servacode.directory.core.model.OwnerFacilitySummary
 import com.servacode.directory.core.model.TemporaryClosure
@@ -18,6 +19,9 @@ class OwnerRepository @Inject constructor(
     suspend fun facilities(): Result<List<OwnerFacilitySummary>> = runCatching { api.facilities() }
 
     suspend fun facility(id: String): Result<OwnerFacilityDetail> = runCatching { api.facility(id) }
+
+    /** What owners may do in [provinceId]: its categories open to them, and what each lets them pick. */
+    suspend fun config(provinceId: String): Result<OwnerConfig> = runCatching { api.ownerConfig(provinceId) }
 
     suspend fun patch(id: String, patch: OwnerFacilityPatch): Result<OwnerFacilityDetail> =
         runCatching { api.patchFacility(id, patch) }

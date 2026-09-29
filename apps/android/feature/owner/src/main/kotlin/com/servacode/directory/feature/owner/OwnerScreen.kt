@@ -42,11 +42,14 @@ import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.closureText
 import com.servacode.directory.core.designsystem.DateTimeField
 import com.servacode.directory.core.designsystem.DirectoryCard
+import com.servacode.directory.core.designsystem.DirectoryChipRow
 import com.servacode.directory.core.designsystem.DirectoryConfirmDialog
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
 import com.servacode.directory.core.designsystem.DirectoryErrorState
+import com.servacode.directory.core.designsystem.DirectoryFilterChip
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
+import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryPill
 import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
@@ -60,6 +63,7 @@ import com.servacode.directory.core.designsystem.OwnerWords
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.designsystem.StatusTone
 import com.servacode.directory.core.model.FacilityMemberRole
+import com.servacode.directory.core.model.FacilityTag
 import com.servacode.directory.core.model.OwnerFacilityStatus
 import com.servacode.directory.core.model.OwnerFacilitySummary
 
@@ -221,10 +225,16 @@ fun ManageFacilityScreen(
     viewModel: ManageFacilityViewModel = hiltViewModel(),
     insightsViewModel: OwnerInsightsViewModel = hiltViewModel(),
     hoursViewModel: HoursConfirmationViewModel = hiltViewModel(),
+    tagsViewModel: FacilityTagsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val insights by insightsViewModel.state.collectAsStateWithLifecycle()
     val hours by hoursViewModel.state.collectAsStateWithLifecycle()
+    val tags by tagsViewModel.state.collectAsStateWithLifecycle()
+    // Saved choices are an edit like any other: the facility is read again, and whatever the
+    // backend made of it — a review, for one already published — shows on its card above.
+    val tagsSaved = (tags as? FacilityTagsUiState.Content)?.saved == true
+    LaunchedEffect(tagsSaved) { if (tagsSaved) viewModel.refresh() }
     var managerId by remember { mutableStateOf("") }
     var closureStart by remember { mutableStateOf<Long?>(null) }
     var closureEnd by remember { mutableStateOf<Long?>(null) }
@@ -308,6 +318,15 @@ fun ManageFacilityScreen(
 
                 LaunchedEffect(summary.id) { insightsViewModel.show(summary.id) }
                 InsightsSection(insights, onRetry = insightsViewModel::refresh)
+
+                LaunchedEffect(value.facility) { tagsViewModel.show(value.facility) }
+                FacilityTagsSection(
+                    state = tags,
+                    onToggleSpecialty = tagsViewModel::toggleSpecialty,
+                    onToggleService = tagsViewModel::toggleService,
+                    onSave = tagsViewModel::save,
+                    onRetry = tagsViewModel::retry,
+                )
 
                 if (OwnerCapabilities.supportsTemporaryClosure(summary)) {
                     DirectorySection(OwnerCopy.CLOSURES) {
@@ -556,6 +575,136 @@ private fun HoursConfirmationSection(
     }
 }
 
+/**
+ * «التخصصات والخدمات»: what the facility offers, ticked from what its category lets owners pick,
+ * so that people narrowing a list by a specialty or a service find it.
+ *
+ * Its own card with its own states, like the statistics: loading, a failure with a retry, no
+ * connection (the ticks stay in sight and cannot change), and saving. A group without choices is
+ * not drawn, and neither is the card when the category offers none.
+ */
+@Composable
+private fun FacilityTagsSection(
+    state: FacilityTagsUiState,
+    onToggleSpecialty: (String) -> Unit,
+    onToggleService: (String) -> Unit,
+    onSave: () -> Unit,
+    onRetry: () -> Unit,
+) {
+    when (state) {
+        FacilityTagsUiState.Hidden -> Unit
+        FacilityTagsUiState.Loading -> DirectorySection(OwnerCopy.TAGS) {
+            DirectoryInlineLoading(OwnerCopy.TAGS_LOADING)
+        }
+        is FacilityTagsUiState.Error -> DirectorySection(OwnerCopy.TAGS) {
+            Text(
+                text = OwnerCopy.TAGS_ERROR,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+            )
+            Text(
+                text = appErrorText(state.error),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            DirectoryTextButton(OwnerCopy.RETRY, onRetry)
+        }
+        is FacilityTagsUiState.Content -> DirectorySection(OwnerCopy.TAGS) {
+            val form = state.form
+            Text(
+                text = OwnerCopy.TAGS_HINT,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (state.offline) {
+                DirectoryOfflineNotice(text = OwnerCopy.TAGS_OFFLINE)
+            }
+            if (form.choices.specialties.isNotEmpty()) {
+                TagChoices(
+                    label = OwnerCopy.SPECIALTIES,
+                    choices = form.choices.specialties,
+                    ticked = form.specialties,
+                    enabled = state.editable,
+                    onToggle = onToggleSpecialty,
+                )
+            }
+            if (form.choices.services.isNotEmpty()) {
+                TagChoices(
+                    label = OwnerCopy.SERVICES,
+                    choices = form.choices.services,
+                    ticked = form.services,
+                    enabled = state.editable,
+                    onToggle = onToggleService,
+                )
+            }
+            TagsStatus(state, onRefresh = onRetry)
+            DirectoryPrimaryButton(
+                text = OwnerCopy.TAGS_SAVE,
+                onClick = onSave,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = state.canSave,
+                loading = state.saving,
+            )
+        }
+    }
+}
+
+/** One group, every choice in sight and each ticked on its own, as a checklist is. */
+@Composable
+private fun TagChoices(
+    label: String,
+    choices: List<FacilityTag>,
+    ticked: Set<String>,
+    enabled: Boolean,
+    onToggle: (String) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.semantics { heading() },
+        )
+        DirectoryChipRow {
+            choices.forEach { choice ->
+                DirectoryFilterChip(
+                    text = choice.nameAr,
+                    selected = choice.id in ticked,
+                    onClick = { onToggle(choice.id) },
+                    enabled = enabled,
+                )
+            }
+        }
+    }
+}
+
+/**
+ * The one line that says how the save went: under way, done, or refused and why. A screen reader
+ * hears it when it changes, because the button it follows says nothing while it spins.
+ */
+@Composable
+private fun TagsStatus(state: FacilityTagsUiState.Content, onRefresh: () -> Unit) {
+    val failure = state.failure
+    val (text, color) = when {
+        state.saving -> OwnerCopy.TAGS_SAVING to MaterialTheme.colorScheme.onSurfaceVariant
+        failure == FacilityTagsFailure.ChoicesOutdated -> OwnerCopy.TAGS_OUTDATED to MaterialTheme.colorScheme.error
+        failure is FacilityTagsFailure.Failed ->
+            OwnerCopy.tagsSaveFailed(appErrorText(failure.error)) to MaterialTheme.colorScheme.error
+        state.saved && !state.form.changed -> OwnerCopy.TAGS_SAVED to MaterialTheme.colorScheme.primary
+        else -> return
+    }
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        color = color,
+        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+    )
+    if (failure == FacilityTagsFailure.ChoicesOutdated) {
+        DirectoryTextButton(OwnerCopy.TAGS_REFRESH, onRefresh)
+    }
+}
+
 @Composable
 private fun InsightFigure(count: Int, label: String, @DrawableRes icon: Int) {
     Column(
@@ -608,6 +757,22 @@ object OwnerCopy {
     val INSIGHTS_DIRECTIONS: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights_directions)
     val RETRY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_retry)
+    val TAGS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags)
+    val TAGS_HINT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_hint)
+    val SPECIALTIES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_specialties)
+    val SERVICES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_services)
+    val TAGS_LOADING: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_loading)
+    val TAGS_ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_error)
+    val TAGS_OFFLINE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_offline)
+    val TAGS_SAVE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_save)
+    val TAGS_SAVING: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_saving)
+    val TAGS_SAVED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_saved)
+    val TAGS_OUTDATED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_outdated)
+    val TAGS_REFRESH: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_tags_refresh)
+
+    /** A refused save, with the error's own sentence after it. */
+    @Composable @ReadOnlyComposable
+    fun tagsSaveFailed(reason: String): String = stringResource(R.string.owner_tags_save_failed, reason)
 
     @Composable @ReadOnlyComposable
     fun insightsWindow(days: Int): String = stringResource(R.string.owner_insights_window, days)

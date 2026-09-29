@@ -26,6 +26,24 @@
     <string name="owner_insights_calls">اتصالات</string>
     <string name="owner_insights_directions">طلبات الاتجاهات</string>
     <string name="owner_count">%1$d</string>
+
+    <!-- What the facility offers, ticked from its category's choices. Each group is shown only
+         when the category has choices in it. -->
+    <string name="owner_tags">التخصصات والخدمات</string>
+    <string name="owner_tags_hint">اختر ما تقدمه منشأتك ليجدك الناس عند البحث</string>
+    <string name="owner_specialties">التخصصات</string>
+    <string name="owner_services">الخدمات</string>
+    <string name="owner_tags_loading">جارٍ تحميل التخصصات والخدمات…</string>
+    <string name="owner_tags_error">تعذر تحميل التخصصات والخدمات.</string>
+    <string name="owner_tags_offline">غير متصل. يمكنك التعديل عند عودة الاتصال.</string>
+    <string name="owner_tags_save">حفظ الاختيارات</string>
+    <string name="owner_tags_saving">جارٍ الحفظ…</string>
+    <string name="owner_tags_saved">تم حفظ الاختيارات.</string>
+    <!-- The backend refused a choice that was retired or moved after the list was read. -->
+    <string name="owner_tags_outdated">بعض الاختيارات لم تعد متاحة، حدّث القائمة</string>
+    <string name="owner_tags_refresh">تحديث القائمة</string>
+    <!-- %1$s is the error's own sentence. -->
+    <string name="owner_tags_save_failed">تعذر حفظ الاختيارات: %1$s</string>
     <string name="owner_list_error">تعذر تحميل المنشآت</string>
     <string name="owner_empty">لا توجد منشآت</string>
     <string name="owner_empty_body">أضف منشأتك لتظهر في الدليل بعد المراجعة.</string>

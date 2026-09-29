@@ -48,7 +48,13 @@ class ScriptedOwnerApi : OwnerApiBoundary {
         return confirmAnswer(id)
     }
 
-    override suspend fun ownerConfig(provinceId: String): OwnerConfig = throw offline
+    var configAnswer: (String) -> OwnerConfig = { throw offline }
+
+    override suspend fun ownerConfig(provinceId: String): OwnerConfig {
+        calls += "config:$provinceId"
+        return configAnswer(provinceId)
+    }
+
     override suspend fun facilities(): List<OwnerFacilitySummary> = throw offline
     override suspend fun createFacility(input: OwnerFacilityDraftInput): OwnerFacilityDetail = throw offline
     override suspend fun facility(id: String): OwnerFacilityDetail = throw offline
