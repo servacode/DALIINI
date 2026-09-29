@@ -29,6 +29,16 @@ object HomeCopy {
     val YOU_ARE_IN: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_you_are_in)
     val NOTIFICATIONS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_notifications)
     val MANY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_many)
+    val EMERGENCY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_emergency)
+    val RECENT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_recent)
+    val DATA_SAVER_TITLE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.home_data_saver_title)
+    val DATA_SAVER_BODY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.home_data_saver_body)
+    val DATA_SAVER_ACCEPT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.home_data_saver_accept)
+    val DATA_SAVER_DISMISS: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.home_data_saver_dismiss)
 
     /** The bell as a screen reader says it when something is waiting. */
     @Composable @ReadOnlyComposable

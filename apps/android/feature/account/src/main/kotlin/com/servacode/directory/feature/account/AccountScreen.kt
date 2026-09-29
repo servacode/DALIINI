@@ -78,6 +78,7 @@ fun AccountScreen(
     onSettings: () -> Unit,
     onHelp: () -> Unit,
     bottomBar: @Composable () -> Unit = {},
+    onRecentlyViewed: () -> Unit = {},
     viewModel: AccountViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -143,6 +144,13 @@ fun AccountScreen(
                         title = AccountCopy.NOTIFICATIONS,
                         onClick = onNotifications,
                         icon = DirectoryIcons.bell,
+                    )
+                    DirectoryMenuDivider()
+                    // Kept on this device, not in the account: it is where this phone has been.
+                    DirectoryMenuRow(
+                        title = RecentCopy.TITLE,
+                        onClick = onRecentlyViewed,
+                        icon = DirectoryIcons.history,
                     )
                 }
 

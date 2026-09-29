@@ -23,6 +23,7 @@ val androidOnly = listOf(
     "**/core/database/DatabaseModule.kt",
     "**/core/database/DirectoryDatabase.kt",
     "**/core/database/PublicCacheDataSource.kt",
+    "**/core/database/LocalStoresRoom.kt",
     "**/core/datastore/PreferencesRepository.kt",
     "**/core/location/AndroidLocationProvider.kt",
     "**/core/location/LocationModule.kt",
@@ -49,7 +50,7 @@ val androidOnly = listOf(
 // Feature modules whose repositories and use cases are platform-free.
 val features = listOf(
     "account", "auth", "bootstrap", "directory", "duty", "facility", "home", "map", "navigation",
-    "onboarding", "owner", "province", "ratings", "search",
+    "onboarding", "owner", "province", "ratings", "search", "settings",
 )
 
 sourceSets {

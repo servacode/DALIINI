@@ -1,5 +1,6 @@
 package com.servacode.directory.core.testing
 
+import com.servacode.directory.core.model.HoursConfirmation
 import com.servacode.directory.core.model.BusinessHour
 import com.servacode.directory.core.model.DutyShift
 import com.servacode.directory.core.model.FacilityMember
@@ -26,6 +27,10 @@ import com.servacode.directory.core.network.TemporaryClosureInput
 class ScriptedOwnerApi : OwnerApiBoundary {
     var insightsAnswer: (String) -> OwnerFacilityInsights = { throw offline }
     var patchAnswer: (String, OwnerFacilityPatch) -> OwnerFacilityDetail = { _, _ -> throw offline }
+    var confirmAnswer: (String) -> HoursConfirmation = { throw offline }
+    var dutyAnswer: (String) -> List<DutyShift> = { throw offline }
+    var createDutyAnswer: (String, DutyShiftInput) -> DutyShift = { _, _ -> throw offline }
+    var closuresAnswer: (String) -> List<TemporaryClosure> = { throw offline }
     val calls = mutableListOf<String>()
 
     override suspend fun insights(id: String): OwnerFacilityInsights {
@@ -36,6 +41,11 @@ class ScriptedOwnerApi : OwnerApiBoundary {
     override suspend fun patchFacility(id: String, input: OwnerFacilityPatch): OwnerFacilityDetail {
         calls += "patch:$id"
         return patchAnswer(id, input)
+    }
+
+    override suspend fun confirmHours(id: String): HoursConfirmation {
+        calls += "confirm:$id"
+        return confirmAnswer(id)
     }
 
     override suspend fun ownerConfig(provinceId: String): OwnerConfig = throw offline
@@ -52,7 +62,7 @@ class ScriptedOwnerApi : OwnerApiBoundary {
     override suspend fun uploadEvidence(id: String, requirementId: String, payload: OwnerUploadPayload): OwnerEvidence =
         throw offline
     override suspend fun deleteEvidence(id: String, evidenceId: String) = throw offline
-    override suspend fun temporaryClosures(id: String): List<TemporaryClosure> = throw offline
+    override suspend fun temporaryClosures(id: String): List<TemporaryClosure> = closuresAnswer(id)
     override suspend fun createTemporaryClosure(id: String, input: TemporaryClosureInput): TemporaryClosure =
         throw offline
     override suspend fun deleteTemporaryClosure(id: String, closureId: String) = throw offline
@@ -60,8 +70,11 @@ class ScriptedOwnerApi : OwnerApiBoundary {
     override suspend fun upsertMember(id: String, userId: String, role: FacilityMemberRole): FacilityMember =
         throw offline
     override suspend fun deleteMember(id: String, userId: String) = throw offline
-    override suspend fun duty(id: String): List<DutyShift> = throw offline
-    override suspend fun createDuty(id: String, input: DutyShiftInput): DutyShift = throw offline
+    override suspend fun duty(id: String): List<DutyShift> = dutyAnswer(id)
+    override suspend fun createDuty(id: String, input: DutyShiftInput): DutyShift {
+        calls += "createDuty:$id"
+        return createDutyAnswer(id, input)
+    }
     override suspend fun updateDuty(id: String, shiftId: String, input: DutyShiftInput): DutyShift = throw offline
     override suspend fun deleteDuty(id: String, shiftId: String) = throw offline
 }

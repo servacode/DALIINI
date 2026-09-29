@@ -1,5 +1,6 @@
 package com.servacode.directory.feature.settings
 
+import com.servacode.directory.core.designsystem.DirectorySwitchRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -77,7 +78,10 @@ fun SettingsScreen(
     onChangePhone: () -> Unit,
     onBack: () -> Unit,
     signedIn: Boolean,
+    onEmergencyNumbers: () -> Unit = {},
+    preferencesViewModel: PreferencesViewModel = hiltViewModel(),
 ) {
+    val preferences by preferencesViewModel.values.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var notificationsAllowed by remember { mutableStateOf(NotificationSetting.allowed(context)) }
     // Read again on the way back from the system's screen, where it may have just been changed.
@@ -121,6 +125,53 @@ fun SettingsScreen(
                     onClick = { context.startActivity(NotificationSetting.systemScreen(context)) },
                     icon = DirectoryIcons.bell,
                     subtitle = if (notificationsAllowed) SettingsCopy.ALLOWED else SettingsCopy.NOT_ALLOWED,
+                )
+                // Which kinds, of the ones the system lets through. Kept on this device: the
+                // platform has no preference endpoint yet, so a notice is filtered as it arrives.
+                val notices = preferences.notifications
+                DirectoryMenuDivider()
+                DirectorySwitchRow(
+                    title = SettingsCopy.NOTIFY_DUTY,
+                    checked = notices.dutyReminders,
+                    onCheckedChange = { on -> preferencesViewModel.setNotifications { copy(dutyReminders = on) } },
+                )
+                DirectorySwitchRow(
+                    title = SettingsCopy.NOTIFY_NEWS,
+                    checked = notices.provinceNews,
+                    onCheckedChange = { on -> preferencesViewModel.setNotifications { copy(provinceNews = on) } },
+                )
+                if (signedIn) {
+                    DirectorySwitchRow(
+                        title = SettingsCopy.NOTIFY_APPLICATIONS,
+                        body = SettingsCopy.NOTIFY_APPLICATIONS_BODY,
+                        checked = notices.applicationStatus,
+                        onCheckedChange = { on ->
+                            preferencesViewModel.setNotifications { copy(applicationStatus = on) }
+                        },
+                    )
+                }
+                Text(
+                    text = SettingsCopy.NOTIFY_LOCAL,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = Space.base, vertical = Space.sm),
+                )
+            }
+
+            DirectoryMenuSection(SettingsCopy.DATA) {
+                DirectorySwitchRow(
+                    title = SettingsCopy.DATA_SAVER,
+                    body = SettingsCopy.DATA_SAVER_BODY,
+                    checked = preferences.dataSaver,
+                    onCheckedChange = preferencesViewModel::setDataSaver,
+                )
+            }
+
+            DirectoryMenuSection(SettingsCopy.SAFETY) {
+                DirectoryMenuRow(
+                    title = SettingsCopy.EMERGENCY_NUMBERS,
+                    onClick = onEmergencyNumbers,
+                    icon = DirectoryIcons.emergency,
                 )
             }
 
@@ -323,6 +374,19 @@ private object NotificationSetting {
 object SettingsCopy {
     val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_title)
     val APPEARANCE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_appearance)
+    val NOTIFY_DUTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_notify_duty)
+    val NOTIFY_NEWS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_notify_news)
+    val NOTIFY_APPLICATIONS: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_notify_applications)
+    val NOTIFY_APPLICATIONS_BODY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_notify_applications_body)
+    val NOTIFY_LOCAL: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_notify_local)
+    val DATA: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_data)
+    val DATA_SAVER: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_data_saver)
+    val DATA_SAVER_BODY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_data_saver_body)
+    val SAFETY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_safety)
+    val EMERGENCY_NUMBERS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.emergency_title)
 
     @Composable
     @ReadOnlyComposable

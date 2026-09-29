@@ -66,6 +66,7 @@
         المرور.</string>
     <string name="ds_error_duty_not_supported">هذا القسم لا يدعم المناوبة.</string>
     <string name="ds_error_duty_overlap">وقت المناوبة يتداخل مع مناوبة أخرى أو غير صالح.</string>
+    <string name="ds_error_duty_during_closure">المنشأة مغلقة مؤقتاً في هذا الوقت، فلا يمكن جدولة مناوبة خلاله.</string>
     <string name="ds_error_hours_not_supported">هذا القسم لا يدعم ساعات العمل.</string>
     <string name="ds_error_invalid_hours">ساعات العمل غير صالحة.</string>
     <string name="ds_error_photos_not_supported">هذا القسم لا يدعم الصور.</string>

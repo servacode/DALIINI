@@ -47,6 +47,7 @@ import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.model.InboxMessage
 import com.servacode.directory.core.model.MessageDestination
+import com.servacode.directory.core.model.NotificationTarget
 
 /**
  * Screen 16. The facilities this account saved, wherever it signed in from.
@@ -130,6 +131,10 @@ fun FavoritesScreen(
 fun NotificationsScreen(
     onFacility: (String) -> Unit,
     onOwnerFacilities: () -> Unit,
+    /** An owner's duty roster, prefilled for a day when the notice named one. */
+    onDuty: (facilityId: String, date: String?) -> Unit,
+    /** A facility's management page, where its hours are confirmed. */
+    onManageFacility: (String) -> Unit,
     onBack: () -> Unit,
     viewModel: InboxViewModel = hiltViewModel(),
 ) {
@@ -177,11 +182,23 @@ fun NotificationsScreen(
                             message = message,
                             onOpen = {
                                 viewModel.read(message.id)
-                                when (message.destination) {
-                                    MessageDestination.FACILITY ->
-                                        message.facilityId?.let(onFacility)
-                                    MessageDestination.OWNER_FACILITIES -> onOwnerFacilities()
-                                    MessageDestination.NONE -> Unit
+                                // By type first — a gap nudge opens duty scheduling, an hours
+                                // reminder the facility's page — then by the destination the
+                                // backend set. What lacks the facility it would need opens the
+                                // owner's list, and a broadcast opens nothing: it is read here.
+                                val target = NotificationTarget.of(
+                                    message.type,
+                                    message.destination,
+                                    message.facilityId,
+                                )
+                                when (target) {
+                                    is NotificationTarget.Facility -> onFacility(target.id)
+                                    is NotificationTarget.DutyScheduling ->
+                                        target.facilityId?.let { onDuty(it, target.date) } ?: onOwnerFacilities()
+                                    is NotificationTarget.HoursConfirmation ->
+                                        target.facilityId?.let(onManageFacility) ?: onOwnerFacilities()
+                                    NotificationTarget.OwnerFacilities -> onOwnerFacilities()
+                                    NotificationTarget.None -> Unit
                                 }
                             },
                         )

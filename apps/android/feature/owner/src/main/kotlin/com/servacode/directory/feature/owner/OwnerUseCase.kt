@@ -29,6 +29,13 @@ class LoadOwnerInsightsUseCase @Inject constructor(
     suspend operator fun invoke(id: String) = repository.insights(id)
 }
 
+/** The weekly «تأكيد أوقات الدوام». */
+class ConfirmHoursUseCase @Inject constructor(
+    private val repository: OwnerRepository,
+) {
+    suspend operator fun invoke(id: String) = repository.confirmHours(id)
+}
+
 class ManageFacilityUseCase @Inject constructor(
     private val repository: OwnerRepository,
 ) {

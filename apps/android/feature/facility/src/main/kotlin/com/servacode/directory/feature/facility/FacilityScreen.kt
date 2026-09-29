@@ -226,7 +226,13 @@ private fun FacilityBody(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                TrustLine(detail.lastVerifiedAtEpochMillis, detail.updatedAtEpochMillis)
+                TrustLine(
+                    TrustFacts.of(
+                        verifiedAt = detail.lastVerifiedAtEpochMillis,
+                        infoConfirmedAt = detail.infoConfirmedAtEpochMillis,
+                        updatedAt = detail.updatedAtEpochMillis,
+                    ),
+                )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -356,17 +362,20 @@ private fun FacilityBody(
 }
 
 /**
- * When the details were last checked by an operator, and when they last changed: the two facts
- * a reader weighs before driving somewhere. Nothing is drawn when neither is known.
+ * When the details were last checked by an operator, and when they were last confirmed (or,
+ * from an older backend, changed): the facts a reader weighs before driving somewhere. Nothing
+ * is drawn when none is known.
  */
 @Composable
-private fun TrustLine(verifiedAt: Long?, updatedAt: Long?) {
+private fun TrustLine(facts: TrustFacts) {
+    if (facts.isEmpty) return
     val now = System.currentTimeMillis()
+    val verifiedAt = facts.verifiedAt
     val parts = listOfNotNull(
         verifiedAt?.let { FacilityCopy.verified(FacilityAge.of(it, now)) },
-        updatedAt?.let { FacilityCopy.updated(FacilityAge.of(it, now)) },
+        facts.confirmedAt?.let { FacilityCopy.confirmed(FacilityAge.of(it, now)) },
+        facts.updatedAt?.let { FacilityCopy.updated(FacilityAge.of(it, now)) },
     )
-    if (parts.isEmpty()) return
     Row(
         // One statement for a screen reader, not an icon and two fragments.
         modifier = Modifier.semantics(mergeDescendants = true) { },
@@ -570,6 +579,10 @@ object FacilityCopy {
     /** "آخر تحديث قبل شهر". */
     @Composable
     fun updated(age: FacilityAge): String = stringResource(R.string.facility_updated, age(age))
+
+    /** "آخر تأكيد للمعلومات اليوم": the owner's confirmation, or the operator's check. */
+    @Composable
+    fun confirmed(age: FacilityAge): String = stringResource(R.string.facility_confirmed, age(age))
 
     @Composable
     private fun age(age: FacilityAge): String = when (age) {

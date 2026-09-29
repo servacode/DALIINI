@@ -39,17 +39,48 @@ class PushRegistrationCoordinator @Inject constructor(
     }
 }
 
+/**
+ * What a push may carry: identifiers, never content.
+ *
+ * `notificationId` and `type`, as the backend sends today. For a duty-gap nudge
+ * (`duty.gap_nudge`) the day and the place it is about are also accepted if the push carries them
+ * — `gapDate` or `date` ("YYYY-MM-DD"), `provinceId`, `facilityId` — so the notice can open the
+ * roster on that day; without them it opens the owner's facilities. Any other key (a title, a body, a phone number) makes the whole payload
+ * refused: the rule that content arrives over REST, not in the push, holds for new types too.
+ * Parsing is tolerant within that: a malformed date or id is dropped, not the push.
+ */
 data class PushMessageData(
-    val notificationId: String,
+    val notificationId: String?,
     val type: String,
+    val date: java.time.LocalDate? = null,
+    val provinceId: String? = null,
+    val facilityId: String? = null,
 ) {
+    val isDutyGap: Boolean
+        get() = type.equals(DUTY_GAP, ignoreCase = true) ||
+            type.equals(com.servacode.directory.core.model.NotificationTypes.DUTY_GAP_NUDGE, ignoreCase = true)
+
     companion object {
+        const val DUTY_GAP = "DUTY_GAP"
+        private val ALLOWED = setOf("notificationId", "type", "date", "gapDate", "provinceId", "facilityId")
+        private val IDENTIFIER = Regex("^[0-9A-Za-z-]{1,64}$")
+
         fun from(data: Map<String, String>): PushMessageData? {
-            if (data.keys.any { it !in setOf("notificationId", "type") }) return null
-            val notificationId = data["notificationId"]?.trim().orEmpty()
+            if (data.keys.any { it !in ALLOWED }) return null
             val type = data["type"]?.trim().orEmpty()
-            if (notificationId.isBlank() || type.isBlank()) return null
-            return PushMessageData(notificationId, type)
+            if (type.isBlank()) return null
+            val notificationId = data["notificationId"]?.trim()?.takeIf { it.isNotEmpty() }
+            // A notice from the inbox needs its id; a nudge is about a date, and may come without.
+            val nudge = type.equals(DUTY_GAP, ignoreCase = true) ||
+                type.equals(com.servacode.directory.core.model.NotificationTypes.DUTY_GAP_NUDGE, ignoreCase = true)
+            if (notificationId == null && !nudge) return null
+            return PushMessageData(
+                notificationId = notificationId,
+                type = type,
+                date = (data["gapDate"] ?: data["date"])?.trim()?.take(10)?.let { runCatching { java.time.LocalDate.parse(it) }.getOrNull() },
+                provinceId = data["provinceId"]?.trim()?.takeIf { IDENTIFIER.matches(it) },
+                facilityId = data["facilityId"]?.trim()?.takeIf { IDENTIFIER.matches(it) },
+            )
         }
     }
 }

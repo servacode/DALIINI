@@ -220,9 +220,11 @@ fun ManageFacilityScreen(
     onBack: () -> Unit,
     viewModel: ManageFacilityViewModel = hiltViewModel(),
     insightsViewModel: OwnerInsightsViewModel = hiltViewModel(),
+    hoursViewModel: HoursConfirmationViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val insights by insightsViewModel.state.collectAsStateWithLifecycle()
+    val hours by hoursViewModel.state.collectAsStateWithLifecycle()
     var managerId by remember { mutableStateOf("") }
     var closureStart by remember { mutableStateOf<Long?>(null) }
     var closureEnd by remember { mutableStateOf<Long?>(null) }
@@ -296,6 +298,13 @@ fun ManageFacilityScreen(
                         }
                     }
                 }
+
+                LaunchedEffect(value.facility) { hoursViewModel.show(value.facility) }
+                HoursConfirmationSection(
+                    state = hours,
+                    onConfirm = hoursViewModel::confirm,
+                    onEdit = { onEdit(summary.id) },
+                )
 
                 LaunchedEffect(summary.id) { insightsViewModel.show(summary.id) }
                 InsightsSection(insights, onRetry = insightsViewModel::refresh)
@@ -493,6 +502,60 @@ private fun InsightsSection(state: OwnerInsightsUiState, onRetry: () -> Unit) {
     }
 }
 
+/**
+ * «تأكيد أوقات الدوام», once a week: one tap says the hours are still right, and the public page's
+ * «آخر تأكيد للمعلومات» moves with it. Hours that changed are edited instead.
+ */
+@Composable
+private fun HoursConfirmationSection(
+    state: HoursConfirmationUiState,
+    onConfirm: () -> Unit,
+    onEdit: () -> Unit,
+) {
+    when (state) {
+        HoursConfirmationUiState.Hidden -> Unit
+        HoursConfirmationUiState.Confirmed -> Text(
+            text = OwnerCopy.HOURS_CONFIRMED,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+        )
+        is HoursConfirmationUiState.Due -> DirectorySection(OwnerCopy.HOURS_CONFIRM_TITLE) {
+            Text(
+                text = OwnerCopy.HOURS_CONFIRM_BODY,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            state.failure?.let {
+                Text(
+                    text = appErrorText(it),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                )
+            }
+            Spacer(Modifier.height(Space.sm))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Space.sm),
+            ) {
+                DirectoryPrimaryButton(
+                    text = OwnerCopy.HOURS_CONFIRM_ACTION,
+                    onClick = onConfirm,
+                    modifier = Modifier.weight(1f),
+                    loading = state.sending,
+                )
+                DirectorySecondaryButton(
+                    text = OwnerCopy.HOURS_CONFIRM_EDIT,
+                    onClick = onEdit,
+                    modifier = Modifier.weight(1f),
+                    enabled = !state.sending,
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun InsightFigure(count: Int, label: String, @DrawableRes icon: Int) {
     Column(
@@ -527,6 +590,16 @@ object OwnerCopy {
     val DUTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_duty)
     val EDIT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_edit)
     val INSIGHTS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights)
+    val HOURS_CONFIRM_TITLE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_hours_confirm_title)
+    val HOURS_CONFIRM_BODY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_hours_confirm_body)
+    val HOURS_CONFIRM_ACTION: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_hours_confirm_action)
+    val HOURS_CONFIRM_EDIT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_hours_confirm_edit)
+    val HOURS_CONFIRMED: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_hours_confirmed)
     val INSIGHTS_LOADING: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights_loading)
     val INSIGHTS_ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights_error)

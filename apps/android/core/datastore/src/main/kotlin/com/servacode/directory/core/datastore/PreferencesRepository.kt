@@ -35,6 +35,13 @@ class PreferencesRepository @Inject constructor(
             themePreference = prefs[THEME_PREFERENCE]
                 ?.let { runCatching { ThemePreference.valueOf(it) }.getOrNull() }
                 ?: ThemePreference.SYSTEM,
+            notifications = NotificationPreferences(
+                dutyReminders = prefs[NOTIFY_DUTY] ?: true,
+                provinceNews = prefs[NOTIFY_NEWS] ?: true,
+                applicationStatus = prefs[NOTIFY_APPLICATIONS] ?: true,
+            ),
+            dataSaver = prefs[DATA_SAVER] ?: false,
+            dataSaverSuggested = prefs[DATA_SAVER_SUGGESTED] ?: false,
         )
     }
 
@@ -65,6 +72,22 @@ class PreferencesRepository @Inject constructor(
         context.directoryDataStore.edit { it[THEME_PREFERENCE] = value.name }
     }
 
+    override suspend fun setNotificationPreferences(value: NotificationPreferences) {
+        context.directoryDataStore.edit {
+            it[NOTIFY_DUTY] = value.dutyReminders
+            it[NOTIFY_NEWS] = value.provinceNews
+            it[NOTIFY_APPLICATIONS] = value.applicationStatus
+        }
+    }
+
+    override suspend fun setDataSaver(enabled: Boolean) {
+        context.directoryDataStore.edit { it[DATA_SAVER] = enabled }
+    }
+
+    override suspend fun setDataSaverSuggested() {
+        context.directoryDataStore.edit { it[DATA_SAVER_SUGGESTED] = true }
+    }
+
     private companion object {
         val SELECTED_PROVINCE = stringPreferencesKey("selected_province_id")
         val LOCATION_PREFERENCE = stringPreferencesKey("location_preference")
@@ -74,6 +97,11 @@ class PreferencesRepository @Inject constructor(
         val PLACE_PROVINCE = stringPreferencesKey("place_province_id")
         val OFFLINE_MAP_DECLINED = booleanPreferencesKey("offline_map_declined")
         val THEME_PREFERENCE = stringPreferencesKey("theme_preference")
+        val NOTIFY_DUTY = booleanPreferencesKey("notify_duty_reminders")
+        val NOTIFY_NEWS = booleanPreferencesKey("notify_province_news")
+        val NOTIFY_APPLICATIONS = booleanPreferencesKey("notify_application_status")
+        val DATA_SAVER = booleanPreferencesKey("data_saver")
+        val DATA_SAVER_SUGGESTED = booleanPreferencesKey("data_saver_suggested")
     }
 }
 

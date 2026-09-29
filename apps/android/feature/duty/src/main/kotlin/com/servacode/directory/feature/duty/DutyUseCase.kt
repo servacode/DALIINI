@@ -7,6 +7,8 @@ class LoadDutyUseCase @Inject constructor(
     private val repository: DutyRepository,
 ) {
     suspend operator fun invoke(facilityId: String) = repository.list(facilityId)
+
+    suspend fun closures(facilityId: String) = repository.closures(facilityId)
 }
 
 class ManageDutyUseCase @Inject constructor(

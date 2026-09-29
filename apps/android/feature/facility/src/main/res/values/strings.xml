@@ -29,6 +29,8 @@
     <!-- The trust line. %1$s is an age: "اليوم" or "قبل ٣ أيام". -->
     <string name="facility_verified">تم التحقق %1$s</string>
     <string name="facility_updated">آخر تحديث %1$s</string>
+    <!-- The later of an operator's check and the owner's weekly confirmation of the hours. -->
+    <string name="facility_confirmed">آخر تأكيد للمعلومات %1$s</string>
     <string name="facility_age_today">اليوم</string>
     <plurals name="facility_age_days">
         <item quantity="zero">اليوم</item>

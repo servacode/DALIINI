@@ -39,11 +39,13 @@ class FacilityViewModel @Inject constructor(
     private val facility: FacilityUseCase,
     private val invalidations: RealtimeInvalidationBus,
     private val session: SessionCoordinator,
+    private val recordVisit: RecordVisitUseCase,
 ) : ViewModel() {
     private val id = savedStateHandle.toRoute<DirectoryRoute.FacilityDetailRoute>().id
     private val _state = MutableStateFlow<FacilityUiState>(FacilityUiState.Loading)
     val state: StateFlow<FacilityUiState> = _state.asStateFlow()
     private var loading: Job? = null
+    private var visitRecorded = false
 
     init {
         refresh()
@@ -90,6 +92,13 @@ class FacilityViewModel @Inject constructor(
                     is Loaded.Fresh -> content(loaded.value, stale = false, previous)
                     is Loaded.Stale -> content(loaded.value, stale = true, previous)
                     is Loaded.Failed -> FacilityUiState.Error(loaded.error)
+                }
+                // Once per opening, from whichever answer arrives first.
+                val shown = (loaded as? Loaded.Cached)?.value ?: (loaded as? Loaded.Fresh)?.value
+                    ?: (loaded as? Loaded.Stale)?.value
+                if (shown != null && !visitRecorded) {
+                    visitRecorded = true
+                    launch { recordVisit(shown) }
                 }
             }
             if (signedIn()) {

@@ -11,6 +11,13 @@
 
     <!-- The statistics card. %1$d is the backend's window in days (30). -->
     <string name="owner_insights">الإحصاءات</string>
+    <!-- The weekly question about the opening hours; confirming moves the public page's
+         «آخر تأكيد للمعلومات». -->
+    <string name="owner_hours_confirm_title">تأكيد أوقات الدوام</string>
+    <string name="owner_hours_confirm_body">هل ما زالت أوقات الدوام المعروضة صحيحة؟ تأكيدها كل أسبوع يُظهر للزوار أن معلومات منشأتك محدّثة.</string>
+    <string name="owner_hours_confirm_action">نعم، الأوقات صحيحة</string>
+    <string name="owner_hours_confirm_edit">تعديل الأوقات</string>
+    <string name="owner_hours_confirmed">شكرًا، تم تأكيد أوقات الدوام.</string>
     <string name="owner_insights_window">خلال آخر %1$d يومًا</string>
     <string name="owner_insights_loading">جارٍ تحميل الإحصاءات…</string>
     <string name="owner_insights_error">تعذر تحميل الإحصاءات.</string>

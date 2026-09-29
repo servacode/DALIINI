@@ -27,6 +27,22 @@ data class DirectoryPreferences(
     val offlineMapDeclined: Boolean = false,
     /** Light, dark, or whatever the phone is set to — the last is the default. */
     val themePreference: ThemePreference = ThemePreference.SYSTEM,
+    /** Which notices the reader wants; every one on until turned off. */
+    val notifications: NotificationPreferences = NotificationPreferences(),
+    /** «توفير البيانات»: smaller downloads, and nothing fetched that is not needed. Off by default. */
+    val dataSaver: Boolean = false,
+    /** Whether the app has already offered data saver on a metered connection; it asks once. */
+    val dataSaverSuggested: Boolean = false,
+)
+
+/**
+ * The notices a reader can turn off. Local to the device: the backend has no preferences
+ * endpoint yet, so they are honoured when a push arrives rather than when it is sent.
+ */
+data class NotificationPreferences(
+    val dutyReminders: Boolean = true,
+    val provinceNews: Boolean = true,
+    val applicationStatus: Boolean = true,
 )
 
 enum class LocationPreference { ASK, ENABLED, DISABLED }
@@ -64,4 +80,11 @@ interface DirectoryPreferencesStore {
 
     /** Remember the reader's theme; applied at the root of the app. */
     suspend fun setThemePreference(value: ThemePreference)
+
+    suspend fun setNotificationPreferences(value: NotificationPreferences)
+
+    suspend fun setDataSaver(enabled: Boolean)
+
+    /** The data-saver suggestion has been shown, whatever the answer. */
+    suspend fun setDataSaverSuggested()
 }

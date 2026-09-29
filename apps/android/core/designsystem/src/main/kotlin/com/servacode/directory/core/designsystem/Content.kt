@@ -327,7 +327,8 @@ object StatusText {
  */
 @Composable
 fun FacilityThumbnail(imageUrl: String? = null, modifier: Modifier = Modifier) {
-    if (imageUrl != null) {
+    // With data saver on, a list costs no pictures: the placeholder stands in for every one.
+    if (imageUrl != null && !LocalDataSaver.current) {
         DirectoryImage(url = imageUrl, modifier = modifier)
         return
     }
@@ -455,7 +456,12 @@ fun PhotoPager(
     }
     val pages = rememberPagerState(pageCount = { urls.size })
     Box(modifier = modifier.fillMaxWidth()) {
-        HorizontalPager(state = pages, modifier = Modifier.fillMaxSize()) { page ->
+        // The next photo is fetched ahead of the swipe, unless the reader is saving data.
+        HorizontalPager(
+            state = pages,
+            modifier = Modifier.fillMaxSize(),
+            beyondViewportPageCount = if (LocalDataSaver.current) 0 else 1,
+        ) { page ->
             val photo = Modifier
                 .fillMaxSize()
                 .let { if (onPhoto == null) it else it.clickable { onPhoto(page) } }

@@ -53,7 +53,7 @@
       "shared": "CONDITIONAL",
       "purposes": ["Analytics"],
       "required": false,
-      "notes": "Do not mark collected until the final release confirms a connected diagnostics SDK/provider."
+      "notes": "Sentry (io.sentry:sentry-android-core) ships in the AAB but initialises only when the build carries DIRECTORY_SENTRY_DSN; without it nothing is collected. With it: crash stacks, device model and OS version, release and flavour; no user, request, screenshot, view hierarchy, session tracking or breadcrumb data (CrashReporting.kt). Mark collected only for a release built with a DSN."
     }
   ],
   "security": {

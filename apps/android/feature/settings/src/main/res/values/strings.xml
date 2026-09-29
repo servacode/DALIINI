@@ -4,6 +4,23 @@
 <resources>
     <string name="settings_title">الإعدادات</string>
     <string name="settings_appearance">المظهر</string>
+    <string name="settings_notify_duty">تذكير بالمناوبة القريبة</string>
+    <string name="settings_notify_news">أخبار المحافظة</string>
+    <string name="settings_notify_applications">حالة طلباتي</string>
+    <string name="settings_notify_applications_body">لأصحاب المنشآت: قبول الطلب أو الحاجة إلى تعديله</string>
+    <!-- The choices are not sent anywhere: the platform has no endpoint for them yet. -->
+    <string name="settings_notify_local">تُحفظ هذه الاختيارات على هذا الجهاز فقط، وتبقى الرسائل كلها في صندوق الإشعارات.</string>
+    <string name="settings_data">البيانات</string>
+    <string name="settings_data_saver">توفير البيانات</string>
+    <string name="settings_data_saver_body">دون صور مصغّرة في القوائم أو إعلانات، وصور المعرض عند عرضها فقط</string>
+    <string name="settings_safety">السلامة</string>
+
+    <string name="emergency_title">أرقام الطوارئ</string>
+    <string name="emergency_national">أرقام وطنية</string>
+    <string name="emergency_province">أرقام المحافظة</string>
+    <string name="emergency_verify">تحقق من الأرقام مع الجهات الرسمية</string>
+    <!-- %1$s is the service's name. -->
+    <string name="emergency_call">الاتصال بـ%1$s</string>
     <string name="settings_theme_system">تلقائي</string>
     <string name="settings_theme_light">فاتح</string>
     <string name="settings_theme_dark">داكن</string>

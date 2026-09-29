@@ -1,5 +1,6 @@
 package com.servacode.directory.feature.owner
 
+import com.servacode.directory.core.model.HoursConfirmation
 import com.servacode.directory.core.model.OwnerFacilityInsights
 import com.servacode.directory.core.model.FacilityMember
 import com.servacode.directory.core.model.FacilityMemberRole
@@ -20,6 +21,9 @@ class OwnerRepository @Inject constructor(
 
     suspend fun patch(id: String, patch: OwnerFacilityPatch): Result<OwnerFacilityDetail> =
         runCatching { api.patchFacility(id, patch) }
+
+    /** "Our hours are still right": one tap, recorded by the backend as `hoursConfirmedAt`. */
+    suspend fun confirmHours(id: String): Result<HoursConfirmation> = runCatching { api.confirmHours(id) }
 
     /** Views, calls and directions over the backend's window. Never cached: it is the owner's. */
     suspend fun insights(id: String): Result<OwnerFacilityInsights> = runCatching { api.insights(id) }

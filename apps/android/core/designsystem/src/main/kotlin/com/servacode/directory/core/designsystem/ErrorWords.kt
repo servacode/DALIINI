@@ -30,6 +30,7 @@ private fun AppErrorMessage.resource(): Int = when (this) {
     AppErrorMessage.PHONE_ALREADY_REGISTERED -> R.string.ds_error_phone_already_registered
     AppErrorMessage.DUTY_NOT_SUPPORTED -> R.string.ds_error_duty_not_supported
     AppErrorMessage.DUTY_OVERLAP_OR_INVALID -> R.string.ds_error_duty_overlap
+    AppErrorMessage.DUTY_DURING_CLOSURE -> R.string.ds_error_duty_during_closure
     AppErrorMessage.HOURS_NOT_SUPPORTED -> R.string.ds_error_hours_not_supported
     AppErrorMessage.INVALID_HOURS -> R.string.ds_error_invalid_hours
     AppErrorMessage.PHOTOS_NOT_SUPPORTED -> R.string.ds_error_photos_not_supported

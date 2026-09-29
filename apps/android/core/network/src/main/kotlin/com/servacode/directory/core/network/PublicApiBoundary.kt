@@ -1,5 +1,7 @@
 package com.servacode.directory.core.network
 
+import com.servacode.directory.core.model.EmergencyNumber
+import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.core.model.FacilityReportReason
 import com.servacode.directory.core.model.AccountProfile
 import com.servacode.directory.core.model.InboxPage
@@ -61,6 +63,12 @@ interface PublicApiBoundary {
     suspend fun provinces(): List<Province>
     suspend fun categories(provinceId: String): List<Category>
     suspend fun home(province: Province, latitude: Double?, longitude: Double?): HomeSnapshot
+
+    /** The country's emergency numbers and, for [provinceId], the province's, in the backend's order. */
+    suspend fun emergencyNumbers(provinceId: String?): List<EmergencyNumber>
+
+    /** Who is on duty in the province, [days] days from [date] ("YYYY-MM-DD"; today when null). */
+    suspend fun dutyRoster(provinceId: String, date: String? = null, days: Int = 1): List<DutyDay>
 
     /** The province's live home advertisements, in the backend's sort order. */
     suspend fun ads(provinceId: String): List<HomeAd>

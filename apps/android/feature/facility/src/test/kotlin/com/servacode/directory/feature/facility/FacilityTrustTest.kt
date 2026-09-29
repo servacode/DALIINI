@@ -26,6 +26,24 @@ class FacilityTrustTest {
         assertEquals(FacilityAge.Years(2), FacilityAge.of(now - 800 * day, now))
     }
 
+    @Test fun `the owner's later confirmation is said beside the operator's check`() {
+        val facts = TrustFacts.of(verifiedAt = now - 10 * day, infoConfirmedAt = now - day, updatedAt = now)
+
+        assertEquals(TrustFacts(now - 10 * day, now - day, null), facts)
+    }
+
+    @Test fun `a confirmation that is the check itself is not said twice`() {
+        val facts = TrustFacts.of(verifiedAt = now - day, infoConfirmedAt = now - day, updatedAt = now)
+
+        assertEquals(TrustFacts(now - day, null, null), facts)
+    }
+
+    @Test fun `without infoConfirmedAt the line keeps its last update`() {
+        assertEquals(TrustFacts(now - day, null, now), TrustFacts.of(now - day, null, now))
+        assertEquals(TrustFacts(null, now - day, null), TrustFacts.of(null, now - day, now))
+        assertTrue(TrustFacts.of(null, null, null).isEmpty)
+    }
+
     @Test fun `a time ahead of the device clock reads as today`() {
         assertEquals(FacilityAge.Today, FacilityAge.of(now + 5 * day, now))
     }

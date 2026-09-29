@@ -1,10 +1,13 @@
 package com.servacode.directory.core.testing
 
+import com.servacode.directory.core.model.EmergencyNumber
+import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.core.model.FacilityReportReason
 import com.servacode.directory.core.database.PublicCache
 import com.servacode.directory.core.datastore.DirectoryPreferences
 import com.servacode.directory.core.datastore.DirectoryPreferencesStore
 import com.servacode.directory.core.datastore.LocationPreference
+import com.servacode.directory.core.datastore.NotificationPreferences
 import com.servacode.directory.core.datastore.ThemePreference
 import com.servacode.directory.core.location.LocationFix
 import com.servacode.directory.core.location.LocationProvider
@@ -116,6 +119,18 @@ class FakePreferences(
     override suspend fun setThemePreference(value: ThemePreference) {
         state.value = state.value.copy(themePreference = value)
     }
+
+    override suspend fun setNotificationPreferences(value: NotificationPreferences) {
+        state.value = state.value.copy(notifications = value)
+    }
+
+    override suspend fun setDataSaver(enabled: Boolean) {
+        state.value = state.value.copy(dataSaver = enabled)
+    }
+
+    override suspend fun setDataSaverSuggested() {
+        state.value = state.value.copy(dataSaverSuggested = true)
+    }
 }
 
 /** Location as the user left it: [fix] when they allowed it, nothing otherwise. */
@@ -151,6 +166,8 @@ class ScriptedPublicApi : PublicApiBoundary {
     var provincesAnswer: () -> List<Province> = { throw offline }
     var homeAnswer: (Province) -> HomeSnapshot = { throw offline }
     var adsAnswer: (String) -> List<HomeAd> = { throw offline }
+    var emergencyAnswer: (String?) -> List<EmergencyNumber> = { throw offline }
+    var rosterAnswer: (String, String?, Int) -> List<DutyDay> = { _, _, _ -> throw offline }
     var reportAnswer: (String, FacilityReportReason, String?) -> Unit = { _, _, _ -> throw offline }
     var directoryAnswer: (DirectoryQuery, String?) -> Page<FacilitySummary> = { _, _ -> throw offline }
     var searchAnswer: (String, String?) -> Page<FacilitySummary> = { _, _ -> throw offline }
@@ -169,6 +186,16 @@ class ScriptedPublicApi : PublicApiBoundary {
     override suspend fun reportFacility(facilityId: String, reason: FacilityReportReason, note: String?) {
         calls += "report:$facilityId:$reason:${note.orEmpty()}"
         reportAnswer(facilityId, reason, note)
+    }
+
+    override suspend fun emergencyNumbers(provinceId: String?): List<EmergencyNumber> {
+        calls += "emergency:$provinceId"
+        return emergencyAnswer(provinceId)
+    }
+
+    override suspend fun dutyRoster(provinceId: String, date: String?, days: Int): List<DutyDay> {
+        calls += "roster:$provinceId:$date:$days"
+        return rosterAnswer(provinceId, date, days)
     }
 
     override suspend fun ads(provinceId: String): List<HomeAd> {

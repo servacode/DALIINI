@@ -1,5 +1,6 @@
 package com.servacode.directory.feature.duty
 
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.contentDescription
@@ -49,8 +50,17 @@ fun DutyScreen(
     viewModel: DutyViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val draft by viewModel.draft.collectAsStateWithLifecycle()
     var start by remember { mutableStateOf<Long?>(null) }
     var end by remember { mutableStateOf<Long?>(null) }
+    // A preset or a gap nudge fills the form; the owner still confirms with «جدولة».
+    LaunchedEffect(draft) {
+        draft?.let {
+            start = it.startsAt
+            end = it.endsAt
+            viewModel.draftShown()
+        }
+    }
 
     DirectoryPage(
         topBar = { DirectoryTopBar(title = DutyCopy.TITLE, onBack = onBack) },
@@ -71,9 +81,9 @@ fun DutyScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(Space.sm),
             ) {
-                if (value.invalidTimes) {
+                value.problem?.let { problem ->
                     Text(
-                        text = DutyCopy.INVALID_TIMES,
+                        text = DutyCopy.problem(problem),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier
@@ -92,6 +102,22 @@ fun DutyScreen(
                     )
                 }
                 DirectorySectionLabel(DutyCopy.NEW_SHIFT)
+                // The two shifts owners schedule most, one tap each, into the form below.
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(Space.sm),
+                ) {
+                    DirectorySecondaryButton(
+                        text = DutyCopy.TONIGHT,
+                        onClick = viewModel::presetTonight,
+                        modifier = Modifier.weight(1f),
+                    )
+                    DirectorySecondaryButton(
+                        text = DutyCopy.TOMORROW,
+                        onClick = viewModel::presetTomorrow,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
                 DateTimeField(DutyCopy.START, start, { start = it }, Modifier.fillMaxWidth())
                 DateTimeField(DutyCopy.END, end, { end = it }, Modifier.fillMaxWidth())
                 DirectoryPrimaryButton(
@@ -153,6 +179,24 @@ fun DutyScreen(
 object DutyCopy {
     val INVALID_TIMES: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_invalid_times)
+    val TONIGHT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_tonight)
+    val TOMORROW: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_tomorrow)
+
+    /** The app's own objection to the times, naming the shift or closure it clashes with. */
+    @Composable
+    @ReadOnlyComposable
+    fun problem(problem: DutyProblem): String = when (problem) {
+        DutyProblem.InvalidRange -> stringResource(R.string.duty_invalid_times)
+        DutyProblem.InPast -> stringResource(R.string.duty_in_past)
+        is DutyProblem.Overlaps -> stringResource(
+            R.string.duty_overlaps,
+            DirectoryWords.period(problem.shift.startsAtEpochMillis, problem.shift.endsAtEpochMillis),
+        )
+        is DutyProblem.DuringClosure -> stringResource(
+            R.string.duty_during_closure,
+            DirectoryWords.period(problem.closure.startsAtEpochMillis, problem.closure.endsAtEpochMillis),
+        )
+    }
 
     val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_title)
     val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_error)

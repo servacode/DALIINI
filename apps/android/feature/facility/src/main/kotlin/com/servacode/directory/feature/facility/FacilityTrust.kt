@@ -32,6 +32,27 @@ sealed interface FacilityAge {
 }
 
 /**
+ * What the trust line says, each fact a time or absent.
+ *
+ * «تم التحقق» is an operator's approval ([verifiedAt]) and nothing else. «آخر تأكيد للمعلومات» is
+ * the backend's `infoConfirmedAt` — the later of that approval and the owner's own weekly
+ * confirmation of the hours — said only when it adds something: when it is the approval itself,
+ * the line would say the same day twice. A backend or a cached page from before
+ * `infoConfirmedAt` existed still has [updatedAt], «آخر تحديث», as before.
+ */
+data class TrustFacts(val verifiedAt: Long?, val confirmedAt: Long?, val updatedAt: Long?) {
+    val isEmpty: Boolean get() = verifiedAt == null && confirmedAt == null && updatedAt == null
+
+    companion object {
+        fun of(verifiedAt: Long?, infoConfirmedAt: Long?, updatedAt: Long?): TrustFacts = TrustFacts(
+            verifiedAt = verifiedAt,
+            confirmedAt = infoConfirmedAt?.takeIf { verifiedAt == null || it > verifiedAt },
+            updatedAt = updatedAt.takeIf { infoConfirmedAt == null },
+        )
+    }
+}
+
+/**
  * The WhatsApp chat link for a published number, or null when it has too few digits to be one.
  *
  * wa.me wants the international number as digits alone. With WhatsApp installed the link opens

@@ -3,6 +3,8 @@ package com.servacode.directory.core.network.api
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.AppException
 import com.servacode.directory.core.model.AvailabilityState
+import com.servacode.directory.core.model.DamascusTime
+import com.servacode.directory.core.model.EmergencyScope
 import com.servacode.directory.core.model.FacilityReportReason
 import com.servacode.directory.core.model.GeoPoint
 import com.servacode.directory.core.model.OwnerFacilityStatus
@@ -84,7 +86,7 @@ class GeneratedAdapterTest {
 
         val provinces = publicApi.provinces()
 
-        assertEquals(listOf(Province(PROVINCE, "الرقة", "Raqqa", GeoPoint(35.9528, 39.0085))), provinces)
+        assertEquals(listOf(Province(PROVINCE, "الرقة", "Raqqa", GeoPoint(35.9528, 39.0085), code = "raqqa")), provinces)
         val request = taken()
         assertEquals("/api/v1/public/provinces/", request.url.encodedPath)
     }
@@ -447,6 +449,74 @@ class GeneratedAdapterTest {
         val unregister = taken()
         assertEquals("/api/v1/account/push-token/unregister/", unregister.url.encodedPath)
         assertEquals("""{"token":"fcm-token-1"}""", unregister.body!!.utf8())
+    }
+
+    @Test fun `emergency numbers come in the backend's order, dialable`() = runTest {
+        respond(
+            """{"items":[
+            {"id":"$REQUIREMENT","scope":"PROVINCE","provinceId":"$PROVINCE","labelAr":"مشفى الرقة الوطني",
+             "phone":"022 123 456","kind":"HOSPITAL","sortOrder":5},
+            {"id":"$FACILITY","scope":"NATIONAL","provinceId":null,"labelAr":"الإسعاف","phone":"110",
+             "kind":"AMBULANCE","sortOrder":1}]}""",
+        )
+
+        val numbers = publicApi.emergencyNumbers(PROVINCE)
+
+        assertEquals(listOf("الإسعاف", "مشفى الرقة الوطني"), numbers.map { it.nameAr })
+        assertEquals(listOf("110", "022123456"), numbers.map { it.number })
+        assertEquals(listOf(EmergencyScope.NATIONAL, EmergencyScope.PROVINCE), numbers.map { it.scope })
+        assertEquals(PROVINCE, numbers[1].provinceId)
+        val url = taken().url
+        assertEquals("/api/v1/emergency-numbers/", url.encodedPath)
+        assertEquals(PROVINCE, url.queryParameter("provinceId"))
+    }
+
+    @Test fun `the duty roster asks for its days and keeps each shift`() = runTest {
+        respond(
+            """{"provinceId":"$PROVINCE","days":[{"date":"2026-09-29","items":[${compact(FACILITY, "DUTY")}],
+            "shifts":[{"facilityId":"$FACILITY","startsAt":"2026-09-29T20:00:00+03:00",
+                       "endsAt":"2026-09-30T08:00:00+03:00"}]}]}""",
+        )
+
+        val days = publicApi.dutyRoster(PROVINCE, "2026-09-29", days = 9)
+
+        assertEquals("2026-09-29", days.single().date)
+        assertEquals(FACILITY, days.single().facilities.single().id)
+        val shift = days.single().shifts.single()
+        assertEquals("2026-09-29 20:00", DamascusTime.format(shift.startsAtEpochMillis))
+        assertEquals("2026-09-30 08:00", DamascusTime.format(shift.endsAtEpochMillis))
+        val url = taken().url
+        assertEquals("/api/v1/public/duty/", url.encodedPath)
+        assertEquals("2026-09-29", url.queryParameter("date"))
+        // The backend serves one to seven days; more is not asked for.
+        assertEquals("7", url.queryParameter("days"))
+    }
+
+    @Test fun `confirming the hours posts once and reads both times back`() = runTest {
+        respond(
+            """{"facilityId":"$FACILITY","hoursConfirmedAt":"2026-09-29T10:00:00Z",
+            "infoConfirmedAt":"2026-09-29T10:00:00Z"}""",
+        )
+
+        val confirmed = ownerApi.confirmHours(FACILITY)
+
+        assertEquals(1_790_676_000_000L, confirmed.hoursConfirmedAtEpochMillis)
+        assertEquals(confirmed.hoursConfirmedAtEpochMillis, confirmed.infoConfirmedAtEpochMillis)
+        val request = taken()
+        assertEquals("POST", request.method)
+        assertEquals("/api/v1/owner/facilities/$FACILITY/confirm-hours/", request.url.encodedPath)
+    }
+
+    @Test fun `a category without hours is refused by code`() = runTest {
+        respond(
+            """{"code":"HOURS_NOT_SUPPORTED","message":"x","details":{},"requestId":"r"}""",
+            code = 409,
+        )
+
+        val error = runCatching { ownerApi.confirmHours(FACILITY) }.exceptionOrNull() as AppException
+
+        assertEquals(AppError.Kind.CONFLICT, error.error.kind)
+        assertEquals("HOURS_NOT_SUPPORTED", error.error.code)
     }
 
     @Test fun `a no-content answer is success`() = runTest {

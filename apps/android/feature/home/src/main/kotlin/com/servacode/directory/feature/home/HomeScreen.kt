@@ -1,5 +1,15 @@
 package com.servacode.directory.feature.home
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import com.servacode.directory.core.designsystem.LocalDirectoryTones
+import com.servacode.directory.core.designsystem.Sizes
+import com.servacode.directory.core.model.RecentFacility
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.AdAction
@@ -93,9 +103,14 @@ fun HomeScreen(
     onFacility: (String) -> Unit,
     onNotifications: () -> Unit,
     bottomBar: @Composable () -> Unit = {},
+    onEmergencyNumbers: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
+    extras: HomeExtrasViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val recent by extras.recent.collectAsStateWithLifecycle()
+    val dataSaver by extras.dataSaver.collectAsStateWithLifecycle()
+    val offerDataSaver by extras.offerDataSaver.collectAsStateWithLifecycle()
     val place by viewModel.place.collectAsStateWithLifecycle()
     val filters by viewModel.filters.collectAsStateWithLifecycle()
     val category by viewModel.category.collectAsStateWithLifecycle()
@@ -162,8 +177,26 @@ fun HomeScreen(
                 filters = filters,
                 category = category,
                 list = list,
-                ads = ads,
+                // Data saver: no slider, so none of its pictures are fetched.
+                ads = if (dataSaver) emptyList() else ads,
                 hasLocation = hasLocation,
+                extraItems = {
+                    if (offerDataSaver) {
+                        item(key = "data-saver") {
+                            DataSaverOffer(
+                                onAccept = extras::acceptDataSaver,
+                                onDismiss = extras::dismissDataSaver,
+                                modifier = Modifier.padding(horizontal = Space.base),
+                            )
+                        }
+                    }
+                    item(key = "emergency") {
+                        EmergencyShortcut(onEmergencyNumbers, Modifier.padding(horizontal = Space.base))
+                    }
+                    if (recent.isNotEmpty()) {
+                        item(key = "recent") { RecentRail(recent, onFacility) }
+                    }
+                },
                 onChip = viewModel::toggle,
                 onCategory = viewModel::select,
                 onLoadMore = viewModel::loadMore,
@@ -315,6 +348,7 @@ private fun HomeContent(
     list: HomeListState,
     ads: List<HomeAd>,
     hasLocation: Boolean,
+    extraItems: LazyListScope.() -> Unit,
     onChip: (HomeChip) -> Unit,
     onCategory: (Category) -> Unit,
     onLoadMore: () -> Unit,
@@ -372,6 +406,7 @@ private fun HomeContent(
                     LocationOffer(onUseLocation, Modifier.padding(horizontal = Space.base))
                 }
             }
+            extraItems()
             if (snapshot.categories.isNotEmpty()) {
                 item(key = "categories") {
                     CategoryRail(
@@ -590,6 +625,101 @@ private fun LocationOffer(onUseLocation: () -> Unit, modifier: Modifier = Modifi
                 overflow = TextOverflow.Ellipsis,
             )
             DirectoryTextButton(text = HomeCopy.LOCATION_ACTION, onClick = onUseLocation)
+        }
+    }
+}
+
+/** «أرقام الطوارئ», one tap from Home: the numbers someone may need before anything else. */
+@Composable
+private fun EmergencyShortcut(onOpen: () -> Unit, modifier: Modifier = Modifier) {
+    val danger = LocalDirectoryTones.current.danger
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(Radius.large))
+            .background(danger.container)
+            .clickable(role = Role.Button, onClick = onOpen)
+            .heightIn(min = Sizes.touchTarget)
+            .padding(horizontal = Space.base, vertical = Space.sm),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.md),
+    ) {
+        DirectoryIcon(DirectoryIcons.emergency, null, tint = danger.content)
+        Text(
+            text = HomeCopy.EMERGENCY,
+            style = MaterialTheme.typography.titleSmall,
+            color = danger.content,
+            modifier = Modifier.weight(1f),
+        )
+        DirectoryIcon(DirectoryIcons.chevron, null, size = IconSize.small, tint = danger.content)
+    }
+}
+
+/** «شوهدت مؤخراً»: the last facilities opened on this device, a swipe across. */
+@Composable
+private fun RecentRail(recent: List<RecentFacility>, onFacility: (String) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+        Text(
+            text = HomeCopy.RECENT,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(horizontal = Space.base).semantics { heading() },
+        )
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = Space.base),
+            horizontalArrangement = Arrangement.spacedBy(Space.sm),
+        ) {
+            items(recent, key = { "recent-" + it.id }) { facility ->
+                DirectoryPill(onClick = { onFacility(facility.id) }) {
+                    Column(
+                        modifier = Modifier
+                            .widthIn(max = RECENT_WIDTH)
+                            .heightIn(min = Sizes.touchTarget)
+                            .padding(horizontal = Space.md, vertical = Space.sm),
+                    ) {
+                        Text(
+                            text = facility.nameAr,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        facility.categoryNameAr?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private val RECENT_WIDTH = 200.dp
+
+/** Offered once, on a metered connection: save data from now on, or not. */
+@Composable
+private fun DataSaverOffer(onAccept: () -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+    DirectoryCard(modifier = modifier) {
+        Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+            Text(
+                text = HomeCopy.DATA_SAVER_TITLE,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = HomeCopy.DATA_SAVER_BODY,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                DirectoryTextButton(text = HomeCopy.DATA_SAVER_ACCEPT, onClick = onAccept)
+                DirectoryTextButton(text = HomeCopy.DATA_SAVER_DISMISS, onClick = onDismiss)
+            }
         }
     }
 }

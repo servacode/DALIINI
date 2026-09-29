@@ -14,11 +14,22 @@ import javax.inject.Singleton
 object DatabaseModule {
     @Provides @Singleton
     fun provideDatabase(@ApplicationContext context: Context): DirectoryDatabase =
-        Room.databaseBuilder(context, DirectoryDatabase::class.java, "directory-cache.db").build()
+        Room.databaseBuilder(context, DirectoryDatabase::class.java, "directory-cache.db")
+            .addMigrations(MIGRATION_1_2)
+            .build()
 
     @Provides
     fun provideCacheDao(database: DirectoryDatabase): CacheDao = database.cacheDao()
 
     @Provides @Singleton
     fun providePublicCache(source: PublicCacheDataSource): PublicCache = source
+
+    @Provides
+    fun provideLocalStoresDao(database: DirectoryDatabase): LocalStoresDao = database.localStoresDao()
+
+    @Provides @Singleton
+    fun provideRecentlyViewedStore(store: RoomRecentlyViewedStore): RecentlyViewedStore = store
+
+    @Provides @Singleton
+    fun provideEmergencyNumbersCache(cache: RoomEmergencyNumbersCache): EmergencyNumbersCache = cache
 }

@@ -43,6 +43,8 @@ class PublicCacheDataSource @Inject constructor(
                 updatedAtEpochMillis = System.currentTimeMillis(),
             ),
         )
+        // The widget redraws from this snapshot; it never asks the backend on its own for it.
+        CacheEvents.homeWritten(value.province.id)
     }
 
     override suspend fun directory(provinceId: String, categoryId: String): List<FacilitySummary> =

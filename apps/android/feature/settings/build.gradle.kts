@@ -11,6 +11,8 @@ dependencies {
     // The province's offline map pack, and the preference that remembers a refusal.
     implementation(project(":core:maps"))
     implementation(project(":core:datastore"))
+    // The emergency numbers kept for when there is no connection.
+    implementation(project(":core:database"))
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     ksp(libs.hilt.compiler)

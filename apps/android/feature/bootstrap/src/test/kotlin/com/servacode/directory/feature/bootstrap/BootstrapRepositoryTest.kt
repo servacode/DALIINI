@@ -3,6 +3,7 @@ package com.servacode.directory.feature.bootstrap
 import com.servacode.directory.core.datastore.DirectoryPreferences
 import com.servacode.directory.core.datastore.DirectoryPreferencesStore
 import com.servacode.directory.core.datastore.LocationPreference
+import com.servacode.directory.core.datastore.NotificationPreferences
 import com.servacode.directory.core.datastore.ThemePreference
 import com.servacode.directory.core.testing.FakePreferences
 import kotlinx.coroutines.flow.Flow
@@ -49,6 +50,9 @@ class BootstrapRepositoryTest {
             override suspend fun rememberPlace(label: String, provinceId: String?) = Unit
             override suspend fun setOfflineMapDeclined(value: Boolean) = Unit
             override suspend fun setThemePreference(value: ThemePreference) = Unit
+            override suspend fun setNotificationPreferences(value: NotificationPreferences) = Unit
+            override suspend fun setDataSaver(enabled: Boolean) = Unit
+            override suspend fun setDataSaverSuggested() = Unit
         }
 
         assertEquals(BootstrapResult.Failed("BOOTSTRAP_STORAGE_UNAVAILABLE"),

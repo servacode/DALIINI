@@ -60,6 +60,25 @@ val localRealtimeWebSocketUrl = providers.gradleProperty("DIRECTORY_LOCAL_REALTI
     .orElse(providers.environmentVariable("DIRECTORY_LOCAL_REALTIME_WS_URL"))
     .orElse("ws://10.0.2.2:8000/ws/v1/directory/")
 
+// The site's host, for App Links: https://<host>/f/{id}, /duty and /{province} open the app once
+// the site publishes /.well-known/assetlinks.json for this package (play/app-links.md). No scheme,
+// no path. The default is a reserved, never-resolving name (RFC 2606), so an unconfigured build
+// claims no real site; a Play release refuses it (validatePlayRelease).
+val appLinkHost = providers.gradleProperty("DIRECTORY_APP_LINK_HOST")
+    .orElse(providers.environmentVariable("DIRECTORY_APP_LINK_HOST"))
+    .orElse("root-domain.invalid")
+val stagingAppLinkHost = providers.gradleProperty("DIRECTORY_STAGING_APP_LINK_HOST")
+    .orElse(providers.environmentVariable("DIRECTORY_STAGING_APP_LINK_HOST"))
+    .orElse("staging.root-domain.invalid")
+val localAppLinkHost = providers.gradleProperty("DIRECTORY_LOCAL_APP_LINK_HOST")
+    .orElse(providers.environmentVariable("DIRECTORY_LOCAL_APP_LINK_HOST"))
+    .orElse(stagingAppLinkHost)
+
+// Crash reporting. Never committed; without a DSN the Sentry SDK is not initialised at all.
+val sentryDsn = providers.gradleProperty("DIRECTORY_SENTRY_DSN")
+    .orElse(providers.environmentVariable("DIRECTORY_SENTRY_DSN"))
+    .orElse("")
+
 // Firebase client configuration for push. Never committed: it comes from Gradle properties or
 // the environment, and when it is absent the app runs with push off.
 fun firebase(name: String) = providers.gradleProperty(name)
@@ -115,6 +134,7 @@ android {
         buildConfigField("String", "FIREBASE_APPLICATION_ID", "\"${firebaseApplicationId.get()}\"")
         buildConfigField("String", "FIREBASE_API_KEY", "\"${firebaseApiKey.get()}\"")
         buildConfigField("String", "FIREBASE_SENDER_ID", "\"${firebaseSenderId.get()}\"")
+        buildConfigField("String", "SENTRY_DSN", "\"${sentryDsn.get()}\"")
     }
 
     // Where the app finds its backend. Only `local` may use cleartext, and only towards the
@@ -130,6 +150,8 @@ android {
             buildConfigField("String", "MAP_STYLE_URL", "\"${localMapStyleUrl.get()}\"")
             buildConfigField("String", "ROUTING_BASE_URL", "\"${localRoutingBaseUrl.get()}\"")
             buildConfigField("String", "REALTIME_WS_URL", "\"${localRealtimeWebSocketUrl.get()}\"")
+            buildConfigField("String", "APP_LINK_HOST", "\"${localAppLinkHost.get()}\"")
+            manifestPlaceholders["appLinkHost"] = localAppLinkHost.get()
             buildConfigField("boolean", "ALLOW_CLEARTEXT", "true")
         }
         create("staging") {
@@ -139,6 +161,8 @@ android {
             buildConfigField("String", "API_BASE_URL", "\"${stagingApiBaseUrl.get()}\"")
             buildConfigField("String", "MAP_STYLE_URL", "\"${stagingMapStyleUrl.get()}\"")
             buildConfigField("String", "REALTIME_WS_URL", "\"${stagingRealtimeWebSocketUrl.get()}\"")
+            buildConfigField("String", "APP_LINK_HOST", "\"${stagingAppLinkHost.get()}\"")
+            manifestPlaceholders["appLinkHost"] = stagingAppLinkHost.get()
             buildConfigField("boolean", "ALLOW_CLEARTEXT", "false")
         }
         create("production") {
@@ -146,6 +170,8 @@ android {
             buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl.get()}\"")
             buildConfigField("String", "MAP_STYLE_URL", "\"${mapStyleUrl.get()}\"")
             buildConfigField("String", "REALTIME_WS_URL", "\"${realtimeWebSocketUrl.get()}\"")
+            buildConfigField("String", "APP_LINK_HOST", "\"${appLinkHost.get()}\"")
+            manifestPlaceholders["appLinkHost"] = appLinkHost.get()
             buildConfigField("boolean", "ALLOW_CLEARTEXT", "false")
         }
     }
@@ -209,6 +235,14 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.maplibre.android)
     implementation(libs.firebase.messaging)
+    // The «المناوب الآن» home-screen widget and its half-hourly refresh.
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material3)
+    implementation(libs.androidx.work.runtime)
+    // Crash reporting, initialised only with a DSN (CrashReporting).
+    implementation(libs.sentry.android)
+    // The widget keeps its last answer as JSON (DutyWidgetState).
+    implementation(libs.kotlinx.serialization.json)
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(libs.junit)
 }
@@ -241,6 +275,14 @@ val validatePlayRelease by tasks.registering {
             "ANDROID_UPLOAD_STORE_PASSWORD" to uploadStorePassword.orNull,
             "ANDROID_UPLOAD_KEY_PASSWORD" to uploadKeyPassword.orNull,
         )
+        // The site the App Links claim: a bare host, never the unconfigured default.
+        val host = appLinkHost.get()
+        require(host.isNotBlank() && !host.endsWith(".invalid") && !host.contains("<")) {
+            "DIRECTORY_APP_LINK_HOST must be the site's real host"
+        }
+        require(Regex("^[a-z0-9.-]+$").matches(host) && !host.startsWith("www.")) {
+            "DIRECTORY_APP_LINK_HOST must be a bare host (no scheme, path or www.)"
+        }
         requiredSigning.forEach { (name, value) ->
             require(!value.isNullOrBlank()) { "$name is required for a Play release" }
         }

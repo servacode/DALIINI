@@ -7,6 +7,10 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
@@ -15,6 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.toRoute
@@ -23,13 +28,16 @@ import com.servacode.directory.core.designsystem.DirectoryBottomBar
 import com.servacode.directory.core.designsystem.DirectoryDestination
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.model.DirectoryRoute
+import com.servacode.directory.core.model.DeepLinkTarget
 import com.servacode.directory.core.model.LegalPageKey
 import com.servacode.directory.core.model.MapNavigation
+import com.servacode.directory.core.model.NotificationTarget
 import com.servacode.directory.feature.account.AccountScreen
 import com.servacode.directory.feature.account.FavoritesScreen
 import com.servacode.directory.feature.account.NotificationsScreen
 import com.servacode.directory.feature.account.PasswordChangeScreen
 import com.servacode.directory.feature.account.PhoneChangeScreen
+import com.servacode.directory.feature.account.RecentlyViewedScreen
 import com.servacode.directory.feature.account.ProfileEditScreen
 import com.servacode.directory.feature.auth.LoginScreen
 import com.servacode.directory.feature.auth.RecoveryScreen
@@ -40,6 +48,7 @@ import com.servacode.directory.feature.bootstrap.StartDestination
 import com.servacode.directory.feature.bootstrap.WelcomeScreen
 import com.servacode.directory.feature.directory.DirectoryScreen
 import com.servacode.directory.feature.duty.DutyScreen
+import com.servacode.directory.feature.duty.DutyRosterScreen
 import com.servacode.directory.feature.facility.FacilityScreen
 import com.servacode.directory.feature.home.HomeScreen
 import com.servacode.directory.feature.map.MapScreen
@@ -52,15 +61,73 @@ import com.servacode.directory.feature.province.ProvinceScreen
 import com.servacode.directory.feature.ratings.RatingsScreen
 import com.servacode.directory.feature.search.SearchScreen
 import com.servacode.directory.feature.settings.HelpScreen
+import com.servacode.directory.feature.settings.EmergencyNumbersScreen
 import com.servacode.directory.feature.settings.LegalPageScreen
 import com.servacode.directory.feature.settings.SettingsScreen
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.launch
 
 @Composable
-fun DirectoryApp(sessionState: StateFlow<SessionState>) {
+fun DirectoryApp(
+    sessionState: StateFlow<SessionState>,
+    /** App Links, tapped notices and the widget, as the activity receives them. */
+    entries: Flow<AppEntry> = emptyFlow(),
+    entryViewModel: EntryViewModel = hiltViewModel(),
+) {
     val navController = rememberNavController()
     val session by sessionState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    // Where the app was asked to go, kept until there is somewhere to go from: the start screen
+    // and the first run finish first, so a link that launched the app lands on top of Home.
+    var pending by remember { mutableStateOf<AppEntry?>(null) }
+    LaunchedEffect(entries) { entries.collect { pending = it } }
+    val current by navController.currentBackStackEntryAsState()
+    LaunchedEffect(pending, current?.destination) {
+        val entry = pending ?: return@LaunchedEffect
+        val destination = current?.destination ?: return@LaunchedEffect
+        val starting = destination.hasRoute<DirectoryRoute.Bootstrap>() ||
+            destination.hasRoute<DirectoryRoute.Welcome>() ||
+            destination.hasRoute<DirectoryRoute.LocationPermission>()
+        if (starting) return@LaunchedEffect
+        pending = null
+        when (entry) {
+            is AppEntry.Link -> when (val target = entry.target) {
+                is DeepLinkTarget.Facility ->
+                    navController.navigate(DirectoryRoute.FacilityDetailRoute(target.id))
+                DeepLinkTarget.DutyNow ->
+                    navController.navigate(DirectoryRoute.DutyNow) { launchSingleTop = true }
+                // The province the link names becomes the reader's, as if picked; Home opens on it.
+                is DeepLinkTarget.Province -> scope.launch {
+                    entryViewModel.selectProvince(target.code)
+                    navController.navigate(DirectoryRoute.Home) {
+                        popUpTo<DirectoryRoute.Home> { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            }
+            is AppEntry.Notice -> {
+                val route: DirectoryRoute = when (val target = entry.target) {
+                    is NotificationTarget.Facility -> DirectoryRoute.FacilityDetailRoute(target.id)
+                    is NotificationTarget.DutyScheduling ->
+                        target.facilityId?.let { DirectoryRoute.Duty(it, target.date) } ?: DirectoryRoute.MyFacilities
+                    is NotificationTarget.HoursConfirmation ->
+                        target.facilityId?.let(DirectoryRoute::ManageFacility) ?: DirectoryRoute.MyFacilities
+                    NotificationTarget.OwnerFacilities -> DirectoryRoute.MyFacilities
+                    // The notice's own words are in the inbox; a push carries none.
+                    NotificationTarget.None -> DirectoryRoute.Notifications
+                }
+                // Each of these is the account's own; signed out, signing in comes first.
+                val needsAccount = route is DirectoryRoute.Duty || route is DirectoryRoute.ManageFacility ||
+                    route == DirectoryRoute.MyFacilities || route == DirectoryRoute.Notifications
+                val signedIn = session == SessionState.SIGNED_IN
+                navController.navigate(if (needsAccount && !signedIn) DirectoryRoute.Login else route)
+            }
+        }
+    }
 
     // When the session ends — signed out elsewhere, revoked, or its refresh refused — a screen
     // that shows the user's own data gives way to sign-in instead of failing on every request.
@@ -133,6 +200,7 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
                 onNotifications = { navController.navigate(DirectoryRoute.Notifications) },
                 bottomBar = { DirectoryTabs(DirectoryTab.HOME, navController) },
+                onEmergencyNumbers = { navController.navigate(DirectoryRoute.EmergencyNumbers) },
             )
         }
         composable<DirectoryRoute.ProvincePicker> {
@@ -263,6 +331,7 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onSettings = { navController.navigate(DirectoryRoute.Settings) },
                 onHelp = { navController.navigate(DirectoryRoute.Help) },
                 bottomBar = { DirectoryTabs(DirectoryTab.ACCOUNT, navController) },
+                onRecentlyViewed = { navController.navigate(DirectoryRoute.RecentlyViewed) },
             )
         }
         composable<DirectoryRoute.Login> {
@@ -301,6 +370,8 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
             NotificationsScreen(
                 onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
                 onOwnerFacilities = { navController.navigate(DirectoryRoute.MyFacilities) },
+                onDuty = { id, date -> navController.navigate(DirectoryRoute.Duty(id, date)) },
+                onManageFacility = { navController.navigate(DirectoryRoute.ManageFacility(it)) },
                 onBack = { navController.popBackStack() },
             )
         }
@@ -340,6 +411,16 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onChangePhone = { navController.navigate(DirectoryRoute.ChangePhone) },
                 onBack = { navController.popBackStack() },
                 signedIn = session == SessionState.SIGNED_IN,
+                onEmergencyNumbers = { navController.navigate(DirectoryRoute.EmergencyNumbers) },
+            )
+        }
+        composable<DirectoryRoute.EmergencyNumbers> {
+            EmergencyNumbersScreen(onBack = { navController.popBackStack() })
+        }
+        composable<DirectoryRoute.RecentlyViewed> {
+            RecentlyViewedScreen(
+                onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
+                onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Help> {
@@ -391,6 +472,17 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
         }
         composable<DirectoryRoute.Duty> {
             DutyScreen(onBack = { navController.popBackStack() })
+        }
+        // Who is on duty in the province today, tomorrow or this week: the site's /duty.
+        composable<DirectoryRoute.DutyNow> {
+            DutyRosterScreen(
+                onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
+                onProvince = { navController.navigate(DirectoryRoute.ProvincePicker) },
+                onBack = {
+                    // Opened from a link, there may be nothing behind it; Home is.
+                    if (!navController.popBackStack()) navController.navigate(DirectoryRoute.Home)
+                },
+            )
         }
     }
 }

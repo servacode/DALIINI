@@ -1,5 +1,7 @@
 package com.servacode.directory.core.network.api
 
+import com.servacode.directory.core.model.EmergencyNumber
+import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.api.apis.PublicFacilitiesApi
 import com.servacode.directory.api.models.FacilityReportRequest
 import com.servacode.directory.core.model.FacilityReportReason
@@ -73,6 +75,15 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
                 longitude = longitude?.toString(),
             )
         }.toDomain(province)
+
+    override suspend fun emergencyNumbers(provinceId: String?): List<EmergencyNumber> =
+        call { content.publicEmergencyNumbersList(provinceId = provinceId) }.items
+            .sortedBy { it.sortOrder }
+            .map { it.toDomain() }
+
+    override suspend fun dutyRoster(provinceId: String, date: String?, days: Int): List<DutyDay> =
+        call { discovery.publicDutyByDateList(provinceId = provinceId, date = date, days = days.coerceIn(1, 7)) }
+            .days.map { it.toDomain() }
 
     override suspend fun ads(provinceId: String): List<HomeAd> =
         call { adverts.publicAdsList(provinceId = provinceId) }.items.map { it.toDomain() }

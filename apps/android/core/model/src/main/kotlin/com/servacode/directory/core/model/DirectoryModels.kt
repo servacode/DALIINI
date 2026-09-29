@@ -17,6 +17,8 @@ data class Province(
     val nameEn: String? = null,
     /** Where a map opens for the province when the user's position is unknown; null when unset. */
     val mapCenter: GeoPoint? = null,
+    /** The province's code, as the site's links carry it (`/{code}`); null where not served. */
+    val code: String? = null,
 )
 
 @Serializable
@@ -86,6 +88,8 @@ data class FacilityDetail(
     val lastVerifiedAtEpochMillis: Long? = null,
     /** The last change to the facility record. Null only in snapshots cached before it existed. */
     val updatedAtEpochMillis: Long? = null,
+    /** The later of the operator's check and the owner's own confirmation of the hours. */
+    val infoConfirmedAtEpochMillis: Long? = null,
 )
 
 @Serializable
@@ -309,6 +313,8 @@ data class OwnerFacilityDetail(
     val descriptionAr: String? = null,
     val descriptionEn: String? = null,
     val phone: String? = null,
+    /** When a member last confirmed the opening hours; the app asks again after a week. */
+    val hoursConfirmedAtEpochMillis: Long? = null,
     /** WhatsApp contact, E.164 Syrian mobile; null when the facility has none. */
     val whatsapp: String? = null,
     val addressAr: String? = null,

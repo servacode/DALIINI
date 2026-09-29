@@ -12,8 +12,6 @@ import com.servacode.directory.core.network.api.GeneratedOwnerApi
 import com.servacode.directory.core.network.api.GeneratedPublicApi
 import com.servacode.directory.core.network.api.GeneratedPushRegistration
 import com.servacode.directory.core.network.api.GeneratedRefreshGateway
-import com.servacode.directory.core.observability.NoOpObservability
-import com.servacode.directory.core.observability.Observability
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -37,8 +35,8 @@ annotation class AuthorizedApi
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    @Provides @Singleton
-    fun provideObservability(): Observability = NoOpObservability
+    // Observability is bound by the app (ObservabilityModule): crash reporting when the build
+    // carries a DSN, nothing otherwise.
 
     /** The shared base: timeouts and the connection pool. Used as-is by the WebSocket. */
     @Provides @Singleton

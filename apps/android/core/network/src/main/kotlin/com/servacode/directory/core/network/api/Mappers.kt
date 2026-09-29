@@ -1,5 +1,12 @@
 package com.servacode.directory.core.network.api
 
+import com.servacode.directory.api.models.EmergencyNumber as WireEmergencyNumber
+import com.servacode.directory.api.models.EmergencyNumberScopeEnum
+import com.servacode.directory.api.models.PublicDutyDay
+import com.servacode.directory.core.model.DutyDay
+import com.servacode.directory.core.model.DutyWindow
+import com.servacode.directory.core.model.EmergencyNumber
+import com.servacode.directory.core.model.EmergencyScope
 import com.servacode.directory.api.models.FacilityReportReasonEnum
 import com.servacode.directory.api.models.OwnerFacilityInsights as WireOwnerFacilityInsights
 import com.servacode.directory.core.model.FacilityReportReason
@@ -128,6 +135,7 @@ internal fun PublicProvince.toDomain() = Province(
     nameAr = nameAr,
     nameEn = nameEn,
     mapCenter = mapCenter?.toGeoPoint(),
+    code = code.trim().lowercase().takeIf { it.isNotEmpty() },
 )
 
 internal fun OwnerConfigProvince.toDomain() = Province(
@@ -322,6 +330,23 @@ internal fun PublicFacilityDetail.toDomain() = FacilityDetail(
     whatsapp = whatsapp?.takeIf { it.isNotBlank() },
     lastVerifiedAtEpochMillis = lastVerifiedAt?.toEpochMillis(),
     updatedAtEpochMillis = updatedAt.toEpochMillis(),
+    infoConfirmedAtEpochMillis = infoConfirmedAt?.toEpochMillis(),
+)
+
+internal fun WireEmergencyNumber.toDomain() = EmergencyNumber(
+    nameAr = labelAr,
+    number = phone.filter { it.isDigit() || it == '+' },
+    scope = when (scope) {
+        EmergencyNumberScopeEnum.NATIONAL -> EmergencyScope.NATIONAL
+        EmergencyNumberScopeEnum.PROVINCE -> EmergencyScope.PROVINCE
+    },
+    provinceId = provinceId?.toString(),
+)
+
+internal fun PublicDutyDay.toDomain() = DutyDay(
+    date = date.toString(),
+    facilities = items.map { it.toDomain() },
+    shifts = shifts.map { DutyWindow(it.facilityId.toString(), it.startsAt.toEpochMillis(), it.endsAt.toEpochMillis()) },
 )
 
 internal fun PublicAdvertisement.toDomain() = HomeAd(
@@ -512,6 +537,7 @@ internal fun WireOwnerFacilityDetail.toDomain() = OwnerFacilityDetail(
     descriptionAr = descriptionAr,
     descriptionEn = descriptionEn,
     phone = phone,
+    hoursConfirmedAtEpochMillis = hoursConfirmedAt?.toEpochMillis(),
     whatsapp = whatsapp?.takeIf { it.isNotBlank() },
     addressAr = addressAr,
     addressEn = addressEn,

@@ -1,5 +1,6 @@
 package com.servacode.directory.core.network
 
+import com.servacode.directory.core.model.HoursConfirmation
 import com.servacode.directory.core.model.BusinessHour
 import com.servacode.directory.core.model.DutyShift
 import com.servacode.directory.core.model.FacilityMember
@@ -64,6 +65,9 @@ interface OwnerApiBoundary {
     suspend fun createFacility(input: OwnerFacilityDraftInput): OwnerFacilityDetail
     suspend fun facility(id: String): OwnerFacilityDetail
     suspend fun patchFacility(id: String, input: OwnerFacilityPatch): OwnerFacilityDetail
+
+    /** The owner confirms the facility's opening hours are still right. 409 HOURS_NOT_SUPPORTED otherwise. */
+    suspend fun confirmHours(id: String): HoursConfirmation
 
     /** Views, calls and directions for the facility over the backend's window (30 days). */
     suspend fun insights(id: String): OwnerFacilityInsights
