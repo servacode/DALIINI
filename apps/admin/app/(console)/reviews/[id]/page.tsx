@@ -15,6 +15,7 @@ import {
   PageHeader,
   Panel,
   StatusBadge,
+  TermBadge,
   Toast,
   formatDateTime,
   termsFor,
@@ -33,6 +34,7 @@ type Detail = Readonly<{
   submittedAt: string | null;
   reviewedAt: string | null;
   rejectionReason: string | null;
+  evidenceComplete: boolean;
   categoryNameAr: string;
   provinceNameAr: string;
   ownerName: string | null;
@@ -157,6 +159,15 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
                     ),
                   },
                   { label: "النوع", value: KIND[detail.data.kind] ?? detail.data.kind },
+                  {
+                    label: "الوثائق المطلوبة",
+                    value: (
+                      <TermBadge
+                        group="evidenceState"
+                        value={detail.data.evidenceComplete ? "COMPLETE" : "INCOMPLETE"}
+                      />
+                    ),
+                  },
                   { label: "التصنيف", value: detail.data.categoryNameAr },
                   { label: "المحافظة", value: detail.data.provinceNameAr },
                   { label: "مقدّم الطلب", value: detail.data.ownerName ?? "—" },

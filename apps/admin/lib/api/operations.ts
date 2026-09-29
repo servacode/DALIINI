@@ -40,7 +40,9 @@ export const READS = {
     apis.system.adminSearchRetrieve({ q: (p.q ?? "").trim() }),
   systemStatus: (apis: AdminApis) => apis.system.adminSystemStatusRetrieve(),
   reviews: (apis: AdminApis, p: Params) =>
-    apis.reviews.adminReviewsList(filled(p, ["kind", "status", "province", "category"])),
+    apis.reviews.adminReviewsList(
+      filled(p, ["kind", "status", "province", "category", "from", "to", "evidence"]),
+    ),
   review: (apis: AdminApis, p: Params) =>
     apis.reviews.adminReviewRetrieve({ applicationId: p.id! }),
 

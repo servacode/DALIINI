@@ -76,6 +76,10 @@ enum DirectoryVocabulary {
         "LEGAL": ("قانونية", "info"),
         "FAQ": ("أسئلة شائعة", "neutral")
     ]
+    static let evidenceState: [String: (ar: String, tone: String)] = [
+        "COMPLETE": ("الوثائق مكتملة", "positive"),
+        "INCOMPLETE": ("وثائق ناقصة", "warning")
+    ]
     static let dutySource: [String: (ar: String, tone: String)] = [
         "ADMIN": ("الإدارة", "info"),
         "OWNER": ("المالك", "neutral"),

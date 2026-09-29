@@ -185,6 +185,23 @@ describe("smart console reads", () => {
     expect(calls[3]?.args[0]).toEqual({ facilityId: "f-1" });
   });
 
+  it("sends the review queue's day range and document filter, and drops what is empty", async () => {
+    const { apis, calls } = spyApis();
+
+    await READS.reviews(apis, {
+      status: "SUBMITTED",
+      kind: "",
+      from: "2026-09-01",
+      to: "",
+      evidence: "incomplete",
+    });
+
+    expect(calls[0]).toEqual({
+      name: "reviews.adminReviewsList",
+      args: [{ status: "SUBMITTED", from: "2026-09-01", evidence: "incomplete" }],
+    });
+  });
+
   it("sends the quality filters on the facility list", async () => {
     const { apis, calls } = spyApis();
 

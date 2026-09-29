@@ -74,6 +74,10 @@
     "LEGAL": {"ar": "قانونية", "tone": "info"},
     "FAQ": {"ar": "أسئلة شائعة", "tone": "neutral"}
   },
+  "evidenceState": {
+    "COMPLETE": {"ar": "الوثائق مكتملة", "tone": "positive"},
+    "INCOMPLETE": {"ar": "وثائق ناقصة", "tone": "warning"}
+  },
   "dutySource": {
     "ADMIN": {"ar": "الإدارة", "tone": "info"},
     "OWNER": {"ar": "المالك", "tone": "neutral"},

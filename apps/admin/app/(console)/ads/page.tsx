@@ -25,6 +25,9 @@ type Advertisement = Readonly<{
   id: string;
   titleAr: string;
   targetScope: string;
+  provinceId: string | null;
+  categoryId: string | null;
+  imageUrl: string | null;
   enabled: boolean;
   startsAt: string | null;
   endsAt: string | null;
@@ -152,10 +155,11 @@ export default function AdsPage() {
     localUrl.current = null;
   }
 
-  function openEditor(next: Draft): void {
+  /** `currentImage` is the slide's image as published, shown until a new one is picked. */
+  function openEditor(next: Draft, currentImage: string | null = null): void {
     mutation.reset();
     releaseLocal();
-    setImage(NO_IMAGE);
+    setImage(currentImage ? { ...NO_IMAGE, url: currentImage } : NO_IMAGE);
     setDraft(next);
   }
 
@@ -322,17 +326,22 @@ export default function AdsPage() {
                             className="button-ghost"
                             data-testid={`edit-ad-${ad.id}`}
                             onClick={() =>
-                              openEditor({
-                                ...BLANK,
-                                id: ad.id,
-                                titleAr: ad.titleAr,
-                                targetScope: ad.targetScope,
-                                startsAt: toLocalInput(ad.startsAt),
-                                endsAt: toLocalInput(ad.endsAt),
-                                enabled: ad.enabled,
-                                sortOrder: String(ad.sortOrder),
-                                slideDurationMs: String(ad.slideDurationMs),
-                              })
+                              openEditor(
+                                {
+                                  ...BLANK,
+                                  id: ad.id,
+                                  titleAr: ad.titleAr,
+                                  targetScope: ad.targetScope,
+                                  provinceId: ad.provinceId ?? "",
+                                  categoryId: ad.categoryId ?? "",
+                                  startsAt: toLocalInput(ad.startsAt),
+                                  endsAt: toLocalInput(ad.endsAt),
+                                  enabled: ad.enabled,
+                                  sortOrder: String(ad.sortOrder),
+                                  slideDurationMs: String(ad.slideDurationMs),
+                                },
+                                ad.imageUrl,
+                              )
                             }
                           >
                             تعديل

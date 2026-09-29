@@ -26,6 +26,7 @@ type Application = Readonly<{
   status: string;
   submittedAt: string | null;
   reviewedAt: string | null;
+  evidenceComplete: boolean;
 }>;
 
 const STATUS = termsFor("applicationStatus");
@@ -34,11 +35,14 @@ const STATUS = termsFor("applicationStatus");
 // a facility asked to prove itself again.
 const KIND = labelsFor("applicationKind");
 
+const EVIDENCE = termsFor("evidenceState");
+
 /**
  * The review queue.
  *
- * The filters are exactly the four the contract declares on `adminReviewsList`. They are
- * sent through the generated client, which is why nothing here builds a query string.
+ * The filters are exactly the ones the contract declares on `adminReviewsList`, the
+ * submission days and whether every required document is in. They are sent
+ * through the generated client, which is why nothing here builds a query string.
  */
 export default function ReviewsPage() {
   const [filters, setFilters] = useUrlFilters({
@@ -46,6 +50,9 @@ export default function ReviewsPage() {
     kind: "",
     province: "",
     category: "",
+    from: "",
+    to: "",
+    evidence: "",
   });
   const lookups = useLookups();
   const queue = useResource<{ items: Application[] }>("reviews", filters, {
@@ -67,6 +74,14 @@ export default function ReviewsPage() {
           {STATUS[row.status]?.label ?? row.status}
         </StatusBadge>
       ),
+    },
+    {
+      key: "evidence",
+      header: "الوثائق",
+      render: (row) => {
+        const state = EVIDENCE[row.evidenceComplete ? "COMPLETE" : "INCOMPLETE"];
+        return <StatusBadge tone={state?.tone ?? "neutral"}>{state?.label}</StatusBadge>;
+      },
     },
     {
       key: "submittedAt",
@@ -95,23 +110,33 @@ export default function ReviewsPage() {
             name: "status",
             label: "الحالة",
             type: "select",
-            options: [
-              { value: "SUBMITTED", label: "قيد المراجعة" },
-              { value: "APPROVED", label: "مقبول" },
-              { value: "REJECTED", label: "مرفوض" },
-            ],
+            options: ["SUBMITTED", "APPROVED", "REJECTED"].map((value) => ({
+              value,
+              label: STATUS[value]?.label ?? value,
+            })),
           },
           {
             name: "kind",
             label: "النوع",
             type: "select",
-            options: [
-              { value: "INITIAL", label: "تسجيل أولي" },
-              { value: "REVERIFICATION", label: "إعادة تحقق" },
-            ],
+            options: ["INITIAL", "REVERIFICATION"].map((value) => ({
+              value,
+              label: KIND[value] ?? value,
+            })),
           },
           lookups.provinceFilter,
           lookups.categoryFilter,
+          {
+            name: "evidence",
+            label: "الوثائق",
+            type: "select",
+            options: [
+              { value: "incomplete", label: EVIDENCE.INCOMPLETE?.label ?? "" },
+              { value: "complete", label: EVIDENCE.COMPLETE?.label ?? "" },
+            ],
+          },
+          { name: "from", label: "أُرسل من", type: "date" },
+          { name: "to", label: "إلى", type: "date" },
         ]}
         values={filters}
         onApply={setFilters}

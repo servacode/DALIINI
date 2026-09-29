@@ -220,6 +220,16 @@ export const vocabulary = {
       "tone": "neutral"
     }
   },
+  "evidenceState": {
+    "COMPLETE": {
+      "ar": "الوثائق مكتملة",
+      "tone": "positive"
+    },
+    "INCOMPLETE": {
+      "ar": "وثائق ناقصة",
+      "tone": "warning"
+    }
+  },
   "dutySource": {
     "ADMIN": {
       "ar": "الإدارة",

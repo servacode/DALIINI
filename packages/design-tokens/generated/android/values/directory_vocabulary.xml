@@ -49,6 +49,8 @@
     <string name="vocab_page_kind_page">صفحة عامة</string>
     <string name="vocab_page_kind_legal">قانونية</string>
     <string name="vocab_page_kind_faq">أسئلة شائعة</string>
+    <string name="vocab_evidence_state_complete">الوثائق مكتملة</string>
+    <string name="vocab_evidence_state_incomplete">وثائق ناقصة</string>
     <string name="vocab_duty_source_admin">الإدارة</string>
     <string name="vocab_duty_source_owner">المالك</string>
     <string name="vocab_duty_source_import">استيراد</string>
