@@ -70,7 +70,14 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
         pages: [
           { href: "/reviews", label: "طلبات المراجعة", permission: "admin.reviews.read" },
           { href: "/reports", label: "البلاغات", permission: "admin.reports.read" },
+          { href: "/reviews/templates", label: "قوالب الرفض", permission: "admin.reviews.read" },
         ],
+      },
+      {
+        key: "duty",
+        label: "المناوبات",
+        icon: "moon",
+        pages: [{ href: "/duty", label: "جدول المناوبات", permission: "admin.duty.read" }],
       },
       {
         key: "facilities",
@@ -82,7 +89,10 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
         key: "users",
         label: "المستخدمون والصلاحيات",
         icon: "users",
-        pages: [{ href: "/users", label: "المستخدمون", permission: "admin.users.read" }],
+        pages: [
+          { href: "/users", label: "المستخدمون", permission: "admin.users.read" },
+          { href: "/users/broadcast", label: "إرسال إشعار", permission: "admin.notifications.send" },
+        ],
       },
     ],
   },
@@ -111,6 +121,17 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
         icon: "megaphone",
         pages: [{ href: "/ads", label: "الإعلانات", permission: "admin.ads.read" }],
       },
+      {
+        key: "content",
+        label: "المحتوى",
+        icon: "info",
+        pages: [
+          { href: "/content/pages", label: "الصفحات", permission: "admin.content.read" },
+          { href: "/content/faq", label: "الأسئلة الشائعة", permission: "admin.content.read" },
+          { href: "/content/emergency", label: "أرقام الطوارئ", permission: "admin.content.read" },
+          { href: "/content/messages", label: "رسائل التواصل", permission: "admin.content.read" },
+        ],
+      },
     ],
   },
   {
@@ -120,7 +141,10 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
         key: "analytics",
         label: "التقارير والإحصاءات",
         icon: "chart",
-        pages: [{ href: "/analytics", label: "الإحصاءات", permission: "admin.analytics.read" }],
+        pages: [
+          { href: "/analytics", label: "الإحصاءات", permission: "admin.analytics.read" },
+          { href: "/analytics/staff", label: "أداء الفريق", permission: "admin.analytics.read" },
+        ],
       },
       {
         key: "platform",

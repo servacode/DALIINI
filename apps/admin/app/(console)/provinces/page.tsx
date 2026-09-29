@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { useCan } from "../../../components/admin-shell";
@@ -15,6 +16,7 @@ import {
   StatusBadge,
   Toast,
 } from "../../../components/ui";
+import { type ChecklistItem, Checklist, SidePanel } from "../../../components/ui/extra";
 import { useMutation } from "../../../lib/client/use-mutation";
 import { useResource } from "../../../lib/client/use-resource";
 
@@ -41,6 +43,7 @@ export default function ProvincesPage() {
 
   const [pending, setPending] = useState<Province | null>(null);
   const [citiesOf, setCitiesOf] = useState<Province | null>(null);
+  const [readinessOf, setReadinessOf] = useState<Province | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   async function submit(): Promise<void> {
@@ -74,6 +77,14 @@ export default function ProvincesPage() {
       width: "1%",
       render: (row) => (
         <div className="button-row">
+          <button
+            type="button"
+            className="button-ghost"
+            data-testid={`readiness-${row.code}`}
+            onClick={() => setReadinessOf(row)}
+          >
+            جاهزية الإطلاق
+          </button>
           <button
             type="button"
             className="button-ghost"
@@ -119,6 +130,16 @@ export default function ProvincesPage() {
       {citiesOf ? (
         <CitiesPanel key={citiesOf.id} province={citiesOf} canManage={canManage} />
       ) : null}
+
+      <SidePanel
+        open={readinessOf !== null}
+        title={readinessOf ? `جاهزية ${readinessOf.nameAr} للإطلاق` : ""}
+        description="ما يلزم قبل أن تُفتح المحافظة للعامة، مفحوصاً الآن."
+        onClose={() => setReadinessOf(null)}
+        testId="readiness-panel"
+      >
+        {readinessOf ? <ReadinessChecklist key={readinessOf.id} province={readinessOf} /> : null}
+      </SidePanel>
 
       <ConfirmDialog
         open={pending !== null}
@@ -206,5 +227,98 @@ function CitiesPanel({ province, canManage }: { province: Province; canManage: b
         />
       ) : null}
     </Panel>
+  );
+}
+
+type Readiness = Readonly<{
+  provinceId: string;
+  provinceNameAr: string;
+  ready: boolean;
+  minActiveFacilities: number;
+  items: readonly { code: string; ok: boolean; detailAr: string }[];
+}>;
+
+const READINESS: Record<string, { title: string; fix?: (province: Province) => { href: string; label: string } }> = {
+  PROVINCE_ACTIVE: { title: "المحافظة مفعّلة" },
+  CATEGORY_PUBLIC: {
+    title: "تصنيف واحد على الأقل ظاهر للعامة",
+    fix: () => ({ href: "/taxonomy/categories", label: "فتح التصنيفات" }),
+  },
+  MIN_ACTIVE_FACILITIES: {
+    title: "عدد كافٍ من المنشآت الفعّالة",
+    fix: () => ({ href: "/reviews", label: "فتح طلبات المراجعة" }),
+  },
+  DUTY_COVERAGE: {
+    title: "صيدلية مناوبة في كل يوم من الأسبوعين القادمين",
+    fix: (province) => ({
+      href: `/duty?province=${encodeURIComponent(province.id)}`,
+      label: "فتح جدول المناوبات",
+    }),
+  },
+  EMERGENCY_NUMBERS: {
+    title: "رقم طوارئ واحد على الأقل",
+    fix: () => ({ href: "/content/emergency", label: "فتح أرقام الطوارئ" }),
+  },
+};
+
+const NUMBER = new Intl.NumberFormat("ar-SY");
+
+/**
+ * The launch checklist for one province, computed by the backend on each open: whether it
+ * is active, has a public category, enough active facilities, a pharmacy on duty every day
+ * of the next two weeks, and an emergency number. Each missing item says why and links to
+ * the screen where it is fixed.
+ */
+function ReadinessChecklist({ province }: { province: Province }) {
+  const readiness = useResource<Readiness>("provinceReadiness", { id: province.id });
+  const data = readiness.data;
+  const missing = data ? data.items.filter((item) => !item.ok).length : 0;
+  const items: ChecklistItem[] = (data?.items ?? []).map((item) => {
+    const meta = READINESS[item.code];
+    const fix = !item.ok ? meta?.fix?.(province) : undefined;
+    return {
+      key: item.code,
+      ok: item.ok,
+      title: meta?.title ?? item.code,
+      detail: item.detailAr,
+      action: fix ? (
+        <Link href={fix.href} className="button-ghost">
+          {fix.label}
+        </Link>
+      ) : undefined,
+    };
+  });
+
+  return (
+    <div className="stack readiness">
+      {readiness.loading ? <LoadingState label="جارٍ الفحص…" /> : null}
+      {readiness.error ? <ErrorState error={readiness.error} onRetry={readiness.reload} /> : null}
+      {data ? (
+        <>
+          <div
+            className="readiness-verdict"
+            data-ready={data.ready}
+            role="status"
+            data-testid="readiness-verdict"
+          >
+            <strong>{data.ready ? "جاهزة للإطلاق" : "غير جاهزة بعد"}</strong>
+            <span>
+              {data.ready
+                ? "كل الشروط متحققة. يمكن فتح المحافظة للعامة."
+                : `ينقصها ${NUMBER.format(missing)} من ${NUMBER.format(data.items.length)} شروط.`}
+            </span>
+          </div>
+          <Checklist items={items} />
+          <p className="field-hint">
+            {`الحد الأدنى للمنشآت الفعّالة ${NUMBER.format(data.minActiveFacilities)}، ويُضبط من الإعدادات.`}
+          </p>
+          <div>
+            <button type="button" className="button-ghost" onClick={readiness.reload}>
+              إعادة الفحص
+            </button>
+          </div>
+        </>
+      ) : null}
+    </div>
   );
 }
