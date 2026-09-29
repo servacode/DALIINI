@@ -1,4 +1,3 @@
-# mypy: disable-error-code="no-untyped-call,no-any-return"
 """Facility lifecycle: owner submission, operator decisions and status transitions."""
 
 from types import SimpleNamespace

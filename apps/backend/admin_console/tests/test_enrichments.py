@@ -1,4 +1,3 @@
-# mypy: disable-error-code="no-untyped-call"
 """Additive Admin, public and owner fields (names, trust, reports, insights, filters)."""
 
 from datetime import timedelta

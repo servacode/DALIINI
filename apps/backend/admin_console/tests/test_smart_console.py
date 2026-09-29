@@ -1,4 +1,3 @@
-# mypy: disable-error-code="no-untyped-call"
 """The smart admin console: tasks, alerts, quality, search, templates, timeline, bulk
 report decisions, broadcasts, readiness, analytics periods, staff stats, CSV exports and
 advertisement images."""

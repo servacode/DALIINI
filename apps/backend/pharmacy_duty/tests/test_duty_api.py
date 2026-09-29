@@ -1,4 +1,3 @@
-# mypy: disable-error-code="no-untyped-call,no-any-return"
 """Duty shifts end to end: owner scheduling, permissions and the public Duty Now query."""
 
 from datetime import datetime, timedelta

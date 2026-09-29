@@ -1,4 +1,3 @@
-# mypy: disable-error-code="no-untyped-call"
 """The admin duty roster, the shared upsert service and the daily gap nudges."""
 
 from __future__ import annotations

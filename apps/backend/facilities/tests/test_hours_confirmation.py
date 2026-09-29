@@ -1,4 +1,3 @@
-# mypy: disable-error-code="no-untyped-call"
 """Owners confirming their hours, the public `infoConfirmedAt`, and the weekly reminder."""
 
 from __future__ import annotations
