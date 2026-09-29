@@ -169,6 +169,70 @@ export const vocabulary = {
       "ar": "الجمعة",
       "tone": "neutral"
     }
+  },
+  "contactKind": {
+    "GENERAL": {
+      "ar": "استفسار أو اقتراح",
+      "tone": "neutral"
+    },
+    "OWNER": {
+      "ar": "صاحب منشأة",
+      "tone": "info"
+    },
+    "CORRECTION": {
+      "ar": "تصحيح معلومة",
+      "tone": "warning"
+    }
+  },
+  "emergencyKind": {
+    "AMBULANCE": {
+      "ar": "إسعاف",
+      "tone": "neutral"
+    },
+    "FIRE": {
+      "ar": "إطفاء",
+      "tone": "neutral"
+    },
+    "POLICE": {
+      "ar": "شرطة",
+      "tone": "neutral"
+    },
+    "HOSPITAL": {
+      "ar": "مستشفى",
+      "tone": "neutral"
+    },
+    "OTHER": {
+      "ar": "أخرى",
+      "tone": "neutral"
+    }
+  },
+  "pageKind": {
+    "PAGE": {
+      "ar": "صفحة عامة",
+      "tone": "neutral"
+    },
+    "LEGAL": {
+      "ar": "قانونية",
+      "tone": "info"
+    },
+    "FAQ": {
+      "ar": "أسئلة شائعة",
+      "tone": "neutral"
+    }
+  },
+  "dutySource": {
+    "ADMIN": {
+      "ar": "الإدارة",
+      "tone": "info"
+    },
+    "OWNER": {
+      "ar": "المالك",
+      "tone": "neutral"
+    },
+    "IMPORT": {
+      "ar": "استيراد",
+      "tone": "neutral"
+    }
   }
 } as const satisfies Record<string, Record<string, Term>>;
 export type VocabularyGroup = keyof typeof vocabulary;

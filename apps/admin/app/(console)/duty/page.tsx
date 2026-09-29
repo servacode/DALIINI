@@ -16,6 +16,7 @@ import {
   Toast,
   type Tone,
   labelsFor,
+  termsFor,
 } from "../../../components/ui";
 import { SidePanel } from "../../../components/ui/extra";
 import {
@@ -62,11 +63,7 @@ const WINDOW_DAYS = 14;
 const WEEKDAYS = labelsFor("weekday");
 const NUMBER = new Intl.NumberFormat("ar-SY");
 
-const SOURCE: Record<string, { label: string; tone: Tone }> = {
-  ADMIN: { label: "الإدارة", tone: "info" },
-  OWNER: { label: "المالك", tone: "neutral" },
-  IMPORT: { label: "استيراد", tone: "neutral" },
-};
+const SOURCE = termsFor("dutySource");
 
 const STATUS: Record<string, { label: string; tone: Tone }> = {
   UPCOMING: { label: "قادمة", tone: "info" },

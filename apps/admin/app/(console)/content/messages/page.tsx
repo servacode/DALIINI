@@ -13,6 +13,7 @@ import {
   PageHeader,
   Pagination,
   StatusBadge,
+  TermBadge,
   Toast,
   formatDateTime,
 } from "../../../../components/ui";
@@ -118,7 +119,7 @@ export default function ContactMessagesPage() {
               >
                 <header className="message-meta">
                   <strong>{item.name}</strong>
-                  <StatusBadge tone="info">{MESSAGE_KINDS[item.kind] ?? item.kind}</StatusBadge>
+                  <TermBadge group="contactKind" value={item.kind} />
                   {item.phone ? (
                     <a className="cell-ltr message-phone" href={`tel:${item.phone}`}>
                       {item.phone}

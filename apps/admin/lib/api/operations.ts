@@ -39,8 +39,6 @@ export const READS = {
   globalSearch: (apis: AdminApis, p: Params) =>
     apis.system.adminSearchRetrieve({ q: (p.q ?? "").trim() }),
   systemStatus: (apis: AdminApis) => apis.system.adminSystemStatusRetrieve(),
-  analytics: (apis: AdminApis) => apis.analytics.adminAnalyticsRetrieve(),
-
   reviews: (apis: AdminApis, p: Params) =>
     apis.reviews.adminReviewsList(filled(p, ["kind", "status", "province", "category"])),
   review: (apis: AdminApis, p: Params) =>

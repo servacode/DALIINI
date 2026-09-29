@@ -1,30 +1,22 @@
+import { type VocabularyGroup, vocabulary } from "@servacode/design-tokens/vocabulary";
+
 /**
- * The words the content screens share: page kinds, emergency-number kinds, contact-message
- * kinds, and how a page body is read.
+ * What the content screens share: the kinds of pages, emergency numbers and contact
+ * messages, and how a page body is read.
  *
- * These are console-only states (the app and the site never show a page's kind or a
- * message's category), so they are kept here, once, rather than in each screen.
+ * The kinds' words come from the shared vocabulary, so the site's contact form and the
+ * console's inbox name a message the same way.
  */
 
-export const PAGE_KINDS: Record<string, string> = {
-  PAGE: "صفحة عامة",
-  LEGAL: "قانونية",
-  FAQ: "أسئلة شائعة",
-};
+function labels(group: VocabularyGroup): Record<string, string> {
+  return Object.fromEntries(Object.entries(vocabulary[group]).map(([key, entry]) => [key, entry.ar]));
+}
 
-export const NUMBER_KINDS: Record<string, string> = {
-  AMBULANCE: "إسعاف",
-  FIRE: "إطفاء",
-  POLICE: "شرطة",
-  HOSPITAL: "مستشفى",
-  OTHER: "أخرى",
-};
+export const PAGE_KINDS = labels("pageKind");
 
-export const MESSAGE_KINDS: Record<string, string> = {
-  GENERAL: "استفسار عام",
-  OWNER: "صاحب منشأة",
-  CORRECTION: "تصحيح بيانات",
-};
+export const NUMBER_KINDS = labels("emergencyKind");
+
+export const MESSAGE_KINDS = labels("contactKind");
 
 /** The slug rule the backend applies: letters, digits and inner hyphens, 1–64 long. */
 export const SLUG_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,62}[A-Za-z0-9])?$/;

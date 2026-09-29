@@ -38,4 +38,18 @@
     <string name="vocab_weekday_wednesday">الأربعاء</string>
     <string name="vocab_weekday_thursday">الخميس</string>
     <string name="vocab_weekday_friday">الجمعة</string>
+    <string name="vocab_contact_kind_general">استفسار أو اقتراح</string>
+    <string name="vocab_contact_kind_owner">صاحب منشأة</string>
+    <string name="vocab_contact_kind_correction">تصحيح معلومة</string>
+    <string name="vocab_emergency_kind_ambulance">إسعاف</string>
+    <string name="vocab_emergency_kind_fire">إطفاء</string>
+    <string name="vocab_emergency_kind_police">شرطة</string>
+    <string name="vocab_emergency_kind_hospital">مستشفى</string>
+    <string name="vocab_emergency_kind_other">أخرى</string>
+    <string name="vocab_page_kind_page">صفحة عامة</string>
+    <string name="vocab_page_kind_legal">قانونية</string>
+    <string name="vocab_page_kind_faq">أسئلة شائعة</string>
+    <string name="vocab_duty_source_admin">الإدارة</string>
+    <string name="vocab_duty_source_owner">المالك</string>
+    <string name="vocab_duty_source_import">استيراد</string>
 </resources>

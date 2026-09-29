@@ -59,4 +59,26 @@ enum DirectoryVocabulary {
         "THURSDAY": ("الخميس", "neutral"),
         "FRIDAY": ("الجمعة", "neutral")
     ]
+    static let contactKind: [String: (ar: String, tone: String)] = [
+        "GENERAL": ("استفسار أو اقتراح", "neutral"),
+        "OWNER": ("صاحب منشأة", "info"),
+        "CORRECTION": ("تصحيح معلومة", "warning")
+    ]
+    static let emergencyKind: [String: (ar: String, tone: String)] = [
+        "AMBULANCE": ("إسعاف", "neutral"),
+        "FIRE": ("إطفاء", "neutral"),
+        "POLICE": ("شرطة", "neutral"),
+        "HOSPITAL": ("مستشفى", "neutral"),
+        "OTHER": ("أخرى", "neutral")
+    ]
+    static let pageKind: [String: (ar: String, tone: String)] = [
+        "PAGE": ("صفحة عامة", "neutral"),
+        "LEGAL": ("قانونية", "info"),
+        "FAQ": ("أسئلة شائعة", "neutral")
+    ]
+    static let dutySource: [String: (ar: String, tone: String)] = [
+        "ADMIN": ("الإدارة", "info"),
+        "OWNER": ("المالك", "neutral"),
+        "IMPORT": ("استيراد", "neutral")
+    ]
 }
