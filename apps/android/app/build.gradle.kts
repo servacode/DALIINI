@@ -1,3 +1,5 @@
+import java.io.File
+
 plugins {
     id("serva.android.application")
     id("serva.android.compose")
@@ -248,18 +250,37 @@ dependencies {
 }
 
 
-val validatePlayRelease by tasks.registering {
+val validatePlayRelease = tasks.register("validatePlayRelease") {
     group = "verification"
     description = "Fails closed when Play release configuration is incomplete or unsafe."
+    // Everything the check reads is taken here, as providers, so the action below refers to
+    // nothing of this script: Gradle's configuration cache (gradle.properties) cannot store a
+    // task action that reaches back into the build script, and a release build would stop on it.
+    val endpoints = mapOf(
+        "DIRECTORY_API_BASE_URL" to apiBaseUrl,
+        "DIRECTORY_MAP_STYLE_URL" to mapStyleUrl,
+        "DIRECTORY_ROUTING_BASE_URL" to routingBaseUrl,
+        "DIRECTORY_GEOCODING_BASE_URL" to geocodingBaseUrl,
+        "DIRECTORY_REALTIME_WS_URL" to realtimeWebSocketUrl,
+    )
+    val signing = mapOf(
+        "ANDROID_UPLOAD_KEYSTORE_PATH" to uploadKeystorePath,
+        "ANDROID_UPLOAD_KEY_ALIAS" to uploadKeyAlias,
+        "ANDROID_UPLOAD_STORE_PASSWORD" to uploadStorePassword,
+        "ANDROID_UPLOAD_KEY_PASSWORD" to uploadKeyPassword,
+    )
+    // Without these the app runs with push off: no duty reminders, no application decisions.
+    val firebaseClient = mapOf(
+        "DIRECTORY_FIREBASE_PROJECT_ID" to firebaseProjectId,
+        "DIRECTORY_FIREBASE_APPLICATION_ID" to firebaseApplicationId,
+        "DIRECTORY_FIREBASE_API_KEY" to firebaseApiKey,
+        "DIRECTORY_FIREBASE_SENDER_ID" to firebaseSenderId,
+    )
+    val linkHost = appLinkHost
+    val keystorePath = uploadKeystorePath
     doLast {
-        val endpoints = mapOf(
-            "DIRECTORY_API_BASE_URL" to apiBaseUrl.get(),
-            "DIRECTORY_MAP_STYLE_URL" to mapStyleUrl.get(),
-            "DIRECTORY_ROUTING_BASE_URL" to routingBaseUrl.get(),
-            "DIRECTORY_GEOCODING_BASE_URL" to geocodingBaseUrl.get(),
-            "DIRECTORY_REALTIME_WS_URL" to realtimeWebSocketUrl.get(),
-        )
-        endpoints.forEach { (name, value) ->
+        endpoints.forEach { (name, provider) ->
+            val value = provider.get()
             require(!value.contains("<") && !value.contains(">")) {
                 "$name still contains a placeholder"
             }
@@ -269,24 +290,22 @@ val validatePlayRelease by tasks.registering {
                 "$name must not use a local endpoint"
             }
         }
-        val requiredSigning = mapOf(
-            "ANDROID_UPLOAD_KEYSTORE_PATH" to uploadKeystorePath.orNull,
-            "ANDROID_UPLOAD_KEY_ALIAS" to uploadKeyAlias.orNull,
-            "ANDROID_UPLOAD_STORE_PASSWORD" to uploadStorePassword.orNull,
-            "ANDROID_UPLOAD_KEY_PASSWORD" to uploadKeyPassword.orNull,
-        )
         // The site the App Links claim: a host, never the unconfigured default.
-        val host = appLinkHost.get()
+        val host = linkHost.get()
         require(host.isNotBlank() && !host.endsWith(".invalid") && !host.contains("<")) {
             "DIRECTORY_APP_LINK_HOST must be the site's real host"
         }
         require(Regex("^[a-z0-9.-]+$").matches(host)) {
             "DIRECTORY_APP_LINK_HOST must be a host only (no scheme or path)"
         }
-        requiredSigning.forEach { (name, value) ->
-            require(!value.isNullOrBlank()) { "$name is required for a Play release" }
+        signing.forEach { (name, provider) ->
+            require(!provider.orNull.isNullOrBlank()) { "$name is required for a Play release" }
         }
-        require(file(uploadKeystorePath.get()).isFile) {
+        firebaseClient.forEach { (name, provider) ->
+            val value = provider.get()
+            require(value.isNotBlank() && !value.contains("<")) { "$name is required for a Play release" }
+        }
+        require(File(keystorePath.get()).isFile) {
             "ANDROID_UPLOAD_KEYSTORE_PATH must point to an existing file outside the repository"
         }
     }
