@@ -4,6 +4,7 @@ import Link from "next/link";
 import { use, useState } from "react";
 
 import { useCan } from "../../../../components/admin-shell";
+import { RejectionTemplatePicker } from "../../../../components/rejection-template-picker";
 import {
   AuditTimeline,
   ConfirmDialog,
@@ -290,6 +291,7 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
         onConfirm={submit}
         onCancel={() => setDialog(null)}
       >
+        <RejectionTemplatePicker onPick={(text) => setReason(text)} />
         <label className="field">
           <span>سبب الرفض</span>
           <textarea
