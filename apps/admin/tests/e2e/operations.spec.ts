@@ -311,7 +311,8 @@ test.describe("verification policy", () => {
 });
 
 /** A plain 160×90 PNG built in memory: a real image the picker's own checks accept. */
-function testPng(width = 160, height = 90): Buffer {
+// 16:9 and at least 100 px a side, the smallest image the picker and the backend both accept.
+function testPng(width = 320, height = 180): Buffer {
   const chunk = (type: string, data: Buffer) => {
     const length = Buffer.alloc(4);
     length.writeUInt32BE(data.length);
@@ -347,7 +348,7 @@ async function pickAdImage(page: Page): Promise<void> {
     route.fulfill({
       status: 201,
       contentType: "application/json",
-      body: JSON.stringify({ imageKey: "ads/e2e.jpg", url: "", width: 160, height: 90 }),
+      body: JSON.stringify({ imageKey: "ads/e2e.jpg", url: "", width: 320, height: 180 }),
     }),
   );
   await page.getByTestId("ad-image-file").setInputFiles({
