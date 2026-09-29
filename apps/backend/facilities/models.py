@@ -95,7 +95,7 @@ class FacilityMembership(models.Model):
             )
         ]
 
-    def clean(self):
+    def clean(self) -> None:
         if self.pk and self.role != self.Role.OWNER:
             original = type(self).objects.get(pk=self.pk)
             another_owner_exists = (

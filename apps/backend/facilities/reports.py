@@ -48,7 +48,7 @@ class PublicFacilityReportView(APIView):
         responses={201: FacilityReportCreatedSerializer, 400: VALIDATION_400, 404: NOT_FOUND_404},
     )
     def post(self, request: Request, facility_id: str) -> Response:
-        facility = get_object_or_404(public_facilities().filter(pk=facility_id))  # type: ignore[no-untyped-call]
+        facility = get_object_or_404(public_facilities().filter(pk=facility_id))
         serializer = FacilityReportRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = request.user if isinstance(request.user, User) else None

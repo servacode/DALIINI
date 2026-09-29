@@ -1,8 +1,12 @@
+from typing import Any
+
 from business_hours.serializers import serialize_hours
 from directory.presenters import category_capabilities
 
+from .models import Facility, FacilityApplication
 
-def facility_summary(facility):
+
+def facility_summary(facility: Facility) -> dict[str, Any]:
     latest = facility.applications.order_by("-updated_at").first()
     return {
         "id": str(facility.pk),
@@ -24,7 +28,7 @@ def facility_summary(facility):
     }
 
 
-def _required_action(facility, application):
+def _required_action(facility: Facility, application: FacilityApplication | None) -> str | None:
     if application and application.status == application.Status.REJECTED:
         return "REVIEW_REJECTION"
     if facility.status == facility.Status.DRAFT:
@@ -38,7 +42,7 @@ def _required_action(facility, application):
     return None
 
 
-def facility_detail(facility):
+def facility_detail(facility: Facility) -> dict[str, Any]:
     point = facility.location
     latest = facility.applications.order_by("-updated_at").first()
     return {

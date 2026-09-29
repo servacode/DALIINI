@@ -1,12 +1,19 @@
+from datetime import datetime
+from typing import Any, cast
+from uuid import UUID
+
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
+from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.authentication import AuthenticatedRequest
 from accounts.models import User
 from audit.services import record_audit
 from core.exceptions import ConflictError, DomainError
@@ -61,12 +68,13 @@ from .services import (
 )
 
 
-def _request_id(request):
+def _request_id(request: Request) -> str:
     return getattr(request, "request_id", "")
 
 
-def _validation_error(exc):
+def _validation_error(exc: DjangoValidationError) -> DomainError:
     """Carry a Django model validation failure into the central error envelope."""
+    details: dict[str, list[str]] | list[str]
     if hasattr(exc, "message_dict"):
         details = exc.message_dict
     elif hasattr(exc, "messages"):
@@ -80,7 +88,7 @@ def _validation_error(exc):
     )
 
 
-def _owned_facilities(user):
+def _owned_facilities(user: User) -> QuerySet[Facility]:
     return (
         Facility.objects.filter(memberships__user=user)
         .select_related("category", "category__capabilities", "province", "city", "neighborhood")
@@ -95,7 +103,7 @@ def _owned_facilities(user):
     )
 
 
-def _owner_config_item(switch):
+def _owner_config_item(switch: CategoryProvince) -> dict[str, Any]:
     category = switch.category
     requirements = category.verification_requirements.filter(active=True).order_by("sort_order")
     return {
@@ -150,7 +158,7 @@ class OwnerConfigView(APIView):
             404: NOT_FOUND_404,
         },
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         province_id = request.query_params.get("provinceId")
         if not province_id:
             raise DomainError(
@@ -191,7 +199,7 @@ class OwnerFacilityListCreateView(APIView):
         summary="List the facilities the caller belongs to",
         responses={200: OwnerFacilitySummaryListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         items = _owned_facilities(request.user).order_by("-updated_at")
         return Response({"items": [facility_summary(item) for item in items]})
 
@@ -206,7 +214,7 @@ class OwnerFacilityListCreateView(APIView):
         request=FacilityCreateSerializer,
         responses={201: OwnerFacilityDetailSerializer, 400: DOMAIN_400, **protected()},
     )
-    def post(self, request):
+    def post(self, request: AuthenticatedRequest) -> Response:
         serializer = FacilityCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -224,7 +232,7 @@ class OwnerFacilityListCreateView(APIView):
 class OwnerFacilityDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def _facility(self, request, facility_id):
+    def _facility(self, request: AuthenticatedRequest, facility_id: UUID) -> Facility:
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
         return facility
@@ -239,7 +247,7 @@ class OwnerFacilityDetailView(APIView):
             404: NOT_FOUND_404,
         },
     )
-    def get(self, request, facility_id):
+    def get(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         return Response(facility_detail(self._facility(request, facility_id)))
 
     @extend_schema(
@@ -258,7 +266,7 @@ class OwnerFacilityDetailView(APIView):
             404: NOT_FOUND_404,
         },
     )
-    def patch(self, request, facility_id):
+    def patch(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = self._facility(request, facility_id)
         serializer = FacilityPatchSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -295,7 +303,7 @@ class OwnerFacilitySubmitView(APIView):
             404: NOT_FOUND_404,
         },
     )
-    def post(self, request, facility_id):
+    def post(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
         try:
@@ -310,7 +318,8 @@ class OwnerFacilitySubmitView(APIView):
             {
                 "applicationId": str(application.pk),
                 "status": application.status,
-                "submittedAt": application.submitted_at.isoformat(),
+                # submit_facility has just set it.
+                "submittedAt": cast(datetime, application.submitted_at).isoformat(),
             }
         )
 
@@ -331,7 +340,7 @@ class OwnerFacilityLocationView(APIView):
             404: NOT_FOUND_404,
         },
     )
-    def put(self, request, facility_id):
+    def put(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
         serializer = FacilityLocationSerializer(data=request.data)
@@ -350,7 +359,7 @@ class OwnerFacilityImagesView(APIView):
     parser_classes = [MultiPartParser, FormParser]
     permission_classes = [IsAuthenticated]
 
-    def _facility(self, request, facility_id):
+    def _facility(self, request: AuthenticatedRequest, facility_id: UUID) -> Facility:
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
         return facility
@@ -365,7 +374,7 @@ class OwnerFacilityImagesView(APIView):
             404: NOT_FOUND_404,
         },
     )
-    def get(self, request, facility_id):
+    def get(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = self._facility(request, facility_id)
         storage = PublicS3Storage()
         items = [
@@ -398,7 +407,7 @@ class OwnerFacilityImagesView(APIView):
             409: CONFLICT_409,
         },
     )
-    def post(self, request, facility_id):
+    def post(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = self._facility(request, facility_id)
         if not facility.category.capabilities.supports_photos:
             raise ConflictError(
@@ -453,7 +462,7 @@ class OwnerFacilityImageDeleteView(APIView):
         summary="Delete a public facility image",
         responses={204: None, **protected(), 404: NOT_FOUND_404},
     )
-    def delete(self, request, facility_id, image_id):
+    def delete(self, request: AuthenticatedRequest, facility_id: UUID, image_id: UUID) -> Response:
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
         image = get_object_or_404(FacilityImage, pk=image_id, facility=facility)
@@ -493,7 +502,7 @@ class OwnerFacilityEvidenceView(APIView):
             409: CONFLICT_409,
         },
     )
-    def post(self, request, facility_id):
+    def post(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
         serializer = EvidenceUploadSerializer(data=request.data)
@@ -554,7 +563,9 @@ class OwnerFacilityEvidenceDeleteView(APIView):
         description="Evidence is locked while an application is under review.",
         responses={204: None, **protected(), 404: NOT_FOUND_404, 409: CONFLICT_409},
     )
-    def delete(self, request, facility_id, evidence_id):
+    def delete(
+        self, request: AuthenticatedRequest, facility_id: UUID, evidence_id: UUID
+    ) -> Response:
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
         if facility.applications.filter(status=FacilityApplication.Status.SUBMITTED).exists():
@@ -587,7 +598,7 @@ class OwnerFacilityMembersView(APIView):
         summary="List the members of a facility",
         responses={200: OwnerMemberListSerializer, **protected(), 404: NOT_FOUND_404},
     )
-    def get(self, request, facility_id):
+    def get(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
         items = facility.memberships.select_related("user").order_by("created_at")
@@ -620,7 +631,7 @@ class OwnerFacilityMembersView(APIView):
         },
     )
     @transaction.atomic
-    def post(self, request, facility_id):
+    def post(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_owner(request.user, facility)
         serializer = FacilityMemberSerializer(data=request.data)
@@ -688,7 +699,7 @@ class OwnerFacilityMemberDeleteView(APIView):
         responses={204: None, **protected(), 404: NOT_FOUND_404, 409: CONFLICT_409},
     )
     @transaction.atomic
-    def delete(self, request, facility_id, user_id):
+    def delete(self, request: AuthenticatedRequest, facility_id: UUID, user_id: UUID) -> Response:
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_owner(request.user, facility)
         member = get_object_or_404(

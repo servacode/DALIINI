@@ -70,7 +70,7 @@ class OwnerFacilityConfirmHoursView(APIView):
             .distinct(),
             pk=facility_id,
         )
-        require_facility_member(request.user, facility)  # type: ignore[no-untyped-call]
+        require_facility_member(request.user, facility)
         if not _supports_hours(facility):
             raise ConflictError("HOURS_NOT_SUPPORTED", message="هذا التصنيف لا يدعم أوقات الدوام.")
         before = facility.hours_confirmed_at

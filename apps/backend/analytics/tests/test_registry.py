@@ -1,7 +1,7 @@
 from analytics.registry import EVENT_REGISTRY, validate_event
 
 
-def test_baseline_event_registry_is_complete():
+def test_baseline_event_registry_is_complete() -> None:
     expected = {
         "app_open",
         "home_view",
@@ -23,7 +23,7 @@ def test_baseline_event_registry_is_complete():
     assert expected <= set(EVENT_REGISTRY)
 
 
-def test_registry_rejects_precise_location_and_tokens():
+def test_registry_rejects_precise_location_and_tokens() -> None:
     for forbidden in ("latitude", "longitude", "token", "phone", "evidenceId"):
         try:
             validate_event("app_open", {forbidden: "x"})
@@ -33,7 +33,7 @@ def test_registry_rejects_precise_location_and_tokens():
             raise AssertionError(f"Forbidden field accepted: {forbidden}")
 
 
-def test_registry_rejects_undocumented_fields():
+def test_registry_rejects_undocumented_fields() -> None:
     try:
         validate_event("facility_view", {"facilityId": "x", "surprise": True})
     except ValueError:

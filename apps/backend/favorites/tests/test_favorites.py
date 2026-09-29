@@ -9,6 +9,7 @@ from typing import Any
 import pytest
 from rest_framework.test import APIClient
 
+from accounts.models import User
 from directory.models import Category, CategoryCapabilities, CategoryGroup, CategoryProvince
 from facilities.models import Facility
 from favorites.models import Favorite
@@ -18,7 +19,7 @@ FAVORITES = "/api/v1/account/favorites/"
 
 
 @pytest.fixture
-def public_facility(db):
+def public_facility(db: None) -> Facility:
     province = Province.objects.create(code="fav-province", name_ar="محافظة", active=True)
     group = CategoryGroup.objects.create(code="fav-group", name_ar="مجموعة")
     category = Category.objects.create(
@@ -40,14 +41,14 @@ def public_facility(db):
 
 
 @pytest.fixture
-def signed_in(db, user):
+def signed_in(db: None, user: User) -> APIClient:
     client = APIClient()
     client.force_authenticate(user=user)
     return client
 
 
 @pytest.mark.django_db
-def test_saving_is_idempotent(signed_in, public_facility, user):
+def test_saving_is_idempotent(signed_in: APIClient, public_facility: Facility, user: User) -> None:
     first = signed_in.post(FAVORITES, {"facilityId": str(public_facility.id)}, format="json")
     second = signed_in.post(FAVORITES, {"facilityId": str(public_facility.id)}, format="json")
 
@@ -58,7 +59,9 @@ def test_saving_is_idempotent(signed_in, public_facility, user):
 
 
 @pytest.mark.django_db
-def test_removing_what_was_never_saved_is_not_an_error(signed_in, public_facility):
+def test_removing_what_was_never_saved_is_not_an_error(
+    signed_in: APIClient, public_facility: Facility
+) -> None:
     response = signed_in.delete(f"{FAVORITES}{public_facility.id}/")
 
     assert response.status_code == 200
@@ -66,7 +69,9 @@ def test_removing_what_was_never_saved_is_not_an_error(signed_in, public_facilit
 
 
 @pytest.mark.django_db
-def test_the_list_returns_the_saved_facility_and_when_it_was_saved(signed_in, public_facility):
+def test_the_list_returns_the_saved_facility_and_when_it_was_saved(
+    signed_in: APIClient, public_facility: Facility
+) -> None:
     signed_in.post(FAVORITES, {"facilityId": str(public_facility.id)}, format="json")
 
     body = signed_in.get(FAVORITES).json()
@@ -78,7 +83,9 @@ def test_the_list_returns_the_saved_facility_and_when_it_was_saved(signed_in, pu
 
 
 @pytest.mark.django_db
-def test_a_facility_that_stops_being_public_leaves_the_list(signed_in, public_facility):
+def test_a_facility_that_stops_being_public_leaves_the_list(
+    signed_in: APIClient, public_facility: Facility
+) -> None:
     signed_in.post(FAVORITES, {"facilityId": str(public_facility.id)}, format="json")
     public_facility.status = Facility.Status.SUSPENDED
     public_facility.save(update_fields=["status"])
@@ -87,7 +94,9 @@ def test_a_facility_that_stops_being_public_leaves_the_list(signed_in, public_fa
 
 
 @pytest.mark.django_db
-def test_a_facility_that_is_not_public_cannot_be_saved(signed_in, public_facility):
+def test_a_facility_that_is_not_public_cannot_be_saved(
+    signed_in: APIClient, public_facility: Facility
+) -> None:
     public_facility.status = Facility.Status.DRAFT
     public_facility.save(update_fields=["status"])
 
@@ -97,7 +106,9 @@ def test_a_facility_that_is_not_public_cannot_be_saved(signed_in, public_facilit
 
 
 @pytest.mark.django_db
-def test_the_public_facility_page_reports_the_callers_own_state(signed_in, public_facility):
+def test_the_public_facility_page_reports_the_callers_own_state(
+    signed_in: APIClient, public_facility: Facility
+) -> None:
     detail = f"/api/v1/public/facilities/{public_facility.id}/"
 
     assert APIClient().get(detail).json()["isFavorite"] is False
@@ -111,7 +122,9 @@ def test_the_public_facility_page_reports_the_callers_own_state(signed_in, publi
 
 
 @pytest.mark.django_db
-def test_an_account_never_sees_another_accounts_list(signed_in, public_facility, db):
+def test_an_account_never_sees_another_accounts_list(
+    signed_in: APIClient, public_facility: Facility, db: None
+) -> None:
     from accounts.models import User
 
     signed_in.post(FAVORITES, {"facilityId": str(public_facility.id)}, format="json")
@@ -125,7 +138,7 @@ def test_an_account_never_sees_another_accounts_list(signed_in, public_facility,
 
 
 @pytest.mark.django_db
-def test_saving_requires_an_account(public_facility):
+def test_saving_requires_an_account(public_facility: Facility) -> None:
     anonymous = APIClient()
 
     assert anonymous.get(FAVORITES).status_code in (401, 403)

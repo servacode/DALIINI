@@ -56,7 +56,7 @@ class OwnerFacilityInsightsView(APIView):
             Facility.objects.filter(memberships__user=request.user.pk).distinct(),
             pk=facility_id,
         )
-        require_facility_member(request.user, facility)  # type: ignore[no-untyped-call]
+        require_facility_member(request.user, facility)
         since = timezone.now() - timedelta(days=WINDOW_DAYS)
         counts = dict(
             ProductAnalyticsEvent.objects.filter(

@@ -88,7 +88,7 @@ class AccountFavoritesView(APIView):
         body = FavoriteWriteSerializer(data=request.data)
         body.is_valid(raise_exception=True)
         facility = get_object_or_404(public_facilities(), pk=body.validated_data["facilityId"])
-        Favorite.objects.get_or_create(user=request.user, facility=facility)  # type: ignore[misc]
+        Favorite.objects.get_or_create(user=request.user, facility=facility)
         return Response({"facilityId": str(facility.id), "isFavorite": True})
 
 

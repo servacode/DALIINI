@@ -1,3 +1,5 @@
+from typing import Any
+
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
@@ -18,14 +20,14 @@ class UploadedFileField(serializers.FileField):
     """
 
 
-class FacilityCreateSerializer(serializers.Serializer):
+class FacilityCreateSerializer(serializers.Serializer[Any]):
     provinceId = serializers.UUIDField()
     categoryId = serializers.UUIDField()
     nameAr = serializers.CharField(max_length=160)
     nameEn = serializers.CharField(max_length=160, required=False, allow_blank=True)
 
 
-class FacilityPatchSerializer(serializers.Serializer):
+class FacilityPatchSerializer(serializers.Serializer[Any]):
     nameAr = serializers.CharField(max_length=160, required=False)
     nameEn = serializers.CharField(max_length=160, required=False, allow_blank=True)
     descriptionAr = serializers.CharField(required=False, allow_blank=True)
@@ -58,20 +60,20 @@ class FacilityPatchSerializer(serializers.Serializer):
             raise serializers.ValidationError("Enter a valid Syrian mobile number.") from exc
 
 
-class FacilityLocationSerializer(serializers.Serializer):
+class FacilityLocationSerializer(serializers.Serializer[Any]):
     latitude = serializers.FloatField(min_value=-90, max_value=90)
     longitude = serializers.FloatField(min_value=-180, max_value=180)
 
 
-class EvidenceUploadSerializer(serializers.Serializer):
+class EvidenceUploadSerializer(serializers.Serializer[Any]):
     requirementId = serializers.IntegerField(min_value=1)
     file = UploadedFileField()
 
 
-class PublicImageUploadSerializer(serializers.Serializer):
+class PublicImageUploadSerializer(serializers.Serializer[Any]):
     file = UploadedFileField()
 
 
-class FacilityMemberSerializer(serializers.Serializer):
+class FacilityMemberSerializer(serializers.Serializer[Any]):
     userId = serializers.UUIDField()
     role = serializers.ChoiceField(choices=FacilityMembership.Role.choices)

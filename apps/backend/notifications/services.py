@@ -3,7 +3,8 @@ from __future__ import annotations
 import logging
 import uuid
 from datetime import date
-from typing import Any
+from typing import TYPE_CHECKING, Any
+from uuid import UUID
 
 from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
@@ -19,10 +20,16 @@ from .providers.base import InvalidPushToken, PushMessage, TransientPushError
 from .providers.factory import get_push_provider
 from .sanitization import safe_notification_payload
 
+if TYPE_CHECKING:
+    from accounts.models import User
+    from sessions.models import UserSession
+
 logger = logging.getLogger(__name__)
 
 
-def register_push_token(*, user, platform: str, token: str, session=None) -> DevicePushToken:
+def register_push_token(
+    *, user: User, platform: str, token: str, session: UserSession | None = None
+) -> DevicePushToken:
     if not token or len(token) > 4096:
         raise ValueError("Invalid push token")
     digest = push_token_digest(token)
@@ -53,12 +60,12 @@ def deactivate_push_tokens_for_sessions(session_ids: list[object]) -> int:
     )
 
 
-def deactivate_push_tokens_for_user(user: object) -> int:
+def deactivate_push_tokens_for_user(user: User) -> int:
     """Stop pushing to every device of a user whose sessions have all ended."""
     return DevicePushToken.objects.filter(user=user, active=True).update(active=False)
 
 
-def deactivate_push_token(*, user, token: str) -> int:
+def deactivate_push_token(*, user: User, token: str) -> int:
     return DevicePushToken.objects.filter(
         user=user,
         token_digest=push_token_digest(token),
@@ -68,9 +75,9 @@ def deactivate_push_token(*, user, token: str) -> int:
 @transaction.atomic
 def create_notification(
     *,
-    user,
+    user: User,
     type: str,
-    payload: dict,
+    payload: dict[str, Any],
     title_ar: str = "",
     body_ar: str = "",
     destination: str = Notification.Destination.NONE,
@@ -102,18 +109,18 @@ def create_notification(
     return notification
 
 
-def mark_all_notifications_read(*, user) -> int:
+def mark_all_notifications_read(*, user: User) -> int:
     """Everything unread becomes read at one moment. Returns how many changed."""
     return Notification.objects.filter(user=user, read_at__isnull=True).update(
         read_at=timezone.now()
     )
 
 
-def unread_notification_count(*, user) -> int:
+def unread_notification_count(*, user: User) -> int:
     return Notification.objects.filter(user=user, read_at__isnull=True).count()
 
 
-def mark_notification_read(*, user, notification_id) -> Notification:
+def mark_notification_read(*, user: User, notification_id: UUID | str) -> Notification:
     notification = Notification.objects.get(pk=notification_id, user=user)
     if notification.read_at is None:
         notification.read_at = timezone.now()

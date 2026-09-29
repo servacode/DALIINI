@@ -1,11 +1,16 @@
+from uuid import UUID
+
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import NotAuthenticated, ValidationError
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.authentication import AuthenticatedRequest
+from accounts.models import User
 from core.openapi import NOT_FOUND_404, VALIDATION_400, protected
 from core.throttles import RatingsWriteThrottle
 from facilities.models import Facility
@@ -16,13 +21,13 @@ from .schemas import AccountRatingListSerializer, FacilityRatingSerializer
 from .serializers import RatingWriteSerializer
 
 
-def _require_user(request):
+def _require_user(request: Request) -> User:
     if not request.user or not request.user.is_authenticated:
         raise NotAuthenticated()
     return request.user
 
 
-def _public_facility(facility_id):
+def _public_facility(facility_id: UUID) -> Facility:
     """The facility as the public sees it; anything not publicly visible is a 404."""
     return get_object_or_404(public_facilities().filter(pk=facility_id))
 
@@ -52,7 +57,7 @@ class FacilityRatingView(APIView):
             404: NOT_FOUND_404,
         },
     )
-    def put(self, request, facility_id):
+    def put(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         user = _require_user(request)
         facility = _public_facility(facility_id)
         if not _ratings_enabled(facility):
@@ -92,7 +97,7 @@ class FacilityRatingView(APIView):
         ),
         responses={204: None, **protected(), 404: NOT_FOUND_404},
     )
-    def delete(self, request, facility_id):
+    def delete(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         user = _require_user(request)
         facility = _public_facility(facility_id)
         Rating.objects.filter(user=user, facility=facility).delete()
@@ -108,7 +113,7 @@ class AccountRatingsView(APIView):
         summary="List the ratings written by the caller",
         responses={200: AccountRatingListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         user = _require_user(request)
         ratings = Rating.objects.filter(user=user).select_related("facility").order_by(
             "-updated_at"
