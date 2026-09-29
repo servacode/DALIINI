@@ -18,6 +18,15 @@ import {
   TermBadge,
   Toast,
 } from "../../../components/ui";
+import {
+  CharCount,
+  Checklist,
+  NotificationPreview,
+  Segmented,
+  SidePanel,
+  SlidePreview,
+  Trend,
+} from "../../../components/ui/extra";
 
 const SWATCHES: readonly (readonly [string, string])[] = [
   ["--sd-semantic-action-primary", "الفعل الأساسي"],
@@ -67,6 +76,9 @@ export default function DesignPage() {
   const [dialog, setDialog] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [checked, setChecked] = useState(true);
+  const [sheet, setSheet] = useState(false);
+  const [audience, setAudience] = useState<"ALL" | "OWNERS">("ALL");
+  const [note, setNote] = useState("اتصلت بالرقم وتأكدت منه.");
 
   return (
     <div className="stack">
@@ -226,6 +238,64 @@ export default function DesignPage() {
         </div>
       </Panel>
 
+      <Panel
+        title="عناصر التشغيل"
+        description="مقارنة بالفترة السابقة، وعدّاد الأحرف، والاختيار المقسّم، وقائمة الشروط، واللوحة الجانبية، والمعاينات."
+      >
+        <div className="kpi-grid">
+          <StatCard label="عمليات البحث" value="١٢٬٨٤٠" icon="search" trend={<Trend current={12840} previous={10450} />} />
+          <StatCard
+            label="بحث بلا نتائج"
+            value="٩١٢"
+            icon="inbox"
+            tone="warning"
+            trend={<Trend current={912} previous={780} lowerIsBetter />}
+          />
+          <StatCard label="طلبات الاتجاهات" value="٤٬١٢٠" icon="directions" trend={<Trend current={4120} previous={0} />} />
+        </div>
+        <div className="grid-2">
+          <div className="stack">
+            <Segmented
+              label="إلى من"
+              name="design-audience"
+              value={audience}
+              options={[
+                { value: "ALL", label: "الجميع", hint: "كل الحسابات الفعّالة" },
+                { value: "OWNERS", label: "أصحاب المنشآت", hint: "المالكون والمديرون" },
+              ]}
+              onChange={setAudience}
+            />
+            <label className="field">
+              <span className="field-label-row">
+                ملاحظة
+                <CharCount value={note} max={40} />
+              </span>
+              <input value={note} onChange={(event) => setNote(event.target.value)} />
+            </label>
+            <Checklist
+              items={[
+                { key: "ok", ok: true, title: "المحافظة مفعّلة", detail: "ظاهرة للعامة." },
+                {
+                  key: "missing",
+                  ok: false,
+                  title: "صيدلية مناوبة كل يوم",
+                  detail: "يومان بلا مناوبة خلال الأسبوعين القادمين.",
+                },
+              ]}
+            />
+            <div>
+              <button type="button" className="button-ghost" onClick={() => setSheet(true)}>
+                فتح لوحة جانبية
+              </button>
+            </div>
+          </div>
+          <div className="stack">
+            <SlidePreview src={null} title="حملة التلقيح الوطنية" emptyLabel="اختر صورة لتظهر هنا" />
+            <NotificationPreview title="صيدليات مناوبة جديدة" body="أضفنا صيدليات مناوبة في حيّك." />
+          </div>
+        </div>
+      </Panel>
+
       <Panel title="الرسومات" description="للحالات الفارغة وانقطاع الاتصال والأخطاء والصيانة.">
         <div className="icon-grid illustration-grid">
           {(Object.keys(illustrationPaths) as IllustrationName[]).map((name) => (
@@ -261,6 +331,9 @@ export default function DesignPage() {
         onConfirm={() => setDialog(false)}
         onCancel={() => setDialog(false)}
       />
+      <SidePanel open={sheet} title="لوحة جانبية" description="للعمل على عنصر واحد دون مغادرة الصفحة." onClose={() => setSheet(false)}>
+        <p className="notice">تُغلق بزر الإغلاق أو بمفتاح Escape أو بالنقر خارجها.</p>
+      </SidePanel>
       <Toast message={toast} onDismiss={() => setToast(null)} />
     </div>
   );

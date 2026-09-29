@@ -3,7 +3,7 @@
 import { type VocabularyGroup, term, vocabulary } from "@servacode/design-tokens/vocabulary";
 import brandSymbol from "@servacode/design-tokens/brand/symbol-128.webp";
 import Link from "next/link";
-import { type ReactNode, useEffect, useId, useRef, useState } from "react";
+import { type ReactNode, useEffect, useEffectEvent, useId, useRef, useState } from "react";
 
 import { type IconName, type IllustrationName, Icons, Illustration } from "../icons";
 
@@ -122,6 +122,7 @@ export function StatCard({
   href,
   tone,
   testId,
+  trend,
 }: {
   label: string;
   value: ReactNode;
@@ -130,6 +131,8 @@ export function StatCard({
   href?: string;
   tone?: "warning" | "info";
   testId?: string;
+  /** Change against a previous period, under the number (see `Trend` in `./extra`). */
+  trend?: ReactNode;
 }) {
   const Glyph = icon ? Icons[icon] : null;
   const body = (
@@ -143,6 +146,7 @@ export function StatCard({
         ) : null}
       </div>
       <strong className="kpi-value">{value}</strong>
+      {trend ? <span className="kpi-trend">{trend}</span> : null}
       {hint ? <span className="kpi-hint">{hint}</span> : null}
     </>
   );
@@ -570,16 +574,23 @@ export function ConfirmDialog({
 }) {
   const headingId = useId();
   const dialog = useRef<HTMLDivElement>(null);
+  // Read when Escape is pressed, so the effect below runs once per opening. With `onCancel`
+  // among its dependencies it re-ran on every render of the screen behind the dialog (an
+  // inline arrow is a new function each time) and pulled focus out of the field being typed in.
+  const escape = useEffectEvent(() => {
+    if (!pending) onCancel();
+  });
 
   useEffect(() => {
     if (!open) return;
-    dialog.current?.querySelector<HTMLElement>("[data-autofocus]")?.focus();
+    // Without scrolling, so a long form opens on its first field rather than on its buttons.
+    dialog.current?.querySelector<HTMLElement>("[data-autofocus]")?.focus({ preventScroll: true });
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !pending) onCancel();
+      if (event.key === "Escape") escape();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [open, pending, onCancel]);
+  }, [open]);
 
   if (!open) return null;
 
