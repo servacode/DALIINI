@@ -863,6 +863,11 @@ Mandatory before staging or production closure. None of these blocks P2 or P10.
 
 Concentrated in `directory/models.py`, which is written in a compressed style with semicolons and lines up to 249 characters against a 100 limit. Rule: **no new lint debt** — any file touched must not increase the count. Forbidden remedies: disabling rules broadly, blanket ignores, or weakening CI to make the result green.
 
+**Closed 2026-09-29:** `uv run ruff check .` reports **0**. The fixes are formatting only (split
+statements and long lines, import order, three unused imports, `raise … from`) plus a
+`__str__` on the 23 models DJ008 named, built from codes, names or ids and never from a phone,
+digest or token. No rule was disabled and no ignore was added.
+
 ## DEBT-002 — Mypy baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 556 errors in 82 files. **Measured again 2026-09-26: 900 errors in 107 files.** It has grown by a third since it was recorded. New modules are still expected to be strict-clean — `locations/osm.py` and the boundary import are — but the rule has plainly not been held to across the whole backend, and the gap should be closed deliberately rather than by a later batch discovering it again.
@@ -879,6 +884,13 @@ is **645**: `core.openapi.protected()` gained a signature (78 at its call sites)
 module was annotated.
 
 `[tool.mypy] strict = true` is declared while the codebase is largely unannotated. Rule: **no new type debt**. Removing `strict` requires a recorded ADR; a blanket ignore is forbidden. New modules are expected to be strict-clean; every module added in the CONTRACT ALIGNMENT batch is.
+
+**Closed 2026-09-29:** `uv run mypy .` reports **0 errors in 308 source files**, measured in the
+backend environment with the django-stubs plugin loaded (824 before). `strict` and
+`warn_unused_ignores` are unchanged. celery, channels and django-storages ship no type
+information; one `[[tool.mypy.overrides]]` block lists exactly the modules imported from them.
+Ten inline ignores remain, each with its error code, and eighteen older ones were removed. The
+standing rule still holds: a new module is strict-clean.
 
 ## DEBT-003 — Evaluate removal of Django `PermissionsMixin` after contract and runtime recovery
 

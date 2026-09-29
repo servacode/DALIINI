@@ -1725,3 +1725,80 @@ touched file. `makemigrations --check` is clean and `check-openapi-drift.sh` pas
 three clients regenerated. Not verified: a Celery worker and beat against Redis, real push
 delivery, and a TypeScript compile of the regenerated client (no node_modules here).
 
+## 2026-09-29 — One design system everywhere, a smart console, the site's second half, Android phase 3, push delivery
+
+- **One design system for app, site and console** (`packages/design-tokens`): a dark theme
+  (`colorsDark`, `semanticDark`; CSS follows the device and can be pinned with `data-theme`,
+  Android gets `values-night`), softer feedback surfaces, Tajawal as the one face (web woff2 and
+  Android TTFs, SIL OFL), `vocabulary.json` (one Arabic word and tone per state, generated for
+  TypeScript, Android strings and Swift; now also contact, emergency, page, duty-source and
+  evidence kinds), 59 icons and 7 illustrations, and the approved brand symbol. The console,
+  the site and the Android app all read it; the console's «نظام التصميم» page shows it live.
+  Guide: `docs/design/DESIGN-SYSTEM.md`.
+- **Admin console**:
+  - Eleven sections with tabs instead of fifteen entries.
+  - Home: a task centre (oldest first, past-SLA marked) and alerts the platform raises by
+    itself, with a bell and a maintenance pill in the top bar.
+  - A keyboard-driven global search; facility quality score, data-problem filter and timeline;
+    filters kept in the address.
+  - New screens: a two-week duty roster per province with gap days and add/edit/cancel on the
+    Damascus clock; content (pages with preview and versions, FAQ, emergency numbers with a
+    verification queue, the contact inbox); broadcasts with a recipient count and preview;
+    rejection templates, offered in the reject dialog; province launch readiness; analytics
+    with period comparison, team performance and CSV exports; audit export; ad images
+    uploaded from the browser with a 16:9 slide preview.
+  - The review queue filters by submission day and by missing documents (both asked by
+    09-ADMIN), and shows each application's document state.
+  - Editing an ad opens with its target and current image; before, a province- or
+    category-targeted ad was saved with an empty target.
+  - A dialog no longer loses the caret after the first keystroke.
+- **Public web**: search, the owners' guide, «كيف نتحقق», duty now / today / tomorrow / the
+  week from `public/duty/`, published pages and FAQ from the console, emergency numbers, a
+  contact form, sharing, the trust line, `/.well-known/assetlinks.json` and «افتح في التطبيق»
+  on Android only (an https intent for `/f/{id}`). Server-side reads carry
+  `WEB_SERVER_API_KEY` so the API counts the site under its own limit.
+- **Android**:
+  - A maintenance screen, ads from `public/ads`, an R8 release build and an accessibility pass.
+  - The trust line, WhatsApp, problem reports and owner insights.
+  - The shared design system, with a theme choice in Settings.
+  - Phase 3:
+    - The «المناوب الآن» home-screen widget.
+    - «أرقام الطوارئ» (cached, with a marked fallback).
+    - App Links for `/f/{id}`, `/duty`, `/duty/today` and the 14 province paths, claiming the
+      site's one host so Android 7–11 do not drop every link over a redirecting `www.`.
+    - Sentry only with a DSN and with no personal data.
+    - Notification choices kept on the device, «شوهدت مؤخراً» (Room v2) and «توفير البيانات».
+    - The weekly hours confirmation, duty presets and named conflicts for owners, and the
+      public roster.
+  - `validatePlayRelease` now works with the configuration cache (a complete configuration
+    used to stop the bundle after the check) and requires the Firebase client settings.
+- **Backend**:
+  - Push reaches phones: an FCM HTTP v1 transport over the standard library, signed with a
+    service account (`FCM_SERVICE_ACCOUNT_JSON`).
+    - Messages are data-only and high priority; the words never leave the server.
+    - Refusals map to deactivate, retry, or configuration error.
+    - A push carries `facilityId`, `provinceId` and `gapDate`, each checked for shape, so a
+      tap lands on the right screen.
+    - Production refuses to start with push half-configured.
+  - The inbox names the facility of an owner's notice. The dashboard warns when push has no
+    Firebase key and when sign-in codes are in development mode.
+- **Quality gates**: the backend now passes its own CI gates: `ruff check .` 0
+  (from 106), `mypy .` strict 0 in 308 files (from 824), and the ten seed tests that needed
+  object storage run against an in-memory store, so `pytest` passes in full with nothing on
+  `localhost:9000` (DEBT-001 and DEBT-002 closed in `DECISIONS.md`).
+
+Verified here:
+- Admin: lint and typecheck clean, 133 unit tests, production build.
+- Web: lint and typecheck clean; the production build passes without any settings, as CI
+  builds it.
+- Android phase 3: 409 unit tests, R8 release builds with and without a DSN, and lint.
+- Backend: 493 tests, ruff 0, mypy strict 0, `manage.py check` and
+  `makemigrations --check` clean; the OpenAPI drift check and the three regenerated
+  clients.
+- Screenshots in Chromium of the new console screens, light and dark, against mocked data.
+
+Not verified:
+- Every GitHub Actions job still fails before its first step (EXT-006).
+- Nothing was run on a device: the widget, App Link verification, push delivery and taps.
+- A real FCM send, which needs the Firebase project.
+- The admin e2e suite, which needs the full stack.
