@@ -1,5 +1,8 @@
+from uuid import UUID
+
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -26,7 +29,7 @@ class PublicProvinceCategoriesView(APIView):
         ),
         responses={200: PublicCategoryListSerializer, 404: NOT_FOUND_404},
     )
-    def get(self, request, province_id):
+    def get(self, request: Request, province_id: UUID) -> Response:
         get_object_or_404(Province.objects.filter(active=True), pk=province_id)
         switches = CategoryProvince.objects.filter(
             province_id=province_id,

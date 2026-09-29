@@ -15,7 +15,7 @@ FACILITIES = "/api/v1/public/facilities/"
 
 
 @pytest.fixture
-def listed(db, facility):
+def listed(db: None, facility: Facility) -> Facility:
     CategoryProvince.objects.create(
         province=facility.province,
         category=facility.category,
@@ -26,14 +26,14 @@ def listed(db, facility):
 
 
 @pytest.mark.django_db
-def test_a_province_can_be_listed_without_a_category(listed):
+def test_a_province_can_be_listed_without_a_category(listed: Facility) -> None:
     body = APIClient().get(FACILITIES, {"provinceId": str(listed.province_id)}).json()
 
     assert [item["id"] for item in body["items"]] == [str(listed.id)]
 
 
 @pytest.mark.django_db
-def test_a_category_still_narrows_the_same_list(listed):
+def test_a_category_still_narrows_the_same_list(listed: Facility) -> None:
     client = APIClient()
 
     inside = client.get(
@@ -53,12 +53,12 @@ def test_a_category_still_narrows_the_same_list(listed):
 
 
 @pytest.mark.django_db
-def test_the_province_is_still_required(listed):
+def test_the_province_is_still_required(listed: Facility) -> None:
     assert APIClient().get(FACILITIES).status_code == 400
 
 
 @pytest.mark.django_db
-def test_a_facility_that_is_not_active_is_not_listed(listed):
+def test_a_facility_that_is_not_active_is_not_listed(listed: Facility) -> None:
     listed.status = Facility.Status.SUSPENDED
     listed.save(update_fields=["status"])
 

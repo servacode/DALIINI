@@ -1,9 +1,14 @@
+from collections.abc import Mapping
 from datetime import UTC
+from typing import TYPE_CHECKING, Any, cast
+from uuid import UUID
 
+from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.exceptions import ValidationError
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -14,6 +19,7 @@ from content_services.serializers import public_ad
 from core.openapi import NOT_FOUND_404, VALIDATION_400
 from core.throttles import SearchThrottle, WebServerThrottle
 from directory.models import CategoryProvince
+from facilities.models import Facility
 from locations.models import Province
 
 from .pagination import FacilityCursorPagination
@@ -33,8 +39,13 @@ from .selectors import (
 )
 from .serializers import compact_facility, facility_detail
 
+if TYPE_CHECKING:
+    from django.contrib.auth.models import AnonymousUser
 
-def _q(name, description, required=False):
+    from accounts.models import User
+
+
+def _q(name: str, description: str, required: bool = False) -> OpenApiParameter:
     return OpenApiParameter(name, str, OpenApiParameter.QUERY, required=required,
                             description=description)
 
@@ -60,16 +71,18 @@ PAGE_PARAMS = [
 ]
 
 
-def _parse_float(value, name):
+def _parse_float(value: str | None, name: str) -> float | None:
     if value in (None, ""):
         return None
     try:
-        return float(value)
+        return float(cast(str, value))
     except (TypeError, ValueError) as exc:
         raise ValidationError({name: "Invalid number."}) from exc
 
 
-def _base_from_params(params, user=None):
+def _base_from_params(
+    params: Mapping[str, str], user: "User | AnonymousUser | None" = None
+) -> QuerySet[Facility]:
     province_id = params.get("provinceId")
     category_id = params.get("categoryId")
     if not province_id:
@@ -84,7 +97,9 @@ def _base_from_params(params, user=None):
     if params.get("specialtyId"):
         queryset = queryset.filter(specialty_links__specialty_id=params["specialtyId"])
     if params.get("serviceId"):
-        queryset = queryset.filter(service_links__service_tag_id=params["serviceId"])
+        # Text from the query string; the lookup converts it to the integer key itself.
+        service_id: Any = params["serviceId"]
+        queryset = queryset.filter(service_links__service_tag_id=service_id)
     queryset = apply_text_search(queryset, params.get("search"))
     try:
         queryset = within_bbox(queryset, params.get("bbox"))
@@ -102,7 +117,7 @@ def _base_from_params(params, user=None):
     return with_rating_summary(queryset)
 
 
-def _orders_by_distance(params):
+def _orders_by_distance(params: Mapping[str, str]) -> bool:
     """Whether this request wants the nearest first.
 
     Coordinates alone used to decide it, which left a client no way to ask for the whole
@@ -118,7 +133,7 @@ def _orders_by_distance(params):
     return located
 
 
-def _with_flags(params, queryset):
+def _with_flags(params: Mapping[str, str], queryset: QuerySet[Facility]) -> QuerySet[Facility]:
     """Apply the availability filters, and carry the flags on every row either way.
 
     The annotation is unconditional so that a row can say whether it is open and whether it is
@@ -164,7 +179,7 @@ class PublicFacilityListView(APIView):
         ],
         responses={200: FacilityCursorPageSerializer, 400: VALIDATION_400},
     )
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         base = _base_from_params(request.query_params, request.user)
         queryset = _with_flags(request.query_params, base)
         paginator = FacilityCursorPagination()
@@ -172,7 +187,8 @@ class PublicFacilityListView(APIView):
         # queryset as well would only give the two a chance to disagree.
         if _orders_by_distance(request.query_params):
             paginator.ordering = ("distance_meters", "id")
-        page = paginator.paginate_queryset(queryset, request)
+        # CursorPage always has a page size, so a page is never None.
+        page = cast("list[Facility]", paginator.paginate_queryset(queryset, request))
         return paginator.get_paginated_response([compact_facility(row) for row in page])
 
 
@@ -187,7 +203,7 @@ class PublicFacilityDetailView(APIView):
         ),
         responses={200: PublicFacilityDetailSerializer, 404: NOT_FOUND_404},
     )
-    def get(self, request, facility_id):
+    def get(self, request: Request, facility_id: UUID) -> Response:
         queryset = with_availability_flags(
             with_favorite_state(with_rating_summary(public_facilities()), request.user)
         )
@@ -215,7 +231,7 @@ class PublicMapFacilitiesView(APIView):
         ],
         responses={200: MapMarkerListSerializer, 400: VALIDATION_400},
     )
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         if not request.query_params.get("bbox"):
             raise ValidationError({"bbox": "Required for map queries."})
         base = _base_from_params(request.query_params, request.user)
@@ -254,14 +270,15 @@ class PublicSearchView(APIView):
         ],
         responses={200: FacilityCursorPageSerializer, 400: VALIDATION_400},
     )
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         term = (request.query_params.get("q") or "").strip()
         if len(term) < 2:
             raise ValidationError({"q": "At least 2 characters are required."})
         queryset = _base_from_params(request.query_params, request.user)
         queryset = apply_text_search(queryset, term)
         paginator = FacilityCursorPagination()
-        page = paginator.paginate_queryset(queryset, request)
+        # CursorPage always has a page size, so a page is never None.
+        page = cast("list[Facility]", paginator.paginate_queryset(queryset, request))
         return paginator.get_paginated_response([compact_facility(row) for row in page])
 
 
@@ -277,7 +294,7 @@ class PublicHomeView(APIView):
         parameters=[*SCOPE_PARAMS, _q("categoryId", "Optional category filter.")],
         responses={200: PublicHomeSerializer, 400: VALIDATION_400, 404: NOT_FOUND_404},
     )
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         province_id = request.query_params.get("provinceId")
         if not province_id:
             raise ValidationError({"provinceId": "Required."})

@@ -112,9 +112,9 @@ class PublicDutyByDateView(APIView):
         raw_days = _param(request, "days") or "1"
         if not raw_days.isdigit() or not 1 <= int(raw_days) <= MAX_DAYS:
             raise ValidationError({"days": [f"Between 1 and {MAX_DAYS}."]})
-        visible = public_facilities()  # type: ignore[no-untyped-call]
-        base = with_availability_flags(  # type: ignore[no-untyped-call]
-            with_rating_summary(  # type: ignore[no-untyped-call]
+        visible = public_facilities()
+        base = with_availability_flags(
+            with_rating_summary(
                 visible.filter(category__capabilities__supports_duty=True, **filters)
             )
         )

@@ -8,6 +8,8 @@ each have to come back distinguishable.
 """
 
 from datetime import datetime, time, timedelta
+from typing import Any
+from uuid import UUID
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -24,11 +26,11 @@ FACILITIES = "/api/v1/public/facilities/"
 DAMASCUS = ZoneInfo("Asia/Damascus")
 
 
-def _local_now():
+def _local_now() -> datetime:
     return timezone.now().astimezone(DAMASCUS)
 
 
-def _open_all_day(facility):
+def _open_all_day(facility: Facility) -> None:
     """Business hours that cover the whole of today, without wrapping past midnight."""
     BusinessHour.objects.create(
         facility=facility,
@@ -38,7 +40,7 @@ def _open_all_day(facility):
     )
 
 
-def _on_duty_all_day(facility):
+def _on_duty_all_day(facility: Facility) -> None:
     local = _local_now()
     start = datetime.combine(local.date(), time(0, 0), tzinfo=DAMASCUS)
     DutyShift.objects.create(
@@ -49,7 +51,7 @@ def _on_duty_all_day(facility):
 
 
 @pytest.fixture
-def listed(db, facility):
+def listed(db: None, facility: Facility) -> Facility:
     CategoryProvince.objects.create(
         province=facility.province,
         category=facility.category,
@@ -59,7 +61,7 @@ def listed(db, facility):
     return facility
 
 
-def _sibling(facility, name):
+def _sibling(facility: Facility, name: str) -> Facility:
     return Facility.objects.create(
         category=facility.category,
         province=facility.province,
@@ -68,7 +70,7 @@ def _sibling(facility, name):
     )
 
 
-def _rows(province_id, **params):
+def _rows(province_id: UUID, **params: str) -> dict[str, Any]:
     body = APIClient().get(FACILITIES, {"provinceId": str(province_id), **params}).json()
     return {item["nameAr"]: item for item in body["items"]}
 
@@ -77,7 +79,7 @@ def _rows(province_id, **params):
 
 
 @pytest.mark.django_db
-def test_the_three_combinations_come_back_distinguishable(listed):
+def test_the_three_combinations_come_back_distinguishable(listed: Facility) -> None:
     both = _sibling(listed, "مفتوحة ومناوبة")
     _open_all_day(both)
     _on_duty_all_day(both)
@@ -103,7 +105,7 @@ def test_the_three_combinations_come_back_distinguishable(listed):
 
 
 @pytest.mark.django_db
-def test_being_on_duty_no_longer_hides_being_open(listed):
+def test_being_on_duty_no_longer_hides_being_open(listed: Facility) -> None:
     both = _sibling(listed, "مفتوحة ومناوبة")
     _open_all_day(both)
     _on_duty_all_day(both)
@@ -120,7 +122,7 @@ def test_being_on_duty_no_longer_hides_being_open(listed):
 
 
 @pytest.mark.django_db
-def test_open_now_keeps_facilities_that_are_also_on_duty(listed):
+def test_open_now_keeps_facilities_that_are_also_on_duty(listed: Facility) -> None:
     both = _sibling(listed, "مفتوحة ومناوبة")
     _open_all_day(both)
     _on_duty_all_day(both)
@@ -129,7 +131,7 @@ def test_open_now_keeps_facilities_that_are_also_on_duty(listed):
 
 
 @pytest.mark.django_db
-def test_open_now_and_duty_today_together_mean_both(listed):
+def test_open_now_and_duty_today_together_mean_both(listed: Facility) -> None:
     both = _sibling(listed, "مفتوحة ومناوبة")
     _open_all_day(both)
     _on_duty_all_day(both)
@@ -144,7 +146,7 @@ def test_open_now_and_duty_today_together_mean_both(listed):
 
 
 @pytest.mark.django_db
-def test_duty_today_alone_keeps_the_shut_one(listed):
+def test_duty_today_alone_keeps_the_shut_one(listed: Facility) -> None:
     shut_on_duty = _sibling(listed, "مغلقة ومناوبة")
     _on_duty_all_day(shut_on_duty)
     open_only = _sibling(listed, "مفتوحة فقط")
@@ -157,7 +159,7 @@ def test_duty_today_alone_keeps_the_shut_one(listed):
 
 
 @pytest.mark.django_db
-def test_a_shift_later_today_counts_as_on_duty_today_but_not_on_duty_now(listed):
+def test_a_shift_later_today_counts_as_on_duty_today_but_not_on_duty_now(listed: Facility) -> None:
     day = datetime(2026, 9, 24, 0, 0, tzinfo=DAMASCUS)
     DutyShift.objects.create(
         facility=listed,
@@ -171,7 +173,7 @@ def test_a_shift_later_today_counts_as_on_duty_today_but_not_on_duty_now(listed)
 
 
 @pytest.mark.django_db
-def test_a_shift_that_runs_past_midnight_belongs_to_both_days(listed):
+def test_a_shift_that_runs_past_midnight_belongs_to_both_days(listed: Facility) -> None:
     day = datetime(2026, 9, 24, 0, 0, tzinfo=DAMASCUS)
     DutyShift.objects.create(
         facility=listed,
@@ -188,7 +190,7 @@ def test_a_shift_that_runs_past_midnight_belongs_to_both_days(listed):
 
 
 @pytest.mark.django_db
-def test_the_local_day_is_what_bounds_today_not_utc(listed):
+def test_the_local_day_is_what_bounds_today_not_utc(listed: Facility) -> None:
     """Damascus runs ahead of UTC, so a late-evening shift would fall on the wrong UTC date."""
     day = datetime(2026, 9, 24, 0, 0, tzinfo=DAMASCUS)
     DutyShift.objects.create(
@@ -204,7 +206,7 @@ def test_the_local_day_is_what_bounds_today_not_utc(listed):
 
 
 @pytest.mark.django_db
-def test_a_row_carries_the_owners_first_photograph(listed):
+def test_a_row_carries_the_owners_first_photograph(listed: Facility) -> None:
     FacilityImage.objects.create(facility=listed, storage_key="facilities/second.jpg", sort_order=2)
     FacilityImage.objects.create(facility=listed, storage_key="facilities/first.jpg", sort_order=1)
 
@@ -215,7 +217,7 @@ def test_a_row_carries_the_owners_first_photograph(listed):
 
 
 @pytest.mark.django_db
-def test_a_row_without_a_photograph_says_so_rather_than_inventing_one(listed):
+def test_a_row_without_a_photograph_says_so_rather_than_inventing_one(listed: Facility) -> None:
     assert _rows(listed.province_id)[listed.name_ar]["imageUrl"] is None
 
 
@@ -223,7 +225,7 @@ def test_a_row_without_a_photograph_says_so_rather_than_inventing_one(listed):
 
 
 @pytest.mark.django_db
-def test_sort_name_keeps_the_distances_it_no_longer_orders_by(listed):
+def test_sort_name_keeps_the_distances_it_no_longer_orders_by(listed: Facility) -> None:
     """Asking for the whole province by name must not cost the reader the distances."""
     Facility.objects.filter(pk=listed.pk).update(location="SRID=4326;POINT(39.01 35.95)")
 
@@ -233,7 +235,7 @@ def test_sort_name_keeps_the_distances_it_no_longer_orders_by(listed):
 
 
 @pytest.mark.django_db
-def test_sort_nearest_without_coordinates_falls_back_rather_than_failing(listed):
+def test_sort_nearest_without_coordinates_falls_back_rather_than_failing(listed: Facility) -> None:
     body = APIClient().get(
         FACILITIES, {"provinceId": str(listed.province_id), "sort": "nearest"}
     )

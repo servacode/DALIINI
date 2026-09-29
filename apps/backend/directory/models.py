@@ -38,7 +38,7 @@ class Category(models.Model):
     sort_order=models.PositiveIntegerField(default=0)
     def __str__(self) -> str:
         return self.code
-    def clean(self):
+    def clean(self) -> None:
         if (
             self.pk
             and hasattr(self,'capabilities')
@@ -60,7 +60,7 @@ class CategoryCapabilities(models.Model):
     supports_owner_onboarding=models.BooleanField(default=True)
     def __str__(self) -> str:
         return f"{self.category_id} capabilities"
-    def clean(self):
+    def clean(self) -> None:
         if self.supports_duty and self.category.specialization != Category.Specialization.PHARMACY:
             raise ValidationError(
                 {'supports_duty':'Duty capability requires pharmacy specialization.'}
@@ -90,7 +90,7 @@ class VerificationRequirement(models.Model):
     sort_order=models.PositiveIntegerField(default=0)
     def __str__(self) -> str:
         return self.label_ar
-    def clean(self):
+    def clean(self) -> None:
         if self.max_files < self.min_files:
             raise ValidationError({'max_files':'Must be >= min_files.'})
 class Specialty(models.Model):
@@ -102,7 +102,7 @@ class Specialty(models.Model):
     sort_order=models.PositiveIntegerField(default=0)
     def __str__(self) -> str:
         return self.name_ar
-    def clean(self):
+    def clean(self) -> None:
         scoped=bool(self.category_id)
         spec=bool(self.specialization.strip())
         if scoped == spec:

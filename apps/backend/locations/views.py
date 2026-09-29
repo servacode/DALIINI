@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.exceptions import ValidationError
@@ -31,7 +33,7 @@ class PublicProvinceListView(APIView):
         ),
         responses={200: PublicProvinceListSerializer},
     )
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         items = [
             {
                 "id": str(province.id),
@@ -58,7 +60,7 @@ class PublicProvinceCitiesView(APIView):
         summary="List active cities in a province",
         responses={200: PublicCityListSerializer, 404: NOT_FOUND_404},
     )
-    def get(self, request, province_id):
+    def get(self, request: Request, province_id: UUID) -> Response:
         province = get_object_or_404(Province.objects.filter(active=True), pk=province_id)
         items = [
             {

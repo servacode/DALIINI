@@ -5,13 +5,14 @@ from django.contrib.postgres.fields import DateTimeRangeField, RangeOperators
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import F, Func
+from django.db.models.expressions import Combinable
 
 
 class TstzRange(Func):
     function = "TSTZRANGE"
     output_field = DateTimeRangeField()
 
-    def __init__(self, start, end):
+    def __init__(self, start: Combinable, end: Combinable) -> None:
         super().__init__(start, end, models.Value("[)"))
 
 
@@ -62,7 +63,7 @@ class DutyShift(models.Model):
     def __str__(self) -> str:
         return f"{self.facility_id} {self.starts_at} - {self.ends_at}"
 
-    def clean(self):
+    def clean(self) -> None:
         if self.ends_at <= self.starts_at:
             raise ValidationError({"ends_at": "Must be after starts_at."})
         capabilities = getattr(self.facility.category, "capabilities", None)

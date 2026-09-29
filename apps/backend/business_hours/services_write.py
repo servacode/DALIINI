@@ -1,18 +1,23 @@
+from typing import Any
+
 from django.db import transaction
 from django.utils import timezone
 
 from audit.services import record_audit
+from facilities.models import Facility
 
 from .domain import HourInterval, validate_weekly_schedule
 from .models import BusinessHour
 
 
 @transaction.atomic
-def replace_business_hours(*, actor, facility, rows):
+def replace_business_hours(
+    *, actor: Any, facility: Facility, rows: list[dict[str, Any]]
+) -> list[BusinessHour]:
     intervals = [HourInterval(**row) for row in rows]
     validate_weekly_schedule(intervals)
     BusinessHour.objects.filter(facility=facility).delete()
-    created = []
+    created: list[BusinessHour] = []
     for interval in intervals:
         obj = BusinessHour(
             facility=facility,

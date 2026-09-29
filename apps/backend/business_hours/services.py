@@ -3,11 +3,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import UTC, datetime, time, timedelta
 from enum import StrEnum
+from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
 from django.utils import timezone
 
 from .models import BusinessHour, TemporaryClosure
+
+if TYPE_CHECKING:
+    from facilities.models import Facility
 
 DAMASCUS = ZoneInfo("Asia/Damascus")
 
@@ -37,7 +41,7 @@ def _window_for(
     opens_at: time,
     closes_at: time,
     day_offset: int = 0,
-):
+) -> tuple[datetime, datetime]:
     base = now_local.date() + timedelta(days=day_offset)
     start = datetime.combine(base, opens_at, tzinfo=DAMASCUS)
     end_day = base if closes_at > opens_at else base + timedelta(days=1)
@@ -45,7 +49,7 @@ def _window_for(
     return start, end
 
 
-def _is_scheduled_open(facility, now_local: datetime) -> bool:
+def _is_scheduled_open(facility: Facility, now_local: datetime) -> bool:
     weekdays = [now_local.weekday(), (now_local.weekday() - 1) % 7]
     candidates = BusinessHour.objects.filter(
         facility=facility,
@@ -64,7 +68,7 @@ def _is_scheduled_open(facility, now_local: datetime) -> bool:
     return False
 
 
-def _is_temporarily_closed(facility, now_utc: datetime) -> bool:
+def _is_temporarily_closed(facility: Facility, now_utc: datetime) -> bool:
     return TemporaryClosure.objects.filter(
         facility=facility,
         starts_at__lte=now_utc,
@@ -72,7 +76,7 @@ def _is_temporarily_closed(facility, now_utc: datetime) -> bool:
     ).exists()
 
 
-def _is_on_duty(facility, now_utc: datetime) -> bool:
+def _is_on_duty(facility: Facility, now_utc: datetime) -> bool:
     return facility.duty_shifts.filter(
         starts_at__lte=now_utc,
         ends_at__gt=now_utc,
@@ -91,7 +95,7 @@ def local_day_bounds(now: datetime | None = None) -> tuple[datetime, datetime]:
     return start.astimezone(UTC), (start + timedelta(days=1)).astimezone(UTC)
 
 
-def is_on_duty_today(facility, now: datetime | None = None) -> bool:
+def is_on_duty_today(facility: Facility, now: datetime | None = None) -> bool:
     """Whether this facility appears on today's duty roster at all.
 
     Deliberately not the same question as `_is_on_duty`, which asks whether a shift is running
@@ -107,7 +111,7 @@ def is_on_duty_today(facility, now: datetime | None = None) -> bool:
     ).exists()
 
 
-def is_open_now(facility, now: datetime | None = None) -> bool:
+def is_open_now(facility: Facility, now: datetime | None = None) -> bool:
     """Whether the doors are open at this moment, whatever the duty roster says.
 
     Independent of duty on purpose. `get_facility_availability` collapses the two into one
@@ -121,7 +125,7 @@ def is_open_now(facility, now: datetime | None = None) -> bool:
     return _is_scheduled_open(facility, now_local)
 
 
-def get_next_open(facility, now: datetime | None = None) -> datetime | None:
+def get_next_open(facility: Facility, now: datetime | None = None) -> datetime | None:
     now_local = _damascus(now)
     rows = list(
         BusinessHour.objects.filter(facility=facility).order_by(
@@ -149,7 +153,7 @@ def get_next_open(facility, now: datetime | None = None) -> datetime | None:
 
 
 def get_facility_availability(
-    facility,
+    facility: Facility,
     now: datetime | None = None,
 ) -> AvailabilityResult:
     now_local = _damascus(now)

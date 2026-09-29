@@ -1,11 +1,13 @@
 """Response contract for the public taxonomy endpoints."""
 
+from typing import Any
+
 from rest_framework import serializers
 
 from core.openapi import NamedRefSerializer
 
 
-class CategoryCapabilitiesSerializer(serializers.Serializer):
+class CategoryCapabilitiesSerializer(serializers.Serializer[Any]):
     """Capability flags that drive client UI, as returned by the public category list.
 
     Clients branch on these flags rather than on a category name, per
@@ -22,7 +24,7 @@ class CategoryCapabilitiesSerializer(serializers.Serializer):
     ownerOnboarding = serializers.BooleanField()
 
 
-class PublicCategorySerializer(serializers.Serializer):
+class PublicCategorySerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     nameAr = serializers.CharField()
     nameEn = serializers.CharField(allow_null=True)
@@ -31,5 +33,5 @@ class PublicCategorySerializer(serializers.Serializer):
     capabilities = CategoryCapabilitiesSerializer()
 
 
-class PublicCategoryListSerializer(serializers.Serializer):
+class PublicCategoryListSerializer(serializers.Serializer[Any]):
     items = PublicCategorySerializer(many=True)

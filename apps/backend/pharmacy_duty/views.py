@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
@@ -5,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.authentication import AuthenticatedRequest
 from business_hours.permissions import require_facility_manager
 from core.openapi import CONFLICT_409, NOT_FOUND_404, VALIDATION_400, protected
 from facilities.models import Facility
@@ -24,7 +27,7 @@ class DutyListCreateView(APIView):
         summary="List duty shifts of a facility",
         responses={200: DutyShiftListSerializer, **protected(), 404: NOT_FOUND_404},
     )
-    def get(self, request, facility_id):
+    def get(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
         shifts = facility.duty_shifts.order_by("starts_at")
@@ -50,7 +53,7 @@ class DutyListCreateView(APIView):
         },
     )
     @transaction.atomic
-    def post(self, request, facility_id):
+    def post(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
         require_duty_capability(facility)
@@ -81,7 +84,7 @@ class DutyDetailView(APIView):
         },
     )
     @transaction.atomic
-    def patch(self, request, facility_id, shift_id):
+    def patch(self, request: AuthenticatedRequest, facility_id: UUID, shift_id: UUID) -> Response:
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
         row = get_object_or_404(
@@ -102,7 +105,7 @@ class DutyDetailView(APIView):
         summary="Remove a duty shift",
         responses={204: None, **protected(), 404: NOT_FOUND_404},
     )
-    def delete(self, request, facility_id, shift_id):
+    def delete(self, request: AuthenticatedRequest, facility_id: UUID, shift_id: UUID) -> Response:
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
         row = get_object_or_404(DutyShift, pk=shift_id, facility=facility)

@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
@@ -5,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.authentication import AuthenticatedRequest
 from core.exceptions import ConflictError, DomainError
 from core.openapi import CONFLICT_409, DOMAIN_400, NOT_FOUND_404, VALIDATION_400, protected
 from facilities.models import Facility
@@ -42,7 +45,7 @@ class FacilityHoursView(APIView):
             409: CONFLICT_409,
         },
     )
-    def put(self, request, facility_id):
+    def put(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
         if not facility.category.capabilities.supports_hours:
@@ -81,7 +84,7 @@ class TemporaryClosureListCreateView(APIView):
             404: NOT_FOUND_404,
         },
     )
-    def get(self, request, facility_id):
+    def get(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
         queryset = facility.temporary_closures.order_by("-starts_at")
@@ -103,7 +106,7 @@ class TemporaryClosureListCreateView(APIView):
             409: CONFLICT_409,
         },
     )
-    def post(self, request, facility_id):
+    def post(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
         if not facility.category.capabilities.supports_temporary_closure:
@@ -126,7 +129,9 @@ class TemporaryClosureDeleteView(APIView):
         summary="Cancel a temporary closure",
         responses={204: None, **protected(), 404: NOT_FOUND_404},
     )
-    def delete(self, request, facility_id, closure_id):
+    def delete(
+        self, request: AuthenticatedRequest, facility_id: UUID, closure_id: UUID
+    ) -> Response:
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
         closure = get_object_or_404(

@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from typing import Any
 
 from business_hours.serializers import serialize_hours
@@ -11,7 +12,7 @@ from storage.backends import PublicS3Storage
 _UNSET = object()
 
 
-def _flag(facility, annotation, fallback):
+def _flag(facility: Any, annotation: str, fallback: Callable[[Any], object]) -> bool:
     """Prefer what the query already worked out; compute only when it did not.
 
     Views that page a list annotate these, so the common path costs nothing. The fallback
@@ -38,7 +39,7 @@ def _availability_payload(facility: Any) -> dict[str, Any]:
     }
 
 
-def _open_now(facility):
+def _open_now(facility: Any) -> bool:
     closed = getattr(facility, "_availability_closed", _UNSET)
     scheduled = getattr(facility, "_availability_scheduled", _UNSET)
     if closed is not _UNSET and scheduled is not _UNSET:
@@ -46,7 +47,7 @@ def _open_now(facility):
     return bool(is_open_now(facility))
 
 
-def _first_image_url(facility):
+def _first_image_url(facility: Any) -> str | None:
     """The one picture a list row shows, or nothing at all.
 
     `images` is prefetched in the ordering the owner chose, so this reads the list already in
@@ -103,7 +104,7 @@ def compact_facility(facility: Any) -> dict[str, Any]:
     }
 
 
-def facility_detail(facility):
+def facility_detail(facility: Any) -> dict[str, Any]:
     storage = PublicS3Storage()
     payload = compact_facility(facility)
     payload.update(

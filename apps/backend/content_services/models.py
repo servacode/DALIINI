@@ -1,5 +1,6 @@
 import re
 import uuid
+from typing import Any
 from urllib.parse import urlparse
 
 from django.conf import settings
@@ -62,7 +63,7 @@ class Advertisement(models.Model):
     def __str__(self) -> str:
         return self.title_ar or str(self.id)
 
-    def clean(self):
+    def clean(self) -> None:
         errors = {}
         if self.starts_at and self.ends_at and self.ends_at <= self.starts_at:
             errors["ends_at"] = "Advertisement end must be after start."
@@ -79,12 +80,12 @@ class Advertisement(models.Model):
             raise ValidationError(errors)
 
 
-def _validate_action(action_type: str, payload: dict) -> dict:
+def _validate_action(action_type: str, payload: Any) -> dict[str, str]:
     if not isinstance(payload, dict):
         return {"action_payload": "Action payload must be an object."}
     if action_type == Advertisement.ActionType.NONE:
         return {} if not payload else {"action_payload": "NONE action must have empty payload."}
-    key_by_type = {
+    key_by_type: dict[str, str] = {
         Advertisement.ActionType.FACILITY: "facilityId",
         Advertisement.ActionType.CATEGORY: "categoryId",
         Advertisement.ActionType.EXTERNAL_URL: "url",
@@ -173,7 +174,7 @@ class LegalDocument(models.Model):
     def __str__(self) -> str:
         return f"{self.key} v{self.version}"
 
-    def clean(self):
+    def clean(self) -> None:
         if self.active and self.published_at is None:
             raise ValidationError({"published_at": "An active document needs a publication time."})
 

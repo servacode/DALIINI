@@ -1,9 +1,11 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from .models import DutyShift
 
 
-class DutyShiftSerializer(serializers.ModelSerializer):
+class DutyShiftSerializer(serializers.ModelSerializer[DutyShift]):
     startsAt = serializers.DateTimeField(source="starts_at")
     endsAt = serializers.DateTimeField(source="ends_at")
 
@@ -11,7 +13,7 @@ class DutyShiftSerializer(serializers.ModelSerializer):
         model = DutyShift
         fields = ["id", "startsAt", "endsAt"]
 
-    def validate(self, attrs):
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         starts_at = attrs.get("starts_at", getattr(self.instance, "starts_at", None))
         ends_at = attrs.get("ends_at", getattr(self.instance, "ends_at", None))
         if starts_at and ends_at and ends_at <= starts_at:

@@ -61,7 +61,7 @@ class PublicAdsView(APIView):
         ],
         responses={200: PublicAdvertisementListSerializer},
     )
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         rows = active_ads(
             province_id=request.query_params.get("provinceId"),
             category_id=request.query_params.get("categoryId"),
@@ -85,7 +85,7 @@ class PublicLegalDocumentsView(APIView):
         ),
         responses={200: LegalDocumentListSerializer},
     )
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         # Only the built-in pages: their keys are the enum this contract declares. Pages
         # operators add later are served by `/content/pages/<slug>/`.
         published = LegalDocument.objects.filter(active=True, key__in=BUILT_IN_KEYS).order_by(
@@ -106,7 +106,7 @@ class PublicLegalDocumentView(APIView):
         summary="Retrieve one published page",
         responses={200: LegalDocumentSerializer, 404: NOT_FOUND_404},
     )
-    def get(self, request, key):
+    def get(self, request: Request, key: str) -> Response:
         if key.upper() not in BUILT_IN_KEYS:
             raise NotFound()
         document = get_object_or_404(LegalDocument, key=key.upper(), active=True)

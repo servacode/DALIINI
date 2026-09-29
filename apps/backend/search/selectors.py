@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, cast
+
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point, Polygon
 from django.db.models import (
@@ -15,8 +17,14 @@ from django.db.models import (
 
 from facilities.models import Facility, FacilityImage
 
+if TYPE_CHECKING:
+    from django.contrib.auth.models import AnonymousUser
+    from django.db.models import F, QuerySet
 
-def public_facilities():
+    from accounts.models import User
+
+
+def public_facilities() -> QuerySet[Facility]:
     return Facility.objects.filter(
         status=Facility.Status.ACTIVE,
         province__active=True,
@@ -39,13 +47,15 @@ def public_facilities():
     ).distinct()
 
 
-def models_f(name):
+def models_f(name: str) -> F:
     from django.db.models import F
 
     return F(name)
 
 
-def with_favorite_state(queryset, user):
+def with_favorite_state(
+    queryset: QuerySet[Facility], user: User | AnonymousUser | None
+) -> QuerySet[Facility]:
     """Whether the caller has saved each facility, as one subquery for the whole page.
 
     Anonymous callers get nothing annotated and the presenter reads false, so a public
@@ -55,18 +65,20 @@ def with_favorite_state(queryset, user):
         return queryset
     from favorites.models import Favorite
 
-    saved = Favorite.objects.filter(user=user, facility=OuterRef("pk"))
+    saved = Favorite.objects.filter(user=cast("User", user), facility=OuterRef("pk"))
     return queryset.annotate(is_favorite=Exists(saved))
 
 
-def with_rating_summary(queryset):
+def with_rating_summary(queryset: QuerySet[Facility]) -> QuerySet[Facility]:
     return queryset.annotate(
         rating_average=Avg("ratings__stars"),
         rating_count=Count("ratings", distinct=True),
     )
 
 
-def with_distance(queryset, latitude=None, longitude=None):
+def with_distance(
+    queryset: QuerySet[Facility], latitude: float | None = None, longitude: float | None = None
+) -> QuerySet[Facility]:
     if latitude is None or longitude is None:
         return queryset
     point = Point(float(longitude), float(latitude), srid=4326)
@@ -79,7 +91,7 @@ def with_distance(queryset, latitude=None, longitude=None):
     ).order_by("distance_meters", "name_ar", "id")
 
 
-def within_bbox(queryset, bbox: str | None):
+def within_bbox(queryset: QuerySet[Facility], bbox: str | None) -> QuerySet[Facility]:
     if not bbox:
         return queryset
     parts = [float(value) for value in bbox.split(",")]
@@ -93,7 +105,7 @@ def within_bbox(queryset, bbox: str | None):
     return queryset.filter(location__within=polygon)
 
 
-def apply_text_search(queryset, term: str | None):
+def apply_text_search(queryset: QuerySet[Facility], term: str | None) -> QuerySet[Facility]:
     if not term:
         return queryset
     normalized = term.strip()
