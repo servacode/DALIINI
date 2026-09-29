@@ -130,7 +130,7 @@ def test_the_inbox_needs_an_account() -> None:
 
 
 @pytest.mark.django_db
-def test_an_owner_notice_names_the_facility_it_is_about(signed_in, user):
+def test_an_owner_notice_names_the_facility_it_is_about(signed_in: APIClient, user: User) -> None:
     create_notification(
         user=user,
         type="facility.hours.confirm_request",
