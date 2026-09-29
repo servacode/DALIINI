@@ -421,7 +421,7 @@ Name | Type | Description  | Notes
 
 # **adminReviewsList**
 ```swift
-    open class func adminReviewsList(category: String? = nil, kind: String? = nil, province: String? = nil, status: String? = nil, completion: @escaping (_ data: AdminApplicationList?, _ error: Error?) -> Void)
+    open class func adminReviewsList(category: String? = nil, evidence: String? = nil, from: String? = nil, kind: String? = nil, province: String? = nil, status: String? = nil, to: String? = nil, completion: @escaping (_ data: AdminApplicationList?, _ error: Error?) -> Void)
 ```
 
 List facility applications awaiting or past review
@@ -434,12 +434,15 @@ Capped at 200 rows. Every filter is optional and combines with the rest.
 import ServaDirectoryAPI
 
 let category = "category_example" // String | Category id of the facility the application belongs to. (optional)
+let evidence = "evidence_example" // String | `complete` or `incomplete`: whether every required document is uploaded. (optional)
+let from = "from_example" // String | Submitted on or after this day (YYYY-MM-DD, Damascus) or this ISO datetime. (optional)
 let kind = "kind_example" // String | Application kind, for example REGISTRATION or REVERIFICATION. (optional)
 let province = "province_example" // String | Province id of the facility the application belongs to. (optional)
 let status = "status_example" // String | Application status, for example SUBMITTED or APPROVED. (optional)
+let to = "to_example" // String | Submitted on or before this day (YYYY-MM-DD, Damascus) or before this datetime. (optional)
 
 // List facility applications awaiting or past review
-AdminReviewsAPI.adminReviewsList(category: category, kind: kind, province: province, status: status) { (response, error) in
+AdminReviewsAPI.adminReviewsList(category: category, evidence: evidence, from: from, kind: kind, province: province, status: status, to: to) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -456,9 +459,12 @@ AdminReviewsAPI.adminReviewsList(category: category, kind: kind, province: provi
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **category** | **String** | Category id of the facility the application belongs to. | [optional] 
+ **evidence** | **String** | &#x60;complete&#x60; or &#x60;incomplete&#x60;: whether every required document is uploaded. | [optional] 
+ **from** | **String** | Submitted on or after this day (YYYY-MM-DD, Damascus) or this ISO datetime. | [optional] 
  **kind** | **String** | Application kind, for example REGISTRATION or REVERIFICATION. | [optional] 
  **province** | **String** | Province id of the facility the application belongs to. | [optional] 
  **status** | **String** | Application status, for example SUBMITTED or APPROVED. | [optional] 
+ **to** | **String** | Submitted on or before this day (YYYY-MM-DD, Damascus) or before this datetime. | [optional] 
 
 ### Return type
 

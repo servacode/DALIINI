@@ -44,6 +44,24 @@ class AdminAdvertisementTest : ShouldSpec() {
             //modelInstance.targetScope shouldBe ("TODO")
         }
 
+        // to test the property `provinceId`
+        should("test provinceId") {
+            // uncomment below to test the property
+            //modelInstance.provinceId shouldBe ("TODO")
+        }
+
+        // to test the property `categoryId`
+        should("test categoryId") {
+            // uncomment below to test the property
+            //modelInstance.categoryId shouldBe ("TODO")
+        }
+
+        // to test the property `imageUrl` - Where the slide's image is served from, to preview it while editing.
+        should("test imageUrl") {
+            // uncomment below to test the property
+            //modelInstance.imageUrl shouldBe ("TODO")
+        }
+
         // to test the property `enabled`
         should("test enabled") {
             // uncomment below to test the property

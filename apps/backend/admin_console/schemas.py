@@ -19,6 +19,7 @@ from content_services.models import Advertisement
 from core.openapi import CoordinatesSerializer
 from directory.models import Category
 from facilities.models import Facility, FacilityApplication, FacilityReport
+from storage.public_media import public_media_url
 
 from .quality import QUALITY_ISSUE_CHOICES
 from .review import DUPLICATE_REASON_CHOICES
@@ -90,6 +91,13 @@ class AdminApplicationSerializer(serializers.Serializer[Any]):
     submittedAt = serializers.DateTimeField(allow_null=True)
     reviewedAt = serializers.DateTimeField(allow_null=True)
     rejectionReason = serializers.CharField(allow_null=True)
+    evidenceComplete = serializers.BooleanField(
+        help_text=(
+            "Whether every active, required document of the facility's category has its "
+            "minimum number of files, as submission requires. False when a requirement was "
+            "added after the application was sent."
+        )
+    )
     categoryNameAr = serializers.CharField()
     provinceNameAr = serializers.CharField()
     ownerName = serializers.CharField(allow_null=True)
@@ -428,11 +436,21 @@ class AdminAdvertisementSerializer(serializers.Serializer[Any]):
     targetScope = serializers.ChoiceField(
         source="target_scope", choices=Advertisement.TargetScope.choices
     )
+    # The target itself, so an edit opens with it chosen instead of silently clearing it.
+    provinceId = serializers.UUIDField(source="province_id", allow_null=True)
+    categoryId = serializers.UUIDField(source="category_id", allow_null=True)
+    imageUrl = serializers.SerializerMethodField(
+        help_text="Where the slide's image is served from, to preview it while editing."
+    )
     enabled = serializers.BooleanField()
     startsAt = serializers.DateTimeField(source="starts_at", allow_null=True)
     endsAt = serializers.DateTimeField(source="ends_at", allow_null=True)
     sortOrder = serializers.IntegerField(source="sort_order")
     slideDurationMs = serializers.IntegerField(source="slide_duration_ms")
+
+    def get_imageUrl(self, obj: dict[str, Any]) -> str | None:
+        key = obj.get("image_key")
+        return public_media_url(key) if key else None
 
 
 class AdminAdvertisementListSerializer(serializers.Serializer[Any]):

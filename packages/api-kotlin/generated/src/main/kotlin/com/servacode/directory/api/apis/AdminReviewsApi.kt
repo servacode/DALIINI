@@ -157,16 +157,20 @@ interface AdminReviewsApi {
      * Capped at 200 rows. Every filter is optional and combines with the rest.
      * Responses:
      *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *
      * @param category Category id of the facility the application belongs to. (optional)
+     * @param evidence &#x60;complete&#x60; or &#x60;incomplete&#x60;: whether every required document is uploaded. (optional)
+     * @param from Submitted on or after this day (YYYY-MM-DD, Damascus) or this ISO datetime. (optional)
      * @param kind Application kind, for example REGISTRATION or REVERIFICATION. (optional)
      * @param province Province id of the facility the application belongs to. (optional)
      * @param status Application status, for example SUBMITTED or APPROVED. (optional)
+     * @param to Submitted on or before this day (YYYY-MM-DD, Damascus) or before this datetime. (optional)
      * @return [AdminApplicationList]
      */
     @GET("api/v1/admin/applications/")
-    suspend fun adminReviewsList(@Query("category") category: kotlin.String? = null, @Query("kind") kind: kotlin.String? = null, @Query("province") province: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminApplicationList>
+    suspend fun adminReviewsList(@Query("category") category: kotlin.String? = null, @Query("evidence") evidence: kotlin.String? = null, @Query("from") from: kotlin.String? = null, @Query("kind") kind: kotlin.String? = null, @Query("province") province: kotlin.String? = null, @Query("status") status: kotlin.String? = null, @Query("to") to: kotlin.String? = null): Response<AdminApplicationList>
 
 }

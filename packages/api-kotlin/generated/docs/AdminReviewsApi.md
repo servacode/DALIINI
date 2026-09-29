@@ -371,22 +371,28 @@ val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AdminReviewsApi::class.java)
 val category : kotlin.String = category_example // kotlin.String | Category id of the facility the application belongs to.
+val evidence : kotlin.String = evidence_example // kotlin.String | `complete` or `incomplete`: whether every required document is uploaded.
+val from : kotlin.String = from_example // kotlin.String | Submitted on or after this day (YYYY-MM-DD, Damascus) or this ISO datetime.
 val kind : kotlin.String = kind_example // kotlin.String | Application kind, for example REGISTRATION or REVERIFICATION.
 val province : kotlin.String = province_example // kotlin.String | Province id of the facility the application belongs to.
 val status : kotlin.String = status_example // kotlin.String | Application status, for example SUBMITTED or APPROVED.
+val to : kotlin.String = to_example // kotlin.String | Submitted on or before this day (YYYY-MM-DD, Damascus) or before this datetime.
 
 launch(Dispatchers.IO) {
-    val result : AdminApplicationList = webService.adminReviewsList(category, kind, province, status)
+    val result : AdminApplicationList = webService.adminReviewsList(category, evidence, from, kind, province, status, to)
 }
 ```
 
 ### Parameters
 | **category** | **kotlin.String**| Category id of the facility the application belongs to. | [optional] |
+| **evidence** | **kotlin.String**| &#x60;complete&#x60; or &#x60;incomplete&#x60;: whether every required document is uploaded. | [optional] |
+| **from** | **kotlin.String**| Submitted on or after this day (YYYY-MM-DD, Damascus) or this ISO datetime. | [optional] |
 | **kind** | **kotlin.String**| Application kind, for example REGISTRATION or REVERIFICATION. | [optional] |
 | **province** | **kotlin.String**| Province id of the facility the application belongs to. | [optional] |
+| **status** | **kotlin.String**| Application status, for example SUBMITTED or APPROVED. | [optional] |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
-| **status** | **kotlin.String**| Application status, for example SUBMITTED or APPROVED. | [optional] |
+| **to** | **kotlin.String**| Submitted on or before this day (YYYY-MM-DD, Damascus) or before this datetime. | [optional] |
 
 ### Return type
 

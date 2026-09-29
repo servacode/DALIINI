@@ -354,14 +354,17 @@ open class AdminReviewsAPI {
      List facility applications awaiting or past review
      
      - parameter category: (query) Category id of the facility the application belongs to. (optional)
+     - parameter evidence: (query) &#x60;complete&#x60; or &#x60;incomplete&#x60;: whether every required document is uploaded. (optional)
+     - parameter from: (query) Submitted on or after this day (YYYY-MM-DD, Damascus) or this ISO datetime. (optional)
      - parameter kind: (query) Application kind, for example REGISTRATION or REVERIFICATION. (optional)
      - parameter province: (query) Province id of the facility the application belongs to. (optional)
      - parameter status: (query) Application status, for example SUBMITTED or APPROVED. (optional)
+     - parameter to: (query) Submitted on or before this day (YYYY-MM-DD, Damascus) or before this datetime. (optional)
      - returns: AdminApplicationList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminReviewsList(category: String? = nil, kind: String? = nil, province: String? = nil, status: String? = nil) async throws -> AdminApplicationList {
-        return try await adminReviewsListWithRequestBuilder(category: category, kind: kind, province: province, status: status).execute().body
+    open class func adminReviewsList(category: String? = nil, evidence: String? = nil, from: String? = nil, kind: String? = nil, province: String? = nil, status: String? = nil, to: String? = nil) async throws -> AdminApplicationList {
+        return try await adminReviewsListWithRequestBuilder(category: category, evidence: evidence, from: from, kind: kind, province: province, status: status, to: to).execute().body
     }
 
     /**
@@ -372,12 +375,15 @@ open class AdminReviewsAPI {
        - type: http
        - name: bearerAccessToken
      - parameter category: (query) Category id of the facility the application belongs to. (optional)
+     - parameter evidence: (query) &#x60;complete&#x60; or &#x60;incomplete&#x60;: whether every required document is uploaded. (optional)
+     - parameter from: (query) Submitted on or after this day (YYYY-MM-DD, Damascus) or this ISO datetime. (optional)
      - parameter kind: (query) Application kind, for example REGISTRATION or REVERIFICATION. (optional)
      - parameter province: (query) Province id of the facility the application belongs to. (optional)
      - parameter status: (query) Application status, for example SUBMITTED or APPROVED. (optional)
+     - parameter to: (query) Submitted on or before this day (YYYY-MM-DD, Damascus) or before this datetime. (optional)
      - returns: RequestBuilder<AdminApplicationList> 
      */
-    open class func adminReviewsListWithRequestBuilder(category: String? = nil, kind: String? = nil, province: String? = nil, status: String? = nil) -> RequestBuilder<AdminApplicationList> {
+    open class func adminReviewsListWithRequestBuilder(category: String? = nil, evidence: String? = nil, from: String? = nil, kind: String? = nil, province: String? = nil, status: String? = nil, to: String? = nil) -> RequestBuilder<AdminApplicationList> {
         let localVariablePath = "/api/v1/admin/applications/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -385,9 +391,12 @@ open class AdminReviewsAPI {
         var localVariableUrlComponents = URLComponents(string: localVariableURLString)
         localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
             "category": (wrappedValue: category?.encodeToJSON(), isExplode: true),
+            "evidence": (wrappedValue: evidence?.encodeToJSON(), isExplode: true),
+            "from": (wrappedValue: from?.encodeToJSON(), isExplode: true),
             "kind": (wrappedValue: kind?.encodeToJSON(), isExplode: true),
             "province": (wrappedValue: province?.encodeToJSON(), isExplode: true),
             "status": (wrappedValue: status?.encodeToJSON(), isExplode: true),
+            "to": (wrappedValue: to?.encodeToJSON(), isExplode: true),
         ])
 
         let localVariableNillableHeaders: [String: Any?] = [

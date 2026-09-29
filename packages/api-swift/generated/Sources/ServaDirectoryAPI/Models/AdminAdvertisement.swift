@@ -15,16 +15,23 @@ public struct AdminAdvertisement: Codable, JSONEncodable, Hashable {
     public var id: UUID
     public var titleAr: String
     public var targetScope: AdvertisementTargetScopeEnum
+    public var provinceId: UUID?
+    public var categoryId: UUID?
+    /** Where the slide's image is served from, to preview it while editing. */
+    public var imageUrl: String?
     public var enabled: Bool
     public var startsAt: Date?
     public var endsAt: Date?
     public var sortOrder: Int
     public var slideDurationMs: Int
 
-    public init(id: UUID, titleAr: String, targetScope: AdvertisementTargetScopeEnum, enabled: Bool, startsAt: Date?, endsAt: Date?, sortOrder: Int, slideDurationMs: Int) {
+    public init(id: UUID, titleAr: String, targetScope: AdvertisementTargetScopeEnum, provinceId: UUID?, categoryId: UUID?, imageUrl: String?, enabled: Bool, startsAt: Date?, endsAt: Date?, sortOrder: Int, slideDurationMs: Int) {
         self.id = id
         self.titleAr = titleAr
         self.targetScope = targetScope
+        self.provinceId = provinceId
+        self.categoryId = categoryId
+        self.imageUrl = imageUrl
         self.enabled = enabled
         self.startsAt = startsAt
         self.endsAt = endsAt
@@ -36,6 +43,9 @@ public struct AdminAdvertisement: Codable, JSONEncodable, Hashable {
         case id
         case titleAr
         case targetScope
+        case provinceId
+        case categoryId
+        case imageUrl
         case enabled
         case startsAt
         case endsAt
@@ -50,6 +60,9 @@ public struct AdminAdvertisement: Codable, JSONEncodable, Hashable {
         try container.encode(id, forKey: .id)
         try container.encode(titleAr, forKey: .titleAr)
         try container.encode(targetScope, forKey: .targetScope)
+        try container.encode(provinceId, forKey: .provinceId)
+        try container.encode(categoryId, forKey: .categoryId)
+        try container.encode(imageUrl, forKey: .imageUrl)
         try container.encode(enabled, forKey: .enabled)
         try container.encode(startsAt, forKey: .startsAt)
         try container.encode(endsAt, forKey: .endsAt)

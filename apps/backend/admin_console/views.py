@@ -67,7 +67,7 @@ from storage.public_media import public_media_url
 
 from .permissions import HasAdminPermission, IsAdminOperator
 from .quality import QUALITY_ISSUES, filter_issue, quality_payload, with_quality
-from .review import find_duplicates, previous_snapshot
+from .review import find_duplicates, missing_evidence, previous_snapshot, with_evidence_state
 from .schemas import (
     AdminAdvertisementListSerializer,
     AdminAdvertisementRequestSerializer,
@@ -446,11 +446,25 @@ class ApplicationListView(AdminView):
             _filter("status", "Application status, for example SUBMITTED or APPROVED."),
             _filter("province", "Province id of the facility the application belongs to."),
             _filter("category", "Category id of the facility the application belongs to."),
+            _filter(
+                "from",
+                "Submitted on or after this day (YYYY-MM-DD, Damascus) or this ISO datetime.",
+            ),
+            _filter(
+                "to",
+                "Submitted on or before this day (YYYY-MM-DD, Damascus) or before this datetime.",
+            ),
+            _filter(
+                "evidence",
+                "`complete` or `incomplete`: whether every required document is uploaded.",
+            ),
         ],
-        responses={200: AppList, **protected()},
+        responses={200: AppList, 400: VALIDATION_400, **protected()},
     )
     def get(self, request: AuthenticatedRequest) -> Response:
-        qs = with_application_names(FacilityApplication.objects.all()).order_by("-submitted_at")
+        qs = with_evidence_state(
+            with_application_names(FacilityApplication.objects.all())
+        ).order_by("-submitted_at")
         for field, param in (("kind", "kind"), ("status", "status")):
             if value := request.query_params.get(param):
                 qs = qs.filter(**{field: value})
@@ -458,6 +472,17 @@ class ApplicationListView(AdminView):
             qs = qs.filter(facility__province_id=value)
         if value := request.query_params.get("category"):
             qs = qs.filter(facility__category_id=value)
+        if value := request.query_params.get("from"):
+            qs = qs.filter(submitted_at__gte=_parse_bound(value, "from", end=False))
+        if value := request.query_params.get("to"):
+            qs = qs.filter(submitted_at__lt=_parse_bound(value, "to", end=True))
+        evidence = request.query_params.get("evidence")
+        if evidence == "complete":
+            qs = qs.filter(~missing_evidence())
+        elif evidence == "incomplete":
+            qs = qs.filter(missing_evidence())
+        elif evidence:
+            raise ValidationError({"evidence": "Expected `complete` or `incomplete`."})
         return Response({"items": [application_payload(item) for item in qs[:200]]})
 
 
@@ -1343,6 +1368,9 @@ class AdvertisementListView(AdminView):
                         "id",
                         "title_ar",
                         "target_scope",
+                        "province_id",
+                        "category_id",
+                        "image_key",
                         "enabled",
                         "starts_at",
                         "ends_at",

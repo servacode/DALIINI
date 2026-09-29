@@ -137,6 +137,12 @@ export interface AdminApplicationDetail {
      */
     rejectionReason: string | null;
     /**
+     * Whether every active, required document of the facility's category has its minimum number of files, as submission requires. False when a requirement was added after the application was sent.
+     * @type {boolean}
+     * @memberof AdminApplicationDetail
+     */
+    evidenceComplete: boolean;
+    /**
      * 
      * @type {string}
      * @memberof AdminApplicationDetail
@@ -232,6 +238,7 @@ export function instanceOfAdminApplicationDetail(value: object): value is AdminA
     if (!('submittedAt' in value) || value['submittedAt'] === undefined) return false;
     if (!('reviewedAt' in value) || value['reviewedAt'] === undefined) return false;
     if (!('rejectionReason' in value) || value['rejectionReason'] === undefined) return false;
+    if (!('evidenceComplete' in value) || value['evidenceComplete'] === undefined) return false;
     if (!('categoryNameAr' in value) || value['categoryNameAr'] === undefined) return false;
     if (!('provinceNameAr' in value) || value['provinceNameAr'] === undefined) return false;
     if (!('ownerName' in value) || value['ownerName'] === undefined) return false;
@@ -268,6 +275,7 @@ export function AdminApplicationDetailFromJSONTyped(json: any, ignoreDiscriminat
         'submittedAt': (json['submittedAt'] == null ? null : new Date(json['submittedAt'])),
         'reviewedAt': (json['reviewedAt'] == null ? null : new Date(json['reviewedAt'])),
         'rejectionReason': json['rejectionReason'],
+        'evidenceComplete': json['evidenceComplete'],
         'categoryNameAr': json['categoryNameAr'],
         'provinceNameAr': json['provinceNameAr'],
         'ownerName': json['ownerName'],
@@ -305,6 +313,7 @@ export function AdminApplicationDetailToJSONTyped(value?: AdminApplicationDetail
         'submittedAt': ((value['submittedAt'] as any).toISOString()),
         'reviewedAt': ((value['reviewedAt'] as any).toISOString()),
         'rejectionReason': value['rejectionReason'],
+        'evidenceComplete': value['evidenceComplete'],
         'categoryNameAr': value['categoryNameAr'],
         'provinceNameAr': value['provinceNameAr'],
         'ownerName': value['ownerName'],

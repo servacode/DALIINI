@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **submittedAt** | **Date** |  | 
 **reviewedAt** | **Date** |  | 
 **rejectionReason** | **String** |  | 
+**evidenceComplete** | **Bool** | Whether every active, required document of the facility&#39;s category has its minimum number of files, as submission requires. False when a requirement was added after the application was sent. | 
 **categoryNameAr** | **String** |  | 
 **provinceNameAr** | **String** |  | 
 **ownerName** | **String** |  | 

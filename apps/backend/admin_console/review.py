@@ -1,4 +1,4 @@
-"""Review-desk helpers: the previous approved state and likely duplicates of a facility."""
+"""Review-desk helpers: the previous approved state, likely duplicates, and missing documents."""
 
 from __future__ import annotations
 
@@ -6,9 +6,11 @@ import re
 from typing import Any
 
 from django.contrib.gis.measure import D
-from django.db.models import Q
+from django.db.models import Count, Exists, F, IntegerField, OuterRef, Q, QuerySet, Subquery, Value
+from django.db.models.functions import Coalesce
 
-from facilities.models import Facility, FacilityApplication
+from directory.models import VerificationRequirement
+from facilities.models import Facility, FacilityApplication, VerificationEvidence
 
 DUPLICATE_REASON_CHOICES = [
     ("SAME_PHONE", "Same phone"),
@@ -84,3 +86,47 @@ def find_duplicates(facility: Facility) -> list[dict[str, Any]]:
         if len(results) >= DUPLICATE_LIMIT:
             break
     return results
+
+
+def missing_evidence() -> Exists:
+    """True for an application whose facility lacks a required document.
+
+    The rule submission enforces: every active, required document of the facility's category
+    has at least its minimum number of files. A requirement added after submission therefore
+    marks an application already in the queue, which is what a reviewer needs to see. One
+    EXISTS per row, usable in `filter()` and, negated, as an annotation.
+    """
+    uploaded = (
+        VerificationEvidence.objects.filter(
+            facility_id=OuterRef(OuterRef("facility_id")), requirement_id=OuterRef("pk")
+        )
+        .order_by()
+        .values("requirement_id")
+        .annotate(files=Count("id"))
+        .values("files")[:1]
+    )
+    short = (
+        VerificationRequirement.objects.filter(
+            category_id=OuterRef("facility__category_id"), active=True, required=True
+        )
+        .annotate(files=Coalesce(Subquery(uploaded, output_field=IntegerField()), Value(0)))
+        .filter(files__lt=F("min_files"))
+    )
+    return Exists(short)
+
+
+def with_evidence_state(
+    applications: QuerySet[FacilityApplication],
+) -> QuerySet[FacilityApplication]:
+    """Annotate `evidence_complete` on each application, in the query itself."""
+    return applications.annotate(evidence_complete=~missing_evidence())
+
+
+def evidence_complete(application: FacilityApplication) -> bool:
+    """The annotated answer when the row has one, otherwise the same rule asked for this row."""
+    annotated = getattr(application, "evidence_complete", None)
+    if annotated is not None:
+        return bool(annotated)
+    return not (
+        FacilityApplication.objects.filter(pk=application.pk).filter(missing_evidence()).exists()
+    )

@@ -127,3 +127,36 @@ def test_the_inbox_needs_an_account() -> None:
     assert anonymous.get(INBOX).status_code in (401, 403)
     assert anonymous.get(UNREAD).status_code in (401, 403)
     assert anonymous.post(READ_ALL).status_code in (401, 403)
+
+
+@pytest.mark.django_db
+def test_an_owner_notice_names_the_facility_it_is_about(signed_in, user):
+    create_notification(
+        user=user,
+        type="facility.hours.confirm_request",
+        title_ar="أكّد أوقات الدوام",
+        destination=Notification.Destination.OWNER_FACILITIES,
+        payload={"facilityId": "3F2B1C62-0000-4000-8000-000000000002"},
+    )
+    create_notification(
+        user=user,
+        type="platform.broadcast",
+        title_ar="إعلان",
+        payload={"facilityId": "3f2b1c62-0000-4000-8000-000000000003"},
+    )
+    create_notification(
+        user=user,
+        type="duty.shift.admin_changed",
+        title_ar="تغيّرت مناوبة",
+        destination=Notification.Destination.OWNER_FACILITIES,
+        payload={"facilityId": "not-an-id"},
+    )
+
+    items = {item["type"]: item for item in signed_in.get(INBOX).json()["items"]}
+
+    assert items["facility.hours.confirm_request"]["facilityId"] == (
+        "3f2b1c62-0000-4000-8000-000000000002"
+    )
+    # No destination means no facility, whatever the payload holds; a malformed id is dropped.
+    assert items["platform.broadcast"]["facilityId"] is None
+    assert items["duty.shift.admin_changed"]["facilityId"] is None

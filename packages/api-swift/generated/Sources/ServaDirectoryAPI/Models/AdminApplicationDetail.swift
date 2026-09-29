@@ -22,6 +22,8 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
     public var submittedAt: Date?
     public var reviewedAt: Date?
     public var rejectionReason: String?
+    /** Whether every active, required document of the facility's category has its minimum number of files, as submission requires. False when a requirement was added after the application was sent. */
+    public var evidenceComplete: Bool
     public var categoryNameAr: String
     public var provinceNameAr: String
     public var ownerName: String?
@@ -39,7 +41,7 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
     public var evidence: [AdminEvidenceRef]
     public var audit: [AdminAuditTrailEntry]
 
-    public init(id: UUID, facilityId: UUID, facilityNameAr: String, kind: FacilityApplicationKindEnum, status: FacilityApplicationStatusEnum, provinceId: UUID, categoryId: UUID, submittedAt: Date?, reviewedAt: Date?, rejectionReason: String?, categoryNameAr: String, provinceNameAr: String, ownerName: String?, ownerPhone: String?, facility: AdminFacility, snapshot: [String: AnyCodable], previous: [String: AnyCodable]?, location: Coordinates?, duplicates: [AdminDuplicateCandidate], publicImageIds: [UUID], publicImages: [AdminPublicImage], evidence: [AdminEvidenceRef], audit: [AdminAuditTrailEntry]) {
+    public init(id: UUID, facilityId: UUID, facilityNameAr: String, kind: FacilityApplicationKindEnum, status: FacilityApplicationStatusEnum, provinceId: UUID, categoryId: UUID, submittedAt: Date?, reviewedAt: Date?, rejectionReason: String?, evidenceComplete: Bool, categoryNameAr: String, provinceNameAr: String, ownerName: String?, ownerPhone: String?, facility: AdminFacility, snapshot: [String: AnyCodable], previous: [String: AnyCodable]?, location: Coordinates?, duplicates: [AdminDuplicateCandidate], publicImageIds: [UUID], publicImages: [AdminPublicImage], evidence: [AdminEvidenceRef], audit: [AdminAuditTrailEntry]) {
         self.id = id
         self.facilityId = facilityId
         self.facilityNameAr = facilityNameAr
@@ -50,6 +52,7 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
         self.submittedAt = submittedAt
         self.reviewedAt = reviewedAt
         self.rejectionReason = rejectionReason
+        self.evidenceComplete = evidenceComplete
         self.categoryNameAr = categoryNameAr
         self.provinceNameAr = provinceNameAr
         self.ownerName = ownerName
@@ -76,6 +79,7 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
         case submittedAt
         case reviewedAt
         case rejectionReason
+        case evidenceComplete
         case categoryNameAr
         case provinceNameAr
         case ownerName
@@ -105,6 +109,7 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
         try container.encode(submittedAt, forKey: .submittedAt)
         try container.encode(reviewedAt, forKey: .reviewedAt)
         try container.encode(rejectionReason, forKey: .rejectionReason)
+        try container.encode(evidenceComplete, forKey: .evidenceComplete)
         try container.encode(categoryNameAr, forKey: .categoryNameAr)
         try container.encode(provinceNameAr, forKey: .provinceNameAr)
         try container.encode(ownerName, forKey: .ownerName)

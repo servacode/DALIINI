@@ -4,6 +4,8 @@ from django.db.models import Prefetch, QuerySet
 
 from facilities.models import Facility, FacilityApplication, FacilityMembership
 
+from .review import evidence_complete
+
 
 def _iso(value: Any) -> Any:
     return value.isoformat() if value else None
@@ -99,5 +101,6 @@ def application_payload(application: Any) -> Any:
         "submittedAt": _iso(application.submitted_at),
         "reviewedAt": _iso(application.reviewed_at),
         "rejectionReason": application.rejection_reason or None,
+        "evidenceComplete": evidence_complete(application),
         **_names(facility),
     }

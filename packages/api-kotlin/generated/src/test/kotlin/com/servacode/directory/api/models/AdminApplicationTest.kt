@@ -87,6 +87,12 @@ class AdminApplicationTest : ShouldSpec() {
             //modelInstance.rejectionReason shouldBe ("TODO")
         }
 
+        // to test the property `evidenceComplete` - Whether every active, required document of the facility's category has its minimum number of files, as submission requires. False when a requirement was added after the application was sent.
+        should("test evidenceComplete") {
+            // uncomment below to test the property
+            //modelInstance.evidenceComplete shouldBe ("TODO")
+        }
+
         // to test the property `categoryNameAr`
         should("test categoryNameAr") {
             // uncomment below to test the property

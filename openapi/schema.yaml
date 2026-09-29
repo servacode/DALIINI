@@ -1123,6 +1123,18 @@ paths:
           type: string
         description: Category id of the facility the application belongs to.
       - in: query
+        name: evidence
+        schema:
+          type: string
+        description: '`complete` or `incomplete`: whether every required document
+          is uploaded.'
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: Submitted on or after this day (YYYY-MM-DD, Damascus) or this
+          ISO datetime.
+      - in: query
         name: kind
         schema:
           type: string
@@ -1137,6 +1149,12 @@ paths:
         schema:
           type: string
         description: Application status, for example SUBMITTED or APPROVED.
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: Submitted on or before this day (YYYY-MM-DD, Damascus) or before
+          this datetime.
       tags:
       - Admin Reviews
       security:
@@ -1148,6 +1166,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/AdminApplicationList'
           description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
@@ -7571,6 +7596,20 @@ components:
           type: string
         targetScope:
           $ref: '#/components/schemas/AdvertisementTargetScopeEnum'
+        provinceId:
+          type: string
+          format: uuid
+          nullable: true
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+        imageUrl:
+          type: string
+          nullable: true
+          readOnly: true
+          description: Where the slide's image is served from, to preview it while
+            editing.
         enabled:
           type: boolean
         startsAt:
@@ -7586,9 +7625,12 @@ components:
         slideDurationMs:
           type: integer
       required:
+      - categoryId
       - enabled
       - endsAt
       - id
+      - imageUrl
+      - provinceId
       - slideDurationMs
       - sortOrder
       - startsAt
@@ -7900,6 +7942,11 @@ components:
         rejectionReason:
           type: string
           nullable: true
+        evidenceComplete:
+          type: boolean
+          description: Whether every active, required document of the facility's category
+            has its minimum number of files, as submission requires. False when a
+            requirement was added after the application was sent.
         categoryNameAr:
           type: string
         provinceNameAr:
@@ -7913,6 +7960,7 @@ components:
       required:
       - categoryId
       - categoryNameAr
+      - evidenceComplete
       - facilityId
       - facilityNameAr
       - id
@@ -7957,6 +8005,11 @@ components:
         rejectionReason:
           type: string
           nullable: true
+        evidenceComplete:
+          type: boolean
+          description: Whether every active, required document of the facility's category
+            has its minimum number of files, as submission requires. False when a
+            requirement was added after the application was sent.
         categoryNameAr:
           type: string
         provinceNameAr:
@@ -8013,6 +8066,7 @@ components:
       - categoryNameAr
       - duplicates
       - evidence
+      - evidenceComplete
       - facility
       - facilityId
       - facilityNameAr
@@ -11283,7 +11337,9 @@ components:
           type: string
           format: uuid
           nullable: true
-          description: Set only when the destination is FACILITY.
+          description: 'The facility the message is about: set for a FACILITY destination,
+            and for an OWNER_FACILITIES notice about one of the owner''s facilities
+            (an hours reminder, a duty change); null otherwise.'
         isRead:
           type: boolean
         createdAt:

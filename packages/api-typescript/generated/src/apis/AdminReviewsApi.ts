@@ -80,9 +80,12 @@ export interface AdminReviewRetrieveRequest {
 
 export interface AdminReviewsListRequest {
     category?: string;
+    evidence?: string;
+    from?: string;
     kind?: string;
     province?: string;
     status?: string;
+    to?: string;
 }
 
 /**
@@ -488,6 +491,14 @@ export class AdminReviewsApi extends runtime.BaseAPI {
             queryParameters['category'] = requestParameters['category'];
         }
 
+        if (requestParameters['evidence'] != null) {
+            queryParameters['evidence'] = requestParameters['evidence'];
+        }
+
+        if (requestParameters['from'] != null) {
+            queryParameters['from'] = requestParameters['from'];
+        }
+
         if (requestParameters['kind'] != null) {
             queryParameters['kind'] = requestParameters['kind'];
         }
@@ -498,6 +509,10 @@ export class AdminReviewsApi extends runtime.BaseAPI {
 
         if (requestParameters['status'] != null) {
             queryParameters['status'] = requestParameters['status'];
+        }
+
+        if (requestParameters['to'] != null) {
+            queryParameters['to'] = requestParameters['to'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

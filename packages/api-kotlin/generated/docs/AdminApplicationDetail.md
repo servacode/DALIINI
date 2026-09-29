@@ -14,6 +14,7 @@
 | **submittedAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) |  |  |
 | **reviewedAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) |  |  |
 | **rejectionReason** | **kotlin.String** |  |  |
+| **evidenceComplete** | **kotlin.Boolean** | Whether every active, required document of the facility&#39;s category has its minimum number of files, as submission requires. False when a requirement was added after the application was sent. |  |
 | **categoryNameAr** | **kotlin.String** |  |  |
 | **provinceNameAr** | **kotlin.String** |  |  |
 | **ownerName** | **kotlin.String** |  |  |
