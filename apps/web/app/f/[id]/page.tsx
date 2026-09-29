@@ -220,6 +220,12 @@ export default async function FacilityPage({ params }: Props) {
         ) : null}
         {f.phone ? <div><dt>الهاتف</dt><dd className="ltr"><a href={`tel:${f.phone.replace(/\s+/g, "")}`}>{f.phone}</a></dd></div> : null}
         {loc ? <div><dt>الموقع</dt><dd><a href={`geo:${loc}`}>افتح في تطبيق الخرائط</a></dd></div> : null}
+        {f.specialties.length > 0 ? (
+          <div><dt>التخصصات</dt><dd>{f.specialties.map((s) => s.nameAr).join("، ")}</dd></div>
+        ) : null}
+        {f.services.length > 0 ? (
+          <div><dt>الخدمات</dt><dd>{f.services.map((s) => s.nameAr).join("، ")}</dd></div>
+        ) : null}
       </dl>
 
       {f.hours.length > 0 ? (

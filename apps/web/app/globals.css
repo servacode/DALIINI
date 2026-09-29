@@ -122,6 +122,9 @@ button.button { cursor: pointer; min-height: 44px; justify-content: center; }
 .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 4px; padding: 0; list-style: none; }
 .tabs a { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 6px 12px; border-radius: 999px; text-decoration: none; font-weight: 700; border: 1px solid var(--sd-semantic-stroke-default); background: var(--sd-semantic-surface-default); }
 .tabs a[aria-current="page"] { background: var(--sd-semantic-surface-selected); border-color: var(--sd-semantic-action-primary); color: var(--sd-semantic-content-primary); }
+/* The same chips narrowing a category's list by specialty and by service, one row each. */
+.filters { display: grid; gap: 8px; margin: 16px 0; }
+.filters .tabs { margin: 0; }
 
 /* Explanatory pages: numbered steps, short cards, questions. */
 .with-icon { display: flex; align-items: center; gap: 8px; }

@@ -5,7 +5,7 @@ import "server-only";
  *
  * The shapes below mirror the generated models in packages/api-typescript
  * (CompactFacility, PublicFacilityDetail, PublicProvince, PublicCategory,
- * FacilityCursorPage, PublicDutyRoster, ContentPage, FaqList,
+ * PublicCategoryTags, FacilityCursorPage, PublicDutyRoster, ContentPage, FaqList,
  * EmergencyNumberList). We do not import the generated client itself: it ships
  * as an unbuilt package (dist/ is produced by its own `prepare` step) and the
  * public site only needs a handful of GET endpoints, so a small typed fetch
@@ -45,6 +45,9 @@ export interface CompactFacility {
 
 export interface HoursEntry { id: string; weekday: number; opensAt: string; closesAt: string; sequence: number }
 
+/* A specialty or a service (NamedIntRef): unlike every other reference, its id is an integer. */
+export interface TagRef { id: number; nameAr: string }
+
 export interface FacilityDetail extends CompactFacility {
   descriptionAr: string | null;
   phone: string | null;
@@ -54,6 +57,9 @@ export interface FacilityDetail extends CompactFacility {
   neighborhood: Ref | null;
   location: { latitude: number; longitude: number } | null;
   hours: HoursEntry[];
+  /* Active ones only, in the team's order. */
+  specialties: TagRef[];
+  services: TagRef[];
 }
 
 export interface Province { id: string; code: string; nameAr: string; nameEn: string | null }
@@ -64,8 +70,18 @@ export interface Category {
   nameEn: string | null;
   iconKey: string | null;
   group: Ref;
-  capabilities: { duty: boolean; hours: boolean; ratings: boolean };
+  capabilities: {
+    duty: boolean;
+    hours: boolean;
+    ratings: boolean;
+    /* Whether the category's list can be narrowed by specialty, and by service. */
+    specialtyFilter: boolean;
+    serviceFilter: boolean;
+  };
 }
+
+/* The choices behind a category's specialty and service filters (publicCategoryTagsRetrieve). */
+export interface CategoryTags { specialties: TagRef[]; services: TagRef[] }
 
 export interface FacilityPage { items: CompactFacility[]; nextCursor: string | null; hasMore: boolean }
 
@@ -143,6 +159,9 @@ export async function getFacilities(params: {
   categoryId?: string;
   cursor?: string;
   dutyNow?: boolean;
+  /* Integer ids from getCategoryTags; the API matches them only where the category offers the filter. */
+  specialtyId?: number;
+  serviceTagId?: number;
   limit?: number;
 }): Promise<FacilityPage | null> {
   return (await getJson<FacilityPage>("public/facilities/", {
@@ -150,8 +169,24 @@ export async function getFacilities(params: {
     categoryId: params.categoryId,
     cursor: params.cursor,
     dutyNow: params.dutyNow ? "true" : undefined,
+    specialtyId: params.specialtyId ? String(params.specialtyId) : undefined,
+    serviceTagId: params.serviceTagId ? String(params.serviceTagId) : undefined,
     limit: String(params.limit ?? 30),
   })) ?? null;
+}
+
+/*
+ * The active specialties and services of a category, in the team's order.
+ * null when the API is unavailable, undefined when the category is not public.
+ */
+export async function getCategoryTags(categoryId: string): Promise<CategoryTags | null | undefined> {
+  if (!isUuid(categoryId)) return undefined;
+  return getJson<CategoryTags>(`public/categories/${categoryId}/tags/`);
+}
+
+/* A specialty or service id from the address: a positive whole number (exact as a JS number), or nothing. */
+export function tagId(value: string | string[] | undefined): number | undefined {
+  return typeof value === "string" && /^[1-9][0-9]{0,14}$/.test(value) ? Number(value) : undefined;
 }
 
 /* undefined = no such (published) facility; null = API unavailable. */
