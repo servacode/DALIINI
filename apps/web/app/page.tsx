@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SearchBox } from "../components/search-form";
-import { DownloadCta, FacilityList, JsonLd, Unavailable } from "../components/ui";
+import { DownloadCta, FacilityList, Icon, JsonLd, Unavailable } from "../components/ui";
 import { getDutyByProvince, getProvinces } from "../lib/api";
 import { SITE_NAME, absoluteUrl, publicConfig } from "../lib/config";
 
@@ -36,6 +36,15 @@ export default async function HomePage() {
           <Link className="button button-alt" href="/owners">أضف منشأتك</Link>
         </div>
       </section>
+
+      <Link className="card quick-link" href="/emergency">
+        <span className="feature-icon"><Icon name="emergency" size={22} /></span>
+        <span>
+          <strong>أرقام الطوارئ</strong>
+          <small>الإسعاف والإطفاء والشرطة، للاتصال بلمسة واحدة</small>
+        </span>
+        <Icon name="chevron" />
+      </Link>
 
       <section aria-labelledby="provinces-title">
         <h2 id="provinces-title">المحافظات المتاحة</h2>

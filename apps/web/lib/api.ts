@@ -1,16 +1,20 @@
+import "server-only";
+
 /*
  * Server-side reader for the public (anonymous) Daliini API.
  *
  * The shapes below mirror the generated models in packages/api-typescript
  * (CompactFacility, PublicFacilityDetail, PublicProvince, PublicCategory,
- * FacilityCursorPage). We do not import the generated client itself: it ships
+ * FacilityCursorPage, PublicDutyRoster, ContentPage, FaqList,
+ * EmergencyNumberList). We do not import the generated client itself: it ships
  * as an unbuilt package (dist/ is produced by its own `prepare` step) and the
  * public site only needs a handful of GET endpoints, so a small typed fetch
  * keeps the web build independent of that package's build. Keep these in sync
  * with the OpenAPI schema when public fields change.
  *
- * Only server components import this module; PUBLIC_API_ORIGIN has no
- * NEXT_PUBLIC_ prefix so it is never inlined into client bundles.
+ * Only server code imports this module (`server-only` fails the build if a
+ * client component does). PUBLIC_API_ORIGIN and WEB_SERVER_API_KEY have no
+ * NEXT_PUBLIC_ prefix, so neither is ever inlined into a browser bundle.
  *
  * Every call degrades to `null` instead of throwing: `next build` runs with no
  * API reachable, and a flaky API must render an explanatory state rather than
@@ -31,8 +35,11 @@ export interface CompactFacility {
   ratingAverage: number | null;
   ratingCount: number;
   availability: { state: AvailabilityState; nextOpenAt: string | null };
-  /* When staff last confirmed the details, and when anything last changed. */
+  /* When staff last approved the details (trust signal). */
   lastVerifiedAt?: string | null;
+  /* The later of lastVerifiedAt and the owner's own "the hours are still right". */
+  infoConfirmedAt?: string | null;
+  /* The last change to the facility record. */
   updatedAt?: string | null;
 }
 
@@ -41,11 +48,12 @@ export interface HoursEntry { id: string; weekday: number; opensAt: string; clos
 export interface FacilityDetail extends CompactFacility {
   descriptionAr: string | null;
   phone: string | null;
+  /* E.164 Syrian mobile (+9639XXXXXXXX). */
+  whatsapp?: string | null;
   addressAr: string | null;
   neighborhood: Ref | null;
   location: { latitude: number; longitude: number } | null;
   hours: HoursEntry[];
-  whatsapp?: string | null;
 }
 
 export interface Province { id: string; code: string; nameAr: string; nameEn: string | null }
@@ -63,6 +71,8 @@ export interface FacilityPage { items: CompactFacility[]; nextCursor: string | n
 
 /* Seconds a rendered page (and each upstream response) stays fresh. */
 export const REVALIDATE_SECONDS = 300;
+/* The duty roster by date is cacheable upstream for one minute. */
+export const DUTY_REVALIDATE_SECONDS = 60;
 
 function apiOrigin(): string | null {
   const origin = process.env.PUBLIC_API_ORIGIN?.trim();
@@ -70,15 +80,31 @@ function apiOrigin(): string | null {
   return origin.replace(/\/+$/, "");
 }
 
-async function getJson<T>(path: string, query: Record<string, string | undefined> = {}): Promise<T | null | undefined> {
+/*
+ * The website server's shared key (the API's WEB_SERVER_API_KEY). Every visitor
+ * reaches the API through this one server, so a per-address limit meant for one
+ * person would throttle the whole site; with the key, the API counts these reads
+ * under the site's own limit. It grants no data or permission. Server-only.
+ */
+function webServerHeaders(): Record<string, string> {
+  const key = process.env.WEB_SERVER_API_KEY?.trim();
+  return key ? { "X-Daliini-Web-Key": key } : {};
+}
+
+/* GET /api/v1/<path>; null when the API is unavailable, undefined on a 404. */
+async function getJson<T>(
+  path: string,
+  query: Record<string, string | undefined> = {},
+  revalidate: number = REVALIDATE_SECONDS,
+): Promise<T | null | undefined> {
   const origin = apiOrigin();
   if (!origin) return null;
-  const url = new URL(`${origin}/api/v1/public/${path}`);
+  const url = new URL(`${origin}/api/v1/${path}`);
   for (const [key, value] of Object.entries(query)) if (value) url.searchParams.set(key, value);
   try {
     const response = await fetch(url, {
-      headers: { Accept: "application/json", "Accept-Language": "ar" },
-      next: { revalidate: REVALIDATE_SECONDS },
+      headers: { Accept: "application/json", "Accept-Language": "ar", ...webServerHeaders() },
+      next: { revalidate },
       signal: AbortSignal.timeout(8000),
     });
     if (response.status === 404) return undefined;
@@ -93,7 +119,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isUuid = (value: string) => UUID.test(value);
 
 export async function getProvinces(): Promise<Province[] | null> {
-  return (await getJson<{ items: Province[] }>("provinces/"))?.items ?? null;
+  return (await getJson<{ items: Province[] }>("public/provinces/"))?.items ?? null;
 }
 
 /*
@@ -109,7 +135,7 @@ export async function getProvinceByCode(code: string): Promise<Province | null |
 }
 
 export async function getCategories(provinceId: string): Promise<Category[] | null> {
-  return (await getJson<{ items: Category[] }>(`provinces/${encodeURIComponent(provinceId)}/categories/`))?.items ?? null;
+  return (await getJson<{ items: Category[] }>(`public/provinces/${encodeURIComponent(provinceId)}/categories/`))?.items ?? null;
 }
 
 export async function getFacilities(params: {
@@ -119,7 +145,7 @@ export async function getFacilities(params: {
   dutyNow?: boolean;
   limit?: number;
 }): Promise<FacilityPage | null> {
-  return (await getJson<FacilityPage>("facilities/", {
+  return (await getJson<FacilityPage>("public/facilities/", {
     provinceId: params.provinceId,
     categoryId: params.categoryId,
     cursor: params.cursor,
@@ -131,30 +157,47 @@ export async function getFacilities(params: {
 /* undefined = no such (published) facility; null = API unavailable. */
 export async function getFacility(id: string): Promise<FacilityDetail | null | undefined> {
   if (!isUuid(id)) return undefined;
-  return getJson<FacilityDetail>(`facilities/${id}/`);
+  return getJson<FacilityDetail>(`public/facilities/${id}/`);
 }
 
-/*
- * The duty roster the public API can answer: "now" (a shift is running) or
- * "today" (on today's roster). The API has no roster for other dates yet.
- */
-export type DutyWhen = "now" | "today";
-
-/* Duty pharmacies for every active province; null when the API is down. */
-export async function getDutyByProvince(when: DutyWhen = "now"): Promise<{ province: Province; items: CompactFacility[] }[] | null> {
+/* Pharmacies whose duty shift is running right now, for every active province; null when the API is down. */
+export async function getDutyByProvince(): Promise<{ province: Province; items: CompactFacility[] }[] | null> {
   const provinces = await getProvinces();
   if (!provinces) return null;
   const pages = await Promise.all(
-    provinces.map((p) =>
-      getJson<FacilityPage>("facilities/", {
-        provinceId: p.id,
-        dutyNow: when === "now" ? "true" : undefined,
-        dutyToday: when === "today" ? "true" : undefined,
-        limit: "50",
-      }),
-    ),
+    provinces.map((p) => getJson<FacilityPage>("public/facilities/", { provinceId: p.id, dutyNow: "true", limit: "50" })),
   );
   return provinces.map((province, i) => ({ province, items: pages[i]?.items ?? [] }));
+}
+
+export interface DutyShift { facilityId: string; startsAt: string; endsAt: string }
+
+/* One Damascus calendar day of the roster: its pharmacies (by name) and their shifts overlapping it. */
+export interface DutyDay { date: string; items: CompactFacility[]; shifts: DutyShift[] }
+
+export const DUTY_WEEK_DAYS = 7;
+
+/*
+ * The duty roster for today and the six days after it, per active province
+ * (GET public/duty/). "Today" is the API's own Damascus day, so the site never
+ * guesses a date. Today, tomorrow and the week all read this one response, so
+ * the three pages share one cached upstream call per province. A province whose
+ * roster could not be loaded has `days: null`; the whole result is null when the
+ * provinces themselves could not be loaded.
+ */
+export async function getDutyRosterByProvince(): Promise<{ province: Province; days: DutyDay[] | null }[] | null> {
+  const provinces = await getProvinces();
+  if (!provinces) return null;
+  const rosters = await Promise.all(
+    provinces.map((p) =>
+      getJson<{ provinceId: string; days: DutyDay[] }>(
+        "public/duty/",
+        { provinceId: p.id, days: String(DUTY_WEEK_DAYS) },
+        DUTY_REVALIDATE_SECONDS,
+      ),
+    ),
+  );
+  return provinces.map((province, i) => ({ province, days: rosters[i]?.days ?? null }));
 }
 
 /* Search needs at least this many characters (the API rejects shorter terms). */
@@ -169,7 +212,7 @@ export async function searchFacilities(params: {
   limit?: number;
 }): Promise<FacilityPage | null> {
   if (params.q.trim().length < MIN_QUERY_LENGTH) return { items: [], nextCursor: null, hasMore: false };
-  return (await getJson<FacilityPage>("search/", {
+  return (await getJson<FacilityPage>("public/search/", {
     q: params.q.trim(),
     provinceId: params.provinceId,
     categoryId: params.categoryId && isUuid(params.categoryId) ? params.categoryId : undefined,
@@ -187,9 +230,55 @@ export async function getCategoriesFor(provinces: Province[]): Promise<Category[
   return [...seen.values()];
 }
 
-export interface PublishedPage { key: string; titleAr: string; version: number; publishedAt: string | null; bodyAr: string }
+export type ContentKind = "LEGAL" | "FAQ" | "PAGE";
 
-/* A page the team publishes from the console (FAQ, about…); undefined when unpublished. */
-export async function getPublishedPage(key: "FAQ" | "ABOUT" | "INSTRUCTIONS"): Promise<PublishedPage | null | undefined> {
-  return getJson<PublishedPage>(`legal/${key}/`);
+/* A page the team publishes from the console. `bodyAr` is plain text; see lib/content.ts. */
+export interface ContentPage {
+  slug: string;
+  kind: ContentKind;
+  titleAr: string;
+  bodyAr: string;
+  version: number;
+  publishedAt: string | null;
+  updatedAt: string;
+}
+
+/* The API's page slugs: lower-case letters, digits and single hyphens, at most 64 characters. */
+const CONTENT_SLUG = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
+export const isContentSlug = (value: string) => CONTENT_SLUG.test(value);
+
+/* The published version of a page; undefined when unknown or unpublished, null when the API is down. */
+export async function getContentPage(slug: string): Promise<ContentPage | null | undefined> {
+  if (!isContentSlug(slug)) return undefined;
+  return getJson<ContentPage>(`content/pages/${slug}/`);
+}
+
+export interface FaqEntry { id: string; questionAr: string; answerAr: string; sortOrder: number }
+
+/* The published questions and answers, in the team's order; null when the API is down. */
+export async function getFaq(): Promise<FaqEntry[] | null> {
+  return (await getJson<{ items: FaqEntry[] }>("content/faq/"))?.items ?? null;
+}
+
+export type EmergencyKind = "AMBULANCE" | "FIRE" | "POLICE" | "HOSPITAL" | "OTHER";
+
+export interface EmergencyNumber {
+  id: string;
+  /* NATIONAL numbers apply everywhere; PROVINCE ones only to provinceId. */
+  scope: "NATIONAL" | "PROVINCE";
+  provinceId: string | null;
+  labelAr: string;
+  /* What to dial: digits with an optional leading +. */
+  phone: string;
+  kind: EmergencyKind;
+  sortOrder: number;
+}
+
+/* National numbers first, then the given province's; null when the API is down. */
+export async function getEmergencyNumbers(provinceId?: string): Promise<EmergencyNumber[] | null> {
+  return (
+    (await getJson<{ items: EmergencyNumber[] }>("emergency-numbers/", {
+      provinceId: provinceId && isUuid(provinceId) ? provinceId : undefined,
+    }))?.items ?? null
+  );
 }

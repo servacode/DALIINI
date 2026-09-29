@@ -2,23 +2,27 @@ import path from "node:path";
 import type { NextConfig } from "next";
 
 /**
- * The public site renders on the server and makes no browser-side requests to other
- * origins, so `connect-src` and `img-src` stay on 'self'. If a deployment sets
- * PUBLIC_API_ORIGIN (read at build time, because these headers are baked into the build),
- * that single origin is allowed as well — never a blanket `https:`.
+ * The public site renders on the server; the only request a page sends from the browser
+ * to another origin is the contact form's POST to NEXT_PUBLIC_API_ORIGIN. So
+ * `connect-src` and `img-src` stay on 'self' plus the API: the origins of PUBLIC_API_ORIGIN
+ * and NEXT_PUBLIC_API_ORIGIN when a deployment sets them (read at build time, because these
+ * headers are baked into the build) — never a blanket `https:`.
  */
-function apiOrigin(): string {
-  const raw = process.env.PUBLIC_API_ORIGIN;
-  if (!raw) return "";
+function originOf(raw: string | undefined): string {
+  const value = raw?.trim();
+  if (!value || value.includes("ROOT_DOMAIN")) return "";
   try {
-    return new URL(raw).origin;
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.origin : "";
   } catch {
     return "";
   }
 }
 
-const extraOrigin = apiOrigin();
-const withApi = (sources: string) => (extraOrigin ? `${sources} ${extraOrigin}` : sources);
+const apiOrigins = [
+  ...new Set([originOf(process.env.PUBLIC_API_ORIGIN), originOf(process.env.NEXT_PUBLIC_API_ORIGIN)].filter(Boolean)),
+];
+const withApi = (sources: string) => [sources, ...apiOrigins].join(" ");
 
 const contentSecurityPolicy = [
   "default-src 'self'",

@@ -17,6 +17,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
           <nav className="nav header-nav" aria-label="التنقل العام">
             <Link href="/duty">المناوبات</Link>
             <Link href="/search">ابحث</Link>
+            <Link href="/emergency">الطوارئ</Link>
             <Link href="/owners">لأصحاب المنشآت</Link>
             <Link href="/support">الدعم</Link>
           </nav>
@@ -25,9 +26,11 @@ export function SiteShell({ children }: { children: ReactNode }) {
       <main>{children}</main>
       <footer className="shell footer">
         <nav className="nav" aria-label="روابط الموقع">
+          <Link href="/emergency">أرقام الطوارئ</Link>
           <Link href="/how-we-verify">كيف نتحقق</Link>
           <Link href="/faq">الأسئلة الشائعة</Link>
           <Link href="/owners">لأصحاب المنشآت</Link>
+          <Link href="/contact">تواصل معنا</Link>
           <Link href="/privacy">الخصوصية</Link>
           <Link href="/terms">الشروط</Link>
           <Link href="/support">الدعم</Link>

@@ -1,14 +1,15 @@
 import Link from "next/link";
-import { Empty, JsonLd } from "../../components/ui";
-import { getPublishedPage } from "../../lib/api";
+import { ContentBody } from "../../components/content";
+import { Empty, JsonLd, Unavailable } from "../../components/ui";
+import { getFaq } from "../../lib/api";
+import { parseContent } from "../../lib/content";
 import { pageMetadata } from "../../lib/seo";
 
 /*
- * /faq — the FAQ page the team publishes from the console (public/legal/FAQ/),
- * the same text the app shows. The body is plain text: blank lines separate
- * blocks, and a block whose first line ends in «؟» is a question followed by
- * its answer. Until it is published (or while the API is unreachable) the page
- * says «قريباً».
+ * /faq — the questions and answers the team publishes from the console
+ * (content/faq/), in their order. Each answer opens in place with
+ * <details>/<summary>, so the page ships no script. Until one is published the
+ * page says «قريباً».
  */
 export const revalidate = 300;
 
@@ -18,64 +19,50 @@ export const metadata = pageMetadata({
   path: "/faq",
 });
 
-/* The published text opens with its own title line; the page heading already says it. */
-const REPEATS_TITLE = /^(ال)?أسئلة (ال)?شائعة[.:]?$/;
-
-type Question = { kind: "qa"; q: string; a: string[] };
-type Text = { kind: "text"; lines: string[] };
-type Block = Question | Text;
-
-function parse(body: string): Block[] {
-  return body
-    .replace(/\r\n/g, "\n")
-    .split(/\n\s*\n/)
-    .map((chunk) => chunk.split("\n").map((l) => l.trim()).filter(Boolean))
-    .filter((lines) => lines.length > 0)
-    .map((lines): Block =>
-      lines[0].endsWith("؟") || lines[0].endsWith("?") ? { kind: "qa", q: lines[0], a: lines.slice(1) } : { kind: "text", lines },
-    );
-}
+/* An answer as one line of plain text, for the structured data. */
+const plain = (answer: string) =>
+  parseContent(answer)
+    .map((b) => (b.type === "heading" ? b.text : b.type === "paragraph" ? b.lines.join(" ") : b.items.join("، ")))
+    .join(" ");
 
 export default async function FaqPage() {
-  const page = await getPublishedPage("FAQ");
-  const blocks = page ? parse(page.bodyAr) : [];
-  const questions = blocks.filter((b): b is Question => b.kind === "qa");
-  const texts = blocks.filter((b): b is Text => b.kind === "text" && !REPEATS_TITLE.test(b.lines.join(" ")));
+  const items = await getFaq();
 
   return (
     <div className="shell page">
       <h1>الأسئلة الشائعة</h1>
-      {questions.length + texts.length === 0 ? (
-        <Empty>قريباً. حتى ذلك الحين، <Link href="/support">راسل الدعم</Link> بسؤالك.</Empty>
+      {items === null ? (
+        <div className="more"><Unavailable /></div>
+      ) : items.length === 0 ? (
+        <div className="more">
+          <Empty>قريباً. حتى ذلك الحين، <Link href="/contact">اسألنا من نموذج التواصل</Link>.</Empty>
+        </div>
       ) : (
         <>
-          {questions.length > 0 ? (
-            <JsonLd
-              data={{
-                "@context": "https://schema.org",
-                "@type": "FAQPage",
-                mainEntity: questions.map((b) => ({
-                  "@type": "Question",
-                  name: b.q,
-                  acceptedAnswer: { "@type": "Answer", text: b.a.join(" ") },
-                })),
-              }}
-            />
-          ) : null}
-          {texts.map((b, i) => b.lines.map((l) => <p key={`${i}-${l}`}>{l}</p>))}
-          <div className="faq">
-            {questions.map((b) => (
-              <details key={b.q} className="card">
-                <summary>{b.q}</summary>
-                {b.a.map((line) => <p key={line}>{line}</p>)}
+          <JsonLd
+            data={{
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: items.map((item) => ({
+                "@type": "Question",
+                name: item.questionAr,
+                acceptedAnswer: { "@type": "Answer", text: plain(item.answerAr) },
+              })),
+            }}
+          />
+          <div className="faq more">
+            {items.map((item) => (
+              <details key={item.id} className="card">
+                <summary>{item.questionAr}</summary>
+                <ContentBody body={item.answerAr} />
               </details>
             ))}
           </div>
-          <p className="more">
-            لم تجد إجابتك؟ <Link href="/support">راسل الدعم</Link>. صاحب منشأة؟ <Link href="/owners">دليل أصحاب المنشآت</Link>.
-          </p>
         </>
       )}
+      <p className="more">
+        لم تجد إجابتك؟ <Link href="/contact">راسلنا</Link>. صاحب منشأة؟ <Link href="/owners">دليل أصحاب المنشآت</Link>.
+      </p>
     </div>
   );
 }

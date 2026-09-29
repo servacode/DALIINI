@@ -126,10 +126,23 @@ async function crumbs(f: FacilityDetail) {
     : [{ label: f.category.nameAr }, { label: f.nameAr }];
 }
 
-/* «تم التحقق قبل ٣ أيام · آخر تحديث أمس · كيف نتحقق؟» */
+/*
+ * «تم التحقق قبل ٣ أيام · آخر تأكيد للمعلومات أمس · كيف نتحقق؟»
+ *
+ * «تم التحقق» is when staff last approved the details (lastVerifiedAt).
+ * «آخر تأكيد للمعلومات» is infoConfirmedAt, the later of that approval and the
+ * owner's own confirmation that the hours are still right; it is shown when it
+ * says something the first does not. «آخر تحديث» stands in only when neither
+ * date exists.
+ */
 function TrustLine({ f }: { f: FacilityDetail }) {
   const verified = spokenDate(f.lastVerifiedAt);
-  const updated = spokenDate(f.updatedAt);
+  const confirmedAt = spokenDate(f.infoConfirmedAt);
+  const confirmed =
+    confirmedAt && (!verified || (Date.parse(confirmedAt.iso) > Date.parse(verified.iso) && confirmedAt.text !== verified.text))
+      ? confirmedAt
+      : null;
+  const updated = !verified && !confirmed ? spokenDate(f.updatedAt) : null;
   return (
     <p className="trust">
       {verified ? (
@@ -138,10 +151,16 @@ function TrustLine({ f }: { f: FacilityDetail }) {
           <span>تم التحقق <time dateTime={verified.iso} title={verified.full}>{verified.text}</time></span>
         </span>
       ) : null}
+      {confirmed ? (
+        <span className="with-icon">
+          <Icon name="refresh" size={16} />
+          <span>آخر تأكيد للمعلومات <time dateTime={confirmed.iso} title={confirmed.full}>{confirmed.text}</time></span>
+        </span>
+      ) : null}
       {updated ? (
         <span>آخر تحديث <time dateTime={updated.iso} title={updated.full}>{updated.text}</time></span>
       ) : null}
-      <Link href="/how-we-verify">كيف نتحقق؟</Link>
+      <Link href="/how-we-verify#last-verified">كيف نتحقق؟</Link>
     </p>
   );
 }
@@ -213,9 +232,14 @@ export default async function FacilityPage({ params }: Props) {
         <h2 id="report-title" className="with-icon"><Icon name="flag" size={20} />وجدت معلومة خاطئة؟</h2>
         <div className="card note">
           <p>
-            افتح هذه المنشأة في تطبيق دليني واضغط «الإبلاغ عن مشكلة»، وسيراجع فريقنا البلاغ. لا تملك التطبيق؟{" "}
-            <Link href="/support">راسل الدعم</Link> واذكر رابط هذه الصفحة.
+            أرسل لنا التصحيح وسيراجعه فريقنا، أو افتح هذه المنشأة في تطبيق دليني واضغط «الإبلاغ عن مشكلة».
           </p>
+        </div>
+        <div className="actions more">
+          <Link className="button button-alt" href={`/contact?kind=correction&facility=${f.id}`}>
+            <Icon name="edit" />
+            تصحيح معلومة
+          </Link>
         </div>
       </section>
     </article>

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getCategories, getFacilities, getProvinces } from "../lib/api";
+import { getCategories, getContentPage, getFacilities, getProvinces } from "../lib/api";
 import { absoluteUrl } from "../lib/config";
 
 /*
@@ -16,13 +16,24 @@ export const revalidate = 3600;
 const MAX_FACILITIES = 10000;
 const PAGE_SIZE = 100;
 
+/*
+ * The console's built-in pages served at /p/<slug>. Pages the team adds under
+ * other slugs cannot be listed through the public API, so they are not here.
+ */
+const CONTENT_PAGES = ["about", "instructions"];
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [
     { url: absoluteUrl("/"), changeFrequency: "daily", priority: 1 },
     { url: absoluteUrl("/duty"), changeFrequency: "hourly", priority: 0.9 },
-    { url: absoluteUrl("/duty/today"), changeFrequency: "hourly", priority: 0.8 },
+    ...["/duty/today", "/duty/tomorrow", "/duty/week"].map((path) => ({
+      url: absoluteUrl(path),
+      changeFrequency: "hourly" as const,
+      priority: 0.8,
+    })),
+    { url: absoluteUrl("/emergency"), changeFrequency: "weekly", priority: 0.7 },
     { url: absoluteUrl("/search"), changeFrequency: "monthly", priority: 0.5 },
-    ...["/owners", "/how-we-verify", "/faq"].map((path) => ({
+    ...["/owners", "/how-we-verify", "/faq", "/contact"].map((path) => ({
       url: absoluteUrl(path),
       changeFrequency: "monthly" as const,
       priority: 0.5,
@@ -33,6 +44,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.3,
     })),
   ];
+
+  const pages = await Promise.all(CONTENT_PAGES.map((slug) => getContentPage(slug)));
+  for (const page of pages) {
+    if (page?.kind === "PAGE") entries.push({ url: absoluteUrl(`/p/${page.slug}`), changeFrequency: "monthly", priority: 0.4 });
+  }
 
   const provinces = (await getProvinces()) ?? [];
   const seen = new Set<string>();
