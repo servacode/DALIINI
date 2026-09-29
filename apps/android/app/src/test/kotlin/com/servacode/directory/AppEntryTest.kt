@@ -32,7 +32,10 @@ class AppEntryTest {
         val gap = entry(
             null,
             null,
-            mapOf("com.servacode.directory.notice.TYPE" to "duty.gap_nudge", "com.servacode.directory.notice.DATE" to "2026-09-30"),
+            mapOf(
+                "com.servacode.directory.notice.TYPE" to "duty.gap_nudge",
+                "com.servacode.directory.notice.DATE" to "2026-09-30",
+            ),
         ) as AppEntry.Notice
         // No facility comes with a nudge today: the owner picks one from their list.
         assertEquals(NotificationTarget.DutyScheduling(null, "2026-09-30"), gap.target)

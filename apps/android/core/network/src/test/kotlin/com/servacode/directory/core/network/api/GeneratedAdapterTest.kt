@@ -88,7 +88,10 @@ class GeneratedAdapterTest {
 
         val provinces = publicApi.provinces()
 
-        assertEquals(listOf(Province(PROVINCE, "الرقة", "Raqqa", GeoPoint(35.9528, 39.0085), code = "raqqa")), provinces)
+        assertEquals(
+            listOf(Province(PROVINCE, "الرقة", "Raqqa", GeoPoint(35.9528, 39.0085), code = "raqqa")),
+            provinces,
+        )
         val request = taken()
         assertEquals("/api/v1/public/provinces/", request.url.encodedPath)
     }
@@ -645,7 +648,8 @@ class GeneratedAdapterTest {
          "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,
          "serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true},"nameEn":null,"descriptionAr":null,
          "descriptionEn":null,
-         "phone":"+963900000001","whatsapp":"+963933000000","addressAr":null,"addressEn":null,"cityId":null,"neighborhoodId":null,
+         "phone":"+963900000001","whatsapp":"+963933000000","addressAr":null,"addressEn":null,
+         "cityId":null,"neighborhoodId":null,
          "location":null,"specialtyIds":[3],"serviceTagIds":[12],"evidence":[],"hours":[],"application":null}
     """
 }

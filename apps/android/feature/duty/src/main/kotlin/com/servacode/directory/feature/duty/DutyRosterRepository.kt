@@ -23,7 +23,10 @@ class DutyRosterRepository @Inject constructor(
     private val preferences: DirectoryPreferencesStore,
 ) {
     /** Null when no province has been chosen yet: there is no roster to show. */
-    suspend fun load(range: RosterRange, today: java.time.LocalDate = DamascusTime.now().toLocalDate()): Result<List<DutyDay>>? {
+    suspend fun load(
+        range: RosterRange,
+        today: java.time.LocalDate = DamascusTime.now().toLocalDate(),
+    ): Result<List<DutyDay>>? {
         val provinceId = preferences.values.first().selectedProvinceId ?: return null
         val from = today.plusDays(range.offsetDays).toString()
         return runCatching { api.dutyRoster(provinceId, from, range.days) }

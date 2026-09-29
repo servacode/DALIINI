@@ -359,7 +359,9 @@ internal fun WireEmergencyNumber.toDomain() = EmergencyNumber(
 internal fun PublicDutyDay.toDomain() = DutyDay(
     date = date.toString(),
     facilities = items.map { it.toDomain() },
-    shifts = shifts.map { DutyWindow(it.facilityId.toString(), it.startsAt.toEpochMillis(), it.endsAt.toEpochMillis()) },
+    shifts = shifts.map {
+        DutyWindow(it.facilityId.toString(), it.startsAt.toEpochMillis(), it.endsAt.toEpochMillis())
+    },
 )
 
 internal fun PublicAdvertisement.toDomain() = HomeAd(

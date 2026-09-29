@@ -68,8 +68,12 @@ object AppEntries {
      * this activity. Each path is its own intent, so two rows never share one tap.
      */
     fun link(context: Context, path: String): Intent =
-        Intent(Intent.ACTION_VIEW, "https://${BuildConfig.APP_LINK_HOST}$path".toUri(), context, MainActivity::class.java)
-            .addFlags(FORWARD)
+        Intent(
+            Intent.ACTION_VIEW,
+            "https://${BuildConfig.APP_LINK_HOST}$path".toUri(),
+            context,
+            MainActivity::class.java,
+        ).addFlags(FORWARD)
 
     private const val FORWARD =
         Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP

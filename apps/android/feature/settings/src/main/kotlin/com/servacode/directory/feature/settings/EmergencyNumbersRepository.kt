@@ -12,6 +12,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
+/**
+ * The names of the few lines the app carries itself, read from this module's resources: words
+ * the reader sees live in resources, never in code.
+ */
+data class BuiltInEmergencyLabels(val ambulance: String, val police: String, val fire: String)
+
 /** What the emergency screen has to show, in the order it can show it. */
 sealed interface EmergencyLoad {
     /** From the device, while the platform is being asked. */
@@ -40,6 +46,7 @@ class EmergencyNumbersRepository @Inject constructor(
     private val api: PublicApiBoundary,
     private val cache: EmergencyNumbersCache,
     private val preferences: DirectoryPreferencesStore,
+    private val labels: BuiltInEmergencyLabels,
 ) {
     fun load(): Flow<EmergencyLoad> = flow {
         val provinceId = runCatching { preferences.values.first().selectedProvinceId }.getOrNull()
@@ -50,17 +57,21 @@ class EmergencyNumbersRepository @Inject constructor(
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: Exception) {
-            emit(if (cached.isNotEmpty()) EmergencyLoad.Stale(group(cached)) else EmergencyLoad.BuiltIn(BUILT_IN))
+            emit(fallback(cached))
             return@flow
         }
         if (fresh.isEmpty()) {
             // An empty answer is not a reason to forget what was known.
-            emit(if (cached.isNotEmpty()) EmergencyLoad.Stale(group(cached)) else EmergencyLoad.BuiltIn(BUILT_IN))
+            emit(fallback(cached))
             return@flow
         }
         runCatching { cache.write(provinceId, fresh) }
         emit(EmergencyLoad.Fresh(group(fresh)))
     }
+
+    /** The device's copy when there is one; only a device that never had the list gets the built-ins. */
+    private fun fallback(cached: List<EmergencyNumber>): EmergencyLoad =
+        if (cached.isNotEmpty()) EmergencyLoad.Stale(group(cached)) else EmergencyLoad.BuiltIn(builtIn(labels))
 
     companion object {
         fun group(values: List<EmergencyNumber>) = EmergencyNumbers(
@@ -69,11 +80,11 @@ class EmergencyNumbersRepository @Inject constructor(
         )
 
         /** Syria's three national lines, for a device that has never had the platform's list. */
-        val BUILT_IN = EmergencyNumbers(
+        fun builtIn(labels: BuiltInEmergencyLabels) = EmergencyNumbers(
             national = listOf(
-                EmergencyNumber("الإسعاف", "110", EmergencyScope.NATIONAL),
-                EmergencyNumber("الشرطة", "112", EmergencyScope.NATIONAL),
-                EmergencyNumber("الإطفاء", "113", EmergencyScope.NATIONAL),
+                EmergencyNumber(labels.ambulance, "110", EmergencyScope.NATIONAL),
+                EmergencyNumber(labels.police, "112", EmergencyScope.NATIONAL),
+                EmergencyNumber(labels.fire, "113", EmergencyScope.NATIONAL),
             ),
             province = emptyList(),
             builtIn = true,

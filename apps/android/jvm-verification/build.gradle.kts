@@ -38,6 +38,8 @@ val androidOnly = listOf(
     "**/*ViewModel.kt",
     "**/*ViewModels.kt",
     "**/feature/bootstrap/BootstrapModule.kt",
+    // Reads the built-in emergency lines' names from the settings module's strings.xml.
+    "**/feature/settings/EmergencyLabelsModule.kt",
     "**/feature/navigation/NavigationMap.kt",
     "**/feature/navigation/NavigationWords.kt",
     // A table of R ids for the voice pack: Android resources, not Kotlin.

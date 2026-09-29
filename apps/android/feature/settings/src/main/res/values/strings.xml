@@ -9,7 +9,8 @@
     <string name="settings_notify_applications">حالة طلباتي</string>
     <string name="settings_notify_applications_body">لأصحاب المنشآت: قبول الطلب أو الحاجة إلى تعديله</string>
     <!-- The choices are not sent anywhere: the platform has no endpoint for them yet. -->
-    <string name="settings_notify_local">تُحفظ هذه الاختيارات على هذا الجهاز فقط، وتبقى الرسائل كلها في صندوق الإشعارات.</string>
+    <string name="settings_notify_local">تُحفظ هذه الاختيارات على هذا الجهاز فقط،
+        وتبقى الرسائل كلها في صندوق الإشعارات.</string>
     <string name="settings_data">البيانات</string>
     <string name="settings_data_saver">توفير البيانات</string>
     <string name="settings_data_saver_body">دون صور مصغّرة في القوائم أو إعلانات، وصور المعرض عند عرضها فقط</string>
@@ -19,6 +20,10 @@
     <string name="emergency_national">أرقام وطنية</string>
     <string name="emergency_province">أرقام المحافظة</string>
     <string name="emergency_verify">تحقق من الأرقام مع الجهات الرسمية</string>
+    <!-- The three national lines the app carries for a device that never had the platform's list. -->
+    <string name="emergency_builtin_ambulance">الإسعاف</string>
+    <string name="emergency_builtin_police">الشرطة</string>
+    <string name="emergency_builtin_fire">الإطفاء</string>
     <!-- %1$s is the service's name. -->
     <string name="emergency_call">الاتصال بـ%1$s</string>
     <string name="settings_theme_system">تلقائي</string>

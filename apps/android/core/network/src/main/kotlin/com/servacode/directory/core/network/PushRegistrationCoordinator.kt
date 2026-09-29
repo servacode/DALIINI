@@ -45,8 +45,9 @@ class PushRegistrationCoordinator @Inject constructor(
  * `notificationId` and `type`, as the backend sends today. For a duty-gap nudge
  * (`duty.gap_nudge`) the day and the place it is about are also accepted if the push carries them
  * — `gapDate` or `date` ("YYYY-MM-DD"), `provinceId`, `facilityId` — so the notice can open the
- * roster on that day; without them it opens the owner's facilities. Any other key (a title, a body, a phone number) makes the whole payload
- * refused: the rule that content arrives over REST, not in the push, holds for new types too.
+ * roster on that day; without them it opens the owner's facilities. Any other key (a title, a body,
+ * a phone number) makes the whole payload refused: the rule that content arrives over REST, not in
+ * the push, holds for new types too.
  * Parsing is tolerant within that: a malformed date or id is dropped, not the push.
  */
 data class PushMessageData(
@@ -77,7 +78,9 @@ data class PushMessageData(
             return PushMessageData(
                 notificationId = notificationId,
                 type = type,
-                date = (data["gapDate"] ?: data["date"])?.trim()?.take(10)?.let { runCatching { java.time.LocalDate.parse(it) }.getOrNull() },
+                date = (data["gapDate"] ?: data["date"])?.trim()?.take(10)?.let {
+                    runCatching { java.time.LocalDate.parse(it) }.getOrNull()
+                },
                 provinceId = data["provinceId"]?.trim()?.takeIf { IDENTIFIER.matches(it) },
                 facilityId = data["facilityId"]?.trim()?.takeIf { IDENTIFIER.matches(it) },
             )

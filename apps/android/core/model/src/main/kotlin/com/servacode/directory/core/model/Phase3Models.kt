@@ -121,7 +121,8 @@ sealed interface NotificationTarget {
             facilityId: String?,
             date: String? = null,
         ): NotificationTarget = when (type.trim().lowercase()) {
-            NotificationTypes.DUTY_GAP_NUDGE, "duty_gap" -> DutyScheduling(facilityId, DutyPresets.parseDate(date)?.toString())
+            NotificationTypes.DUTY_GAP_NUDGE, "duty_gap" ->
+                DutyScheduling(facilityId, DutyPresets.parseDate(date)?.toString())
             NotificationTypes.DUTY_SHIFT_ADMIN_CHANGED -> DutyScheduling(facilityId, null)
             NotificationTypes.HOURS_CONFIRM_REQUEST -> HoursConfirmation(facilityId)
             else -> when (destination) {

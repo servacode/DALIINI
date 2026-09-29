@@ -14,7 +14,7 @@ class EmergencyNumbersViewModelTest {
     @get:Rule val main = MainDispatcherRule()
 
     private val repository =
-        EmergencyNumbersRepository(ScriptedPublicApi(), FakeEmergencyNumbersCache(), FakePreferences("raqqa"))
+        EmergencyNumbersRepository(ScriptedPublicApi(), FakeEmergencyNumbersCache(), FakePreferences("raqqa"), LABELS)
 
     @Test fun `the screen shows the built-in list with its warning`() = runTest(main.dispatcher) {
         val model = EmergencyNumbersViewModel(repository)

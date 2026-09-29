@@ -147,7 +147,11 @@ class MaintenanceTest {
 
     @Test fun `a zero retry hint is no hint`() {
         val active = GeneratedMaintenanceProbe.active(
-            com.servacode.directory.api.models.PlatformStatus(maintenance = true, messageAr = " ", retryAfterSeconds = 0),
+            com.servacode.directory.api.models.PlatformStatus(
+                maintenance = true,
+                messageAr = " ",
+                retryAfterSeconds = 0,
+            ),
         )!!
         assertNull(active.message)
         assertNull(active.retryAfterSeconds)

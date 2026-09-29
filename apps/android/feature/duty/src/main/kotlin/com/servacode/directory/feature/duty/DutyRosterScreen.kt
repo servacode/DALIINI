@@ -70,7 +70,9 @@ fun DutyRosterScreen(
                 }
             }
             when (val value = state) {
-                DutyRosterUiState.Loading -> item(key = "loading") { DirectoryLoading(Modifier.padding(top = Space.xxl)) }
+                DutyRosterUiState.Loading -> item(key = "loading") {
+                    DirectoryLoading(Modifier.padding(top = Space.xxl))
+                }
                 DutyRosterUiState.ProvinceRequired -> item(key = "province") {
                     DirectoryEmptyState(
                         title = RosterCopy.PROVINCE,

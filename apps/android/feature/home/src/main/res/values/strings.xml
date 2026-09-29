@@ -10,7 +10,8 @@
     <string name="home_emergency">أرقام الطوارئ</string>
     <string name="home_recent">شوهدت مؤخراً</string>
     <string name="home_data_saver_title">توفير البيانات؟</string>
-    <string name="home_data_saver_body">أنت على اتصال بالباقة. يمكن للتطبيق أن يتجنب تحميل الصور غير الضرورية والإعلانات.</string>
+    <string name="home_data_saver_body">أنت على اتصال بالباقة.
+        يمكن للتطبيق أن يتجنب تحميل الصور غير الضرورية والإعلانات.</string>
     <string name="home_data_saver_accept">تفعيل توفير البيانات</string>
     <string name="home_data_saver_dismiss">ليس الآن</string>
     <string name="home_notifications_unread">الإشعارات، %1$d غير مقروءة</string>

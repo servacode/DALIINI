@@ -8,4 +8,6 @@ import com.servacode.directory.core.model.AppException
  * feature is simply not offered, rather than shown as broken.
  */
 fun Throwable.isMissingEndpoint(): Boolean =
-    (this as? AppException)?.error?.let { it.kind == AppError.Kind.NOT_FOUND || it.status == 404 || it.status == 405 } == true
+    (this as? AppException)?.error?.let {
+        it.kind == AppError.Kind.NOT_FOUND || it.status == 404 || it.status == 405
+    } == true

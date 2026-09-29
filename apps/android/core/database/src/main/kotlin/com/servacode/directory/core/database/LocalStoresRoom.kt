@@ -60,7 +60,10 @@ interface LocalStoresDao {
         trimRecentlyViewed(limit)
     }
 
-    @Query("SELECT * FROM emergency_number_cache WHERE cacheKey IN (:keys) ORDER BY cacheKey = 'national' DESC, position ASC")
+    @Query(
+        "SELECT * FROM emergency_number_cache WHERE cacheKey IN (:keys) " +
+            "ORDER BY cacheKey = 'national' DESC, position ASC",
+    )
     suspend fun emergencyNumbers(keys: List<String>): List<EmergencyNumberEntity>
 
     @Query("DELETE FROM emergency_number_cache WHERE cacheKey = :key")
@@ -110,7 +113,9 @@ class RoomEmergencyNumbersCache @Inject constructor(
         val rows = values.groupBy { if (it.scope == EmergencyScope.NATIONAL) NATIONAL else provinceId ?: NATIONAL }
             .flatMap { (key, group) ->
                 group.mapIndexed { index, value ->
-                    EmergencyNumberEntity(key, index, value.nameAr, value.number, value.scope.name, value.provinceId, now)
+                    EmergencyNumberEntity(
+                        key, index, value.nameAr, value.number, value.scope.name, value.provinceId, now,
+                    )
                 }
             }
         dao.replaceEmergencyNumbers(listOfNotNull(NATIONAL, provinceId), rows)

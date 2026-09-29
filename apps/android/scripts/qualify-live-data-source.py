@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -109,7 +110,12 @@ def check_push_boundary() -> None:
     )
     require("POST_NOTIFICATIONS" in manifest, "notification permission declaration missing")
     require("registerAndroidToken" in push and "deactivateAndroidToken" in push, "push token lifecycle missing")
-    require('setOf("notificationId", "type")' in push, "identifier-only push payload policy missing")
+    # A push carries identifiers only: its own id and type, and the ids and day a tap needs to
+    # open the right screen. Never words: the app reads those from the inbox over REST.
+    allowed = re.search(r"val ALLOWED = setOf\(([^)]*)\)", push)
+    keys = set(re.findall(r'"([A-Za-z]+)"', allowed.group(1))) if allowed else set()
+    identifiers = {"notificationId", "type", "date", "gapDate", "provinceId", "facilityId"}
+    require({"notificationId", "type"} <= keys <= identifiers, "identifier-only push payload policy missing")
     # P10 shipped: the boundary is implemented over the generated client, and a failure travels
     # as the app's own error rather than as a placeholder for a client that does not exist.
     adapter = read(

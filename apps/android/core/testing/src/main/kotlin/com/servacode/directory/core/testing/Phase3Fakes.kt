@@ -13,8 +13,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 /** The backend of a deployment that has not added an endpoint yet. */
 val missingEndpoint = AppException(AppError(AppError.Kind.NOT_FOUND, code = "NOT_FOUND", status = 404))
 
-fun emergency(name: String, number: String, scope: EmergencyScope = EmergencyScope.NATIONAL, provinceId: String? = null) =
-    EmergencyNumber(name, number, scope, provinceId)
+fun emergency(
+    name: String,
+    number: String,
+    scope: EmergencyScope = EmergencyScope.NATIONAL,
+    provinceId: String? = null,
+) = EmergencyNumber(name, number, scope, provinceId)
 
 /** The Room cache, in memory, with its semantics: national rows shared, province rows per id. */
 class FakeEmergencyNumbersCache : EmergencyNumbersCache {

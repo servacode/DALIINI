@@ -15,7 +15,7 @@ import org.junit.Test
 class EmergencyNumbersRepositoryTest {
     private val api = ScriptedPublicApi()
     private val cache = FakeEmergencyNumbersCache()
-    private val repository = EmergencyNumbersRepository(api, cache, FakePreferences("raqqa"))
+    private val repository = EmergencyNumbersRepository(api, cache, FakePreferences("raqqa"), LABELS)
 
     private val ambulance = emergency("الإسعاف", "110")
     private val hospital = emergency("مستشفى الرقة", "022123456", EmergencyScope.PROVINCE, "raqqa")

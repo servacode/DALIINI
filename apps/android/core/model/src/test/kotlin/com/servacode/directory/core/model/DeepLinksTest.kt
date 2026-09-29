@@ -12,14 +12,20 @@ class DeepLinksTest {
     @Test fun `a facility link opens its page`() {
         assertEquals(DeepLinkTarget.Facility(id), DeepLinks.parse("https://daliini.example/f/$id", hosts))
         assertEquals(DeepLinkTarget.Facility(id), DeepLinks.parse("https://www.daliini.example/f/$id/", hosts))
-        assertEquals(DeepLinkTarget.Facility(id), DeepLinks.parse("https://DALIINI.example/f/${id.uppercase()}?utm=x", hosts))
+        assertEquals(
+            DeepLinkTarget.Facility(id),
+            DeepLinks.parse("https://DALIINI.example/f/${id.uppercase()}?utm=x", hosts),
+        )
     }
 
     @Test fun `duty and a province code are their own places`() {
         assertEquals(DeepLinkTarget.DutyNow, DeepLinks.parse("https://daliini.example/duty", hosts))
         assertEquals(DeepLinkTarget.DutyNow, DeepLinks.parse("https://daliini.example/duty/today", hosts))
         assertEquals(DeepLinkTarget.Province("raqqa"), DeepLinks.parse("https://daliini.example/Raqqa", hosts))
-        assertEquals(DeepLinkTarget.Province("deir-ez-zor"), DeepLinks.parse("https://daliini.example/deir-ez-zor/", hosts))
+        assertEquals(
+            DeepLinkTarget.Province("deir-ez-zor"),
+            DeepLinks.parse("https://daliini.example/deir-ez-zor/", hosts),
+        )
     }
 
     @Test fun `anything else opens nothing in particular`() {
