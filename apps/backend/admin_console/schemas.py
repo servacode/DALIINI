@@ -24,7 +24,7 @@ from .quality import QUALITY_ISSUE_CHOICES
 from .review import DUPLICATE_REASON_CHOICES
 
 
-class AdminUserSerializer(serializers.Serializer):
+class AdminUserSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     name = serializers.CharField()
     phone = serializers.CharField()
@@ -38,11 +38,11 @@ class AdminUserDetailSerializer(AdminUserSerializer):
     roleIds = serializers.ListField(child=serializers.UUIDField())
 
 
-class AdminUserListSerializer(serializers.Serializer):
+class AdminUserListSerializer(serializers.Serializer[Any]):
     items = AdminUserSerializer(many=True)
 
 
-class AdminFacilitySerializer(serializers.Serializer):
+class AdminFacilitySerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     nameAr = serializers.CharField()
     nameEn = serializers.CharField(allow_null=True)
@@ -75,11 +75,11 @@ class AdminFacilityQualitySerializer(AdminFacilitySerializer):
     )
 
 
-class AdminFacilityListSerializer(serializers.Serializer):
+class AdminFacilityListSerializer(serializers.Serializer[Any]):
     items = AdminFacilityQualitySerializer(many=True)
 
 
-class AdminApplicationSerializer(serializers.Serializer):
+class AdminApplicationSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     facilityId = serializers.UUIDField()
     facilityNameAr = serializers.CharField()
@@ -96,11 +96,11 @@ class AdminApplicationSerializer(serializers.Serializer):
     ownerPhone = serializers.CharField(allow_null=True)
 
 
-class AdminApplicationListSerializer(serializers.Serializer):
+class AdminApplicationListSerializer(serializers.Serializer[Any]):
     items = AdminApplicationSerializer(many=True)
 
 
-class AdminEvidenceRefSerializer(serializers.Serializer):
+class AdminEvidenceRefSerializer(serializers.Serializer[Any]):
     """Reviewer-facing evidence reference. The object key and any URL are withheld."""
 
     id = serializers.UUIDField()
@@ -108,7 +108,7 @@ class AdminEvidenceRefSerializer(serializers.Serializer):
     labelAr = serializers.CharField()
 
 
-class AdminAuditTrailEntrySerializer(serializers.Serializer):
+class AdminAuditTrailEntrySerializer(serializers.Serializer[Any]):
     action = serializers.CharField()
     requestId = serializers.CharField(source="request_id", allow_blank=True)
     createdAt = serializers.DateTimeField(source="created_at")
@@ -150,7 +150,7 @@ class AdminApplicationDetailSerializer(AdminApplicationSerializer):
     audit = AdminAuditTrailEntrySerializer(many=True)
 
 
-class AdminDecisionRequestSerializer(serializers.Serializer):
+class AdminDecisionRequestSerializer(serializers.Serializer[Any]):
     reason = serializers.CharField(
         required=False,
         allow_blank=True,
@@ -158,19 +158,19 @@ class AdminDecisionRequestSerializer(serializers.Serializer):
     )
 
 
-class AdminFacilityStatusCountSerializer(serializers.Serializer):
+class AdminFacilityStatusCountSerializer(serializers.Serializer[Any]):
     status = serializers.ChoiceField(choices=Facility.Status.choices)
     count = serializers.IntegerField()
 
 
-class AdminRecentActionSerializer(serializers.Serializer):
+class AdminRecentActionSerializer(serializers.Serializer[Any]):
     action = serializers.CharField()
     targetType = serializers.CharField(source="target_type", allow_blank=True)
     targetId = serializers.CharField(source="target_id", allow_blank=True)
     createdAt = serializers.DateTimeField(source="created_at")
 
 
-class AdminDashboardSerializer(serializers.Serializer):
+class AdminDashboardSerializer(serializers.Serializer[Any]):
     dutyActiveNow = serializers.IntegerField(help_text="Facilities on a duty shift right now.")
     newUsers7d = serializers.IntegerField()
     openReports = serializers.IntegerField(help_text="Facility problem reports still OPEN.")
@@ -184,22 +184,22 @@ class AdminDashboardSerializer(serializers.Serializer):
     recentActions = AdminRecentActionSerializer(many=True)
 
 
-class AdminRoleSerializer(serializers.Serializer):
+class AdminRoleSerializer(serializers.Serializer[Any]):
     id = serializers.IntegerField()
     code = serializers.CharField()
     name = serializers.CharField()
     permissions = serializers.ListField(child=serializers.CharField())
 
 
-class AdminRoleListSerializer(serializers.Serializer):
+class AdminRoleListSerializer(serializers.Serializer[Any]):
     items = AdminRoleSerializer(many=True)
 
 
-class AdminUserRolesRequestSerializer(serializers.Serializer):
+class AdminUserRolesRequestSerializer(serializers.Serializer[Any]):
     roleIds = serializers.ListField(child=serializers.UUIDField())
 
 
-class AdminCategoryGroupSerializer(serializers.Serializer):
+class AdminCategoryGroupSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     code = serializers.CharField()
     nameAr = serializers.CharField(source="name_ar")
@@ -209,11 +209,11 @@ class AdminCategoryGroupSerializer(serializers.Serializer):
     sortOrder = serializers.IntegerField(source="sort_order")
 
 
-class AdminCategoryGroupListSerializer(serializers.Serializer):
+class AdminCategoryGroupListSerializer(serializers.Serializer[Any]):
     items = AdminCategoryGroupSerializer(many=True)
 
 
-class AdminCategorySerializer(serializers.Serializer):
+class AdminCategorySerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     groupId = serializers.UUIDField(source="group_id")
     code = serializers.CharField()
@@ -226,11 +226,11 @@ class AdminCategorySerializer(serializers.Serializer):
     sortOrder = serializers.IntegerField(source="sort_order")
 
 
-class AdminCategoryListSerializer(serializers.Serializer):
+class AdminCategoryListSerializer(serializers.Serializer[Any]):
     items = AdminCategorySerializer(many=True)
 
 
-class AdminCapabilitiesRequestSerializer(serializers.Serializer):
+class AdminCapabilitiesRequestSerializer(serializers.Serializer[Any]):
     """Capability flags. Omitting one leaves it as it is.
 
     INT-039: these were the last `supports_*` names on the wire. The column names are
@@ -263,18 +263,18 @@ class AdminCapabilitiesSerializer(AdminCapabilitiesRequestSerializer):
     """The response echoes every capability flag after the update."""
 
 
-class AdminCategoryProvinceRequestSerializer(serializers.Serializer):
+class AdminCategoryProvinceRequestSerializer(serializers.Serializer[Any]):
     provinceId = serializers.UUIDField()
     publicEnabled = serializers.BooleanField(required=False)
     ownerRegistrationEnabled = serializers.BooleanField(required=False)
     sortOrder = serializers.IntegerField(required=False)
 
 
-class AdminIdSerializer(serializers.Serializer):
+class AdminIdSerializer(serializers.Serializer[Any]):
     id = serializers.CharField(help_text="Identifier of the affected row.")
 
 
-class AdminMeSerializer(serializers.Serializer):
+class AdminMeSerializer(serializers.Serializer[Any]):
     """Who the caller is and what they may do, for the Admin shell to render against.
 
     Deliberately minimal. No phone, no session material, no Django groups or
@@ -296,7 +296,7 @@ class AdminMeSerializer(serializers.Serializer):
     )
 
 
-class AdminCategoryGroupRequestSerializer(serializers.Serializer):
+class AdminCategoryGroupRequestSerializer(serializers.Serializer[Any]):
     """Create or update a category group. `code` is set once and never changes."""
 
     code = serializers.CharField(
@@ -310,7 +310,7 @@ class AdminCategoryGroupRequestSerializer(serializers.Serializer):
     sortOrder = serializers.IntegerField(required=False)
 
 
-class AdminCategoryCreateRequestSerializer(serializers.Serializer):
+class AdminCategoryCreateRequestSerializer(serializers.Serializer[Any]):
     groupId = serializers.UUIDField()
     code = serializers.CharField(help_text="Immutable once created.")
     slug = serializers.SlugField(help_text="Immutable once created.")
@@ -324,7 +324,7 @@ class AdminCategoryCreateRequestSerializer(serializers.Serializer):
     sortOrder = serializers.IntegerField(required=False, default=0)
 
 
-class AdminCategoryUpdateRequestSerializer(serializers.Serializer):
+class AdminCategoryUpdateRequestSerializer(serializers.Serializer[Any]):
     """Everything a category may become. `code` and `slug` are absent on purpose.
 
     `06-DATA-MODEL.md` marks both immutable and `09-ADMIN-NEXTJS.md` requires that changing
@@ -342,7 +342,7 @@ class AdminCategoryUpdateRequestSerializer(serializers.Serializer):
     sortOrder = serializers.IntegerField(required=False)
 
 
-class AdminProvinceSerializer(serializers.Serializer):
+class AdminProvinceSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     code = serializers.CharField()
     nameAr = serializers.CharField(source="name_ar")
@@ -351,21 +351,21 @@ class AdminProvinceSerializer(serializers.Serializer):
     sortOrder = serializers.IntegerField(source="sort_order")
 
 
-class AdminProvinceListSerializer(serializers.Serializer):
+class AdminProvinceListSerializer(serializers.Serializer[Any]):
     items = AdminProvinceSerializer(many=True)
 
 
-class AdminProvinceUpdateRequestSerializer(serializers.Serializer):
+class AdminProvinceUpdateRequestSerializer(serializers.Serializer[Any]):
     active = serializers.BooleanField(required=False)
     sortOrder = serializers.IntegerField(required=False)
 
 
-class AdminProvinceUpdatedSerializer(serializers.Serializer):
+class AdminProvinceUpdatedSerializer(serializers.Serializer[Any]):
     active = serializers.BooleanField()
     sortOrder = serializers.IntegerField()
 
 
-class AdminVerificationRequirementSerializer(serializers.Serializer):
+class AdminVerificationRequirementSerializer(serializers.Serializer[Any]):
     # INT-043: this was declared as a UUID while the model's primary key is a BigAutoField.
     # DRF's UUIDField stringifies without validating on output, so the contract claimed
     # `format: uuid` for a field that actually returns "2" and no test could see it.
@@ -373,18 +373,20 @@ class AdminVerificationRequirementSerializer(serializers.Serializer):
     categoryId = serializers.UUIDField(source="category_id")
     labelAr = serializers.CharField(source="label_ar")
     labelEn = serializers.CharField(source="label_en", allow_blank=True)
-    required = serializers.BooleanField()
+    # The stubs see Field.required, but the serializer metaclass collects this declaration
+    # as the wire field "required" and removes it from the class; the name is the contract.
+    required = serializers.BooleanField()  # type: ignore[assignment]
     active = serializers.BooleanField()
     minFiles = serializers.IntegerField(source="min_files")
     maxFiles = serializers.IntegerField(source="max_files")
     sortOrder = serializers.IntegerField(source="sort_order")
 
 
-class AdminVerificationRequirementListSerializer(serializers.Serializer):
+class AdminVerificationRequirementListSerializer(serializers.Serializer[Any]):
     items = AdminVerificationRequirementSerializer(many=True)
 
 
-class AdminVerificationRequirementUpdateRequestSerializer(serializers.Serializer):
+class AdminVerificationRequirementUpdateRequestSerializer(serializers.Serializer[Any]):
     """Edit a requirement in place. The category it belongs to cannot change.
 
     Evidence rows point at a (facility, requirement) pair, so moving a requirement to
@@ -396,27 +398,31 @@ class AdminVerificationRequirementUpdateRequestSerializer(serializers.Serializer
     labelEn = serializers.CharField(required=False, allow_blank=True)
     instructionsAr = serializers.CharField(required=False, allow_blank=True)
     instructionsEn = serializers.CharField(required=False, allow_blank=True)
-    required = serializers.BooleanField(required=False)
+    # The stubs see Field.required, but the serializer metaclass collects this declaration
+    # as the wire field "required" and removes it from the class; the name is the contract.
+    required = serializers.BooleanField(required=False)  # type: ignore[assignment]
     active = serializers.BooleanField(required=False)
     minFiles = serializers.IntegerField(required=False)
     maxFiles = serializers.IntegerField(required=False)
     sortOrder = serializers.IntegerField(required=False)
 
 
-class AdminVerificationRequirementRequestSerializer(serializers.Serializer):
+class AdminVerificationRequirementRequestSerializer(serializers.Serializer[Any]):
     categoryId = serializers.UUIDField()
     labelAr = serializers.CharField()
     labelEn = serializers.CharField(required=False, allow_blank=True)
     instructionsAr = serializers.CharField(required=False, allow_blank=True)
     instructionsEn = serializers.CharField(required=False, allow_blank=True)
-    required = serializers.BooleanField(required=False, default=True)
+    # The stubs see Field.required, but the serializer metaclass collects this declaration
+    # as the wire field "required" and removes it from the class; the name is the contract.
+    required = serializers.BooleanField(required=False, default=True)  # type: ignore[assignment]
     active = serializers.BooleanField(required=False, default=True)
     minFiles = serializers.IntegerField(required=False, default=1)
     maxFiles = serializers.IntegerField(required=False, default=1)
     sortOrder = serializers.IntegerField(required=False, default=0)
 
 
-class AdminAdvertisementSerializer(serializers.Serializer):
+class AdminAdvertisementSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     titleAr = serializers.CharField(source="title_ar", allow_blank=True)
     targetScope = serializers.ChoiceField(
@@ -429,11 +435,11 @@ class AdminAdvertisementSerializer(serializers.Serializer):
     slideDurationMs = serializers.IntegerField(source="slide_duration_ms")
 
 
-class AdminAdvertisementListSerializer(serializers.Serializer):
+class AdminAdvertisementListSerializer(serializers.Serializer[Any]):
     items = AdminAdvertisementSerializer(many=True)
 
 
-class AdminAdvertisementRequestSerializer(serializers.Serializer):
+class AdminAdvertisementRequestSerializer(serializers.Serializer[Any]):
     imageKey = serializers.CharField()
     titleAr = serializers.CharField(required=False, allow_blank=True)
     titleEn = serializers.CharField(required=False, allow_blank=True)
@@ -454,7 +460,7 @@ class AdminAdvertisementRequestSerializer(serializers.Serializer):
     slideDurationMs = serializers.IntegerField(required=False, default=5000)
 
 
-class AdminAdvertisementUpdateRequestSerializer(serializers.Serializer):
+class AdminAdvertisementUpdateRequestSerializer(serializers.Serializer[Any]):
     """Edit an advertisement in place; omitted fields keep their current value.
 
     The field set is fixed by `06-DATA-MODEL.md`. Schedule, targeting and action payload are
@@ -482,7 +488,7 @@ class AdminAdvertisementUpdateRequestSerializer(serializers.Serializer):
     slideDurationMs = serializers.IntegerField(required=False)
 
 
-class AdminAuditEntrySerializer(serializers.Serializer):
+class AdminAuditEntrySerializer(serializers.Serializer[Any]):
     """Snapshots in `metadata` are redacted before they are recorded."""
 
     id = serializers.UUIDField()
@@ -495,11 +501,11 @@ class AdminAuditEntrySerializer(serializers.Serializer):
     createdAt = serializers.DateTimeField(source="created_at")
 
 
-class AdminAuditListSerializer(serializers.Serializer):
+class AdminAuditListSerializer(serializers.Serializer[Any]):
     items = AdminAuditEntrySerializer(many=True)
 
 
-class AdminEventCountSerializer(serializers.Serializer):
+class AdminEventCountSerializer(serializers.Serializer[Any]):
     name = serializers.CharField()
     count = serializers.IntegerField()
 
@@ -522,7 +528,7 @@ class AdminAnalyticsPeriodKpisSerializer(serializers.Serializer[Any]):
         }
 
 
-class AdminAnalyticsSerializer(serializers.Serializer):
+class AdminAnalyticsSerializer(serializers.Serializer[Any]):
     approvalMedianHours = serializers.FloatField(
         allow_null=True, help_text="Median submit-to-approval time in the period."
     )
@@ -547,30 +553,30 @@ class AdminAnalyticsSerializer(serializers.Serializer):
         }
 
 
-class AdminSettingSerializer(serializers.Serializer):
+class AdminSettingSerializer(serializers.Serializer[Any]):
     key = serializers.CharField()
     valueType = serializers.CharField(source="value_type")
     value = serializers.JSONField(allow_null=True)
     updatedAt = serializers.DateTimeField(source="updated_at")
 
 
-class AdminSettingListSerializer(serializers.Serializer):
+class AdminSettingListSerializer(serializers.Serializer[Any]):
     items = AdminSettingSerializer(many=True)
 
 
-class AdminSettingWriteRequestSerializer(serializers.Serializer):
+class AdminSettingWriteRequestSerializer(serializers.Serializer[Any]):
     key = serializers.CharField()
     type = serializers.CharField(required=False)
     value = serializers.JSONField(required=False, allow_null=True)
 
 
-class AdminSettingWrittenSerializer(serializers.Serializer):
+class AdminSettingWrittenSerializer(serializers.Serializer[Any]):
     key = serializers.CharField()
     type = serializers.CharField()
     value = serializers.JSONField(allow_null=True)
 
 
-class AdminSystemStatusSerializer(serializers.Serializer):
+class AdminSystemStatusSerializer(serializers.Serializer[Any]):
     """Configuration presence only. No credential or connection string is exposed."""
 
     apiVersion = serializers.CharField()

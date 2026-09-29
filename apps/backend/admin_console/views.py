@@ -3,6 +3,7 @@ import mimetypes
 from datetime import datetime, timedelta
 from pathlib import PurePosixPath
 from typing import Any
+from uuid import UUID
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -24,6 +25,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.authentication import AuthenticatedRequest
 from accounts.models import AdminRole, User, UserAdminRole
 from accounts.rbac import admin_permissions_for
 from analytics.models import ProductAnalyticsEvent
@@ -381,7 +383,7 @@ class AdminMeView(APIView):
         ),
         responses={200: AdminMeSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         return Response(
             {
                 "userId": str(request.user.pk),
@@ -400,7 +402,7 @@ class DashboardView(AdminView):
         summary="Operational counters for the review desk",
         responses={200: AdminDashboardSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         now = timezone.now()
         return Response(
             {
@@ -447,7 +449,7 @@ class ApplicationListView(AdminView):
         ],
         responses={200: AppList, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         qs = with_application_names(FacilityApplication.objects.all()).order_by("-submitted_at")
         for field, param in (("kind", "kind"), ("status", "status")):
             if value := request.query_params.get(param):
@@ -472,7 +474,7 @@ class ApplicationDetailView(AdminView):
         ),
         responses={200: AppDetail, **protected(), 404: NOT_FOUND_404},
     )
-    def get(self, request, application_id):
+    def get(self, request: AuthenticatedRequest, application_id: UUID) -> Response:
         item = get_object_or_404(
             with_application_names(FacilityApplication.objects.all()), pk=application_id
         )
@@ -521,7 +523,7 @@ class ApplicationDecisionView(AdminView):
         request=AdminDecisionRequestSerializer,
         responses={200: App, 400: VALIDATION_400, **protected(), 404: NOT_FOUND_404},
     )
-    def post(self, request, application_id):
+    def post(self, request: AuthenticatedRequest, application_id: UUID) -> Response:
         try:
             item = decide_application(
                 request=request,
@@ -589,7 +591,7 @@ class EvidenceContentView(AdminView):
             404: NOT_FOUND_404,
         },
     )
-    def get(self, request, evidence_id):
+    def get(self, request: AuthenticatedRequest, evidence_id: UUID) -> FileResponse:
         evidence = get_object_or_404(VerificationEvidence, pk=evidence_id)
         record_audit(
             actor=request.user,
@@ -661,7 +663,7 @@ class FacilityListView(AdminView):
         ],
         responses={200: AdminFacilityListSerializer, 400: VALIDATION_400, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         qs = filtered_facilities(request.query_params)
         return Response(
             {"items": [{**facility_payload(item), **quality_payload(item)} for item in qs[:250]]}
@@ -677,7 +679,7 @@ class FacilityDetailView(AdminView):
         summary="Retrieve one facility",
         responses={200: AdminFacilityQualitySerializer, **protected(), 404: NOT_FOUND_404},
     )
-    def get(self, request, facility_id):
+    def get(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = get_object_or_404(
             with_quality(with_facility_names(Facility.objects.all())), pk=facility_id
         )
@@ -700,7 +702,7 @@ class FacilityTransitionView(AdminView):
             404: NOT_FOUND_404,
         },
     )
-    def post(self, request, facility_id):
+    def post(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         try:
             facility = transition_facility(
                 request=request,
@@ -797,7 +799,7 @@ class UserListView(AdminView):
         ],
         responses={200: AdminUserListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         qs = User.objects.order_by("-created_at")
         if value := request.query_params.get("q"):
             qs = qs.filter(Q(name__icontains=value) | Q(phone__icontains=value))
@@ -826,7 +828,7 @@ class UserDetailView(AdminView):
         summary="Retrieve one user with the roles assigned",
         responses={200: AdminUserDetailSerializer, **protected(), 404: NOT_FOUND_404},
     )
-    def get(self, request, user_id):
+    def get(self, request: AuthenticatedRequest, user_id: UUID) -> Response:
         user = get_object_or_404(User, pk=user_id)
         payload = user_payload(user)
         payload["roleIds"] = [
@@ -848,7 +850,7 @@ class UserBlockView(AdminView):
         request=None,
         responses={200: AdminUserSerializer, **protected(), 404: NOT_FOUND_404},
     )
-    def post(self, request, user_id):
+    def post(self, request: AuthenticatedRequest, user_id: UUID) -> Response:
         user = get_object_or_404(User, pk=user_id)
         updated = set_user_blocked(
             request=request,
@@ -880,7 +882,7 @@ class RoleListView(AdminView):
         summary="List admin roles and their permission codes",
         responses={200: AdminRoleListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         items = AdminRole.objects.prefetch_related("permissions").order_by("name")
         return Response(
             {
@@ -911,7 +913,7 @@ class UserRolesView(AdminView):
         request=AdminUserRolesRequestSerializer,
         responses={204: None, 400: VALIDATION_400, **protected(), 404: NOT_FOUND_404},
     )
-    def put(self, request, user_id):
+    def put(self, request: AuthenticatedRequest, user_id: UUID) -> Response:
         role_ids = request.data.get("roleIds", [])
         if not isinstance(role_ids, list):
             raise ValidationError({"roleIds": "Must be a list."})
@@ -924,7 +926,8 @@ class UserRolesView(AdminView):
 
 class TaxonomyView(AdminView):
     required_permission = "admin.taxonomy.read"
-    model = None
+    # CategoryGroup or Category, set by each subclass.
+    model: Any = None
 
     @extend_schema(
         operation_id="adminTaxonomyList",
@@ -932,7 +935,8 @@ class TaxonomyView(AdminView):
         summary="List taxonomy rows",
         responses={200: AdminCategoryListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
+        serializer: type[AdminCategoryGroupSerializer] | type[AdminCategorySerializer]
         if self.model is CategoryGroup:
             rows = self.model.objects.order_by("sort_order", "name_ar").values(
                 "id", "code", "name_ar", "name_en", "icon_key", "active", "sort_order"
@@ -991,7 +995,7 @@ class CategoryGroupCreateView(AdminView):
         request=AdminCategoryGroupRequestSerializer,
         responses={201: AdminIdSerializer, 400: VALIDATION_400, **protected()},
     )
-    def post(self, request):
+    def post(self, request: AuthenticatedRequest) -> Response:
         payload = AdminCategoryGroupRequestSerializer(data=request.data)
         payload.is_valid(raise_exception=True)
         if not payload.validated_data.get("code") or not payload.validated_data.get("nameAr"):
@@ -1019,7 +1023,7 @@ class CategoryGroupDetailView(AdminView):
             404: NOT_FOUND_404,
         },
     )
-    def put(self, request, group_id):
+    def put(self, request: AuthenticatedRequest, group_id: UUID) -> Response:
         payload = AdminCategoryGroupRequestSerializer(data=request.data, partial=True)
         payload.is_valid(raise_exception=True)
         try:
@@ -1046,7 +1050,7 @@ class CategoryCreateView(AdminView):
         request=AdminCategoryCreateRequestSerializer,
         responses={201: AdminIdSerializer, 400: VALIDATION_400, **protected()},
     )
-    def post(self, request):
+    def post(self, request: AuthenticatedRequest) -> Response:
         payload = AdminCategoryCreateRequestSerializer(data=request.data)
         payload.is_valid(raise_exception=True)
         try:
@@ -1076,7 +1080,7 @@ class CategoryDetailView(AdminView):
             404: NOT_FOUND_404,
         },
     )
-    def put(self, request, category_id):
+    def put(self, request: AuthenticatedRequest, category_id: UUID) -> Response:
         payload = AdminCategoryUpdateRequestSerializer(data=request.data, partial=True)
         payload.is_valid(raise_exception=True)
         data = dict(payload.validated_data)
@@ -1108,7 +1112,7 @@ class CategoryCapabilitiesView(AdminView):
             404: NOT_FOUND_404,
         },
     )
-    def put(self, request, category_id):
+    def put(self, request: AuthenticatedRequest, category_id: UUID) -> Response:
         category = get_object_or_404(Category, pk=category_id)
         capabilities, _ = CategoryCapabilities.objects.get_or_create(category=category)
         payload = AdminCapabilitiesRequestSerializer(data=request.data, partial=True)
@@ -1147,7 +1151,7 @@ class ProvinceListView(AdminView):
         summary="List every province",
         responses={200: AdminProvinceListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         return Response(
             {
                 "items": AdminProvinceSerializer(
@@ -1170,7 +1174,7 @@ class ProvinceDetailView(AdminView):
         request=AdminProvinceUpdateRequestSerializer,
         responses={200: AdminProvinceUpdatedSerializer, **protected(), 404: NOT_FOUND_404},
     )
-    def put(self, request, province_id):
+    def put(self, request: AuthenticatedRequest, province_id: UUID) -> Response:
         province = get_object_or_404(Province, pk=province_id)
         before = {"active": province.active, "sortOrder": province.sort_order}
         if "active" in request.data:
@@ -1200,7 +1204,7 @@ class CategoryProvinceView(AdminView):
         request=AdminCategoryProvinceRequestSerializer,
         responses={200: AdminIdSerializer, 400: VALIDATION_400, **protected(), 404: NOT_FOUND_404},
     )
-    def put(self, request, category_id):
+    def put(self, request: AuthenticatedRequest, category_id: UUID) -> Response:
         province_id = request.data.get("provinceId")
         if not province_id:
             raise ValidationError({"provinceId": "Required."})
@@ -1241,7 +1245,7 @@ class VerificationRequirementListView(AdminView):
         summary="List verification requirements",
         responses={200: AdminVerificationRequirementListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         qs = VerificationRequirement.objects.order_by("category_id", "sort_order")
         return Response(
             {
@@ -1270,7 +1274,7 @@ class VerificationRequirementListView(AdminView):
         request=AdminVerificationRequirementRequestSerializer,
         responses={201: AdminIdSerializer, 400: VALIDATION_400, **protected()},
     )
-    def post(self, request):
+    def post(self, request: AuthenticatedRequest) -> Response:
         self.required_permission = "admin.verification.manage"
         if not HasAdminPermission().has_permission(request, self):
             self.permission_denied(request)
@@ -1305,7 +1309,7 @@ class VerificationRequirementDetailView(AdminView):
             404: NOT_FOUND_404,
         },
     )
-    def put(self, request, requirement_id):
+    def put(self, request: AuthenticatedRequest, requirement_id: int) -> Response:
         payload = AdminVerificationRequirementUpdateRequestSerializer(
             data=request.data, partial=True
         )
@@ -1331,7 +1335,7 @@ class AdvertisementListView(AdminView):
         summary="List advertisements",
         responses={200: AdminAdvertisementListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         return Response(
             {
                 "items": AdminAdvertisementSerializer(
@@ -1361,7 +1365,7 @@ class AdvertisementListView(AdminView):
         request=AdminAdvertisementRequestSerializer,
         responses={201: AdminIdSerializer, 400: VALIDATION_400, **protected()},
     )
-    def post(self, request):
+    def post(self, request: AuthenticatedRequest) -> Response:
         self.required_permission = "admin.ads.manage"
         if not HasAdminPermission().has_permission(request, self):
             self.permission_denied(request)
@@ -1396,7 +1400,7 @@ class AdvertisementDetailView(AdminView):
             404: NOT_FOUND_404,
         },
     )
-    def put(self, request, advertisement_id):
+    def put(self, request: AuthenticatedRequest, advertisement_id: UUID) -> Response:
         payload = AdminAdvertisementUpdateRequestSerializer(data=request.data, partial=True)
         payload.is_valid(raise_exception=True)
         ad = get_object_or_404(Advertisement, pk=advertisement_id)
@@ -1412,7 +1416,7 @@ class AdvertisementDetailView(AdminView):
         summary="Delete an advertisement",
         responses={204: None, **protected(), 404: NOT_FOUND_404},
     )
-    def delete(self, request, advertisement_id):
+    def delete(self, request: AuthenticatedRequest, advertisement_id: UUID) -> Response:
         ad = get_object_or_404(Advertisement, pk=advertisement_id)
         delete_advertisement(actor=request.user, advertisement=ad)
         return Response(status=204)
@@ -1442,7 +1446,7 @@ class AuditListView(AdminView):
         ],
         responses={200: AdminAuditListSerializer, 400: VALIDATION_400, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         qs = filtered_audit(request.query_params)
         return Response(
             {
@@ -1482,7 +1486,7 @@ class AnalyticsView(AdminView):
         ],
         responses={200: AdminAnalyticsSerializer, 400: VALIDATION_400, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         start, end = analytics_period(request)
         span = end - start
         event_counts = list(
@@ -1519,7 +1523,7 @@ class SettingsView(AdminView):
         summary="List typed platform settings",
         responses={200: AdminSettingListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         return Response(
             {
                 "items": AdminSettingSerializer(
@@ -1539,7 +1543,7 @@ class SettingsView(AdminView):
         request=AdminSettingWriteRequestSerializer,
         responses={200: AdminSettingWrittenSerializer, 400: VALIDATION_400, **protected()},
     )
-    def put(self, request):
+    def put(self, request: AuthenticatedRequest) -> Response:
         self.required_permission = "admin.settings.manage"
         if not HasAdminPermission().has_permission(request, self):
             self.permission_denied(request)
@@ -1586,7 +1590,7 @@ class SystemStatusView(AdminView):
         ),
         responses={200: AdminSystemStatusSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         database = "unavailable"
         try:
             with connection.cursor() as cursor:

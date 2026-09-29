@@ -1,11 +1,12 @@
 from collections import Counter
 from typing import Any
+from uuid import UUID
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 
-from accounts.models import UserAdminRole
+from accounts.models import User, UserAdminRole
 from audit.services import record_audit
 from facilities.models import Facility, FacilityApplication, FacilityReport, VerificationEvidence
 from notifications.models import Notification
@@ -13,7 +14,7 @@ from notifications.services import create_notification
 from sessions.models import UserSession
 
 
-def _request_id(request):
+def _request_id(request: Any) -> str:
     return getattr(request, "request_id", "")
 
 
@@ -39,7 +40,7 @@ def decide_report(
     return report
 
 
-def _facility_snapshot(facility):
+def _facility_snapshot(facility: Facility) -> dict[str, Any]:
     return {
         "status": facility.status,
         "nameAr": facility.name_ar,
@@ -48,7 +49,7 @@ def _facility_snapshot(facility):
     }
 
 
-def _required_evidence_is_complete(facility):
+def _required_evidence_is_complete(facility: Facility) -> bool:
     requirements = list(
         facility.category.verification_requirements.filter(active=True, required=True)
     )
@@ -61,7 +62,9 @@ def _required_evidence_is_complete(facility):
 
 
 @transaction.atomic
-def decide_application(*, request, application_id, approve, reason=""):
+def decide_application(
+    *, request: Any, application_id: UUID, approve: bool, reason: str = ""
+) -> FacilityApplication:
     application = (
         FacilityApplication.objects.select_for_update()
         .select_related("facility__category")
@@ -117,7 +120,7 @@ def decide_application(*, request, application_id, approve, reason=""):
     return application
 
 
-def _tell_the_owners(facility, *, approve: bool, reason: str) -> None:
+def _tell_the_owners(facility: Facility, *, approve: bool, reason: str) -> None:
     """A review decision reaches the people responsible for the facility.
 
     The message goes to the account's own inbox, which is the record; whether a push also
@@ -145,9 +148,11 @@ def _tell_the_owners(facility, *, approve: bool, reason: str) -> None:
 
 
 @transaction.atomic
-def transition_facility(*, request, facility_id, target_status, reason=""):
+def transition_facility(
+    *, request: Any, facility_id: UUID, target_status: str, reason: str = ""
+) -> Facility:
     facility = Facility.objects.select_for_update().get(pk=facility_id)
-    allowed = {
+    allowed: dict[str, set[str]] = {
         Facility.Status.SUSPENDED: {Facility.Status.ACTIVE},
         Facility.Status.ACTIVE: {Facility.Status.SUSPENDED},
         Facility.Status.CLOSED: {
@@ -174,7 +179,7 @@ def transition_facility(*, request, facility_id, target_status, reason=""):
 
 
 @transaction.atomic
-def set_user_blocked(*, request, user, blocked):
+def set_user_blocked(*, request: Any, user: User, blocked: bool) -> User:
     before = {"active": user.is_active}
     user.is_active = not blocked
     user.save(update_fields=["is_active", "updated_at"])
@@ -194,7 +199,7 @@ def set_user_blocked(*, request, user, blocked):
 
 
 @transaction.atomic
-def replace_user_roles(*, request, user, role_ids):
+def replace_user_roles(*, request: Any, user: User, role_ids: list[Any]) -> None:
     before = list(
         UserAdminRole.objects.filter(user=user, active=True).values_list("role_id", flat=True)
     )
