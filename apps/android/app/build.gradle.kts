@@ -275,13 +275,13 @@ val validatePlayRelease by tasks.registering {
             "ANDROID_UPLOAD_STORE_PASSWORD" to uploadStorePassword.orNull,
             "ANDROID_UPLOAD_KEY_PASSWORD" to uploadKeyPassword.orNull,
         )
-        // The site the App Links claim: a bare host, never the unconfigured default.
+        // The site the App Links claim: a host, never the unconfigured default.
         val host = appLinkHost.get()
         require(host.isNotBlank() && !host.endsWith(".invalid") && !host.contains("<")) {
             "DIRECTORY_APP_LINK_HOST must be the site's real host"
         }
-        require(Regex("^[a-z0-9.-]+$").matches(host) && !host.startsWith("www.")) {
-            "DIRECTORY_APP_LINK_HOST must be a bare host (no scheme, path or www.)"
+        require(Regex("^[a-z0-9.-]+$").matches(host)) {
+            "DIRECTORY_APP_LINK_HOST must be a host only (no scheme or path)"
         }
         requiredSigning.forEach { (name, value) ->
             require(!value.isNullOrBlank()) { "$name is required for a Play release" }

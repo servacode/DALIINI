@@ -24,17 +24,25 @@ The host is a build setting, never committed:
 | staging | `com.servacode.directory.staging` | `DIRECTORY_STAGING_APP_LINK_HOST` | `staging.root-domain.invalid` |
 | local | `com.servacode.directory.local` | `DIRECTORY_LOCAL_APP_LINK_HOST` | the staging host |
 
-Set it to the bare host the site is served on — the value of the site's `NEXT_PUBLIC_ROOT_DOMAIN`,
-without `https://` or a path. The app claims that host and its `www.` form. The defaults are
-reserved names that never resolve (RFC 2606), so an unconfigured build claims no real site, and
-`validatePlayRelease` refuses a production bundle that still has one.
+Set it to the host the site is served on — the value of the site's `NEXT_PUBLIC_ROOT_DOMAIN`,
+without `https://` or a path. It is the host every link the site makes carries (sharing,
+canonical addresses, «افتح في التطبيق»), and the app claims that one host only.
+
+Its other form (`www.` or bare) is left out on purpose. Render, like most hosts, adds it and
+redirects it to the main one, and a redirecting host cannot verify. Android 12 and later would
+just skip it, but Android 7 to 11 (this app starts at Android 7) then verify none of the app's
+links. A `www.` link that reaches the app some other way is still read as the same site.
+
+The defaults are reserved names that never resolve (RFC 2606), so an unconfigured build claims
+no real site, and `validatePlayRelease` refuses a production bundle that still has one.
 
 ## The file
 
-Both hosts — `<host>` and `www.<host>` — must serve this at `/.well-known/assetlinks.json`:
-HTTP 200, `Content-Type: application/json`, **no redirect** (Android does not follow one for this
-file), reachable without cookies or a login. Android 12+ verifies each host on its own; Android
-6–11 needs every host in the filter to verify, so a `www.` that only redirects breaks those.
+The host must serve this at `/.well-known/assetlinks.json`: HTTP 200,
+`Content-Type: application/json`, **no redirect** (Android does not follow one for this file),
+reachable without cookies or a login. The site already does, from `NEXT_PUBLIC_ANDROID_PACKAGE`
+and `ANDROID_CERT_SHA256` (`apps/web/app/.well-known/assetlinks.json/route.ts`); it answers 404
+until both are set.
 
 ```json
 [
@@ -74,14 +82,13 @@ curl -s "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.
 
 # On a device with the build installed.
 adb shell pm verify-app-links --re-verify com.servacode.directory
-adb shell pm get-app-links com.servacode.directory     # each host should read "verified"
+adb shell pm get-app-links com.servacode.directory     # the host should read "verified"
 adb shell am start -a android.intent.action.VIEW -d "https://<host>/duty"
 ```
 
 ## The site's "open in the app"
 
-The facility page's button builds an intent for a `daliini://facility/<id>` scheme
-(`apps/web/lib/config.ts`, `appOpenUrl`). The app declares no such scheme, so that button should
-link to the facility's own https address instead — which opens the app once verified and the
-page otherwise — or, to force the app with a store fallback:
-`intent://<host>/f/<id>#Intent;scheme=https;package=com.servacode.directory;S.browser_fallback_url=<encoded fallback>;end`.
+The facility page's button, shown on Android only, is an intent for the page's own https
+address addressed to the app (`apps/web/lib/config.ts`, `appOpenUrl`):
+`intent://<host>/f/<id>#Intent;scheme=https;package=com.servacode.directory;S.browser_fallback_url=<the page>;end`.
+With the app installed it opens the facility there; without it, the browser stays on the page.

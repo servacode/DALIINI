@@ -78,14 +78,17 @@
                  duty (/duty, /duty/today), and a province (/{code}). Provinces are listed one by
                  one, from the backend's reference data (directory/reference_data/launch_v1.py),
                  rather than as a pattern that would also take /privacy, /faq and every other
-                 page away from the browser. DeepLinks.parse reads what arrives. -->
+                 page away from the browser. DeepLinks.parse reads what arrives.
+
+                 One host only, the one the site's own links use. Its other form (www. or bare)
+                 is usually a redirect, which cannot verify, and Android 7 to 11 then verify
+                 none of the app's links. -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" />
                 <data android:host="${appLinkHost}" />
-                <data android:host="www.${appLinkHost}" />
                 <data android:pathPrefix="/f/" />
                 <data android:path="/duty" />
                 <data android:path="/duty/today" />

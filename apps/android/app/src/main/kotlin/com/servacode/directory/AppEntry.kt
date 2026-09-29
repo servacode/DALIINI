@@ -36,7 +36,7 @@ object AppEntries {
     private val IDENTIFIER = Regex("^[0-9A-Za-z-]{1,64}$")
     private val TYPE = Regex("^[a-z0-9._-]{1,64}$", RegexOption.IGNORE_CASE)
 
-    /** The site's host for this build; `www.` is accepted by the parser as the same site. */
+    /** The site's host for this build; the parser takes its `www.` or bare form as the same site. */
     val hosts: Set<String> get() = setOf(BuildConfig.APP_LINK_HOST.lowercase())
 
     fun from(intent: Intent?): AppEntry? = intent?.let {
