@@ -63,6 +63,10 @@ const GROUP_TITLES: Record<string, string> = {
   switch: "مفتاح",
   trust: "الثقة",
   weekday: "أيام الأسبوع",
+  contactKind: "نوع رسالة التواصل",
+  emergencyKind: "نوع رقم الطوارئ",
+  pageKind: "نوع الصفحة",
+  dutySource: "مصدر المناوبة",
 };
 
 /**
