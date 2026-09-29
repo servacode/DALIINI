@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import Link from "next/link";
 import { ShareLinks } from "../../../components/share";
+import { AndroidOnly } from "../../../components/android-only";
 import { Breadcrumbs, Icon, JsonLd, Rating, StatusBadge, Unavailable } from "../../../components/ui";
 import { getFacility, getProvinces, type FacilityDetail, type HoursEntry } from "../../../lib/api";
 import { absoluteUrl, appOpenUrl } from "../../../lib/config";
@@ -203,10 +204,12 @@ export default async function FacilityPage({ params }: Props) {
           </a>
         ) : null}
         {openInApp ? (
-          <a className="button button-alt" href={openInApp}>
-            <Icon name="externalLink" />
-            افتح في التطبيق
-          </a>
+          <AndroidOnly>
+            <a className="button button-alt" href={openInApp}>
+              <Icon name="externalLink" />
+              افتح في التطبيق
+            </a>
+          </AndroidOnly>
         ) : null}
       </div>
 
