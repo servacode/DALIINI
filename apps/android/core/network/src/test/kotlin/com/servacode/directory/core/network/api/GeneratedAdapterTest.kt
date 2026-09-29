@@ -215,7 +215,7 @@ class GeneratedAdapterTest {
             "descriptionAr":null,"descriptionEn":null,"phone":"+963900000000","addressAr":"شارع","addressEn":null,
             "neighborhood":null,"location":{"latitude":35.95,"longitude":39.01},
             "images":[{"id":"$REQUIREMENT","url":"https://cdn.example.test/a.jpg"}],
-            "specialties":[],"services":[{"id":"$PROVINCE","nameAr":"قياس ضغط"}],
+            "specialties":[{"id":3,"nameAr":"قلبية"}],"services":[{"id":12,"nameAr":"قياس ضغط"}],
             "hours":[
               {"id":"$PROVINCE","weekday":1,"opensAt":"16:00:00","closesAt":"22:00:00","sequence":1},
               {"id":"$PHARMACY","weekday":0,"opensAt":"09:00:00","closesAt":"13:00:00","sequence":0},
@@ -228,6 +228,7 @@ class GeneratedAdapterTest {
         assertEquals(AvailabilityState.CLOSED, detail.summary.availability)
         assertEquals(1_789_880_400_000L, detail.summary.nextOpenAtEpochMillis)
         assertEquals(listOf("https://cdn.example.test/a.jpg"), detail.imageUrls)
+        assertEquals(listOf("قلبية"), detail.specialties)
         assertEquals(listOf("قياس ضغط"), detail.services)
         assertEquals("الرقة", detail.summary.cityNameAr)
         assertEquals("+963933000000", detail.whatsapp)
@@ -273,6 +274,19 @@ class GeneratedAdapterTest {
         val request = taken()
         assertEquals("PATCH", request.method)
         assertEquals("""{"phone":"+963900000001"}""", request.body!!.utf8())
+    }
+
+    @Test fun `specialties and services travel as the integer ids they are keyed by`() = runTest {
+        respond(ownerDetail())
+
+        val detail = ownerApi.patchFacility(
+            FACILITY,
+            OwnerFacilityPatch(specialtyIds = listOf("3"), serviceTagIds = listOf("12")),
+        )
+
+        assertEquals("""{"specialtyIds":[3],"serviceTagIds":[12]}""", taken().body!!.utf8())
+        assertEquals(listOf("3"), detail.specialtyIds)
+        assertEquals(listOf("12"), detail.serviceTagIds)
     }
 
     @Test fun `an empty WhatsApp is sent, because blank is how it is cleared`() = runTest {
@@ -403,7 +417,8 @@ class GeneratedAdapterTest {
             """{"province":{"id":"$PROVINCE","nameAr":"الرقة"},"categories":[{
             "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":null,"iconKey":null,"specialization":"PHARMACY"},
             "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,
-            "serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true},"verificationRequirements":[]}]}""",
+            "serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true},"verificationRequirements":[],
+            "specialties":[],"services":[]}]}""",
         )
 
         val config = ownerApi.ownerConfig(PROVINCE)
@@ -422,7 +437,8 @@ class GeneratedAdapterTest {
             "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,
             "serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true},"verificationRequirements":[
             {"id":$REQUIREMENT_ID,"labelAr":"ترخيص","labelEn":null,"instructionsAr":null,"required":true,
-            "minFiles":1,"maxFiles":2}]}]}""",
+            "minFiles":1,"maxFiles":2}],"specialties":[{"id":3,"nameAr":"قلبية"}],
+            "services":[{"id":12,"nameAr":"قياس ضغط"}]}]}""",
         )
 
         val requirement = ownerApi.ownerConfig(PROVINCE).categories.single().verificationRequirements.single()
@@ -545,6 +561,6 @@ class GeneratedAdapterTest {
          "serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true},"nameEn":null,"descriptionAr":null,
          "descriptionEn":null,
          "phone":"+963900000001","whatsapp":"+963933000000","addressAr":null,"addressEn":null,"cityId":null,"neighborhoodId":null,
-         "location":null,"specialtyIds":[],"serviceTagIds":[],"evidence":[],"hours":[],"application":null}
+         "location":null,"specialtyIds":[3],"serviceTagIds":[12],"evidence":[],"hours":[],"application":null}
     """
 }

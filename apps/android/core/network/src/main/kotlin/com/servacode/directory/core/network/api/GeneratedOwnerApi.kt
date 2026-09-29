@@ -91,8 +91,9 @@ class GeneratedOwnerApi(client: GeneratedClient) : OwnerApiBoundary {
                 addressEn = input.addressEn,
                 cityId = input.cityId?.let(UUID::fromString),
                 neighborhoodId = input.neighborhoodId?.let(UUID::fromString),
-                specialtyIds = input.specialtyIds?.map(UUID::fromString),
-                serviceTagIds = input.serviceTagIds?.map(UUID::fromString),
+                // Integer keys on the wire; the domain keeps every id as a String.
+                specialtyIds = input.specialtyIds?.map(String::toInt),
+                serviceTagIds = input.serviceTagIds?.map(String::toInt),
             ),
         )
     }.toDomain()
