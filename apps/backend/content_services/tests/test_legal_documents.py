@@ -9,10 +9,11 @@ to publish yet.
 """
 
 import pytest
-from content_services.models import LegalDocument
 from django.db import IntegrityError
 from django.utils import timezone
 from rest_framework.test import APIClient
+
+from content_services.models import LegalDocument
 
 LIST = "/api/v1/public/legal/"
 

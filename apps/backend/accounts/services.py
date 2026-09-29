@@ -10,11 +10,10 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.db import transaction
 from django.utils import timezone
-
-from core.exceptions import ConflictError
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 
 from audit.services import record_audit
+from core.exceptions import ConflictError
 from facilities.models import Facility, FacilityMembership
 from locations.models import Province
 from notifications.services import (

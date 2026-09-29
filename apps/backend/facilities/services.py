@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from audit.services import record_audit
 from directory.models import CategoryProvince, ServiceTag, Specialty
-from locations.models import City, Neighborhood, Province
+from locations.models import City, Neighborhood
 
 from .models import (
     Facility,

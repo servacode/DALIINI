@@ -59,6 +59,9 @@ class Advertisement(models.Model):
             ),
         ]
 
+    def __str__(self) -> str:
+        return self.title_ar or str(self.id)
+
     def clean(self):
         errors = {}
         if self.starts_at and self.ends_at and self.ends_at <= self.starts_at:

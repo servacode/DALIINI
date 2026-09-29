@@ -5,15 +5,14 @@ identity, so changing it is not a field: it is a code sent to the number being c
 proving it ends every session, the caller's included.
 """
 
+from datetime import timedelta
 from io import BytesIO
+from uuid import uuid4
 
 import pytest
 from django.utils import timezone
 from PIL import Image
 from rest_framework.test import APIClient
-
-from datetime import timedelta
-from uuid import uuid4
 
 from accounts.models import OTPChallenge, User
 from accounts.otp import otp_digest

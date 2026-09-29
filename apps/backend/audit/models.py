@@ -1,6 +1,9 @@
 import uuid
+
 from django.conf import settings
 from django.db import models
+
+
 class AuditEvent(models.Model):
     id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     actor=models.ForeignKey(
@@ -21,3 +24,6 @@ class AuditEvent(models.Model):
     class Meta:
         # The facility timeline and the review detail look audit rows up by target.
         indexes = [models.Index(fields=["target_id", "-created_at"], name="audit_target_idx")]
+
+    def __str__(self) -> str:
+        return f"{self.action} {self.target_type}:{self.target_id}"

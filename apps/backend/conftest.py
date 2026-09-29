@@ -2,9 +2,11 @@ from collections.abc import Callable, Iterator
 from typing import Any
 
 import pytest
+
 from directory.models import Category, CategoryCapabilities, CategoryGroup
 from facilities.models import Facility
 from locations.models import Province
+
 
 @pytest.fixture(autouse=True)
 def _isolated_cache() -> Iterator[None]:
@@ -22,7 +24,12 @@ def facility(db):
     group=CategoryGroup.objects.create(code='health-test',name_ar='الصحة')
     category=Category.objects.create(group=group,code='pharmacy-test',slug='pharmacy-test',name_ar='صيدلية',specialization=Category.Specialization.PHARMACY)
     CategoryCapabilities.objects.create(category=category,supports_duty=True)
-    return Facility.objects.create(category=category,province=province,name_ar='صيدلية اختبار',status=Facility.Status.ACTIVE)
+    return Facility.objects.create(
+        category=category,
+        province=province,
+        name_ar='صيدلية اختبار',
+        status=Facility.Status.ACTIVE,
+    )
 
 
 @pytest.fixture

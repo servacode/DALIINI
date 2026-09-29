@@ -59,6 +59,9 @@ class DutyShift(models.Model):
             )
         ]
 
+    def __str__(self) -> str:
+        return f"{self.facility_id} {self.starts_at} - {self.ends_at}"
+
     def clean(self):
         if self.ends_at <= self.starts_at:
             raise ValidationError({"ends_at": "Must be after starts_at."})

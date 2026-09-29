@@ -4,8 +4,8 @@ from django.dispatch import receiver
 from business_hours.models import BusinessHour, TemporaryClosure
 from directory.models import Category, CategoryGroup, CategoryProvince, VerificationRequirement
 from facilities.models import Facility, FacilityApplication, FacilityMembership
-from pharmacy_duty.models import DutyShift
 from locations.models import Province
+from pharmacy_duty.models import DutyShift
 
 from .events import EventName, RealtimeEvent, ScopeType
 from .publisher import publish_after_commit

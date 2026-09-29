@@ -20,7 +20,7 @@ def generate_otp() -> str:
 
 def otp_digest(*, challenge_id, code: str) -> str:
     key = settings.RECOVERY_HMAC_SECRET.encode("utf-8")
-    message = f"otp:{challenge_id}:{code}".encode("utf-8")
+    message = f"otp:{challenge_id}:{code}".encode()
     return hmac.new(key, message, hashlib.sha256).hexdigest()
 
 

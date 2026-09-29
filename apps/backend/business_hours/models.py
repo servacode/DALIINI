@@ -29,6 +29,9 @@ class BusinessHour(models.Model):
             ),
         ]
 
+    def __str__(self) -> str:
+        return f"{self.facility_id} {self.weekday} {self.opens_at}-{self.closes_at}"
+
     def clean(self):
         if self.opens_at == self.closes_at:
             raise ValidationError("Opening and closing time cannot be equal.")
@@ -53,6 +56,9 @@ class TemporaryClosure(models.Model):
                 name="business_ho_facilit_idx",
             )
         ]
+
+    def __str__(self) -> str:
+        return f"{self.facility_id} {self.starts_at} - {self.ends_at}"
 
     def clean(self):
         if self.ends_at <= self.starts_at:

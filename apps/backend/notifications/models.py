@@ -47,6 +47,9 @@ class Notification(models.Model):
             models.Index(fields=["user", "-created_at"], name="notifications_inbox_idx"),
         ]
 
+    def __str__(self) -> str:
+        return f"{self.type} {self.id}"
+
 
 class DevicePushToken(models.Model):
     class Platform(models.TextChoices):
@@ -78,6 +81,10 @@ class DevicePushToken(models.Model):
                 name="notificatio_user_id_67bc12_idx",
             )
         ]
+
+    def __str__(self) -> str:
+        # Never the token: a repr can reach logs and error reports.
+        return f"{self.platform} {self.id}"
 
 
 class NotificationPushDelivery(models.Model):

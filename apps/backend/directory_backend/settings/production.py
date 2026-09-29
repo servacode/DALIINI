@@ -1,6 +1,7 @@
 from django.core.exceptions import ImproperlyConfigured
 
 from .base import *  # noqa: F403
+from .base import CHANNEL_LAYERS
 from .env import env, env_bool, env_csv
 
 DEBUG = env_bool("DEBUG", False)

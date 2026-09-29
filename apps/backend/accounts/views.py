@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -8,7 +9,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.openapi import CONFLICT_409, THROTTLED_429, VALIDATION_400, protected
-from django.core.exceptions import ValidationError as DjangoValidationError
 from locations.models import Province
 
 from .media import delete_profile_image, profile_image_url, save_profile_image
