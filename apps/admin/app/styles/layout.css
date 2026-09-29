@@ -265,3 +265,25 @@
 .global-search-hit .muted { font-size: var(--ad-text-xs); }
 @media (max-width: 900px) { .topbar-start .breadcrumb { display: none; } }
 @media (max-width: 640px) { .global-search kbd { display: none; } .global-search { max-width: none; min-width: 0; } }
+
+/* System indicator in the top bar */
+.bell { position: relative; }
+.bell-count {
+  position: absolute; inset-block-start: -5px; inset-inline-end: -5px;
+  min-inline-size: 18px; block-size: 18px; padding: 0 4px;
+  display: grid; place-items: center;
+  border-radius: 999px; border: 2px solid var(--ad-surface);
+  background: var(--ad-warning); color: #fff;
+  font-size: 10px; font-weight: 800; line-height: 1;
+}
+.bell-count[data-critical="true"] { background: var(--ad-danger); }
+.maintenance-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  block-size: 30px; padding: 0 var(--ad-space-3);
+  border-radius: 999px;
+  background: var(--ad-warning-bg); color: var(--ad-warning);
+  border: 1px solid var(--ad-warning-border);
+  font-size: var(--ad-text-xs); font-weight: 700; white-space: nowrap;
+}
+.maintenance-pill svg { width: 14px; height: 14px; }
+@media (max-width: 640px) { .maintenance-pill { font-size: 0; gap: 0; padding: 0 8px; } .maintenance-pill svg { width: 16px; height: 16px; } }

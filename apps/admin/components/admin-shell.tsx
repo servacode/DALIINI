@@ -9,6 +9,7 @@ import { useResource } from "../lib/client/use-resource";
 import { type IconName, Icons } from "./icons";
 import { GlobalSearch } from "./global-search";
 import { ThemeToggle } from "./theme-toggle";
+import { TopbarStatus } from "./topbar-status";
 import { BrandMark, ErrorState, LoadingState } from "./ui";
 
 /**
@@ -309,6 +310,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <GlobalSearch />
             </div>
             <div className="topbar-end">
+              <TopbarStatus enabled={identity.permissions.includes("admin.dashboard.read")} />
               <ThemeToggle />
               <div className="topbar-identity" data-testid="operator-name">
               <span className="identity-name">{identity.displayName}</span>
