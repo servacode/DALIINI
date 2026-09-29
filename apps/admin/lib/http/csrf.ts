@@ -38,8 +38,17 @@ function effectiveHost(request: Request): string | null {
  *
  * The reason is for the server log. What reaches the caller is a bare code, because a
  * precise description of which check failed is a free hint to whoever is probing.
+ *
+ * `body: "multipart"` is for the one route that receives a file (the advertisement image).
+ * A cross-site form *can* send multipart without a preflight, so for that route the third
+ * signal proves nothing and the first two carry the weight: the browser always sends
+ * `Origin` on a cross-origin POST, and it cannot be forged from a page. Everything else
+ * keeps requiring JSON.
  */
-export function checkSameOrigin(request: Request): OriginRejection | null {
+export function checkSameOrigin(
+  request: Request,
+  options: Readonly<{ body?: "json" | "multipart" }> = {},
+): OriginRejection | null {
   if (SAFE_METHODS.has(request.method.toUpperCase())) return null;
 
   const fetchSite = request.headers.get("sec-fetch-site");
@@ -67,7 +76,8 @@ export function checkSameOrigin(request: Request): OriginRejection | null {
   }
 
   const contentType = request.headers.get("content-type") ?? "";
-  if (!contentType.split(";")[0]!.trim().toLowerCase().startsWith("application/json")) {
+  const expected = options.body === "multipart" ? "multipart/form-data" : "application/json";
+  if (!contentType.split(";")[0]!.trim().toLowerCase().startsWith(expected)) {
     return { code: "ORIGIN_REJECTED", reason: `Content-Type is ${contentType || "absent"}` };
   }
 

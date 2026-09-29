@@ -194,3 +194,226 @@ describe("smart console reads", () => {
   });
 });
 
+// Operations screens
+
+describe("operations screens: registration", () => {
+  it("reaches every new screen's reads over GET and its writes over POST only", () => {
+    for (const name of [
+      "dutyRoster",
+      "contentPages",
+      "contentPage",
+      "faqEntries",
+      "emergencyNumbers",
+      "contactMessages",
+      "broadcasts",
+      "rejectionTemplates",
+      "provinceReadiness",
+      "analyticsPeriod",
+      "staffPerformance",
+    ]) {
+      expect(isReadOperation(name)).toBe(true);
+      expect(isWriteOperation(name)).toBe(false);
+    }
+    for (const name of [
+      "dutyShiftCreate",
+      "dutyShiftUpdate",
+      "dutyShiftDelete",
+      "contentPageCreate",
+      "contentPageUpdate",
+      "contentPageDelete",
+      "faqCreate",
+      "faqUpdate",
+      "faqDelete",
+      "emergencyNumberCreate",
+      "emergencyNumberUpdate",
+      "emergencyNumberDelete",
+      "contactMessageHandle",
+      "broadcastSend",
+      "rejectionTemplateCreate",
+      "rejectionTemplateUpdate",
+      "rejectionTemplateDelete",
+    ]) {
+      expect(isWriteOperation(name)).toBe(true);
+      expect(isReadOperation(name)).toBe(false);
+    }
+  });
+});
+
+describe("operations screens: reads", () => {
+  it("asks for a province's roster with only the filters that carry a value", async () => {
+    const { apis, calls } = spyApis();
+
+    await READS.dutyRoster(apis, {
+      provinceId: "p-1",
+      cityId: "",
+      from: "2026-09-26",
+      to: "2026-10-09",
+      stray: "x",
+    });
+
+    expect(calls[0]).toEqual({
+      name: "duty.adminDutyRosterRetrieve",
+      args: [{ provinceId: "p-1", from: "2026-09-26", to: "2026-10-09" }],
+    });
+  });
+
+  it("sends the analytics period to both analytics reads", async () => {
+    const { apis, calls } = spyApis();
+
+    await READS.analyticsPeriod(apis, { from: "2026-09-01", to: "2026-09-28", q: "x" });
+    await READS.staffPerformance(apis, { from: "2026-09-01", to: "" });
+
+    expect(calls[0]).toEqual({
+      name: "analytics.adminAnalyticsRetrieve",
+      args: [{ from: "2026-09-01", to: "2026-09-28" }],
+    });
+    expect(calls[1]).toEqual({
+      name: "analytics.adminAnalyticsStaffRetrieve",
+      args: [{ from: "2026-09-01" }],
+    });
+  });
+
+  it("pages the inbox and the broadcast history by cursor, with their filters", async () => {
+    const { apis, calls } = spyApis();
+
+    await READS.contactMessages(apis, { status: "open", kind: "", cursor: "c-2", limit: "999" });
+    await READS.broadcasts(apis, { cursor: "" });
+
+    expect(calls[0]?.args[0]).toEqual({ status: "open", cursor: "c-2" });
+    expect(calls[1]?.args[0]).toEqual({});
+  });
+
+  it("addresses a page by slug, a readiness check by province, and filters templates", async () => {
+    const { apis, calls } = spyApis();
+
+    await READS.contentPage(apis, { slug: "privacy" });
+    await READS.provinceReadiness(apis, { id: "p-9" });
+    await READS.rejectionTemplates(apis, { active: "true" });
+    await READS.rejectionTemplates(apis, {});
+    await READS.emergencyNumbers(apis, { provinceId: "national" });
+
+    expect(calls.map((call) => [call.name, call.args[0]])).toEqual([
+      ["content.adminContentPageRetrieve", { slug: "privacy" }],
+      ["provinces.adminProvinceReadinessRetrieve", { provinceId: "p-9" }],
+      ["reviews.adminRejectionTemplatesList", { active: true }],
+      ["reviews.adminRejectionTemplatesList", {}],
+      ["content.adminEmergencyNumbersList", { provinceId: "national" }],
+    ]);
+  });
+});
+
+describe("operations screens: writes", () => {
+  it("turns a shift's ISO times into Dates, as the generated serialiser needs", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.dutyShiftCreate(apis, {
+      facilityId: "f-1",
+      startsAt: "2026-09-28T19:00:00.000Z",
+      endsAt: "2026-09-29T05:00:00.000Z",
+    });
+
+    const request = (calls[0]?.args[0] as { adminDutyShiftCreateRequest: Record<string, unknown> })
+      .adminDutyShiftCreateRequest;
+    expect(calls[0]?.name).toBe("duty.adminDutyShiftCreate");
+    expect(request.facilityId).toBe("f-1");
+    expect(request.startsAt).toBeInstanceOf(Date);
+    expect((request.endsAt as Date).toISOString()).toBe("2026-09-29T05:00:00.000Z");
+  });
+
+  it("moves a shift with its times only, and cancels it by id", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.dutyShiftUpdate(apis, {
+      id: "s-1",
+      startsAt: "2026-09-28T19:00:00.000Z",
+      endsAt: "2026-09-29T05:00:00.000Z",
+      facilityId: "must-not-travel",
+    });
+    await WRITES.dutyShiftDelete(apis, { id: "s-1" });
+
+    const update = calls[0]?.args[0] as {
+      shiftId: string;
+      patchedAdminDutyShiftUpdateRequest: Record<string, unknown>;
+    };
+    expect(update.shiftId).toBe("s-1");
+    expect(Object.keys(update.patchedAdminDutyShiftUpdateRequest).sort()).toEqual([
+      "endsAt",
+      "startsAt",
+    ]);
+    expect(calls[1]).toEqual({ name: "duty.adminDutyShiftDelete", args: [{ shiftId: "s-1" }] });
+  });
+
+  it("keeps partial updates partial: a key the screen did not send stays absent", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.faqUpdate(apis, { id: "q-1", published: false });
+    await WRITES.contentPageUpdate(apis, { slug: "about", published: true });
+    await WRITES.rejectionTemplateUpdate(apis, { id: "t-1", active: false });
+
+    expect(calls[0]?.args[0]).toEqual({
+      entryId: "q-1",
+      adminFaqEntryRequest: { published: false },
+    });
+    expect(calls[1]?.args[0]).toEqual({
+      slug: "about",
+      adminContentPageUpdateRequest: { published: true },
+    });
+    expect(calls[2]?.args[0]).toEqual({
+      templateId: "t-1",
+      adminRejectionTemplateRequest: { active: false },
+    });
+  });
+
+  it("keeps an explicit null province, which makes an emergency number national", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.emergencyNumberUpdate(apis, { id: "n-1", provinceId: null, adminNote: "" });
+
+    expect(calls[0]?.args[0]).toEqual({
+      numberId: "n-1",
+      adminEmergencyNumberRequest: { provinceId: null, adminNote: "" },
+    });
+  });
+
+  it("sends a broadcast's audience as given and an empty province as none", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.broadcastSend(apis, {
+      titleAr: "عنوان",
+      bodyAr: "نص",
+      audience: "OWNERS",
+      provinceId: "",
+    });
+    await WRITES.broadcastSend(apis, { titleAr: "ع", bodyAr: "ن", audience: "EVERYONE" });
+
+    expect(calls[0]?.args[0]).toEqual({
+      adminBroadcastRequest: {
+        titleAr: "عنوان",
+        bodyAr: "نص",
+        audience: "OWNERS",
+        provinceId: null,
+      },
+    });
+    // An unknown audience is not widened to "everyone" here; the backend refuses it.
+    expect(
+      (calls[1]?.args[0] as { adminBroadcastRequest: { audience: string } }).adminBroadcastRequest
+        .audience,
+    ).toBe("EVERYONE");
+  });
+
+  it("records the handling note on a contact message", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.contactMessageHandle(apis, { id: "m-1", note: "اتُّصل بصاحب الرسالة" });
+    await WRITES.contactMessageHandle(apis, { id: "m-2" });
+
+    expect(calls[0]?.args[0]).toEqual({
+      messageId: "m-1",
+      adminContactHandleRequest: { note: "اتُّصل بصاحب الرسالة" },
+    });
+    expect(calls[1]?.args[0]).toEqual({
+      messageId: "m-2",
+      adminContactHandleRequest: { note: "" },
+    });
+  });
+});

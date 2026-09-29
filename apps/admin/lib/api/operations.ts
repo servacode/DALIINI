@@ -77,6 +77,32 @@ export const READS = {
     apis.reports.adminReportsList(filled(p, ["status", "facility"])),
   provinceCities: (apis: AdminApis, p: Params) =>
     apis.provinces.adminProvinceCitiesList({ provinceId: p.id! }),
+
+  // Operations screens
+  analyticsPeriod: (apis: AdminApis, p: Params) =>
+    apis.analytics.adminAnalyticsRetrieve(filled(p, ["from", "to"])),
+  staffPerformance: (apis: AdminApis, p: Params) =>
+    apis.analytics.adminAnalyticsStaffRetrieve(filled(p, ["from", "to"])),
+  provinceReadiness: (apis: AdminApis, p: Params) =>
+    apis.provinces.adminProvinceReadinessRetrieve({ provinceId: p.id ?? "" }),
+  dutyRoster: (apis: AdminApis, p: Params) =>
+    apis.duty.adminDutyRosterRetrieve({
+      // Required upstream; an absent one is sent empty so Django answers with its own 400.
+      provinceId: p.provinceId?.trim() ?? "",
+      ...filled(p, ["cityId", "from", "to"]),
+    }),
+  contentPages: (apis: AdminApis) => apis.content.adminContentPagesList(),
+  contentPage: (apis: AdminApis, p: Params) =>
+    apis.content.adminContentPageRetrieve({ slug: p.slug ?? "" }),
+  faqEntries: (apis: AdminApis) => apis.content.adminFaqEntriesList(),
+  emergencyNumbers: (apis: AdminApis, p: Params) =>
+    apis.content.adminEmergencyNumbersList(filled(p, ["provinceId"])),
+  contactMessages: (apis: AdminApis, p: Params) =>
+    apis.content.adminContactMessagesList(filled(p, ["status", "kind", "cursor"])),
+  broadcasts: (apis: AdminApis, p: Params) =>
+    apis.notifications.adminNotificationBroadcastsList(filled(p, ["cursor"])),
+  rejectionTemplates: (apis: AdminApis, p: Params) =>
+    apis.reviews.adminRejectionTemplatesList(p.active === "true" ? { active: true } : {}),
 } as const satisfies Record<string, ReadFn>;
 
 /**
@@ -211,6 +237,92 @@ export const WRITES = {
 
   settingWrite: (apis: AdminApis, b: Body) =>
     apis.settings.adminSettingWrite({ adminSettingWriteRequest: b as never }),
+
+  // Operations screens
+  dutyShiftCreate: (apis: AdminApis, b: Body) =>
+    apis.duty.adminDutyShiftCreate({
+      adminDutyShiftCreateRequest: withDates(
+        { facilityId: String(b.facilityId ?? ""), ...sent(b, SCHEDULE) },
+        SCHEDULE,
+      ) as never,
+    }),
+  dutyShiftUpdate: (apis: AdminApis, b: Body) =>
+    apis.duty.adminDutyShiftUpdate({
+      shiftId: String(b.id),
+      patchedAdminDutyShiftUpdateRequest: withDates(sent(b, SCHEDULE), SCHEDULE),
+    }),
+  dutyShiftDelete: (apis: AdminApis, b: Body) =>
+    apis.duty.adminDutyShiftDelete({ shiftId: String(b.id) }),
+
+  contentPageCreate: (apis: AdminApis, b: Body) =>
+    apis.content.adminContentPageCreate({
+      adminContentPageCreateRequest: sent(b, [
+        "slug",
+        "kind",
+        "titleAr",
+        "bodyAr",
+        "published",
+      ]) as never,
+    }),
+  contentPageUpdate: (apis: AdminApis, b: Body) =>
+    apis.content.adminContentPageUpdate({
+      slug: String(b.slug ?? ""),
+      adminContentPageUpdateRequest: sent(b, ["kind", "titleAr", "bodyAr", "published"]),
+    }),
+  contentPageDelete: (apis: AdminApis, b: Body) =>
+    apis.content.adminContentPageDelete({ slug: String(b.slug ?? "") }),
+
+  faqCreate: (apis: AdminApis, b: Body) =>
+    apis.content.adminFaqEntryCreate({ adminFaqEntryRequest: sent(b, FAQ_FIELDS) as never }),
+  faqUpdate: (apis: AdminApis, b: Body) =>
+    apis.content.adminFaqEntryUpdate({
+      entryId: String(b.id),
+      adminFaqEntryRequest: sent(b, FAQ_FIELDS) as never,
+    }),
+  faqDelete: (apis: AdminApis, b: Body) =>
+    apis.content.adminFaqEntryDelete({ entryId: String(b.id) }),
+
+  emergencyNumberCreate: (apis: AdminApis, b: Body) =>
+    apis.content.adminEmergencyNumberCreate({
+      adminEmergencyNumberRequest: sent(b, NUMBER_FIELDS) as never,
+    }),
+  emergencyNumberUpdate: (apis: AdminApis, b: Body) =>
+    apis.content.adminEmergencyNumberUpdate({
+      numberId: String(b.id),
+      adminEmergencyNumberRequest: sent(b, NUMBER_FIELDS) as never,
+    }),
+  emergencyNumberDelete: (apis: AdminApis, b: Body) =>
+    apis.content.adminEmergencyNumberDelete({ numberId: String(b.id) }),
+
+  contactMessageHandle: (apis: AdminApis, b: Body) =>
+    apis.content.adminContactMessageHandle({
+      messageId: String(b.id),
+      adminContactHandleRequest: { note: String(b.note ?? "") },
+    }),
+
+  broadcastSend: (apis: AdminApis, b: Body) =>
+    apis.notifications.adminNotificationBroadcast({
+      adminBroadcastRequest: {
+        titleAr: String(b.titleAr ?? ""),
+        bodyAr: String(b.bodyAr ?? ""),
+        // Passed through untouched: an unknown audience is refused upstream, never widened
+        // here to "everyone".
+        audience: String(b.audience ?? "") as never,
+        provinceId: b.provinceId ? String(b.provinceId) : null,
+      },
+    }),
+
+  rejectionTemplateCreate: (apis: AdminApis, b: Body) =>
+    apis.reviews.adminRejectionTemplateCreate({
+      adminRejectionTemplateRequest: sent(b, TEMPLATE_FIELDS) as never,
+    }),
+  rejectionTemplateUpdate: (apis: AdminApis, b: Body) =>
+    apis.reviews.adminRejectionTemplateUpdate({
+      templateId: String(b.id),
+      adminRejectionTemplateRequest: sent(b, TEMPLATE_FIELDS) as never,
+    }),
+  rejectionTemplateDelete: (apis: AdminApis, b: Body) =>
+    apis.reviews.adminRejectionTemplateDelete({ templateId: String(b.id) }),
 } as const satisfies Record<string, WriteFn>;
 
 export type ReadOperation = keyof typeof READS;
@@ -223,3 +335,35 @@ export function isReadOperation(name: string): name is ReadOperation {
 export function isWriteOperation(name: string): name is WriteOperation {
   return Object.hasOwn(WRITES, name);
 }
+
+// Operations screens
+//
+// Declared after the registries on purpose, so the entries above stay an append-only block;
+// they are only read when an operation runs, long after this module has finished loading.
+
+/**
+ * Copy only the keys the browser actually sent.
+ *
+ * The content, FAQ, emergency-number and template updates are partial upstream ("omitted
+ * fields keep their value"), so a key the screen did not send must stay absent rather than
+ * arrive as `undefined` or a default that would overwrite what is stored.
+ */
+function sent(body: Body, keys: readonly string[]): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const key of keys) {
+    if (Object.hasOwn(body, key)) out[key] = body[key];
+  }
+  return out;
+}
+
+const FAQ_FIELDS = ["questionAr", "answerAr", "sortOrder", "published"] as const;
+const NUMBER_FIELDS = [
+  "provinceId",
+  "labelAr",
+  "phone",
+  "kind",
+  "sortOrder",
+  "active",
+  "adminNote",
+] as const;
+const TEMPLATE_FIELDS = ["titleAr", "bodyAr", "active", "sortOrder"] as const;
