@@ -103,3 +103,65 @@ def test_a_missing_notification_is_not_an_error() -> None:
 def test_backoff_is_capped_and_jittered() -> None:
     for attempt in range(10):
         assert 1 <= retry_countdown(attempt) <= 1800
+
+
+class Capturing:
+    def __init__(self) -> None:
+        self.messages: list[PushMessage] = []
+
+    def send(self, message: PushMessage) -> None:
+        self.messages.append(message)
+
+
+@pytest.mark.django_db
+def test_a_push_carries_the_routing_identifiers_and_nothing_else(
+    user: User, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    register_push_token(user=user, platform="ANDROID", token="tok-a")
+    facility_id = "7f0c3d1e-2b4a-4c5d-8e6f-0a1b2c3d4e5f"
+    province_id = "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"
+    notification = Notification.objects.create(
+        user=user,
+        type="duty.gap_nudge",
+        payload={
+            "facilityId": facility_id.upper(),
+            "provinceId": province_id,
+            "gapDate": "2026-09-30",
+            "shiftId": "s-1",
+        },
+    )
+    provider = Capturing()
+    monkeypatch.setattr("notifications.services.get_push_provider", lambda platform: provider)
+
+    deliver_notification_push.apply(args=[str(notification.pk), "t", "b"])
+
+    [message] = provider.messages
+    assert message.data == {
+        "notificationId": str(notification.pk),
+        "type": "duty.gap_nudge",
+        "facilityId": facility_id,
+        "provinceId": province_id,
+        "gapDate": "2026-09-30",
+    }
+
+
+@pytest.mark.django_db
+def test_a_malformed_routing_value_is_left_out_not_forwarded(
+    user: User, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    register_push_token(user=user, platform="ANDROID", token="tok-a")
+    notification = Notification.objects.create(
+        user=user,
+        type="duty.shift.admin_changed",
+        payload={"facilityId": "<script>", "gapDate": "next week", "provinceId": None},
+    )
+    provider = Capturing()
+    monkeypatch.setattr("notifications.services.get_push_provider", lambda platform: provider)
+
+    deliver_notification_push.apply(args=[str(notification.pk), "t", "b"])
+
+    [message] = provider.messages
+    assert message.data == {
+        "notificationId": str(notification.pk),
+        "type": "duty.shift.admin_changed",
+    }

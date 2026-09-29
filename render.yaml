@@ -220,6 +220,10 @@ envVarGroups:
         sync: false
       - key: FCM_PROJECT_ID
         sync: false
+      # The Firebase service account key the push transport signs in with: the downloaded
+      # JSON, pasted as is or base64-encoded. Required when PUSH_PROVIDER=fcm.
+      - key: FCM_SERVICE_ACCOUNT_JSON
+        sync: false
       - key: SENTRY_DSN
         sync: false
       - key: SENTRY_ENVIRONMENT

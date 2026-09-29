@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import uuid
+from datetime import date
 from typing import Any
 
 from django.core.exceptions import ImproperlyConfigured
@@ -119,6 +121,26 @@ def mark_notification_read(*, user, notification_id) -> Notification:
     return notification
 
 
+def push_routing(payload: dict[str, Any]) -> dict[str, str]:
+    """The identifiers a push may carry besides its own, so a tap lands on the right screen.
+
+    Only these three, and only in the shape of an identifier or a day: the facility a notice
+    is about, and the day and province of a duty gap. Anything else in the payload (another
+    id, a name) stays on the server; the app refuses a push that carries any other key.
+    """
+    routing: dict[str, str] = {}
+    for key in ("facilityId", "provinceId"):
+        try:
+            routing[key] = str(uuid.UUID(str(payload.get(key))))
+        except (TypeError, ValueError):
+            continue
+    try:
+        routing["gapDate"] = date.fromisoformat(str(payload.get("gapDate"))).isoformat()
+    except (TypeError, ValueError):
+        pass
+    return routing
+
+
 def push_notification(notification: Notification, *, title: str, body: str) -> None:
     """Send to every active device that has not received this notification yet.
 
@@ -127,6 +149,7 @@ def push_notification(notification: Notification, *, title: str, body: str) -> N
     remaining devices were attempted, so the caller can retry only what is left.
     """
     data = {"notificationId": str(notification.id), "type": notification.type}
+    data.update(push_routing(notification.payload))
     delivered = NotificationPushDelivery.objects.filter(notification=notification).values(
         "device_id"
     )

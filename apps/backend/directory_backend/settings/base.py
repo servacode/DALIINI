@@ -242,6 +242,9 @@ S3_PUBLIC_MEDIA_BASE_URL = env(
 PUSH_PROVIDER = env("PUSH_PROVIDER", "development")
 PUSH_TOKEN_ENCRYPTION_KEY = env("PUSH_TOKEN_ENCRYPTION_KEY", "development-push-token-key")
 FCM_PROJECT_ID = env("FCM_PROJECT_ID", "")
+# The Firebase service account key (its JSON, or that JSON in base64) the FCM transport signs
+# in with; see notifications/providers/fcm_http.py. A secret: set it, never commit it.
+FCM_SERVICE_ACCOUNT_JSON = env("FCM_SERVICE_ACCOUNT_JSON", "")
 ANALYTICS_HASH_SALT = env("ANALYTICS_HASH_SALT", "development-analytics-salt")
 # Optional shared secret of the public website's server. Requests carrying it in
 # `X-Daliini-Web-Key` have their anonymous public reads counted under the `web_server`

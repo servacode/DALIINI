@@ -322,8 +322,16 @@ def system_warnings() -> list[str]:
         warnings.append("Redis غير مهيأ: المهام الخلفية والإشعارات اللحظية معطلة.")
     if not getattr(settings, "CELERY_BROKER_URL", ""):
         warnings.append("Celery غير مهيأ: لن تُنفّذ المهام المجدولة.")
-    if str(getattr(settings, "PUSH_PROVIDER", "")).lower() == "development":
+    push_provider = str(getattr(settings, "PUSH_PROVIDER", "")).lower()
+    if push_provider == "development":
         warnings.append("مزود الإشعارات في وضع التطوير: لن تصل الإشعارات إلى الأجهزة.")
+    elif push_provider == "fcm" and not (
+        getattr(settings, "FCM_PROJECT_ID", "")
+        and str(getattr(settings, "FCM_SERVICE_ACCOUNT_JSON", "")).strip()
+    ):
+        warnings.append("إشعارات أندرويد غير مربوطة بحساب Firebase: لن تصل إلى الأجهزة.")
+    if str(getattr(settings, "OTP_PROVIDER", "")).lower() in {"development", "test"}:
+        warnings.append("رموز الدخول في وضع التطوير: لن تصل رسائل التحقق إلى الهواتف.")
     if not getattr(settings, "SENTRY_DSN", ""):
         warnings.append("تتبع الأخطاء (Sentry) غير مفعّل.")
     return warnings
