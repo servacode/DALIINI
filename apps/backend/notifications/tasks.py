@@ -22,7 +22,9 @@ def retry_countdown(retries: int) -> int:
     return random.randint(1, max(1, ceiling))
 
 
-@shared_task(bind=True, acks_late=True, reject_on_worker_lost=True, max_retries=MAX_RETRIES)
+@shared_task(  # type: ignore[untyped-decorator]
+    bind=True, acks_late=True, reject_on_worker_lost=True, max_retries=MAX_RETRIES
+)
 def deliver_notification_push(self: Task, notification_id: str, title: str, body: str) -> None:
     """Push a notification to every active device of its user.
 

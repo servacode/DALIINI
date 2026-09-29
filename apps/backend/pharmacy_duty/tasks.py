@@ -1,4 +1,4 @@
-from celery import shared_task  # type: ignore[import-untyped]
+from celery import shared_task
 
 from .nudges import nudge_duty_gaps
 

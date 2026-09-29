@@ -19,8 +19,8 @@ from typing import Any
 
 import pytest
 from asgiref.sync import async_to_sync, sync_to_async
-from channels.layers import get_channel_layer  # type: ignore[import-untyped]  # no stubs exist
-from channels.testing import WebsocketCommunicator  # type: ignore[import-untyped]
+from channels.layers import get_channel_layer
+from channels.testing import WebsocketCommunicator
 from django.conf import settings
 from django.utils import timezone
 from rest_framework.test import APIClient

@@ -47,6 +47,22 @@ strict = true
 warn_unused_ignores = true
 exclude = ["migrations/"]
 
+# Installed packages that ship no type information (no py.typed marker, and no stub
+# package in the lock). Only the modules the code imports are listed; what comes from
+# them is typed Any.
+[[tool.mypy.overrides]]
+module = [
+  "celery",
+  "celery.exceptions",
+  "celery.schedules",
+  "channels.generic.websocket",
+  "channels.layers",
+  "channels.routing",
+  "channels.testing",
+  "storages.backends.s3",
+]
+ignore_missing_imports = true
+
 [tool.django-stubs]
 django_settings_module = "directory_backend.settings.test"
 

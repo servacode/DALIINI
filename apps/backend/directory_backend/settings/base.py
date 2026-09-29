@@ -1,7 +1,8 @@
 from pathlib import Path
+from typing import Any
 
 import dj_database_url
-from celery.schedules import crontab  # type: ignore[import-untyped]
+from celery.schedules import crontab
 
 from .env import env, env_bool, env_csv
 
@@ -187,7 +188,7 @@ CORS_ALLOWED_ORIGINS = env_csv("CORS_ALLOWED_ORIGINS")
 CSRF_TRUSTED_ORIGINS = env_csv("CSRF_TRUSTED_ORIGINS")
 
 REDIS_URL = env("REDIS_URL", "redis://localhost:6379/0")
-CHANNEL_LAYERS = {
+CHANNEL_LAYERS: dict[str, dict[str, Any]] = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {"hosts": [REDIS_URL]},

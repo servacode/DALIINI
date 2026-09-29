@@ -1,7 +1,7 @@
 """Push delivery reliability: permanent failures never retry, retries never double-send."""
 
 import pytest
-from celery.exceptions import Retry  # type: ignore[import-untyped]
+from celery.exceptions import Retry
 from django.core.exceptions import ImproperlyConfigured
 
 from accounts.models import User

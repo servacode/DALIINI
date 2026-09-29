@@ -9,7 +9,7 @@ from locations.models import Province
 from .groups import admin_group, province_group, user_group
 
 
-class DirectoryConsumer(AsyncJsonWebsocketConsumer):
+class DirectoryConsumer(AsyncJsonWebsocketConsumer):  # type: ignore[misc]
     async def connect(self) -> None:
         self.joined_groups: set[str] = set()
         self.authenticated_user_id: str | None = None

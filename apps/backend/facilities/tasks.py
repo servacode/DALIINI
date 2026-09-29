@@ -1,4 +1,4 @@
-from celery import shared_task  # type: ignore[import-untyped]
+from celery import shared_task
 
 from .hours_confirmation import remind_owners_to_confirm_hours
 
