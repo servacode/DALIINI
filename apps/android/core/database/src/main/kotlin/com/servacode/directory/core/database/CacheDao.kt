@@ -43,4 +43,10 @@ interface CacheDao {
 
     @Query("DELETE FROM facility_cache WHERE provinceId = :provinceId AND categoryId = :categoryId")
     suspend fun clearDirectory(provinceId: String, categoryId: String)
+
+    @Query("SELECT * FROM category_cache WHERE id = :id LIMIT 1")
+    suspend fun category(id: String): CategoryCacheEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun putCategory(value: CategoryCacheEntity)
 }

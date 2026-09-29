@@ -3,9 +3,11 @@ package com.servacode.directory.core.network.api
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.AppException
 import com.servacode.directory.core.model.AvailabilityState
+import com.servacode.directory.core.model.CategoryTags
 import com.servacode.directory.core.model.DamascusTime
 import com.servacode.directory.core.model.EmergencyScope
 import com.servacode.directory.core.model.FacilityReportReason
+import com.servacode.directory.core.model.FacilityTag
 import com.servacode.directory.core.model.GeoPoint
 import com.servacode.directory.core.model.OwnerFacilityStatus
 import com.servacode.directory.core.model.Province
@@ -188,6 +190,55 @@ class GeneratedAdapterTest {
         val url = taken().url
         assertEquals("name", url.queryParameter("sort"))
         assertEquals("35.95", url.queryParameter("latitude"))
+    }
+
+    @Test fun `a category's choices keep the operators' order, their integer keys as string ids`() = runTest {
+        respond(
+            """{"specialties":[{"id":7,"nameAr":"قلبية"},{"id":3,"nameAr":"أطفال"}],
+            "services":[{"id":12,"nameAr":"قياس ضغط"}]}""",
+        )
+
+        val tags = publicApi.categoryTags(PHARMACY)
+
+        assertEquals(
+            CategoryTags(
+                specialties = listOf(FacilityTag("7", "قلبية"), FacilityTag("3", "أطفال")),
+                services = listOf(FacilityTag("12", "قياس ضغط")),
+            ),
+            tags,
+        )
+        assertEquals("/api/v1/public/categories/$PHARMACY/tags/", taken().url.encodedPath)
+    }
+
+    @Test fun `a category with nothing to choose from has empty lists`() = runTest {
+        respond("""{"specialties":[],"services":[]}""")
+
+        assertTrue(publicApi.categoryTags(PHARMACY).isEmpty)
+    }
+
+    @Test fun `a specialty and a service narrow a directory page as the integers they are keyed by`() = runTest {
+        respond("""{"items":[],"nextCursor":null,"hasMore":false}""")
+        respond("""{"items":[],"nextCursor":null,"hasMore":false}""")
+
+        publicApi.directory(DirectoryQuery(PROVINCE, PHARMACY, specialtyId = "3", serviceTagId = "12"))
+        publicApi.directory(DirectoryQuery(PROVINCE, PHARMACY))
+
+        val narrowed = taken().url
+        assertEquals("3", narrowed.queryParameter("specialtyId"))
+        assertEquals("12", narrowed.queryParameter("serviceTagId"))
+        // The contract's name for it, not the older alias.
+        assertNull(narrowed.queryParameter("serviceId"))
+        val whole = taken().url
+        assertNull(whole.queryParameter("specialtyId"))
+        assertNull(whole.queryParameter("serviceTagId"))
+    }
+
+    @Test fun `a tag id that is not a number never reaches the network`() = runTest {
+        val error = runCatching { publicApi.directory(DirectoryQuery(PROVINCE, PHARMACY, specialtyId = "x")) }
+            .exceptionOrNull() as AppException
+
+        assertEquals(AppError.Kind.UNEXPECTED, error.error.kind)
+        assertEquals(0, server.requestCount)
     }
 
     @Test fun `an invalid cursor is a validation error on the cursor field`() = runTest {
@@ -446,6 +497,40 @@ class GeneratedAdapterTest {
         assertEquals(REQUIREMENT_ID, requirement.id)
         assertEquals(1, requirement.minFiles)
         assertEquals(2, requirement.maxFiles)
+    }
+
+    @Test fun `each category in the owner configuration carries what owners may pick for it`() = runTest {
+        respond(
+            """{"province":{"id":"$PROVINCE","nameAr":"الرقة"},"categories":[{
+            "category":{"id":"$PHARMACY","nameAr":"عيادات","nameEn":null,"iconKey":null,
+            "specialization":"MEDICAL_CLINIC"},
+            "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":false,"specialtyFilter":true,
+            "serviceFilter":true,"temporaryClosure":true,"ownerOnboarding":true},"verificationRequirements":[],
+            "specialties":[{"id":3,"nameAr":"قلبية"},{"id":4,"nameAr":"أطفال"}],
+            "services":[{"id":12,"nameAr":"قياس ضغط"}]}]}""",
+        )
+
+        val tags = ownerApi.ownerConfig(PROVINCE).categories.single().tags
+
+        assertEquals(listOf(FacilityTag("3", "قلبية"), FacilityTag("4", "أطفال")), tags.specialties)
+        assertEquals(listOf(FacilityTag("12", "قياس ضغط")), tags.services)
+    }
+
+    @Test fun `a facility with no specialty and no service has empty lists, for the page to leave out`() = runTest {
+        respond(
+            """{"id":"$FACILITY","nameAr":"صيدلية","nameEn":null,
+            "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":null},"city":null,
+            "distanceMeters":null,"ratingAverage":null,"ratingCount":0,"isFavorite":false,"imageUrl":null,
+            "lastVerifiedAt":null,"updatedAt":"2026-09-19T10:00:00Z","whatsapp":null,
+            "availability":{"state":"OPEN","nextOpenAt":null,"isOpenNow":true,"isOnDutyToday":false},
+            "descriptionAr":null,"descriptionEn":null,"phone":null,"addressAr":null,"addressEn":null,
+            "neighborhood":null,"location":null,"images":[],"specialties":[],"services":[],"hours":[]}""",
+        )
+
+        val detail = publicApi.facility(FACILITY)
+
+        assertTrue(detail.specialties.isEmpty())
+        assertTrue(detail.services.isEmpty())
     }
 
     @Test fun `a push token is registered for android and unregistered by value`() = runTest {

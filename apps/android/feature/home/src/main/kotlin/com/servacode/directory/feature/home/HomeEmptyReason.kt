@@ -9,6 +9,11 @@ package com.servacode.directory.feature.home
  * breaks every time the wording is improved.
  */
 internal enum class HomeEmptyReason {
+    /**
+     * A specialty or a service was chosen, whatever else was: that choice is the one the reader
+     * can undo, and the empty list offers to undo it.
+     */
+    CHOICE,
     DUTY_AND_OPEN,
     DUTY,
     OPEN,
@@ -16,6 +21,7 @@ internal enum class HomeEmptyReason {
 }
 
 internal fun HomeFilters.emptyReason(): HomeEmptyReason = when {
+    hasTags -> HomeEmptyReason.CHOICE
     openNow && dutyToday -> HomeEmptyReason.DUTY_AND_OPEN
     dutyToday -> HomeEmptyReason.DUTY
     openNow -> HomeEmptyReason.OPEN

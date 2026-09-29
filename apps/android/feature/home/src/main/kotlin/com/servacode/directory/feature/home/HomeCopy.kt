@@ -47,6 +47,16 @@ object HomeCopy {
     val FILTERS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_filters)
     val LOADING_MORE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_loading_more)
 
+    /** The rows of a category's specialties and services, and the chips that undo them. */
+    val SPECIALTIES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_specialties)
+    val SERVICES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_services)
+    val ALL_SPECIALTIES: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.home_all_specialties)
+    val ALL_SERVICES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_all_services)
+    val CLEAR_TAGS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_clear_tags)
+    val EMPTY_CHOICE_BODY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.home_empty_choice_body)
+
     val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_error)
     val PROVINCE_REQUIRED: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.home_province_required)
@@ -80,6 +90,7 @@ object HomeCopy {
     @ReadOnlyComposable
     fun emptyFor(filters: HomeFilters): String = stringResource(
         when (filters.emptyReason()) {
+            HomeEmptyReason.CHOICE -> R.string.home_empty_choice
             HomeEmptyReason.DUTY_AND_OPEN -> R.string.home_empty_duty_and_open
             HomeEmptyReason.DUTY -> R.string.home_empty_duty
             HomeEmptyReason.OPEN -> R.string.home_empty_open

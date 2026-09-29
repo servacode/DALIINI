@@ -205,6 +205,32 @@ data class FacilityCapabilities(
     val supportsRatings: Boolean = false,
 )
 
+/**
+ * A specialty or a service: a choice a category offers, a facility carries and a list is
+ * narrowed by.
+ *
+ * The backend keys these by integers. The id is a string here, like every other id in the app,
+ * and only the adapter turns it back into a number.
+ */
+@Serializable
+data class FacilityTag(
+    val id: String,
+    val nameAr: String,
+)
+
+/**
+ * The specialties and the services a category offers, active ones only and in the operators'
+ * order: what an owner picks from, and what the public filters are made of.
+ */
+@Serializable
+data class CategoryTags(
+    val specialties: List<FacilityTag> = emptyList(),
+    val services: List<FacilityTag> = emptyList(),
+) {
+    /** Nothing to choose from at all. */
+    val isEmpty: Boolean get() = specialties.isEmpty() && services.isEmpty()
+}
+
 @Serializable
 data class VerificationRequirementDescriptor(
     val id: String,
@@ -222,6 +248,8 @@ data class OwnerCategoryConfig(
     val specialization: String,
     val capabilities: FacilityCapabilities,
     val verificationRequirements: List<VerificationRequirementDescriptor>,
+    /** The specialties and services an owner may pick for a facility of this category. */
+    val tags: CategoryTags = CategoryTags(),
 )
 
 @Serializable
@@ -323,6 +351,7 @@ data class OwnerFacilityDetail(
     val neighborhoodId: String? = null,
     val latitude: Double? = null,
     val longitude: Double? = null,
+    /** The ids of the [CategoryTags] choices the facility carries; active ones only. */
     val specialtyIds: List<String> = emptyList(),
     val serviceTagIds: List<String> = emptyList(),
     val hours: List<BusinessHour> = emptyList(),

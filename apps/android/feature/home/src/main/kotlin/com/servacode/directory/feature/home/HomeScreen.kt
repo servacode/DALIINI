@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.selectableGroup
 import androidx.compose.ui.semantics.semantics
 import com.servacode.directory.core.designsystem.LocalDirectoryTones
 import com.servacode.directory.core.designsystem.Sizes
@@ -65,6 +66,7 @@ import com.servacode.directory.core.designsystem.DirectoryBrandHeader
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryCompactFilterChip
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
+import com.servacode.directory.core.designsystem.DirectoryFilterChip
 import com.servacode.directory.core.designsystem.DirectoryIllustrations
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcon
@@ -84,6 +86,8 @@ import com.servacode.directory.core.designsystem.Radius
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.location.FOREGROUND_LOCATION_PERMISSIONS
 import com.servacode.directory.core.model.Category
+import com.servacode.directory.core.model.CategoryTags
+import com.servacode.directory.core.model.FacilityTag
 
 /**
  * Screen 04. The app's front door.
@@ -114,6 +118,7 @@ fun HomeScreen(
     val place by viewModel.place.collectAsStateWithLifecycle()
     val filters by viewModel.filters.collectAsStateWithLifecycle()
     val category by viewModel.category.collectAsStateWithLifecycle()
+    val tags by viewModel.tags.collectAsStateWithLifecycle()
     val list by viewModel.list.collectAsStateWithLifecycle()
     val hasLocation by viewModel.hasLocation.collectAsStateWithLifecycle()
     val unread by viewModel.unread.collectAsStateWithLifecycle()
@@ -176,6 +181,7 @@ fun HomeScreen(
                 offerLocation = offerLocation,
                 filters = filters,
                 category = category,
+                tags = tags,
                 list = list,
                 // Data saver: no slider, so none of its pictures are fetched.
                 ads = if (dataSaver) emptyList() else ads,
@@ -199,6 +205,9 @@ fun HomeScreen(
                 },
                 onChip = viewModel::toggle,
                 onCategory = viewModel::select,
+                onSpecialty = viewModel::chooseSpecialty,
+                onService = viewModel::chooseService,
+                onClearTags = viewModel::clearTags,
                 onLoadMore = viewModel::loadMore,
                 onUseLocation = { askLocation.launch(FOREGROUND_LOCATION_PERMISSIONS.toTypedArray()) },
                 onRefresh = viewModel::refresh,
@@ -345,12 +354,16 @@ private fun HomeContent(
     offerLocation: Boolean,
     filters: HomeFilters,
     category: Category?,
+    tags: CategoryTags,
     list: HomeListState,
     ads: List<HomeAd>,
     hasLocation: Boolean,
     extraItems: LazyListScope.() -> Unit,
     onChip: (HomeChip) -> Unit,
     onCategory: (Category) -> Unit,
+    onSpecialty: (String?) -> Unit,
+    onService: (String?) -> Unit,
+    onClearTags: () -> Unit,
     onLoadMore: () -> Unit,
     onUseLocation: () -> Unit,
     onRefresh: () -> Unit,
@@ -426,7 +439,105 @@ private fun HomeContent(
                     modifier = Modifier.padding(horizontal = Space.md),
                 )
             }
-            facilityList(list, filters, place, onFacility, onLoadMore)
+            if (!tags.isEmpty) {
+                item(key = "tags") {
+                    TagFilters(
+                        tags = tags,
+                        filters = filters,
+                        onSpecialty = onSpecialty,
+                        onService = onService,
+                        onClear = onClearTags,
+                    )
+                }
+            }
+            facilityList(list, filters, place, onFacility, onLoadMore, onClearTags)
+        }
+    }
+}
+
+/**
+ * The chosen category's specialties and services, a row of each, under the chips.
+ *
+ * One of each at a time, as the backend narrows by one of each. «كل التخصصات» and «كل الخدمات»
+ * lead their rows because nothing chosen is a state the reader can see and return to, and
+ * «امسح التصفية» appears once something is chosen, for when the choice has scrolled out of
+ * sight. The rows scroll rather than wrap: a clinic may offer twenty specialties, and wrapped
+ * they would push the list off the screen.
+ */
+@Composable
+private fun TagFilters(
+    tags: CategoryTags,
+    filters: HomeFilters,
+    onSpecialty: (String?) -> Unit,
+    onService: (String?) -> Unit,
+    onClear: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        if (tags.specialties.isNotEmpty()) {
+            TagRow(
+                label = HomeCopy.SPECIALTIES,
+                all = HomeCopy.ALL_SPECIALTIES,
+                choices = tags.specialties,
+                chosen = filters.specialtyId,
+                onChoose = onSpecialty,
+            )
+        }
+        if (tags.services.isNotEmpty()) {
+            TagRow(
+                label = HomeCopy.SERVICES,
+                all = HomeCopy.ALL_SERVICES,
+                choices = tags.services,
+                chosen = filters.serviceTagId,
+                onChoose = onService,
+            )
+        }
+        if (filters.hasTags) {
+            DirectoryCompactFilterChip(
+                text = HomeCopy.CLEAR_TAGS,
+                selected = false,
+                onClick = onClear,
+                icon = DirectoryIcons.close,
+                modifier = Modifier.padding(horizontal = Space.base),
+            )
+        }
+    }
+}
+
+/**
+ * One labelled row: «all» first, then each choice in the operators' order. A screen reader hears
+ * the label as a heading, then each chip with whether it is the one chosen.
+ */
+@Composable
+private fun TagRow(
+    label: String,
+    all: String,
+    choices: List<FacilityTag>,
+    chosen: String?,
+    onChoose: (String?) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = Space.base).semantics { heading() },
+        )
+        LazyRow(
+            modifier = Modifier.semantics { selectableGroup() },
+            contentPadding = PaddingValues(horizontal = Space.base),
+            horizontalArrangement = Arrangement.spacedBy(Space.xs),
+        ) {
+            item(key = "all") {
+                DirectoryFilterChip(text = all, selected = chosen == null, onClick = { onChoose(null) })
+            }
+            items(choices, key = { it.id }) { choice ->
+                DirectoryFilterChip(
+                    text = choice.nameAr,
+                    selected = choice.id == chosen,
+                    onClick = { onChoose(choice.id) },
+                )
+            }
         }
     }
 }
@@ -534,6 +645,7 @@ private fun LazyListScope.facilityList(
     place: String?,
     onFacility: (String) -> Unit,
     onLoadMore: () -> Unit,
+    onClearTags: () -> Unit,
 ) {
     if (list.loading) {
         item(key = "list-loading") { DirectoryLoading(Modifier.padding(top = Space.xxl)) }
@@ -552,11 +664,15 @@ private fun LazyListScope.facilityList(
     }
     if (list.items.isEmpty()) {
         item(key = "list-empty") {
+            // A specialty or a service is the one choice here that can be undone in place, so
+            // the empty list says so and offers to.
             DirectoryEmptyState(
                 title = HomeCopy.emptyFor(filters),
                 modifier = Modifier.padding(top = Space.lg),
-                body = HomeCopy.emptyBodyFor(place),
+                body = if (filters.hasTags) HomeCopy.EMPTY_CHOICE_BODY else HomeCopy.emptyBodyFor(place),
                 illustration = DirectoryIllustrations.noResults,
+                action = if (filters.hasTags) HomeCopy.CLEAR_TAGS else null,
+                onAction = if (filters.hasTags) onClearTags else null,
             )
         }
         return

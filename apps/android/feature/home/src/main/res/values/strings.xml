@@ -30,6 +30,16 @@
 
     <string name="home_chip_nearest">الأقرب إليك</string>
 
+    <!-- A category's specialties and services, a row of each under the chips, where the category
+         filters by them. One of each at a time; «كل …» is the row with nothing chosen. -->
+    <string name="home_specialties">التخصصات</string>
+    <string name="home_services">الخدمات</string>
+    <string name="home_all_specialties">كل التخصصات</string>
+    <string name="home_all_services">كل الخدمات</string>
+    <string name="home_clear_tags">امسح التصفية</string>
+
+    <string name="home_empty_choice">لا توجد منشآت تطابق هذا الاختيار</string>
+    <string name="home_empty_choice_body">جرّب تخصصاً أو خدمة أخرى.</string>
     <string name="home_empty_duty_and_open">لا توجد منشآت مناوبة اليوم ومفتوحة الآن</string>
     <string name="home_empty_duty">لا توجد منشآت مناوبة اليوم</string>
     <string name="home_empty_open">لا توجد منشآت مفتوحة حالياً</string>

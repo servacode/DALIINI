@@ -13,7 +13,8 @@
     <string name="facility_address">العنوان</string>
     <string name="facility_hours">ساعات العمل</string>
     <string name="facility_about">نبذة</string>
-    <string name="facility_specialties">الاختصاصات</string>
+    <!-- The same word the filters and the owner's section use for them. -->
+    <string name="facility_specialties">التخصصات</string>
     <string name="facility_services">الخدمات</string>
     <string name="facility_your_rating">تقييمك</string>
     <string name="facility_rating_change">اضغط نجمة أخرى لتغيير تقييمك.</string>

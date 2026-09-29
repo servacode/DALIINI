@@ -37,6 +37,7 @@ import com.servacode.directory.api.models.FacilityMemberRoleEnum
 import com.servacode.directory.api.models.FacilityStatusEnum
 import com.servacode.directory.api.models.HomeCategory
 import com.servacode.directory.api.models.MapMarker
+import com.servacode.directory.api.models.NamedIntRef
 import com.servacode.directory.api.models.NamedRef
 import com.servacode.directory.api.models.OwnerApplication as WireOwnerApplication
 import com.servacode.directory.api.models.OwnerConfig as WireOwnerConfig
@@ -52,6 +53,7 @@ import com.servacode.directory.api.models.OwnerVerificationRequirement
 import com.servacode.directory.api.models.Profile
 import com.servacode.directory.api.models.PublicAdvertisement
 import com.servacode.directory.api.models.PublicCategory
+import com.servacode.directory.api.models.PublicCategoryTags
 import com.servacode.directory.api.models.PublicFacilityDetail
 import com.servacode.directory.api.models.PublicHome
 import com.servacode.directory.api.models.PublicHoursEntry
@@ -67,12 +69,14 @@ import com.servacode.directory.core.model.AuthChallenge
 import com.servacode.directory.core.model.AvailabilityState
 import com.servacode.directory.core.model.BusinessHour
 import com.servacode.directory.core.model.Category
+import com.servacode.directory.core.model.CategoryTags
 import com.servacode.directory.core.model.DutyShift
 import com.servacode.directory.core.model.FacilityCapabilities
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.FacilityMember
 import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.model.FacilitySummary
+import com.servacode.directory.core.model.FacilityTag
 import com.servacode.directory.core.model.GeoPoint
 import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.HomeSnapshot
@@ -167,6 +171,15 @@ internal fun PublicCategory.toDomain() = Category(
     nameEn = nameEn,
     iconKey = iconKey,
     capabilities = capabilities.toDomain(),
+)
+
+/** A specialty or a service. Its integer key becomes a string id, as every id is in the domain. */
+internal fun NamedIntRef.toDomain() = FacilityTag(id = id.toString(), nameAr = nameAr)
+
+/** The backend's order is the operators' order, so neither list is sorted here. */
+internal fun PublicCategoryTags.toDomain() = CategoryTags(
+    specialties = specialties.map { it.toDomain() },
+    services = services.map { it.toDomain() },
 )
 
 /** The home payload carries the capabilities a home screen needs, not the owner-side ones. */
@@ -487,6 +500,10 @@ internal fun WireOwnerConfig.toDomain() = OwnerConfig(
             specialization = item.category.specialization.value,
             capabilities = item.capabilities.toDomain(),
             verificationRequirements = item.verificationRequirements.map { it.toDomain() },
+            tags = CategoryTags(
+                specialties = item.specialties.map { it.toDomain() },
+                services = item.services.map { it.toDomain() },
+            ),
         )
     },
 )

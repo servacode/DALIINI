@@ -1,5 +1,6 @@
 package com.servacode.directory.core.database
 
+import com.servacode.directory.core.model.CategoryTags
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.HomeSnapshot
@@ -69,6 +70,21 @@ class PublicCacheDataSource @Inject constructor(
                     summaryPayloadJson = json.encodeToString(value.summary),
                     updatedAtEpochMillis = System.currentTimeMillis(),
                 ),
+            ),
+        )
+    }
+
+    override suspend fun categoryTags(categoryId: String): CategoryTags? = dao.category(categoryId)?.let {
+        runCatching { json.decodeFromString<CategoryTags>(it.payloadJson) }.getOrNull()
+    }
+
+    override suspend fun putCategoryTags(value: CategoryTags, categoryId: String, provinceId: String) {
+        dao.putCategory(
+            CategoryCacheEntity(
+                id = categoryId,
+                provinceId = provinceId,
+                payloadJson = json.encodeToString(value),
+                updatedAtEpochMillis = System.currentTimeMillis(),
             ),
         )
     }

@@ -1,5 +1,6 @@
 package com.servacode.directory.feature.home
 
+import com.servacode.directory.core.model.CategoryTags
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -21,6 +22,9 @@ class HomeUseCase @Inject constructor(
         filters: HomeFilters,
         cursor: String? = null,
     ) = repository.filtered(provinceId, categoryId, filters, cursor)
+
+    /** The specialties and services a category offers, cached first, for the rows under the chips. */
+    fun tags(provinceId: String, categoryId: String): Flow<CategoryTags> = repository.tags(provinceId, categoryId)
 
     /** Whether a position is known, which decides whether "nearest" is offered. */
     fun hasLocation(): Boolean = repository.hasLocation()

@@ -16,6 +16,7 @@ import com.servacode.directory.core.model.AccountProfile
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.AppException
 import com.servacode.directory.core.model.Category
+import com.servacode.directory.core.model.CategoryTags
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.HomeAd
@@ -77,6 +78,14 @@ class FakePublicCache : PublicCache {
     override suspend fun putFacility(value: FacilityDetail, provinceId: String) {
         writes += "facility:${value.summary.id}"
         details[value.summary.id] = value
+    }
+
+    val tags = mutableMapOf<String, CategoryTags>()
+
+    override suspend fun categoryTags(categoryId: String): CategoryTags? = tags[categoryId]
+    override suspend fun putCategoryTags(value: CategoryTags, categoryId: String, provinceId: String) {
+        writes += "tags:$categoryId"
+        tags[categoryId] = value
     }
 }
 
@@ -178,6 +187,14 @@ class ScriptedPublicApi : PublicApiBoundary {
 
     override suspend fun provinces(): List<Province> = provincesAnswer().also { calls += "provinces" }
     override suspend fun categories(provinceId: String): List<Category> = throw offline
+
+    var tagsAnswer: (String) -> CategoryTags = { throw offline }
+
+    override suspend fun categoryTags(categoryId: String): CategoryTags {
+        calls += "tags:$categoryId"
+        return tagsAnswer(categoryId)
+    }
+
     override suspend fun home(province: Province, latitude: Double?, longitude: Double?): HomeSnapshot {
         calls += "home:${province.id}:$latitude:$longitude"
         return homeAnswer(province)

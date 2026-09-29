@@ -24,6 +24,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import com.servacode.directory.core.model.AccountProfile
 import com.servacode.directory.core.model.Category
+import com.servacode.directory.core.model.CategoryTags
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.HomeAd
@@ -66,6 +67,9 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
     override suspend fun categories(provinceId: String): List<Category> =
         call { taxonomy.publicProvinceCategoriesList(UUID.fromString(provinceId)) }
             .items.map { it.toDomain() }
+
+    override suspend fun categoryTags(categoryId: String): CategoryTags =
+        call { taxonomy.publicCategoryTagsRetrieve(UUID.fromString(categoryId)) }.toDomain()
 
     override suspend fun home(province: Province, latitude: Double?, longitude: Double?): HomeSnapshot =
         call {
@@ -122,6 +126,9 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
             latitude = query.latitude?.toString(),
             longitude = query.longitude?.toString(),
             limit = query.pageSize,
+            // Integer keys on the wire; the domain keeps every id as a String.
+            specialtyId = query.specialtyId?.toInt(),
+            serviceTagId = query.serviceTagId?.toInt(),
         )
     }.toDomain()
 
