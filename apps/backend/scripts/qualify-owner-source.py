@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import sys
 from pathlib import Path
+from typing import cast
 
 ROOT = Path(__file__).resolve().parents[1]
 FACILITIES = ROOT / "facilities"
@@ -89,13 +90,13 @@ def _model_constraint_names(source: str, model: str) -> list[str]:
                 targets = [t.id for t in stmt.targets if isinstance(t, ast.Name)]
                 if "constraints" not in targets:
                     continue
-                names = []
+                names: list[str] = []
                 for call in ast.walk(stmt.value):
                     if not isinstance(call, ast.Call):
                         continue
                     for kw in call.keywords:
                         if kw.arg == "name" and isinstance(kw.value, ast.Constant):
-                            names.append(kw.value.value)
+                            names.append(cast(str, kw.value.value))
                 return names
     return []
 

@@ -1,3 +1,6 @@
+from typing import Any
+from uuid import UUID
+
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
@@ -5,14 +8,16 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.openapi import CONFLICT_409, THROTTLED_429, VALIDATION_400, protected
 from locations.models import Province
 
+from .authentication import AuthenticatedRequest
 from .media import delete_profile_image, profile_image_url, save_profile_image
-from .models import OTPChallenge
+from .models import OTPChallenge, User
 from .schemas import (
     AccountDeletionRequestedSerializer,
     ChallengeAcceptedSerializer,
@@ -53,7 +58,7 @@ from .services import (
 from .throttles import LoginThrottle, OtpStartThrottle, OtpVerifyThrottle, RecoveryThrottle
 
 
-def _profile_payload(user) -> dict:
+def _profile_payload(user: User) -> dict[str, Any]:
     """Everything the app is told about its own account, in one place.
 
     One function rather than one per view, so a field added here cannot appear in the answer
@@ -72,7 +77,7 @@ def _profile_payload(user) -> dict:
     }
 
 
-def _challenge_response(challenge):
+def _challenge_response(challenge: OTPChallenge) -> Response:
     return Response(
         {
             "challengeId": str(challenge.pk),
@@ -99,7 +104,7 @@ class RegisterStartView(APIView):
         request=RegisterStartSerializer,
         responses={202: ChallengeAcceptedSerializer, 400: VALIDATION_400, 429: THROTTLED_429},
     )
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         serializer = RegisterStartSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -125,7 +130,7 @@ class RegisterVerifyView(APIView):
         request=ChallengeVerifySerializer,
         responses={200: ChallengeVerifiedSerializer, 400: VALIDATION_400, 429: THROTTLED_429},
     )
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         serializer = ChallengeVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         challenge = verify_challenge(
@@ -147,7 +152,7 @@ class RegisterCompleteView(APIView):
         request=RegisterCompleteSerializer,
         responses={201: SessionCredentialsSerializer, 400: VALIDATION_400, 409: CONFLICT_409},
     )
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         serializer = RegisterCompleteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(complete_registration(**serializer.validated_data), status=201)
@@ -165,7 +170,7 @@ class LoginView(APIView):
         request=LoginSerializer,
         responses={200: SessionCredentialsSerializer, 400: VALIDATION_400, 429: THROTTLED_429},
     )
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(login(**serializer.validated_data))
@@ -187,7 +192,7 @@ class RefreshView(APIView):
         request=RefreshSerializer,
         responses={200: SessionCredentialsSerializer, 400: VALIDATION_400},
     )
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         serializer = RefreshSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(rotate_refresh(raw_refresh=serializer.validated_data["refreshToken"]))
@@ -203,7 +208,7 @@ class LogoutView(APIView):
         request=LogoutRequestSerializer,
         responses={204: None, 400: VALIDATION_400, **protected()},
     )
-    def post(self, request):
+    def post(self, request: AuthenticatedRequest) -> Response:
         session_id = request.data.get("sessionId")
         if not session_id:
             raise ValidationError({"sessionId": ["This field is required."]})
@@ -221,7 +226,7 @@ class LogoutAllView(APIView):
         request=None,
         responses={204: None, **protected()},
     )
-    def post(self, request):
+    def post(self, request: AuthenticatedRequest) -> Response:
         revoke_all_sessions(user=request.user)
         return Response(status=204)
 
@@ -236,7 +241,7 @@ class SessionsView(APIView):
         description="Session secrets are never returned, only metadata and revocation state.",
         responses={200: UserSessionListSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         rows = request.user.sessions.order_by("-created_at")
         return Response(
             {
@@ -264,7 +269,7 @@ class SessionDetailView(APIView):
         summary="Revoke a specific session of the caller",
         responses={204: None, 400: VALIDATION_400, **protected()},
     )
-    def delete(self, request, session_id):
+    def delete(self, request: AuthenticatedRequest, session_id: UUID) -> Response:
         revoke_session(user=request.user, session_id=session_id)
         return Response(status=204)
 
@@ -281,7 +286,7 @@ class RecoveryStartView(APIView):
         request=RecoveryStartSerializer,
         responses={202: ChallengeAcceptedSerializer, 400: VALIDATION_400, 429: THROTTLED_429},
     )
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         serializer = RecoveryStartSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         challenge = start_challenge(
@@ -303,7 +308,7 @@ class RecoveryVerifyView(APIView):
         request=ChallengeVerifySerializer,
         responses={200: ChallengeVerifiedSerializer, 400: VALIDATION_400, 429: THROTTLED_429},
     )
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         serializer = ChallengeVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         challenge = verify_challenge(
@@ -326,7 +331,7 @@ class RecoveryResetView(APIView):
         request=RecoveryResetSerializer,
         responses={204: None, 400: VALIDATION_400},
     )
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         serializer = RecoveryResetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         reset_password(**serializer.validated_data)
@@ -342,7 +347,7 @@ class ProfileView(APIView):
         summary="Retrieve the profile of the caller",
         responses={200: ProfileSerializer, **protected()},
     )
-    def get(self, request):
+    def get(self, request: AuthenticatedRequest) -> Response:
         return Response(_profile_payload(request.user))
 
     @extend_schema(
@@ -352,7 +357,7 @@ class ProfileView(APIView):
         request=ProfilePatchSerializer,
         responses={200: ProfileSerializer, 400: VALIDATION_400, **protected()},
     )
-    def patch(self, request):
+    def patch(self, request: AuthenticatedRequest) -> Response:
         serializer = ProfilePatchSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = request.user
@@ -395,7 +400,7 @@ class ProfileImageView(APIView):
         request={"multipart/form-data": ProfileImageUploadSerializer},
         responses={200: ProfileSerializer, 400: VALIDATION_400, **protected()},
     )
-    def put(self, request):
+    def put(self, request: AuthenticatedRequest) -> Response:
         serializer = ProfileImageUploadSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = request.user
@@ -421,7 +426,7 @@ class ProfileImageView(APIView):
         summary="Remove the profile picture of the caller",
         responses={200: ProfileSerializer, **protected()},
     )
-    def delete(self, request):
+    def delete(self, request: AuthenticatedRequest) -> Response:
         user = request.user
         previous = user.profile_image_key
         user.profile_image_key = ""
@@ -453,7 +458,7 @@ class PhoneChangeStartView(APIView):
             **protected(),
         },
     )
-    def post(self, request):
+    def post(self, request: AuthenticatedRequest) -> Response:
         serializer = PhoneChangeStartSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         challenge = start_phone_change(
@@ -480,7 +485,7 @@ class PhoneChangeConfirmView(APIView):
         request=ChallengeVerifySerializer,
         responses={200: ProfileSerializer, 400: VALIDATION_400, 429: THROTTLED_429, **protected()},
     )
-    def post(self, request):
+    def post(self, request: AuthenticatedRequest) -> Response:
         serializer = ChallengeVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = complete_phone_change(
@@ -505,7 +510,7 @@ class AccountDeletionRequestView(APIView):
         request=DeletionRequestSerializer,
         responses={202: AccountDeletionRequestedSerializer, 400: VALIDATION_400, **protected()},
     )
-    def post(self, request):
+    def post(self, request: AuthenticatedRequest) -> Response:
         serializer = DeletionRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         deletion = request_account_deletion(
@@ -534,7 +539,7 @@ class PasswordChangeView(APIView):
         request=PasswordChangeSerializer,
         responses={204: None, 400: VALIDATION_400, **protected()},
     )
-    def post(self, request):
+    def post(self, request: AuthenticatedRequest) -> Response:
         serializer = PasswordChangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         change_password(

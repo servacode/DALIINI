@@ -7,7 +7,8 @@ proving it ends every session, the caller's included.
 
 from datetime import timedelta
 from io import BytesIO
-from uuid import uuid4
+from typing import IO
+from uuid import UUID, uuid4
 
 import pytest
 from django.utils import timezone
@@ -36,10 +37,10 @@ class _Storage:
 
 
 @pytest.fixture
-def signed_in(db, user, monkeypatch):
+def signed_in(db: None, user: User, monkeypatch: pytest.MonkeyPatch) -> APIClient:
     # The bytes are still decoded and re-encoded, so an upload that is not an image is still
     # refused for the real reason; only the write to the store is stood in for.
-    def save(*, user_id, upload):
+    def save(*, user_id: UUID, upload: IO[bytes]) -> tuple[_Storage, str]:
         safe_reencode_image(upload)
         return _Storage(), f"accounts/{user_id}/avatar/{uuid4().hex}.jpg"
 
@@ -51,7 +52,7 @@ def signed_in(db, user, monkeypatch):
 
 
 @pytest.fixture
-def new_phone(request):
+def new_phone(request: pytest.FixtureRequest) -> str:
     """A number of this test's own.
 
     The start throttle is keyed by caller and number, and the cache outlives a test, so tests
@@ -61,7 +62,7 @@ def new_phone(request):
     return f"+9639{digits[:8].ljust(8, '0')}"
 
 
-def a_png(size=(40, 30)) -> BytesIO:
+def a_png(size: tuple[int, int] = (40, 30)) -> BytesIO:
     buffer = BytesIO()
     Image.new("RGB", size, (10, 120, 90)).save(buffer, format="PNG")
     buffer.seek(0)
@@ -69,7 +70,7 @@ def a_png(size=(40, 30)) -> BytesIO:
     return buffer
 
 
-def a_session(user) -> UserSession:
+def a_session(user: User) -> UserSession:
     return UserSession.objects.create(
         user=user,
         refresh_digest="digest-for-the-test",
@@ -83,7 +84,7 @@ def a_session(user) -> UserSession:
 
 
 @pytest.mark.django_db
-def test_an_address_is_written_and_read_back(signed_in, user):
+def test_an_address_is_written_and_read_back(signed_in: APIClient, user: User) -> None:
     response = signed_in.patch(PROFILE, {"address": "حي الأمين، خلف الجامع"}, format="json")
 
     assert response.status_code == 200
@@ -93,7 +94,9 @@ def test_an_address_is_written_and_read_back(signed_in, user):
 
 
 @pytest.mark.django_db
-def test_an_account_that_has_given_no_address_reads_as_empty_not_missing(signed_in):
+def test_an_account_that_has_given_no_address_reads_as_empty_not_missing(
+    signed_in: APIClient
+) -> None:
     response = signed_in.get(PROFILE)
 
     assert response.status_code == 200
@@ -102,7 +105,7 @@ def test_an_account_that_has_given_no_address_reads_as_empty_not_missing(signed_
 
 
 @pytest.mark.django_db
-def test_an_address_can_be_cleared(signed_in, user):
+def test_an_address_can_be_cleared(signed_in: APIClient, user: User) -> None:
     signed_in.patch(PROFILE, {"address": "حي الأمين"}, format="json")
 
     response = signed_in.patch(PROFILE, {"address": ""}, format="json")
@@ -112,7 +115,9 @@ def test_an_address_can_be_cleared(signed_in, user):
 
 
 @pytest.mark.django_db
-def test_a_patch_that_says_nothing_about_the_address_leaves_it_alone(signed_in, user):
+def test_a_patch_that_says_nothing_about_the_address_leaves_it_alone(
+    signed_in: APIClient, user: User
+) -> None:
     signed_in.patch(PROFILE, {"address": "حي الأمين"}, format="json")
 
     response = signed_in.patch(PROFILE, {"displayName": "اسم آخر"}, format="json")
@@ -125,7 +130,7 @@ def test_a_patch_that_says_nothing_about_the_address_leaves_it_alone(signed_in, 
 
 
 @pytest.mark.django_db
-def test_a_picture_is_stored_and_its_url_is_returned(signed_in, user):
+def test_a_picture_is_stored_and_its_url_is_returned(signed_in: APIClient, user: User) -> None:
     response = signed_in.put(IMAGE, {"file": a_png()}, format="multipart")
 
     assert response.status_code == 200
@@ -137,7 +142,7 @@ def test_a_picture_is_stored_and_its_url_is_returned(signed_in, user):
 
 
 @pytest.mark.django_db
-def test_the_key_does_not_carry_the_name_of_the_person(signed_in, user):
+def test_the_key_does_not_carry_the_name_of_the_person(signed_in: APIClient, user: User) -> None:
     signed_in.put(IMAGE, {"file": a_png()}, format="multipart")
 
     user.refresh_from_db()
@@ -146,7 +151,7 @@ def test_the_key_does_not_carry_the_name_of_the_person(signed_in, user):
 
 
 @pytest.mark.django_db
-def test_a_second_picture_replaces_the_first(signed_in, user):
+def test_a_second_picture_replaces_the_first(signed_in: APIClient, user: User) -> None:
     signed_in.put(IMAGE, {"file": a_png()}, format="multipart")
     user.refresh_from_db()
     first = user.profile_image_key
@@ -158,7 +163,7 @@ def test_a_second_picture_replaces_the_first(signed_in, user):
 
 
 @pytest.mark.django_db
-def test_a_picture_is_removed(signed_in, user):
+def test_a_picture_is_removed(signed_in: APIClient, user: User) -> None:
     signed_in.put(IMAGE, {"file": a_png()}, format="multipart")
 
     response = signed_in.delete(IMAGE)
@@ -170,7 +175,7 @@ def test_a_picture_is_removed(signed_in, user):
 
 
 @pytest.mark.django_db
-def test_a_file_that_is_not_an_image_is_refused(signed_in, user):
+def test_a_file_that_is_not_an_image_is_refused(signed_in: APIClient, user: User) -> None:
     text = BytesIO(b"this is not a picture")
     text.name = "photo.jpg"
 
@@ -185,7 +190,9 @@ def test_a_file_that_is_not_an_image_is_refused(signed_in, user):
 
 
 @pytest.mark.django_db
-def test_the_code_goes_to_the_number_being_claimed(signed_in, user, new_phone):
+def test_the_code_goes_to_the_number_being_claimed(
+    signed_in: APIClient, user: User, new_phone: str
+) -> None:
     response = signed_in.post(PHONE_START, {"phone": new_phone}, format="json")
 
     assert response.status_code == 202
@@ -199,7 +206,9 @@ def test_the_code_goes_to_the_number_being_claimed(signed_in, user, new_phone):
 
 
 @pytest.mark.django_db
-def test_a_proved_code_moves_the_account_and_ends_every_session(signed_in, user, new_phone):
+def test_a_proved_code_moves_the_account_and_ends_every_session(
+    signed_in: APIClient, user: User, new_phone: str
+) -> None:
     session = a_session(user)
     started = signed_in.post(PHONE_START, {"phone": new_phone}, format="json")
     challenge = OTPChallenge.objects.get(pk=started.data["challengeId"])
@@ -222,7 +231,9 @@ def test_a_proved_code_moves_the_account_and_ends_every_session(signed_in, user,
 
 
 @pytest.mark.django_db
-def test_a_number_another_account_already_has_is_refused(signed_in, user, new_phone):
+def test_a_number_another_account_already_has_is_refused(
+    signed_in: APIClient, user: User, new_phone: str
+) -> None:
     User.objects.create_user(phone=new_phone, password="StrongPass123!", name="Someone Else")
 
     response = signed_in.post(PHONE_START, {"phone": new_phone}, format="json")
@@ -232,14 +243,16 @@ def test_a_number_another_account_already_has_is_refused(signed_in, user, new_ph
 
 
 @pytest.mark.django_db
-def test_the_number_the_account_already_has_is_refused(signed_in, user):
+def test_the_number_the_account_already_has_is_refused(signed_in: APIClient, user: User) -> None:
     response = signed_in.post(PHONE_START, {"phone": user.phone}, format="json")
 
     assert response.status_code == 400
 
 
 @pytest.mark.django_db
-def test_a_wrong_code_does_not_move_the_account(signed_in, user, new_phone):
+def test_a_wrong_code_does_not_move_the_account(
+    signed_in: APIClient, user: User, new_phone: str
+) -> None:
     started = signed_in.post(PHONE_START, {"phone": new_phone}, format="json")
 
     response = signed_in.post(
@@ -254,7 +267,9 @@ def test_a_wrong_code_does_not_move_the_account(signed_in, user, new_phone):
 
 
 @pytest.mark.django_db
-def test_a_code_started_for_one_account_cannot_be_spent_by_another(db, user, new_phone):
+def test_a_code_started_for_one_account_cannot_be_spent_by_another(
+    db: None, user: User, new_phone: str
+) -> None:
     other = User.objects.create_user(
         phone="+963900000002",
         password="StrongPass123!",
@@ -281,7 +296,7 @@ def test_a_code_started_for_one_account_cannot_be_spent_by_another(db, user, new
 
 
 @pytest.mark.django_db
-def test_a_code_is_good_once(signed_in, user, new_phone):
+def test_a_code_is_good_once(signed_in: APIClient, user: User, new_phone: str) -> None:
     started = signed_in.post(PHONE_START, {"phone": new_phone}, format="json")
     challenge = OTPChallenge.objects.get(pk=started.data["challengeId"])
     challenge.otp_digest = otp_digest(challenge_id=challenge.pk, code="123456")
@@ -302,7 +317,9 @@ def test_a_code_is_good_once(signed_in, user, new_phone):
 
 
 @pytest.mark.django_db
-def test_a_number_that_is_not_syrian_is_refused_before_any_code_is_sent(signed_in):
+def test_a_number_that_is_not_syrian_is_refused_before_any_code_is_sent(
+    signed_in: APIClient
+) -> None:
     response = signed_in.post(PHONE_START, {"phone": "+15551234567"}, format="json")
 
     assert response.status_code == 400
@@ -310,7 +327,7 @@ def test_a_number_that_is_not_syrian_is_refused_before_any_code_is_sent(signed_i
 
 
 @pytest.mark.django_db
-def test_the_account_is_reached_by_any_form_of_the_number(signed_in, user):
+def test_the_account_is_reached_by_any_form_of_the_number(signed_in: APIClient, user: User) -> None:
     # 09XXXXXXXX is how it is written on a shopfront; it means the same number.
     response = signed_in.post(PHONE_START, {"phone": "0912345678"}, format="json")
 
@@ -319,7 +336,7 @@ def test_the_account_is_reached_by_any_form_of_the_number(signed_in, user):
 
 
 @pytest.mark.django_db
-def test_signing_out_is_not_required_to_read_a_profile(signed_in):
+def test_signing_out_is_not_required_to_read_a_profile(signed_in: APIClient) -> None:
     response = signed_in.get(PROFILE)
 
     assert response.status_code == 200

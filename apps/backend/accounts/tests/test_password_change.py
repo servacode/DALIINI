@@ -11,20 +11,21 @@ import pytest
 from django.utils import timezone
 from rest_framework.test import APIClient
 
+from accounts.models import User
 from sessions.models import UserSession
 
 CHANGE = "/api/v1/account/password/"
 
 
 @pytest.fixture
-def signed_in(db, user):
+def signed_in(db: None, user: User) -> APIClient:
     client = APIClient()
     client.force_authenticate(user=user)
     return client
 
 
 @pytest.mark.django_db
-def test_the_password_is_replaced_and_every_session_ends(signed_in, user):
+def test_the_password_is_replaced_and_every_session_ends(signed_in: APIClient, user: User) -> None:
     session = UserSession.objects.create(
         user=user,
         refresh_digest="digest-for-the-test",
@@ -47,7 +48,7 @@ def test_the_password_is_replaced_and_every_session_ends(signed_in, user):
 
 
 @pytest.mark.django_db
-def test_the_wrong_current_password_changes_nothing(signed_in, user):
+def test_the_wrong_current_password_changes_nothing(signed_in: APIClient, user: User) -> None:
     response = signed_in.post(
         CHANGE,
         {"currentPassword": "NotThePassword1!", "newPassword": "EvenStronger456!"},
@@ -60,7 +61,7 @@ def test_the_wrong_current_password_changes_nothing(signed_in, user):
 
 
 @pytest.mark.django_db
-def test_the_new_password_must_differ_and_must_be_strong(signed_in, user):
+def test_the_new_password_must_differ_and_must_be_strong(signed_in: APIClient, user: User) -> None:
     same = signed_in.post(
         CHANGE,
         {"currentPassword": "StrongPass123!", "newPassword": "StrongPass123!"},
@@ -79,7 +80,7 @@ def test_the_new_password_must_differ_and_must_be_strong(signed_in, user):
 
 
 @pytest.mark.django_db
-def test_changing_a_password_needs_an_account():
+def test_changing_a_password_needs_an_account() -> None:
     assert APIClient().post(
         CHANGE,
         {"currentPassword": "a", "newPassword": "b"},

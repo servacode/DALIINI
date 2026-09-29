@@ -5,8 +5,11 @@ never completed is a name stored for nothing, and asking for it first makes the 
 form before they know whether they can even receive the code.
 """
 
+from collections.abc import Iterator
+
 import pytest
 from django.core.cache import cache
+from rest_framework.response import Response
 from rest_framework.test import APIClient
 
 from accounts.models import OTPChallenge, User
@@ -20,7 +23,7 @@ PHONE = "+963900444001"
 
 
 @pytest.fixture
-def province(db) -> Province:
+def province(db: None) -> Province:
     return Province.objects.create(code="test-province", name_ar="محافظة", active=True)
 
 
@@ -30,7 +33,7 @@ def client() -> APIClient:
 
 
 @pytest.fixture(autouse=True)
-def spent_allowance():
+def spent_allowance() -> Iterator[None]:
     """The start throttle is keyed by caller and number and its cache outlives a test.
 
     These ask for a code on the same number more than once on purpose, which is the thing
@@ -41,11 +44,11 @@ def spent_allowance():
     cache.clear()
 
 
-def start(client, province, phone=PHONE):
+def start(client: APIClient, province: Province, phone: str = PHONE) -> Response:
     return client.post(START, {"phone": phone, "provinceId": str(province.pk)}, format="json")
 
 
-def prove(challenge_id, code="123456"):
+def prove(challenge_id: str, code: str = "123456") -> str:
     challenge = OTPChallenge.objects.get(pk=challenge_id)
     challenge.otp_digest = otp_digest(challenge_id=challenge.pk, code=code)
     challenge.save(update_fields=["otp_digest"])
@@ -53,7 +56,7 @@ def prove(challenge_id, code="123456"):
 
 
 @pytest.mark.django_db
-def test_a_code_is_sent_without_asking_for_a_name(client, province):
+def test_a_code_is_sent_without_asking_for_a_name(client: APIClient, province: Province) -> None:
     response = start(client, province)
 
     assert response.status_code == 202
@@ -64,7 +67,9 @@ def test_a_code_is_sent_without_asking_for_a_name(client, province):
 
 
 @pytest.mark.django_db
-def test_a_name_sent_with_the_code_request_is_simply_not_stored(client, province):
+def test_a_name_sent_with_the_code_request_is_simply_not_stored(
+    client: APIClient, province: Province
+) -> None:
     response = client.post(
         START,
         {"phone": PHONE, "provinceId": str(province.pk), "displayName": "لا يُحفظ"},
@@ -76,7 +81,9 @@ def test_a_name_sent_with_the_code_request_is_simply_not_stored(client, province
 
 
 @pytest.mark.django_db
-def test_the_name_arrives_with_the_password_and_opens_the_account(client, province):
+def test_the_name_arrives_with_the_password_and_opens_the_account(
+    client: APIClient, province: Province
+) -> None:
     started = start(client, province)
     challenge_id = started.data["challengeId"]
     code = prove(challenge_id)
@@ -102,7 +109,7 @@ def test_the_name_arrives_with_the_password_and_opens_the_account(client, provin
 
 
 @pytest.mark.django_db
-def test_completing_without_a_name_is_refused(client, province):
+def test_completing_without_a_name_is_refused(client: APIClient, province: Province) -> None:
     started = start(client, province)
     challenge_id = started.data["challengeId"]
     code = prove(challenge_id)
@@ -119,7 +126,9 @@ def test_completing_without_a_name_is_refused(client, province):
 
 
 @pytest.mark.django_db
-def test_a_code_that_was_never_proved_cannot_open_an_account(client, province):
+def test_a_code_that_was_never_proved_cannot_open_an_account(
+    client: APIClient, province: Province
+) -> None:
     started = start(client, province)
 
     response = client.post(
@@ -134,7 +143,9 @@ def test_a_code_that_was_never_proved_cannot_open_an_account(client, province):
 
     assert response.status_code == 400
     assert not User.objects.filter(phone=PHONE).exists()
-def register(client, province, phone=PHONE, name="اسم كامل"):
+def register(
+    client: APIClient, province: Province, phone: str = PHONE, name: str = "اسم كامل"
+) -> Response:
     """The whole flow: a code, the proof of it, then the person."""
     started = start(client, province, phone)
     challenge_id = started.data["challengeId"]
@@ -154,7 +165,9 @@ def register(client, province, phone=PHONE, name="اسم كامل"):
 
 
 @pytest.mark.django_db
-def test_a_number_that_already_has_an_account_is_told_so_by_name(client, province):
+def test_a_number_that_already_has_an_account_is_told_so_by_name(
+    client: APIClient, province: Province
+) -> None:
     register(client, province)
 
     again = register(client, province, name="اسم آخر")
@@ -168,7 +181,9 @@ def test_a_number_that_already_has_an_account_is_told_so_by_name(client, provinc
 
 
 @pytest.mark.django_db
-def test_asking_for_a_code_says_nothing_about_whether_the_number_is_known(client, province):
+def test_asking_for_a_code_says_nothing_about_whether_the_number_is_known(
+    client: APIClient, province: Province
+) -> None:
     register(client, province)
 
     # The same 202 a number with no account gets: whether a number is registered is not

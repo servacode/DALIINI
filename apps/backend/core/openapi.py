@@ -15,12 +15,19 @@ The area prefix is the API family, not the Python class name, so renaming a view
 changes the public contract.
 """
 
+from typing import TYPE_CHECKING, Any
+
 from drf_spectacular.extensions import OpenApiAuthenticationExtension
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema_serializer
 from rest_framework import serializers
 
+if TYPE_CHECKING:
+    from drf_spectacular.openapi import AutoSchema
 
-class BearerAccessTokenScheme(OpenApiAuthenticationExtension):
+
+# drf-spectacular's extension base registers subclasses through an unannotated
+# __init_subclass__, which strict mode reports at every subclass definition.
+class BearerAccessTokenScheme(OpenApiAuthenticationExtension):  # type: ignore[no-untyped-call]
     """Describe `accounts.authentication.BearerAccessTokenAuthentication`.
 
     The wire format is the short-lived JOSE/JWT access token only. The opaque rotating
@@ -31,7 +38,7 @@ class BearerAccessTokenScheme(OpenApiAuthenticationExtension):
     target_class = "accounts.authentication.BearerAccessTokenAuthentication"
     name = "bearerAccessToken"
 
-    def get_security_definition(self, auto_schema):
+    def get_security_definition(self, auto_schema: "AutoSchema") -> dict[str, Any]:
         return {
             "type": "http",
             "scheme": "bearer",
@@ -80,7 +87,7 @@ class BearerAccessTokenScheme(OpenApiAuthenticationExtension):
         ),
     ],
 )
-class ApiErrorSerializer(serializers.Serializer):
+class ApiErrorSerializer(serializers.Serializer[Any]):
     """The single error envelope returned by every failing request."""
 
     code = serializers.CharField(
@@ -161,21 +168,21 @@ def protected(*extra: tuple[int, OpenApiResponse]) -> dict[int, OpenApiResponse]
 # --------------------------------------------------------------------------------------
 
 
-class CoordinatesSerializer(serializers.Serializer):
+class CoordinatesSerializer(serializers.Serializer[Any]):
     """WGS84 / SRID 4326 decimal degrees, as stored by PostGIS."""
 
     latitude = serializers.FloatField(min_value=-90, max_value=90)
     longitude = serializers.FloatField(min_value=-180, max_value=180)
 
 
-class NamedRefSerializer(serializers.Serializer):
+class NamedRefSerializer(serializers.Serializer[Any]):
     """An id plus its Arabic display name, the shape used for inline references."""
 
     id = serializers.UUIDField()
     nameAr = serializers.CharField()
 
 
-class BilingualRefSerializer(serializers.Serializer):
+class BilingualRefSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     nameAr = serializers.CharField()
     nameEn = serializers.CharField(allow_null=True)
