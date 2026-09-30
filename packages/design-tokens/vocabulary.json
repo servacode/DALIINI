@@ -2,9 +2,9 @@
   "$comment": "The platform's shared words. Every surface (app, site, console) reads a state's Arabic label and its colour tone from here, so the same state never reads two ways. Tones: neutral, positive, warning, danger, info, brand.",
   "availability": {
     "OPEN": {"ar": "مفتوح الآن", "tone": "positive"},
-    "CLOSED": {"ar": "مغلق الآن", "tone": "neutral"},
-    "DUTY": {"ar": "مناوب الآن", "tone": "brand"},
-    "TEMP_CLOSED": {"ar": "مغلق مؤقتاً", "tone": "warning"}
+    "CLOSED": {"ar": "مغلق الآن", "tone": "danger"},
+    "DUTY": {"ar": "مناوب الآن", "tone": "warning"},
+    "TEMP_CLOSED": {"ar": "مغلق مؤقتاً", "tone": "info"}
   },
   "facilityStatus": {
     "DRAFT": {"ar": "مسودة", "tone": "neutral"},

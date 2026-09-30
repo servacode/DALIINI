@@ -4,9 +4,9 @@ import Foundation
 enum DirectoryVocabulary {
     static let availability: [String: (ar: String, tone: String)] = [
         "OPEN": ("مفتوح الآن", "positive"),
-        "CLOSED": ("مغلق الآن", "neutral"),
-        "DUTY": ("مناوب الآن", "brand"),
-        "TEMP_CLOSED": ("مغلق مؤقتاً", "warning")
+        "CLOSED": ("مغلق الآن", "danger"),
+        "DUTY": ("مناوب الآن", "warning"),
+        "TEMP_CLOSED": ("مغلق مؤقتاً", "info")
     ]
     static let facilityStatus: [String: (ar: String, tone: String)] = [
         "DRAFT": ("مسودة", "neutral"),

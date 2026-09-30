@@ -9,15 +9,15 @@ export const vocabulary = {
     },
     "CLOSED": {
       "ar": "مغلق الآن",
-      "tone": "neutral"
+      "tone": "danger"
     },
     "DUTY": {
       "ar": "مناوب الآن",
-      "tone": "brand"
+      "tone": "warning"
     },
     "TEMP_CLOSED": {
       "ar": "مغلق مؤقتاً",
-      "tone": "warning"
+      "tone": "info"
     }
   },
   "facilityStatus": {

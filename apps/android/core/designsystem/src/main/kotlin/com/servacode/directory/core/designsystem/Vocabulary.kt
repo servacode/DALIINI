@@ -34,9 +34,9 @@ enum class StatusTone { NEUTRAL, POSITIVE, WARNING, DANGER, INFO, BRAND }
 object StatusTones {
     fun availability(state: AvailabilityState): StatusTone = when (state) {
         AvailabilityState.OPEN -> StatusTone.POSITIVE
-        AvailabilityState.CLOSED -> StatusTone.NEUTRAL
-        AvailabilityState.DUTY -> StatusTone.BRAND
-        AvailabilityState.TEMP_CLOSED -> StatusTone.WARNING
+        AvailabilityState.CLOSED -> StatusTone.DANGER
+        AvailabilityState.DUTY -> StatusTone.WARNING
+        AvailabilityState.TEMP_CLOSED -> StatusTone.INFO
     }
 
     fun facilityStatus(status: OwnerFacilityStatus): StatusTone = when (status) {
