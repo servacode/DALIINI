@@ -21,6 +21,7 @@ import io.kotlintest.specs.ShouldSpec
 import com.servacode.directory.api.models.FavoriteFacility
 import com.servacode.directory.api.models.Availability
 import com.servacode.directory.api.models.BilingualRef
+import com.servacode.directory.api.models.Coordinates
 import com.servacode.directory.api.models.NamedRef
 
 class FavoriteFacilityTest : ShouldSpec() {
@@ -80,6 +81,36 @@ class FavoriteFacilityTest : ShouldSpec() {
         should("test availability") {
             // uncomment below to test the property
             //modelInstance.availability shouldBe ("TODO")
+        }
+
+        // to test the property `addressAr` - Street address, so a row says where it is without being opened.
+        should("test addressAr") {
+            // uncomment below to test the property
+            //modelInstance.addressAr shouldBe ("TODO")
+        }
+
+        // to test the property `neighborhood`
+        should("test neighborhood") {
+            // uncomment below to test the property
+            //modelInstance.neighborhood shouldBe ("TODO")
+        }
+
+        // to test the property `phone` - Public telephone number, so a row can be called without opening it.
+        should("test phone") {
+            // uncomment below to test the property
+            //modelInstance.phone shouldBe ("TODO")
+        }
+
+        // to test the property `whatsapp` - WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX).
+        should("test whatsapp") {
+            // uncomment below to test the property
+            //modelInstance.whatsapp shouldBe ("TODO")
+        }
+
+        // to test the property `location` - Where it is, so a row can be navigated to without opening it.
+        should("test location") {
+            // uncomment below to test the property
+            //modelInstance.location shouldBe ("TODO")
         }
 
         // to test the property `isFavorite` - Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery.

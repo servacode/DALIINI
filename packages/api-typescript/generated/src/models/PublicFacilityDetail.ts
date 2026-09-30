@@ -124,6 +124,36 @@ export interface PublicFacilityDetail {
      */
     availability: Availability;
     /**
+     * Street address, so a row says where it is without being opened.
+     * @type {string}
+     * @memberof PublicFacilityDetail
+     */
+    addressAr: string | null;
+    /**
+     * 
+     * @type {NamedRef}
+     * @memberof PublicFacilityDetail
+     */
+    neighborhood: NamedRef | null;
+    /**
+     * Public telephone number, so a row can be called without opening it.
+     * @type {string}
+     * @memberof PublicFacilityDetail
+     */
+    phone: string | null;
+    /**
+     * WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX).
+     * @type {string}
+     * @memberof PublicFacilityDetail
+     */
+    whatsapp: string | null;
+    /**
+     * Where it is, so a row can be navigated to without opening it.
+     * @type {Coordinates}
+     * @memberof PublicFacilityDetail
+     */
+    location: Coordinates | null;
+    /**
      * Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery.
      * @type {boolean}
      * @memberof PublicFacilityDetail
@@ -170,37 +200,7 @@ export interface PublicFacilityDetail {
      * @type {string}
      * @memberof PublicFacilityDetail
      */
-    phone: string | null;
-    /**
-     * WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX).
-     * @type {string}
-     * @memberof PublicFacilityDetail
-     */
-    whatsapp: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof PublicFacilityDetail
-     */
-    addressAr: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof PublicFacilityDetail
-     */
     addressEn: string | null;
-    /**
-     * 
-     * @type {NamedRef}
-     * @memberof PublicFacilityDetail
-     */
-    neighborhood: NamedRef | null;
-    /**
-     * 
-     * @type {Coordinates}
-     * @memberof PublicFacilityDetail
-     */
-    location: Coordinates | null;
     /**
      * 
      * @type {Array<FacilityImage>}
@@ -240,6 +240,11 @@ export function instanceOfPublicFacilityDetail(value: object): value is PublicFa
     if (!('ratingAverage' in value) || value['ratingAverage'] === undefined) return false;
     if (!('ratingCount' in value) || value['ratingCount'] === undefined) return false;
     if (!('availability' in value) || value['availability'] === undefined) return false;
+    if (!('addressAr' in value) || value['addressAr'] === undefined) return false;
+    if (!('neighborhood' in value) || value['neighborhood'] === undefined) return false;
+    if (!('phone' in value) || value['phone'] === undefined) return false;
+    if (!('whatsapp' in value) || value['whatsapp'] === undefined) return false;
+    if (!('location' in value) || value['location'] === undefined) return false;
     if (!('isFavorite' in value) || value['isFavorite'] === undefined) return false;
     if (!('imageUrl' in value) || value['imageUrl'] === undefined) return false;
     if (!('lastVerifiedAt' in value) || value['lastVerifiedAt'] === undefined) return false;
@@ -247,12 +252,7 @@ export function instanceOfPublicFacilityDetail(value: object): value is PublicFa
     if (!('updatedAt' in value) || value['updatedAt'] === undefined) return false;
     if (!('descriptionAr' in value) || value['descriptionAr'] === undefined) return false;
     if (!('descriptionEn' in value) || value['descriptionEn'] === undefined) return false;
-    if (!('phone' in value) || value['phone'] === undefined) return false;
-    if (!('whatsapp' in value) || value['whatsapp'] === undefined) return false;
-    if (!('addressAr' in value) || value['addressAr'] === undefined) return false;
     if (!('addressEn' in value) || value['addressEn'] === undefined) return false;
-    if (!('neighborhood' in value) || value['neighborhood'] === undefined) return false;
-    if (!('location' in value) || value['location'] === undefined) return false;
     if (!('images' in value) || value['images'] === undefined) return false;
     if (!('specialties' in value) || value['specialties'] === undefined) return false;
     if (!('services' in value) || value['services'] === undefined) return false;
@@ -279,6 +279,11 @@ export function PublicFacilityDetailFromJSONTyped(json: any, ignoreDiscriminator
         'ratingAverage': json['ratingAverage'],
         'ratingCount': json['ratingCount'],
         'availability': AvailabilityFromJSON(json['availability']),
+        'addressAr': json['addressAr'],
+        'neighborhood': NamedRefFromJSON(json['neighborhood']),
+        'phone': json['phone'],
+        'whatsapp': json['whatsapp'],
+        'location': CoordinatesFromJSON(json['location']),
         'isFavorite': json['isFavorite'],
         'imageUrl': json['imageUrl'],
         'lastVerifiedAt': (json['lastVerifiedAt'] == null ? null : new Date(json['lastVerifiedAt'])),
@@ -286,12 +291,7 @@ export function PublicFacilityDetailFromJSONTyped(json: any, ignoreDiscriminator
         'updatedAt': (new Date(json['updatedAt'])),
         'descriptionAr': json['descriptionAr'],
         'descriptionEn': json['descriptionEn'],
-        'phone': json['phone'],
-        'whatsapp': json['whatsapp'],
-        'addressAr': json['addressAr'],
         'addressEn': json['addressEn'],
-        'neighborhood': NamedRefFromJSON(json['neighborhood']),
-        'location': CoordinatesFromJSON(json['location']),
         'images': ((json['images'] as Array<any>).map(FacilityImageFromJSON)),
         'specialties': ((json['specialties'] as Array<any>).map(NamedIntRefFromJSON)),
         'services': ((json['services'] as Array<any>).map(NamedIntRefFromJSON)),
@@ -319,6 +319,11 @@ export function PublicFacilityDetailToJSONTyped(value?: PublicFacilityDetail | n
         'ratingAverage': value['ratingAverage'],
         'ratingCount': value['ratingCount'],
         'availability': AvailabilityToJSON(value['availability']),
+        'addressAr': value['addressAr'],
+        'neighborhood': NamedRefToJSON(value['neighborhood']),
+        'phone': value['phone'],
+        'whatsapp': value['whatsapp'],
+        'location': CoordinatesToJSON(value['location']),
         'isFavorite': value['isFavorite'],
         'imageUrl': value['imageUrl'],
         'lastVerifiedAt': ((value['lastVerifiedAt'] as any).toISOString()),
@@ -326,12 +331,7 @@ export function PublicFacilityDetailToJSONTyped(value?: PublicFacilityDetail | n
         'updatedAt': ((value['updatedAt']).toISOString()),
         'descriptionAr': value['descriptionAr'],
         'descriptionEn': value['descriptionEn'],
-        'phone': value['phone'],
-        'whatsapp': value['whatsapp'],
-        'addressAr': value['addressAr'],
         'addressEn': value['addressEn'],
-        'neighborhood': NamedRefToJSON(value['neighborhood']),
-        'location': CoordinatesToJSON(value['location']),
         'images': ((value['images'] as Array<any>).map(FacilityImageToJSON)),
         'specialties': ((value['specialties'] as Array<any>).map(NamedIntRefToJSON)),
         'services': ((value['services'] as Array<any>).map(NamedIntRefToJSON)),

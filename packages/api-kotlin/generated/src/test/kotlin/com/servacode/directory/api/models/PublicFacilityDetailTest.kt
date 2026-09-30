@@ -86,6 +86,36 @@ class PublicFacilityDetailTest : ShouldSpec() {
             //modelInstance.availability shouldBe ("TODO")
         }
 
+        // to test the property `addressAr` - Street address, so a row says where it is without being opened.
+        should("test addressAr") {
+            // uncomment below to test the property
+            //modelInstance.addressAr shouldBe ("TODO")
+        }
+
+        // to test the property `neighborhood`
+        should("test neighborhood") {
+            // uncomment below to test the property
+            //modelInstance.neighborhood shouldBe ("TODO")
+        }
+
+        // to test the property `phone` - Public telephone number, so a row can be called without opening it.
+        should("test phone") {
+            // uncomment below to test the property
+            //modelInstance.phone shouldBe ("TODO")
+        }
+
+        // to test the property `whatsapp` - WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX).
+        should("test whatsapp") {
+            // uncomment below to test the property
+            //modelInstance.whatsapp shouldBe ("TODO")
+        }
+
+        // to test the property `location` - Where it is, so a row can be navigated to without opening it.
+        should("test location") {
+            // uncomment below to test the property
+            //modelInstance.location shouldBe ("TODO")
+        }
+
         // to test the property `isFavorite` - Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery.
         should("test isFavorite") {
             // uncomment below to test the property
@@ -128,40 +158,10 @@ class PublicFacilityDetailTest : ShouldSpec() {
             //modelInstance.descriptionEn shouldBe ("TODO")
         }
 
-        // to test the property `phone`
-        should("test phone") {
-            // uncomment below to test the property
-            //modelInstance.phone shouldBe ("TODO")
-        }
-
-        // to test the property `whatsapp` - WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX).
-        should("test whatsapp") {
-            // uncomment below to test the property
-            //modelInstance.whatsapp shouldBe ("TODO")
-        }
-
-        // to test the property `addressAr`
-        should("test addressAr") {
-            // uncomment below to test the property
-            //modelInstance.addressAr shouldBe ("TODO")
-        }
-
         // to test the property `addressEn`
         should("test addressEn") {
             // uncomment below to test the property
             //modelInstance.addressEn shouldBe ("TODO")
-        }
-
-        // to test the property `neighborhood`
-        should("test neighborhood") {
-            // uncomment below to test the property
-            //modelInstance.neighborhood shouldBe ("TODO")
-        }
-
-        // to test the property `location`
-        should("test location") {
-            // uncomment below to test the property
-            //modelInstance.location shouldBe ("TODO")
         }
 
         // to test the property `images`

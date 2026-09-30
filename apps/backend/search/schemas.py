@@ -56,6 +56,21 @@ class CompactFacilitySerializer(serializers.Serializer[Any]):
     ratingAverage = serializers.FloatField(allow_null=True)
     ratingCount = serializers.IntegerField()
     availability = AvailabilitySerializer()
+    addressAr = serializers.CharField(
+        allow_null=True, help_text="Street address, so a row says where it is without being opened."
+    )
+    neighborhood = NamedRefSerializer(allow_null=True)
+    phone = serializers.CharField(
+        allow_null=True,
+        help_text="Public telephone number, so a row can be called without opening it.",
+    )
+    whatsapp = serializers.CharField(
+        allow_null=True, help_text="WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX)."
+    )
+    location = CoordinatesSerializer(
+        allow_null=True,
+        help_text="Where it is, so a row can be navigated to without opening it.",
+    )
     isFavorite = serializers.BooleanField(
         help_text=(
             "Whether the caller has saved this facility. False for anonymous callers; "
@@ -103,14 +118,7 @@ class PublicHoursEntrySerializer(serializers.Serializer[Any]):
 class PublicFacilityDetailSerializer(CompactFacilitySerializer):
     descriptionAr = serializers.CharField(allow_null=True)
     descriptionEn = serializers.CharField(allow_null=True)
-    phone = serializers.CharField(allow_null=True)
-    whatsapp = serializers.CharField(
-        allow_null=True, help_text="WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX)."
-    )
-    addressAr = serializers.CharField(allow_null=True)
     addressEn = serializers.CharField(allow_null=True)
-    neighborhood = NamedRefSerializer(allow_null=True)
-    location = CoordinatesSerializer(allow_null=True)
     images = FacilityImageSerializer(many=True)
     specialties = NamedIntRefSerializer(
         many=True, help_text="Active specialties, in the operators' order."

@@ -95,6 +95,25 @@ def compact_facility(facility: Any) -> dict[str, Any]:
         ),
         "ratingCount": getattr(facility, "rating_count", 0),
         "availability": _availability_payload(facility),
+        # How to reach it and how to get there, on the row itself. These three were detail-only,
+        # which made calling a pharmacy from a list of pharmacies a page load away; they are the
+        # same public values the detail endpoint has always served, and they are already loaded
+        # on the row, so no list query grows for them.
+        # Where it is, in words. A row that says only "Raqqa" is a row somebody has to open to
+        # know whether it is the pharmacy on their street.
+        "addressAr": facility.address_ar or None,
+        "neighborhood": (
+            {"id": str(facility.neighborhood_id), "nameAr": facility.neighborhood.name_ar}
+            if facility.neighborhood_id
+            else None
+        ),
+        "phone": facility.phone or None,
+        "whatsapp": facility.whatsapp or None,
+        "location": (
+            {"latitude": facility.location.y, "longitude": facility.location.x}
+            if facility.location
+            else None
+        ),
         # False for anonymous callers and for anyone who has not saved it (INT-097).
         "isFavorite": bool(getattr(facility, "is_favorite", False)),
         # The owner's own first photograph, or null. A list row shows the brand mark when it
@@ -113,26 +132,7 @@ def facility_detail(facility: Any) -> dict[str, Any]:
         {
             "descriptionAr": facility.description_ar or None,
             "descriptionEn": facility.description_en or None,
-            "phone": facility.phone or None,
-            "whatsapp": facility.whatsapp or None,
-            "addressAr": facility.address_ar or None,
             "addressEn": facility.address_en or None,
-            "neighborhood": (
-                {
-                    "id": str(facility.neighborhood_id),
-                    "nameAr": facility.neighborhood.name_ar,
-                }
-                if facility.neighborhood_id
-                else None
-            ),
-            "location": (
-                {
-                    "latitude": facility.location.y,
-                    "longitude": facility.location.x,
-                }
-                if facility.location
-                else None
-            ),
             # The storage URL, as the owner endpoint serves it. The previous relative path
             # pointed at a route that does not exist, so every public image was a broken
             # link (INT-060).

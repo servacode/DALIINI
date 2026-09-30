@@ -22,6 +22,15 @@ public struct CompactFacility: Codable, JSONEncodable, Hashable {
     public var ratingAverage: Double?
     public var ratingCount: Int
     public var availability: Availability
+    /** Street address, so a row says where it is without being opened. */
+    public var addressAr: String?
+    public var neighborhood: NamedRef?
+    /** Public telephone number, so a row can be called without opening it. */
+    public var phone: String?
+    /** WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX). */
+    public var whatsapp: String?
+    /** Where it is, so a row can be navigated to without opening it. */
+    public var location: Coordinates?
     /** Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery. */
     public var isFavorite: Bool
     /** The facility's first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one. */
@@ -33,7 +42,7 @@ public struct CompactFacility: Codable, JSONEncodable, Hashable {
     /** Last change to the facility record. */
     public var updatedAt: Date
 
-    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, isFavorite: Bool, imageUrl: String?, lastVerifiedAt: Date?, infoConfirmedAt: Date?, updatedAt: Date) {
+    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, addressAr: String?, neighborhood: NamedRef?, phone: String?, whatsapp: String?, location: Coordinates?, isFavorite: Bool, imageUrl: String?, lastVerifiedAt: Date?, infoConfirmedAt: Date?, updatedAt: Date) {
         self.id = id
         self.nameAr = nameAr
         self.nameEn = nameEn
@@ -43,6 +52,11 @@ public struct CompactFacility: Codable, JSONEncodable, Hashable {
         self.ratingAverage = ratingAverage
         self.ratingCount = ratingCount
         self.availability = availability
+        self.addressAr = addressAr
+        self.neighborhood = neighborhood
+        self.phone = phone
+        self.whatsapp = whatsapp
+        self.location = location
         self.isFavorite = isFavorite
         self.imageUrl = imageUrl
         self.lastVerifiedAt = lastVerifiedAt
@@ -60,6 +74,11 @@ public struct CompactFacility: Codable, JSONEncodable, Hashable {
         case ratingAverage
         case ratingCount
         case availability
+        case addressAr
+        case neighborhood
+        case phone
+        case whatsapp
+        case location
         case isFavorite
         case imageUrl
         case lastVerifiedAt
@@ -80,6 +99,11 @@ public struct CompactFacility: Codable, JSONEncodable, Hashable {
         try container.encode(ratingAverage, forKey: .ratingAverage)
         try container.encode(ratingCount, forKey: .ratingCount)
         try container.encode(availability, forKey: .availability)
+        try container.encode(addressAr, forKey: .addressAr)
+        try container.encode(neighborhood, forKey: .neighborhood)
+        try container.encode(phone, forKey: .phone)
+        try container.encode(whatsapp, forKey: .whatsapp)
+        try container.encode(location, forKey: .location)
         try container.encode(isFavorite, forKey: .isFavorite)
         try container.encode(imageUrl, forKey: .imageUrl)
         try container.encode(lastVerifiedAt, forKey: .lastVerifiedAt)

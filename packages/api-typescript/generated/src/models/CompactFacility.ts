@@ -20,6 +20,13 @@ import {
     AvailabilityToJSON,
     AvailabilityToJSONTyped,
 } from './Availability';
+import type { Coordinates } from './Coordinates';
+import {
+    CoordinatesFromJSON,
+    CoordinatesFromJSONTyped,
+    CoordinatesToJSON,
+    CoordinatesToJSONTyped,
+} from './Coordinates';
 import type { BilingualRef } from './BilingualRef';
 import {
     BilingualRefFromJSON,
@@ -96,6 +103,36 @@ export interface CompactFacility {
      */
     availability: Availability;
     /**
+     * Street address, so a row says where it is without being opened.
+     * @type {string}
+     * @memberof CompactFacility
+     */
+    addressAr: string | null;
+    /**
+     * 
+     * @type {NamedRef}
+     * @memberof CompactFacility
+     */
+    neighborhood: NamedRef | null;
+    /**
+     * Public telephone number, so a row can be called without opening it.
+     * @type {string}
+     * @memberof CompactFacility
+     */
+    phone: string | null;
+    /**
+     * WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX).
+     * @type {string}
+     * @memberof CompactFacility
+     */
+    whatsapp: string | null;
+    /**
+     * Where it is, so a row can be navigated to without opening it.
+     * @type {Coordinates}
+     * @memberof CompactFacility
+     */
+    location: Coordinates | null;
+    /**
      * Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery.
      * @type {boolean}
      * @memberof CompactFacility
@@ -140,6 +177,11 @@ export function instanceOfCompactFacility(value: object): value is CompactFacili
     if (!('ratingAverage' in value) || value['ratingAverage'] === undefined) return false;
     if (!('ratingCount' in value) || value['ratingCount'] === undefined) return false;
     if (!('availability' in value) || value['availability'] === undefined) return false;
+    if (!('addressAr' in value) || value['addressAr'] === undefined) return false;
+    if (!('neighborhood' in value) || value['neighborhood'] === undefined) return false;
+    if (!('phone' in value) || value['phone'] === undefined) return false;
+    if (!('whatsapp' in value) || value['whatsapp'] === undefined) return false;
+    if (!('location' in value) || value['location'] === undefined) return false;
     if (!('isFavorite' in value) || value['isFavorite'] === undefined) return false;
     if (!('imageUrl' in value) || value['imageUrl'] === undefined) return false;
     if (!('lastVerifiedAt' in value) || value['lastVerifiedAt'] === undefined) return false;
@@ -167,6 +209,11 @@ export function CompactFacilityFromJSONTyped(json: any, ignoreDiscriminator: boo
         'ratingAverage': json['ratingAverage'],
         'ratingCount': json['ratingCount'],
         'availability': AvailabilityFromJSON(json['availability']),
+        'addressAr': json['addressAr'],
+        'neighborhood': NamedRefFromJSON(json['neighborhood']),
+        'phone': json['phone'],
+        'whatsapp': json['whatsapp'],
+        'location': CoordinatesFromJSON(json['location']),
         'isFavorite': json['isFavorite'],
         'imageUrl': json['imageUrl'],
         'lastVerifiedAt': (json['lastVerifiedAt'] == null ? null : new Date(json['lastVerifiedAt'])),
@@ -195,6 +242,11 @@ export function CompactFacilityToJSONTyped(value?: CompactFacility | null, ignor
         'ratingAverage': value['ratingAverage'],
         'ratingCount': value['ratingCount'],
         'availability': AvailabilityToJSON(value['availability']),
+        'addressAr': value['addressAr'],
+        'neighborhood': NamedRefToJSON(value['neighborhood']),
+        'phone': value['phone'],
+        'whatsapp': value['whatsapp'],
+        'location': CoordinatesToJSON(value['location']),
         'isFavorite': value['isFavorite'],
         'imageUrl': value['imageUrl'],
         'lastVerifiedAt': ((value['lastVerifiedAt'] as any).toISOString()),

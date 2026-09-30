@@ -17,6 +17,7 @@ package com.servacode.directory.api.models
 
 import com.servacode.directory.api.models.Availability
 import com.servacode.directory.api.models.BilingualRef
+import com.servacode.directory.api.models.Coordinates
 import com.servacode.directory.api.models.NamedRef
 
 import kotlinx.serialization.Serializable
@@ -35,6 +36,11 @@ import kotlinx.serialization.Contextual
  * @param ratingAverage 
  * @param ratingCount 
  * @param availability 
+ * @param addressAr Street address, so a row says where it is without being opened.
+ * @param neighborhood 
+ * @param phone Public telephone number, so a row can be called without opening it.
+ * @param whatsapp WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX).
+ * @param location Where it is, so a row can be navigated to without opening it.
  * @param isFavorite Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery.
  * @param imageUrl The facility's first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one.
  * @param lastVerifiedAt When an operator last approved this facility's details (trust signal).
@@ -72,6 +78,25 @@ data class CompactFacility (
 
     @SerialName(value = "availability")
     val availability: Availability,
+
+    /* Street address, so a row says where it is without being opened. */
+    @SerialName(value = "addressAr")
+    val addressAr: kotlin.String?,
+
+    @SerialName(value = "neighborhood")
+    val neighborhood: NamedRef?,
+
+    /* Public telephone number, so a row can be called without opening it. */
+    @SerialName(value = "phone")
+    val phone: kotlin.String?,
+
+    /* WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX). */
+    @SerialName(value = "whatsapp")
+    val whatsapp: kotlin.String?,
+
+    /* Where it is, so a row can be navigated to without opening it. */
+    @SerialName(value = "location")
+    val location: Coordinates?,
 
     /* Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery. */
     @SerialName(value = "isFavorite")
