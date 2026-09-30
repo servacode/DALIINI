@@ -3,7 +3,7 @@
 # and the process runs as the unprivileged `app` user.
 # UV_NO_SYNC keeps `uv run` (CMD, Render dockerCommand/preDeployCommand) from re-syncing
 # the environment - including dev dependencies - at container start.
-FROM python:3.13-slim
+FROM python:3.14-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
