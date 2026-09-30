@@ -1,7 +1,7 @@
 import { type IconName, type IllustrationName, iconPaths, illustrationPaths, mirroredIcons } from "@servacode/design-tokens/icons";
 import { term } from "@servacode/design-tokens/vocabulary";
 import Link from "next/link";
-import type { AvailabilityState, CompactFacility } from "../lib/api";
+import type { AvailabilityState } from "../lib/api";
 import { publicConfig } from "../lib/config";
 
 /*
@@ -43,35 +43,38 @@ export function Illustration({ name, size = 96 }: { name: IllustrationName; size
 }
 
 /** Open, closed, on duty: the label and colour come from the shared vocabulary. */
+/*
+ * Whether it is open, in a word and a sign.
+ *
+ * The four states each carry their own mark, because a coloured dot asks the reader to remember
+ * which colour meant which. The ground is the state's own colour at full strength with the word
+ * in white on it: a pale tint reads as decoration next to a photograph, and whether a pharmacy
+ * is open is the one thing on the card that must be legible from across the room.
+ */
+const STATUS_ICON: Record<AvailabilityState, IconName> = {
+  OPEN: "checkCircle",
+  CLOSED: "lock",
+  DUTY: "shield",
+  TEMP_CLOSED: "alert",
+};
+
 export function StatusBadge({ state }: { state: AvailabilityState }) {
   const t = term("availability", state);
-  return <span className={`badge badge-${t.tone}`}>{t.ar}</span>;
+  return (
+    <span className={`badge badge-iconic badge-solid badge-${t.tone}`}>
+      <Icon name={STATUS_ICON[state]} size={14} />
+      {t.ar}
+    </span>
+  );
 }
 
 export function Rating({ average, count }: { average: number | null; count: number }) {
   if (average == null || count === 0) return null;
-  return <span className="muted" aria-label={`التقييم ${average.toFixed(1)} من 5`}>★ {average.toFixed(1)} ({count})</span>;
+  return <span className="rating muted" aria-label={`التقييم ${average.toFixed(1)} من 5`}>★ {average.toFixed(1)} ({count})</span>;
 }
 
-export function FacilityList({ items }: { items: CompactFacility[] }) {
-  return (
-    <ul className="list">
-      {items.map((f) => (
-        <li key={f.id} className="card row">
-          <div>
-            <Link href={`/f/${f.id}`} className="title-link">{f.nameAr}</Link>
-            <div className="meta">
-              <span>{f.category.nameAr}</span>
-              {f.city ? <span>· {f.city.nameAr}</span> : null}
-              <Rating average={f.ratingAverage} count={f.ratingCount} />
-            </div>
-          </div>
-          <StatusBadge state={f.availability.state} />
-        </li>
-      ))}
-    </ul>
-  );
-}
+/* The card grid lives in its own client component: a card now opens over the list. */
+export { FacilityCards as FacilityList } from "./facility-cards";
 
 export function Unavailable() {
   return (

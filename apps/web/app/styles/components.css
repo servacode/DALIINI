@@ -1,0 +1,1282 @@
+/*
+ * Everything the pages compose from. A page never styles anything itself: a new need becomes a
+ * component here, which is what keeps twenty pages looking like one site.
+ */
+
+/* ---- Cards and grids --------------------------------------------------------------------- */
+
+.card {
+  background: var(--sd-semantic-surface-default);
+  border: 1px solid var(--sd-semantic-stroke-subtle);
+  border-radius: var(--sd-radius-large);
+  padding: var(--sd-spacing-lg);
+  box-shadow: var(--shadow-low);
+}
+
+/* A card that goes somewhere lifts under the hand; a card that only holds text does not. */
+a.card,
+.card-link {
+  display: block;
+  text-decoration: none;
+  transition:
+    transform var(--quick) var(--ease),
+    box-shadow var(--quick) var(--ease),
+    border-color var(--quick) var(--ease);
+}
+
+a.card:hover,
+.card-link:hover {
+  transform: translateY(-2px);
+  border-color: var(--sd-semantic-stroke-strong);
+  box-shadow: var(--shadow-medium);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--sd-spacing-base);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.list {
+  display: grid;
+  gap: var(--sd-spacing-md);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sd-spacing-md);
+}
+
+.title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sd-spacing-sm);
+}
+
+/* A tile in a grid: a name, and a word about what is behind it. */
+.tile {
+  display: grid;
+  gap: var(--sd-spacing-xs);
+  text-decoration: none;
+  font-size: var(--sd-typography-roles-title-medium-size);
+  font-weight: var(--sd-typography-roles-title-medium-weight);
+}
+
+/* The name is a bare text node beside this one, so it has to be made a line of its own. */
+.tile small {
+  display: block;
+  color: var(--sd-semantic-content-muted);
+  font-size: var(--sd-typography-roles-body-medium-size);
+  font-weight: 400;
+}
+
+.title-link {
+  font-size: var(--sd-typography-roles-title-medium-size);
+  font-weight: var(--sd-typography-roles-title-medium-weight);
+  text-decoration: none;
+  color: var(--sd-semantic-content-primary);
+}
+
+.title-link:hover,
+.tile:hover { color: var(--sd-semantic-action-primary); }
+
+/*
+ * The row on the landing page that leads to the emergency numbers.
+ *
+ * Written as `a.quick-link` on purpose: `a.card` above is a class on an element and outranks a
+ * bare class, so a plain `.quick-link` had its `display` quietly overruled back to a block and
+ * the chevron fell under the words.
+ */
+a.quick-link {
+  display: flex;
+  align-items: center;
+  gap: var(--sd-spacing-base);
+}
+
+a.quick-link > span:nth-child(2) { flex: 1; display: grid; gap: var(--sd-spacing-2xs); }
+a.quick-link strong { font-size: var(--sd-typography-roles-title-medium-size); }
+a.quick-link small { color: var(--sd-semantic-content-muted); }
+
+.feature-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--sd-radius-medium);
+  background: var(--sd-semantic-surface-brand-soft);
+  color: var(--sd-semantic-action-primary);
+}
+
+/* ---- Buttons ----------------------------------------------------------------------------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sd-spacing-sm);
+  width: fit-content;
+  min-height: 44px;
+  padding-inline: var(--sd-spacing-lg);
+  border: 1px solid transparent;
+  border-radius: var(--sd-radius-medium);
+  background: var(--sd-semantic-action-primary);
+  color: var(--sd-semantic-content-on-primary);
+  font-family: inherit;
+  font-size: var(--sd-typography-roles-label-large-size);
+  font-weight: var(--sd-typography-roles-label-large-weight);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background var(--quick) var(--ease),
+    transform var(--quick) var(--ease),
+    box-shadow var(--quick) var(--ease);
+}
+
+.button:hover {
+  background: var(--sd-semantic-action-primary-pressed);
+  box-shadow: var(--shadow-low);
+}
+
+.button:active { transform: translateY(1px); }
+
+.button-alt {
+  background: var(--sd-semantic-surface-brand-soft);
+  color: var(--sd-semantic-action-primary);
+  border-color: transparent;
+}
+
+.button-alt:hover {
+  background: var(--sd-semantic-surface-selected);
+  color: var(--sd-semantic-action-primary-pressed);
+}
+
+/* On the dark opening band the soft button would disappear, so it wears an outline instead. */
+.hero .button-alt {
+  background: transparent;
+  border-color: rgb(255 255 255 / 0.35);
+  color: var(--sd-semantic-content-on-bar);
+}
+
+.hero .button-alt:hover {
+  background: rgb(255 255 255 / 0.1);
+  color: var(--sd-semantic-content-on-bar);
+}
+
+.button svg { flex: none; }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sd-spacing-md);
+}
+
+.cta {
+  display: grid;
+  gap: var(--sd-spacing-md);
+  justify-items: start;
+  margin-top: var(--sd-spacing-2xl);
+  padding: var(--sd-spacing-2xl);
+  border-radius: var(--sd-radius-xl);
+  background: var(--sd-semantic-surface-brand-soft);
+}
+
+.more { margin-top: var(--sd-spacing-base); }
+
+/* ---- Forms and search -------------------------------------------------------------------- */
+
+/*
+ * Two different things wear a search: the compact box in the bar and on the opening, and the
+ * full form on /search with its province and category. `.field` is the wrapper around a label
+ * and its control, never the control itself — which is why the controls are styled by element
+ * here rather than by a class.
+ */
+.search-box {
+  display: flex;
+  gap: var(--sd-spacing-sm);
+  width: 100%;
+}
+
+.search-box input { flex: 1; min-width: 0; }
+
+/* Under 900px the bar carries the brand and the links; the opening carries the search. */
+.search-header { display: none; }
+
+@media (min-width: 900px) {
+  /* Its width is the bar's business, and the bar sets it — a second width here would only be
+     the one that loses, which is how the hint came to be cut in half. */
+  .search-header {
+    display: flex;
+    margin-inline-start: auto;
+  }
+}
+
+.search-hero { max-width: 560px; }
+
+.search-form {
+  display: grid;
+  gap: var(--sd-spacing-base);
+  align-items: end;
+}
+
+@media (min-width: 720px) {
+  .search-form { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+  .search-form .field-wide { grid-column: 1 / -1; }
+  .search-form .button { align-self: end; }
+}
+
+.field {
+  display: grid;
+  gap: var(--sd-spacing-xs);
+}
+
+.field label {
+  color: var(--sd-semantic-content-primary);
+  font-size: var(--sd-typography-roles-label-large-size);
+  font-weight: var(--sd-typography-roles-label-large-weight);
+}
+
+/* One control, whatever it is and wherever it sits. */
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="tel"],
+select,
+textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sd-spacing-sm) var(--sd-spacing-base);
+  border: 1px solid var(--sd-semantic-stroke-default);
+  border-radius: var(--sd-radius-medium);
+  background: var(--sd-semantic-surface-default);
+  color: var(--sd-semantic-content-primary);
+  font-family: inherit;
+  font-size: var(--sd-typography-roles-body-large-size);
+}
+
+textarea {
+  min-height: 132px;
+  padding: var(--sd-spacing-md) var(--sd-spacing-base);
+  resize: vertical;
+}
+
+::placeholder { color: var(--sd-semantic-content-muted); }
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  border-color: var(--sd-semantic-action-primary);
+  outline-offset: 0;
+}
+
+.field-hint,
+.field-error { font-size: var(--sd-typography-roles-body-medium-size); }
+.field-hint { color: var(--sd-semantic-content-muted); }
+.field-error { color: var(--sd-semantic-content-danger); }
+
+/* A heading or a line that carries its own icon. */
+.with-icon {
+  display: flex;
+  align-items: center;
+  gap: var(--sd-spacing-sm);
+}
+
+.with-icon svg { flex: none; color: var(--sd-semantic-action-primary); }
+
+/* ---- Badges ------------------------------------------------------------------------------ */
+
+.badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sd-spacing-xs);
+  border-radius: var(--sd-radius-pill);
+  padding: 3px var(--sd-spacing-md);
+  border: 1px solid transparent;
+  font-size: var(--sd-typography-roles-label-medium-size);
+  line-height: var(--sd-typography-roles-label-medium-line-height);
+  font-weight: var(--sd-typography-roles-label-medium-weight);
+}
+
+.badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Tones from the shared vocabulary — the same pairs the console uses. */
+.badge-neutral {
+  background: var(--sd-semantic-surface-subtle);
+  color: var(--sd-semantic-content-secondary);
+  border-color: var(--sd-semantic-stroke-default);
+}
+
+.badge-positive {
+  background: var(--sd-semantic-feedback-success-soft);
+  color: var(--sd-semantic-feedback-success);
+}
+
+.badge-warning {
+  background: var(--sd-semantic-feedback-warning-soft);
+  color: var(--sd-semantic-content-warning);
+}
+
+.badge-danger {
+  background: var(--sd-semantic-feedback-danger-soft);
+  color: var(--sd-semantic-feedback-danger);
+}
+
+.badge-info {
+  background: var(--sd-semantic-feedback-info-soft);
+  color: var(--sd-semantic-feedback-info);
+}
+
+.badge-brand {
+  background: var(--sd-semantic-action-primary);
+  color: var(--sd-semantic-content-on-primary);
+}
+
+/* ---- States ------------------------------------------------------------------------------ */
+
+.state {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: var(--sd-spacing-sm);
+  padding-block: var(--sd-spacing-4xl);
+  border: 1px dashed var(--sd-semantic-stroke-default);
+  border-radius: var(--sd-radius-large);
+  background: var(--sd-semantic-surface-default);
+}
+
+.il-soft { fill: var(--sd-semantic-surface-brand-soft); }
+.il-line { stroke: var(--sd-semantic-content-muted); }
+.il-accent { stroke: var(--sd-semantic-action-primary); }
+
+.notice,
+.note {
+  border-inline-start: 3px solid var(--sd-semantic-action-primary);
+  padding-inline-start: var(--sd-spacing-base);
+}
+
+.notice p,
+.note p { margin: var(--sd-spacing-xs) 0 0; }
+
+.results-summary {
+  color: var(--sd-semantic-content-secondary);
+  font-size: var(--sd-typography-roles-body-medium-size);
+}
+
+/* ---- Facts, tables and long text --------------------------------------------------------- */
+
+.facts {
+  display: grid;
+  gap: var(--sd-spacing-md);
+  margin: 0;
+}
+
+.facts div {
+  display: flex;
+  gap: var(--sd-spacing-md);
+  padding-bottom: var(--sd-spacing-md);
+  border-bottom: 1px solid var(--sd-semantic-stroke-subtle);
+}
+
+.facts div:last-child { border-bottom: 0; padding-bottom: 0; }
+
+.facts dt {
+  min-width: 96px;
+  font-weight: 700;
+  color: var(--sd-semantic-content-primary);
+}
+
+.facts dd { margin: 0; color: var(--sd-semantic-content-secondary); }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--sd-typography-roles-body-medium-size);
+}
+
+th,
+td {
+  text-align: start;
+  padding: var(--sd-spacing-md) var(--sd-spacing-sm);
+  border-bottom: 1px solid var(--sd-semantic-stroke-subtle);
+}
+
+th {
+  color: var(--sd-semantic-content-muted);
+  font-size: var(--sd-typography-roles-label-medium-size);
+  font-weight: var(--sd-typography-roles-label-medium-weight);
+}
+
+tr:last-child td { border-bottom: 0; }
+
+.bullets { padding-inline-start: var(--sd-spacing-lg); display: grid; gap: var(--sd-spacing-sm); }
+.steps { display: grid; gap: var(--sd-spacing-base); padding-inline-start: var(--sd-spacing-lg); }
+.faq { display: grid; gap: var(--sd-spacing-base); }
+/* The written pages carry their own rhythm: they are set without the landing page's `page`. */
+.legal {
+  display: grid;
+  gap: var(--sd-spacing-base);
+  padding-block: var(--sd-spacing-2xl) var(--sd-spacing-5xl);
+}
+.legal h2 { margin-top: var(--sd-spacing-lg); }
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sd-spacing-sm);
+  /* It is a list in the markup, and a list draws its markers unless told otherwise. */
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tabs a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sd-spacing-xs);
+  padding: var(--sd-spacing-sm) var(--sd-spacing-base);
+  border-radius: var(--sd-radius-pill);
+  border: 1px solid var(--sd-semantic-stroke-default);
+  background: var(--sd-semantic-surface-default);
+  color: var(--sd-semantic-content-secondary);
+  font-size: var(--sd-typography-roles-label-large-size);
+  font-weight: var(--sd-typography-roles-label-large-weight);
+  text-decoration: none;
+}
+
+.tabs a:hover { border-color: var(--sd-semantic-stroke-strong); }
+
+.tabs a[aria-current="page"] {
+  background: var(--sd-semantic-action-primary);
+  border-color: var(--sd-semantic-action-primary);
+  color: var(--sd-semantic-content-on-primary);
+}
+
+/* Directional icons flip in right-to-left layouts. */
+[dir="rtl"] svg[data-mirror="true"] { transform: scaleX(-1); }
+
+/* ---- The strip of slides under the bar ---------------------------------------------------- */
+
+/*
+ * Filled from the console: an image, a line or two, and optionally somewhere to go. It holds
+ * its own aspect so the page below never jumps as an image arrives, and it stops moving the
+ * moment a hand, a cursor or a focus is inside it.
+ */
+.slider {
+  position: relative;
+  overflow: hidden;
+  background: var(--sd-semantic-surface-subtle);
+}
+
+.slider-track {
+  position: relative;
+  /*
+   * The width is stated, not left to `auto`. With only `aspect-ratio` and a `max-height`, the
+   * browser runs the ratio backwards from the capped height and hands the strip a width of
+   * height × 21/6 — which is why the banner covered two thirds of the window and left the rest
+   * bare. A definite width gives the ratio nothing to solve for but the height.
+   */
+  width: 100%;
+  /* A banner, not a page: wide and shallow, and never more than a third of the window,
+     so what the visitor came for is on screen without scrolling past an advertisement. */
+  aspect-ratio: 21 / 6;
+  min-height: 200px;
+  max-height: min(380px, 34vh);
+}
+
+@media (max-width: 720px) {
+  .slider-track { aspect-ratio: 4 / 3; min-height: 0; }
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 500ms var(--ease);
+}
+
+.slide[data-current] { opacity: 1; visibility: visible; }
+
+/*
+ * A slide that goes somewhere is wrapped in a link, and a link is inline: the picture inside it
+ * was sized against a box that had shrunk to fit, so a slide with an action filled part of the
+ * strip and left the rest bare. Whatever wraps the picture fills the slide.
+ */
+.slide > a { display: block; }
+.slide > a,
+.slide > a > img { width: 100%; height: 100%; }
+
+.slide > a,
+.slide > img { display: block; width: 100%; height: 100%; }
+
+.slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The words sit on the picture, so they carry their own dark ground to stay readable on any. */
+.slide-caption {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  display: grid;
+  gap: var(--sd-spacing-2xs);
+  padding: var(--sd-spacing-3xl) var(--gutter) var(--sd-spacing-xl);
+  background: linear-gradient(to top, rgb(4 38 35 / 0.85), transparent);
+  color: #fff;
+}
+
+.slide-caption strong {
+  font-size: var(--sd-typography-roles-headline-medium-size);
+  line-height: 1.2;
+}
+
+.slide-caption span {
+  color: rgb(255 255 255 / 0.85);
+  font-size: var(--sd-typography-roles-body-large-size);
+}
+
+@media (max-width: 720px) {
+  .slide-caption strong { font-size: var(--sd-typography-roles-title-large-size); }
+  .slide-caption span { font-size: var(--sd-typography-roles-body-medium-size); }
+}
+
+.slider-arrow {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.9);
+  color: var(--sd-semantic-content-primary);
+  cursor: pointer;
+  box-shadow: var(--shadow-low);
+}
+
+.slider-arrow:hover { background: #fff; }
+/* Back is behind you: in Arabic that is the right-hand edge, and forward is the left. */
+.slider-prev { inset-inline-start: var(--sd-spacing-base); }
+.slider-next { inset-inline-end: var(--sd-spacing-base); }
+
+/*
+ * Each arrow points the way it takes you. The chevron is already turned over for Arabic by the
+ * mirroring rule, and `scale` is turned over again here rather than `transform` — the mirroring
+ * rule is the more specific selector, so a second `transform` would simply be ignored, which is
+ * how both arrows came to point the same way.
+ */
+.slider-prev svg { scale: -1 1; }
+
+@media (max-width: 720px) {
+  .slider-arrow { display: none; }
+}
+
+.slider-dots {
+  position: absolute;
+  inset-inline: 0;
+  bottom: var(--sd-spacing-md);
+  display: flex;
+  justify-content: center;
+  gap: var(--sd-spacing-sm);
+}
+
+.slider-dots button {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.5);
+  cursor: pointer;
+  transition: width var(--quick) var(--ease), background var(--quick) var(--ease);
+}
+
+.slider-dots button[aria-selected="true"] {
+  width: 24px;
+  border-radius: var(--sd-radius-pill);
+  background: #fff;
+}
+
+/* ---- Choosing a category without leaving the page ----------------------------------------- */
+
+.category-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sd-spacing-sm);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.category-strip a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--sd-spacing-lg);
+  border: 1px solid var(--sd-semantic-stroke-default);
+  border-radius: var(--sd-radius-pill);
+  background: var(--sd-semantic-surface-default);
+  color: var(--sd-semantic-content-secondary);
+  font-size: var(--sd-typography-roles-label-large-size);
+  font-weight: var(--sd-typography-roles-label-large-weight);
+  text-decoration: none;
+  transition:
+    background var(--quick) var(--ease),
+    border-color var(--quick) var(--ease),
+    color var(--quick) var(--ease);
+}
+
+.category-strip a:hover {
+  border-color: var(--sd-semantic-stroke-strong);
+  color: var(--sd-semantic-content-primary);
+}
+
+/* The one being shown below, said plainly. */
+.category-strip a[aria-current] {
+  background: var(--sd-semantic-action-primary);
+  border-color: var(--sd-semantic-action-primary);
+  color: var(--sd-semantic-content-on-primary);
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sd-spacing-md);
+}
+
+.section-more {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sd-spacing-xs);
+  color: var(--sd-semantic-action-primary);
+  font-size: var(--sd-typography-roles-label-large-size);
+  font-weight: var(--sd-typography-roles-label-large-weight);
+  text-decoration: none;
+}
+
+.section-more:hover { text-decoration: underline; }
+
+/* ---- One facility, one card -------------------------------------------------------------- */
+
+/*
+ * A photograph on top, the name and the rest beneath it. The photograph is the reason the card
+ * exists: a row of text tells you a pharmacy is open, a picture tells you which door to look for.
+ *
+ * The cards are all one height in a row and the photograph is always the same shape, because a
+ * grid of cards that each end somewhere different reads as a mistake rather than as a grid.
+ */
+.facility-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--sd-spacing-lg);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.facility-grid > li { display: flex; }
+
+.facility-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--sd-semantic-stroke-subtle);
+  border-radius: var(--sd-radius-large);
+  background: var(--sd-semantic-surface-default);
+  box-shadow: var(--shadow-low);
+  text-decoration: none;
+  transition:
+    transform var(--quick) var(--ease),
+    box-shadow var(--quick) var(--ease),
+    border-color var(--quick) var(--ease);
+}
+
+.facility-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--sd-semantic-stroke-strong);
+  box-shadow: var(--shadow-medium);
+}
+
+.facility-photo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 4:3 — a shopfront is wider than it is tall, and every card crops to the same shape. */
+  aspect-ratio: 4 / 3;
+  background: var(--sd-semantic-surface-subtle);
+  color: var(--sd-semantic-content-muted);
+  overflow: hidden;
+}
+
+.facility-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform calc(var(--quick) * 3) var(--ease);
+}
+
+.facility-card:hover .facility-photo img { transform: scale(1.04); }
+
+/* The strip above the picture: the state on one side, the two things to look at on the other. */
+.facility-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sd-spacing-xs);
+  padding: var(--sd-spacing-sm) var(--sd-spacing-md);
+  border-block-end: 1px solid var(--sd-semantic-stroke-subtle);
+}
+
+.facility-bar-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.facility-bar-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 30px;
+  padding-inline: var(--sd-spacing-sm);
+  border: 0;
+  border-radius: var(--sd-radius-small);
+  background: none;
+  color: var(--sd-semantic-content-muted);
+  font: inherit;
+  font-size: var(--sd-typography-roles-label-medium-size);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--quick) var(--ease), color var(--quick) var(--ease);
+}
+
+.facility-bar-actions button:hover {
+  background: var(--sd-semantic-surface-hover);
+  color: var(--sd-semantic-action-primary);
+}
+
+/*
+ * Three bands, in the order somebody reads them: what it is, then the two things they would do
+ * with it, then the things they might. Nothing is spread across four rows of buttons; the two
+ * doing-things are real buttons and the rest is one quiet line, so twenty cards read as a list
+ * rather than as twenty control panels.
+ */
+.facility-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sd-spacing-sm);
+  /* The body grows, so the quiet line lands on the floor of every card in the row alike. */
+  flex: 1;
+  padding: var(--sd-spacing-base);
+}
+
+.facility-body h3 {
+  color: var(--sd-semantic-content-primary);
+  font-size: var(--sd-typography-roles-title-medium-size);
+  line-height: var(--sd-typography-roles-title-medium-line-height);
+  font-weight: var(--sd-typography-roles-title-medium-weight);
+  /* Two lines at most: a long name must not push the card taller than its neighbours. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Where it is and what people made of it, on one line: both are the same kind of aside. */
+.facility-where {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sd-spacing-xs);
+}
+
+.facility-where .meta { gap: var(--sd-spacing-xs); }
+
+/* The street, said plainly. Two lines at most; a card is not an envelope. */
+.facility-address {
+  color: var(--sd-semantic-content-muted);
+  font-size: var(--sd-typography-roles-body-medium-size);
+  line-height: var(--sd-typography-roles-body-medium-line-height);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/*
+ * The number, with the two ways to use it sitting on the end of it.
+ *
+ * A browser on a desk cannot dial, so the digits are there to be read and copied; the handset
+ * and the WhatsApp mark on either side are for the phone that can. The digits read left to right
+ * inside a right-to-left card, being digits rather than words, and they sit centred between the
+ * two so the field is one shape whatever the number's length.
+ */
+.facility-phone {
+  display: flex;
+  align-items: center;
+  gap: var(--sd-spacing-sm);
+  padding: 5px;
+  border: 1px solid var(--sd-semantic-stroke-subtle);
+  border-radius: var(--sd-radius-pill);
+  background: var(--sd-semantic-surface-subtle);
+  color: var(--sd-semantic-content-primary);
+  font-size: var(--sd-typography-roles-body-large-size);
+  font-weight: var(--sd-typography-roles-label-large-weight);
+  letter-spacing: 0.02em;
+}
+
+/* The number takes what is left between the two, and is centred in it. */
+.facility-phone > .ltr {
+  flex: 1;
+  text-align: center;
+}
+
+.way {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  box-shadow: var(--shadow-low);
+  transition: transform var(--quick) var(--ease), filter var(--quick) var(--ease);
+}
+
+.way:hover {
+  transform: scale(1.06);
+  filter: brightness(1.08);
+}
+
+.way-call {
+  background: var(--sd-semantic-action-primary);
+  color: var(--sd-semantic-content-on-primary);
+}
+
+/* WhatsApp's own green: the mark is only recognised in it, and a reader scanning a page of
+   cards finds it by colour before they read anything. */
+.way-whatsapp {
+  background: #25d366;
+  color: #07351d;
+}
+
+
+
+/* The two doing-things, side by side and equal: neither is the lesser of the pair. */
+.facility-actions {
+  display: flex;
+  gap: var(--sd-spacing-sm);
+  /* Pushed to the floor, so a card with a short name ends where its neighbours do. */
+  margin-block-start: auto;
+}
+
+.facility-actions .button {
+  flex: 1;
+  /* Three labels in a 260px card: the icon may go before the word wraps. */
+  min-width: 0;
+  padding-inline: var(--sd-spacing-sm);
+}
+
+/*
+ * Reporting is red, and outlined rather than filled: red says what the button is for, and the
+ * outline keeps it from competing with the two things most people actually came to do.
+ */
+.button-danger {
+  border: 1px solid var(--sd-semantic-feedback-danger);
+  background: none;
+  color: var(--sd-semantic-feedback-danger);
+}
+
+.button-danger:hover {
+  background: var(--sd-semantic-feedback-danger);
+  color: #fff;
+}
+
+.facility-hint {
+  color: var(--sd-semantic-action-primary);
+  font-size: var(--sd-typography-roles-label-medium-size);
+}
+
+
+
+/* ---- The province menu ------------------------------------------------------------------- */
+
+/*
+ * The button sits on the dark bar; the menu it opens does not. A menu is a sheet of the page
+ * that has come forward, so it is built from the page's own surfaces — the same white card, the
+ * same radius, the same shadow as everything else — rather than borrowing the bar's green and
+ * reading as a second, floating bar.
+ */
+.province-picker {
+  position: relative;
+  flex: none;
+}
+
+.province-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sd-spacing-xs);
+  min-height: 44px;
+  padding-inline: var(--sd-spacing-base);
+  border: 1px solid rgb(255 255 255 / 0.25);
+  border-radius: var(--sd-radius-pill);
+  background: rgb(255 255 255 / 0.1);
+  color: var(--sd-semantic-content-on-bar);
+  font: inherit;
+  font-size: var(--sd-typography-roles-label-large-size);
+  font-weight: var(--sd-typography-roles-label-large-weight);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--quick) var(--ease),
+    border-color var(--quick) var(--ease);
+}
+
+.province-button:hover { background: rgb(255 255 255 / 0.18); }
+
+.province-button[aria-expanded="true"] {
+  background: rgb(255 255 255 / 0.2);
+  border-color: rgb(255 255 255 / 0.45);
+}
+
+/* The caret points down, and turns over while the menu it opened is open. */
+.province-button > svg:last-of-type {
+  transform: rotate(90deg);
+  transition: transform var(--quick) var(--ease);
+}
+
+.province-button[aria-expanded="true"] > svg:last-of-type { transform: rotate(-90deg); }
+
+.province-menu {
+  position: absolute;
+  z-index: 40;
+  inset-block-start: calc(100% + var(--sd-spacing-sm));
+  inset-inline-start: 0;
+  min-width: max(100%, 220px);
+  /* Fourteen provinces are more than a bar's height; the rest are a scroll away, not gone. */
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
+  padding: var(--sd-spacing-xs);
+  margin: 0;
+  list-style: none;
+  border: 1px solid var(--sd-semantic-stroke-subtle);
+  border-radius: var(--sd-radius-large);
+  background: var(--sd-semantic-surface-default);
+  box-shadow: var(--shadow-medium);
+  animation: province-menu-in calc(var(--quick) * 1.2) var(--ease);
+}
+
+@keyframes province-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.province-menu button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sd-spacing-md);
+  width: 100%;
+  min-height: 42px;
+  padding-inline: var(--sd-spacing-md);
+  border: 0;
+  border-radius: var(--sd-radius-medium);
+  background: transparent;
+  color: var(--sd-semantic-content-secondary);
+  font: inherit;
+  font-size: var(--sd-typography-roles-body-medium-size);
+  text-align: start;
+  cursor: pointer;
+}
+
+/* One highlight, wherever the choice is being made from — the mouse or the arrow keys. */
+.province-menu button[data-cursor] {
+  background: var(--sd-semantic-surface-hover);
+  color: var(--sd-semantic-content-primary);
+}
+
+.province-menu button[aria-selected="true"] {
+  color: var(--sd-semantic-action-primary);
+  font-weight: var(--sd-typography-roles-label-large-weight);
+}
+
+/* ---- The question the page opens with ---------------------------------------------------- */
+
+/*
+ * "What are you looking for in Raqqa?" is the whole page put as a question, so it is set in the
+ * middle and given room, and the categories sit centred under it as the answers to it. Left
+ * against the edge it read as one more section heading among several.
+ */
+.ask {
+  display: grid;
+  justify-items: center;
+  gap: var(--sd-spacing-lg);
+  text-align: center;
+  padding-block: var(--sd-spacing-md);
+}
+
+.ask h2 {
+  max-width: 20ch;
+  font-size: clamp(
+    var(--sd-typography-roles-headline-medium-size),
+    3.2vw,
+    calc(var(--sd-typography-roles-display-size) * 1.1)
+  );
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.ask .category-strip { justify-content: center; }
+
+/* ---- Acting on a card without opening it ------------------------------------------------- */
+
+/* A badge that says which state it is, rather than asking the reader to decode a colour. */
+.badge-iconic::before { display: none; }
+.badge-iconic { padding-inline: var(--sd-spacing-base); }
+
+/*
+ * The state at full strength, white on colour. A tint is decoration; this is a signal, and it
+ * has to survive sitting beside a photograph.
+ *
+ * Each ground is the darkest member of its family rather than the brightest, because the word on
+ * it is white and small: the amber that fills a chart is too light to carry text, and the mid
+ * green misses the contrast floor by a hair. These four all clear it.
+ */
+.badge-solid {
+  border-color: transparent;
+  color: #fff;
+  box-shadow: var(--shadow-low);
+}
+
+.badge-solid.badge-positive { background: var(--sd-semantic-action-primary); }
+.badge-solid.badge-neutral { background: var(--sd-semantic-surface-bar); }
+.badge-solid.badge-warning { background: var(--sd-semantic-content-warning); }
+.badge-solid.badge-danger { background: var(--sd-semantic-feedback-danger); }
+.badge-solid.badge-info { background: var(--sd-semantic-feedback-info); }
+.badge-solid.badge-brand { background: var(--sd-semantic-action-primary); }
+
+/* ---- The rest of a card, without leaving it ---------------------------------------------- */
+
+/*
+ * Hours, sharing and reporting: the three things that used to be a page away. They are quieter
+ * than call and directions because they are wanted less often, not because they are secondary —
+ * a reader who needs to report a wrong listing must be able to find it at a glance.
+ */
+.report-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sd-spacing-xs);
+}
+
+.report-reasons button {
+  min-height: 32px;
+  padding-inline: var(--sd-spacing-md);
+  border: 1px solid var(--sd-semantic-stroke-default);
+  border-radius: var(--sd-radius-pill);
+  background: var(--sd-semantic-surface-default);
+  color: var(--sd-semantic-content-secondary);
+  font: inherit;
+  font-size: var(--sd-typography-roles-label-medium-size);
+  cursor: pointer;
+}
+
+.report-reasons button:hover:not(:disabled) {
+  border-color: var(--sd-semantic-action-primary);
+  color: var(--sd-semantic-action-primary);
+}
+
+.report-reasons button:disabled { opacity: 0.6; cursor: default; }
+
+.hours {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--sd-typography-roles-body-medium-size);
+}
+
+.hours th,
+.hours td {
+  padding: 4px 0;
+  text-align: start;
+  font-weight: inherit;
+  border-block-end: 1px solid var(--sd-semantic-stroke-subtle);
+}
+
+.hours th {
+  color: var(--sd-semantic-content-muted);
+  font-size: var(--sd-typography-roles-label-medium-size);
+}
+
+.hours td { color: var(--sd-semantic-content-secondary); }
+
+.hours tr:last-child th,
+.hours tr:last-child td { border-block-end: 0; }
+
+/* ---- A small window over the card -------------------------------------------------------- */
+
+/*
+ * What a card's buttons open. It is small and it sits over the page rather than inside the card,
+ * which is what keeps every card the same shape however much is going on behind it.
+ */
+.dialog-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: var(--sd-spacing-base);
+  background: rgb(4 38 35 / 0.5);
+  backdrop-filter: blur(2px);
+  animation: dialog-fade calc(var(--quick) * 1.5) var(--ease);
+}
+
+.dialog {
+  width: min(420px, 100%);
+  max-height: min(84dvh, 720px);
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--sd-radius-large);
+  background: var(--sd-semantic-surface-default);
+  box-shadow: var(--shadow-medium);
+  animation: dialog-rise calc(var(--quick) * 2) var(--ease);
+}
+
+@keyframes dialog-fade {
+  from { opacity: 0; }
+}
+
+@keyframes dialog-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+}
+
+.dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sd-spacing-md);
+  padding: var(--sd-spacing-base) var(--sd-spacing-lg);
+  border-block-end: 1px solid var(--sd-semantic-stroke-subtle);
+}
+
+.dialog-head h3 {
+  font-size: var(--sd-typography-roles-title-medium-size);
+  line-height: var(--sd-typography-roles-title-medium-line-height);
+  /* A long facility name must not push the close button off the edge. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dialog-head button {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sd-semantic-surface-subtle);
+  color: var(--sd-semantic-content-secondary);
+  cursor: pointer;
+}
+
+.dialog-head button:hover {
+  background: var(--sd-semantic-surface-hover);
+  color: var(--sd-semantic-content-primary);
+}
+
+.dialog-body {
+  display: grid;
+  gap: var(--sd-spacing-md);
+  padding: var(--sd-spacing-lg);
+  overflow-y: auto;
+}
+
+@media (max-width: 520px) {
+  /* From the bottom edge, where the hand is. */
+  .dialog-scrim {
+    padding: 0;
+    align-items: end;
+  }
+
+  .dialog {
+    width: 100%;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+  }
+}
+
+/* The number, read as a number: a browser on a desk has nothing to dial with. */
+
+/* ---- Narrowing a list ---------------------------------------------------------------------- */
+
+/*
+ * Where the category's name used to be repeated. Both chips ask the API a question rather than
+ * hiding rows of an answer already fetched, so what they show is the whole truth, not the part
+ * of it that happened to be on this page.
+ */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sd-spacing-sm);
+  padding-block-end: var(--sd-spacing-xs);
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sd-spacing-xs);
+  min-height: 38px;
+  padding-inline: var(--sd-spacing-lg);
+  border: 1px solid var(--sd-semantic-stroke-default);
+  border-radius: var(--sd-radius-pill);
+  background: var(--sd-semantic-surface-default);
+  color: var(--sd-semantic-content-secondary);
+  font: inherit;
+  font-size: var(--sd-typography-roles-label-medium-size);
+  font-weight: var(--sd-typography-roles-label-medium-weight);
+  cursor: pointer;
+  transition:
+    background var(--quick) var(--ease),
+    border-color var(--quick) var(--ease),
+    color var(--quick) var(--ease);
+}
+
+.filter-chip:hover {
+  border-color: var(--sd-semantic-stroke-strong);
+  color: var(--sd-semantic-content-primary);
+}
+
+/* What is on, said the same way the category strip says it. */
+.filter-chip[aria-pressed="true"] {
+  background: var(--sd-semantic-action-primary);
+  border-color: var(--sd-semantic-action-primary);
+  color: var(--sd-semantic-content-on-primary);
+}

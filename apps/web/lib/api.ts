@@ -35,6 +35,16 @@ export interface CompactFacility {
   ratingAverage: number | null;
   ratingCount: number;
   availability: { state: AvailabilityState; nextOpenAt: string | null };
+  /* Where it is, in words. */
+  addressAr: string | null;
+  neighborhood: Ref | null;
+  /* Call, message and go: on the row itself, not a page load away. */
+  phone: string | null;
+  /* E.164 Syrian mobile (+9639XXXXXXXX). */
+  whatsapp: string | null;
+  location: { latitude: number; longitude: number } | null;
+  /* The facility's own photograph, once an owner has uploaded one. Null until then. */
+  imageUrl?: string | null;
   /* When staff last approved the details (trust signal). */
   lastVerifiedAt?: string | null;
   /* The later of lastVerifiedAt and the owner's own "the hours are still right". */
@@ -50,12 +60,6 @@ export interface TagRef { id: number; nameAr: string }
 
 export interface FacilityDetail extends CompactFacility {
   descriptionAr: string | null;
-  phone: string | null;
-  /* E.164 Syrian mobile (+9639XXXXXXXX). */
-  whatsapp?: string | null;
-  addressAr: string | null;
-  neighborhood: Ref | null;
-  location: { latitude: number; longitude: number } | null;
   hours: HoursEntry[];
   /* Active ones only, in the team's order. */
   specialties: TagRef[];
@@ -131,8 +135,75 @@ async function getJson<T>(
   }
 }
 
+/**
+ * A reader's report that a listing is wrong.
+ *
+ * The one write the public site makes. It is never cached and never retried: a report sent twice
+ * is two reports for an operator to read. The outcomes are named rather than numbered because
+ * the card tells a person what happened in words — "too many reports just now" is not an error
+ * they can fix by pressing again.
+ */
+export type ReportOutcome = "sent" | "throttled" | "gone" | "failed";
+
+export async function reportFacility(
+  facilityId: string,
+  reason: string,
+  note?: string,
+): Promise<ReportOutcome> {
+  const origin = apiOrigin();
+  if (!origin) return "failed";
+  try {
+    const response = await fetch(`${origin}/api/v1/facilities/${facilityId}/reports/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "Accept-Language": "ar",
+        ...webServerHeaders(),
+      },
+      body: JSON.stringify(note ? { reason, note } : { reason }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(8000),
+    });
+    if (response.ok) return "sent";
+    if (response.status === 429) return "throttled";
+    if (response.status === 404) return "gone";
+    return "failed";
+  } catch {
+    return "failed";
+  }
+}
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isUuid = (value: string) => UUID.test(value);
+
+/**
+ * A slide in the strip under the bar.
+ *
+ * The same rows the app shows: operators add them in the console with an image, a line or two,
+ * and optionally somewhere to go. `slideDurationMs` is per slide, so one can be held longer
+ * than the rest without the whole strip slowing down.
+ */
+export type Slide = {
+  id: string;
+  imageUrl: string;
+  titleAr: string | null;
+  subtitleAr: string | null;
+  action: { type: string; payload: Record<string, unknown> };
+  slideDurationMs: number;
+};
+
+/**
+ * The slides for a province, or the ones shown everywhere when no province is named.
+ *
+ * Returns an empty list rather than null when the API is unreachable: a strip that cannot be
+ * loaded is a strip that is not drawn, which is not an error worth telling a visitor about.
+ */
+export async function getSlides(provinceId?: string): Promise<Slide[]> {
+  const query = provinceId ? `?provinceId=${encodeURIComponent(provinceId)}` : "";
+  const answered = await getJson<{ items: Slide[] }>(`public/ads/${query}`);
+  return answered?.items ?? [];
+}
 
 export async function getProvinces(): Promise<Province[] | null> {
   return (await getJson<{ items: Province[] }>("public/provinces/"))?.items ?? null;
@@ -158,6 +229,8 @@ export async function getFacilities(params: {
   provinceId: string;
   categoryId?: string;
   cursor?: string;
+  cityId?: string;
+  openNow?: boolean;
   dutyNow?: boolean;
   /* Integer ids from getCategoryTags; the API matches them only where the category offers the filter. */
   specialtyId?: number;
@@ -168,6 +241,8 @@ export async function getFacilities(params: {
     provinceId: params.provinceId,
     categoryId: params.categoryId,
     cursor: params.cursor,
+    cityId: params.cityId,
+    openNow: params.openNow ? "true" : undefined,
     dutyNow: params.dutyNow ? "true" : undefined,
     specialtyId: params.specialtyId ? String(params.specialtyId) : undefined,
     serviceTagId: params.serviceTagId ? String(params.serviceTagId) : undefined,

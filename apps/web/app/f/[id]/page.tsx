@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { directionsLink, telLink, waLink } from "../../../lib/links";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import Link from "next/link";
@@ -35,12 +36,6 @@ function describe(f: FacilityDetail): string {
     f.descriptionAr?.slice(0, 160) ||
     `${f.category.nameAr}${place ? ` في ${place}` : ""}: أوقات الدوام، رقم الهاتف، والموقع على الخريطة.`
   );
-}
-
-/* WhatsApp wants international digits only; tolerate "+963 9…" style input. */
-function waLink(raw: string | null | undefined): string | null {
-  const digits = raw?.replace(/[^\d]/g, "");
-  return digits && digits.length >= 8 ? `https://wa.me/${digits}` : null;
 }
 
 function schemaType(f: FacilityDetail): string {
@@ -172,7 +167,9 @@ export default async function FacilityPage({ params }: Props) {
   if (f === undefined) notFound();
   if (f === null) return <div className="shell page"><Unavailable /></div>;
 
+  const tel = telLink(f.phone);
   const wa = waLink(f.whatsapp);
+  const directions = directionsLink(f.location);
   const loc = f.location ? `${f.location.latitude},${f.location.longitude}` : null;
   const openInApp = appOpenUrl(f.id);
   const url = absoluteUrl(`/f/${f.id}`);
@@ -195,10 +192,10 @@ export default async function FacilityPage({ params }: Props) {
       {f.descriptionAr ? <p>{f.descriptionAr}</p> : null}
 
       <div className="actions more">
-        {f.phone ? <a className="button" href={`tel:${f.phone.replace(/\s+/g, "")}`}><Icon name="phone" />اتصال</a> : null}
+        {tel ? <a className="button" href={tel}><Icon name="phone" />اتصال</a> : null}
         {wa ? <a className="button button-alt" href={wa} rel="noopener"><Icon name="whatsapp" />واتساب</a> : null}
-        {loc ? (
-          <a className="button button-alt" href={`https://www.google.com/maps/dir/?api=1&destination=${loc}`} rel="noopener">
+        {directions ? (
+          <a className="button button-alt" href={directions} rel="noopener">
             <Icon name="directions" />
             الاتجاهات
           </a>
@@ -218,7 +215,7 @@ export default async function FacilityPage({ params }: Props) {
         {f.addressAr || f.neighborhood ? (
           <div><dt>العنوان</dt><dd>{[f.addressAr, f.neighborhood?.nameAr, f.city?.nameAr].filter(Boolean).join("، ")}</dd></div>
         ) : null}
-        {f.phone ? <div><dt>الهاتف</dt><dd className="ltr"><a href={`tel:${f.phone.replace(/\s+/g, "")}`}>{f.phone}</a></dd></div> : null}
+        {tel && f.phone ? <div><dt>الهاتف</dt><dd className="ltr"><a href={tel}>{f.phone}</a></dd></div> : null}
         {loc ? <div><dt>الموقع</dt><dd><a href={`geo:${loc}`}>افتح في تطبيق الخرائط</a></dd></div> : null}
         {f.specialties.length > 0 ? (
           <div><dt>التخصصات</dt><dd>{f.specialties.map((s) => s.nameAr).join("، ")}</dd></div>

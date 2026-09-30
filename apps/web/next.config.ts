@@ -7,6 +7,11 @@ import type { NextConfig } from "next";
  * `connect-src` and `img-src` stay on 'self' plus the API: the origins of PUBLIC_API_ORIGIN
  * and NEXT_PUBLIC_API_ORIGIN when a deployment sets them (read at build time, because these
  * headers are baked into the build) — never a blanket `https:`.
+ *
+ * `img-src` carries one origin more: the media store. Slides and facility photographs are
+ * served from object storage, which is a different host from the API — and while it was not
+ * listed, every one of those images was blocked by the browser and the page showed alt text
+ * where a photograph should be. NEXT_PUBLIC_MEDIA_ORIGIN names it; unset, nothing is added.
  */
 function originOf(raw: string | undefined): string {
   const value = raw?.trim();
@@ -24,9 +29,14 @@ const apiOrigins = [
 ];
 const withApi = (sources: string) => [sources, ...apiOrigins].join(" ");
 
+/* Where the photographs are served from, when a deployment serves them elsewhere. */
+const mediaOrigin = originOf(process.env.NEXT_PUBLIC_MEDIA_ORIGIN);
+const imageOrigins = [...apiOrigins, mediaOrigin].filter(Boolean);
+const withImages = (sources: string) => [sources, ...imageOrigins].join(" ");
+
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `img-src ${withApi("'self' data:")}`,
+  `img-src ${withImages("'self' data:")}`,
   "style-src 'self' 'unsafe-inline'",
   // Next streams each page's server-component payload as inline <script> tags. The
   // admin console signs those with a per-request nonce, but these pages are cached
@@ -54,6 +64,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Next writes AGENTS.md and CLAUDE.md into this directory on every dev run unless told not
+  // to. Nothing here is generated into the repository by a tool nobody asked.
+  agentRules: false,
   // Standalone output lets the Docker runtime stage ship only the traced server files.
   // The tracing root is the monorepo root so workspace packages are traced too.
   output: "standalone",

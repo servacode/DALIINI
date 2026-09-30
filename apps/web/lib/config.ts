@@ -18,6 +18,14 @@ export const publicConfig = {
   playStoreUrl: process.env.NEXT_PUBLIC_PLAY_STORE_URL?.trim() || null,
   appStoreUrl: process.env.NEXT_PUBLIC_APP_STORE_URL?.trim() || null,
   /*
+   * Where the bar's "download the app" button goes. A direct build while there is one, and the
+   * Play Store once the app is listed — one setting to change rather than a button to move.
+   */
+  appDownloadUrl:
+    process.env.NEXT_PUBLIC_APP_DOWNLOAD_URL?.trim() ||
+    process.env.NEXT_PUBLIC_PLAY_STORE_URL?.trim() ||
+    null,
+  /*
    * The API as a visitor's browser reaches it, for the one request a page sends
    * from the browser: the contact form. Inlined at build time, when next.config.ts
    * also adds it to the CSP's connect-src. null hides the form.

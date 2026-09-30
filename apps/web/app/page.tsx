@@ -1,21 +1,69 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
-import { SearchBox } from "../components/search-form";
-import { DownloadCta, FacilityList, Icon, JsonLd, Unavailable } from "../components/ui";
-import { getDutyByProvince, getProvinces } from "../lib/api";
+import { FacilityFilters } from "../components/facility-filters";
+import { Slider } from "../components/slider";
+import { DownloadCta, FacilityList, JsonLd, Unavailable } from "../components/ui";
+import {
+  getCategories,
+  getContentPage,
+  getFacilities,
+  getProvinces,
+  getSlides,
+} from "../lib/api";
 import { SITE_NAME, absoluteUrl, publicConfig } from "../lib/config";
+
+/*
+ * The opening line lives in the console under this slug, so the team can change what the page
+ * says without a deployment. Until somebody writes it, the province's own name carries it.
+ */
+const INTRO_SLUG = "home-intro";
 
 /* ISR: the landing page is rebuilt at most every five minutes. */
 export const revalidate = 300;
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
-export default async function HomePage() {
-  const [provinces, duty] = await Promise.all([getProvinces(), getDutyByProvince()]);
-  const dutyGroups = (duty ?? []).filter((g) => g.items.length > 0);
+/**
+ * One page that changes under you.
+ *
+ * The province is chosen in the bar, its categories appear here, and pressing one brings that
+ * category's facilities up below — without leaving the page. Both choices live in the address
+ * (`?p=` and `?c=`), so the page is still rendered on the server, still works with the back
+ * button, and a link to "pharmacies in Raqqa" is a link somebody can send.
+ */
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ p?: string; c?: string; open?: string; duty?: string }>;
+}) {
+  const { p, c, open, duty } = await searchParams;
+  const provinces = await getProvinces();
+  const chosen =
+    provinces?.find((province) => province.code === p) ?? provinces?.[0] ?? null;
+
+  const [slides, categories, intro] = await Promise.all([
+    getSlides(chosen?.id),
+    chosen ? getCategories(chosen.id) : Promise.resolve(null),
+    /* The opening line, when the team has written one in the console. */
+    getContentPage(INTRO_SLUG),
+  ]);
+
+  const category =
+    categories?.find((item) => item.id === c) ?? categories?.[0] ?? null;
+  const page =
+    chosen && category
+      ? await getFacilities({
+          provinceId: chosen.id,
+          categoryId: category.id,
+          openNow: open === "1",
+          dutyNow: duty === "1",
+          limit: 12,
+        })
+      : null;
 
   return (
-    <div className="shell">
+    <>
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -26,60 +74,66 @@ export default async function HomePage() {
           email: publicConfig.supportEmail.includes("@") ? publicConfig.supportEmail : undefined,
         }}
       />
-      <section className="hero">
-        <span className="eyebrow">دليني</span>
-        <h1>اعثر على الصيدليات والعيادات والخدمات القريبة منك بسهولة.</h1>
-        <p>دليل محلي يعرض أوقات الدوام، والصيدليات المناوبة، وأرقام التواصل، ومواقع المنشآت على الخريطة — بمعلومات تُراجَع باستمرار.</p>
-        <SearchBox id="hero-q" variant="hero" />
-        <div className="actions">
-          <Link className="button" href="/duty">الصيدليات المناوبة الآن</Link>
-          <Link className="button button-alt" href="/owners">أضف منشأتك</Link>
-        </div>
-      </section>
 
-      <Link className="card quick-link" href="/emergency">
-        <span className="feature-icon"><Icon name="emergency" size={22} /></span>
-        <span>
-          <strong>أرقام الطوارئ</strong>
-          <small>الإسعاف والإطفاء والشرطة، للاتصال بلمسة واحدة</small>
-        </span>
-        <Icon name="chevron" />
-      </Link>
+      <Slider slides={slides} />
 
-      <section aria-labelledby="provinces-title">
-        <h2 id="provinces-title">المحافظات المتاحة</h2>
+      <div className="shell page page-sections">
         {provinces === null ? (
           <Unavailable />
-        ) : provinces.length === 0 ? (
+        ) : !chosen ? (
           <p>لم تُفعَّل أي محافظة بعد.</p>
         ) : (
-          <ul className="grid">
-            {provinces.map((p) => (
-              <li key={p.id}>
-                <Link className="card tile" href={`/${p.code}`}>
-                  {p.nameAr}
-                  <small>تصفّح التصنيفات</small>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <>
+            <section className="ask" aria-labelledby="categories-title">
+              <h2 id="categories-title">
+                {intro?.titleAr ? intro.titleAr : `دليلك الشامل في ${chosen.nameAr}`}
+              </h2>
+              {categories === null ? (
+                <Unavailable />
+              ) : categories.length === 0 ? (
+                <p>لا توجد تصنيفات مُفعَّلة في هذه المحافظة بعد.</p>
+              ) : (
+                <ul className="category-strip">
+                  {categories.map((item) => (
+                    <li key={item.id}>
+                      <Link
+                        href={`/?p=${chosen.code}&c=${item.id}`}
+                        scroll={false}
+                        aria-current={item.id === category?.id ? "true" : undefined}
+                      >
+                        {item.nameAr}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            {category ? (
+              <section aria-label={category.nameAr}>
+                {/* The category is named on the chip that is lit above; naming it again here
+                    only says the same word twice. The filters take that line instead. */}
+                <Suspense fallback={null}>
+                  <FacilityFilters />
+                </Suspense>
+                {page === null ? (
+                  <Unavailable />
+                ) : page.items.length === 0 ? (
+                  <p>
+                    {open === "1" || duty === "1"
+                      ? "لا توجد منشآت تطابق التصفية الآن."
+                      : "لا توجد منشآت في هذا التصنيف بعد."}
+                  </p>
+                ) : (
+                  <FacilityList items={page.items} />
+                )}
+              </section>
+            ) : null}
+          </>
         )}
-      </section>
 
-      {dutyGroups.length > 0 ? (
-        <section aria-labelledby="duty-title">
-          <h2 id="duty-title">صيدليات مناوبة الآن</h2>
-          {dutyGroups.map((g) => (
-            <div key={g.province.id}>
-              {dutyGroups.length > 1 ? <h3>{g.province.nameAr}</h3> : null}
-              <FacilityList items={g.items.slice(0, 6)} />
-            </div>
-          ))}
-          <p className="more"><Link href="/duty">عرض كل المناوبات</Link></p>
-        </section>
-      ) : null}
-
-      <DownloadCta />
-    </div>
+        <DownloadCta />
+      </div>
+    </>
   );
 }

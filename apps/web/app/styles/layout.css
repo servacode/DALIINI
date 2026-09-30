@@ -1,0 +1,368 @@
+/*
+ * The shape of a page: the band at the top, the column in the middle, the band at the bottom,
+ * and the opening a landing page gets.
+ *
+ * The column used to be 960px pinned to one side, which on a desk left half the screen empty
+ * and made a two-column grid impossible. It is centred now and wider, and the bands run the
+ * full width so the page has edges instead of ending in the middle of nowhere.
+ */
+
+.shell {
+  width: 100%;
+  max-width: var(--w-page);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ---- The bar at the top ---------------------------------------------------------------- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  /* The bar and the footer wear the brand's own deep green, the way the app's own bar does. */
+  background: var(--sd-semantic-surface-bar);
+  color: var(--sd-semantic-content-on-bar);
+  border-bottom: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--sd-spacing-lg);
+  min-height: 92px;
+  padding-block: var(--sd-spacing-md);
+}
+
+/* ---- The mark and the name ---- */
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sd-spacing-lg);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* A white disc under the mark: the symbol is dark green, and a dark green bar would swallow it. */
+.brand-mark {
+  display: block;
+  width: 72px;
+  height: 72px;
+  /* Room inside the disc, so the whole symbol reads rather than touching the edge of it. */
+  padding: 10px;
+  border-radius: 50%;
+  background: #fff;
+  object-fit: contain;
+}
+
+.brand-text {
+  display: grid;
+  /* The name is heavy and the line under it is small; pressed together they read as one
+     smudged block rather than as a name and what it is. */
+  gap: var(--sd-spacing-sm);
+}
+
+.brand-text strong {
+  color: var(--sd-semantic-content-on-bar);
+  font-size: var(--sd-typography-roles-headline-large-size);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* A line saying what this is, because a name alone says nothing to a first visitor. */
+.brand-text small {
+  color: var(--sd-semantic-content-on-bar-muted);
+  font-size: var(--sd-typography-roles-body-small-size);
+  line-height: 1.2;
+}
+
+/* ---- The links ---- */
+
+.header-nav {
+  display: none;
+  align-items: center;
+  gap: var(--sd-spacing-xs);
+  margin-inline-start: var(--sd-spacing-base);
+}
+
+.header-nav a {
+  position: relative;
+  padding: var(--sd-spacing-sm) var(--sd-spacing-md);
+  border-radius: var(--sd-radius-small);
+  color: var(--sd-semantic-content-on-bar-muted);
+  font-size: var(--sd-typography-roles-label-large-size);
+  font-weight: var(--sd-typography-roles-label-large-weight);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color var(--quick) var(--ease),
+    background var(--quick) var(--ease);
+}
+
+.header-nav a:hover {
+  color: var(--sd-semantic-content-on-bar);
+  background: rgb(255 255 255 / 0.08);
+}
+
+/* The page you are on, said plainly rather than left to be worked out. */
+.header-nav a[aria-current="page"] {
+  color: var(--sd-semantic-content-on-bar);
+  background: rgb(255 255 255 / 0.16);
+}
+
+/* ---- What sits at the far end ---- */
+
+.header-end {
+  display: flex;
+  align-items: center;
+  gap: var(--sd-spacing-md);
+  margin-inline-start: auto;
+}
+
+/* The bar's own search. Wide enough for the whole prompt — at 260px the hint was cut mid-word
+   — and it holds that width rather than being squeezed by the button beside it. */
+.header-end .search-box {
+  flex: none;
+  width: clamp(280px, 24vw, 420px);
+}
+
+.button-sm {
+  min-height: 40px;
+  padding-inline: var(--sd-spacing-base);
+  font-size: var(--sd-typography-roles-label-medium-size);
+}
+
+/* Both fold away below the breakpoint, where they live in the panel instead. */
+.header-cta,
+.header-download { display: none; }
+
+/* The download is the filled one of the pair: it is what a first visitor should do. */
+.header-download { white-space: nowrap; }
+
+.menu-button {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  border-radius: var(--sd-radius-medium);
+  background: rgb(255 255 255 / 0.1);
+  color: var(--sd-semantic-content-on-bar);
+  cursor: pointer;
+}
+
+.menu-button:hover { background: rgb(255 255 255 / 0.18); }
+
+/* ---- The panel the links fold into ---- */
+
+.header-panel {
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+  background: var(--sd-semantic-surface-default);
+  box-shadow: var(--shadow-medium);
+}
+
+.header-panel > .shell {
+  display: grid;
+  gap: var(--sd-spacing-base);
+  padding-block: var(--sd-spacing-lg) var(--sd-spacing-xl);
+}
+
+.header-panel nav {
+  display: grid;
+  gap: var(--sd-spacing-2xs);
+}
+
+.header-panel nav a {
+  padding: var(--sd-spacing-md);
+  border-radius: var(--sd-radius-medium);
+  color: var(--sd-semantic-content-primary);
+  font-size: var(--sd-typography-roles-title-medium-size);
+  font-weight: var(--sd-typography-roles-title-medium-weight);
+  text-decoration: none;
+}
+
+.header-panel nav a[aria-current="page"] {
+  background: var(--sd-semantic-surface-selected);
+  color: var(--sd-semantic-action-primary);
+}
+
+.header-panel .button { width: 100%; }
+
+/* ---- Where the row fits, the panel is not needed ---- */
+
+@media (min-width: 1000px) {
+  .header-nav { display: flex; }
+  .header-cta,
+  .header-download { display: inline-flex; }
+  .menu-button { display: none; }
+  .header-panel { display: none; }
+}
+
+/* Between the two, the links fold away but the search and the action stay. */
+@media (max-width: 999px) {
+  .header-end .search-box { display: none; }
+}
+
+@media (max-width: 520px) {
+  .brand-text small { display: none; }
+  .header { min-height: 76px; }
+  .brand-mark { width: 56px; height: 56px; }
+}
+
+/* ---- The opening ------------------------------------------------------------------------ */
+
+/*
+ * A landing page opens on a band the width of the window, not on a paragraph. The gradient is
+ * the brand's own bar colour lifted towards its primary green, so the top of the page belongs
+ * to the same family as the app's own bar.
+ */
+.hero-band {
+  background:
+    radial-gradient(120% 140% at 85% 0%, rgb(11 107 71 / 0.55) 0%, transparent 60%),
+    var(--sd-semantic-surface-bar);
+  color: var(--sd-semantic-content-on-bar);
+}
+
+.hero {
+  display: grid;
+  gap: var(--sd-spacing-lg);
+  padding-block: var(--sd-spacing-4xl) var(--sd-spacing-3xl);
+  max-width: 760px;
+}
+
+.hero .eyebrow { color: var(--sd-semantic-content-on-bar-muted); }
+.hero h1 { color: var(--sd-semantic-content-on-bar); }
+
+.hero p {
+  color: var(--sd-semantic-content-on-bar-muted);
+  max-width: var(--w-prose);
+}
+
+.hero .search-form { max-width: 560px; }
+
+@media (min-width: 720px) {
+  .hero { padding-block: var(--sd-spacing-5xl) var(--sd-spacing-4xl); }
+}
+
+/* The three figures under the opening: what the directory actually holds. */
+.hero-figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sd-spacing-xl) var(--sd-spacing-3xl);
+  padding-block: 0 var(--sd-spacing-4xl);
+  margin: 0;
+}
+
+.hero-figures div { display: grid; gap: var(--sd-spacing-2xs); }
+
+.hero-figures dt {
+  color: var(--sd-semantic-content-on-bar);
+  font-size: var(--sd-typography-roles-headline-medium-size);
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+.hero-figures dd {
+  margin: 0;
+  color: var(--sd-semantic-content-on-bar-muted);
+  font-size: var(--sd-typography-roles-body-medium-size);
+}
+
+/* ---- The middle -------------------------------------------------------------------------- */
+
+.page {
+  display: grid;
+  gap: var(--sd-spacing-xl);
+  padding-block: var(--sd-spacing-2xl) var(--sd-spacing-5xl);
+}
+
+.page > section { display: grid; gap: var(--sd-spacing-base); }
+
+/* Sections on a landing page breathe more than sections in an article. */
+.page-sections { gap: var(--sd-spacing-4xl); }
+
+.page-intro {
+  color: var(--sd-semantic-content-secondary);
+  font-size: var(--sd-typography-roles-body-large-size);
+}
+
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sd-spacing-sm);
+  color: var(--sd-semantic-content-muted);
+  font-size: var(--sd-typography-roles-body-medium-size);
+}
+
+.crumbs a { text-decoration: none; }
+.crumbs a:hover { color: var(--sd-semantic-action-primary); }
+
+/* ---- The bar at the bottom --------------------------------------------------------------- */
+
+.site-footer {
+  margin-top: auto;
+  background: var(--sd-semantic-surface-bar);
+  color: var(--sd-semantic-content-on-bar-muted);
+}
+
+.footer {
+  display: grid;
+  gap: var(--sd-spacing-2xl);
+  padding-block: var(--sd-spacing-4xl) var(--sd-spacing-2xl);
+}
+
+.footer-top {
+  display: grid;
+  gap: var(--sd-spacing-2xl);
+}
+
+@media (min-width: 720px) {
+  .footer-top { grid-template-columns: 1.2fr 2fr; }
+}
+
+.footer-brand { display: grid; gap: var(--sd-spacing-sm); align-content: start; }
+.footer-brand .brand { color: var(--sd-semantic-content-on-bar); }
+.footer-brand .brand-mark { width: 64px; height: 64px; }
+.footer-brand p { color: var(--sd-semantic-content-on-bar-muted); max-width: 42ch; }
+
+/* Grouped, because nine links in one row is a list nobody reads. */
+.footer-groups {
+  display: grid;
+  gap: var(--sd-spacing-xl);
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.footer-group { display: grid; gap: var(--sd-spacing-sm); align-content: start; }
+
+.footer-group h2 {
+  color: var(--sd-semantic-content-on-bar);
+  font-size: var(--sd-typography-roles-label-large-size);
+  line-height: var(--sd-typography-roles-label-large-line-height);
+  font-weight: var(--sd-typography-roles-label-large-weight);
+}
+
+.footer-group nav { display: grid; gap: var(--sd-spacing-sm); }
+
+.footer-group a {
+  color: var(--sd-semantic-content-on-bar-muted);
+  font-size: var(--sd-typography-roles-body-medium-size);
+  text-decoration: none;
+  width: fit-content;
+  transition: color var(--quick) var(--ease);
+}
+
+.footer-group a:hover { color: var(--sd-semantic-content-on-bar); }
+
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sd-spacing-sm) var(--sd-spacing-base);
+  justify-content: space-between;
+  padding-top: var(--sd-spacing-xl);
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+  color: var(--sd-semantic-content-on-bar-muted);
+  font-size: var(--sd-typography-roles-body-small-size);
+}
