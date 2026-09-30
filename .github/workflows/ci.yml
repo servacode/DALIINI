@@ -27,6 +27,13 @@ jobs:
       - run: node packages/design-tokens/scripts/generate.mjs --check
       - run: node packages/design-tokens/scripts/vocabulary.mjs --check
       - run: node packages/design-tokens/scripts/icons.mjs --check
+      # The two source gates that need no runtime. Until now nothing ran them, which is how the
+      # secret scan came to fail on a dependency's compiled WebAssembly for an unknown length of
+      # time: a gate nobody executes reports nothing.
+      - name: Secret-shaped material and source security invariants
+        run: python3 infrastructure/quality/source_security.py
+      - name: No open P0/P1 release blocker
+        run: python3 infrastructure/quality/release_blockers.py
 
   backend-source:
     runs-on: ubuntu-latest
