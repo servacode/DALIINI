@@ -79,6 +79,7 @@ fun AccountScreen(
     onHelp: () -> Unit,
     bottomBar: @Composable () -> Unit = {},
     onRecentlyViewed: () -> Unit = {},
+    onMyRatings: () -> Unit = {},
     viewModel: AccountViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -138,6 +139,14 @@ fun AccountScreen(
                         title = AccountCopy.FAVORITES,
                         onClick = onFavorites,
                         icon = DirectoryIcons.star,
+                    )
+                    DirectoryMenuDivider()
+                    // Beside the favourites, because both are what this person did rather than
+                    // what the platform holds. A star they filled in, against the hollow one.
+                    DirectoryMenuRow(
+                        title = AccountCopy.MY_RATINGS,
+                        onClick = onMyRatings,
+                        icon = DirectoryIcons.starFilled,
                     )
                     DirectoryMenuDivider()
                     DirectoryMenuRow(
@@ -308,6 +317,7 @@ object AccountCopy {
     val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_error)
     val EDIT_PROFILE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_edit_profile)
     val FAVORITES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_favorites)
+    val MY_RATINGS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_my_ratings)
     val NOTIFICATIONS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_notifications)
     val SETTINGS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_settings)
     val FACILITIES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_facilities)

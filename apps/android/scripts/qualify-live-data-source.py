@@ -54,7 +54,6 @@ def check_reconnect_and_lifecycle() -> None:
 def check_rest_truth_and_offline() -> None:
     for feature, filename in (
         ("home", "HomeViewModel.kt"),
-        ("directory", "DirectoryViewModel.kt"),
         ("facility", "FacilityViewModel.kt"),
     ):
         source = read(
@@ -77,7 +76,6 @@ def check_rest_truth_and_offline() -> None:
         read(path)
         for path in (
             "feature/home/src/main/kotlin/com/servacode/directory/feature/home/HomeScreen.kt",
-            "feature/directory/src/main/kotlin/com/servacode/directory/feature/directory/DirectoryScreen.kt",
             "feature/facility/src/main/kotlin/com/servacode/directory/feature/facility/FacilityScreen.kt",
         )
     )

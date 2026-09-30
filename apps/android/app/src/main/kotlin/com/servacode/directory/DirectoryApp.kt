@@ -46,7 +46,6 @@ import com.servacode.directory.feature.bootstrap.BootstrapScreen
 import com.servacode.directory.feature.bootstrap.LocationPermissionScreen
 import com.servacode.directory.feature.bootstrap.StartDestination
 import com.servacode.directory.feature.bootstrap.WelcomeScreen
-import com.servacode.directory.feature.directory.DirectoryScreen
 import com.servacode.directory.feature.duty.DutyScreen
 import com.servacode.directory.feature.duty.DutyRosterScreen
 import com.servacode.directory.feature.facility.FacilityScreen
@@ -219,14 +218,8 @@ fun DirectoryApp(
                 onBack = { navController.popBackStack() },
             )
         }
-        composable<DirectoryRoute.Directory> {
-            DirectoryScreen(
-                onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
-                onProvince = { navController.navigate(DirectoryRoute.ProvincePicker) },
-                onBack = { navController.popBackStack() },
-            )
-        }
-        composable<DirectoryRoute.FacilityDetailRoute> {
+        composable<DirectoryRoute.FacilityDetailRoute> { backStackEntry ->
+            val facilityId = backStackEntry.toRoute<DirectoryRoute.FacilityDetailRoute>().id
             FacilityScreen(
                 onDirections = { latitude, longitude ->
                     // The way there is shown before it is followed; starting is the user's own
@@ -248,6 +241,23 @@ fun DirectoryApp(
                         context.startActivity(Intent(Intent.ACTION_VIEW, link.toUri()))
                     } catch (_: ActivityNotFoundException) {
                         // Nothing can show it; the tap is a no-op rather than a crash.
+                    }
+                },
+                // The site's own address for this facility, which is also the App Link that
+                // opens this screen again on a phone that has the app. Whoever it is sent to
+                // can read it either way, which is the point of sharing it at all.
+                onShare = { name ->
+                    val link = "https://${BuildConfig.APP_LINK_HOST}/f/$facilityId"
+                    val send = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_SUBJECT, name)
+                        putExtra(Intent.EXTRA_TEXT, "$name
+$link")
+                    }
+                    try {
+                        context.startActivity(Intent.createChooser(send, null))
+                    } catch (_: ActivityNotFoundException) {
+                        // A phone with nothing to share to; the tap is a no-op rather than a crash.
                     }
                 },
                 onBack = { navController.popBackStack() },
@@ -286,6 +296,14 @@ fun DirectoryApp(
                 // not given the function, so the control does not exist in it.
                 onSimulate = if (BuildConfig.DEBUG) {
                     { profile ->
+                        // A new entry, deliberately. The screen being left is this same
+                        // destination, and `simulated` is read once, when the view model is
+                        // built (NavigationViewModel). Asking to stay on a single top entry
+                        // hands the new arguments to the model that already exists and never
+                        // reads them again, so the demonstration was requested and nothing
+                        // happened: no banner, no movement, no voice. Pushing an entry builds
+                        // the model that reads `simulated = true`, and Back returns to the
+                        // real trip.
                         navController.navigate(
                             DirectoryRoute.BuiltInNavigation(
                                 latitude = route.latitude,
@@ -293,7 +311,7 @@ fun DirectoryApp(
                                 profile = profile.name,
                                 simulated = true,
                             ),
-                        ) { launchSingleTop = true }
+                        )
                     }
                 } else {
                     null
@@ -332,6 +350,7 @@ fun DirectoryApp(
                 onHelp = { navController.navigate(DirectoryRoute.Help) },
                 bottomBar = { DirectoryTabs(DirectoryTab.ACCOUNT, navController) },
                 onRecentlyViewed = { navController.navigate(DirectoryRoute.RecentlyViewed) },
+                onMyRatings = { navController.navigate(DirectoryRoute.MyRatings) },
             )
         }
         composable<DirectoryRoute.Login> {

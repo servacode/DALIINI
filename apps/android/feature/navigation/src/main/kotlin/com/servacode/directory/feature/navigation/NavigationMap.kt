@@ -23,6 +23,7 @@ import com.servacode.directory.core.maps.FOLLOW_MILLIS
 import com.servacode.directory.core.maps.GeoMath
 import com.servacode.directory.core.maps.MapCamera
 import com.servacode.directory.core.maps.MapLibreController
+import com.servacode.directory.core.maps.LabelledLine
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.maps.MapStyle
 import com.servacode.directory.core.maps.NavigationRoute
@@ -35,6 +36,8 @@ internal fun NavigationMap(
     styleUrl: String,
     route: NavigationRoute?,
     location: MapPoint?,
+    /** The ways there on offer and not taken, drawn under the one that is. */
+    alternatives: List<LabelledLine> = emptyList(),
     modifier: Modifier = Modifier,
     /** Broken for a walk, unbroken for a vehicle. */
     stroke: RouteStroke = RouteStroke.SOLID,
@@ -46,6 +49,8 @@ internal fun NavigationMap(
     /** True while the map rides with the traveller; false after a hand has moved it. */
     following: Boolean = true,
     onUserMovedMap: () -> Unit = {},
+    /** A press on one of the other ways there, by its own number. */
+    onChooseAlternative: (Int) -> Unit = {},
     /** Handed back so the screen's own controls can work the map they are floating over. */
     onController: (MapLibreController) -> Unit = {},
 ) {
@@ -55,6 +60,8 @@ internal fun NavigationMap(
                 styleUrl = styleUrl,
                 route = route,
                 location = location,
+                alternatives = alternatives,
+                onChooseAlternative = onChooseAlternative,
                 stroke = stroke,
                 mark = mark,
                 bearingDegrees = bearingDegrees,
@@ -79,6 +86,8 @@ private fun RouteMap(
     styleUrl: String,
     route: NavigationRoute?,
     location: MapPoint?,
+    /** The ways there on offer and not taken, drawn under the one that is. */
+    alternatives: List<LabelledLine> = emptyList(),
     stroke: RouteStroke,
     mark: UserMark,
     bearingDegrees: Float,
@@ -86,9 +95,14 @@ private fun RouteMap(
     destinationName: String?,
     following: Boolean,
     onUserMovedMap: () -> Unit,
+    onChooseAlternative: (Int) -> Unit,
     onController: (MapLibreController) -> Unit,
 ) {
     val routeColor = MaterialTheme.colorScheme.primary.toArgb()
+    // Not the route's own colour: two greens at different opacities read as one line half
+    // drawn. The outline colour is what the design system uses for a thing that is present
+    // but not active.
+    val alternativeColor = MaterialTheme.colorScheme.outline.toArgb()
     val density = LocalDensity.current
     val sidePadding = with(density) { Space.xl.roundToPx() }
     val bottomPadding = with(density) { Sizes.mapCardClearance.roundToPx() }
@@ -112,6 +126,19 @@ private fun RouteMap(
     LaunchedEffect(controller, destination, destinationName) {
         val map = controller ?: return@LaunchedEffect
         destination?.let { map.showDestination(it, destinationName) }
+    }
+
+    // Registered once per map: a press that lands on one of the other ways takes it, and a
+    // press anywhere else is left to the map.
+    LaunchedEffect(controller) {
+        controller?.setOnAlternativeSelected(onChooseAlternative)
+    }
+
+    // What else was on offer, on its own clock: a set of routes arrives once, while the
+    // line ahead below is redrawn every second.
+    LaunchedEffect(controller, alternatives) {
+        val map = controller ?: return@LaunchedEffect
+        map.showAlternatives(alternatives, alternativeColor)
     }
 
     // The line and the mark are one update: they describe the same instant, and drawing them

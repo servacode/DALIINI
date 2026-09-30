@@ -25,13 +25,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryCompactFilterChip
-import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryInlineLoading
 import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
@@ -44,6 +42,7 @@ import com.servacode.directory.core.designsystem.DirectoryWords
 import com.servacode.directory.core.designsystem.MetaRow
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.location.FOREGROUND_LOCATION_PERMISSIONS
+import com.servacode.directory.core.maps.LabelledLine
 import com.servacode.directory.core.maps.MapLibreController
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.maps.RouteStroke
@@ -109,6 +108,21 @@ fun BuiltInNavigationScreen(
                 styleUrl = styleUrl,
                 route = state.route,
                 location = state.progress?.location,
+                // Every way on offer except the one being followed: that one is the route above,
+                // drawn in the route's own colour over the top of these. Each carries its own
+                // number, so a press on the map can say which was pressed, and its own minutes,
+                // written along it — a way offered without its price is not an offer.
+                alternatives = state.choices
+                    .mapIndexed { index, choice -> index to choice }
+                    .filter { (index, _) -> index != state.chosenIndex }
+                    .map { (index, choice) ->
+                        LabelledLine(
+                            key = index,
+                            label = formatDuration(choice.durationSeconds),
+                            points = choice.geometry,
+                        )
+                    },
+                onChooseAlternative = viewModel::selectRoute,
                 modifier = Modifier.fillMaxSize(),
                 stroke = state.profile.stroke(),
                 mark = state.profile.mark(),
@@ -204,24 +218,33 @@ fun BuiltInNavigationScreen(
                 // to the real thing and is not is the one thing this screen must never be.
                 if (state.simulated) DirectoryOfflineNotice(text = NavigationCopy.SIMULATED)
 
-                DirectoryCard {
+                // While the trip is running there is no card: the screen is the map, and the
+                // turn is spoken. A sentence printed under the road is a sentence read instead
+                // of it, and the voice was proven on the device before this was taken away.
+                //
+                // Everything else that appears here is not an instruction — a route being
+                // computed, a route being recomputed, an arrival, a failure carrying the button
+                // that retries it — and none of those is said aloud in a way that replaces
+                // being shown.
+                if (state.navigation !is NavigationState.Navigating) DirectoryCard {
                     when (val navigation = state.navigation) {
                         NavigationState.Idle,
                         NavigationState.Routing,
-                        -> DirectoryInlineLoading(NavigationCopy.ROUTING)
+                        // Whatever is actually being waited for. The engine answers in about
+                        // twenty milliseconds; a first satellite reading is allowed eight
+                        // seconds, and saying the wrong one of those is what made this screen
+                        // feel like a fault rather than a wait.
+                        -> DirectoryInlineLoading(
+                            if (state.locating) NavigationCopy.LOCATING else NavigationCopy.ROUTING,
+                        )
 
-                        is NavigationState.Navigating -> ManeuverBanner(navigation.progress)
+                        is NavigationState.Navigating -> Unit
 
-                        is NavigationState.Rerouting -> Column(
-                            verticalArrangement = Arrangement.spacedBy(Space.sm),
-                        ) {
-                            Text(
-                                text = NavigationCopy.REROUTING,
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                            ManeuverBanner(navigation.progress)
-                        }
+                        is NavigationState.Rerouting -> Text(
+                            text = NavigationCopy.REROUTING,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
 
                         is NavigationState.Arrived -> Text(
                             text = NavigationCopy.ARRIVED,
@@ -250,7 +273,9 @@ fun BuiltInNavigationScreen(
                         }
                     }
                 }
-                onSimulate?.let { simulate ->
+                // Offered on a real trip only. During the demonstration itself the control would
+                // start a second one on top of the first, which is not a thing anyone wants.
+                onSimulate?.takeIf { !state.simulated }?.let { simulate ->
                     DirectorySecondaryButton(
                         text = NavigationCopy.SIMULATE,
                         onClick = { simulate(state.profile) },
@@ -323,40 +348,6 @@ private fun TripSummary(progress: NavigationProgress, switching: Boolean) {
                     icon = DirectoryIcons.clock,
                     text = formatDuration(progress.remainingDurationSeconds),
                     modifier = Modifier.weight(1f),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ManeuverBanner(progress: NavigationProgress) {
-    val maneuver = progress.maneuver ?: return
-    DirectoryCard {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Space.md),
-        ) {
-            DirectoryIcon(
-                icon = DirectoryIcons.route,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-            )
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = maneuverSentence(maneuver),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                // How far to the turn, not how long the turn's own leg is: "in 300 m" is the
-                // sentence a navigator says, and the engine already measures it for the voice.
-                Text(
-                    text = DirectoryWords.distance(progress.distanceToManeuverMeters),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -442,6 +433,7 @@ object NavigationCopy {
         @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_external_maps)
     val PERMISSION_TITLE: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_permission_title)
+    val LOCATING: String @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_locating)
     val SIMULATE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_simulate)
     val SIMULATED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.nav_simulated)
 

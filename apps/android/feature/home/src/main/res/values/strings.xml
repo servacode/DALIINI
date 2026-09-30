@@ -8,6 +8,7 @@
     <string name="home_you_are_in">أنت الآن في</string>
     <string name="home_notifications">الإشعارات</string>
     <string name="home_emergency">أرقام الطوارئ</string>
+    <string name="home_emergency_hint">الأرقام الرسمية التي قد تحتاجها فورًا</string>
     <string name="home_recent">شوهدت مؤخراً</string>
     <string name="home_data_saver_title">توفير البيانات؟</string>
     <string name="home_data_saver_body">أنت على اتصال بالباقة.

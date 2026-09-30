@@ -49,7 +49,21 @@ class ValhallaRoutingProvider @Inject constructor(
         origin: MapPoint,
         destination: MapPoint,
         profile: RoutingProfile,
-    ): NavigationRoute = withContext(Dispatchers.IO) {
+    ): NavigationRoute = routes(origin, destination, profile, alternates = 0).first()
+
+    /**
+     * The engine's own answer first, then whatever else it was willing to find.
+     *
+     * Valhalla returns the preferred trip under `trip` and the rest under `alternates`, each of
+     * them wrapping a trip of its own. Asking for none is asking the same question this adapter
+     * always asked, so the single-route path costs nothing.
+     */
+    override suspend fun routes(
+        origin: MapPoint,
+        destination: MapPoint,
+        profile: RoutingProfile,
+        alternates: Int,
+    ): List<NavigationRoute> = withContext(Dispatchers.IO) {
         val from = origin.requireRoutable()
         val to = destination.requireRoutable()
         val base = runCatching { ProviderEndpointPolicy.requireConfiguredHttps(config.routingBaseUrl) }
@@ -66,6 +80,7 @@ class ValhallaRoutingProvider @Inject constructor(
                     ValhallaLocation(to.latitude, to.longitude),
                 ),
                 costing = profile.costing(),
+                alternates = alternates.coerceAtLeast(0),
             ),
         )
         val request = Request.Builder()
@@ -88,7 +103,13 @@ class ValhallaRoutingProvider @Inject constructor(
                 }
             val trip = decoded.trip
                 ?: throw rejected(it.code, payload, profile)
-            trip.toDomain()
+            // An alternate the adapter cannot read is dropped rather than failing the request:
+            // the way there is still the way there, and one unusable extra is not a reason to
+            // leave someone without a route.
+            val others = decoded.alternates.mapNotNull { alternate ->
+                alternate.trip?.let { other -> runCatching { other.toDomain() }.getOrNull() }
+            }
+            listOf(trip.toDomain()) + others
         }
     }
 
@@ -284,6 +305,8 @@ private data class ValhallaRequest(
     val costing: String,
     /** Asked for explicitly so the adapter never has to guess what `length` means. */
     val units: String = "kilometers",
+    /** How many other ways to look for. Zero asks exactly what this adapter always asked. */
+    val alternates: Int = 0,
 )
 
 @Serializable
@@ -292,9 +315,14 @@ private data class ValhallaLocation(val lat: Double, val lon: Double)
 @Serializable
 private data class ValhallaResponse(
     val trip: ValhallaTrip? = null,
+    /** Each carries a trip of its own, which is how the engine returns the other ways. */
+    val alternates: List<ValhallaAlternate> = emptyList(),
     @SerialName("error_code") val errorCode: Int? = null,
     val error: String? = null,
 )
+
+@Serializable
+private data class ValhallaAlternate(val trip: ValhallaTrip? = null)
 
 @Serializable
 private data class ValhallaTrip(

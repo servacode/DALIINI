@@ -4,9 +4,12 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.PointF
+import android.graphics.RectF
 import android.graphics.Path
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.Style
+import org.maplibre.android.style.expressions.Expression
 import org.maplibre.android.style.layers.LineLayer
 import org.maplibre.android.style.layers.Property
 import org.maplibre.android.style.layers.PropertyFactory
@@ -54,6 +57,16 @@ internal class NavigationLayers(private val map: MapLibreMap) {
     private var installedStyle: Style? = null
 
     /**
+     * What was last asked to be drawn, kept so it can be drawn again on a style that was not
+     * ready when it was asked for.
+     *
+     * The route survives a style arriving late because a reading a second later redraws it.
+     * The other ways there are asked for once, when they are computed, and were simply lost.
+     */
+    private var alternatives: List<LabelledLine> = emptyList()
+    private var alternativesColor: Int = Color.GRAY
+
+    /**
      * Put the layers on the style, once per style.
      *
      * Returns false when the style is not ready, so the caller can try again on the next frame
@@ -64,10 +77,36 @@ internal class NavigationLayers(private val map: MapLibreMap) {
         if (installedStyle === style) return style
         installedStyle = style
         runCatching {
+            style.addSource(GeoJsonSource(ALTERNATES_SOURCE))
             style.addSource(GeoJsonSource(ROUTE_SOURCE))
             style.addSource(GeoJsonSource(USER_SOURCE))
             style.addImage(ARROW_IMAGE, arrowBitmap())
             style.addImage(WALKER_IMAGE, walkerBitmap())
+            // Added first so it lies under everything else: a way not taken must never be
+            // mistaken for the way being followed, and the order of the layers is what
+            // guarantees that however the two lines cross.
+            style.addLayer(
+                LineLayer(ALTERNATES_LAYER, ALTERNATES_SOURCE).withProperties(
+                    PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
+                    PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
+                    PropertyFactory.lineWidth(ALTERNATE_WIDTH),
+                    PropertyFactory.lineOpacity(ALTERNATE_OPACITY),
+                ),
+            )
+            // What each of them costs, written along it. A way offered without its price is
+            // not an offer, and this is the figure anybody compares two roads by.
+            style.addLayer(
+                SymbolLayer(ALTERNATES_LABEL_LAYER, ALTERNATES_SOURCE).withProperties(
+                    PropertyFactory.textField(Expression.get(GeoJson.LABEL_PROPERTY)),
+                    PropertyFactory.textFont(arrayOf(LABEL_FONT)),
+                    PropertyFactory.textSize(LABEL_SIZE),
+                    PropertyFactory.textColor(Color.BLACK),
+                    // A halo, because the words sit on a map and not on a card.
+                    PropertyFactory.textHaloColor(Color.WHITE),
+                    PropertyFactory.textHaloWidth(LABEL_HALO),
+                    PropertyFactory.symbolPlacement(Property.SYMBOL_PLACEMENT_LINE_CENTER),
+                ),
+            )
             // A casing under the line, so the route reads against both a pale street and a park.
             style.addLayer(
                 LineLayer(ROUTE_CASING_LAYER, ROUTE_SOURCE).withProperties(
@@ -95,6 +134,8 @@ internal class NavigationLayers(private val map: MapLibreMap) {
                 ),
             )
         }
+        // Whatever was asked for before this style existed is asked for again now.
+        drawAlternatives(style)
         return style
     }
 
@@ -116,6 +157,50 @@ internal class NavigationLayers(private val map: MapLibreMap) {
         )
     }
 
+    /**
+     * The ways there that are on offer and not being followed.
+     *
+     * Thinner and paler than the route, and under it: they are there to be seen and chosen,
+     * not to be read as the line to drive. An empty list clears them, which is what happens
+     * the moment there is only one way left worth showing.
+     */
+    fun showAlternatives(lines: List<LabelledLine>, colorArgb: Int) {
+        alternatives = lines
+        alternativesColor = colorArgb
+        drawAlternatives(style() ?: return)
+    }
+
+    private fun drawAlternatives(style: Style) {
+        val source = style.getSourceAs<GeoJsonSource>(ALTERNATES_SOURCE) ?: return
+        source.setGeoJson(
+            if (alternatives.isEmpty()) GeoJson.EMPTY else GeoJson.labelledLines(alternatives),
+        )
+        (style.getLayer(ALTERNATES_LAYER) as? LineLayer)
+            ?.setProperties(PropertyFactory.lineColor(alternativesColor))
+    }
+
+    /**
+     * Which way there was pressed, if the press landed on one.
+     *
+     * A line seven pixels wide is not a target a thumb can find, so the question is asked of a
+     * small square around the point rather than of the point itself.
+     */
+    fun alternativeAt(screen: PointF): Int? {
+        installedStyle?.getLayer(ALTERNATES_LAYER) ?: return null
+        val box = RectF(
+            screen.x - TAP_SLOP,
+            screen.y - TAP_SLOP,
+            screen.x + TAP_SLOP,
+            screen.y + TAP_SLOP,
+        )
+        val hit = runCatching { map.queryRenderedFeatures(box, ALTERNATES_LAYER) }
+            .getOrNull()
+            .orEmpty()
+        return hit.firstNotNullOfOrNull { feature ->
+            runCatching { feature.getNumberProperty(GeoJson.KEY_PROPERTY)?.toInt() }.getOrNull()
+        }
+    }
+
     fun showUser(point: MapPoint, bearingDegrees: Float, mark: UserMark) {
         val style = style() ?: return
         val source = style.getSourceAs<GeoJsonSource>(USER_SOURCE) ?: return
@@ -130,6 +215,7 @@ internal class NavigationLayers(private val map: MapLibreMap) {
     fun clear() {
         val style = installedStyle ?: return
         runCatching {
+            style.getSourceAs<GeoJsonSource>(ALTERNATES_SOURCE)?.setGeoJson(GeoJson.EMPTY)
             style.getSourceAs<GeoJsonSource>(ROUTE_SOURCE)?.setGeoJson(GeoJson.EMPTY)
             style.getSourceAs<GeoJsonSource>(USER_SOURCE)?.setGeoJson(GeoJson.EMPTY)
         }
@@ -137,15 +223,30 @@ internal class NavigationLayers(private val map: MapLibreMap) {
 
     private companion object {
         const val ROUTE_SOURCE = "directory-route"
+        const val ALTERNATES_SOURCE = "directory-route-alternates"
         const val USER_SOURCE = "directory-user"
         const val ROUTE_CASING_LAYER = "directory-route-casing"
         const val ROUTE_LAYER = "directory-route-line"
+        const val ALTERNATES_LAYER = "directory-route-alternates-line"
+        const val ALTERNATES_LABEL_LAYER = "directory-route-alternates-label"
         const val USER_LAYER = "directory-user-mark"
         const val ARROW_IMAGE = "directory-user-arrow"
         const val WALKER_IMAGE = "directory-user-walker"
 
         const val LINE_WIDTH = 7f
         const val CASING_WIDTH = 11f
+
+        /** Thin enough and pale enough to be an offer rather than an instruction. */
+        const val ALTERNATE_WIDTH = 5f
+        const val ALTERNATE_OPACITY = 0.45f
+
+        /** One of the two the map style already loads, so no new glyphs are fetched. */
+        const val LABEL_FONT = "RahalGo Bold"
+        const val LABEL_SIZE = 13f
+        const val LABEL_HALO = 1.6f
+
+        /** Half the side of the square a press is looked for in, in pixels. */
+        const val TAP_SLOP = 28f
 
         /** Round caps turn each short dash into a dot. */
         val DOTTED_PATTERN = arrayOf(0.05f, 1.6f)

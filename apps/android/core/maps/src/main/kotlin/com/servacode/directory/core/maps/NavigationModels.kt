@@ -145,6 +145,24 @@ interface RoutingProvider {
         destination: MapPoint,
         profile: RoutingProfile = RoutingProfile.DRIVING,
     ): NavigationRoute
+
+    /**
+     * Every way there the engine is willing to offer, the one it prefers first.
+     *
+     * A city has more than one way through it, and which one a person wants is not something an
+     * engine can know: the shorter way past the school at four o'clock is the one a local
+     * refuses. So the ways are offered and the choice is theirs, which is what asking for
+     * alternates is for.
+     *
+     * The default answers with the single route this provider gives, so a provider that has no
+     * notion of alternates is complete without pretending to offer a choice it cannot make.
+     */
+    suspend fun routes(
+        origin: MapPoint,
+        destination: MapPoint,
+        profile: RoutingProfile = RoutingProfile.DRIVING,
+        alternates: Int = 0,
+    ): List<NavigationRoute> = listOf(route(origin, destination, profile))
 }
 
 interface GeocodingProvider {

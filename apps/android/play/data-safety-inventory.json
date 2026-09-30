@@ -31,11 +31,11 @@
     {
       "category": "App activity",
       "types": ["App interactions"],
-      "collected": true,
+      "collected": "CONDITIONAL",
       "shared": false,
       "purposes": ["Analytics", "App functionality"],
       "required": false,
-      "notes": "Analytics registry explicitly rejects precise coordinates, tokens, full phone numbers and evidence IDs."
+      "notes": "The backend declares eighteen interaction events and an ingest endpoint (analytics/registry.py, POST /api/v1/analytics/events/), and its registry explicitly rejects precise coordinates, tokens, full phone numbers and evidence IDs. The Android app does not send them yet: core:analytics holds an AnalyticsTracker interface whose only implementation is NoOpAnalyticsTracker, and nothing binds or calls it, so an AAB built from this source collects no app interaction from the phone. Events the backend records from requests it serves anyway are its own. Mark collected once a tracker posts to that endpoint, and reconcile the event list with the registry as shipped."
     },
     {
       "category": "Device or other IDs",

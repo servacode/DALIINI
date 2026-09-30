@@ -209,6 +209,26 @@ internal class NavigationVoicePlanner(private val tuning: VoiceTuning = VoiceTun
         return previousMeters > triggerMeters
     }
 
+    /**
+     * The shortest time guidance leaves between two of its own sentences, in seconds of travel.
+     *
+     * Each stage is a number of seconds before the maneuver, so at any speed the three land at
+     * three distances along the road, and what a voice has to live within is the gap between the
+     * closest two of them. On the road that gap is ten seconds by car and half a minute on foot,
+     * which is room enough for anything the pack says. A demonstration played faster than life
+     * divides it — and divided below the length of a spoken sentence, every instruction arrives
+     * on top of the one before it. This is the number a demonstration's speed is bounded by.
+     */
+    internal fun tightestCueSeconds(speedMps: Double): Double {
+        if (speedMps <= 0.0) return Double.POSITIVE_INFINITY
+        // The three that are a distance ahead of a maneuver. An event is announced where it
+        // happens and has no threshold to be spaced against.
+        val metres = listOf(VoiceStage.PREPARE, VoiceStage.APPROACH, VoiceStage.NOW)
+            .map { triggerMeters(it, speedMps) }
+            .sortedDescending()
+        return metres.zipWithNext { far, near -> (far - near) / speedMps }.min()
+    }
+
     internal fun triggerMeters(stage: VoiceStage, speedMps: Double): Double {
         val (seconds, minimum, maximum) = when (stage) {
             VoiceStage.NOW -> Triple(tuning.nowSeconds, tuning.nowMinMeters, tuning.nowMaxMeters)

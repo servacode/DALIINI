@@ -177,16 +177,21 @@ internal class NavigationEngine(
         }
         val offRoute = GeoMath.distanceToPolylineMeters(location, route.geometry)
         val maneuverIndex = advanceManeuver(route, location, previousIndex)
+        // How much of the road being travelled is still ahead. The index names the turn to
+        // announce next, so the leg under the wheels belongs to the turn before it and is
+        // not in the sum below — which is why the trip used to lose its first leg the
+        // moment it began, and said 6.3 km of a way it had just offered as 10.10.
+        val toManeuver = route.maneuvers.getOrNull(maneuverIndex)
+            ?.let { GeoMath.distanceMeters(location, it.point) }
+            ?: 0.0
         val progress = NavigationProgress(
             route = route,
             location = location,
             maneuverIndex = maneuverIndex,
-            remainingDistanceMeters = remainingDistance(route, maneuverIndex),
-            remainingDurationSeconds = remainingDuration(route, maneuverIndex),
+            remainingDistanceMeters = remainingDistance(route, maneuverIndex, toManeuver),
+            remainingDurationSeconds = remainingDuration(route, maneuverIndex, toManeuver),
             offRouteDistanceMeters = offRoute,
-            distanceToManeuverMeters = route.maneuvers.getOrNull(maneuverIndex)
-                ?.let { GeoMath.distanceMeters(location, it.point) }
-                ?: 0.0,
+            distanceToManeuverMeters = toManeuver,
         )
         val cooldownElapsed = lastRerouteAtMillis == Long.MIN_VALUE ||
             nowMillis - lastRerouteAtMillis >= thresholds.rerouteCooldownMillis
@@ -223,13 +228,24 @@ internal class NavigationEngine(
         return index
     }
 
-    private fun remainingDistance(route: NavigationRoute, index: Int): Double {
+    /** What is left: the road still to run before the next turn, and every leg after it. */
+    private fun remainingDistance(route: NavigationRoute, index: Int, toManeuver: Double): Double {
         if (route.maneuvers.isEmpty()) return route.distanceMeters
-        return route.maneuvers.drop(index).sumOf(RouteManeuver::distanceMeters)
+        return toManeuver + route.maneuvers.drop(index).sumOf(RouteManeuver::distanceMeters)
     }
 
-    private fun remainingDuration(route: NavigationRoute, index: Int): Double {
+    /**
+     * The same, in time.
+     *
+     * The part still to run before the next turn is timed at the pace the engine gave the leg it
+     * belongs to, rather than at an average of the whole trip: the leg before a turn is the one
+     * whose speed the estimate is actually about.
+     */
+    private fun remainingDuration(route: NavigationRoute, index: Int, toManeuver: Double): Double {
         if (route.maneuvers.isEmpty()) return route.durationSeconds
-        return route.maneuvers.drop(index).sumOf(RouteManeuver::durationSeconds)
+        val after = route.maneuvers.drop(index).sumOf(RouteManeuver::durationSeconds)
+        val leg = route.maneuvers.getOrNull(index - 1) ?: return after
+        if (leg.distanceMeters <= 0.0) return after
+        return after + leg.durationSeconds * (toManeuver / leg.distanceMeters)
     }
 }

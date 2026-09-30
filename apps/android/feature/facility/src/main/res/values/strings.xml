@@ -20,6 +20,7 @@
     <string name="facility_rating_change">اضغط نجمة أخرى لتغيير تقييمك.</string>
     <string name="facility_rating_remove">حذف تقييمي</string>
     <string name="facility_sign_in_to_rate">سجّل الدخول لتقييم المنشأة</string>
+    <string name="facility_share">مشاركة</string>
     <string name="facility_photos">الصور</string>
     <string name="facility_photo">%1$s، صورة %2$d من %3$d</string>
     <string name="facility_photo_open">عرض الصورة بحجم أكبر</string>

@@ -213,7 +213,6 @@ dependencies {
     implementation(project(":feature:home"))
     implementation(project(":feature:province"))
     implementation(project(":feature:search"))
-    implementation(project(":feature:directory"))
     implementation(project(":feature:facility"))
     implementation(project(":feature:map"))
     implementation(project(":feature:navigation"))

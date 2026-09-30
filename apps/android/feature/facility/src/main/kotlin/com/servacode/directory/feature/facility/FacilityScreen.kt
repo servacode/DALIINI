@@ -95,6 +95,8 @@ fun FacilityScreen(
     onSignIn: () -> Unit,
     onCall: (String) -> Unit,
     onWhatsApp: (String) -> Unit,
+    /** Hands the facility's name and its public link to whatever the phone shares with. */
+    onShare: (String) -> Unit,
     onBack: () -> Unit,
     viewModel: FacilityViewModel = hiltViewModel(),
     reportViewModel: FacilityReportViewModel = hiltViewModel(),
@@ -175,6 +177,7 @@ fun FacilityScreen(
                     onSignIn = onSignIn,
                     onCall = onCall,
                     onWhatsApp = onWhatsApp,
+                    onShare = onShare,
                     onRate = viewModel::rate,
                     onRemoveRating = viewModel::removeRating,
                     onToggleFavorite = viewModel::toggleFavorite,
@@ -192,6 +195,7 @@ private fun FacilityBody(
     onSignIn: () -> Unit,
     onCall: (String) -> Unit,
     onWhatsApp: (String) -> Unit,
+    onShare: (String) -> Unit,
     onRate: (Int) -> Unit,
     onRemoveRating: () -> Unit,
     onToggleFavorite: () -> Unit,
@@ -352,12 +356,24 @@ private fun FacilityBody(
             }
         }
 
-        // Last, after everything the reader could have checked against what they know.
-        DirectoryTextButton(
-            text = FacilityCopy.REPORT,
-            onClick = onReport,
+        // Last, after everything the reader could have checked against what they know. Sharing
+        // passes the facility on; reporting is how a reader tells us what they found is wrong,
+        // and the two belong together at the foot of the page rather than one being hidden.
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Space.sm),
             modifier = Modifier.fillMaxWidth(),
-        )
+        ) {
+            DirectoryTextButton(
+                text = FacilityCopy.SHARE,
+                onClick = { onShare(detail.summary.nameAr) },
+                modifier = Modifier.weight(1f),
+            )
+            DirectoryTextButton(
+                text = FacilityCopy.REPORT,
+                onClick = onReport,
+                modifier = Modifier.weight(1f),
+            )
+        }
     }
 }
 
@@ -541,6 +557,7 @@ object FacilityCopy {
     val RATING_REMOVE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_rating_remove)
     val SIGN_IN_TO_RATE: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_sign_in_to_rate)
+    val SHARE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_share)
     val PHOTOS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_photos)
     val PHOTO_OPEN: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_photo_open)
 

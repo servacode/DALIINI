@@ -24,7 +24,6 @@ EXPECTED_MODULES = {
     ":feature:home",
     ":feature:province",
     ":feature:search",
-    ":feature:directory",
     ":feature:facility",
     ":feature:map",
     ":feature:navigation",

@@ -18,6 +18,7 @@
     <string name="nav_recentre">إعادة التوسيط</string>
     <string name="nav_external_maps">فتح تطبيق خرائط خارجي</string>
     <string name="nav_permission_title">الملاحة تحتاج موقعك</string>
+    <string name="nav_locating">جارٍ تحديد موقعك…</string>
     <string name="nav_simulate">رحلة تجريبية</string>
     <string name="nav_simulated">رحلة تجريبية — الموقع مُحاكى ولست تتحرك فعلًا</string>
     <string name="nav_map_not_configured">يجب ضبط مزود خرائط الإنتاج قبل عرض مسار الملاحة</string>

@@ -6,6 +6,7 @@
     <string name="account_error">تعذر تحميل الحساب</string>
     <string name="account_edit_profile">المعلومات الشخصية</string>
     <string name="account_favorites">المفضلة</string>
+    <string name="account_my_ratings">تقييماتي</string>
     <string name="account_notifications">الإشعارات</string>
     <string name="recent_title">شوهدت مؤخراً</string>
     <string name="recent_clear">مسح السجل</string>

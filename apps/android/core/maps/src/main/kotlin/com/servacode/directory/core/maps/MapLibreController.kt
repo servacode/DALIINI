@@ -240,6 +240,35 @@ class MapLibreController(
         user?.let { layers.showUser(it, bearingDegrees, mark) }
     }
 
+    /**
+     * The ways there being offered and not followed, drawn under the one that is.
+     *
+     * Kept apart from [showGuidance] because they change on a different clock: the route
+     * ahead is redrawn on every reading, while what else was on offer changes only when a
+     * new set of routes arrives.
+     */
+    fun showAlternatives(lines: List<LabelledLine>, colorArgb: Int) {
+        layers.showAlternatives(lines, colorArgb)
+    }
+
+    /**
+     * Press one of the other ways there to take it.
+     *
+     * The press is answered only when it lands on a way; otherwise it is passed on, so panning
+     * and everything else the map does with a touch still works.
+     */
+    fun setOnAlternativeSelected(listener: (Int) -> Unit) {
+        map.addOnMapClickListener { point ->
+            val chosen = layers.alternativeAt(map.projection.toScreenLocation(point))
+            if (chosen == null) {
+                false
+            } else {
+                listener(chosen)
+                true
+            }
+        }
+    }
+
     /** Where they are going, marked, so the end of the line is a place and not a line's end. */
     fun showDestination(point: MapPoint, label: String?) {
         destinationMarker?.let(map::removeMarker)

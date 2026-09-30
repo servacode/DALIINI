@@ -30,6 +30,8 @@ object HomeCopy {
     val NOTIFICATIONS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_notifications)
     val MANY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_many)
     val EMERGENCY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_emergency)
+    val EMERGENCY_HINT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.home_emergency_hint)
     val RECENT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.home_recent)
     val DATA_SAVER_TITLE: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.home_data_saver_title)

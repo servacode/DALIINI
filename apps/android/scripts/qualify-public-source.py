@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PUBLIC = ("home", "province", "search", "directory", "facility", "map", "account", "ratings")
+PUBLIC = ("home", "province", "search", "facility", "map", "account", "ratings")
 
 
 def require(condition: bool, message: str) -> None:
@@ -36,7 +36,10 @@ def check_cache_and_privacy() -> None:
     # Features read the cache through the PublicCache interface; PublicCacheDataSource is the
     # Room implementation behind it, which no feature names. What matters is that a public list
     # is served from the cache before the network, and that personal data never enters it.
-    for feature in ("home", "directory", "facility"):
+    # `directory` was a second list screen nobody could reach: Home already narrows by
+    # category, and the route that opened it was never navigated to. Removed with the
+    # module, so it is no longer among the features this gate expects to find.
+    for feature in ("home", "facility"):
         source = feature_text(feature)
         require("PublicCache" in source, f"cache-first path missing: {feature}")
         require("cacheFirst(" in source, f"cache-first read missing: {feature}")
@@ -104,7 +107,6 @@ def check_routes() -> None:
         "Home",
         "ProvincePicker",
         "Search",
-        "Directory",
         "FacilityDetailRoute",
         "Map",
         "Account",
