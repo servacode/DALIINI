@@ -21,6 +21,12 @@ export MSYS_NO_PATHCONV=1
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ARCHIVE="${1:-}"
 WORK="$ROOT/.local-stack/map"
+# Python here is the Windows interpreter on a Git Bash shell: it cannot open `/d/…`, which is
+# what this shell calls the same file, and MSYS_NO_PATHCONV above stops the shell translating.
+# `cygpath` does it explicitly; on a Unix machine there is nothing to translate and no cygpath.
+host_path() {
+  if command -v cygpath >/dev/null 2>&1; then cygpath -w "$1"; else printf '%s' "$1"; fi
+}
 BUCKET_PREFIX="map"
 
 if [ -z "$ARCHIVE" ] || [ ! -f "$ARCHIVE" ]; then
@@ -33,10 +39,10 @@ fi
 
 echo "== unpacking $(basename "$ARCHIVE") =="
 rm -rf "$WORK"
-python "$ROOT/scripts/pmtiles-extract.py" "$ARCHIVE" "$WORK" || exit 1
+python "$(host_path "$ROOT/scripts/pmtiles-extract.py")" "$(host_path "$ARCHIVE")" "$(host_path "$WORK")" || exit 1
 
 echo "== binding the style to tiles this machine serves =="
-python - "$ROOT" "$WORK" <<'PY' || exit 1
+python - "$(host_path "$ROOT")" "$(host_path "$WORK")" <<'PY' || exit 1
 import json, pathlib, sys
 root, work = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
 style = json.loads((root / "maps" / "raqqa.style.json").read_text(encoding="utf-8"))
@@ -45,7 +51,7 @@ print(f"  {len(style['layers'])} layers, source {style['sources']['base']['tiles
 PY
 
 echo "== uploading to the local media store =="
-python - "$ROOT" "$WORK" "$BUCKET_PREFIX" <<'PY' || exit 1
+python - "$(host_path "$ROOT")" "$(host_path "$WORK")" "$BUCKET_PREFIX" <<'PY' || exit 1
 import pathlib, re, sys
 import boto3
 from botocore.client import Config
