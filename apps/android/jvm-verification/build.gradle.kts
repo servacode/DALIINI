@@ -62,7 +62,11 @@ val features = listOf(
 sourceSets {
     main {
         kotlin.srcDir(generatedClient)
-        for (core in listOf("model", "observability", "analytics", "auth", "network", "database", "datastore", "location", "maps")) {
+        val platformFreeCores = listOf(
+            "model", "observability", "analytics", "auth",
+            "network", "database", "datastore", "location", "maps",
+        )
+        for (core in platformFreeCores) {
             kotlin.srcDir(android.resolve("core/$core/src/main/kotlin"))
         }
         for (feature in features) {
