@@ -403,12 +403,15 @@
   flex: none;
   width: auto;
   /*
-   * Taller than the row's content box, and allowed to overhang it by the padding either side, so
-   * the crest reads at the scale of the bar rather than as a stamp in the middle of it. The bar's
-   * own height does not change for it: the negative margin is exactly the padding it eats.
+   * Sized to the bar rather than placed in it. The asset is cropped to its own artwork — it used
+   * to carry a fifth of its height as empty space, which is why the crest rendered small and low
+   * while its box claimed the full height — so this height is the crest itself.
+   *
+   * It overhangs the row's padding by the eight pixels either side that the padding is, and the
+   * negative margin gives exactly that back, so the bar's height does not change for it.
    */
-  height: 88px;
-  margin-block: -8px;
+  height: 92px;
+  margin-block: -10px;
   margin-inline: auto;
   /* Decoration between two groups of controls; nothing about it is clickable. */
   pointer-events: none;
@@ -416,9 +419,9 @@
 
 /*
  * Below this the row needs its whole width for the brand, the links and the controls. Measured
- * rather than guessed: at 1800 the row still has room for the crest at its full size, and at
- * 1700 it does not.
+ * rather than guessed: at 1850 the row still has room for the crest at its full size, and at
+ * 1800 it does not.
  */
-@media (max-width: 1780px) {
+@media (max-width: 1820px) {
   .header-crest { display: none; }
 }
