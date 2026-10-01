@@ -134,9 +134,14 @@
   font-size: var(--sd-typography-roles-label-medium-size);
 }
 
-/* Both fold away below the breakpoint, where they live in the panel instead. */
-.header-cta,
-.header-download { display: none; }
+/*
+ * Both fold away below the breakpoint, where they live in the panel instead. The selector carries
+ * the bar with it because `.button` is declared in components.css — same specificity, later file —
+ * so a plain `.header-cta { display: none }` lost to it and the row overflowed the phone by the
+ * width of two buttons.
+ */
+.header-end .header-cta,
+.header-end .header-download { display: none; }
 
 /* The download is the filled one of the pair: it is what a first visitor should do. */
 .header-download { white-space: nowrap; }
@@ -192,16 +197,20 @@
 
 /* ---- Where the row fits, the panel is not needed ---- */
 
-@media (min-width: 1000px) {
+@media (min-width: 1040px) {
   .header-nav { display: flex; }
-  .header-cta,
-  .header-download { display: inline-flex; }
+  .header-end .header-cta,
+  .header-end .header-download { display: inline-flex; }
   .menu-button { display: none; }
   .header-panel { display: none; }
 }
 
-/* Between the two, the links fold away but the search and the action stay. */
-@media (max-width: 999px) {
+/*
+ * The search is the widest thing in the row, and between 1000 and 1200 it is the difference
+ * between a row that fits and a row that runs off the side of the screen. It folds into the
+ * panel first; the links and the two buttons keep their places until the panel takes them too.
+ */
+@media (max-width: 1359px) {
   .header-end .search-box { display: none; }
 }
 
