@@ -251,8 +251,7 @@ fun DirectoryApp(
                     val send = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
                         putExtra(Intent.EXTRA_SUBJECT, name)
-                        putExtra(Intent.EXTRA_TEXT, "$name
-$link")
+                        putExtra(Intent.EXTRA_TEXT, "$name\n$link")
                     }
                     try {
                         context.startActivity(Intent.createChooser(send, null))
