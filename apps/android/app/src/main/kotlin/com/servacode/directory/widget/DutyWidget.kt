@@ -243,7 +243,11 @@ private fun FacilityRow(facility: DutyWidgetFacility, layout: WidgetLayout) {
 private fun Message(text: String, action: Action? = null) {
     Text(
         text = text,
-        style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant, fontSize = TypeScale.bodyMedium, textAlign = TextAlign.Right),
+        style = TextStyle(
+            color = GlanceTheme.colors.onSurfaceVariant,
+            fontSize = TypeScale.bodyMedium,
+            textAlign = TextAlign.Right,
+        ),
         maxLines = 3,
         modifier = GlanceModifier
             .fillMaxWidth()
@@ -264,7 +268,11 @@ private fun Footer(state: DutyWidgetState) {
     Spacer(GlanceModifier.height(Space.xs))
     Text(
         text = text,
-        style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant, fontSize = TypeScale.bodySmall, textAlign = TextAlign.Right),
+        style = TextStyle(
+            color = GlanceTheme.colors.onSurfaceVariant,
+            fontSize = TypeScale.bodySmall,
+            textAlign = TextAlign.Right,
+        ),
         maxLines = 2,
         modifier = GlanceModifier.fillMaxWidth(),
     )
