@@ -16,6 +16,8 @@ val androidOnly = listOf(
     "**/core/network/NetworkMonitor.kt",
     "**/core/network/UploadReader.kt",
     "**/core/network/NetworkBindings.kt",
+    // Builds its Retrofit service from the generated client, which is an AAR here.
+    "**/core/network/api/GeneratedAnalyticsTransport.kt",
     "**/core/network/MapProviderAdapters.kt",
     "**/core/network/MapProviderNetworkModule.kt",
     "**/core/database/CacheDao.kt",
@@ -25,6 +27,8 @@ val androidOnly = listOf(
     "**/core/database/PublicCacheDataSource.kt",
     "**/core/database/LocalStoresRoom.kt",
     "**/core/datastore/PreferencesRepository.kt",
+    // The pseudonymous id lives in the same DataStore the preferences do.
+    "**/core/datastore/StoredAnonymousId.kt",
     "**/core/location/AndroidLocationProvider.kt",
     "**/core/location/LocationModule.kt",
     "**/core/maps/MapLibreController.kt",
@@ -58,7 +62,7 @@ val features = listOf(
 sourceSets {
     main {
         kotlin.srcDir(generatedClient)
-        for (core in listOf("model", "observability", "auth", "network", "database", "datastore", "location", "maps")) {
+        for (core in listOf("model", "observability", "analytics", "auth", "network", "database", "datastore", "location", "maps")) {
             kotlin.srcDir(android.resolve("core/$core/src/main/kotlin"))
         }
         for (feature in features) {
@@ -73,6 +77,7 @@ sourceSets {
         kotlin.srcDir(android.resolve("core/database/src/test/kotlin"))
         kotlin.srcDir(android.resolve("core/model/src/test/kotlin"))
         kotlin.srcDir(android.resolve("core/maps/src/test/kotlin"))
+        kotlin.srcDir(android.resolve("core/analytics/src/test/kotlin"))
         for (feature in features) {
             kotlin.srcDir(android.resolve("feature/$feature/src/test/kotlin"))
         }
