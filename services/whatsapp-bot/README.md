@@ -94,7 +94,8 @@ WHATSAPP_BOT_TOKEN=<نفس السرّ>
 | الحالة | `reason` | معناها في الباكند |
 |---|---|---|
 | `200` | — | أُرسِل |
-| `400` | `bad_request` / `invalid_number` | رقم أو رمز غير صالح — لا يُعاد |
+| `400` | `bad_request` / `invalid_number` | طلب أو رقم غير صالح — لا يُعاد |
+| `400` | `invalid_code` | رمز مُشوَّه من جهتنا — عيب برمجي، لا حكم على الرقم |
 | `422` | `not_on_whatsapp` | لا حساب واتساب لهذا الرقم — لا يُعاد |
 | `429` | `hourly_cap` / `too_soon_for_this_number` | مع `retryAfterMs` — يُعاد لاحقًا |
 | `503` | `disconnected` / `logged_out` | الجلسة ساقطة — يُعاد لاحقًا |

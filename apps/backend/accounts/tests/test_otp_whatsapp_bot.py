@@ -97,6 +97,8 @@ def test_a_number_that_can_never_receive_is_not_retried(reason: str) -> None:
         (429, "hourly_cap"),
         (429, "too_soon_for_this_number"),
         (502, "send_failed"),
+        # A code we malformed ourselves: a bug on our side, never a verdict on the number.
+        (400, "invalid_code"),
         (401, "unauthorised"),
         (500, None),
     ],

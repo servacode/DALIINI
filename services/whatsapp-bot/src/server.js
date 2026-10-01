@@ -72,8 +72,13 @@ async function handleSend(request, response) {
 
   const jid = toWhatsAppId(body?.phone);
   const code = String(body?.code ?? "");
-  if (!jid || !/^\d{4,8}$/.test(code)) {
+  if (!jid) {
     return reply(response, 400, { reason: "invalid_number" });
+  }
+  // Told apart from the number on purpose: the backend treats invalid_number as a verdict on
+  // the recipient and never asks again, and a code we malformed ourselves is not that.
+  if (!/^\d{4,8}$/.test(code)) {
+    return reply(response, 400, { reason: "invalid_code" });
   }
 
   const status = session.status();

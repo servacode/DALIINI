@@ -1,7 +1,10 @@
 import { Boom } from "@hapi/boom";
-import makeWASocket, {
+// Named, including the socket factory: Baileys is CommonJS, so its default export is the whole
+// module object rather than the factory, and `import makeWASocket from …` yields an object.
+import {
   DisconnectReason,
   fetchLatestBaileysVersion,
+  makeWASocket,
   useMultiFileAuthState,
 } from "@whiskeysockets/baileys";
 import pino from "pino";
