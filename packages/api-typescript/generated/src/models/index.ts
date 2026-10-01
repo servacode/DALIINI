@@ -16,6 +16,8 @@ export * from './AdminAlertList';
 export * from './AdminAlertSeverityEnum';
 export * from './AdminAnalytics';
 export * from './AdminAnalyticsPeriodKpis';
+export * from './AdminAppRelease';
+export * from './AdminAppReleaseRequest';
 export * from './AdminApplication';
 export * from './AdminApplicationDetail';
 export * from './AdminApplicationList';

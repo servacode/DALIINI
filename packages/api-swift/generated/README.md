@@ -100,6 +100,8 @@ Class | Method | HTTP request | Description
 *AdminReviewsAPI* | [**adminReviewReject**](docs/AdminReviewsAPI.md#adminreviewreject) | **POST** /api/v1/admin/applications/{application_id}/reject/ | Reject an application
 *AdminReviewsAPI* | [**adminReviewRetrieve**](docs/AdminReviewsAPI.md#adminreviewretrieve) | **GET** /api/v1/admin/applications/{application_id}/ | Retrieve one application with its review context
 *AdminReviewsAPI* | [**adminReviewsList**](docs/AdminReviewsAPI.md#adminreviewslist) | **GET** /api/v1/admin/applications/ | List facility applications awaiting or past review
+*AdminSettingsAPI* | [**adminAppReleaseRetrieve**](docs/AdminSettingsAPI.md#adminappreleaseretrieve) | **GET** /api/v1/admin/app-release/ | What a mobile build must be
+*AdminSettingsAPI* | [**adminAppReleaseUpdate**](docs/AdminSettingsAPI.md#adminappreleaseupdate) | **PUT** /api/v1/admin/app-release/ | Set what a mobile build must be
 *AdminSettingsAPI* | [**adminSettingWrite**](docs/AdminSettingsAPI.md#adminsettingwrite) | **PUT** /api/v1/admin/settings/ | Create or update a typed platform setting
 *AdminSettingsAPI* | [**adminSettingsList**](docs/AdminSettingsAPI.md#adminsettingslist) | **GET** /api/v1/admin/settings/ | List typed platform settings
 *AdminSystemAPI* | [**adminAlertsList**](docs/AdminSystemAPI.md#adminalertslist) | **GET** /api/v1/admin/alerts/ | Smart alerts: problems worth acting on now
@@ -214,6 +216,8 @@ Class | Method | HTTP request | Description
  - [AdminAlertSeverityEnum](docs/AdminAlertSeverityEnum.md)
  - [AdminAnalytics](docs/AdminAnalytics.md)
  - [AdminAnalyticsPeriodKpis](docs/AdminAnalyticsPeriodKpis.md)
+ - [AdminAppRelease](docs/AdminAppRelease.md)
+ - [AdminAppReleaseRequest](docs/AdminAppReleaseRequest.md)
  - [AdminApplication](docs/AdminApplication.md)
  - [AdminApplicationDetail](docs/AdminApplicationDetail.md)
  - [AdminApplicationList](docs/AdminApplicationList.md)

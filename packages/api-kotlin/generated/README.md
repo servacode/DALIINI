@@ -119,6 +119,8 @@ All URIs are relative to *http://localhost*
 | *AdminReviewsApi* | [**adminReviewReject**](docs/AdminReviewsApi.md#adminreviewreject) | **POST** api/v1/admin/applications/{application_id}/reject/ | Reject an application |
 | *AdminReviewsApi* | [**adminReviewRetrieve**](docs/AdminReviewsApi.md#adminreviewretrieve) | **GET** api/v1/admin/applications/{application_id}/ | Retrieve one application with its review context |
 | *AdminReviewsApi* | [**adminReviewsList**](docs/AdminReviewsApi.md#adminreviewslist) | **GET** api/v1/admin/applications/ | List facility applications awaiting or past review |
+| *AdminSettingsApi* | [**adminAppReleaseRetrieve**](docs/AdminSettingsApi.md#adminappreleaseretrieve) | **GET** api/v1/admin/app-release/ | What a mobile build must be |
+| *AdminSettingsApi* | [**adminAppReleaseUpdate**](docs/AdminSettingsApi.md#adminappreleaseupdate) | **PUT** api/v1/admin/app-release/ | Set what a mobile build must be |
 | *AdminSettingsApi* | [**adminSettingWrite**](docs/AdminSettingsApi.md#adminsettingwrite) | **PUT** api/v1/admin/settings/ | Create or update a typed platform setting |
 | *AdminSettingsApi* | [**adminSettingsList**](docs/AdminSettingsApi.md#adminsettingslist) | **GET** api/v1/admin/settings/ | List typed platform settings |
 | *AdminSystemApi* | [**adminAlertsList**](docs/AdminSystemApi.md#adminalertslist) | **GET** api/v1/admin/alerts/ | Smart alerts: problems worth acting on now |
@@ -234,6 +236,8 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminAlertSeverityEnum](docs/AdminAlertSeverityEnum.md)
  - [com.servacode.directory.api.models.AdminAnalytics](docs/AdminAnalytics.md)
  - [com.servacode.directory.api.models.AdminAnalyticsPeriodKpis](docs/AdminAnalyticsPeriodKpis.md)
+ - [com.servacode.directory.api.models.AdminAppRelease](docs/AdminAppRelease.md)
+ - [com.servacode.directory.api.models.AdminAppReleaseRequest](docs/AdminAppReleaseRequest.md)
  - [com.servacode.directory.api.models.AdminApplication](docs/AdminApplication.md)
  - [com.servacode.directory.api.models.AdminApplicationDetail](docs/AdminApplicationDetail.md)
  - [com.servacode.directory.api.models.AdminApplicationList](docs/AdminApplicationList.md)

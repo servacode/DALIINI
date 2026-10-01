@@ -7,7 +7,7 @@ from typing import Any
 
 from rest_framework import serializers
 
-from content_services.models import ContactMessage, EmergencyNumber, LegalDocument
+from content_services.models import AppRelease, ContactMessage, EmergencyNumber, LegalDocument
 from facilities.models import FacilityReport
 from facilities.serializers import UploadedFileField
 from notifications.models import Broadcast
@@ -473,3 +473,44 @@ class AdminDutyShiftCreateRequestSerializer(serializers.Serializer[Any]):
 class AdminDutyShiftUpdateRequestSerializer(serializers.Serializer[Any]):
     startsAt = serializers.DateTimeField(required=False)
     endsAt = serializers.DateTimeField(required=False)
+
+
+class AdminAppReleaseSerializer(serializers.Serializer[Any]):
+    platform = serializers.ChoiceField(choices=AppRelease.Platform.choices)
+    minimumVersionCode = serializers.IntegerField()
+    latestVersionCode = serializers.IntegerField()
+    storeUrl = serializers.CharField(allow_blank=True)
+    noticeAr = serializers.CharField(allow_blank=True)
+    updatedAt = serializers.DateTimeField(allow_null=True)
+
+
+class AdminAppReleaseRequestSerializer(serializers.Serializer[Any]):
+    minimumVersionCode = serializers.IntegerField(
+        min_value=0,
+        help_text="A build below this is refused. Zero refuses nobody.",
+    )
+    latestVersionCode = serializers.IntegerField(
+        min_value=0,
+        help_text="The newest build there is. Must not be below the minimum.",
+    )
+    storeUrl = serializers.CharField(
+        allow_blank=True,
+        max_length=200,
+        help_text="Where a blocked person is sent. Empty shows the notice without a button.",
+    )
+    noticeAr = serializers.CharField(
+        allow_blank=True,
+        help_text="What the blocking screen says. Empty uses the app's own wording.",
+    )
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        if attrs["minimumVersionCode"] > attrs["latestVersionCode"]:
+            raise serializers.ValidationError(
+                {
+                    "minimumVersionCode": [
+                        "Cannot be above latestVersionCode: nobody can install a build that "
+                        "does not exist."
+                    ]
+                }
+            )
+        return attrs
