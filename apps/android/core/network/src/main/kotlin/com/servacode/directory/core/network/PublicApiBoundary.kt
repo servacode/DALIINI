@@ -1,5 +1,6 @@
 package com.servacode.directory.core.network
 
+import com.servacode.directory.core.model.AppRelease
 import com.servacode.directory.core.model.EmergencyNumber
 import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.core.model.FacilityReportReason
@@ -87,6 +88,15 @@ interface PublicApiBoundary {
 
     /** The province's live home advertisements, in the backend's sort order. */
     suspend fun ads(provinceId: String): List<HomeAd>
+
+    /**
+     * What this build must be for the backend to keep serving it.
+     *
+     * Asked once at startup, before anybody signs in. A failure here is not an answer:
+     * the caller carries on, because a platform that cannot be reached must not look
+     * like a platform that refuses you.
+     */
+    suspend fun appRelease(): AppRelease
     suspend fun search(
         provinceId: String,
         query: String,

@@ -35,6 +35,12 @@
     <string name="ds_maintenance_body">نعمل على تحسين الخدمة وسنعود قريبًا. لا حاجة لإغلاق التطبيق.</string>
     <string name="ds_maintenance_auto_retry">سيعيد التطبيق المحاولة تلقائيًا.</string>
 
+    <!-- A build the backend no longer accepts. Like maintenance, the backend may send its own
+         words; these stand in when it does not. Unlike maintenance, waiting changes nothing. -->
+    <string name="ds_update_required_title">هذه النسخة قديمة</string>
+    <string name="ds_update_required_body">صدرت نسخة أحدث من دليني، وهذه لم تعد تعمل. حدّثها لتتابع.</string>
+    <string name="ds_update_required_action">تحديث التطبيق</string>
+
     <!-- Whether today's roster names this facility. Open, closed and on duty now are the shared
          vocabulary's (vocab_availability_*). -->
     <string name="ds_on_duty_today">مناوبة اليوم</string>

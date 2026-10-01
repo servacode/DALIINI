@@ -1,8 +1,10 @@
 package com.servacode.directory.core.network.api
 
+import com.servacode.directory.api.models.AppRelease as WireAppRelease
 import com.servacode.directory.api.models.EmergencyNumber as WireEmergencyNumber
 import com.servacode.directory.api.models.EmergencyNumberScopeEnum
 import com.servacode.directory.api.models.PublicDutyDay
+import com.servacode.directory.core.model.AppRelease
 import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.core.model.DutyWindow
 import com.servacode.directory.core.model.EmergencyNumber
@@ -133,6 +135,13 @@ internal fun Long.toOffsetDateTime(): OffsetDateTime =
 // Taxonomy and places
 
 internal fun Coordinates.toGeoPoint() = GeoPoint(latitude = latitude, longitude = longitude)
+
+internal fun WireAppRelease.toDomain() = AppRelease(
+    minimumVersionCode = minimumVersionCode,
+    latestVersionCode = latestVersionCode,
+    storeUrl = storeUrl,
+    noticeAr = noticeAr,
+)
 
 internal fun PublicProvince.toDomain() = Province(
     id = id.toString(),

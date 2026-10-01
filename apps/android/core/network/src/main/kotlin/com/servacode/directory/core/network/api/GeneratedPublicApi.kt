@@ -1,5 +1,6 @@
 package com.servacode.directory.core.network.api
 
+import com.servacode.directory.core.model.AppRelease
 import com.servacode.directory.core.model.EmergencyNumber
 import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.api.apis.PublicFacilitiesApi
@@ -79,6 +80,10 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
                 longitude = longitude?.toString(),
             )
         }.toDomain(province)
+
+    override suspend fun appRelease(): AppRelease =
+        call { content.publicAppReleaseRetrieve(ContentApi.PlatformPublicAppReleaseRetrieve.ANDROID) }
+            .toDomain()
 
     override suspend fun emergencyNumbers(provinceId: String?): List<EmergencyNumber> =
         call { content.publicEmergencyNumbersList(provinceId = provinceId) }.items
