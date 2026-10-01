@@ -402,7 +402,13 @@
      smudge between 1400 and 1700 — present, and worse than absent. */
   flex: none;
   width: auto;
-  height: 58px;
+  /*
+   * Taller than the row's content box, and allowed to overhang it by the padding either side, so
+   * the crest reads at the scale of the bar rather than as a stamp in the middle of it. The bar's
+   * own height does not change for it: the negative margin is exactly the padding it eats.
+   */
+  height: 88px;
+  margin-block: -8px;
   margin-inline: auto;
   /* Decoration between two groups of controls; nothing about it is clickable. */
   pointer-events: none;
@@ -410,8 +416,9 @@
 
 /*
  * Below this the row needs its whole width for the brand, the links and the controls. Measured
- * rather than guessed: at 1660 the row still has room for it and at 1640 it does not.
+ * rather than guessed: at 1800 the row still has room for the crest at its full size, and at
+ * 1700 it does not.
  */
-@media (max-width: 1660px) {
+@media (max-width: 1780px) {
   .header-crest { display: none; }
 }
