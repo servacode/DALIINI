@@ -371,12 +371,26 @@ export function SlidePreview({
  * Only a scheme that can carry a picture.
  *
  * The address is a preview of a file the operator just chose or a media URL the API answered
- * with, and `src` will follow whatever scheme it is handed — including `javascript:`, which runs
- * when the load fails. Neither source is meant to be hostile, but neither is written by this
- * page, and the check costs nothing.
+ * with, and `src` follows whatever scheme it is handed — including `javascript:`, which runs when
+ * the load fails. Neither source is meant to be hostile, but neither is written by this page.
+ *
+ * The scheme is read by parsing the address rather than by matching its start, because a prefix
+ * test is defeated by the things a parser handles for you: leading whitespace, a tab inside the
+ * word, a different case. The base is a fixed, unreachable origin so a relative address resolves
+ * without this needing to know where it is running.
  */
-const PICTURE_SCHEMES = /^(?:https?:|blob:|data:image\/)/i;
-const pictureOrNothing = (value: string) => (PICTURE_SCHEMES.test(value.trim()) ? value : "");
+const PICTURE_PROTOCOLS = new Set(["http:", "https:", "blob:"]);
+
+function pictureOrNothing(value: string): string {
+  const address = value.trim();
+  try {
+    const parsed = new URL(address, "https://admin.invalid/");
+    if (PICTURE_PROTOCOLS.has(parsed.protocol)) return address;
+    return parsed.protocol === "data:" && /^image\//i.test(parsed.pathname) ? address : "";
+  } catch {
+    return "";
+  }
+}
 
 function SlideImage({ src, fallback }: { src: string; fallback: string | null }) {
   const [failed, setFailed] = useState(false);
