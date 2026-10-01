@@ -367,9 +367,20 @@ export function SlidePreview({
   );
 }
 
+/*
+ * Only a scheme that can carry a picture.
+ *
+ * The address is a preview of a file the operator just chose or a media URL the API answered
+ * with, and `src` will follow whatever scheme it is handed — including `javascript:`, which runs
+ * when the load fails. Neither source is meant to be hostile, but neither is written by this
+ * page, and the check costs nothing.
+ */
+const PICTURE_SCHEMES = /^(?:https?:|blob:|data:image\/)/i;
+const pictureOrNothing = (value: string) => (PICTURE_SCHEMES.test(value.trim()) ? value : "");
+
 function SlideImage({ src, fallback }: { src: string; fallback: string | null }) {
   const [failed, setFailed] = useState(false);
-  const shown = failed && fallback ? fallback : src;
+  const shown = pictureOrNothing(failed && fallback ? fallback : src);
   return (
     // eslint-disable-next-line @next/next/no-img-element -- a preview of an uploaded file or a public media URL; no optimisation route
     <img

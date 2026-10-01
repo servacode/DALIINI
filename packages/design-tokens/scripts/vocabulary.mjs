@@ -18,7 +18,22 @@ for (const [group, entries] of Object.entries(vocab)) {
 }
 
 const snake = (s) => s.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`).replace(/^_/, '');
-const xmlEscape = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/'/g, "\\'");
+/*
+ * Android string resources, escaped in the order the escaping requires.
+ *
+ * The backslash goes first, because it is the escape character: replacing it after the
+ * apostrophe would escape the backslash this function had just added and undo the escape. The
+ * previous version skipped it altogether, along with `>` and `"`, so a word carrying any of
+ * those four produced a resource file Android would not parse.
+ */
+const xmlEscape = (s) =>
+  s
+    .replace(/\\/g, '\\\\')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, "\\'");
 
 const ts = `// GENERATED — DO NOT EDIT (source: vocabulary.json)
 export type Tone = "neutral" | "positive" | "warning" | "danger" | "info" | "brand";
