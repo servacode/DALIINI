@@ -1,6 +1,7 @@
 package com.servacode.directory.core.designsystem
 
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.servacode.directory.designsystem.generated.DirectoryTokens
 
 /**
@@ -35,6 +36,27 @@ object Elevation {
     val none = DirectoryTokens.ElevationNoneY.dp
     val low = DirectoryTokens.ElevationLowY.dp
     val medium = DirectoryTokens.ElevationMediumY.dp
+}
+
+/**
+ * The type scale, in scalable pixels.
+ *
+ * Compose screens take their sizes from the Material typography the theme builds out of these
+ * same tokens, and never need this. The home-screen widget does: Glance has its own text style
+ * and cannot read the app's theme, so without a named scale it was choosing 11, 12, 13, 14 and
+ * 15 at its call sites — five sizes, none of them on the scale the rest of the product uses.
+ */
+object TypeScale {
+    val display = DirectoryTokens.TypographyRolesDisplaySize.sp
+    val headlineLarge = DirectoryTokens.TypographyRolesHeadlineLargeSize.sp
+    val headlineMedium = DirectoryTokens.TypographyRolesHeadlineMediumSize.sp
+    val titleLarge = DirectoryTokens.TypographyRolesTitleLargeSize.sp
+    val titleMedium = DirectoryTokens.TypographyRolesTitleMediumSize.sp
+    val bodyLarge = DirectoryTokens.TypographyRolesBodyLargeSize.sp
+    val bodyMedium = DirectoryTokens.TypographyRolesBodyMediumSize.sp
+    val bodySmall = DirectoryTokens.TypographyRolesBodySmallSize.sp
+    val labelLarge = DirectoryTokens.TypographyRolesLabelLargeSize.sp
+    val labelMedium = DirectoryTokens.TypographyRolesLabelMediumSize.sp
 }
 
 /** Icons come in three sizes, and nothing else. */

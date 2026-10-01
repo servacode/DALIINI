@@ -1,3 +1,4 @@
+import { tokens } from "@servacode/design-tokens/tokens";
 import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { SITE_NAME } from "../lib/config";
@@ -19,11 +20,15 @@ export const alt = SITE_NAME;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-/* The deep green of the bar and the gold the brand pairs with it. */
-const BAR = "#042623";
-const INK = "#f7f7f5";
-const MUTED = "#9fb8ae";
-const ACCENT = "#0b6b47";
+/*
+ * The brand's own colours, read from the generated tokens rather than written out. The renderer
+ * cannot see a stylesheet, so the values have to be literals by the time they reach it — but
+ * which literals is still the token package's decision, not this file's.
+ */
+const BAR = tokens.colors.barDeep;
+const INK = tokens.colors.background;
+const MUTED = tokens.colors.barContentMuted;
+const ACCENT = tokens.colors.primary;
 
 const TAGLINE = "دليل الخدمات الصحية في سوريا";
 

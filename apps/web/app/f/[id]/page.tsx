@@ -8,7 +8,7 @@ import { AndroidOnly } from "../../../components/android-only";
 import { Breadcrumbs, Icon, JsonLd, Rating, StatusBadge, Unavailable } from "../../../components/ui";
 import { getFacility, getProvinces, type FacilityDetail, type HoursEntry } from "../../../lib/api";
 import { absoluteUrl, appOpenUrl } from "../../../lib/config";
-import { spokenDate } from "../../../lib/dates";
+import { WEEKDAYS_AR, WEEKDAY_DISPLAY_ORDER, spokenDate } from "../../../lib/dates";
 import { UNAVAILABLE_METADATA, pageMetadata } from "../../../lib/seo";
 
 /*
@@ -22,11 +22,8 @@ type Props = { params: Promise<{ id: string }> };
 /* Dedupe the detail fetch between generateMetadata and the page. */
 const load = cache((id: string) => getFacility(id));
 
-/* Backend weekdays follow Python's date.weekday(): 0 = Monday … 6 = Sunday. */
-const WEEKDAYS_AR = ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"];
+/* Schema.org counts the week in English, in the backend's own order (Monday first). */
 const WEEKDAYS_SCHEMA = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-/* Display order starting Saturday, the usual first day of the week locally. */
-const DISPLAY_ORDER = [5, 6, 0, 1, 2, 3, 4];
 
 const hhmm = (time: string) => time.slice(0, 5);
 
@@ -92,7 +89,7 @@ function HoursTable({ hours }: { hours: HoursEntry[] }) {
   return (
     <table>
       <tbody>
-        {DISPLAY_ORDER.map((day) => (
+        {WEEKDAY_DISPLAY_ORDER.map((day) => (
           <tr key={day}>
             <th scope="row">{WEEKDAYS_AR[day]}</th>
             <td className="ltr">

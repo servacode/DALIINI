@@ -38,7 +38,7 @@ fun OnboardingMapPicker(
     point: MapPoint?,
     onTap: (MapPoint) -> Unit,
 ) {
-    Box(Modifier.fillMaxWidth().height(260.dp)) {
+    Box(Modifier.fillMaxWidth().height(MAP_HEIGHT)) {
         if (MapStyle.isConfigured(styleUrl)) {
             PickerMap(styleUrl, camera, point, onTap)
         } else {
@@ -78,7 +78,7 @@ private fun PickerMap(
                 }
             }
         },
-        modifier = Modifier.fillMaxWidth().height(260.dp),
+        modifier = Modifier.fillMaxWidth().height(MAP_HEIGHT),
     )
 
     LaunchedEffect(controller, camera) {
@@ -90,3 +90,6 @@ private fun PickerMap(
         if (point != null) map.showSelectionPoint(point) else map.clearFacilities()
     }
 }
+
+/* How tall the map a person drops their pin on is, written once rather than at both call sites. */
+private val MAP_HEIGHT = 260.dp

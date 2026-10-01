@@ -6,7 +6,10 @@ import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.servacode.directory.core.designsystem.Radius
+import com.servacode.directory.core.designsystem.Space
+import com.servacode.directory.core.designsystem.Sizes
+import com.servacode.directory.core.designsystem.TypeScale
 import androidx.core.net.toUri
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -116,12 +119,12 @@ private fun DutyWidgetBody(state: DutyWidgetState) {
             .fillMaxSize()
             .appWidgetBackground()
             .background(GlanceTheme.colors.surface)
-            .cornerRadius(16.dp)
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .cornerRadius(Radius.large)
+            .padding(horizontal = Space.md, vertical = Space.sm),
         horizontalAlignment = layout.readingStart,
     ) {
         Header(state, layout)
-        Spacer(GlanceModifier.height(6.dp))
+        Spacer(GlanceModifier.height(Space.sm))
         when (state.kind) {
             DutyWidgetKind.NO_PROVINCE -> Message(
                 context.getString(R.string.widget_duty_no_province),
@@ -150,7 +153,7 @@ private fun Header(state: DutyWidgetState, layout: WidgetLayout) {
                 text = context.getString(R.string.widget_duty_title),
                 style = TextStyle(
                     color = GlanceTheme.colors.onSurface,
-                    fontSize = 15.sp,
+                    fontSize = TypeScale.titleMedium,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Right,
                 ),
@@ -158,12 +161,12 @@ private fun Header(state: DutyWidgetState, layout: WidgetLayout) {
                 modifier = GlanceModifier.defaultWeight(),
             )
         },
-        gap = 8.dp,
+        gap = Space.sm,
         end = {
             state.provinceNameAr?.let {
                 Text(
                     text = it,
-                    style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant, fontSize = 12.sp),
+                    style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant, fontSize = TypeScale.bodySmall),
                     maxLines = 1,
                 )
             }
@@ -183,7 +186,7 @@ private fun FacilityRow(facility: DutyWidgetFacility, layout: WidgetLayout) {
     layout.ReadingRow(
         modifier = GlanceModifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(vertical = Space.xs)
             .clickable(actionStartActivity(AppEntries.link(context, "/f/${facility.id}"))),
         start = {
             Column(
@@ -194,7 +197,7 @@ private fun FacilityRow(facility: DutyWidgetFacility, layout: WidgetLayout) {
                     text = facility.nameAr,
                     style = TextStyle(
                         color = GlanceTheme.colors.onSurface,
-                        fontSize = 14.sp,
+                        fontSize = TypeScale.bodyMedium,
                         fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.Right,
                     ),
@@ -206,7 +209,7 @@ private fun FacilityRow(facility: DutyWidgetFacility, layout: WidgetLayout) {
                         text = details,
                         style = TextStyle(
                             color = GlanceTheme.colors.onSurfaceVariant,
-                            fontSize = 12.sp,
+                            fontSize = TypeScale.bodySmall,
                             textAlign = TextAlign.Right,
                         ),
                         maxLines = 1,
@@ -215,7 +218,7 @@ private fun FacilityRow(facility: DutyWidgetFacility, layout: WidgetLayout) {
                 }
             }
         },
-        gap = if (facility.phone != null) 8.dp else 0.dp,
+        gap = if (facility.phone != null) Space.sm else 0.dp,
         end = {
             val phone = facility.phone
             if (phone != null) {
@@ -224,9 +227,9 @@ private fun FacilityRow(facility: DutyWidgetFacility, layout: WidgetLayout) {
                     contentDescription = context.getString(R.string.widget_duty_call, facility.nameAr),
                     colorFilter = ColorFilter.tint(GlanceTheme.colors.primary),
                     modifier = GlanceModifier
-                        .size(40.dp)
-                        .padding(8.dp)
-                        .cornerRadius(20.dp)
+                        .size(Sizes.touchTarget)
+                        .padding(Space.sm)
+                        .cornerRadius(Radius.pill)
                         .background(GlanceTheme.colors.primaryContainer)
                         .clickable(actionStartActivity(Intent(Intent.ACTION_DIAL, "tel:$phone".toUri()))),
                 )
@@ -240,7 +243,7 @@ private fun FacilityRow(facility: DutyWidgetFacility, layout: WidgetLayout) {
 private fun Message(text: String, action: Action? = null) {
     Text(
         text = text,
-        style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant, fontSize = 13.sp, textAlign = TextAlign.Right),
+        style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant, fontSize = TypeScale.bodyMedium, textAlign = TextAlign.Right),
         maxLines = 3,
         modifier = GlanceModifier
             .fillMaxWidth()
@@ -258,10 +261,10 @@ private fun Footer(state: DutyWidgetState) {
             context.getString(R.string.widget_duty_updated, DamascusTime.clock(it))
         }
     } ?: return
-    Spacer(GlanceModifier.height(4.dp))
+    Spacer(GlanceModifier.height(Space.xs))
     Text(
         text = text,
-        style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant, fontSize = 11.sp, textAlign = TextAlign.Right),
+        style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant, fontSize = TypeScale.bodySmall, textAlign = TextAlign.Right),
         maxLines = 2,
         modifier = GlanceModifier.fillMaxWidth(),
     )

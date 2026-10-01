@@ -1,5 +1,6 @@
 "use client";
 
+import { term } from "@servacode/design-tokens/vocabulary";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Icon } from "./ui";
 
@@ -17,9 +18,10 @@ import { Icon } from "./ui";
  * to say so.
  */
 
+/* The two words come from the shared vocabulary, so a chip and a badge cannot disagree. */
 const FILTERS = [
-  { key: "open", label: "مفتوح الآن", icon: "clock" as const },
-  { key: "duty", label: "مناوب الآن", icon: "shield" as const },
+  { key: "open", label: term("availability", "OPEN").ar, icon: "clock" as const },
+  { key: "duty", label: term("availability", "DUTY").ar, icon: "shield" as const },
 ];
 
 export function FacilityFilters() {

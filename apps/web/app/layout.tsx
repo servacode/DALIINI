@@ -1,3 +1,4 @@
+import { tokens } from "@servacode/design-tokens/tokens";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { SiteShell } from "../components/site-shell";
@@ -23,8 +24,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#042623" },
-    { media: "(prefers-color-scheme: dark)", color: "#021a18" },
+    { media: "(prefers-color-scheme: light)", color: tokens.colors.barDeep },
+    { media: "(prefers-color-scheme: dark)", color: tokens.colorsDark.barDeep },
   ],
 };
 

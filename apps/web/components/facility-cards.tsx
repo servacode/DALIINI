@@ -4,6 +4,7 @@ import { term } from "@servacode/design-tokens/vocabulary";
 import { useCallback, useState } from "react";
 import type { CompactFacility, FacilityDetail, HoursEntry } from "../lib/api";
 import { directionsLink, localPhone, telLink, whatsAppFor } from "../lib/links";
+import { WEEKDAYS_AR, WEEKDAY_DISPLAY_ORDER } from "../lib/dates";
 import { CardDialog } from "./card-dialog";
 import { Icon, Rating, StatusBadge } from "./ui";
 
@@ -24,17 +25,13 @@ import { Icon, Rating, StatusBadge } from "./ui";
  * twelve requests for a week of hours nobody opened.
  */
 
-/* Backend weekdays follow Python's date.weekday(): 0 = Monday … 6 = Sunday. */
-const WEEKDAYS_AR = ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"];
-/* Display order starting Saturday, the usual first day of the week locally. */
-const DISPLAY_ORDER = [5, 6, 0, 1, 2, 3, 4];
 const hhmm = (time: string) => time.slice(0, 5);
 
 function Hours({ hours }: { hours: HoursEntry[] }) {
   return (
     <table className="hours">
       <tbody>
-        {DISPLAY_ORDER.map((weekday) => {
+        {WEEKDAY_DISPLAY_ORDER.map((weekday) => {
           const spans = hours
             .filter((entry) => entry.weekday === weekday)
             .sort((a, b) => a.sequence - b.sequence);

@@ -382,7 +382,7 @@ fun DirectoryFilterChip(
     FilterChip(
         selected = selected,
         onClick = onClick,
-        modifier = modifier.heightIn(min = 40.dp),
+        modifier = modifier.heightIn(min = Sizes.compactChip),
         enabled = enabled,
         label = { Text(text, style = MaterialTheme.typography.labelLarge) },
         shape = RoundedCornerShape(Radius.pill),
@@ -413,8 +413,8 @@ fun DirectoryChipRow(modifier: Modifier = Modifier, content: @Composable () -> U
 }
 
 private val PaddingLarge = androidx.compose.foundation.layout.PaddingValues(
-    horizontal = 24.dp,
-    vertical = 12.dp,
+    horizontal = Space.xl,
+    vertical = Space.md,
 )
 
 internal fun Modifier.screenPadding() = padding(horizontal = Space.screen)

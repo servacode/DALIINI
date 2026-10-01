@@ -39,6 +39,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.designsystem.BrandColors
 import com.servacode.directory.core.designsystem.BrandMarkHandoverSize
 import com.servacode.directory.core.designsystem.BrandMarkSize
@@ -96,7 +97,7 @@ fun DirectorySplashScreen(modifier: Modifier = Modifier) {
                 SplashPing(markCentreY, appear = { appear })
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(Space.sm),
                     modifier = Modifier.graphicsLayer {
                         alpha = appear
                         translationY = (1f - appear) * RISE.toPx()
@@ -211,8 +212,10 @@ private val HANDOVER_SCALE = BrandMarkHandoverSize / BrandMarkSize
 // Longer than the app's other motion: this one is the only chance to read the mark, and the
 // start waits for it (BootstrapViewModel.MINIMUM_ON_SCREEN) rather than cutting it short.
 private const val GROW_MILLIS = 700
-private val TITLE_GAP = 20.dp
-private val SIDE = 24.dp
-private val RISE = 8.dp
+// Spacing, so it comes from the scale. The three below it are the drawing's own geometry: a
+// ripple's radius and the pitch of a dot grid are not measurements anything else shares.
+private val TITLE_GAP = Space.lg
+private val SIDE = Space.xl
+private val RISE = Space.sm
 private val GRID_STEP = 16.dp
 private val GRID_DOT = 1.5.dp

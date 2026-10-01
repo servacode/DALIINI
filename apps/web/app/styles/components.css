@@ -707,13 +707,13 @@ tr:last-child td { border-bottom: 0; }
 
 .facility-bar-actions {
   display: flex;
-  gap: 2px;
+  gap: var(--sd-spacing-2xs);
 }
 
 .facility-bar-actions button {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--sd-spacing-xs);
   /* A thumb covers about 44 pixels; 30 was the height of the words. */
   min-height: 40px;
   padding-inline: var(--sd-spacing-sm);
@@ -1076,7 +1076,7 @@ tr:last-child td { border-bottom: 0; }
 
 .hours th,
 .hours td {
-  padding: 4px 0;
+  padding: var(--sd-spacing-xs) 0;
   text-align: start;
   font-weight: inherit;
   border-block-end: 1px solid var(--sd-semantic-stroke-subtle);

@@ -460,7 +460,11 @@ label.switch-row { cursor: pointer; }
   background: var(--ad-shell-accent); box-shadow: 0 0 0 4px rgba(95, 211, 162, 0.18);
 }
 .toast > span { flex: 1; }
-.toast-danger::before { background: #FF8A8A; box-shadow: 0 0 0 4px rgba(255, 138, 138, 0.18); }
+/* A toast sits on the dark shell, so the danger colour is lifted off the brand's own red. */
+.toast-danger::before {
+  background: color-mix(in srgb, var(--sd-semantic-feedback-danger) 55%, #ffffff);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--sd-semantic-feedback-danger) 20%, transparent);
+}
 .toast-close {
   width: 28px; height: 28px; display: grid; place-items: center;
   border: 0; border-radius: var(--ad-radius-sm);

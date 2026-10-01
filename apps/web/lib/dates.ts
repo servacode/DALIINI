@@ -6,6 +6,8 @@
  * Calendar days and clock times are Damascus local time, like the API's own
  * days (its TIME_ZONE), whatever zone the web server runs in.
  */
+
+import { term } from "@servacode/design-tokens/vocabulary";
 export const SITE_TIME_ZONE = "Asia/Damascus";
 
 const relative = new Intl.RelativeTimeFormat("ar-SY", { numeric: "auto" });
@@ -98,3 +100,30 @@ export function shiftSpan(startsAt: string, endsAt: string, day: string): ShiftS
     endsAtMidnight,
   };
 }
+
+/*
+ * The week, from the shared vocabulary.
+ *
+ * Two files held their own copy of the seven names, and the vocabulary package that the app, the
+ * site and the console all read from has held them all along. Two copies of a list are two lists
+ * that can disagree, and a word that reads one way in the app and another on the site is the
+ * exact failure the shared vocabulary exists to prevent.
+ *
+ * The order is the backend's: `date.weekday()` counts Monday as 0.
+ */
+const WEEKDAY_KEYS = [
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+  "SUNDAY",
+] as const;
+
+export const WEEKDAYS_AR: readonly string[] = WEEKDAY_KEYS.map(
+  (key) => term("weekday", key).ar,
+);
+
+/** Saturday first, as the week is counted locally. */
+export const WEEKDAY_DISPLAY_ORDER = [5, 6, 0, 1, 2, 3, 4] as const;

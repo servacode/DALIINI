@@ -1,3 +1,4 @@
+import { tokens } from "@servacode/design-tokens/tokens";
 import type { MetadataRoute } from "next";
 import { SITE_NAME } from "../lib/config";
 
@@ -24,8 +25,8 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#f7f7f5",
-    theme_color: "#042623",
+    background_color: tokens.colors.background,
+    theme_color: tokens.colors.barDeep,
     icons: [
       { src: "/icon.png", sizes: "512x512", type: "image/png", purpose: "any" },
       { src: "/apple-icon.png", sizes: "180x180", type: "image/png" },

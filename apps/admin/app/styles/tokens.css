@@ -22,13 +22,15 @@
 
   /* Shell (sidebar) — the brand's deep bar colour */
   --ad-shell: var(--sd-semantic-surface-bar);
-  --ad-shell-raised: #0A332E;
+  /* A shade up from the bar, derived from it so a brand change carries it along. */
+  --ad-shell-raised: color-mix(in srgb, var(--sd-semantic-surface-bar) 92%, #ffffff);
   --ad-shell-hover: rgba(255, 255, 255, 0.06);
   --ad-shell-active: rgba(255, 255, 255, 0.10);
   --ad-shell-stroke: rgba(255, 255, 255, 0.08);
   --ad-shell-text: var(--sd-semantic-content-on-bar);
   --ad-shell-text-muted: var(--sd-semantic-content-on-bar-muted);
-  --ad-shell-accent: #5FD3A2;
+  /* The brand's green, lifted enough to read on the bar's deep ground. */
+  --ad-shell-accent: color-mix(in srgb, var(--sd-semantic-action-primary) 55%, #ffffff);
 
   /* Content */
   --ad-text: var(--sd-semantic-content-primary);
