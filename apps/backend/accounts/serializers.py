@@ -5,7 +5,7 @@ from rest_framework import serializers
 
 from facilities.serializers import UploadedFileField
 
-from .phone import normalize_syrian_phone
+from .phone import INVALID_SYRIAN_MOBILE, normalize_syrian_phone
 
 
 class PhoneField(serializers.CharField):
@@ -14,7 +14,9 @@ class PhoneField(serializers.CharField):
         try:
             return normalize_syrian_phone(raw)
         except ValueError as exc:
-            raise serializers.ValidationError(str(exc)) from exc
+            # Our own message, not the exception's: one rejection reaches the client, and an
+            # unexpected failure inside normalisation cannot describe itself to a stranger.
+            raise serializers.ValidationError(INVALID_SYRIAN_MOBILE) from exc
 
 
 class RegisterStartSerializer(serializers.Serializer[Any]):

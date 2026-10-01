@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from core.openapi import VALIDATION_400
 from core.throttles import AnalyticsIngestThrottle
 
+from .registry import REJECTIONS, RejectedEvent
 from .schemas import AnalyticsEventAcceptedSerializer, AnalyticsEventRequestSerializer
 from .services import record_product_event
 
@@ -52,6 +53,9 @@ class AnalyticsEventView(APIView):
                 user=request.user,
                 anonymous_id=request.headers.get("X-Anonymous-Id", "")[:128],
             )
+        except RejectedEvent as exc:
+            raise ValidationError({"event": REJECTIONS[exc.code]}) from exc
         except ValueError as exc:
-            raise ValidationError({"event": str(exc)}) from exc
+            # Anything we did not name describes nothing to the client.
+            raise ValidationError({"event": "The event was rejected"}) from exc
         return Response({"accepted": True, "id": str(event.id)}, status=status.HTTP_202_ACCEPTED)

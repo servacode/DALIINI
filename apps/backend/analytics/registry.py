@@ -58,17 +58,36 @@ FORBIDDEN_FIELD_NAMES = frozenset(
 )
 
 
+class RejectedEvent(ValueError):
+    """A rejection a caller may be told about, named rather than described.
+
+    The reason is a code from REJECTIONS below, so what reaches a response is a sentence we
+    wrote. The earlier messages interpolated the field names the client had just sent, which
+    told the client nothing it did not know and made a response carry its own input back.
+    """
+
+    def __init__(self, code: str) -> None:
+        super().__init__(code)
+        self.code = code
+
+
+REJECTIONS = {
+    "unknown_event": "Unknown analytics event",
+    "properties_not_object": "Analytics properties must be an object",
+    "forbidden_fields": "The event carries a field this endpoint never accepts",
+    "undocumented_fields": "The event carries a field the schema does not declare",
+}
+
+
 def validate_event(name: str, properties: dict[str, Any]) -> dict[str, Any]:
     spec = EVENT_REGISTRY.get(name)
     if spec is None:
-        raise ValueError("Unknown analytics event")
+        raise RejectedEvent("unknown_event")
     if not isinstance(properties, dict):
-        raise ValueError("Analytics properties must be an object")
+        raise RejectedEvent("properties_not_object")
     keys = set(properties)
-    forbidden = keys & FORBIDDEN_FIELD_NAMES
-    if forbidden:
-        raise ValueError(f"Forbidden analytics fields: {sorted(forbidden)}")
-    extra = keys - set(spec.allowed_fields)
-    if extra:
-        raise ValueError(f"Undocumented analytics fields: {sorted(extra)}")
+    if keys & FORBIDDEN_FIELD_NAMES:
+        raise RejectedEvent("forbidden_fields")
+    if keys - set(spec.allowed_fields):
+        raise RejectedEvent("undocumented_fields")
     return properties

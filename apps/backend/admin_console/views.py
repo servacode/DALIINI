@@ -339,17 +339,24 @@ def system_warnings() -> list[str]:
     return warnings
 
 
+# What a log line may say a request was. Anything else is recorded as OTHER.
+LOGGED_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+
+
 class AdminView(APIView):
     permission_classes = [IsAuthenticated, HasAdminPermission]
 
     def handle_exception(self, exc: Exception) -> Response:
         # Failed admin mutations are operationally interesting even when they are 4xx.
         if self.request.method not in ("GET", "HEAD", "OPTIONS"):
+            # One of a fixed set, never the request's own text: a log line is read by tools
+            # that trust its shape.
+            method = self.request.method if self.request.method in LOGGED_METHODS else "OTHER"
             logger.warning(
                 "admin.mutation_failed",
                 extra={
                     "view": type(self).__name__,
-                    "method": self.request.method,
+                    "method": method,
                     "error": type(exc).__name__,
                     "actor_id": str(getattr(self.request.user, "pk", "") or ""),
                 },
