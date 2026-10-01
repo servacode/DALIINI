@@ -67,6 +67,9 @@ export const READS = {
     apis.verification.adminVerificationRequirementsList(),
   ads: (apis: AdminApis) => apis.ads.adminAdsList(),
   settings: (apis: AdminApis) => apis.settings.adminSettingsList(),
+  // What a mobile build must be. Its own entry rather than part of `settings`, because it is
+  // a different endpoint with a different shape — and the one that can stop every phone.
+  appRelease: (apis: AdminApis) => apis.settings.adminAppReleaseRetrieve({}),
 
   audit: (apis: AdminApis, p: Params) =>
     apis.audit.adminAuditList(
@@ -234,6 +237,25 @@ export const WRITES = {
     apis.reports.adminReportDismiss({
       reportId: String(b.id),
       adminReportDecisionRequest: { note: String(b.note ?? "") },
+    }),
+  // Up to a hundred at once, in one transaction. The response says what happened to each id,
+  // because some may have been decided by somebody else between the list and the button.
+  appReleaseUpdate: (apis: AdminApis, b: Body) =>
+    apis.settings.adminAppReleaseUpdate({
+      adminAppReleaseRequest: {
+        minimumVersionCode: Number(b.minimumVersionCode ?? 0),
+        latestVersionCode: Number(b.latestVersionCode ?? 0),
+        storeUrl: String(b.storeUrl ?? ""),
+        noticeAr: String(b.noticeAr ?? ""),
+      },
+    }),
+  reportsBulkDecide: (apis: AdminApis, b: Body) =>
+    apis.reports.adminReportsBulkDecide({
+      adminReportBulkRequest: {
+        ids: (b.ids as string[]) ?? [],
+        action: b.action as "resolve" | "dismiss",
+        note: String(b.note ?? ""),
+      },
     }),
   cityUpdate: (apis: AdminApis, b: Body) =>
     apis.provinces.adminProvinceCityUpdate({

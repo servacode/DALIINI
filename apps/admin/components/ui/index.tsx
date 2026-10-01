@@ -255,7 +255,8 @@ export function FieldError({ id, message }: { id: string; message?: string }) {
 
 export type Column<T> = Readonly<{
   key: string;
-  header: string;
+  /** Usually a word. A node when the header is a control, such as a select-all checkbox. */
+  header: ReactNode;
   render: (row: T) => ReactNode;
   /** Identifiers and timestamps read left-to-right even in an RTL table. */
   ltr?: boolean;

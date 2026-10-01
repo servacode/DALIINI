@@ -58,7 +58,6 @@ button:disabled { cursor: not-allowed; }
 .tabular { font-variant-numeric: tabular-nums; }
 
 .stack { display: grid; gap: var(--ad-space-5); align-content: start; }
-.operation-stack { display: grid; gap: var(--ad-space-5); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
