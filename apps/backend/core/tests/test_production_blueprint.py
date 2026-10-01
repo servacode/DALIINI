@@ -107,3 +107,20 @@ def test_the_settings_module_is_the_production_one() -> None:
     group = next(g for g in BLUEPRINT["envVarGroups"] if g["name"] == "directory-v3-backend")
     module = next(e for e in group["envVars"] if e["key"] == "DJANGO_SETTINGS_MODULE")
     assert module["value"] == "directory_backend.settings.production"
+
+
+def test_no_access_log_writes_a_request_line() -> None:
+    """Both access loggers stay at WARNING, whatever else changes around them.
+
+    Their INFO line is the whole request line, query string included, and some of this API's
+    queries carry a person's position. A log that records where somebody stood is a log that
+    must not exist, so this is pinned rather than left to a comment.
+    """
+    settings_base = (
+        ROOT / "apps" / "backend" / "directory_backend" / "settings" / "base.py"
+    ).read_text(encoding="utf-8")
+
+    for logger in ("django.server", "django.channels.server"):
+        assert f'"{logger}": {{"level": "WARNING"}}' in settings_base, (
+            f"{logger} would write a request line, and some carry coordinates"
+        )

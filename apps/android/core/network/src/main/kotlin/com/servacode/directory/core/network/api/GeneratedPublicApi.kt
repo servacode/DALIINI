@@ -1,5 +1,6 @@
 package com.servacode.directory.core.network.api
 
+import com.servacode.directory.core.network.asCoordinate
 import com.servacode.directory.core.model.AppRelease
 import com.servacode.directory.core.model.EmergencyNumber
 import com.servacode.directory.core.model.DutyDay
@@ -76,8 +77,8 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
         call {
             discovery.publicHomeRetrieve(
                 provinceId = province.id,
-                latitude = latitude?.toString(),
-                longitude = longitude?.toString(),
+                latitude = latitude.asCoordinate(),
+                longitude = longitude.asCoordinate(),
             )
         }.toDomain(province)
 
@@ -108,8 +109,8 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
             provinceId = provinceId,
             q = query,
             cursor = cursor,
-            latitude = latitude?.toString(),
-            longitude = longitude?.toString(),
+            latitude = latitude.asCoordinate(),
+            longitude = longitude.asCoordinate(),
         )
     }.toDomain()
 
@@ -128,8 +129,8 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
                 null -> null
             },
             search = query.search?.takeIf { it.isNotBlank() },
-            latitude = query.latitude?.toString(),
-            longitude = query.longitude?.toString(),
+            latitude = query.latitude.asCoordinate(),
+            longitude = query.longitude.asCoordinate(),
             limit = query.pageSize,
             // Integer keys on the wire; the domain keeps every id as a String.
             specialtyId = query.specialtyId?.toInt(),
