@@ -8,6 +8,8 @@ import com.servacode.directory.core.auth.SessionCoordinator
 import com.servacode.directory.core.auth.SessionState
 import com.servacode.directory.core.database.Loaded
 import com.servacode.directory.core.model.AppError
+import com.servacode.directory.core.analytics.AnalyticsEvent
+import com.servacode.directory.core.analytics.AnalyticsTracker
 import com.servacode.directory.core.model.DirectoryRoute
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.toAppError
@@ -40,6 +42,7 @@ class FacilityViewModel @Inject constructor(
     private val invalidations: RealtimeInvalidationBus,
     private val session: SessionCoordinator,
     private val recordVisit: RecordVisitUseCase,
+    private val analytics: AnalyticsTracker,
 ) : ViewModel() {
     private val id = savedStateHandle.toRoute<DirectoryRoute.FacilityDetailRoute>().id
     private val _state = MutableStateFlow<FacilityUiState>(FacilityUiState.Loading)
@@ -55,6 +58,16 @@ class FacilityViewModel @Inject constructor(
             }
         }
     }
+
+    /**
+     * The dialer was opened — not that a call was made, which the app cannot know and does not
+     * claim to. The number itself is never sent; only that this facility's was tapped.
+     */
+    fun phoneTapped() = analytics.track(AnalyticsEvent.PhoneTap(facilityId = id))
+
+    /** The way there was asked for. Where the person is is never part of it. */
+    fun directionsStarted() =
+        analytics.track(AnalyticsEvent.DirectionsStart(facilityId = id, routingProvider = "valhalla"))
 
     private fun signedIn() = session.state.value == SessionState.SIGNED_IN
 
@@ -99,6 +112,9 @@ class FacilityViewModel @Inject constructor(
                 if (shown != null && !visitRecorded) {
                     visitRecorded = true
                     launch { recordVisit(shown) }
+                    // Once per opening, beside the visit this already records, so the two
+                    // cannot disagree about whether a facility was looked at.
+                    analytics.track(AnalyticsEvent.FacilityView(facilityId = id))
                 }
             }
             if (signedIn()) {
@@ -131,6 +147,9 @@ class FacilityViewModel @Inject constructor(
             facility.rate(id, stars)
                 .onSuccess { stored ->
                     _state.value = current.copy(myRating = stored, ratingFailure = null)
+                    // Counted only once the backend took it, so the number is ratings that
+                    // exist rather than ratings that were attempted.
+                    analytics.track(AnalyticsEvent.RatingSubmit(facilityId = id, stars = stored))
                     // The average and count are the backend's; fetch them again.
                     refresh()
                 }

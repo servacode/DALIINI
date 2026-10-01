@@ -11,6 +11,8 @@ import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.HomeSnapshot
 import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.network.RealtimeInvalidation
+import com.servacode.directory.core.analytics.AnalyticsEvent
+import com.servacode.directory.core.analytics.AnalyticsTracker
 import com.servacode.directory.core.network.RealtimeInvalidationBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -48,7 +50,10 @@ class HomeViewModel @Inject constructor(
     private val loadHome: HomeUseCase,
     private val loadAds: HomeAdsUseCase,
     private val invalidations: RealtimeInvalidationBus,
+    private val analytics: AnalyticsTracker,
 ) : ViewModel() {
+    /** So a province that is reloaded ten times is still one person arriving once. */
+    private var lastReportedProvince: String? = null
     private val _state = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val state: StateFlow<HomeUiState> = _state.asStateFlow()
 
@@ -263,6 +268,14 @@ class HomeViewModel @Inject constructor(
                         is Loaded.Fresh -> HomeUiState.Content(loaded.value, stale = false)
                         is Loaded.Stale -> HomeUiState.Content(loaded.value, stale = true)
                         is Loaded.Failed -> HomeUiState.Error(loaded.error)
+                    }
+                }
+                // Once per province, not once per answer: a snapshot arrives cached and then
+                // fresh, and counting both would double every visit.
+                (_state.value as? HomeUiState.Content)?.snapshot?.province?.id?.let { id ->
+                    if (id != lastReportedProvince) {
+                        lastReportedProvince = id
+                        analytics.track(AnalyticsEvent.HomeView(provinceId = id))
                     }
                 }
                 adoptSnapshot()

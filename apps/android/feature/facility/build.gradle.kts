@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:database"))
     implementation(project(":core:datastore"))
+    implementation(project(":core:analytics"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

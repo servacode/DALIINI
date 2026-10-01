@@ -173,9 +173,18 @@ fun FacilityScreen(
                 }
                 FacilityBody(
                     value = value,
-                    onDirections = onDirections,
+                    // The two actions worth counting are wrapped here rather than at the
+                    // button: the screen is given them from outside, and what the app does
+                    // with a tap is not the same question as whether a tap happened.
+                    onDirections = { latitude, longitude ->
+                        viewModel.directionsStarted()
+                        onDirections(latitude, longitude)
+                    },
                     onSignIn = onSignIn,
-                    onCall = onCall,
+                    onCall = { phone ->
+                        viewModel.phoneTapped()
+                        onCall(phone)
+                    },
                     onWhatsApp = onWhatsApp,
                     onShare = onShare,
                     onRate = viewModel::rate,

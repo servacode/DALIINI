@@ -15,7 +15,8 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private val Context.directoryDataStore by preferencesDataStore(name = "directory_preferences")
+/* Internal rather than private: the anonymous id lives in the same store, in its own file. */
+internal val Context.directoryDataStore by preferencesDataStore(name = "directory_preferences")
 
 @Singleton
 class PreferencesRepository @Inject constructor(

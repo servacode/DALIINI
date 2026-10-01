@@ -15,6 +15,8 @@ extensions.configure<com.android.build.api.dsl.LibraryExtension> {
 
 dependencies {
     implementation(project(":core:model"))
+    // Only for the `AnalyticsTransport` contract the generated sender implements.
+    implementation(project(":core:analytics"))
     implementation(project(":core:auth"))
     implementation(project(":core:observability"))
     implementation(project(":core:maps"))
