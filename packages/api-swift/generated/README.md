@@ -151,6 +151,7 @@ Class | Method | HTTP request | Description
 *AvailabilityAPI* | [**ownerFacilityTemporaryClosureCancel**](docs/AvailabilityAPI.md#ownerfacilitytemporaryclosurecancel) | **DELETE** /api/v1/owner/facilities/{facility_id}/temporary-closures/{closure_id}/ | Cancel a temporary closure
 *AvailabilityAPI* | [**ownerFacilityTemporaryClosureCreate**](docs/AvailabilityAPI.md#ownerfacilitytemporaryclosurecreate) | **POST** /api/v1/owner/facilities/{facility_id}/temporary-closures/ | Open a temporary closure window
 *AvailabilityAPI* | [**ownerFacilityTemporaryClosuresList**](docs/AvailabilityAPI.md#ownerfacilitytemporaryclosureslist) | **GET** /api/v1/owner/facilities/{facility_id}/temporary-closures/ | List temporary closures of a facility
+*ContentAPI* | [**publicAppReleaseRetrieve**](docs/ContentAPI.md#publicappreleaseretrieve) | **GET** /api/v1/public/app-release/ | The minimum and newest build of the mobile app
 *ContentAPI* | [**publicContactCreate**](docs/ContentAPI.md#publiccontactcreate) | **POST** /api/v1/contact/ | Send a message to the platform team
 *ContentAPI* | [**publicContentPageRetrieve**](docs/ContentAPI.md#publiccontentpageretrieve) | **GET** /api/v1/content/pages/{slug}/ | Retrieve one published content page
 *ContentAPI* | [**publicEmergencyNumbersList**](docs/ContentAPI.md#publicemergencynumberslist) | **GET** /api/v1/emergency-numbers/ | Emergency numbers: national, plus the province&#39;s own
@@ -329,6 +330,7 @@ Class | Method | HTTP request | Description
  - [AnalyticsEventAccepted](docs/AnalyticsEventAccepted.md)
  - [AnalyticsEventRequest](docs/AnalyticsEventRequest.md)
  - [ApiError](docs/ApiError.md)
+ - [AppRelease](docs/AppRelease.md)
  - [Availability](docs/Availability.md)
  - [AvailabilityStateEnum](docs/AvailabilityStateEnum.md)
  - [BilingualRef](docs/BilingualRef.md)

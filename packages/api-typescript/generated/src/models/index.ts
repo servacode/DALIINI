@@ -132,6 +132,7 @@ export * from './AdvertisementTargetScopeEnum';
 export * from './AnalyticsEventAccepted';
 export * from './AnalyticsEventRequest';
 export * from './ApiError';
+export * from './AppRelease';
 export * from './Availability';
 export * from './AvailabilityStateEnum';
 export * from './BilingualRef';

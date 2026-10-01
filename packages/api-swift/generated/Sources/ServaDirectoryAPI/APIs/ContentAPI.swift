@@ -13,6 +13,53 @@ import AnyCodable
 open class ContentAPI {
 
     /**
+     * enum for parameter platform
+     */
+    public enum Platform_publicAppReleaseRetrieve: String, CaseIterable {
+        case android = "ANDROID"
+        case ios = "IOS"
+    }
+
+    /**
+     The minimum and newest build of the mobile app
+     
+     - parameter platform: (query) Defaults to ANDROID. (optional)
+     - returns: AppRelease
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func publicAppReleaseRetrieve(platform: Platform_publicAppReleaseRetrieve? = nil) async throws -> AppRelease {
+        return try await publicAppReleaseRetrieveWithRequestBuilder(platform: platform).execute().body
+    }
+
+    /**
+     The minimum and newest build of the mobile app
+     - GET /api/v1/public/app-release/
+     - A build below `minimumVersionCode` must stop and show `noticeAr`. A build below `latestVersionCode` may offer an update and carry on. Both are zero until an operator sets them, and zero blocks nothing. Cacheable for five minutes.
+     - parameter platform: (query) Defaults to ANDROID. (optional)
+     - returns: RequestBuilder<AppRelease> 
+     */
+    open class func publicAppReleaseRetrieveWithRequestBuilder(platform: Platform_publicAppReleaseRetrieve? = nil) -> RequestBuilder<AppRelease> {
+        let localVariablePath = "/api/v1/public/app-release/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "platform": (wrappedValue: platform?.encodeToJSON(), isExplode: true),
+        ])
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AppRelease>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false)
+    }
+
+    /**
      Send a message to the platform team
      
      - parameter contactMessageRequest: (body)  

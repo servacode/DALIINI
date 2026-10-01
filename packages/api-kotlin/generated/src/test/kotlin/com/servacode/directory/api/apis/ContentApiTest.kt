@@ -20,6 +20,7 @@ import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.ContentApi
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.AppRelease
 import com.servacode.directory.api.models.ContactMessageCreated
 import com.servacode.directory.api.models.ContactMessageRequest
 import com.servacode.directory.api.models.ContentPage
@@ -32,6 +33,14 @@ class ContentApiTest : ShouldSpec() {
     init {
         // uncomment below to create an instance of ContentApi
         //val apiInstance = ContentApi()
+
+        // to test publicAppReleaseRetrieve
+        should("test publicAppReleaseRetrieve") {
+            // uncomment below to test publicAppReleaseRetrieve
+            //val platform : kotlin.String = platform_example // kotlin.String | Defaults to ANDROID.
+            //val result : AppRelease = apiInstance.publicAppReleaseRetrieve(platform)
+            //result shouldBe ("TODO")
+        }
 
         // to test publicContactCreate
         should("test publicContactCreate") {

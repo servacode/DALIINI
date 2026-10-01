@@ -170,6 +170,7 @@ All URIs are relative to *http://localhost*
 | *AvailabilityApi* | [**ownerFacilityTemporaryClosureCancel**](docs/AvailabilityApi.md#ownerfacilitytemporaryclosurecancel) | **DELETE** api/v1/owner/facilities/{facility_id}/temporary-closures/{closure_id}/ | Cancel a temporary closure |
 | *AvailabilityApi* | [**ownerFacilityTemporaryClosureCreate**](docs/AvailabilityApi.md#ownerfacilitytemporaryclosurecreate) | **POST** api/v1/owner/facilities/{facility_id}/temporary-closures/ | Open a temporary closure window |
 | *AvailabilityApi* | [**ownerFacilityTemporaryClosuresList**](docs/AvailabilityApi.md#ownerfacilitytemporaryclosureslist) | **GET** api/v1/owner/facilities/{facility_id}/temporary-closures/ | List temporary closures of a facility |
+| *ContentApi* | [**publicAppReleaseRetrieve**](docs/ContentApi.md#publicappreleaseretrieve) | **GET** api/v1/public/app-release/ | The minimum and newest build of the mobile app |
 | *ContentApi* | [**publicContactCreate**](docs/ContentApi.md#publiccontactcreate) | **POST** api/v1/contact/ | Send a message to the platform team |
 | *ContentApi* | [**publicContentPageRetrieve**](docs/ContentApi.md#publiccontentpageretrieve) | **GET** api/v1/content/pages/{slug}/ | Retrieve one published content page |
 | *ContentApi* | [**publicEmergencyNumbersList**](docs/ContentApi.md#publicemergencynumberslist) | **GET** api/v1/emergency-numbers/ | Emergency numbers: national, plus the province's own |
@@ -349,6 +350,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AnalyticsEventAccepted](docs/AnalyticsEventAccepted.md)
  - [com.servacode.directory.api.models.AnalyticsEventRequest](docs/AnalyticsEventRequest.md)
  - [com.servacode.directory.api.models.ApiError](docs/ApiError.md)
+ - [com.servacode.directory.api.models.AppRelease](docs/AppRelease.md)
  - [com.servacode.directory.api.models.Availability](docs/Availability.md)
  - [com.servacode.directory.api.models.AvailabilityStateEnum](docs/AvailabilityStateEnum.md)
  - [com.servacode.directory.api.models.BilingualRef](docs/BilingualRef.md)

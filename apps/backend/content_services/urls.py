@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     PublicAdsView,
+    PublicAppReleaseView,
     PublicContactView,
     PublicContentPageView,
     PublicEmergencyNumbersView,
@@ -12,6 +13,7 @@ from .views import (
 
 urlpatterns = [
     path("public/ads/", PublicAdsView.as_view(), name="public-ads"),
+    path("public/app-release/", PublicAppReleaseView.as_view(), name="public-app-release"),
     path("public/legal/", PublicLegalDocumentsView.as_view(), name="public-legal-list"),
     path("public/legal/<str:key>/", PublicLegalDocumentView.as_view(), name="public-legal"),
     path("content/pages/<str:slug>/", PublicContentPageView.as_view(), name="content-page"),
