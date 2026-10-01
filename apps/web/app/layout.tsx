@@ -14,7 +14,19 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: SITE_NAME, description },
 };
 
-export const viewport: Viewport = { width: "device-width", initialScale: 1 };
+/*
+ * `themeColor` is the bar's own green, so a phone's browser chrome continues the page instead of
+ * sitting white above it. The pair is given so a reader who has asked for a dark system gets the
+ * darker of the brand's two bar colours rather than being pulled towards light.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#042623" },
+    { media: "(prefers-color-scheme: dark)", color: "#021a18" },
+  ],
+};
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
