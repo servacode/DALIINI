@@ -50,8 +50,15 @@ fi
 status=0
 probe() {
   local port="$1" path="$2" name="$3"
-  local code
-  code="$(adb -t "$T" shell "curl -s -o /dev/null -m 5 -w '%{http_code}' http://localhost:$port$path" 2>/dev/null | tr -d '\r')"
+  local code=""
+  # Three attempts: a rule created a moment ago is not always listening yet, and one early
+  # probe reported a working tunnel as dead — which sent somebody looking at a server that was
+  # running perfectly the whole time.
+  for _ in 1 2 3; do
+    code="$(adb -t "$T" shell "curl -s -o /dev/null -m 5 -w '%{http_code}' http://localhost:$port$path" 2>/dev/null | tr -d '\r')"
+    [ "$code" = "200" ] && break
+    sleep 1
+  done
   if [ "$code" = "200" ]; then
     printf '  %-9s tcp:%-5s 200\n' "$name" "$port"
   else
