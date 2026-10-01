@@ -42,6 +42,16 @@ if not ALLOWED_HOSTS or "*" in ALLOWED_HOSTS:
     raise ImproperlyConfigured("Production ALLOWED_HOSTS must be explicit")
 if OTP_PROVIDER.lower() in {"development", "test", "console"}:
     raise ImproperlyConfigured("Production OTP provider cannot be a test provider")
+
+# WhatsApp needs all three or it cannot send: the number that sends, the token that authorises
+# it, and the approved template that carries the code. Checked here rather than at the first
+# registration, so a misconfigured deployment refuses to start instead of accepting sign-ups it
+# can never complete.
+if OTP_PROVIDER.lower() == "whatsapp":
+    WHATSAPP_PHONE_NUMBER_ID = env("WHATSAPP_PHONE_NUMBER_ID", required=True)
+    WHATSAPP_ACCESS_TOKEN = env("WHATSAPP_ACCESS_TOKEN", required=True)
+    WHATSAPP_TEMPLATE_NAME = env("WHATSAPP_TEMPLATE_NAME", required=True)
+    WHATSAPP_TEMPLATE_LANGUAGE = env("WHATSAPP_TEMPLATE_LANGUAGE", "ar")
 if PUSH_PROVIDER.lower() in {"development", "test", "console"}:
     raise ImproperlyConfigured("Production push provider cannot be a test provider")
 if len(PUSH_TOKEN_ENCRYPTION_KEY) < 32:

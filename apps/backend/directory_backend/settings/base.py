@@ -13,6 +13,14 @@ ACCESS_TOKEN_SIGNING_KEY = env("ACCESS_TOKEN_SIGNING_KEY", "development-access-t
 REFRESH_HMAC_SECRET = env("REFRESH_HMAC_SECRET", "development-refresh-hmac-key")
 RECOVERY_HMAC_SECRET = env("RECOVERY_HMAC_SECRET", "development-recovery-hmac-key")
 OTP_PROVIDER = env("OTP_PROVIDER", "development")
+
+# WhatsApp, through Meta's Cloud API. A business may only open a conversation with a template
+# Meta approved in advance, so the code travels inside an "Authentication" template rather than
+# as free text — the name and language below are that template's, on the business account.
+WHATSAPP_PHONE_NUMBER_ID = env("WHATSAPP_PHONE_NUMBER_ID", "")
+WHATSAPP_ACCESS_TOKEN = env("WHATSAPP_ACCESS_TOKEN", "")
+WHATSAPP_TEMPLATE_NAME = env("WHATSAPP_TEMPLATE_NAME", "")
+WHATSAPP_TEMPLATE_LANGUAGE = env("WHATSAPP_TEMPLATE_LANGUAGE", "ar")
 DEBUG = False
 ALLOWED_HOSTS = env_csv("ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
 
