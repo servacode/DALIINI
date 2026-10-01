@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What this module says. Here rather than in Kotlin so that a second language is a
+     second file beside this one and the phone's own setting chooses between them. -->
+<resources>
+    <string name="province_title">اختر المحافظة</string>
+    <string name="province_error">تعذر تحميل المحافظات</string>
+    <string name="province_stale">يعرض آخر قائمة محفوظة</string>
+</resources>

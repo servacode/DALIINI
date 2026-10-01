@@ -18,6 +18,7 @@ import type {
   ApiError,
   FacilityCursorPage,
   MapMarkerList,
+  PublicDutyRoster,
   PublicFacilityDetail,
   PublicHome,
 } from '../models/index';
@@ -28,27 +29,40 @@ import {
     FacilityCursorPageToJSON,
     MapMarkerListFromJSON,
     MapMarkerListToJSON,
+    PublicDutyRosterFromJSON,
+    PublicDutyRosterToJSON,
     PublicFacilityDetailFromJSON,
     PublicFacilityDetailToJSON,
     PublicHomeFromJSON,
     PublicHomeToJSON,
 } from '../models/index';
 
+export interface PublicDutyByDateListRequest {
+    provinceId: string;
+    categoryId?: string;
+    cityId?: string;
+    date?: string;
+    days?: number;
+}
+
 export interface PublicFacilitiesListRequest {
-    categoryId: string;
     provinceId: string;
     bbox?: string;
+    categoryId?: string;
     cityId?: string;
     cursor?: string;
     dutyNow?: string;
+    dutyToday?: string;
     latitude?: string;
     limit?: number;
     longitude?: string;
     neighborhoodId?: string;
     openNow?: string;
     search?: string;
-    serviceId?: string;
-    specialtyId?: string;
+    serviceId?: number;
+    serviceTagId?: number;
+    sort?: string;
+    specialtyId?: number;
 }
 
 export interface PublicFacilityRetrieveRequest {
@@ -64,8 +78,9 @@ export interface PublicHomeRetrieveRequest {
     longitude?: string;
     neighborhoodId?: string;
     search?: string;
-    serviceId?: string;
-    specialtyId?: string;
+    serviceId?: number;
+    serviceTagId?: number;
+    specialtyId?: number;
 }
 
 export interface PublicMapFacilitiesListRequest {
@@ -73,12 +88,16 @@ export interface PublicMapFacilitiesListRequest {
     bbox?: string;
     categoryId?: string;
     cityId?: string;
+    dutyNow?: string;
+    dutyToday?: string;
     latitude?: string;
     longitude?: string;
     neighborhoodId?: string;
+    openNow?: string;
     search?: string;
-    serviceId?: string;
-    specialtyId?: string;
+    serviceId?: number;
+    serviceTagId?: number;
+    specialtyId?: number;
 }
 
 export interface PublicSearchListRequest {
@@ -93,8 +112,9 @@ export interface PublicSearchListRequest {
     longitude?: string;
     neighborhoodId?: string;
     search?: string;
-    serviceId?: string;
-    specialtyId?: string;
+    serviceId?: number;
+    serviceTagId?: number;
+    specialtyId?: number;
 }
 
 /**
@@ -103,17 +123,68 @@ export interface PublicSearchListRequest {
 export class PublicDiscoveryApi extends runtime.BaseAPI {
 
     /**
-     * Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend; openNow and dutyNow filter on that computed state rather than on a stored flag.
-     * List publicly visible facilities in a province and category
+     * Days are Damascus calendar days starting at `date` (default today). A pharmacy is listed on every day one of its duty shifts overlaps. Same visibility as the public duty-now listing. Cacheable for one minute.
+     * Pharmacies on duty on a given day (or up to 7 days)
      */
-    async publicFacilitiesListRaw(requestParameters: PublicFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FacilityCursorPage>> {
-        if (requestParameters['categoryId'] == null) {
+    async publicDutyByDateListRaw(requestParameters: PublicDutyByDateListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PublicDutyRoster>> {
+        if (requestParameters['provinceId'] == null) {
             throw new runtime.RequiredError(
-                'categoryId',
-                'Required parameter "categoryId" was null or undefined when calling publicFacilitiesList().'
+                'provinceId',
+                'Required parameter "provinceId" was null or undefined when calling publicDutyByDateList().'
             );
         }
 
+        const queryParameters: any = {};
+
+        if (requestParameters['categoryId'] != null) {
+            queryParameters['categoryId'] = requestParameters['categoryId'];
+        }
+
+        if (requestParameters['cityId'] != null) {
+            queryParameters['cityId'] = requestParameters['cityId'];
+        }
+
+        if (requestParameters['date'] != null) {
+            queryParameters['date'] = requestParameters['date'];
+        }
+
+        if (requestParameters['days'] != null) {
+            queryParameters['days'] = requestParameters['days'];
+        }
+
+        if (requestParameters['provinceId'] != null) {
+            queryParameters['provinceId'] = requestParameters['provinceId'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/v1/public/duty/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PublicDutyRosterFromJSON(jsonValue));
+    }
+
+    /**
+     * Days are Damascus calendar days starting at `date` (default today). A pharmacy is listed on every day one of its duty shifts overlaps. Same visibility as the public duty-now listing. Cacheable for one minute.
+     * Pharmacies on duty on a given day (or up to 7 days)
+     */
+    async publicDutyByDateList(requestParameters: PublicDutyByDateListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PublicDutyRoster> {
+        const response = await this.publicDutyByDateListRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend. The filters combine: openNow and dutyToday together mean facilities that are both, which is a different question from either alone.
+     * List publicly visible facilities in a province, optionally in one category
+     */
+    async publicFacilitiesListRaw(requestParameters: PublicFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FacilityCursorPage>> {
         if (requestParameters['provinceId'] == null) {
             throw new runtime.RequiredError(
                 'provinceId',
@@ -141,6 +212,10 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
 
         if (requestParameters['dutyNow'] != null) {
             queryParameters['dutyNow'] = requestParameters['dutyNow'];
+        }
+
+        if (requestParameters['dutyToday'] != null) {
+            queryParameters['dutyToday'] = requestParameters['dutyToday'];
         }
 
         if (requestParameters['latitude'] != null) {
@@ -175,6 +250,14 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
             queryParameters['serviceId'] = requestParameters['serviceId'];
         }
 
+        if (requestParameters['serviceTagId'] != null) {
+            queryParameters['serviceTagId'] = requestParameters['serviceTagId'];
+        }
+
+        if (requestParameters['sort'] != null) {
+            queryParameters['sort'] = requestParameters['sort'];
+        }
+
         if (requestParameters['specialtyId'] != null) {
             queryParameters['specialtyId'] = requestParameters['specialtyId'];
         }
@@ -203,8 +286,8 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
     }
 
     /**
-     * Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend; openNow and dutyNow filter on that computed state rather than on a stored flag.
-     * List publicly visible facilities in a province and category
+     * Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend. The filters combine: openNow and dutyToday together mean facilities that are both, which is a different question from either alone.
+     * List publicly visible facilities in a province, optionally in one category
      */
     async publicFacilitiesList(requestParameters: PublicFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FacilityCursorPage> {
         const response = await this.publicFacilitiesListRaw(requestParameters, initOverrides);
@@ -308,6 +391,10 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
             queryParameters['serviceId'] = requestParameters['serviceId'];
         }
 
+        if (requestParameters['serviceTagId'] != null) {
+            queryParameters['serviceTagId'] = requestParameters['serviceTagId'];
+        }
+
         if (requestParameters['specialtyId'] != null) {
             queryParameters['specialtyId'] = requestParameters['specialtyId'];
         }
@@ -345,7 +432,7 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
     }
 
     /**
-     * Capped at 500 markers. Facilities without coordinates are omitted.
+     * Capped at 500 markers. Facilities without coordinates are omitted. The filters behave exactly as they do on the list endpoint and combine the same way, so a map and a list asked the same question answer the same.
      * List compact map markers inside a viewport
      */
     async publicMapFacilitiesListRaw(requestParameters: PublicMapFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MapMarkerList>> {
@@ -370,6 +457,14 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
             queryParameters['cityId'] = requestParameters['cityId'];
         }
 
+        if (requestParameters['dutyNow'] != null) {
+            queryParameters['dutyNow'] = requestParameters['dutyNow'];
+        }
+
+        if (requestParameters['dutyToday'] != null) {
+            queryParameters['dutyToday'] = requestParameters['dutyToday'];
+        }
+
         if (requestParameters['latitude'] != null) {
             queryParameters['latitude'] = requestParameters['latitude'];
         }
@@ -382,6 +477,10 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
             queryParameters['neighborhoodId'] = requestParameters['neighborhoodId'];
         }
 
+        if (requestParameters['openNow'] != null) {
+            queryParameters['openNow'] = requestParameters['openNow'];
+        }
+
         if (requestParameters['provinceId'] != null) {
             queryParameters['provinceId'] = requestParameters['provinceId'];
         }
@@ -392,6 +491,10 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
 
         if (requestParameters['serviceId'] != null) {
             queryParameters['serviceId'] = requestParameters['serviceId'];
+        }
+
+        if (requestParameters['serviceTagId'] != null) {
+            queryParameters['serviceTagId'] = requestParameters['serviceTagId'];
         }
 
         if (requestParameters['specialtyId'] != null) {
@@ -422,7 +525,7 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
     }
 
     /**
-     * Capped at 500 markers. Facilities without coordinates are omitted.
+     * Capped at 500 markers. Facilities without coordinates are omitted. The filters behave exactly as they do on the list endpoint and combine the same way, so a map and a list asked the same question answer the same.
      * List compact map markers inside a viewport
      */
     async publicMapFacilitiesList(requestParameters: PublicMapFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MapMarkerList> {
@@ -496,6 +599,10 @@ export class PublicDiscoveryApi extends runtime.BaseAPI {
 
         if (requestParameters['serviceId'] != null) {
             queryParameters['serviceId'] = requestParameters['serviceId'];
+        }
+
+        if (requestParameters['serviceTagId'] != null) {
+            queryParameters['serviceTagId'] = requestParameters['serviceTagId'];
         }
 
         if (requestParameters['specialtyId'] != null) {

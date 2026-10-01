@@ -11,7 +11,7 @@
 | **provinceId** | [**java.util.UUID**](java.util.UUID.md) |  |  |
 | **createdAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) |  |  |
 | **updatedAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) |  |  |
-| **roleIds** | [**kotlin.collections.List&lt;java.util.UUID&gt;**](java.util.UUID.md) |  |  |
+| **roleIds** | **kotlin.collections.List&lt;kotlin.Int&gt;** |  |  |
 
 
 

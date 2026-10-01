@@ -28,7 +28,7 @@ next regeneration silently discards the edit and CI fails on drift.
 The clients are committed rather than produced during each consumer build. That way CI can
 prove the committed clients still match the schema, a reviewer can see a contract change in
 the diff of the pull request that causes it, and Admin, Android and iOS can build without
-running a code generator. See DECISION-010 in `DECISIONS.md`.
+running a code generator. See DECISION-010 in `docs/project/DECISIONS.md`.
 
 ## Official commands
 

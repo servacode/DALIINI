@@ -55,6 +55,12 @@ class PatchedFacilityPatchTest : ShouldSpec() {
             //modelInstance.phone shouldBe ("TODO")
         }
 
+        // to test the property `whatsapp` - Optional Syrian mobile (09XXXXXXXX or +9639XXXXXXXX); blank clears it.
+        should("test whatsapp") {
+            // uncomment below to test the property
+            //modelInstance.whatsapp shouldBe ("TODO")
+        }
+
         // to test the property `addressAr`
         should("test addressAr") {
             // uncomment below to test the property
@@ -79,13 +85,13 @@ class PatchedFacilityPatchTest : ShouldSpec() {
             //modelInstance.neighborhoodId shouldBe ("TODO")
         }
 
-        // to test the property `specialtyIds`
+        // to test the property `specialtyIds` - Replaces the facility's specialties. Ids come from the category's `specialties` in ownerConfigRetrieve; an empty list clears them.
         should("test specialtyIds") {
             // uncomment below to test the property
             //modelInstance.specialtyIds shouldBe ("TODO")
         }
 
-        // to test the property `serviceTagIds`
+        // to test the property `serviceTagIds` - Replaces the facility's services. Ids come from the category's `services` in ownerConfigRetrieve; an empty list clears them.
         should("test serviceTagIds") {
             // uncomment below to test the property
             //modelInstance.serviceTagIds shouldBe ("TODO")

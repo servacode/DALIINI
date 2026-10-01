@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { Coordinates } from './Coordinates';
+import {
+    CoordinatesFromJSON,
+    CoordinatesFromJSONTyped,
+    CoordinatesToJSON,
+    CoordinatesToJSONTyped,
+} from './Coordinates';
+
 /**
  * 
  * @export
@@ -43,6 +51,12 @@ export interface PublicProvince {
      * @memberof PublicProvince
      */
     nameEn: string | null;
+    /**
+     * Where a map opens for this province when the user's own position is unknown. Null when no centre has been set.
+     * @type {Coordinates}
+     * @memberof PublicProvince
+     */
+    mapCenter: Coordinates | null;
 }
 
 /**
@@ -53,6 +67,7 @@ export function instanceOfPublicProvince(value: object): value is PublicProvince
     if (!('code' in value) || value['code'] === undefined) return false;
     if (!('nameAr' in value) || value['nameAr'] === undefined) return false;
     if (!('nameEn' in value) || value['nameEn'] === undefined) return false;
+    if (!('mapCenter' in value) || value['mapCenter'] === undefined) return false;
     return true;
 }
 
@@ -70,6 +85,7 @@ export function PublicProvinceFromJSONTyped(json: any, ignoreDiscriminator: bool
         'code': json['code'],
         'nameAr': json['nameAr'],
         'nameEn': json['nameEn'],
+        'mapCenter': CoordinatesFromJSON(json['mapCenter']),
     };
 }
 
@@ -88,6 +104,7 @@ export function PublicProvinceToJSONTyped(value?: PublicProvince | null, ignoreD
         'code': value['code'],
         'nameAr': value['nameAr'],
         'nameEn': value['nameEn'],
+        'mapCenter': CoordinatesToJSON(value['mapCenter']),
     };
 }
 

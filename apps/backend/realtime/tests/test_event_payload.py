@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from realtime.events import EventName, RealtimeEvent, ScopeType
 
 
-def test_event_payload_is_minimal_invalidation_envelope():
+def test_event_payload_is_minimal_invalidation_envelope() -> None:
     event = RealtimeEvent(
         name=EventName.FACILITY_CHANGED,
         scope_type=ScopeType.PROVINCE,

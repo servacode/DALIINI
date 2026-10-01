@@ -4,9 +4,11 @@ import { useState } from "react";
 
 import { useCan } from "../../../components/admin-shell";
 import {
+  EmptyState,
   ErrorState,
   LoadingState,
   PageHeader,
+  Panel,
   StatusBadge,
   Toast,
   formatDateTime,
@@ -20,6 +22,22 @@ type Setting = Readonly<{
   value: unknown;
   updatedAt: string;
 }>;
+
+/**
+ * Human names for the settings the platform itself reads. Any other key still renders with
+ * its raw name; this only makes the ones operators act on under pressure readable.
+ */
+const KNOWN: Record<string, { label: string; hint?: string }> = {
+  "maintenance.enabled": {
+    label: "وضع الصيانة",
+    hint: "عند التفعيل يتوقف التطبيق العام ويعرض شاشة الصيانة. لوحة الإدارة تبقى متاحة.",
+  },
+  "maintenance.messageAr": { label: "رسالة الصيانة", hint: "تظهر للمستخدمين في شاشة الصيانة." },
+  "maintenance.retryAfterSeconds": {
+    label: "إعادة المحاولة بعد (ثوانٍ)",
+    hint: "المدة التي تنتظرها التطبيقات قبل إعادة المحاولة تلقائياً.",
+  },
+};
 
 /**
  * Typed platform settings.
@@ -68,14 +86,22 @@ export default function SettingsPage() {
 
       {settings.data ? (
         settings.data.items.length === 0 ? (
-          <div className="state-block state-empty" data-testid="empty-state">
-            <strong>لا إعدادات مُهيّأة</strong>
-          </div>
+          <EmptyState title="لا إعدادات مُهيّأة" />
         ) : (
-          <section className="panel stack">
+          <Panel>
             {settings.data.items.map((setting) => (
               <div key={setting.key} className="switch-row">
                 <span>
+                  {KNOWN[setting.key] ? (
+                    <>
+                      <strong>{KNOWN[setting.key]!.label}</strong>
+                      {KNOWN[setting.key]!.hint ? (
+                        <span className="field-hint setting-hint">
+                          {KNOWN[setting.key]!.hint}
+                        </span>
+                      ) : null}
+                    </>
+                  ) : null}
                   <code className="cell-ltr">{setting.key}</code>{" "}
                   <StatusBadge tone="neutral">{setting.valueType}</StatusBadge>
                   <br />
@@ -131,7 +157,7 @@ export default function SettingsPage() {
                 </span>
               </div>
             ))}
-          </section>
+          </Panel>
         )
       ) : null}
 

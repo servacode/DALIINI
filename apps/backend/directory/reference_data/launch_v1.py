@@ -217,8 +217,9 @@ ENABLED_SWITCHES = (
 # whether either is required, how many files each takes, or whether a pharmacy licence
 # document is needed instead.
 #
-# Tracked as LAUNCH_POLICY_PENDING in DECISIONS.md: pharmacy verification requirements must
-# be configured and qualified before owner onboarding is opened publicly in production.
+# Tracked as LAUNCH_POLICY_PENDING in docs/project/DECISIONS.md: pharmacy verification
+# requirements must be configured and qualified before owner onboarding is opened publicly
+# in production.
 # This does not block backend or Admin development.
 # --------------------------------------------------------------------------------------
 

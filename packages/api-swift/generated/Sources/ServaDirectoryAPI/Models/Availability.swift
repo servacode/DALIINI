@@ -15,15 +15,23 @@ public struct Availability: Codable, JSONEncodable, Hashable {
 
     public var state: AvailabilityStateEnum
     public var nextOpenAt: Date?
+    /** Whether the doors are open at this moment, by the facility's own business hours and temporary closures. Independent of duty: unlike `state`, which collapses both into one value and lets DUTY win, this stays true for a facility that is open while its duty shift runs. */
+    public var isOpenNow: Bool
+    /** Whether the facility appears on today's duty roster, taking today to be the local day in Asia/Damascus. A different question from being open: a pharmacy on tonight's roster is on duty today from midnight, hours before it opens. False simply means it is not on the roster; clients must not render that as a badge of its own. */
+    public var isOnDutyToday: Bool
 
-    public init(state: AvailabilityStateEnum, nextOpenAt: Date?) {
+    public init(state: AvailabilityStateEnum, nextOpenAt: Date?, isOpenNow: Bool, isOnDutyToday: Bool) {
         self.state = state
         self.nextOpenAt = nextOpenAt
+        self.isOpenNow = isOpenNow
+        self.isOnDutyToday = isOnDutyToday
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case state
         case nextOpenAt
+        case isOpenNow
+        case isOnDutyToday
     }
 
     // Encodable protocol methods
@@ -32,6 +40,8 @@ public struct Availability: Codable, JSONEncodable, Hashable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(state, forKey: .state)
         try container.encode(nextOpenAt, forKey: .nextOpenAt)
+        try container.encode(isOpenNow, forKey: .isOpenNow)
+        try container.encode(isOnDutyToday, forKey: .isOnDutyToday)
     }
 }
 

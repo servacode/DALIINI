@@ -7,6 +7,7 @@ plugins {
 dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:network"))
+    implementation(project(":core:location"))
     implementation(project(":core:auth"))
     implementation(project(":core:datastore"))
     implementation(project(":core:designsystem"))

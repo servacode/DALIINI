@@ -21,12 +21,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
 import javax.inject.Inject
-import javax.inject.Qualifier
 import javax.inject.Singleton
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class MapProviderHttpClient
 
 class MapProviderException(message: String, cause: Throwable? = null) : IOException(message, cause)
 

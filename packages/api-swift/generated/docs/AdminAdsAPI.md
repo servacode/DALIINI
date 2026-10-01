@@ -6,6 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**adminAdCreate**](AdminAdsAPI.md#adminadcreate) | **POST** /api/v1/admin/ads/ | Create an advertisement
 [**adminAdDelete**](AdminAdsAPI.md#adminaddelete) | **DELETE** /api/v1/admin/ads/{advertisement_id}/ | Delete an advertisement
+[**adminAdImageUpload**](AdminAdsAPI.md#adminadimageupload) | **POST** /api/v1/admin/ads/images/ | Upload an advertisement image
 [**adminAdUpdate**](AdminAdsAPI.md#adminadupdate) | **PUT** /api/v1/admin/ads/{advertisement_id}/ | Edit an advertisement, its schedule or its activation
 [**adminAdsList**](AdminAdsAPI.md#adminadslist) | **GET** /api/v1/admin/ads/ | List advertisements
 
@@ -104,6 +105,56 @@ Void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminAdImageUpload**
+```swift
+    open class func adminAdImageUpload(file: URL, completion: @escaping (_ data: AdminAdImage?, _ error: Error?) -> Void)
+```
+
+Upload an advertisement image
+
+multipart/form-data with `file`. JPEG, PNG or WebP only, at most 2 MB, each side 100 to 4096 px. The image is re-encoded to JPEG (metadata stripped) and stored in public media under a random key. Pass the returned `imageKey` when creating or updating the advertisement.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let file = URL(string: "https://example.com")! // URL | JPEG, PNG or WebP, at most 2 MB, 100-4096 px a side.
+
+// Upload an advertisement image
+AdminAdsAPI.adminAdImageUpload(file: file) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **file** | **URL** | JPEG, PNG or WebP, at most 2 MB, 100-4096 px a side. | 
+
+### Return type
+
+[**AdminAdImage**](AdminAdImage.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

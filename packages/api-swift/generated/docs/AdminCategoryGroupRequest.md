@@ -6,6 +6,7 @@ Name | Type | Description | Notes
 **code** | **String** | Required on create. Refused on update; the group code is immutable. | [optional] 
 **nameAr** | **String** |  | [optional] 
 **nameEn** | **String** |  | [optional] 
+**iconKey** | **String** |  | [optional] 
 **active** | **Bool** |  | [optional] 
 **sortOrder** | **Int** |  | [optional] 
 

@@ -1,0 +1,180 @@
+name: Android Build Verification
+
+# The Android app's real build, against the official repositories only: Google Maven and Maven
+# Central, exactly as apps/android/settings.gradle.kts declares them. It runs here because
+# Google Maven does not answer the network the app is developed on
+# (artifacts/evidence/google-maven-diagnosis-20260919.txt). No mirror, no artifact copied in
+# by hand, no version changed to suit a cache. apps/android/jvm-verification is a separate,
+# portable check and is not run here: it is no substitute for this build.
+
+on:
+  push:
+    branches: ['android-build-verification-*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    # Built for a device on USB with `adb reverse` (docs/runbooks/android-local-networking.md):
+    # the phone reaches the developer's machine through its own localhost, which the local
+    # flavor's network security config already allows. The flavor's default, 10.0.2.2, is the
+    # emulator's alias and does not exist on a phone. No machine address is involved. The
+    # build reads these from the environment, so every gate below sees the same configuration.
+    env:
+      DIRECTORY_LOCAL_API_BASE_URL: http://localhost:8000/
+      DIRECTORY_LOCAL_REALTIME_WS_URL: ws://localhost:8000/ws/v1/directory/
+      # The certificate every debug APK must carry (INT-091, DECISION-041). Public: it is the
+      # key's fingerprint, not the key. The key itself comes from the repository's secrets.
+      EXPECTED_DEBUG_CERT_SHA256: f875d994ddb187754c54b74968d6997c7d45dbca91c17a43d5501999ed248838
+    defaults:
+      run:
+        working-directory: apps/android
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate the Gradle wrapper against gradle.org's checksums
+        uses: gradle/actions/wrapper-validation@v4
+
+      # AGP 9.4 needs JDK 17 or later; 21 is the current long-term release.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # Gradle's own action: caches the dependencies Gradle downloaded from the declared
+      # repositories, keyed on the build files, and nothing else.
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Record the toolchain and Google Maven's answer
+        run: |
+          java -version
+          ./gradlew --version
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools"
+          curl -sSI https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/9.4.0/gradle-9.4.0.pom | head -5
+
+      # Debug builds are signed with the project's stable debug key, so a device updates with
+      # `adb install -r` and keeps its data. Without the secret the build stops: an APK signed
+      # with this runner's throwaway key could never update the one on the device.
+      - name: Stable debug signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.DIRECTORY_DEBUG_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.DIRECTORY_DEBUG_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.DIRECTORY_DEBUG_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.DIRECTORY_DEBUG_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "::error::the DIRECTORY_DEBUG_* secrets are not set; refusing to sign with a throwaway key"
+            exit 1
+          fi
+          keystore="$RUNNER_TEMP/directory-debug.keystore"
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$keystore"
+          {
+            echo "DIRECTORY_DEBUG_KEYSTORE_PATH=$keystore"
+            echo "DIRECTORY_DEBUG_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "DIRECTORY_DEBUG_KEY_ALIAS=$KEY_ALIAS"
+            echo "DIRECTORY_DEBUG_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      # --continue: this code is compiled for the first time here, and one run should report
+      # every module that fails, not only the first.
+      - name: Gate 1 — assembleLocalDebug
+        id: assemble
+        run: ./gradlew :app:assembleLocalDebug --continue --stacktrace
+
+      - name: APK metadata
+        if: steps.assemble.outcome == 'success'
+        run: |
+          set -euo pipefail
+          dir=app/build/outputs/apk/local/debug
+          apk="$(find "$dir" -maxdepth 1 -name '*.apk' | head -1)"
+          aapt2="$(find "$ANDROID_HOME/build-tools" -name aapt2 -type f | sort -V | tail -1)"
+          badging="$("$aapt2" dump badging "$apk")"
+          apksigner="$(dirname "$aapt2")/apksigner"
+          cert="$("$apksigner" verify --print-certs "$apk" | grep -m1 'certificate SHA-256 digest' | awk '{print $NF}')"
+          if [ "$cert" != "$EXPECTED_DEBUG_CERT_SHA256" ]; then
+            echo "::error::the APK is signed with $cert, not the stable debug key $EXPECTED_DEBUG_CERT_SHA256"
+            exit 1
+          fi
+          field() { printf '%s\n' "$badging" | grep -o "$1='[^']*'" | head -1 | cut -d"'" -f2; }
+          sdk() { printf '%s\n' "$badging" | grep -o "^$1:'[^']*'" | head -1 | cut -d"'" -f2; }
+          {
+            echo "path=apps/android/$apk"
+            echo "filename=$(basename "$apk")"
+            echo "sha256=$(sha256sum "$apk" | cut -d' ' -f1)"
+            echo "size_bytes=$(stat -c %s "$apk")"
+            echo "applicationId=$(printf '%s\n' "$badging" | grep -o "^package: name='[^']*'" | cut -d"'" -f2)"
+            echo "versionName=$(field versionName)"
+            echo "versionCode=$(field versionCode)"
+            # aapt2 prints minSdkVersion; older tools printed sdkVersion.
+            min="$(sdk minSdkVersion)"; [ -n "$min" ] || min="$(sdk sdkVersion)"
+            echo "minSdk=$min"
+            echo "targetSdk=$(sdk targetSdkVersion)"
+            echo "flavor=local"
+            echo "buildType=debug"
+            echo "signingCertSha256=$cert"
+            echo "apiBaseUrl=http://localhost:8000/ (reach it with adb reverse tcp:8000 tcp:8000)"
+            echo "realtimeUrl=ws://localhost:8000/ws/v1/directory/"
+            echo "commit=$GITHUB_SHA"
+          } > "$dir/apk-metadata.txt"
+          cat "$dir/apk-metadata.txt"
+          { echo '### APK'; echo '```'; cat "$dir/apk-metadata.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the APK
+        if: steps.assemble.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: directory-local-debug-apk
+          path: |
+            apps/android/app/build/outputs/apk/local/debug/*.apk
+            apps/android/app/build/outputs/apk/local/debug/apk-metadata.txt
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Gate 2 — Android unit tests
+        id: unit
+        if: steps.assemble.outcome == 'success'
+        run: ./gradlew testDebugUnitTest :app:testLocalDebugUnitTest --continue --stacktrace
+
+      - name: Gate 2b — platform-free JVM harness
+        if: always() && steps.assemble.outcome == 'success'
+        working-directory: apps/android/jvm-verification
+        run: ../gradlew -p . test --continue --stacktrace
+
+      - name: Gate 3 — Android lint
+        id: lint
+        if: always() && steps.assemble.outcome == 'success'
+        run: ./gradlew lintDebug :app:lintLocalDebug --continue --stacktrace
+
+      # The two source qualifiers that describe the current source. The public, owner,
+      # navigation and live-data qualifiers still assert the pre-binding stubs that INT-013
+      # removed, and are recorded as INT-069 rather than run and ignored.
+      - name: Gate 4 — Android source qualifiers
+        if: always() && steps.assemble.outcome == 'success'
+        run: |
+          python3 scripts/qualify-source.py
+          python3 scripts/qualify-play-rc-source.py
+          python3 scripts/qualify-public-source.py
+          python3 scripts/qualify-owner-source.py
+          python3 scripts/qualify-live-data-source.py
+          python3 scripts/qualify-navigation-source.py
+
+      - name: Upload test and lint reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-reports
+          path: |
+            apps/android/**/build/reports/
+            apps/android/**/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 30

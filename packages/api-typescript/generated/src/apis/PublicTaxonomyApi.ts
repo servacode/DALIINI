@@ -17,7 +17,9 @@ import * as runtime from '../runtime';
 import type {
   ApiError,
   PublicCategoryList,
+  PublicCategoryTags,
   PublicCityList,
+  PublicLocationResolve,
   PublicProvinceList,
 } from '../models/index';
 import {
@@ -25,11 +27,24 @@ import {
     ApiErrorToJSON,
     PublicCategoryListFromJSON,
     PublicCategoryListToJSON,
+    PublicCategoryTagsFromJSON,
+    PublicCategoryTagsToJSON,
     PublicCityListFromJSON,
     PublicCityListToJSON,
+    PublicLocationResolveFromJSON,
+    PublicLocationResolveToJSON,
     PublicProvinceListFromJSON,
     PublicProvinceListToJSON,
 } from '../models/index';
+
+export interface PublicCategoryTagsRetrieveRequest {
+    categoryId: string;
+}
+
+export interface PublicLocationResolveRequest {
+    latitude: number;
+    longitude: number;
+}
 
 export interface PublicProvinceCategoriesListRequest {
     provinceId: string;
@@ -43,6 +58,98 @@ export interface PublicProvinceCitiesListRequest {
  * 
  */
 export class PublicTaxonomyApi extends runtime.BaseAPI {
+
+    /**
+     * The choices behind the specialty and service filters: active items only, in the operators\' order. Specialties are the category\'s own plus those shared by its specialization. Whether to offer each filter is still decided by the category\'s `specialtyFilter` and `serviceFilter` capabilities. A category that is not public in any province is 404. Cacheable for five minutes (`Cache-Control: public, max-age=300`).
+     * List the specialties and services a category offers
+     */
+    async publicCategoryTagsRetrieveRaw(requestParameters: PublicCategoryTagsRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PublicCategoryTags>> {
+        if (requestParameters['categoryId'] == null) {
+            throw new runtime.RequiredError(
+                'categoryId',
+                'Required parameter "categoryId" was null or undefined when calling publicCategoryTagsRetrieve().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/v1/public/categories/{category_id}/tags/`;
+        urlPath = urlPath.replace(`{${"category_id"}}`, encodeURIComponent(String(requestParameters['categoryId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PublicCategoryTagsFromJSON(jsonValue));
+    }
+
+    /**
+     * The choices behind the specialty and service filters: active items only, in the operators\' order. Specialties are the category\'s own plus those shared by its specialization. Whether to offer each filter is still decided by the category\'s `specialtyFilter` and `serviceFilter` capabilities. A category that is not public in any province is 404. Cacheable for five minutes (`Cache-Control: public, max-age=300`).
+     * List the specialties and services a category offers
+     */
+    async publicCategoryTagsRetrieve(requestParameters: PublicCategoryTagsRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PublicCategoryTags> {
+        const response = await this.publicCategoryTagsRetrieveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Point-in-polygon against the seeded city and neighbourhood boundaries, then the nearest active province centre within 200 km. No external geocoder is called and the coordinate is not stored.
+     * Resolve a coordinate to a province, city and neighbourhood
+     */
+    async publicLocationResolveRaw(requestParameters: PublicLocationResolveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PublicLocationResolve>> {
+        if (requestParameters['latitude'] == null) {
+            throw new runtime.RequiredError(
+                'latitude',
+                'Required parameter "latitude" was null or undefined when calling publicLocationResolve().'
+            );
+        }
+
+        if (requestParameters['longitude'] == null) {
+            throw new runtime.RequiredError(
+                'longitude',
+                'Required parameter "longitude" was null or undefined when calling publicLocationResolve().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['latitude'] != null) {
+            queryParameters['latitude'] = requestParameters['latitude'];
+        }
+
+        if (requestParameters['longitude'] != null) {
+            queryParameters['longitude'] = requestParameters['longitude'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/v1/public/locations/resolve/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PublicLocationResolveFromJSON(jsonValue));
+    }
+
+    /**
+     * Point-in-polygon against the seeded city and neighbourhood boundaries, then the nearest active province centre within 200 km. No external geocoder is called and the coordinate is not stored.
+     * Resolve a coordinate to a province, city and neighbourhood
+     */
+    async publicLocationResolve(requestParameters: PublicLocationResolveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PublicLocationResolve> {
+        const response = await this.publicLocationResolveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * A category is listed only when the province is active, the group and the category are active, and the per-province public switch is on. Clients drive their UI from the returned capability flags, never from the category name.

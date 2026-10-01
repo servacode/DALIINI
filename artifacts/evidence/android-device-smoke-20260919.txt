@@ -1,0 +1,55 @@
+FIRST ANDROID DEVICE SMOKE — LOCAL STACK — 2026-09-19
+APK: app-local-debug.apk from CI run 35430793735, SHA-256
+a6f36ac82ecf3cc5fe51806214011e238578e8ff59775678bcf15799a78952c9 (checked again before install).
+Device: Samsung Galaxy A52 (SM-A525F), Android 14 (SDK 34), One UI 6.1, arm64-v8a.
+Transport: wireless debugging (_adb-tls-connect), state "device"; adb reverse tcp:8000 and tcp:9000.
+Stack: scripts/local-stack.sh up — PostGIS (directory_device), Redis db 1, MinIO (public object
+reads only, private evidence private), Django on :8000, Admin production build on :3000.
+
+Privacy: actions and screenshots only while الدليل is in the foreground (enforced by a guard);
+one screenshot taken while another app was in front was deleted unopened; device-wide logcat was
+replaced by logcat restricted to the app's uid (10424). No coordinates, token or password printed.
+
+Stack       live 200; ready {database ok, redis ok}; MinIO live; public listing 403; private 403;
+            photo 200; Admin: BFF login 200, /admin/me 200 (24 permissions), dashboard 200.
+Install     adb install -r: Success. 0.1.0-local (1), minSdk 24, targetSdk 36, DEBUGGABLE.
+Startup     cold start 1844 ms; no crash, ANR or black screen; Compose RTL renders backend data.
+
+Public      Raqqa; pharmacies only (no disabled category); on duty / open now / nearest sections;
+            directory list; page 2 through "عرض المزيد" (one cursor request, 200, no duplicate);
+            detail; two-span hours by sequence (weekday 0 = Monday on both sides); the public
+            photo loaded from MinIO; back navigation.                                    PASS
+Auth        sign-in as the fixture citizen; force-stop then relaunch: one /auth/refresh 200 and
+            the profile restored; sign-out: /auth/logout 204, the Keystore-encrypted refresh
+            secret removed from the device, the server session ended.                   PASS
+Storage     only refresh_iv + refresh_ciphertext in the session prefs; no JWT, password or
+            Bearer header in any app file; the Room cache holds public data only.       PASS
+Owner       sign-in as the fixture owner; "منشآتي" lists both facilities with capabilities;
+            the existing draft opened, filled, saved (PATCH 200), reopened with every field,
+            edited and saved again, and unchanged after force-stop. No submit.          PASS
+Map         "يجب ضبط مزود خرائط الإنتاج قبل عرض الخريطة": the placeholder style URL.   BLOCKED (INT-087)
+Location    granted foreground only (appops foreground; the system dialog offers no "all the
+            time"); the coordinates the backend received are 0 m from the phone's own location.
+Distance    backend distanceMeters = independent haversine (<= 0.01 %); the app shows the
+            backend's value, truncated (INT-085).
+Ordering    36 rows on the phone over 2 pages = the backend's order exactly; non-decreasing
+            metres; no duplicates; none missing. The one fixture without coordinates is
+            left out of nearest-first by design.                                         PASS
+Denied      relaunch after revoke: no crash; province discovery 37 rows over 2 pages with no
+            distance; no request carries coordinates; no prompt on its own; one tap, one
+            system dialog, refused, no re-prompt in 16 s; the account screen works.      PASS
+Notify      POST_NOTIFICATIONS never requested: granted=false with no USER_SET/USER_FIXED,
+            appop ignore, no mention in the app's log.                                  PASS
+Logcat      app only: 0 FATAL / AndroidRuntime / ANR / exception. Warnings: FirebaseApp auto-init
+            (INT-088), "A resource failed to call release" x4 (INT-089),
+            OnBackInvokedCallback not enabled (INT-090).
+Server      117 x 200, 1 x 201, 1 x 204, 4 x 401 (each 401 -> refresh 200 -> retry 200 after a
+            restart, by design), 0 x 5xx, 0 tracebacks.
+
+UI findings: INT-082 raw enums, INT-083 epoch-millis inputs, INT-084 raw manager account id,
+INT-085 distance format, INT-086 "الأقرب إليك" without a location. MissingApplicationIcon is a
+launch and design gate.
+Test data: 30 extra pharmacies (e2e-m- prefix) in the local directory_device database only,
+to exercise page 2; not in any seed or migration.
+
+Status approved by the owner: P15 = CONNECTED_VERIFIED; P16, P17, P18 = SOURCE_IMPLEMENTED.

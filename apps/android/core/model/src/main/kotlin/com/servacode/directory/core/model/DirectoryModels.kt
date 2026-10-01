@@ -1,12 +1,24 @@
 package com.servacode.directory.core.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
+/** A WGS84 position in decimal degrees, as the backend's `Coordinates`. */
+@Serializable
+data class GeoPoint(
+    val latitude: Double,
+    val longitude: Double,
+)
 
 @Serializable
 data class Province(
     val id: String,
     val nameAr: String,
     val nameEn: String? = null,
+    /** Where a map opens for the province when the user's position is unknown; null when unset. */
+    val mapCenter: GeoPoint? = null,
+    /** The province's code, as the site's links carry it (`/{code}`); null where not served. */
+    val code: String? = null,
 )
 
 @Serializable
@@ -35,6 +47,25 @@ data class FacilitySummary(
     /** When a closed facility next opens, as the backend computed it. */
     val nextOpenAtEpochMillis: Long? = null,
     val cityNameAr: String? = null,
+    /** Whether the signed-in account saved this facility; false for anyone not signed in. */
+    val isFavorite: Boolean = false,
+    /**
+     * Whether the doors are open at this moment.
+     *
+     * Read this rather than [availability], which is one value that lets DUTY outrank OPEN and
+     * so cannot say that a pharmacy is both on tonight's roster and serving customers now.
+     */
+    val isOpenNow: Boolean = false,
+    /**
+     * Whether the facility is on today's duty roster, today being the local day in Damascus.
+     *
+     * Independent of [isOpenNow]: a pharmacy on tonight's roster is on duty today from
+     * midnight, hours before it opens. False means only that it is not on the roster, and the
+     * interface says nothing at all in that case.
+     */
+    val isOnDutyToday: Boolean = false,
+    /** The owner's first photograph, or null when the facility has none. */
+    val imageUrl: String? = null,
 )
 
 @Serializable
@@ -51,6 +82,14 @@ data class FacilityDetail(
     val hours: List<BusinessHour> = emptyList(),
     val specialties: List<String> = emptyList(),
     val services: List<String> = emptyList(),
+    /** WhatsApp contact, E.164 Syrian mobile, when the facility gave one. */
+    val whatsapp: String? = null,
+    /** When an operator last approved these details: the trust line. Null when never. */
+    val lastVerifiedAtEpochMillis: Long? = null,
+    /** The last change to the facility record. Null only in snapshots cached before it existed. */
+    val updatedAtEpochMillis: Long? = null,
+    /** The later of the operator's check and the owner's own confirmation of the hours. */
+    val infoConfirmedAtEpochMillis: Long? = null,
 )
 
 @Serializable
@@ -60,7 +99,32 @@ data class HomeAd(
     val titleAr: String? = null,
     val subtitleAr: String? = null,
     val slideDurationMs: Int = 5000,
+    /** What a tap does. Older cached snapshots have none and decode as [AdAction.None]. */
+    val action: AdAction = AdAction.None,
 )
+
+/**
+ * Where a home advertisement leads, already checked by the mapper.
+ *
+ * Only destinations the app can open safely exist here: a facility or a category inside the
+ * app, or an `https` page opened outside it. Anything else the backend may send — an in-app
+ * route string, a malformed payload, any other scheme — becomes [None], and the slide is shown
+ * without being clickable.
+ */
+@Serializable
+sealed interface AdAction {
+    @Serializable @SerialName("none")
+    data object None : AdAction
+
+    @Serializable @SerialName("facility")
+    data class OpenFacility(val facilityId: String) : AdAction
+
+    @Serializable @SerialName("category")
+    data class OpenCategory(val categoryId: String) : AdAction
+
+    @Serializable @SerialName("url")
+    data class OpenUrl(val url: String) : AdAction
+}
 
 @Serializable
 data class HomeSnapshot(
@@ -91,6 +155,10 @@ data class AccountProfile(
     val name: String,
     val phone: String,
     val provinceId: String? = null,
+    /** Free text, as the person wrote it. Empty when they have given none. */
+    val address: String = "",
+    /** The picture on the account, or null when there is none. */
+    val imageUrl: String? = null,
 )
 
 @Serializable
@@ -137,6 +205,32 @@ data class FacilityCapabilities(
     val supportsRatings: Boolean = false,
 )
 
+/**
+ * A specialty or a service: a choice a category offers, a facility carries and a list is
+ * narrowed by.
+ *
+ * The backend keys these by integers. The id is a string here, like every other id in the app,
+ * and only the adapter turns it back into a number.
+ */
+@Serializable
+data class FacilityTag(
+    val id: String,
+    val nameAr: String,
+)
+
+/**
+ * The specialties and the services a category offers, active ones only and in the operators'
+ * order: what an owner picks from, and what the public filters are made of.
+ */
+@Serializable
+data class CategoryTags(
+    val specialties: List<FacilityTag> = emptyList(),
+    val services: List<FacilityTag> = emptyList(),
+) {
+    /** Nothing to choose from at all. */
+    val isEmpty: Boolean get() = specialties.isEmpty() && services.isEmpty()
+}
+
 @Serializable
 data class VerificationRequirementDescriptor(
     val id: String,
@@ -154,6 +248,8 @@ data class OwnerCategoryConfig(
     val specialization: String,
     val capabilities: FacilityCapabilities,
     val verificationRequirements: List<VerificationRequirementDescriptor>,
+    /** The specialties and services an owner may pick for a facility of this category. */
+    val tags: CategoryTags = CategoryTags(),
 )
 
 @Serializable
@@ -245,12 +341,17 @@ data class OwnerFacilityDetail(
     val descriptionAr: String? = null,
     val descriptionEn: String? = null,
     val phone: String? = null,
+    /** When a member last confirmed the opening hours; the app asks again after a week. */
+    val hoursConfirmedAtEpochMillis: Long? = null,
+    /** WhatsApp contact, E.164 Syrian mobile; null when the facility has none. */
+    val whatsapp: String? = null,
     val addressAr: String? = null,
     val addressEn: String? = null,
     val cityId: String? = null,
     val neighborhoodId: String? = null,
     val latitude: Double? = null,
     val longitude: Double? = null,
+    /** The ids of the [CategoryTags] choices the facility carries; active ones only. */
     val specialtyIds: List<String> = emptyList(),
     val serviceTagIds: List<String> = emptyList(),
     val hours: List<BusinessHour> = emptyList(),
@@ -279,3 +380,94 @@ data class AccountSession(
     val lastSeenAtEpochMillis: Long?,
     val revoked: Boolean,
 )
+
+
+/**
+ * Where the app decided the user is, and how sure it is of that.
+ *
+ * The platform resolves a coordinate against its own city and neighbourhood boundaries, so the
+ * name shown is the same name the lists and filters are scoped by.
+ */
+@Serializable
+data class ResolvedPlace(
+    val province: Province?,
+    val cityNameAr: String? = null,
+    val neighborhoodNameAr: String? = null,
+    /** What to show the user, already assembled: "الرقة" or "الرقة — المشلب". */
+    val label: String? = null,
+    val resolvedBy: PlaceResolution = PlaceResolution.NONE,
+)
+
+@Serializable
+enum class PlaceResolution {
+    /** The point fell inside a seeded city or neighbourhood. */
+    BOUNDARY,
+
+    /** Only the closest province centre could be used. */
+    NEAREST_PROVINCE,
+
+    /** The point is outside every province the platform serves. */
+    NONE,
+}
+
+/** One message in the account's own inbox. */
+@Serializable
+data class InboxMessage(
+    val id: String,
+    val type: String,
+    val titleAr: String,
+    val bodyAr: String,
+    val destination: MessageDestination,
+    val facilityId: String? = null,
+    val isRead: Boolean,
+    val createdAtEpochMillis: Long,
+)
+
+@Serializable
+enum class MessageDestination { NONE, FACILITY, OWNER_FACILITIES }
+
+/** A page of the inbox, with the unread total for the whole of it. */
+data class InboxPage(
+    val items: List<InboxMessage>,
+    val nextCursor: String?,
+    val hasMore: Boolean,
+    val unreadCount: Int,
+)
+
+/** One of the platform's own published pages. */
+@Serializable
+data class LegalPage(
+    val key: LegalPageKey,
+    val titleAr: String,
+    val version: Int,
+    val bodyAr: String? = null,
+)
+
+@Serializable
+enum class LegalPageKey { ABOUT, PRIVACY, TERMS, INSTRUCTIONS, FAQ, CONTACT }
+
+/**
+ * Why someone reports a facility's public details. The backend's `FacilityReportReasonEnum`,
+ * in the order the sheet offers them.
+ */
+enum class FacilityReportReason {
+    WRONG_INFO,
+    CLOSED_PERMANENTLY,
+    WRONG_LOCATION,
+    WRONG_HOURS,
+    NOT_ON_DUTY,
+    OTHER,
+}
+
+/** An owner's facility, as people engaged with it over the backend's window (30 days). */
+data class OwnerFacilityInsights(
+    val facilityId: String,
+    val windowDays: Int,
+    val sinceEpochMillis: Long,
+    val views: Int,
+    val calls: Int,
+    val directions: Int,
+) {
+    /** Nothing happened in the window: the card says so rather than showing three zeros. */
+    val isEmpty: Boolean get() = views == 0 && calls == 0 && directions == 0
+}

@@ -21,10 +21,6 @@ services:
     autoDeployTrigger: checksPass
     preDeployCommand: uv run python manage.py check --deploy && uv run python manage.py migrate --noinput
     envVars:
-      - key: DJANGO_SETTINGS_MODULE
-        value: directory_backend.settings.staging
-      - key: ENVIRONMENT
-        value: staging
       - key: DATABASE_URL
         fromDatabase:
           name: directory-v3-staging-db
@@ -34,46 +30,7 @@ services:
           type: keyvalue
           name: directory-v3-staging-redis
           property: connectionString
-      - key: SECRET_KEY
-        sync: false
-      - key: ACCESS_TOKEN_SIGNING_KEY
-        sync: false
-      - key: REFRESH_HMAC_SECRET
-        sync: false
-      - key: RECOVERY_HMAC_SECRET
-        sync: false
-      - key: PUSH_TOKEN_ENCRYPTION_KEY
-        sync: false
-      - key: ANALYTICS_HASH_SALT
-        sync: false
-      - key: ALLOWED_HOSTS
-        sync: false
-      - key: CORS_ALLOWED_ORIGINS
-        sync: false
-      - key: CSRF_TRUSTED_ORIGINS
-        sync: false
-      - key: S3_ENDPOINT_URL
-        sync: false
-      - key: S3_REGION
-        value: auto
-      - key: S3_ACCESS_KEY_ID
-        sync: false
-      - key: S3_SECRET_ACCESS_KEY
-        sync: false
-      - key: S3_PUBLIC_BUCKET
-        sync: false
-      - key: S3_PRIVATE_BUCKET
-        sync: false
-      - key: OTP_PROVIDER
-        sync: false
-      - key: PUSH_PROVIDER
-        sync: false
-      - key: FCM_PROJECT_ID
-        sync: false
-      - key: SENTRY_DSN
-        sync: false
-      - key: SENTRY_ENVIRONMENT
-        value: staging
+      - fromGroup: directory-v3-staging-backend
 
   - type: worker
     name: directory-v3-staging-worker
@@ -85,10 +42,6 @@ services:
     dockerCommand: uv run celery -A directory_backend worker -l INFO
     autoDeployTrigger: checksPass
     envVars:
-      - key: DJANGO_SETTINGS_MODULE
-        value: directory_backend.settings.staging
-      - key: ENVIRONMENT
-        value: staging
       - key: DATABASE_URL
         fromDatabase:
           name: directory-v3-staging-db
@@ -98,6 +51,166 @@ services:
           type: keyvalue
           name: directory-v3-staging-redis
           property: connectionString
+      - fromGroup: directory-v3-staging-backend
+
+  # Celery beat: the single scheduler for CELERY_BEAT_SCHEDULE (Django settings). Run
+  # exactly one instance; two beats would enqueue every periodic task twice.
+  - type: worker
+    name: directory-v3-staging-beat
+    runtime: docker
+    plan: 0.5c-512mb
+    region: frankfurt
+    dockerContext: ./apps/backend
+    dockerfilePath: ./apps/backend/Dockerfile
+    dockerCommand: uv run celery -A directory_backend beat --loglevel=info
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: directory-v3-staging-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: directory-v3-staging-redis
+          property: connectionString
+      - fromGroup: directory-v3-staging-backend
+
+  # Nightly logical backup to S3-compatible storage (scripts/db-backup.sh).
+  # Runbook: infrastructure/BACKUP-RESTORE.md.
+  - type: cron
+    name: directory-v3-staging-db-backup
+    runtime: docker
+    plan: starter
+    region: frankfurt
+    schedule: "17 2 * * *"
+    dockerContext: .
+    dockerfilePath: ./infrastructure/backup/Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: directory-v3-staging-db
+          property: connectionString
+      - key: BACKUP_S3_BUCKET
+        sync: false
+      - key: BACKUP_S3_PREFIX
+        value: directory-v3-staging/postgres
+      - key: BACKUP_RETENTION_DAYS
+        value: "14"
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_ENDPOINT_URL
+        sync: false
+      - key: AWS_DEFAULT_REGION
+        value: auto
+
+  # The OTP bot: a paired WhatsApp account that sends registration codes. Private on purpose
+  # — it must never be reachable from the internet — and reached by the API at
+  # http://directory-v3-staging-whatsapp-bot:8085.
+  #
+  # The disk is the account. Pairing writes credentials into it once (scan a QR from a shell on
+  # this service, or pair locally and copy the directory in); lose it and nobody can register
+  # until somebody scans again. See services/whatsapp-bot/README.md.
+  #
+  # This route runs an ordinary WhatsApp account through an unofficial library, which is outside
+  # WhatsApp's terms and can be banned without warning. Setting OTP_PROVIDER=whatsapp on the
+  # backend group moves delivery to the official Cloud API without touching this service.
+  - type: pserv
+    name: directory-v3-staging-whatsapp-bot
+    runtime: docker
+    plan: 0.5c-512mb
+    region: frankfurt
+    dockerContext: ./services/whatsapp-bot
+    dockerfilePath: ./services/whatsapp-bot/Dockerfile
+    autoDeployTrigger: checksPass
+    disk:
+      name: whatsapp-auth
+      mountPath: /app/auth
+      sizeGB: 1
+    envVars:
+      - key: PORT
+        value: "8085"
+      - key: WHATSAPP_BOT_TOKEN
+        sync: false
+
+  - type: web
+    name: directory-v3-staging-www
+    runtime: docker
+    plan: 0.5c-512mb
+    region: frankfurt
+    dockerContext: .
+    dockerfilePath: ./apps/web/Dockerfile
+    healthCheckPath: /
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: WEB_SERVER_API_KEY
+        sync: false
+      - key: PUBLIC_API_ORIGIN
+        sync: false
+      - key: NEXT_PUBLIC_ROOT_DOMAIN
+        sync: false
+      - key: SUPPORT_EMAIL
+        sync: false
+      - key: PRIVACY_CONTACT_EMAIL
+        sync: false
+      # Build-time values (declared as ARG in apps/web/Dockerfile): the API origin the
+      # browser posts the contact form to, the store links, and the Android package that
+      # «افتح في التطبيق» and /.well-known/assetlinks.json name.
+      - key: NEXT_PUBLIC_API_ORIGIN
+        sync: false
+      - key: NEXT_PUBLIC_PLAY_STORE_URL
+        sync: false
+      - key: NEXT_PUBLIC_APP_STORE_URL
+        sync: false
+      - key: NEXT_PUBLIC_ANDROID_PACKAGE
+        sync: false
+      # SHA-256 fingerprint(s) of the Play app-signing certificate, comma separated.
+      - key: ANDROID_CERT_SHA256
+        sync: false
+
+  - type: web
+    name: directory-v3-staging-admin
+    runtime: docker
+    plan: 0.5c-512mb
+    region: frankfurt
+    dockerContext: .
+    dockerfilePath: ./apps/admin/Dockerfile
+    healthCheckPath: /login
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ADMIN_API_ORIGIN
+        sync: false
+      - key: NEXT_PUBLIC_APP_NAME
+        value: Directory Admin
+      - key: NEXT_PUBLIC_ROOT_DOMAIN
+        sync: false
+
+databases:
+  - name: directory-v3-staging-db
+    plan: 0.5c-1g
+    region: frankfurt
+    postgresMajorVersion: "17"
+    databaseName: directory_v3_staging
+    user: directory_v3_staging
+    ipAllowList: []
+    connectionPool: none
+
+# Shared by the API, the Celery worker and Celery beat: they run the same Django settings.
+# fromDatabase/fromService values cannot live in a group, so DATABASE_URL and REDIS_URL
+# stay on each service.
+envVarGroups:
+  - name: directory-v3-staging-backend
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: directory_backend.settings.staging
+      - key: ENVIRONMENT
+        value: staging
       - key: SECRET_KEY
         sync: false
       - key: ACCESS_TOKEN_SIGNING_KEY
@@ -112,6 +225,8 @@ services:
         sync: false
       - key: ALLOWED_HOSTS
         sync: false
+      # Must include the public site's exact origin (e.g. https://ROOT_DOMAIN, no trailing
+      # slash): the site's contact form posts to the API straight from the visitor's browser.
       - key: CORS_ALLOWED_ORIGINS
         sync: false
       - key: CSRF_TRUSTED_ORIGINS
@@ -128,61 +243,46 @@ services:
         sync: false
       - key: S3_PRIVATE_BUCKET
         sync: false
+      # development | whatsapp (official Cloud API) | whatsapp_bot (the paired account in
+      # services/whatsapp-bot). Production refuses to start when the chosen one is unconfigured.
       - key: OTP_PROVIDER
+        sync: false
+      # Required when OTP_PROVIDER=whatsapp.
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_ACCESS_TOKEN
+        sync: false
+      # The approved Authentication template and its language.
+      - key: WHATSAPP_TEMPLATE_NAME
+        sync: false
+      - key: WHATSAPP_TEMPLATE_LANGUAGE
+        value: ar
+      # Required when OTP_PROVIDER=whatsapp_bot. The token must match the bot service's own.
+      - key: WHATSAPP_BOT_URL
+        value: http://directory-v3-staging-whatsapp-bot:8085
+      - key: WHATSAPP_BOT_TOKEN
         sync: false
       - key: PUSH_PROVIDER
         sync: false
       - key: FCM_PROJECT_ID
         sync: false
+      # The Firebase service account key the push transport signs in with: the downloaded
+      # JSON, pasted as is or base64-encoded. Required when PUSH_PROVIDER=fcm.
+      - key: FCM_SERVICE_ACCOUNT_JSON
+        sync: false
       - key: SENTRY_DSN
         sync: false
       - key: SENTRY_ENVIRONMENT
         value: staging
-
-  - type: web
-    name: directory-v3-staging-www
-    runtime: docker
-    plan: 0.5c-512mb
-    region: frankfurt
-    dockerContext: .
-    dockerfilePath: ./apps/web/Dockerfile
-    autoDeployTrigger: checksPass
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PUBLIC_API_ORIGIN
+      # The website's server calls the public API for every visitor, so it presents this key
+      # to be counted under its own limit (THROTTLE_WEB_SERVER) instead of one shared IP. Set
+      # the same value on the www service. It grants no data and no permission.
+      - key: WEB_SERVER_API_KEY
         sync: false
-      - key: NEXT_PUBLIC_ROOT_DOMAIN
-        value: ROOT_DOMAIN
-      - key: SUPPORT_EMAIL
-        sync: false
-      - key: PRIVACY_CONTACT_EMAIL
-        sync: false
-
-  - type: web
-    name: directory-v3-staging-admin
-    runtime: docker
-    plan: 0.5c-512mb
-    region: frankfurt
-    dockerContext: .
-    dockerfilePath: ./apps/admin/Dockerfile
-    autoDeployTrigger: checksPass
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: ADMIN_API_ORIGIN
-        sync: false
-      - key: NEXT_PUBLIC_APP_NAME
-        value: Directory Admin
-      - key: NEXT_PUBLIC_ROOT_DOMAIN
-        value: ROOT_DOMAIN
-
-databases:
-  - name: directory-v3-staging-db
-    plan: 0.5c-1g
-    region: frankfurt
-    postgresMajorVersion: "17"
-    databaseName: directory_v3_staging
-    user: directory_v3_staging
-    ipAllowList: []
-    connectionPool: none
+      - key: THROTTLE_WEB_SERVER
+        value: 3000/minute
+      - key: THROTTLE_CONTACT
+        value: 3/hour
+      # Render terminates TLS in one proxy hop; the client address is the last X-Forwarded-For.
+      - key: DRF_NUM_PROXIES
+        value: "1"

@@ -9,19 +9,24 @@ asserted here rather than trusting a text match in a migration file:
 3. PostgreSQL actually refuses the violating row.
 """
 
+from typing import cast
+
 import pytest
 from django.db import IntegrityError, transaction
 from django.db.migrations.autodetector import MigrationAutodetector
 from django.db.migrations.loader import MigrationLoader
 from django.db.migrations.questioner import NonInteractiveMigrationQuestioner
 from django.db.migrations.state import ProjectState
+from django.db.models import UniqueConstraint
 
-from facilities.models import FacilityApplication
+from facilities.models import Facility, FacilityApplication
 
 CONSTRAINT = "uniq_submitted_application_per_facility_kind"
 
 
-def _submitted(facility, kind=FacilityApplication.Kind.INITIAL):
+def _submitted(
+    facility: Facility, kind: str = FacilityApplication.Kind.INITIAL
+) -> FacilityApplication:
     return FacilityApplication.objects.create(
         facility=facility,
         kind=kind,
@@ -29,19 +34,22 @@ def _submitted(facility, kind=FacilityApplication.Kind.INITIAL):
     )
 
 
-def test_constraint_is_declared_in_model_state():
+def test_constraint_is_declared_in_model_state() -> None:
     names = [c.name for c in FacilityApplication._meta.constraints]
     assert CONSTRAINT in names, (
         "the invariant must live in model state; a migration keeps its historic "
         "AddConstraint forever and therefore proves nothing"
     )
-    constraint = next(c for c in FacilityApplication._meta.constraints if c.name == CONSTRAINT)
+    constraint = cast(
+        UniqueConstraint,
+        next(c for c in FacilityApplication._meta.constraints if c.name == CONSTRAINT),
+    )
     assert tuple(constraint.fields) == ("facility", "kind")
     assert constraint.condition is not None, "the constraint must stay partial"
 
 
 @pytest.mark.django_db
-def test_autodetector_does_not_propose_dropping_the_constraint():
+def test_autodetector_does_not_propose_dropping_the_constraint() -> None:
     loader = MigrationLoader(None, ignore_no_migrations=True)
     autodetector = MigrationAutodetector(
         loader.project_state(),
@@ -64,7 +72,9 @@ def test_autodetector_does_not_propose_dropping_the_constraint():
 
 
 @pytest.mark.django_db
-def test_database_rejects_a_second_submitted_application_of_the_same_kind(facility):
+def test_database_rejects_a_second_submitted_application_of_the_same_kind(
+    facility: Facility
+) -> None:
     _submitted(facility)
     with pytest.raises(IntegrityError):
         with transaction.atomic():
@@ -72,7 +82,7 @@ def test_database_rejects_a_second_submitted_application_of_the_same_kind(facili
 
 
 @pytest.mark.django_db
-def test_database_allows_a_draft_alongside_a_submitted_application(facility):
+def test_database_allows_a_draft_alongside_a_submitted_application(facility: Facility) -> None:
     _submitted(facility)
     FacilityApplication.objects.create(
         facility=facility,
@@ -83,7 +93,7 @@ def test_database_allows_a_draft_alongside_a_submitted_application(facility):
 
 
 @pytest.mark.django_db
-def test_database_allows_a_submitted_application_of_a_different_kind(facility):
+def test_database_allows_a_submitted_application_of_a_different_kind(facility: Facility) -> None:
     _submitted(facility)
     _submitted(facility, kind=FacilityApplication.Kind.REVERIFICATION)
     assert (

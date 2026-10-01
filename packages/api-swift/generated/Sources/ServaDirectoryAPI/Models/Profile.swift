@@ -18,13 +18,19 @@ public struct Profile: Codable, JSONEncodable, Hashable {
     public var phone: String
     public var provinceId: UUID?
     public var phoneVerifiedAt: Date?
+    /** Free text, as the person writes it. Empty when they have not given one. */
+    public var address: String
+    /** Public URL of the profile picture, or null when there is none. */
+    public var profileImageUrl: String?
 
-    public init(id: UUID, displayName: String, phone: String, provinceId: UUID?, phoneVerifiedAt: Date?) {
+    public init(id: UUID, displayName: String, phone: String, provinceId: UUID?, phoneVerifiedAt: Date?, address: String, profileImageUrl: String?) {
         self.id = id
         self.displayName = displayName
         self.phone = phone
         self.provinceId = provinceId
         self.phoneVerifiedAt = phoneVerifiedAt
+        self.address = address
+        self.profileImageUrl = profileImageUrl
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
@@ -33,6 +39,8 @@ public struct Profile: Codable, JSONEncodable, Hashable {
         case phone
         case provinceId
         case phoneVerifiedAt
+        case address
+        case profileImageUrl
     }
 
     // Encodable protocol methods
@@ -44,6 +52,8 @@ public struct Profile: Codable, JSONEncodable, Hashable {
         try container.encode(phone, forKey: .phone)
         try container.encode(provinceId, forKey: .provinceId)
         try container.encode(phoneVerifiedAt, forKey: .phoneVerifiedAt)
+        try container.encode(address, forKey: .address)
+        try container.encode(profileImageUrl, forKey: .profileImageUrl)
     }
 }
 

@@ -169,7 +169,7 @@ def test_no_city_or_neighborhood_is_invented() -> None:
 def _snapshot() -> dict[str, Any]:
     return {
         "provinces": sorted(
-            (p.code, str(p.pk), p.active, p.sort_order, p.name_ar)
+            (p.code, str(p.pk), p.active, p.sort_order, p.name_ar, str(p.map_center))
             for p in _canonical_provinces()
         ),
         "categories": sorted(

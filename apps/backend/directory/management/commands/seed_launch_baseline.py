@@ -21,8 +21,12 @@ from django.apps import apps
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from directory.reference_data import launch_v1
-from directory.reference_data.apply import ReferenceIdMismatch, apply_dataset
+from directory.reference_data import launch_v1, province_map_centers_v1
+from directory.reference_data.apply import (
+    ReferenceIdMismatch,
+    apply_dataset,
+    apply_map_centers,
+)
 
 
 class Command(BaseCommand):
@@ -43,13 +47,14 @@ class Command(BaseCommand):
         try:
             with transaction.atomic():
                 summary = apply_dataset(launch_v1, apps.get_model)
+                apply_map_centers(province_map_centers_v1, apps.get_model, summary)
                 missing = sum(summary.created.values())
                 if check_only:
                     transaction.set_rollback(True)
         except ReferenceIdMismatch as exc:
             raise CommandError(str(exc)) from exc
 
-        self.stdout.write(f"dataset {summary.version}")
+        self.stdout.write(f"dataset {summary.version} + {province_map_centers_v1.VERSION}")
         for line in summary.lines():
             self.stdout.write(f"  {line}")
 

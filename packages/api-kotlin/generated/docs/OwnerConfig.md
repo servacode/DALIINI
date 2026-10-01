@@ -4,7 +4,7 @@
 ## Properties
 | Name | Type | Description | Notes |
 | ------------ | ------------- | ------------- | ------------- |
-| **province** | [**NamedRef**](NamedRef.md) |  |  |
+| **province** | [**OwnerConfigProvince**](OwnerConfigProvince.md) |  |  |
 | **categories** | [**kotlin.collections.List&lt;OwnerConfigCategory&gt;**](OwnerConfigCategory.md) |  |  |
 
 

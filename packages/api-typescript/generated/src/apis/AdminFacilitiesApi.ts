@@ -18,6 +18,8 @@ import type {
   AdminDecisionRequest,
   AdminFacility,
   AdminFacilityList,
+  AdminFacilityQuality,
+  AdminTimeline,
   ApiError,
 } from '../models/index';
 import {
@@ -27,12 +29,18 @@ import {
     AdminFacilityToJSON,
     AdminFacilityListFromJSON,
     AdminFacilityListToJSON,
+    AdminFacilityQualityFromJSON,
+    AdminFacilityQualityToJSON,
+    AdminTimelineFromJSON,
+    AdminTimelineToJSON,
     ApiErrorFromJSON,
     ApiErrorToJSON,
 } from '../models/index';
 
 export interface AdminFacilitiesListRequest {
     category?: string;
+    issue?: AdminFacilitiesListIssueEnum;
+    ordering?: AdminFacilitiesListOrderingEnum;
     province?: string;
     q?: string;
     status?: string;
@@ -57,13 +65,17 @@ export interface AdminFacilitySuspendRequest {
     adminDecisionRequest?: AdminDecisionRequest;
 }
 
+export interface AdminFacilityTimelineRetrieveRequest {
+    facilityId: string;
+}
+
 /**
  * 
  */
 export class AdminFacilitiesApi extends runtime.BaseAPI {
 
     /**
-     * Capped at 250 rows. Every filter is optional and combines with the rest.
+     * Capped at 250 rows. Every filter is optional and combines with the rest. Each row carries `qualityScore` (0-100) and `qualityIssues`, computed in the same query.
      * List facilities for operations
      */
     async adminFacilitiesListRaw(requestParameters: AdminFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminFacilityList>> {
@@ -71,6 +83,14 @@ export class AdminFacilitiesApi extends runtime.BaseAPI {
 
         if (requestParameters['category'] != null) {
             queryParameters['category'] = requestParameters['category'];
+        }
+
+        if (requestParameters['issue'] != null) {
+            queryParameters['issue'] = requestParameters['issue'];
+        }
+
+        if (requestParameters['ordering'] != null) {
+            queryParameters['ordering'] = requestParameters['ordering'];
         }
 
         if (requestParameters['province'] != null) {
@@ -109,7 +129,7 @@ export class AdminFacilitiesApi extends runtime.BaseAPI {
     }
 
     /**
-     * Capped at 250 rows. Every filter is optional and combines with the rest.
+     * Capped at 250 rows. Every filter is optional and combines with the rest. Each row carries `qualityScore` (0-100) and `qualityIssues`, computed in the same query.
      * List facilities for operations
      */
     async adminFacilitiesList(requestParameters: AdminFacilitiesListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacilityList> {
@@ -216,7 +236,7 @@ export class AdminFacilitiesApi extends runtime.BaseAPI {
     /**
      * Retrieve one facility
      */
-    async adminFacilityRetrieveRaw(requestParameters: AdminFacilityRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminFacility>> {
+    async adminFacilityRetrieveRaw(requestParameters: AdminFacilityRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminFacilityQuality>> {
         if (requestParameters['facilityId'] == null) {
             throw new runtime.RequiredError(
                 'facilityId',
@@ -247,13 +267,13 @@ export class AdminFacilitiesApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => AdminFacilityFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminFacilityQualityFromJSON(jsonValue));
     }
 
     /**
      * Retrieve one facility
      */
-    async adminFacilityRetrieve(requestParameters: AdminFacilityRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacility> {
+    async adminFacilityRetrieve(requestParameters: AdminFacilityRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacilityQuality> {
         const response = await this.adminFacilityRetrieveRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -308,4 +328,75 @@ export class AdminFacilitiesApi extends runtime.BaseAPI {
         return await response.value();
     }
 
+    /**
+     * Merges applications (submitted, decided), problem reports (created, resolved or dismissed), audited changes to the facility and its applications, reports, images, evidence and duty shifts, and a summary of the next 14 days of duty. Up to 200 events.
+     * Everything that happened to a facility, newest first
+     */
+    async adminFacilityTimelineRetrieveRaw(requestParameters: AdminFacilityTimelineRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminTimeline>> {
+        if (requestParameters['facilityId'] == null) {
+            throw new runtime.RequiredError(
+                'facilityId',
+                'Required parameter "facilityId" was null or undefined when calling adminFacilityTimelineRetrieve().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/facilities/{facility_id}/timeline/`;
+        urlPath = urlPath.replace(`{${"facility_id"}}`, encodeURIComponent(String(requestParameters['facilityId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminTimelineFromJSON(jsonValue));
+    }
+
+    /**
+     * Merges applications (submitted, decided), problem reports (created, resolved or dismissed), audited changes to the facility and its applications, reports, images, evidence and duty shifts, and a summary of the next 14 days of duty. Up to 200 events.
+     * Everything that happened to a facility, newest first
+     */
+    async adminFacilityTimelineRetrieve(requestParameters: AdminFacilityTimelineRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminTimeline> {
+        const response = await this.adminFacilityTimelineRetrieveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
 }
+
+/**
+ * @export
+ */
+export const AdminFacilitiesListIssueEnum = {
+    NotVerifiedRecently: 'NOT_VERIFIED_RECENTLY',
+    NoHours: 'NO_HOURS',
+    NoLocation: 'NO_LOCATION',
+    NoPhone: 'NO_PHONE',
+    NoPhotos: 'NO_PHOTOS',
+    OpenReports: 'OPEN_REPORTS',
+    Stale: 'STALE'
+} as const;
+export type AdminFacilitiesListIssueEnum = typeof AdminFacilitiesListIssueEnum[keyof typeof AdminFacilitiesListIssueEnum];
+/**
+ * @export
+ */
+export const AdminFacilitiesListOrderingEnum = {
+    QualityScore: '-qualityScore',
+    UpdatedAt: '-updatedAt',
+    QualityScore2: 'qualityScore',
+    UpdatedAt2: 'updatedAt'
+} as const;
+export type AdminFacilitiesListOrderingEnum = typeof AdminFacilitiesListOrderingEnum[keyof typeof AdminFacilitiesListOrderingEnum];

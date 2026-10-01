@@ -30,12 +30,26 @@ function isSecureDeployment(): boolean {
   return origin.startsWith("https://");
 }
 
+/**
+ * The public-media origin (the CDN or bucket facility photos are served from), so a
+ * reviewer can see the photos an application carries. Only that one origin is added to
+ * `img-src`; it is public content by definition, and nothing else widens.
+ */
+function mediaOrigin(): string {
+  const raw = process.env.ADMIN_PUBLIC_MEDIA_ORIGIN ?? "";
+  try {
+    return raw ? ` ${new URL(raw).origin}` : "";
+  } catch {
+    return "";
+  }
+}
+
 export function buildContentSecurityPolicy(nonce: string, secure: boolean, dev: boolean): string {
   return [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
+    `img-src 'self' data: blob:${mediaOrigin()}`,
     "font-src 'self'",
     "connect-src 'self'",
     "object-src 'none'",

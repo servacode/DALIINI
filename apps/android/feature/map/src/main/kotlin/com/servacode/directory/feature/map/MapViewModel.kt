@@ -1,36 +1,110 @@
 package com.servacode.directory.feature.map
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.servacode.directory.core.model.PublicMapFacility
+import androidx.navigation.toRoute
+import com.servacode.directory.core.maps.MapCamera
+import com.servacode.directory.core.model.DirectoryRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-sealed interface MapUiState {
-    data object Idle : MapUiState
-    data object Loading : MapUiState
-    data class Content(val facilities: List<PublicMapFacility>) : MapUiState
-    data object Error : MapUiState
-}
-
+/** Owns the map's state across views; never the MapView itself. */
 @HiltViewModel
 class MapViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
     private val loadMap: MapUseCase,
+    private val startCamera: MapStartUseCase,
 ) : ViewModel() {
-    private val _state = MutableStateFlow<MapUiState>(MapUiState.Idle)
+    private val focusFacilityId = savedStateHandle.toRoute<DirectoryRoute.Map>().focusFacilityId
+    private val _state = MutableStateFlow(
+        MapUiState(selectedFacilityId = savedStateHandle[SELECTED] ?: focusFacilityId),
+    )
     val state: StateFlow<MapUiState> = _state.asStateFlow()
+    private var loading: Job? = null
 
-    fun viewportChanged(viewport: MapViewport) {
+    private var lastViewport: MapViewport? = null
+
+    init {
         viewModelScope.launch {
-            _state.value = MapUiState.Loading
-            _state.value = loadMap(viewport).fold(
-                onSuccess = { MapUiState.Content(it) },
-                onFailure = { MapUiState.Error },
-            )
+            val restored = savedStateHandle.get<DoubleArray>(CAMERA)?.toCamera()
+            val camera = startCamera(focusFacilityId, restored)
+            _state.update { it.copy(camera = camera, cameraResolved = true) }
         }
+        viewModelScope.launch {
+            val categories = loadMap.categories()
+            _state.update { it.copy(categories = categories) }
+        }
+    }
+
+    /**
+     * A filter changed: the markers on screen answer a question the user has just changed, so
+     * the same viewport is asked again. The camera is not touched — changing what is shown
+     * must never move the map out from under the person looking at it.
+     */
+    fun filter(change: (MapFilters) -> MapFilters) {
+        val filters = change(_state.value.filters)
+        _state.update { it.copy(filters = filters, loadedViewport = null) }
+        val viewport = lastViewport ?: return
+        loading?.cancel()
+        loading = viewModelScope.launch {
+            loadMap(viewport, filters).onSuccess { facilities ->
+                _state.update { it.copy(facilities = facilities, loadedViewport = viewport) }
+            }
+        }
+    }
+
+    /** The map stopped moving: keep where it is, and fetch markers only for an area not loaded yet. */
+    fun cameraIdle(camera: MapCamera, viewport: MapViewport) {
+        savedStateHandle[CAMERA] = camera.toSaved()
+        _state.update { it.copy(camera = camera) }
+        lastViewport = viewport
+        if (!_state.value.needsLoad(viewport)) return
+        loading?.cancel()
+        val filters = _state.value.filters
+        loading = viewModelScope.launch {
+            loadMap(viewport, filters).onSuccess { facilities ->
+                _state.update { it.copy(facilities = facilities, loadedViewport = viewport) }
+            }
+        }
+    }
+
+    /** A marker was pressed: the facility is named at the foot of the map, and nothing else. */
+    fun facilityChosen(id: String) {
+        savedStateHandle[SELECTED] = id
+        _state.update { it.copy(selectedFacilityId = id) }
+    }
+
+    /** The marker's card was dismissed, or the map was pressed away from any marker. */
+    fun facilityDismissed() {
+        savedStateHandle[SELECTED] = null
+        _state.update { it.copy(selectedFacilityId = null) }
+    }
+
+    /**
+     * Point at the user, because they asked.
+     *
+     * Asked for once per press and never on a timer: the map shows where someone is when they
+     * press for it, and does not follow them. A refusal leaves the map exactly as it was —
+     * there is nothing useful to say beyond what the permission dialog already said.
+     */
+    fun locate() {
+        if (_state.value.locating) return
+        _state.update { it.copy(locating = true) }
+        viewModelScope.launch {
+            val point = runCatching { loadMap.userPoint() }.getOrNull()
+            _state.update { it.copy(locating = false, userPoint = point ?: it.userPoint) }
+        }
+    }
+
+    private companion object {
+        const val CAMERA = "map.camera"
+        const val SELECTED = "map.selected"
     }
 }

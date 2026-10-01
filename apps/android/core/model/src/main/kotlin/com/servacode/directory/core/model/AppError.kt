@@ -40,44 +40,90 @@ fun Throwable.toAppError(): AppError =
     (this as? AppException)?.error ?: AppError(AppError.Kind.UNEXPECTED)
 
 /**
- * Arabic text for an error, chosen by its code and kind.
+ * Which sentence an error deserves, named without saying it.
  *
- * The backend's own message is not shown: it may be English, and it is written for
- * developers. Codes the app has no phrase for fall back to the phrase for their kind.
+ * The backend's own message is never shown: it may be English, and it is written for developers.
+ * What is shown is one of these, chosen from the code the backend sent, or from the kind of
+ * failure where the code is one this app has never heard of.
+ *
+ * The words themselves are in the design system's `strings.xml`, and `appErrorText` reads them.
+ * They are not here because this module is compiled without the Android framework — it is the
+ * part of the app a test can run in a second — and because a sentence that depends on the
+ * reader's language is not a constant. What is here is the decision, which is the same in every
+ * language and which the harness tests.
  */
-object AppErrorText {
+enum class AppErrorMessage {
+    AUTHENTICATION_FAILED,
+    AUTHENTICATION_REQUIRED,
+    PERMISSION_DENIED,
+    NOT_FOUND,
+    THROTTLED,
+    VALIDATION_ERROR,
+    PROVINCE_REQUIRED,
+    PHONE_ALREADY_REGISTERED,
+    DUTY_NOT_SUPPORTED,
+    DUTY_OVERLAP_OR_INVALID,
+    DUTY_DURING_CLOSURE,
+    HOURS_NOT_SUPPORTED,
+    INVALID_HOURS,
+    PHOTOS_NOT_SUPPORTED,
+    TEMPORARY_CLOSURE_NOT_SUPPORTED,
+    EVIDENCE_MAX_FILES,
+    EVIDENCE_LOCKED_DURING_REVIEW,
+    LAST_OWNER_PROTECTED,
+    MAINTENANCE,
+
+    /** The kinds that have no code of their own worth naming. */
+    OFFLINE,
+    SESSION_EXPIRED,
+    CONFLICT,
+    SERVER,
+    UNEXPECTED,
+}
+
+object AppErrorMessages {
     // Codes the backend emits today: `core/exceptions.py` and the ConflictError and
     // DomainError call sites.
     private val byCode = mapOf(
-        "AUTHENTICATION_FAILED" to "بيانات الدخول غير صحيحة أو انتهت الجلسة.",
-        "AUTHENTICATION_REQUIRED" to "سجّل الدخول للمتابعة.",
-        "PERMISSION_DENIED" to "لا تملك الصلاحية لهذا الإجراء.",
-        "NOT_FOUND" to "العنصر المطلوب غير موجود.",
-        "THROTTLED" to "محاولات كثيرة. حاول بعد قليل.",
-        "VALIDATION_ERROR" to "تحقق من البيانات المدخلة.",
-        "PROVINCE_REQUIRED" to "اختر المحافظة أولًا.",
-        "DUTY_NOT_SUPPORTED" to "هذا القسم لا يدعم المناوبة.",
-        "DUTY_OVERLAP_OR_INVALID" to "وقت المناوبة يتداخل مع مناوبة أخرى أو غير صالح.",
-        "HOURS_NOT_SUPPORTED" to "هذا القسم لا يدعم ساعات العمل.",
-        "INVALID_HOURS" to "ساعات العمل غير صالحة.",
-        "PHOTOS_NOT_SUPPORTED" to "هذا القسم لا يدعم الصور.",
-        "TEMPORARY_CLOSURE_NOT_SUPPORTED" to "هذا القسم لا يدعم الإغلاق المؤقت.",
-        "EVIDENCE_MAX_FILES" to "تجاوزت العدد المسموح من الملفات لهذا المتطلب.",
-        "EVIDENCE_LOCKED_DURING_REVIEW" to "لا يمكن تعديل المستندات أثناء المراجعة.",
-        "LAST_OWNER_PROTECTED" to "لا يمكن إزالة المالك الوحيد للمنشأة.",
+        "AUTHENTICATION_FAILED" to AppErrorMessage.AUTHENTICATION_FAILED,
+        "AUTHENTICATION_REQUIRED" to AppErrorMessage.AUTHENTICATION_REQUIRED,
+        "PERMISSION_DENIED" to AppErrorMessage.PERMISSION_DENIED,
+        "NOT_FOUND" to AppErrorMessage.NOT_FOUND,
+        "THROTTLED" to AppErrorMessage.THROTTLED,
+        "VALIDATION_ERROR" to AppErrorMessage.VALIDATION_ERROR,
+        "PROVINCE_REQUIRED" to AppErrorMessage.PROVINCE_REQUIRED,
+        "PHONE_ALREADY_REGISTERED" to AppErrorMessage.PHONE_ALREADY_REGISTERED,
+        "DUTY_NOT_SUPPORTED" to AppErrorMessage.DUTY_NOT_SUPPORTED,
+        "DUTY_OVERLAP_OR_INVALID" to AppErrorMessage.DUTY_OVERLAP_OR_INVALID,
+        "DUTY_DURING_CLOSURE" to AppErrorMessage.DUTY_DURING_CLOSURE,
+        "HOURS_NOT_SUPPORTED" to AppErrorMessage.HOURS_NOT_SUPPORTED,
+        "INVALID_HOURS" to AppErrorMessage.INVALID_HOURS,
+        "PHOTOS_NOT_SUPPORTED" to AppErrorMessage.PHOTOS_NOT_SUPPORTED,
+        "TEMPORARY_CLOSURE_NOT_SUPPORTED" to AppErrorMessage.TEMPORARY_CLOSURE_NOT_SUPPORTED,
+        "EVIDENCE_MAX_FILES" to AppErrorMessage.EVIDENCE_MAX_FILES,
+        "EVIDENCE_LOCKED_DURING_REVIEW" to AppErrorMessage.EVIDENCE_LOCKED_DURING_REVIEW,
+        "LAST_OWNER_PROTECTED" to AppErrorMessage.LAST_OWNER_PROTECTED,
+        "MAINTENANCE" to AppErrorMessage.MAINTENANCE,
     )
 
-    fun of(error: AppError): String = error.code?.let(byCode::get) ?: byKind(error.kind)
+    fun of(error: AppError): AppErrorMessage = error.code?.let(byCode::get) ?: byKind(error.kind)
 
-    fun byKind(kind: AppError.Kind): String = when (kind) {
-        AppError.Kind.OFFLINE -> "لا يوجد اتصال بالإنترنت."
-        AppError.Kind.UNAUTHENTICATED -> "انتهت الجلسة. سجّل الدخول من جديد."
-        AppError.Kind.FORBIDDEN -> "لا تملك الصلاحية لهذا الإجراء."
-        AppError.Kind.NOT_FOUND -> "العنصر المطلوب غير موجود."
-        AppError.Kind.CONFLICT -> "لا يمكن تنفيذ هذا الإجراء الآن."
-        AppError.Kind.VALIDATION -> "تحقق من البيانات المدخلة."
-        AppError.Kind.RATE_LIMITED -> "محاولات كثيرة. حاول بعد قليل."
-        AppError.Kind.SERVER -> "حدث خطأ في الخادم. حاول لاحقًا."
-        AppError.Kind.UNEXPECTED -> "حدث خطأ غير متوقع."
+    /**
+     * What a kind of failure says on its own.
+     *
+     * Several kinds share a message with a code — a forbidden request and `PERMISSION_DENIED` are
+     * the same thing said twice — and they answer with the same member rather than with a second
+     * sentence that has to be translated twice and kept in step.
+     */
+    fun byKind(kind: AppError.Kind): AppErrorMessage = when (kind) {
+        AppError.Kind.OFFLINE -> AppErrorMessage.OFFLINE
+        AppError.Kind.UNAUTHENTICATED -> AppErrorMessage.SESSION_EXPIRED
+        AppError.Kind.FORBIDDEN -> AppErrorMessage.PERMISSION_DENIED
+        AppError.Kind.NOT_FOUND -> AppErrorMessage.NOT_FOUND
+        AppError.Kind.CONFLICT -> AppErrorMessage.CONFLICT
+        AppError.Kind.VALIDATION -> AppErrorMessage.VALIDATION_ERROR
+        AppError.Kind.RATE_LIMITED -> AppErrorMessage.THROTTLED
+        AppError.Kind.SERVER -> AppErrorMessage.SERVER
+        AppError.Kind.UNEXPECTED -> AppErrorMessage.UNEXPECTED
     }
 }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The mark on the system splash.
+
+     Android scales a splash icon into a 288 dp box and masks it to the launcher's shape, and
+     this letter's ink reaches the corners of its box: drawn edge to edge it came back with its
+     sides cut off, photographed on the A52. So the margin is inside the pixels — the symbol is
+     cut at 90 dp of a 288 dp canvas by scripts/build-brand-assets.py — rather than being a
+     layer the system is free to ignore. The app's own splash then grows it to BrandMarkSize.
+
+     A bitmap, not a layer list: whatever a device does to the icon, it does it to one picture
+     that already carries its own margin. -->
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/splash_symbol"
+    android:gravity="center" />

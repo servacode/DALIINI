@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { AdminFacility } from './AdminFacility';
+import type { AdminFacilityQuality } from './AdminFacilityQuality';
 import {
-    AdminFacilityFromJSON,
-    AdminFacilityFromJSONTyped,
-    AdminFacilityToJSON,
-    AdminFacilityToJSONTyped,
-} from './AdminFacility';
+    AdminFacilityQualityFromJSON,
+    AdminFacilityQualityFromJSONTyped,
+    AdminFacilityQualityToJSON,
+    AdminFacilityQualityToJSONTyped,
+} from './AdminFacilityQuality';
 
 /**
  * 
@@ -29,10 +29,10 @@ import {
 export interface AdminFacilityList {
     /**
      * 
-     * @type {Array<AdminFacility>}
+     * @type {Array<AdminFacilityQuality>}
      * @memberof AdminFacilityList
      */
-    items: Array<AdminFacility>;
+    items: Array<AdminFacilityQuality>;
 }
 
 /**
@@ -53,7 +53,7 @@ export function AdminFacilityListFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
         
-        'items': ((json['items'] as Array<any>).map(AdminFacilityFromJSON)),
+        'items': ((json['items'] as Array<any>).map(AdminFacilityQualityFromJSON)),
     };
 }
 
@@ -68,7 +68,7 @@ export function AdminFacilityListToJSONTyped(value?: AdminFacilityList | null, i
 
     return {
         
-        'items': ((value['items'] as Array<any>).map(AdminFacilityToJSON)),
+        'items': ((value['items'] as Array<any>).map(AdminFacilityQualityToJSON)),
     };
 }
 

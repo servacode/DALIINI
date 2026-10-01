@@ -2,22 +2,22 @@ package com.servacode.directory.feature.ratings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.servacode.directory.core.model.AppErrorText
-import com.servacode.directory.core.model.UserRating
+import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.toAppError
+import com.servacode.directory.core.model.UserRating
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 sealed interface RatingsUiState {
     data object Loading : RatingsUiState
     data class Content(
         val values: List<UserRating>,
         val savingFacilityId: String? = null,
-        val message: String? = null,
+        val failure: AppError? = null,
     ) : RatingsUiState
     data object Error : RatingsUiState
 }
@@ -48,7 +48,7 @@ class RatingsViewModel @Inject constructor(
             ratings.update(facilityId, stars)
                 .onSuccess { refresh() }
                 .onFailure {
-                    _state.value = RatingsUiState.Content(current, message = AppErrorText.of(it.toAppError()))
+                    _state.value = RatingsUiState.Content(current, failure = it.toAppError())
                 }
         }
     }

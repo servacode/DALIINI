@@ -1,39 +1,132 @@
 package com.servacode.directory
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.core.net.toUri
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavHostController
 import androidx.navigation.toRoute
 import com.servacode.directory.core.auth.SessionState
+import com.servacode.directory.core.designsystem.DirectoryBottomBar
+import com.servacode.directory.core.designsystem.DirectoryDestination
+import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.model.DirectoryRoute
+import com.servacode.directory.core.model.DeepLinkTarget
+import com.servacode.directory.core.model.LegalPageKey
+import com.servacode.directory.core.model.MapNavigation
+import com.servacode.directory.core.model.NotificationTarget
+import com.servacode.directory.feature.account.AccountScreen
+import com.servacode.directory.feature.account.FavoritesScreen
+import com.servacode.directory.feature.account.NotificationsScreen
+import com.servacode.directory.feature.account.PasswordChangeScreen
+import com.servacode.directory.feature.account.PhoneChangeScreen
+import com.servacode.directory.feature.account.RecentlyViewedScreen
+import com.servacode.directory.feature.account.ProfileEditScreen
 import com.servacode.directory.feature.auth.LoginScreen
 import com.servacode.directory.feature.auth.RecoveryScreen
 import com.servacode.directory.feature.auth.RegisterScreen
-import kotlinx.coroutines.flow.StateFlow
-import com.servacode.directory.feature.account.AccountScreen
 import com.servacode.directory.feature.bootstrap.BootstrapScreen
-import com.servacode.directory.feature.directory.DirectoryScreen
-import com.servacode.directory.feature.owner.MyFacilitiesScreen
-import com.servacode.directory.feature.owner.ManageFacilityScreen
-import com.servacode.directory.feature.onboarding.OnboardingScreen
+import com.servacode.directory.feature.bootstrap.LocationPermissionScreen
+import com.servacode.directory.feature.bootstrap.StartDestination
+import com.servacode.directory.feature.bootstrap.WelcomeScreen
 import com.servacode.directory.feature.duty.DutyScreen
+import com.servacode.directory.feature.duty.DutyRosterScreen
 import com.servacode.directory.feature.facility.FacilityScreen
 import com.servacode.directory.feature.home.HomeScreen
 import com.servacode.directory.feature.map.MapScreen
 import com.servacode.directory.feature.navigation.BuiltInNavigationScreen
+import com.servacode.directory.feature.onboarding.OnboardingScreen
+import com.servacode.directory.feature.owner.ManageFacilityScreen
+import com.servacode.directory.feature.owner.MyFacilitiesScreen
+import com.servacode.directory.feature.owner.OwnerPresenceViewModel
 import com.servacode.directory.feature.province.ProvinceScreen
 import com.servacode.directory.feature.ratings.RatingsScreen
 import com.servacode.directory.feature.search.SearchScreen
+import com.servacode.directory.feature.settings.HelpScreen
+import com.servacode.directory.feature.settings.EmergencyNumbersScreen
+import com.servacode.directory.feature.settings.LegalPageScreen
+import com.servacode.directory.feature.settings.SettingsScreen
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.launch
 
 @Composable
-fun DirectoryApp(sessionState: StateFlow<SessionState>) {
+fun DirectoryApp(
+    sessionState: StateFlow<SessionState>,
+    /** App Links, tapped notices and the widget, as the activity receives them. */
+    entries: Flow<AppEntry> = emptyFlow(),
+    entryViewModel: EntryViewModel = hiltViewModel(),
+) {
     val navController = rememberNavController()
     val session by sessionState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    // Where the app was asked to go, kept until there is somewhere to go from: the start screen
+    // and the first run finish first, so a link that launched the app lands on top of Home.
+    var pending by remember { mutableStateOf<AppEntry?>(null) }
+    LaunchedEffect(entries) { entries.collect { pending = it } }
+    val current by navController.currentBackStackEntryAsState()
+    LaunchedEffect(pending, current?.destination) {
+        val entry = pending ?: return@LaunchedEffect
+        val destination = current?.destination ?: return@LaunchedEffect
+        val starting = destination.hasRoute<DirectoryRoute.Bootstrap>() ||
+            destination.hasRoute<DirectoryRoute.Welcome>() ||
+            destination.hasRoute<DirectoryRoute.LocationPermission>()
+        if (starting) return@LaunchedEffect
+        pending = null
+        when (entry) {
+            is AppEntry.Link -> when (val target = entry.target) {
+                is DeepLinkTarget.Facility ->
+                    navController.navigate(DirectoryRoute.FacilityDetailRoute(target.id))
+                DeepLinkTarget.DutyNow ->
+                    navController.navigate(DirectoryRoute.DutyNow) { launchSingleTop = true }
+                // The province the link names becomes the reader's, as if picked; Home opens on it.
+                is DeepLinkTarget.Province -> scope.launch {
+                    entryViewModel.selectProvince(target.code)
+                    navController.navigate(DirectoryRoute.Home) {
+                        popUpTo<DirectoryRoute.Home> { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            }
+            is AppEntry.Notice -> {
+                val route: DirectoryRoute = when (val target = entry.target) {
+                    is NotificationTarget.Facility -> DirectoryRoute.FacilityDetailRoute(target.id)
+                    is NotificationTarget.DutyScheduling ->
+                        target.facilityId?.let { DirectoryRoute.Duty(it, target.date) } ?: DirectoryRoute.MyFacilities
+                    is NotificationTarget.HoursConfirmation ->
+                        target.facilityId?.let(DirectoryRoute::ManageFacility) ?: DirectoryRoute.MyFacilities
+                    NotificationTarget.OwnerFacilities -> DirectoryRoute.MyFacilities
+                    // The notice's own words are in the inbox; a push carries none.
+                    NotificationTarget.None -> DirectoryRoute.Notifications
+                }
+                // Each of these is the account's own; signed out, signing in comes first.
+                val needsAccount = route is DirectoryRoute.Duty || route is DirectoryRoute.ManageFacility ||
+                    route == DirectoryRoute.MyFacilities || route == DirectoryRoute.Notifications
+                val signedIn = session == SessionState.SIGNED_IN
+                navController.navigate(if (needsAccount && !signedIn) DirectoryRoute.Login else route)
+            }
+        }
+    }
 
     // When the session ends — signed out elsewhere, revoked, or its refresh refused — a screen
     // that shows the user's own data gives way to sign-in instead of failing on every request.
@@ -52,12 +145,49 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
         }
     }
 
-    NavHost(navController = navController, startDestination = DirectoryRoute.Bootstrap) {
+    NavHost(
+        navController = navController,
+        startDestination = DirectoryRoute.Bootstrap,
+        // One screen at a time, and no animation between them.
+        //
+        // Leaving these out does not mean no animation: navigation-compose fills them with a
+        // long cross-fade of its own, and a cross-fade is the one shape of motion that reads as
+        // a fault. Nothing moves during it — both screens sit still at full size while one
+        // becomes transparent — so the eye sees the page it just left frozen over the page it
+        // is returning to, which is exactly the "it took a screenshot" complaint. Measured on
+        // an A52, the outgoing screen was still a visible ghost more than a second after Back.
+        //
+        // The answer is to draw one screen, not to pick a different animation: with None the
+        // two are never composited together and there is nothing to mistake for a still image.
+        // Predictive back is untouched; the system gesture still runs, this only says the app
+        // does not cross-fade its own content while it does.
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = { ExitTransition.None },
+    ) {
         composable<DirectoryRoute.Bootstrap> {
             BootstrapScreen(
-                onReady = {
-                    navController.navigate(DirectoryRoute.Home) {
+                onReady = { start ->
+                    val destination = when (start) {
+                        StartDestination.WELCOME -> DirectoryRoute.Welcome
+                        StartDestination.HOME -> DirectoryRoute.Home
+                    }
+                    navController.navigate(destination) {
                         popUpTo<DirectoryRoute.Bootstrap> { inclusive = true }
+                    }
+                },
+            )
+        }
+        composable<DirectoryRoute.Welcome> {
+            WelcomeScreen(onContinue = { navController.navigate(DirectoryRoute.LocationPermission) })
+        }
+        composable<DirectoryRoute.LocationPermission> {
+            LocationPermissionScreen(
+                onDone = {
+                    navController.navigate(DirectoryRoute.Home) {
+                        // The first run is over; back from Home leaves the app, as it always did.
+                        popUpTo<DirectoryRoute.Welcome> { inclusive = true }
                     }
                 },
             )
@@ -66,10 +196,10 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
             HomeScreen(
                 onProvince = { navController.navigate(DirectoryRoute.ProvincePicker) },
                 onSearch = { navController.navigate(DirectoryRoute.Search) },
-                onCategory = { navController.navigate(DirectoryRoute.Directory(it)) },
                 onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
-                onMap = { navController.navigate(DirectoryRoute.Map) },
-                onAccount = { navController.navigate(DirectoryRoute.Account) },
+                onNotifications = { navController.navigate(DirectoryRoute.Notifications) },
+                bottomBar = { DirectoryTabs(DirectoryTab.HOME, navController) },
+                onEmergencyNumbers = { navController.navigate(DirectoryRoute.EmergencyNumbers) },
             )
         }
         composable<DirectoryRoute.ProvincePicker> {
@@ -79,33 +209,76 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                         popUpTo<DirectoryRoute.Home> { inclusive = true }
                     }
                 },
+                onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Search> {
             SearchScreen(
                 onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
+                onBack = { navController.popBackStack() },
             )
         }
-        composable<DirectoryRoute.Directory> {
-            DirectoryScreen(
-                onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
-                onProvince = { navController.navigate(DirectoryRoute.ProvincePicker) },
-            )
-        }
-        composable<DirectoryRoute.FacilityDetailRoute> {
+        composable<DirectoryRoute.FacilityDetailRoute> { backStackEntry ->
+            val facilityId = backStackEntry.toRoute<DirectoryRoute.FacilityDetailRoute>().id
             FacilityScreen(
-                onMap = { navController.navigate(DirectoryRoute.Map) },
                 onDirections = { latitude, longitude ->
-                    navController.navigate(DirectoryRoute.BuiltInNavigation(latitude, longitude))
+                    // The way there is shown before it is followed; starting is the user's own
+                    // decision, on the next screen.
+                    navController.navigate(
+                        DirectoryRoute.BuiltInNavigation(latitude, longitude),
+                    )
                 },
-                onRatings = { navController.navigate(DirectoryRoute.MyRatings) },
                 onSignIn = { navController.navigate(DirectoryRoute.Login) },
+                // The dialer opens with the number the backend published; the call is the user's.
+                onCall = { phone ->
+                    context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$phone".toUri()))
+                },
+                // A wa.me link built from the facility's own WhatsApp number. With WhatsApp
+                // installed it opens there; without it, its own page opens in the browser and
+                // says so. A phone with nothing to open an https link does nothing.
+                onWhatsApp = { link ->
+                    try {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, link.toUri()))
+                    } catch (_: ActivityNotFoundException) {
+                        // Nothing can show it; the tap is a no-op rather than a crash.
+                    }
+                },
+                // The site's own address for this facility, which is also the App Link that
+                // opens this screen again on a phone that has the app. Whoever it is sent to
+                // can read it either way, which is the point of sharing it at all.
+                onShare = { name ->
+                    val link = "https://${BuildConfig.APP_LINK_HOST}/f/$facilityId"
+                    val send = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_SUBJECT, name)
+                        putExtra(Intent.EXTRA_TEXT, "$name\n$link")
+                    }
+                    try {
+                        context.startActivity(Intent.createChooser(send, null))
+                    } catch (_: ActivityNotFoundException) {
+                        // A phone with nothing to share to; the tap is a no-op rather than a crash.
+                    }
+                },
+                onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Map> {
             MapScreen(
                 styleUrl = BuildConfig.MAP_STYLE_URL,
-                onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
+                bottomBar = { DirectoryTabs(DirectoryTab.MAP, navController) },
+                onRoute = { id, latitude, longitude ->
+                    navController.navigate(DirectoryRoute.BuiltInNavigation(latitude, longitude))
+                },
+                onFacility = { id ->
+                    val below = navController.previousBackStackEntry
+                        ?.takeIf { it.destination.hasRoute<DirectoryRoute.FacilityDetailRoute>() }
+                        ?.toRoute<DirectoryRoute.FacilityDetailRoute>()
+                    if (MapNavigation.returnsToDetail(below, id)) {
+                        navController.popBackStack()
+                    } else {
+                        navController.navigate(DirectoryRoute.FacilityDetailRoute(id)) { launchSingleTop = true }
+                    }
+                },
             )
         }
         composable<DirectoryRoute.BuiltInNavigation> { backStackEntry ->
@@ -117,19 +290,66 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                     route.longitude,
                 ),
                 onClose = { navController.popBackStack() },
+                // A trip driven by made-up readings, so that guidance and its voice can be
+                // watched without a car. The gate is here and nowhere else: a release build is
+                // not given the function, so the control does not exist in it.
+                onSimulate = if (BuildConfig.DEBUG) {
+                    { profile ->
+                        // A new entry, deliberately. The screen being left is this same
+                        // destination, and `simulated` is read once, when the view model is
+                        // built (NavigationViewModel). Asking to stay on a single top entry
+                        // hands the new arguments to the model that already exists and never
+                        // reads them again, so the demonstration was requested and nothing
+                        // happened: no banner, no movement, no voice. Pushing an entry builds
+                        // the model that reads `simulated = true`, and Back returns to the
+                        // real trip.
+                        navController.navigate(
+                            DirectoryRoute.BuiltInNavigation(
+                                latitude = route.latitude,
+                                longitude = route.longitude,
+                                profile = profile.name,
+                                simulated = true,
+                            ),
+                        )
+                    }
+                } else {
+                    null
+                },
             )
         }
         composable<DirectoryRoute.Account> {
+            // Signed out, the tab is signing in — not a profile with nothing in it. There is no
+            // account to show, so the page that makes one is the page the tab opens.
+            if (session != SessionState.SIGNED_IN) {
+                LoginScreen(
+                    onSignedIn = { },
+                    onRegister = { navController.navigate(DirectoryRoute.Register) },
+                    onRecovery = { navController.navigate(DirectoryRoute.Recovery) },
+                    // The root of a tab has nothing behind it.
+                    onBack = null,
+                    bottomBar = { DirectoryTabs(DirectoryTab.ACCOUNT, navController) },
+                )
+                return@composable
+            }
             AccountScreen(
-                onRatings = { navController.navigate(DirectoryRoute.MyRatings) },
                 onFacilities = { navController.navigate(DirectoryRoute.MyFacilities) },
+                // Joining is adding the first facility; there is nothing else to join.
+                onJoinAsOwner = { navController.navigate(DirectoryRoute.Onboarding()) },
                 onAccountDeleted = {
                     navController.navigate(DirectoryRoute.Home) {
                         popUpTo(navController.graph.id) { inclusive = true }
                     }
                 },
-                onSignIn = { navController.navigate(DirectoryRoute.Login) },
-                onRegister = { navController.navigate(DirectoryRoute.Register) },
+                // The root of a tab has nothing behind it, signed in as well as signed out.
+                onBack = null,
+                onEditProfile = { navController.navigate(DirectoryRoute.EditProfile) },
+                onFavorites = { navController.navigate(DirectoryRoute.Favorites) },
+                onNotifications = { navController.navigate(DirectoryRoute.Notifications) },
+                onSettings = { navController.navigate(DirectoryRoute.Settings) },
+                onHelp = { navController.navigate(DirectoryRoute.Help) },
+                bottomBar = { DirectoryTabs(DirectoryTab.ACCOUNT, navController) },
+                onRecentlyViewed = { navController.navigate(DirectoryRoute.RecentlyViewed) },
+                onMyRatings = { navController.navigate(DirectoryRoute.MyRatings) },
             )
         }
         composable<DirectoryRoute.Login> {
@@ -137,6 +357,7 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onSignedIn = { navController.popBackStack() },
                 onRegister = { navController.navigate(DirectoryRoute.Register) },
                 onRecovery = { navController.navigate(DirectoryRoute.Recovery) },
+                onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Register> {
@@ -146,13 +367,96 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                         popUpTo<DirectoryRoute.Home>()
                     }
                 },
+                onBack = { navController.popBackStack() },
+                // Signing in is the page this one was opened from.
+                onSignIn = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Recovery> {
-            RecoveryScreen(onDone = { navController.popBackStack() })
+            RecoveryScreen(
+                onDone = { navController.popBackStack() },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable<DirectoryRoute.Favorites> {
+            FavoritesScreen(
+                onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable<DirectoryRoute.Notifications> {
+            NotificationsScreen(
+                onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
+                onOwnerFacilities = { navController.navigate(DirectoryRoute.MyFacilities) },
+                onDuty = { id, date -> navController.navigate(DirectoryRoute.Duty(id, date)) },
+                onManageFacility = { navController.navigate(DirectoryRoute.ManageFacility(it)) },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable<DirectoryRoute.EditProfile> {
+            ProfileEditScreen(
+                onDone = { navController.popBackStack() },
+                onBack = { navController.popBackStack() },
+                onChangePhone = { navController.navigate(DirectoryRoute.ChangePhone) },
+            )
+        }
+        composable<DirectoryRoute.ChangePhone> {
+            PhoneChangeScreen(
+                // Every session ended, this one included: the app goes back to signing in, and
+                // the number it signs in with is now the new one.
+                onChanged = {
+                    navController.navigate(DirectoryRoute.Login) {
+                        popUpTo<DirectoryRoute.Home>()
+                    }
+                },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable<DirectoryRoute.ChangePassword> {
+            PasswordChangeScreen(
+                // Every session ended, this one included: the app goes back to signing in.
+                onChanged = {
+                    navController.navigate(DirectoryRoute.Login) {
+                        popUpTo<DirectoryRoute.Home>()
+                    }
+                },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable<DirectoryRoute.Settings> {
+            SettingsScreen(
+                onChangePassword = { navController.navigate(DirectoryRoute.ChangePassword) },
+                onChangePhone = { navController.navigate(DirectoryRoute.ChangePhone) },
+                onBack = { navController.popBackStack() },
+                signedIn = session == SessionState.SIGNED_IN,
+                onEmergencyNumbers = { navController.navigate(DirectoryRoute.EmergencyNumbers) },
+            )
+        }
+        composable<DirectoryRoute.EmergencyNumbers> {
+            EmergencyNumbersScreen(onBack = { navController.popBackStack() })
+        }
+        composable<DirectoryRoute.RecentlyViewed> {
+            RecentlyViewedScreen(
+                onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable<DirectoryRoute.Help> {
+            HelpScreen(
+                onPage = { key -> navController.navigate(DirectoryRoute.LegalPageRoute(key.name)) },
+                onBack = { navController.popBackStack() },
+                appVersion = BuildConfig.VERSION_NAME,
+            )
+        }
+        composable<DirectoryRoute.LegalPageRoute> { backStackEntry ->
+            val key = backStackEntry.toRoute<DirectoryRoute.LegalPageRoute>().key
+            LegalPageScreen(
+                key = runCatching { LegalPageKey.valueOf(key) }.getOrDefault(LegalPageKey.ABOUT),
+                onBack = { navController.popBackStack() },
+            )
         }
         composable<DirectoryRoute.MyRatings> {
-            RatingsScreen()
+            RatingsScreen(onBack = { navController.popBackStack() })
         }
 
         composable<DirectoryRoute.MyFacilities> {
@@ -160,6 +464,9 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                 onAdd = { navController.navigate(DirectoryRoute.Onboarding()) },
                 onManage = { navController.navigate(DirectoryRoute.ManageFacility(it)) },
                 onDuty = { navController.navigate(DirectoryRoute.Duty(it)) },
+                // A place in the bar, so back leads nowhere the bar does not already go.
+                onBack = null,
+                bottomBar = { DirectoryTabs(DirectoryTab.FACILITIES, navController) },
             )
         }
         composable<DirectoryRoute.Onboarding> {
@@ -171,16 +478,108 @@ fun DirectoryApp(sessionState: StateFlow<SessionState>) {
                         popUpTo<DirectoryRoute.MyFacilities> { inclusive = true }
                     }
                 },
+                onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.ManageFacility> {
             ManageFacilityScreen(
                 onEdit = { navController.navigate(DirectoryRoute.Onboarding(it)) },
                 onDuty = { navController.navigate(DirectoryRoute.Duty(it)) },
+                onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Duty> {
-            DutyScreen()
+            DutyScreen(onBack = { navController.popBackStack() })
+        }
+        // Who is on duty in the province today, tomorrow or this week: the site's /duty.
+        composable<DirectoryRoute.DutyNow> {
+            DutyRosterScreen(
+                onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
+                onProvince = { navController.navigate(DirectoryRoute.ProvincePicker) },
+                onBack = {
+                    // Opened from a link, there may be nothing behind it; Home is.
+                    if (!navController.popBackStack()) navController.navigate(DirectoryRoute.Home)
+                },
+            )
         }
     }
+}
+
+/** The app's few main places, as the bar along the bottom carries them. */
+private enum class DirectoryTab { HOME, MAP, FACILITIES, ACCOUNT }
+
+/**
+ * The bottom bar.
+ *
+ * Three places for most people. A fourth appears for an account that has facilities of its own:
+ * someone who manages a pharmacy opens its hours, its duty roster and its photographs far more
+ * often than they browse the directory, and for them those facilities are a place rather than a
+ * page inside a menu. For everyone else it is not drawn, because an empty tab is a promise the
+ * app cannot keep.
+ */
+@Composable
+private fun DirectoryTabs(
+    current: DirectoryTab,
+    navController: NavHostController,
+    presence: OwnerPresenceViewModel = hiltViewModel(),
+) {
+    val ownsFacility by presence.ownsFacility.collectAsStateWithLifecycle()
+    DirectoryBottomBar(
+        listOfNotNull(
+            DirectoryDestination(
+                label = stringResource(R.string.app_tab_home),
+                icon = DirectoryIcons.home,
+                selected = current == DirectoryTab.HOME,
+            ) {
+                if (current != DirectoryTab.HOME) {
+                    navController.navigate(DirectoryRoute.Home) {
+                        popUpTo<DirectoryRoute.Home> { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            },
+            DirectoryDestination(
+                label = stringResource(R.string.app_tab_map),
+                icon = DirectoryIcons.map,
+                selected = current == DirectoryTab.MAP,
+            ) {
+                if (current != DirectoryTab.MAP) {
+                    // One map at most, as everywhere else that opens it.
+                    navController.navigate(DirectoryRoute.Map()) {
+                        popUpTo<DirectoryRoute.Map> { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            },
+            // Only for those who have something to manage.
+            if (!ownsFacility) {
+                null
+            } else {
+                DirectoryDestination(
+                    label = stringResource(R.string.app_tab_facilities),
+                    icon = DirectoryIcons.hospital,
+                    selected = current == DirectoryTab.FACILITIES,
+                ) {
+                    if (current != DirectoryTab.FACILITIES) {
+                        navController.navigate(DirectoryRoute.MyFacilities) {
+                            popUpTo<DirectoryRoute.MyFacilities> { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                }
+            },
+            DirectoryDestination(
+                label = stringResource(R.string.app_tab_account),
+                icon = DirectoryIcons.person,
+                selected = current == DirectoryTab.ACCOUNT,
+            ) {
+                if (current != DirectoryTab.ACCOUNT) {
+                    navController.navigate(DirectoryRoute.Account) {
+                        popUpTo<DirectoryRoute.Account> { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            },
+        ),
+    )
 }

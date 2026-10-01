@@ -13,17 +13,21 @@ import AnyCodable
 public struct PatchedProfilePatch: Codable, JSONEncodable, Hashable {
 
     public static let displayNameRule = StringRule(minLength: nil, maxLength: 120, pattern: nil)
+    public static let addressRule = StringRule(minLength: nil, maxLength: 240, pattern: nil)
     public var displayName: String?
     public var provinceId: UUID?
+    public var address: String?
 
-    public init(displayName: String? = nil, provinceId: UUID? = nil) {
+    public init(displayName: String? = nil, provinceId: UUID? = nil, address: String? = nil) {
         self.displayName = displayName
         self.provinceId = provinceId
+        self.address = address
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case displayName
         case provinceId
+        case address
     }
 
     // Encodable protocol methods
@@ -32,6 +36,7 @@ public struct PatchedProfilePatch: Codable, JSONEncodable, Hashable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(displayName, forKey: .displayName)
         try container.encodeIfPresent(provinceId, forKey: .provinceId)
+        try container.encodeIfPresent(address, forKey: .address)
     }
 }
 

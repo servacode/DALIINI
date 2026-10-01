@@ -22,11 +22,20 @@ import com.servacode.directory.api.apis.AccountApi
 import com.servacode.directory.api.models.AccountDeletionRequested
 import com.servacode.directory.api.models.AccountRatingList
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.ChallengeAccepted
+import com.servacode.directory.api.models.ChallengeVerify
 import com.servacode.directory.api.models.DeletionRequest
+import com.servacode.directory.api.models.FavoriteList
+import com.servacode.directory.api.models.FavoriteState
+import com.servacode.directory.api.models.FavoriteWrite
+import com.servacode.directory.api.models.NotificationPage
+import com.servacode.directory.api.models.PasswordChange
 import com.servacode.directory.api.models.PatchedProfilePatch
+import com.servacode.directory.api.models.PhoneChangeStart
 import com.servacode.directory.api.models.Profile
 import com.servacode.directory.api.models.PushToken
 import com.servacode.directory.api.models.PushTokenRegister
+import com.servacode.directory.api.models.UnreadCount
 
 class AccountApiTest : ShouldSpec() {
     init {
@@ -38,6 +47,100 @@ class AccountApiTest : ShouldSpec() {
             // uncomment below to test accountDeletionRequestCreate
             //val deletionRequest : DeletionRequest =  // DeletionRequest | 
             //val result : AccountDeletionRequested = apiInstance.accountDeletionRequestCreate(deletionRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountFavoriteAdd
+        should("test accountFavoriteAdd") {
+            // uncomment below to test accountFavoriteAdd
+            //val favoriteWrite : FavoriteWrite =  // FavoriteWrite | 
+            //val result : FavoriteState = apiInstance.accountFavoriteAdd(favoriteWrite)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountFavoriteRemove
+        should("test accountFavoriteRemove") {
+            // uncomment below to test accountFavoriteRemove
+            //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : FavoriteState = apiInstance.accountFavoriteRemove(facilityId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountFavoritesList
+        should("test accountFavoritesList") {
+            // uncomment below to test accountFavoritesList
+            //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
+            //val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 100, default 30.
+            //val result : FavoriteList = apiInstance.accountFavoritesList(cursor, limit)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountNotificationMarkRead
+        should("test accountNotificationMarkRead") {
+            // uncomment below to test accountNotificationMarkRead
+            //val notificationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : UnreadCount = apiInstance.accountNotificationMarkRead(notificationId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountNotificationsList
+        should("test accountNotificationsList") {
+            // uncomment below to test accountNotificationsList
+            //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
+            //val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 100, default 30.
+            //val result : NotificationPage = apiInstance.accountNotificationsList(cursor, limit)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountNotificationsMarkAllRead
+        should("test accountNotificationsMarkAllRead") {
+            // uncomment below to test accountNotificationsMarkAllRead
+            //val result : UnreadCount = apiInstance.accountNotificationsMarkAllRead()
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountNotificationsUnreadCount
+        should("test accountNotificationsUnreadCount") {
+            // uncomment below to test accountNotificationsUnreadCount
+            //val result : UnreadCount = apiInstance.accountNotificationsUnreadCount()
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountPasswordChange
+        should("test accountPasswordChange") {
+            // uncomment below to test accountPasswordChange
+            //val passwordChange : PasswordChange =  // PasswordChange | 
+            //apiInstance.accountPasswordChange(passwordChange)
+        }
+
+        // to test accountPhoneChangeConfirm
+        should("test accountPhoneChangeConfirm") {
+            // uncomment below to test accountPhoneChangeConfirm
+            //val challengeVerify : ChallengeVerify =  // ChallengeVerify | 
+            //val result : Profile = apiInstance.accountPhoneChangeConfirm(challengeVerify)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountPhoneChangeStart
+        should("test accountPhoneChangeStart") {
+            // uncomment below to test accountPhoneChangeStart
+            //val phoneChangeStart : PhoneChangeStart =  // PhoneChangeStart | 
+            //val result : ChallengeAccepted = apiInstance.accountPhoneChangeStart(phoneChangeStart)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountProfileImageDelete
+        should("test accountProfileImageDelete") {
+            // uncomment below to test accountProfileImageDelete
+            //val result : Profile = apiInstance.accountProfileImageDelete()
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountProfileImageUpdate
+        should("test accountProfileImageUpdate") {
+            // uncomment below to test accountProfileImageUpdate
+            //val file : java.io.File = BINARY_DATA_HERE // java.io.File | 
+            //val result : Profile = apiInstance.accountProfileImageUpdate(file)
             //result shouldBe ("TODO")
         }
 

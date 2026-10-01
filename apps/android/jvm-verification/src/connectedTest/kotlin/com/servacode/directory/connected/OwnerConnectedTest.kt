@@ -101,7 +101,8 @@ class OwnerConnectedTest {
                 BusinessHour(4, "20:00", "02:00", 0),
             ),
         )
-        assertEquals(listOf(0 to 0, 0 to 1, 4 to 0), hours.map { it.weekday to it.sequence }.sortedWith(compareBy({ it.first }, { it.second })))
+        assertEquals(listOf(0 to 0, 0 to 1, 4 to 0),
+            hours.map { it.weekday to it.sequence }.sortedWith(compareBy({ it.first }, { it.second })))
 
         val image = owner.uploadImage(id, OwnerUploadPayload("upload.jpg", "image/jpeg", jpeg()))
         assertEquals(64, image.width)

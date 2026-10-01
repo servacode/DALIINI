@@ -23,11 +23,15 @@ class PlatformSetting(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def clean(self):
-        expected = {
+    def __str__(self) -> str:
+        return self.key
+
+    def clean(self) -> None:
+        python_types: dict[str, type] = {
             self.ValueType.STRING: str,
             self.ValueType.INTEGER: int,
             self.ValueType.BOOLEAN: bool,
-        }.get(self.value_type)
+        }
+        expected = python_types.get(self.value_type)
         if expected is not None and type(self.value) is not expected:
             raise ValidationError({"value": f"Expected {self.value_type.lower()} value."})

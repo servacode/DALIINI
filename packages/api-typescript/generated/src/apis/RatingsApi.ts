@@ -43,6 +43,7 @@ export interface FacilityRatingUpsertRequest {
 export class RatingsApi extends runtime.BaseAPI {
 
     /**
+     * Idempotent for a publicly visible facility; a facility that is not publicly visible answers 404, exactly as the write does.
      * Remove the caller\'s rating for a facility
      */
     async facilityRatingDeleteRaw(requestParameters: FacilityRatingDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
@@ -80,6 +81,7 @@ export class RatingsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Idempotent for a publicly visible facility; a facility that is not publicly visible answers 404, exactly as the write does.
      * Remove the caller\'s rating for a facility
      */
     async facilityRatingDelete(requestParameters: FacilityRatingDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {

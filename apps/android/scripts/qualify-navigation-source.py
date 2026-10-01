@@ -13,12 +13,12 @@ def require(condition: bool, message: str) -> None:
 
 
 def read(relative: str) -> str:
-    return (ROOT / relative).read_text()
+    return (ROOT / relative).read_text(encoding="utf-8")
 
 
 def nav_text() -> str:
     base = ROOT / "feature/navigation/src"
-    return "\n".join(path.read_text() for path in base.rglob("*.kt"))
+    return "\n".join(path.read_text(encoding="utf-8") for path in base.rglob("*.kt") if "build" not in path.parts)
 
 
 def check_provider_configuration() -> None:
@@ -69,13 +69,44 @@ def check_navigation_engine() -> None:
 
 def check_voice_and_map() -> None:
     source = nav_text()
-    require("ArabicManeuverPhraseBuilder" in source, "Arabic maneuver builder missing")
-    require("TextToSpeech" in source and 'Locale("ar")' in source, "Arabic native TTS missing")
+    # A turn is decided in Kotlin and worded in the module's own strings.xml, so both halves
+    # are asserted: the decision, which is what the tests cover, and the Arabic sentences it
+    # is rendered with, which is what a second language replaces.
+    require(
+        "ManeuverPhrases" in source and "NavigationWords" in source,
+        "maneuver phrase builder missing",
+    )
+    words = read("feature/navigation/src/main/res/values/strings.xml")
+    require(
+        "nav_maneuver_turn_right" in words and "انعطف يمينًا" in words,
+        "Arabic maneuver phrases missing",
+    )
+    # Arabic out loud, whichever way the locale is named. The recorded pack says the common
+    # phrases; the synthesiser is the fallback for the ones it has no recording for, and on a
+    # phone with no Arabic voice installed the fallback is silent — which is why both must exist.
+    require(
+        "TextToSpeech" in source
+        and ('Locale("ar")' in source or 'forLanguageTag("ar")' in source),
+        "Arabic native TTS missing",
+    )
+    require("NavigationClips" in source, "the recorded Arabic pack is not wired")
     require("AndroidView" in source and "MapView" in source, "MapLibre native navigation view missing")
     require("WebView" not in source, "WebView navigation is forbidden")
-    require("showRoute" in source, "route rendering missing")
-    require("showNavigationLocation" in source, "navigation location rendering missing")
-    require("mutableStateOf<MapLibreMap?>" in source, "MapLibre async state is not Compose-observable")
+    # The route and the person must both be drawn. They used to be two calls on the annotation
+    # API; they are now one call on the style layers, which is what lets a walk be dotted and the
+    # mark be turned to a heading. Either spelling satisfies what the rule is actually for.
+    require(
+        "showGuidance" in source or "showRoute" in source,
+        "route rendering missing",
+    )
+    require(
+        "showGuidance" in source or "showNavigationLocation" in source,
+        "navigation location rendering missing",
+    )
+    require(
+        "mutableStateOf<MapLibreMap?>" in source or "mutableStateOf<MapLibreController?>" in source,
+        "MapLibre async state is not Compose-observable",
+    )
 
 
 def check_location_policy() -> None:
@@ -95,14 +126,28 @@ def check_product_integration() -> None:
     )
     require("BuiltInNavigationScreen" in app, "built-in navigation destination not wired")
     require("DirectoryRoute.BuiltInNavigation" in app, "navigation route not wired")
-    require("onDirections" in facility and 'Text("الاتجاهات")' in facility, "facility directions action missing")
+    # The wording and the widget belong to the design system; what must hold is that a facility
+    # can start the way there, and that the route is seen whole before anyone follows it.
+    #
+    # This used to demand a separate preview screen between the two. The owner removed it on
+    # 2026-09-24 — someone who presses "الطريق" has already decided to go — so what is required
+    # now is that the one screen still frames the whole route and still offers the three ways of
+    # travelling, which is everything the preview existed to show.
+    require("onDirections" in facility, "facility directions action missing")
+    navigation = read(
+        "feature/navigation/src/main/kotlin/com/servacode/directory/feature/navigation/NavigationScreen.kt"
+    )
+    require("frameRoute" in read(
+        "feature/navigation/src/main/kotlin/com/servacode/directory/feature/navigation/NavigationMap.kt"
+    ), "the whole route is no longer framed on opening")
+    require("TravelModeRow" in navigation, "the travel modes are not offered on the navigation screen")
 
 
 def check_tests() -> None:
     expected = (
         "core/maps/src/test/kotlin/com/servacode/directory/core/maps/NavigationModelsTest.kt",
         "feature/navigation/src/test/kotlin/com/servacode/directory/feature/navigation/NavigationEngineTest.kt",
-        "feature/navigation/src/test/kotlin/com/servacode/directory/feature/navigation/ArabicManeuverPhraseBuilderTest.kt",
+        "feature/navigation/src/test/kotlin/com/servacode/directory/feature/navigation/ManeuverPhrasesTest.kt",
     )
     for relative in expected:
         require((ROOT / relative).exists(), f"navigation test missing: {relative}")
@@ -121,15 +166,15 @@ def check_hygiene() -> None:
         path for path in sources
         if path != policy and "/src/test/" not in path.as_posix()
     ]
-    combined = "\n".join(path.read_text() for path in runtime_sources)
+    combined = "\n".join(path.read_text(encoding="utf-8") for path in runtime_sources)
     require("demotiles.maplibre.org" not in combined, "MapLibre demo tiles runtime reference found")
     require("router.project-osrm.org" not in combined, "public OSRM demo endpoint hardcoded")
     require("ACCESS_BACKGROUND_LOCATION" not in combined, "background location reference found")
     for path in sources:
-        for line_no, line in enumerate(path.read_text().splitlines(), 1):
+        for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
             require(len(line) <= 120, f"line >120: {path.relative_to(ROOT)}:{line_no}")
         if path.name != "DirectoryTokens.kt":
-            require(not re.search(r"#[0-9A-Fa-f]{6,8}", path.read_text()), f"hardcoded color: {path}")
+            require(not re.search(r"#[0-9A-Fa-f]{6,8}", path.read_text(encoding="utf-8")), f"hardcoded color: {path}")
 
 
 def main() -> int:

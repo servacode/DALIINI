@@ -24,18 +24,24 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
     public var descriptionAr: String?
     public var descriptionEn: String?
     public var phone: String?
+    /** E.164 Syrian mobile. */
+    public var whatsapp: String?
     public var addressAr: String?
     public var addressEn: String?
     public var cityId: UUID?
     public var neighborhoodId: UUID?
     public var location: Coordinates?
-    public var specialtyIds: [UUID]
-    public var serviceTagIds: [UUID]
+    /** The facility's active specialties, in order; retired ones are left out. */
+    public var specialtyIds: [Int]
+    /** The facility's active services, in order; retired ones are left out. */
+    public var serviceTagIds: [Int]
     public var evidence: [OwnerEvidenceRef]
     public var hours: [OwnerHoursEntry]
+    /** When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old. */
+    public var hoursConfirmedAt: Date?
     public var application: OwnerApplication?
 
-    public init(id: UUID, nameAr: String, category: NamedRef, province: NamedRef, status: FacilityStatusEnum, lastUpdate: Date, requiredAction: OwnerRequiredActionEnum?, capabilities: CategoryCapabilities, nameEn: String?, descriptionAr: String?, descriptionEn: String?, phone: String?, addressAr: String?, addressEn: String?, cityId: UUID?, neighborhoodId: UUID?, location: Coordinates?, specialtyIds: [UUID], serviceTagIds: [UUID], evidence: [OwnerEvidenceRef], hours: [OwnerHoursEntry], application: OwnerApplication?) {
+    public init(id: UUID, nameAr: String, category: NamedRef, province: NamedRef, status: FacilityStatusEnum, lastUpdate: Date, requiredAction: OwnerRequiredActionEnum?, capabilities: CategoryCapabilities, nameEn: String?, descriptionAr: String?, descriptionEn: String?, phone: String?, whatsapp: String?, addressAr: String?, addressEn: String?, cityId: UUID?, neighborhoodId: UUID?, location: Coordinates?, specialtyIds: [Int], serviceTagIds: [Int], evidence: [OwnerEvidenceRef], hours: [OwnerHoursEntry], hoursConfirmedAt: Date?, application: OwnerApplication?) {
         self.id = id
         self.nameAr = nameAr
         self.category = category
@@ -48,6 +54,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
         self.descriptionAr = descriptionAr
         self.descriptionEn = descriptionEn
         self.phone = phone
+        self.whatsapp = whatsapp
         self.addressAr = addressAr
         self.addressEn = addressEn
         self.cityId = cityId
@@ -57,6 +64,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
         self.serviceTagIds = serviceTagIds
         self.evidence = evidence
         self.hours = hours
+        self.hoursConfirmedAt = hoursConfirmedAt
         self.application = application
     }
 
@@ -73,6 +81,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
         case descriptionAr
         case descriptionEn
         case phone
+        case whatsapp
         case addressAr
         case addressEn
         case cityId
@@ -82,6 +91,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
         case serviceTagIds
         case evidence
         case hours
+        case hoursConfirmedAt
         case application
     }
 
@@ -101,6 +111,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
         try container.encode(descriptionAr, forKey: .descriptionAr)
         try container.encode(descriptionEn, forKey: .descriptionEn)
         try container.encode(phone, forKey: .phone)
+        try container.encode(whatsapp, forKey: .whatsapp)
         try container.encode(addressAr, forKey: .addressAr)
         try container.encode(addressEn, forKey: .addressEn)
         try container.encode(cityId, forKey: .cityId)
@@ -110,6 +121,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
         try container.encode(serviceTagIds, forKey: .serviceTagIds)
         try container.encode(evidence, forKey: .evidence)
         try container.encode(hours, forKey: .hours)
+        try container.encode(hoursConfirmedAt, forKey: .hoursConfirmedAt)
         try container.encode(application, forKey: .application)
     }
 }

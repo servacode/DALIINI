@@ -13,6 +13,87 @@ import AnyCodable
 open class PublicTaxonomyAPI {
 
     /**
+     List the specialties and services a category offers
+     
+     - parameter categoryId: (path)  
+     - returns: PublicCategoryTags
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func publicCategoryTagsRetrieve(categoryId: UUID) async throws -> PublicCategoryTags {
+        return try await publicCategoryTagsRetrieveWithRequestBuilder(categoryId: categoryId).execute().body
+    }
+
+    /**
+     List the specialties and services a category offers
+     - GET /api/v1/public/categories/{category_id}/tags/
+     - The choices behind the specialty and service filters: active items only, in the operators' order. Specialties are the category's own plus those shared by its specialization. Whether to offer each filter is still decided by the category's `specialtyFilter` and `serviceFilter` capabilities. A category that is not public in any province is 404. Cacheable for five minutes (`Cache-Control: public, max-age=300`).
+     - parameter categoryId: (path)  
+     - returns: RequestBuilder<PublicCategoryTags> 
+     */
+    open class func publicCategoryTagsRetrieveWithRequestBuilder(categoryId: UUID) -> RequestBuilder<PublicCategoryTags> {
+        var localVariablePath = "/api/v1/public/categories/{category_id}/tags/"
+        let categoryIdPreEscape = "\(APIHelper.mapValueToPathItem(categoryId))"
+        let categoryIdPostEscape = categoryIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{category_id}", with: categoryIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<PublicCategoryTags>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false)
+    }
+
+    /**
+     Resolve a coordinate to a province, city and neighbourhood
+     
+     - parameter latitude: (query)  
+     - parameter longitude: (query)  
+     - returns: PublicLocationResolve
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func publicLocationResolve(latitude: Double, longitude: Double) async throws -> PublicLocationResolve {
+        return try await publicLocationResolveWithRequestBuilder(latitude: latitude, longitude: longitude).execute().body
+    }
+
+    /**
+     Resolve a coordinate to a province, city and neighbourhood
+     - GET /api/v1/public/locations/resolve/
+     - Point-in-polygon against the seeded city and neighbourhood boundaries, then the nearest active province centre within 200 km. No external geocoder is called and the coordinate is not stored.
+     - parameter latitude: (query)  
+     - parameter longitude: (query)  
+     - returns: RequestBuilder<PublicLocationResolve> 
+     */
+    open class func publicLocationResolveWithRequestBuilder(latitude: Double, longitude: Double) -> RequestBuilder<PublicLocationResolve> {
+        let localVariablePath = "/api/v1/public/locations/resolve/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "latitude": (wrappedValue: latitude.encodeToJSON(), isExplode: true),
+            "longitude": (wrappedValue: longitude.encodeToJSON(), isExplode: true),
+        ])
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<PublicLocationResolve>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false)
+    }
+
+    /**
      List categories publicly enabled for a province
      
      - parameter provinceId: (path)  

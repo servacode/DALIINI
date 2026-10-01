@@ -35,6 +35,11 @@ import kotlinx.serialization.Contextual
  * @param submittedAt 
  * @param reviewedAt 
  * @param rejectionReason 
+ * @param evidenceComplete Whether every active, required document of the facility's category has its minimum number of files, as submission requires. False when a requirement was added after the application was sent.
+ * @param categoryNameAr 
+ * @param provinceNameAr 
+ * @param ownerName 
+ * @param ownerPhone 
  */
 @Serializable
 
@@ -68,7 +73,23 @@ data class AdminApplication (
     val reviewedAt: java.time.OffsetDateTime?,
 
     @SerialName(value = "rejectionReason")
-    val rejectionReason: kotlin.String?
+    val rejectionReason: kotlin.String?,
+
+    /* Whether every active, required document of the facility's category has its minimum number of files, as submission requires. False when a requirement was added after the application was sent. */
+    @SerialName(value = "evidenceComplete")
+    val evidenceComplete: kotlin.Boolean,
+
+    @SerialName(value = "categoryNameAr")
+    val categoryNameAr: kotlin.String,
+
+    @SerialName(value = "provinceNameAr")
+    val provinceNameAr: kotlin.String,
+
+    @SerialName(value = "ownerName")
+    val ownerName: kotlin.String?,
+
+    @SerialName(value = "ownerPhone")
+    val ownerPhone: kotlin.String?
 
 ) {
 

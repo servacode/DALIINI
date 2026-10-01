@@ -4,6 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **challengeId** | **UUID** |  | 
+**displayName** | **String** |  | 
 **password** | **String** |  | 
 **platform** | **String** |  | [optional] [default to "UNKNOWN"]
 **deviceName** | **String** |  | [optional] [default to ""]

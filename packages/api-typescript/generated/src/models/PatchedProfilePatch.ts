@@ -31,6 +31,12 @@ export interface PatchedProfilePatch {
      * @memberof PatchedProfilePatch
      */
     provinceId?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof PatchedProfilePatch
+     */
+    address?: string;
 }
 
 /**
@@ -52,6 +58,7 @@ export function PatchedProfilePatchFromJSONTyped(json: any, ignoreDiscriminator:
         
         'displayName': json['displayName'] == null ? undefined : json['displayName'],
         'provinceId': json['provinceId'] == null ? undefined : json['provinceId'],
+        'address': json['address'] == null ? undefined : json['address'],
     };
 }
 
@@ -68,6 +75,7 @@ export function PatchedProfilePatchToJSONTyped(value?: PatchedProfilePatch | nul
         
         'displayName': value['displayName'],
         'provinceId': value['provinceId'],
+        'address': value['address'],
     };
 }
 

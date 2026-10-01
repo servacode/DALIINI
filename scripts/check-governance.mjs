@@ -2,9 +2,13 @@ import { access, readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 
+// The working papers live under docs/project (ADR-001); README and SECURITY stay at the root,
+// where GitHub and anyone arriving at the repository look for them.
 const required = [
-  'plan.md', 'PROJECT-STATUS.md', 'IMPLEMENTATION-LOG.md', 'DECISIONS.md',
-  'BLOCKERS.md', 'HANDOFF.md', 'EVIDENCE.md', 'README.md', 'SECURITY.md',
+  'docs/project/plan.md', 'docs/project/PROJECT-STATUS.md',
+  'docs/project/IMPLEMENTATION-LOG.md', 'docs/project/DECISIONS.md',
+  'docs/project/BLOCKERS.md', 'docs/project/HANDOFF.md', 'docs/project/EVIDENCE.md',
+  'README.md', 'SECURITY.md',
   'docs/spec/00-START-HERE.md', 'docs/spec/01-MASTER-SPECIFICATION.md',
   'docs/spec/24-IMPLEMENTATION-ROADMAP.md', 'docs/adr/ADR-TEMPLATE.md',
   '.editorconfig', '.gitignore', '.env.example'

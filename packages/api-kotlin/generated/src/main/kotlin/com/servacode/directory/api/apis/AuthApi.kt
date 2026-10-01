@@ -132,6 +132,7 @@ interface AuthApi {
      * Responses:
      *  - 201: 
      *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 409: The request conflicts with the current state or with a domain rule.
      *
      * @param registerComplete 
      * @return [SessionCredentials]

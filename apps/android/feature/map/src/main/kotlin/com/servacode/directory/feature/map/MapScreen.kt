@@ -1,103 +1,460 @@
 package com.servacode.directory.feature.map
 
-import android.os.Bundle
+import com.servacode.directory.core.designsystem.DirectoryVocabulary
+import com.servacode.directory.core.model.AvailabilityState
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.servacode.directory.core.designsystem.AvailabilityPill
+import com.servacode.directory.core.designsystem.DirectoryCard
+import com.servacode.directory.core.designsystem.DirectoryIcon
+import com.servacode.directory.core.designsystem.DirectoryIconButton
+import com.servacode.directory.core.designsystem.DirectoryIcons
+import com.servacode.directory.core.designsystem.DirectoryLoading
+import com.servacode.directory.core.designsystem.DirectoryMessageState
+import com.servacode.directory.core.designsystem.DirectoryOverlayChip
+import com.servacode.directory.core.designsystem.DirectoryOverlayTile
+import com.servacode.directory.core.designsystem.DirectoryPage
+import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
+import com.servacode.directory.core.designsystem.DirectoryRoundControl
+import com.servacode.directory.core.designsystem.IconSize
+import com.servacode.directory.core.designsystem.Radius
+import com.servacode.directory.core.designsystem.Sizes
+import com.servacode.directory.core.designsystem.Space
+import com.servacode.directory.core.location.FOREGROUND_LOCATION_PERMISSIONS
 import com.servacode.directory.core.maps.FacilityMapPin
+import com.servacode.directory.core.maps.MapCamera
 import com.servacode.directory.core.maps.MapLibreController
 import com.servacode.directory.core.maps.MapPoint
-import org.maplibre.android.maps.MapLibreMap
-import org.maplibre.android.maps.MapView
+import com.servacode.directory.core.maps.MapStyle
+import com.servacode.directory.core.maps.rememberMapViewWithLifecycle
+import com.servacode.directory.core.model.Category
+import com.servacode.directory.core.model.PublicMapFacility
 
+/**
+ * Screen 05. The province's facilities where they stand.
+ *
+ * The map itself is unchanged: the camera it opens on, what it keeps while its view comes and
+ * goes, and which markers it draws all stay as they were. What changed is what a marker does:
+ * it names its facility at the foot of the map, and the page opens from those words rather
+ * than from the pin. Nothing frames the map — a title reading "map" above a map says nothing —
+ * and a control in the corner points at the user when they ask.
+ */
 @Composable
 fun MapScreen(
     styleUrl: String,
     onFacility: (String) -> Unit,
+    onRoute: (String, Double, Double) -> Unit,
+    bottomBar: @Composable () -> Unit = {},
     viewModel: MapViewModel = hiltViewModel(),
 ) {
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val mapView = remember { MapView(context) }
-    val mapState = remember { arrayOfNulls<MapLibreMap>(1) }
-    val configured = styleUrl.startsWith("https://") && !styleUrl.contains("<ROOT_DOMAIN>")
+    val askLocation = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions(),
+    ) { granted -> if (granted.values.any { it }) viewModel.locate() }
+    val context = LocalContext.current
 
-    DisposableEffect(mapView, lifecycleOwner) {
-        mapView.onCreate(Bundle())
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_START -> mapView.onStart()
-                Lifecycle.Event.ON_RESUME -> mapView.onResume()
-                Lifecycle.Event.ON_PAUSE -> mapView.onPause()
-                Lifecycle.Event.ON_STOP -> mapView.onStop()
-                Lifecycle.Event.ON_DESTROY -> mapView.onDestroy()
-                else -> Unit
+    // No bar over the map. A title that says "map" above a map tells the reader nothing they
+    // cannot see, and a back arrow on one of the app's three main places leads nowhere the
+    // bottom bar does not already go. The height goes to the map instead.
+    DirectoryPage(
+        bottomBar = bottomBar,
+    ) { padding ->
+        Box(Modifier.fillMaxSize().padding(padding)) {
+            when {
+                !MapStyle.isConfigured(styleUrl) -> DirectoryMessageState(
+                    icon = DirectoryIcons.map,
+                    title = MapCopy.UNCONFIGURED,
+                    body = MapCopy.UNCONFIGURED_BODY,
+                )
+                // Shown only once the start is known, so it never opens on the whole world.
+                state.cameraResolved -> FacilityMap(
+                    styleUrl = styleUrl,
+                    state = state,
+                    viewModel = viewModel,
+                    onFacility = onFacility,
+                    // Asked once per press and forgotten: a map that follows a person is a
+                    // different product from one that points at them when asked.
+                    onLocate = {
+                        val granted = FOREGROUND_LOCATION_PERMISSIONS.any {
+                            context.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED
+                        }
+                        if (granted) {
+                            viewModel.locate()
+                        } else {
+                            askLocation.launch(FOREGROUND_LOCATION_PERMISSIONS.toTypedArray())
+                        }
+                    },
+                )
+                else -> DirectoryLoading()
+            }
+            // Over the map, not instead of it: the bar is at the top and the rail hugs the
+            // start edge, both narrow enough to leave the map itself the screen.
+            MapQuickFilters(
+                filters = state.filters,
+                offersDuty = state.offersDuty,
+                onOpenNow = { viewModel.filter { current -> current.toggleOpenNow() } },
+                onDutyNow = { viewModel.filter { current -> current.toggleDutyNow() } },
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
+            if (state.categories.isNotEmpty()) {
+                // The far edge: the near one belongs to the controls, which are pressed far
+                // more often than a section is changed, and a thumb reaches it without moving.
+                MapCategoryRail(
+                    categories = state.categories,
+                    selectedId = state.filters.categoryId,
+                    onCategory = { id -> viewModel.filter { current -> current.withCategory(id) } },
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                )
+            }
+            val selected = state.facilities.firstOrNull { it.id == state.selectedFacilityId }
+            if (selected != null && state.cameraResolved) {
+                SelectedFacilityCard(
+                    facility = selected,
+                    onDetails = { onFacility(selected.id) },
+                    onRoute = { onRoute(selected.id, selected.latitude, selected.longitude) },
+                    onDismiss = viewModel::facilityDismissed,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(Space.base),
+                )
             }
         }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-            mapView.onDestroy()
-        }
     }
+}
 
-    Box(Modifier.fillMaxSize()) {
-        if (!configured) {
-            Text("يجب ضبط مزود خرائط الإنتاج قبل عرض الخريطة", Modifier.padding(20.dp))
-        } else {
-            AndroidView(
-                factory = {
-                    mapView.apply {
-                        getMapAsync { map ->
-                            mapState[0] = map
-                            map.setStyle(styleUrl)
-                            map.addOnCameraIdleListener {
-                                val bounds = map.projection.visibleRegion.latLngBounds
-                                viewModel.viewportChanged(
-                                    MapViewport(
-                                        west = bounds.longitudeWest,
-                                        south = bounds.latitudeSouth,
-                                        east = bounds.longitudeEast,
-                                        north = bounds.latitudeNorth,
-                                    ),
-                                )
-                            }
-                            map.setOnMarkerClickListener { marker ->
-                                marker.snippet?.let(onFacility)
-                                true
-                            }
-                        }
-                    }
-                },
-                modifier = Modifier.fillMaxSize(),
+/**
+ * The same two questions Home asks, over the map.
+ *
+ * They are the backend's own filters: the markers change because the query changed, not because
+ * the map hid anything. Nearest is not among them — a map is already showing distance.
+ */
+@Composable
+private fun MapQuickFilters(
+    filters: MapFilters,
+    offersDuty: Boolean,
+    onOpenNow: () -> Unit,
+    onDutyNow: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.padding(Space.md),
+        horizontalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        DirectoryOverlayChip(MapCopy.OPEN_NOW, filters.openNow, onOpenNow)
+        if (offersDuty) DirectoryOverlayChip(MapCopy.DUTY_NOW, filters.dutyNow, onDutyNow)
+    }
+}
+
+/**
+ * The three things one does to a map without touching it: closer, further, and "where am I".
+ *
+ * They stand together at the top edge because they are one set — the locate button used to sit
+ * alone in the far corner, where it read as something else entirely, and it wore a pin, which
+ * on a map means "a place is here" and is what every marker under it already says.
+ */
+@Composable
+private fun MapControls(
+    onIn: () -> Unit,
+    onOut: () -> Unit,
+    onLocate: (() -> Unit)?,
+    locating: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        DirectoryRoundControl(DirectoryIcons.plus, MapCopy.ZOOM_IN, onIn)
+        // A minus, not a cross. The pair reads as one scale; a cross beside a plus reads as
+        // "close", and someone pressing it expects the map to go away rather than widen.
+        DirectoryRoundControl(DirectoryIcons.minus, MapCopy.ZOOM_OUT, onOut)
+        if (onLocate != null) {
+            DirectoryRoundControl(
+                icon = DirectoryIcons.myLocation,
+                label = MapCopy.MY_LOCATION,
+                onClick = onLocate,
+                enabled = !locating,
             )
         }
     }
+}
 
-    LaunchedEffect(state, mapState[0]) {
-        val map = mapState[0] ?: return@LaunchedEffect
-        val content = state as? MapUiState.Content ?: return@LaunchedEffect
-        val controller = MapLibreController(map)
-        controller.clearFacilities()
-        val pins = content.facilities.map {
-            FacilityMapPin(it.id, MapPoint(it.latitude, it.longitude), it.label)
+/** One step of scale per press: enough to notice, small enough to aim with. */
+private const val ZOOM_STEP = 1.0
+
+
+/**
+ * The province's categories, down the start edge.
+ *
+ * Whatever the backend serves, in its own order: one category today, and clinics, laboratories
+ * or anything else the moment a province starts serving them. It scrolls, so the rail holds as
+ * many as arrive without the map losing room.
+ */
+@Composable
+private fun MapCategoryRail(
+    categories: List<Category>,
+    selectedId: String?,
+    onCategory: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyColumn(
+        modifier = modifier
+            .padding(Space.md)
+            .heightIn(max = Sizes.railMaxHeight),
+        verticalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        items(categories, key = { it.id }) { category ->
+            val selected = category.id == selectedId
+            // The name under the mark, not only in the accessibility tree. An icon alone is a
+            // guess for anyone meeting it the first time, and a rail of five guesses is a rail
+            // nobody uses — the labels are what make it a list of sections rather than a row
+            // of symbols.
+            DirectoryOverlayTile(
+                selected = selected,
+                onClick = { onCategory(category.id) },
+                modifier = Modifier.width(Sizes.categoryLabel),
+            ) {
+                DirectoryIcon(
+                    icon = DirectoryIcons.category(category.iconKey),
+                    // The label beside it already says this; announcing both would read
+                    // the name twice.
+                    contentDescription = null,
+                    tint = if (selected) {
+                        MaterialTheme.colorScheme.onPrimary
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    },
+                )
+                Text(
+                    text = category.nameAr,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (selected) {
+                        MaterialTheme.colorScheme.onPrimary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
-        controller.showFacilities(pins)
     }
+}
+
+/** The facility the map is holding onto, named rather than left as a marker among markers. */
+@Composable
+private fun SelectedFacilityCard(
+    facility: PublicMapFacility,
+    onDetails: () -> Unit,
+    onRoute: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    // Not itself a button. Pressing a marker is how one reads a name off the map, and reading
+    // a name should not cost the map: the page opens from the words below, and nowhere else.
+    DirectoryCard(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Space.md),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(Sizes.categoryCircle)
+                    .clip(RoundedCornerShape(Radius.medium))
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                DirectoryIcon(
+                    icon = DirectoryIcons.category(facility.categoryIconKey),
+                    contentDescription = null,
+                    size = IconSize.large,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(Space.xs),
+            ) {
+                Text(
+                    text = facility.label,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                AvailabilityPill(facility.availability)
+            }
+            // A cross in a red box: a bare grey cross beside a facility's name reads as
+            // "remove this facility" as often as "close this card".
+            DirectoryIconButton(
+                icon = DirectoryIcons.closeBox,
+                label = MapCopy.DISMISS,
+                onClick = onDismiss,
+                tint = Color.Unspecified,
+            )
+        }
+        // Two ways on from a marker: read about it, or go to it. Going is the commoner of
+        // the two from a map, so it sits first in the reading order.
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = Space.md),
+            horizontalArrangement = Arrangement.spacedBy(Space.sm),
+        ) {
+            // Drawn alike: one filled and one outlined said that going was the real choice
+            // and reading about it was an afterthought, and from a map neither is.
+            DirectoryPrimaryButton(
+                text = MapCopy.ROUTE,
+                onClick = onRoute,
+                modifier = Modifier.weight(1f),
+            )
+            DirectoryPrimaryButton(
+                text = MapCopy.OPEN_DETAILS,
+                onClick = onDetails,
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun FacilityMap(
+    styleUrl: String,
+    state: MapUiState,
+    viewModel: MapViewModel,
+    onFacility: (String) -> Unit,
+    onLocate: () -> Unit,
+) {
+    val mapView = rememberMapViewWithLifecycle()
+    var controller by remember(mapView) { mutableStateOf<MapLibreController?>(null) }
+    val openFacility by rememberUpdatedState(onFacility)
+    // The controller draws each section's mark into its pin, which needs resources.
+    val context = LocalContext.current
+
+    Box(Modifier.fillMaxSize()) {
+        AndroidView(
+        factory = {
+            mapView.apply {
+                getMapAsync { map ->
+                    val mapController = MapLibreController(map, context)
+                    // The ViewModel's camera: the start, or where the user left this map.
+                    viewModel.state.value.camera?.let { mapController.moveCamera(it, animated = false) }
+                    map.addOnCameraIdleListener {
+                        val camera = mapController.camera ?: return@addOnCameraIdleListener
+                        val bounds = map.projection.visibleRegion.latLngBounds
+                        viewModel.cameraIdle(
+                            camera,
+                            MapViewport(
+                                west = bounds.longitudeWest,
+                                south = bounds.latitudeSouth,
+                                east = bounds.longitudeEast,
+                                north = bounds.latitudeNorth,
+                            ),
+                        )
+                    }
+                    // A marker names its facility at the foot of the map and stops there. The
+                    // page is a place one chooses to go, from the card, rather than somewhere
+                    // a finger lands by touching a pin the size of a fingertip.
+                    mapController.setOnFacilitySelected { id -> viewModel.facilityChosen(id) }
+                    map.setStyle(styleUrl) { controller = mapController }
+                }
+            }
+        },
+            modifier = Modifier.fillMaxSize(),
+        )
+        // Beside the map rather than on a menu: two taps is how most people change a map's
+        // scale, and pinching with one hand holding a phone is not always available. "Where am
+        // I" stands with them, half way down the edge: where the eye already is and where a
+        // thumb reaches without the hand leaving the phone.
+        MapControls(
+            onIn = { controller?.zoomBy(ZOOM_STEP) },
+            onOut = { controller?.zoomBy(-ZOOM_STEP) },
+            onLocate = onLocate.takeIf { state.cameraResolved },
+            locating = state.locating,
+            modifier = Modifier.align(Alignment.CenterStart).padding(Space.md),
+        )
+    }
+
+    // Drawn on every new view from what the ViewModel already holds; nothing is fetched for it.
+    LaunchedEffect(controller, state.facilities, state.selectedFacilityId) {
+        val map = controller ?: return@LaunchedEffect
+        map.showFacilities(
+            state.facilities.map {
+                FacilityMapPin(
+                    facilityId = it.id,
+                    point = MapPoint(it.latitude, it.longitude),
+                    label = it.label,
+                    // The section's own mark, the same one the rail and the cards wear: a map
+                    // of identical teardrops asks someone who does not read to give up.
+                    iconRes = DirectoryIcons.category(it.categoryIconKey),
+                )
+            },
+            state.selectedFacilityId,
+        )
+    }
+
+    // The user's own position, marked and brought into view — once, when they asked for it.
+    LaunchedEffect(controller, state.userPoint) {
+        val map = controller ?: return@LaunchedEffect
+        val point = state.userPoint ?: return@LaunchedEffect
+        val here = MapPoint(point.latitude, point.longitude)
+        map.showNavigationLocation(here)
+        map.moveCamera(MapCamera(here, MY_LOCATION_ZOOM), animated = true)
+    }
+}
+
+/** Close enough to read the streets around someone without losing the pins near them. */
+private const val MY_LOCATION_ZOOM = 15.0
+
+/** The words of the map, provisional until product copy is approved. */
+object MapCopy {
+    val OPEN_NOW: String
+        @Composable @ReadOnlyComposable get() = DirectoryVocabulary.availability(AvailabilityState.OPEN)
+    val DUTY_NOW: String
+        @Composable @ReadOnlyComposable get() = DirectoryVocabulary.availability(AvailabilityState.DUTY)
+    val MY_LOCATION: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_my_location)
+    val OPEN_DETAILS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_open_details)
+    val DISMISS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_dismiss)
+    val ROUTE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_route)
+    val ZOOM_IN: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_zoom_in)
+    val ZOOM_OUT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_zoom_out)
+    val UNCONFIGURED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_unconfigured)
+    val UNCONFIGURED_BODY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.map_unconfigured_body)
 }

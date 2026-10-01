@@ -7,6 +7,7 @@ plugins {
 dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:network"))
+    implementation(project(":core:auth"))
     implementation(project(":core:designsystem"))
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
@@ -17,5 +18,6 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.material3)
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(project(":core:testing"))
 }

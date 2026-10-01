@@ -3,9 +3,16 @@ package com.servacode.directory.core.network.api
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.AppException
 import com.servacode.directory.core.model.AvailabilityState
+import com.servacode.directory.core.model.CategoryTags
+import com.servacode.directory.core.model.DamascusTime
+import com.servacode.directory.core.model.EmergencyScope
+import com.servacode.directory.core.model.FacilityReportReason
+import com.servacode.directory.core.model.FacilityTag
+import com.servacode.directory.core.model.GeoPoint
 import com.servacode.directory.core.model.OwnerFacilityStatus
 import com.servacode.directory.core.model.Province
 import com.servacode.directory.core.network.DirectoryQuery
+import com.servacode.directory.core.network.DirectorySort
 import com.servacode.directory.core.network.DutyShiftInput
 import com.servacode.directory.core.network.OwnerFacilityPatch
 import com.servacode.directory.core.network.OwnerUploadPayload
@@ -53,7 +60,13 @@ class GeneratedAdapterTest {
     @After fun stop() = server.close()
 
     private fun respond(body: String, code: Int = 200) =
-        server.enqueue(MockResponse.Builder().code(code).addHeader("Content-Type", "application/json").body(body).build())
+        server.enqueue(
+            MockResponse.Builder()
+                .code(code)
+                .addHeader("Content-Type", "application/json")
+                .body(body)
+                .build(),
+        )
 
     private fun taken(): RecordedRequest = server.takeRequest()
 
@@ -61,17 +74,43 @@ class GeneratedAdapterTest {
         {"id":"$id","nameAr":"صيدلية","nameEn":null,
          "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":"Pharmacy"},
          "city":null,"distanceMeters":120.5,"ratingAverage":4.5,"ratingCount":2,
-         "availability":{"state":"$state","nextOpenAt":null}}
+         "isFavorite":false,"imageUrl":"https://cdn.example.test/shop.jpg",
+         "lastVerifiedAt":null,"updatedAt":"2026-09-19T10:00:00Z",
+         "availability":{"state":"$state","nextOpenAt":null,
+                         "isOpenNow":true,"isOnDutyToday":false}}
     """
 
     @Test fun `provinces come from the backend unchanged`() = runTest {
-        respond("""{"items":[{"id":"$PROVINCE","code":"raqqa","nameAr":"الرقة","nameEn":"Raqqa"}]}""")
+        respond(
+            """{"items":[{"id":"$PROVINCE","code":"raqqa","nameAr":"الرقة","nameEn":"Raqqa",
+            "mapCenter":{"latitude":35.9528,"longitude":39.0085}}]}""",
+        )
 
         val provinces = publicApi.provinces()
 
-        assertEquals(listOf(Province(PROVINCE, "الرقة", "Raqqa")), provinces)
+        assertEquals(
+            listOf(Province(PROVINCE, "الرقة", "Raqqa", GeoPoint(35.9528, 39.0085), code = "raqqa")),
+            provinces,
+        )
         val request = taken()
         assertEquals("/api/v1/public/provinces/", request.url.encodedPath)
+    }
+
+    @Test fun `a province without a map centre carries none`() = runTest {
+        respond("""{"items":[{"id":"$PROVINCE","code":"raqqa","nameAr":"الرقة","nameEn":null,"mapCenter":null}]}""")
+
+        assertNull(publicApi.provinces().single().mapCenter)
+    }
+
+    @Test fun `the owner config carries the province map centre`() = runTest {
+        respond(
+            """{"province":{"id":"$PROVINCE","nameAr":"الرقة","mapCenter":{"latitude":35.9528,"longitude":39.0085}},
+            "categories":[]}""",
+        )
+
+        val province = ownerApi.ownerConfig(PROVINCE).province
+
+        assertEquals(Province(PROVINCE, "الرقة", mapCenter = GeoPoint(35.9528, 39.0085)), province)
     }
 
     @Test fun `category capabilities decide what the screens offer`() = runTest {
@@ -112,6 +151,99 @@ class GeneratedAdapterTest {
         assertEquals("cD0x+/=", taken().url.queryParameter("cursor"))
     }
 
+    @Test fun `open now and on duty today are sent as separate parameters, and combine`() = runTest {
+        respond("""{"items":[${compact(FACILITY, "DUTY")}],"nextCursor":null,"hasMore":false}""")
+
+        val page = publicApi.directory(
+            DirectoryQuery(
+                provinceId = PROVINCE,
+                openNow = true,
+                dutyToday = true,
+                sort = DirectorySort.NEAREST,
+                latitude = 35.95,
+                longitude = 39.01,
+            ),
+        )
+
+        // The row says both things at once, which the single legacy state cannot express.
+        val facility = page.items.single()
+        assertTrue(facility.isOpenNow)
+        assertFalse(facility.isOnDutyToday)
+        assertEquals("https://cdn.example.test/shop.jpg", facility.imageUrl)
+        val url = taken().url
+        assertEquals("true", url.queryParameter("openNow"))
+        assertEquals("true", url.queryParameter("dutyToday"))
+        assertEquals("nearest", url.queryParameter("sort"))
+        // Never confused with a shift that happens to be running at this second.
+        assertNull(url.queryParameter("dutyNow"))
+    }
+
+    @Test fun `ordering by name still measures the distance`() = runTest {
+        respond("""{"items":[${compact(FACILITY, "OPEN")}],"nextCursor":null,"hasMore":false}""")
+
+        publicApi.directory(
+            DirectoryQuery(
+                provinceId = PROVINCE,
+                sort = DirectorySort.NAME,
+                latitude = 35.95,
+                longitude = 39.01,
+            ),
+        )
+
+        val url = taken().url
+        assertEquals("name", url.queryParameter("sort"))
+        assertEquals("35.95", url.queryParameter("latitude"))
+    }
+
+    @Test fun `a category's choices keep the operators' order, their integer keys as string ids`() = runTest {
+        respond(
+            """{"specialties":[{"id":7,"nameAr":"قلبية"},{"id":3,"nameAr":"أطفال"}],
+            "services":[{"id":12,"nameAr":"قياس ضغط"}]}""",
+        )
+
+        val tags = publicApi.categoryTags(PHARMACY)
+
+        assertEquals(
+            CategoryTags(
+                specialties = listOf(FacilityTag("7", "قلبية"), FacilityTag("3", "أطفال")),
+                services = listOf(FacilityTag("12", "قياس ضغط")),
+            ),
+            tags,
+        )
+        assertEquals("/api/v1/public/categories/$PHARMACY/tags/", taken().url.encodedPath)
+    }
+
+    @Test fun `a category with nothing to choose from has empty lists`() = runTest {
+        respond("""{"specialties":[],"services":[]}""")
+
+        assertTrue(publicApi.categoryTags(PHARMACY).isEmpty)
+    }
+
+    @Test fun `a specialty and a service narrow a directory page as the integers they are keyed by`() = runTest {
+        respond("""{"items":[],"nextCursor":null,"hasMore":false}""")
+        respond("""{"items":[],"nextCursor":null,"hasMore":false}""")
+
+        publicApi.directory(DirectoryQuery(PROVINCE, PHARMACY, specialtyId = "3", serviceTagId = "12"))
+        publicApi.directory(DirectoryQuery(PROVINCE, PHARMACY))
+
+        val narrowed = taken().url
+        assertEquals("3", narrowed.queryParameter("specialtyId"))
+        assertEquals("12", narrowed.queryParameter("serviceTagId"))
+        // The contract's name for it, not the older alias.
+        assertNull(narrowed.queryParameter("serviceId"))
+        val whole = taken().url
+        assertNull(whole.queryParameter("specialtyId"))
+        assertNull(whole.queryParameter("serviceTagId"))
+    }
+
+    @Test fun `a tag id that is not a number never reaches the network`() = runTest {
+        val error = runCatching { publicApi.directory(DirectoryQuery(PROVINCE, PHARMACY, specialtyId = "x")) }
+            .exceptionOrNull() as AppException
+
+        assertEquals(AppError.Kind.UNEXPECTED, error.error.kind)
+        assertEquals(0, server.requestCount)
+    }
+
     @Test fun `an invalid cursor is a validation error on the cursor field`() = runTest {
         respond(
             """{"code":"VALIDATION_ERROR","message":"Invalid input.",
@@ -130,12 +262,14 @@ class GeneratedAdapterTest {
         respond(
             """{"id":"$FACILITY","nameAr":"صيدلية","nameEn":null,
             "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":null},"city":{"id":"$PROVINCE","nameAr":"الرقة"},
-            "distanceMeters":null,"ratingAverage":null,"ratingCount":0,
-            "availability":{"state":"CLOSED","nextOpenAt":"2026-09-20T08:00:00+03:00"},
+            "distanceMeters":null,"ratingAverage":null,"ratingCount":0,"isFavorite":true,"imageUrl":null,
+            "lastVerifiedAt":"2026-09-18T10:00:00Z","updatedAt":"2026-09-19T10:00:00Z","whatsapp":"+963933000000",
+            "availability":{"state":"CLOSED","nextOpenAt":"2026-09-20T08:00:00+03:00",
+                            "isOpenNow":false,"isOnDutyToday":true},
             "descriptionAr":null,"descriptionEn":null,"phone":"+963900000000","addressAr":"شارع","addressEn":null,
             "neighborhood":null,"location":{"latitude":35.95,"longitude":39.01},
             "images":[{"id":"$REQUIREMENT","url":"https://cdn.example.test/a.jpg"}],
-            "specialties":[],"services":[{"id":"$PROVINCE","nameAr":"قياس ضغط"}],
+            "specialties":[{"id":3,"nameAr":"قلبية"}],"services":[{"id":12,"nameAr":"قياس ضغط"}],
             "hours":[
               {"id":"$PROVINCE","weekday":1,"opensAt":"16:00:00","closesAt":"22:00:00","sequence":1},
               {"id":"$PHARMACY","weekday":0,"opensAt":"09:00:00","closesAt":"13:00:00","sequence":0},
@@ -148,8 +282,12 @@ class GeneratedAdapterTest {
         assertEquals(AvailabilityState.CLOSED, detail.summary.availability)
         assertEquals(1_789_880_400_000L, detail.summary.nextOpenAtEpochMillis)
         assertEquals(listOf("https://cdn.example.test/a.jpg"), detail.imageUrls)
+        assertEquals(listOf("قلبية"), detail.specialties)
         assertEquals(listOf("قياس ضغط"), detail.services)
         assertEquals("الرقة", detail.summary.cityNameAr)
+        assertEquals("+963933000000", detail.whatsapp)
+        assertEquals(1_789_725_600_000L, detail.lastVerifiedAtEpochMillis)
+        assertEquals(1_789_812_000_000L, detail.updatedAtEpochMillis)
     }
 
     @Test fun `the home decodes advertisements with a free-form payload`() = runTest {
@@ -192,6 +330,69 @@ class GeneratedAdapterTest {
         assertEquals("""{"phone":"+963900000001"}""", request.body!!.utf8())
     }
 
+    @Test fun `specialties and services travel as the integer ids they are keyed by`() = runTest {
+        respond(ownerDetail())
+
+        val detail = ownerApi.patchFacility(
+            FACILITY,
+            OwnerFacilityPatch(specialtyIds = listOf("3"), serviceTagIds = listOf("12")),
+        )
+
+        assertEquals("""{"specialtyIds":[3],"serviceTagIds":[12]}""", taken().body!!.utf8())
+        assertEquals(listOf("3"), detail.specialtyIds)
+        assertEquals(listOf("12"), detail.serviceTagIds)
+    }
+
+    @Test fun `an empty WhatsApp is sent, because blank is how it is cleared`() = runTest {
+        respond(ownerDetail())
+
+        val detail = ownerApi.patchFacility(FACILITY, OwnerFacilityPatch(whatsapp = ""))
+
+        assertEquals("""{"whatsapp":""}""", taken().body!!.utf8())
+        assertEquals("+963933000000", detail.whatsapp)
+    }
+
+    @Test fun `a refused WhatsApp names its field`() = runTest {
+        respond(
+            """{"code":"VALIDATION_ERROR","message":"Invalid input.",
+            "details":{"whatsapp":["Enter a valid Syrian mobile number."]},"requestId":"r"}""",
+            code = 400,
+        )
+
+        val error = runCatching { ownerApi.patchFacility(FACILITY, OwnerFacilityPatch(whatsapp = "123")) }
+            .exceptionOrNull() as AppException
+
+        assertEquals(AppError.Kind.VALIDATION, error.error.kind)
+        assertTrue("whatsapp" in error.error.fieldErrors)
+    }
+
+    @Test fun `insights are the owner's three counts over the window`() = runTest {
+        respond(
+            """{"facilityId":"$FACILITY","windowDays":30,"since":"2026-08-20T10:00:00Z",
+            "views":12,"calls":3,"directions":5}""",
+        )
+
+        val insights = ownerApi.insights(FACILITY)
+
+        assertEquals("/api/v1/owner/facilities/$FACILITY/insights/", taken().url.encodedPath)
+        assertEquals(listOf(12, 3, 5), listOf(insights.views, insights.calls, insights.directions))
+        assertEquals(30, insights.windowDays)
+    }
+
+    @Test fun `a report goes to the facility with its reason and note`() = runTest {
+        respond(
+            """{"id":"$FACILITY","status":"OPEN","createdAt":"2026-09-19T10:00:00Z"}""",
+            code = 201,
+        )
+
+        publicApi.reportFacility(FACILITY, FacilityReportReason.WRONG_HOURS, "  يفتح مساءً  ")
+
+        val request = taken()
+        assertEquals("POST", request.method)
+        assertEquals("/api/v1/facilities/$FACILITY/reports/", request.url.encodedPath)
+        assertEquals("""{"reason":"WRONG_HOURS","note":"يفتح مساءً"}""", request.body!!.utf8())
+    }
+
     @Test fun `evidence goes as a real file part with the requirement id as plain text`() = runTest {
         respond("""{"id":"$FACILITY","requirementId":$REQUIREMENT_ID}""", code = 201)
         val jpeg = byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte(), 0xE0.toByte())
@@ -226,14 +427,32 @@ class GeneratedAdapterTest {
         assertTrue(body.contains("\"startsAt\":\"2026-09-20T00:00Z\"") || body.contains("2026-09-20T00:00:00Z"))
     }
 
+    @Test fun `a closure the backend stored without a reason arrives with none`() = runTest {
+        respond(
+            """{"items":[
+            {"id":"$FACILITY","startsAt":"2026-09-20T05:00:00Z","endsAt":"2026-09-20T13:00:00Z","reason":""},
+            {"id":"$FACILITY","startsAt":"2026-09-20T05:00:00Z","endsAt":"2026-09-20T13:00:00Z","reason":"   "},
+            {"id":"$FACILITY","startsAt":"2026-09-20T05:00:00Z","endsAt":"2026-09-20T13:00:00Z","reason":null},
+            {"id":"$FACILITY","startsAt":"2026-09-20T05:00:00Z","endsAt":"2026-09-20T13:00:00Z","reason":"صيانة"}]}""",
+        )
+
+        val reasons = ownerApi.temporaryClosures(FACILITY).map { it.reason }
+
+        assertEquals(listOf(null, null, null, "صيانة"), reasons)
+    }
+
     @Test fun `owner facilities map status and a missing required action`() = runTest {
         respond(
             """{"items":[{"id":"$FACILITY","nameAr":"صيدلية","category":{"id":"$PHARMACY","nameAr":"صيدلية"},
             "province":{"id":"$PROVINCE","nameAr":"الرقة"},"status":"SUBMITTED",
-            "lastUpdate":"2026-09-19T10:00:00Z","requiredAction":null,"capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,"serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true}},
+            "lastUpdate":"2026-09-19T10:00:00Z","requiredAction":null,
+            "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,
+            "serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true}},
             {"id":"$REQUIREMENT","nameAr":"أخرى","category":{"id":"$PHARMACY","nameAr":"صيدلية"},
             "province":{"id":"$PROVINCE","nameAr":"الرقة"},"status":"DRAFT",
-            "lastUpdate":"2026-09-19T10:00:00Z","requiredAction":"COMPLETE_AND_SUBMIT","capabilities":{"hours":true,"photos":true,"ratings":true,"duty":false,"specialtyFilter":true,"serviceFilter":false,"temporaryClosure":false,"ownerOnboarding":true}}]}""",
+            "lastUpdate":"2026-09-19T10:00:00Z","requiredAction":"COMPLETE_AND_SUBMIT",
+            "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":false,"specialtyFilter":true,
+            "serviceFilter":false,"temporaryClosure":false,"ownerOnboarding":true}}]}""",
         )
 
         val facilities = ownerApi.facilities()
@@ -252,7 +471,8 @@ class GeneratedAdapterTest {
             """{"province":{"id":"$PROVINCE","nameAr":"الرقة"},"categories":[{
             "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":null,"iconKey":null,"specialization":"PHARMACY"},
             "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,
-            "serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true},"verificationRequirements":[]}]}""",
+            "serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true},"verificationRequirements":[],
+            "specialties":[],"services":[]}]}""",
         )
 
         val config = ownerApi.ownerConfig(PROVINCE)
@@ -271,7 +491,8 @@ class GeneratedAdapterTest {
             "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,
             "serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true},"verificationRequirements":[
             {"id":$REQUIREMENT_ID,"labelAr":"ترخيص","labelEn":null,"instructionsAr":null,"required":true,
-            "minFiles":1,"maxFiles":2}]}]}""",
+            "minFiles":1,"maxFiles":2}],"specialties":[{"id":3,"nameAr":"قلبية"}],
+            "services":[{"id":12,"nameAr":"قياس ضغط"}]}]}""",
         )
 
         val requirement = ownerApi.ownerConfig(PROVINCE).categories.single().verificationRequirements.single()
@@ -279,6 +500,40 @@ class GeneratedAdapterTest {
         assertEquals(REQUIREMENT_ID, requirement.id)
         assertEquals(1, requirement.minFiles)
         assertEquals(2, requirement.maxFiles)
+    }
+
+    @Test fun `each category in the owner configuration carries what owners may pick for it`() = runTest {
+        respond(
+            """{"province":{"id":"$PROVINCE","nameAr":"الرقة"},"categories":[{
+            "category":{"id":"$PHARMACY","nameAr":"عيادات","nameEn":null,"iconKey":null,
+            "specialization":"MEDICAL_CLINIC"},
+            "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":false,"specialtyFilter":true,
+            "serviceFilter":true,"temporaryClosure":true,"ownerOnboarding":true},"verificationRequirements":[],
+            "specialties":[{"id":3,"nameAr":"قلبية"},{"id":4,"nameAr":"أطفال"}],
+            "services":[{"id":12,"nameAr":"قياس ضغط"}]}]}""",
+        )
+
+        val tags = ownerApi.ownerConfig(PROVINCE).categories.single().tags
+
+        assertEquals(listOf(FacilityTag("3", "قلبية"), FacilityTag("4", "أطفال")), tags.specialties)
+        assertEquals(listOf(FacilityTag("12", "قياس ضغط")), tags.services)
+    }
+
+    @Test fun `a facility with no specialty and no service has empty lists, for the page to leave out`() = runTest {
+        respond(
+            """{"id":"$FACILITY","nameAr":"صيدلية","nameEn":null,
+            "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":null},"city":null,
+            "distanceMeters":null,"ratingAverage":null,"ratingCount":0,"isFavorite":false,"imageUrl":null,
+            "lastVerifiedAt":null,"updatedAt":"2026-09-19T10:00:00Z","whatsapp":null,
+            "availability":{"state":"OPEN","nextOpenAt":null,"isOpenNow":true,"isOnDutyToday":false},
+            "descriptionAr":null,"descriptionEn":null,"phone":null,"addressAr":null,"addressEn":null,
+            "neighborhood":null,"location":null,"images":[],"specialties":[],"services":[],"hours":[]}""",
+        )
+
+        val detail = publicApi.facility(FACILITY)
+
+        assertTrue(detail.specialties.isEmpty())
+        assertTrue(detail.services.isEmpty())
     }
 
     @Test fun `a push token is registered for android and unregistered by value`() = runTest {
@@ -298,6 +553,74 @@ class GeneratedAdapterTest {
         val unregister = taken()
         assertEquals("/api/v1/account/push-token/unregister/", unregister.url.encodedPath)
         assertEquals("""{"token":"fcm-token-1"}""", unregister.body!!.utf8())
+    }
+
+    @Test fun `emergency numbers come in the backend's order, dialable`() = runTest {
+        respond(
+            """{"items":[
+            {"id":"$REQUIREMENT","scope":"PROVINCE","provinceId":"$PROVINCE","labelAr":"مشفى الرقة الوطني",
+             "phone":"022 123 456","kind":"HOSPITAL","sortOrder":5},
+            {"id":"$FACILITY","scope":"NATIONAL","provinceId":null,"labelAr":"الإسعاف","phone":"110",
+             "kind":"AMBULANCE","sortOrder":1}]}""",
+        )
+
+        val numbers = publicApi.emergencyNumbers(PROVINCE)
+
+        assertEquals(listOf("الإسعاف", "مشفى الرقة الوطني"), numbers.map { it.nameAr })
+        assertEquals(listOf("110", "022123456"), numbers.map { it.number })
+        assertEquals(listOf(EmergencyScope.NATIONAL, EmergencyScope.PROVINCE), numbers.map { it.scope })
+        assertEquals(PROVINCE, numbers[1].provinceId)
+        val url = taken().url
+        assertEquals("/api/v1/emergency-numbers/", url.encodedPath)
+        assertEquals(PROVINCE, url.queryParameter("provinceId"))
+    }
+
+    @Test fun `the duty roster asks for its days and keeps each shift`() = runTest {
+        respond(
+            """{"provinceId":"$PROVINCE","days":[{"date":"2026-09-29","items":[${compact(FACILITY, "DUTY")}],
+            "shifts":[{"facilityId":"$FACILITY","startsAt":"2026-09-29T20:00:00+03:00",
+                       "endsAt":"2026-09-30T08:00:00+03:00"}]}]}""",
+        )
+
+        val days = publicApi.dutyRoster(PROVINCE, "2026-09-29", days = 9)
+
+        assertEquals("2026-09-29", days.single().date)
+        assertEquals(FACILITY, days.single().facilities.single().id)
+        val shift = days.single().shifts.single()
+        assertEquals("2026-09-29 20:00", DamascusTime.format(shift.startsAtEpochMillis))
+        assertEquals("2026-09-30 08:00", DamascusTime.format(shift.endsAtEpochMillis))
+        val url = taken().url
+        assertEquals("/api/v1/public/duty/", url.encodedPath)
+        assertEquals("2026-09-29", url.queryParameter("date"))
+        // The backend serves one to seven days; more is not asked for.
+        assertEquals("7", url.queryParameter("days"))
+    }
+
+    @Test fun `confirming the hours posts once and reads both times back`() = runTest {
+        respond(
+            """{"facilityId":"$FACILITY","hoursConfirmedAt":"2026-09-29T10:00:00Z",
+            "infoConfirmedAt":"2026-09-29T10:00:00Z"}""",
+        )
+
+        val confirmed = ownerApi.confirmHours(FACILITY)
+
+        assertEquals(1_790_676_000_000L, confirmed.hoursConfirmedAtEpochMillis)
+        assertEquals(confirmed.hoursConfirmedAtEpochMillis, confirmed.infoConfirmedAtEpochMillis)
+        val request = taken()
+        assertEquals("POST", request.method)
+        assertEquals("/api/v1/owner/facilities/$FACILITY/confirm-hours/", request.url.encodedPath)
+    }
+
+    @Test fun `a category without hours is refused by code`() = runTest {
+        respond(
+            """{"code":"HOURS_NOT_SUPPORTED","message":"x","details":{},"requestId":"r"}""",
+            code = 409,
+        )
+
+        val error = runCatching { ownerApi.confirmHours(FACILITY) }.exceptionOrNull() as AppException
+
+        assertEquals(AppError.Kind.CONFLICT, error.error.kind)
+        assertEquals("HOURS_NOT_SUPPORTED", error.error.code)
     }
 
     @Test fun `a no-content answer is success`() = runTest {
@@ -321,8 +644,12 @@ class GeneratedAdapterTest {
     private fun ownerDetail() = """
         {"id":"$FACILITY","nameAr":"صيدلية","category":{"id":"$PHARMACY","nameAr":"صيدلية"},
          "province":{"id":"$PROVINCE","nameAr":"الرقة"},"status":"DRAFT","lastUpdate":"2026-09-19T10:00:00Z",
-         "requiredAction":"COMPLETE_AND_SUBMIT","capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,"serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true},"nameEn":null,"descriptionAr":null,"descriptionEn":null,
-         "phone":"+963900000001","addressAr":null,"addressEn":null,"cityId":null,"neighborhoodId":null,
-         "location":null,"specialtyIds":[],"serviceTagIds":[],"evidence":[],"hours":[],"application":null}
+         "requiredAction":"COMPLETE_AND_SUBMIT",
+         "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,
+         "serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true},"nameEn":null,"descriptionAr":null,
+         "descriptionEn":null,
+         "phone":"+963900000001","whatsapp":"+963933000000","addressAr":null,"addressEn":null,
+         "cityId":null,"neighborhoodId":null,
+         "location":null,"specialtyIds":[3],"serviceTagIds":[12],"evidence":[],"hours":[],"application":null}
     """
 }

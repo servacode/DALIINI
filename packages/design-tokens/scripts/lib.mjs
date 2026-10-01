@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
-const names = ['colors', 'semantic', 'typography', 'spacing', 'radius', 'elevation', 'motion'];
+const names = ['colors', 'colorsDark', 'semantic', 'semanticDark', 'typography', 'spacing', 'radius', 'elevation', 'motion'];
 
 export async function loadTokens() {
   const entries = await Promise.all(names.map(async (name) => [name, JSON.parse(await readFile(resolve(root, 'tokens', `${name}.json`), 'utf8'))]));

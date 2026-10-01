@@ -25,6 +25,10 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
+ * @param dutyActiveNow Facilities on a duty shift right now.
+ * @param newUsers7d 
+ * @param openReports Facility problem reports still OPEN.
+ * @param systemWarnings Arabic, configuration-level warnings.
  * @param pendingReviews 
  * @param reverification 
  * @param facilitiesByStatus 
@@ -34,6 +38,21 @@ import kotlinx.serialization.Contextual
 @Serializable
 
 data class AdminDashboard (
+
+    /* Facilities on a duty shift right now. */
+    @SerialName(value = "dutyActiveNow")
+    val dutyActiveNow: kotlin.Int,
+
+    @SerialName(value = "newUsers7d")
+    val newUsers7d: kotlin.Int,
+
+    /* Facility problem reports still OPEN. */
+    @SerialName(value = "openReports")
+    val openReports: kotlin.Int,
+
+    /* Arabic, configuration-level warnings. */
+    @SerialName(value = "systemWarnings")
+    val systemWarnings: kotlin.collections.List<kotlin.String>,
 
     @SerialName(value = "pendingReviews")
     val pendingReviews: kotlin.Int,

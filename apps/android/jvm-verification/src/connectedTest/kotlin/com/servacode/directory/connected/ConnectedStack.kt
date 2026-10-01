@@ -9,6 +9,8 @@ import com.servacode.directory.core.network.NetworkModule
 import com.servacode.directory.core.network.OwnerApiBoundary
 import com.servacode.directory.core.network.PublicApiBoundary
 import com.servacode.directory.core.network.PushRegistrationBoundary
+import com.servacode.directory.core.network.MaintenanceInterceptor
+import com.servacode.directory.core.network.MaintenanceState
 import com.servacode.directory.core.network.RequestIdInterceptor
 import com.servacode.directory.core.network.api.ApiEnvironment
 import com.servacode.directory.core.network.api.GeneratedClient
@@ -47,7 +49,9 @@ class Device {
 
     private val environment = ApiEnvironment(baseUrl(), allowCleartext = true)
     private val base = NetworkModule.provideBaseHttpClient()
-    private val anonymousHttp = NetworkModule.provideAnonymousHttpClient(base, RequestIdInterceptor())
+    val maintenanceState = MaintenanceState()
+    private val maintenance = MaintenanceInterceptor(maintenanceState)
+    private val anonymousHttp = NetworkModule.provideAnonymousHttpClient(base, RequestIdInterceptor(), maintenance)
         .newBuilder()
         .addInterceptor(Interceptor { chain ->
             if (chain.request().url.encodedPath == "/api/v1/auth/refresh/") refreshCalls.incrementAndGet()
@@ -58,7 +62,8 @@ class Device {
     val session: SessionCoordinator = NetworkModule.provideSessionCoordinator(access, vault, anonymous)
     private val authorized = NetworkModule.provideAuthorizedClient(
         environment,
-        NetworkModule.provideAuthorizedHttpClient(base, RequestIdInterceptor(), AccessTokenInterceptor(access), session),
+        NetworkModule.provideAuthorizedHttpClient(base, RequestIdInterceptor(), AccessTokenInterceptor(access),
+            session, maintenance),
     )
     val public: PublicApiBoundary = NetworkModule.providePublicApiBoundary(anonymous, authorized)
     val owner: OwnerApiBoundary = GeneratedOwnerApi(authorized)
@@ -120,7 +125,8 @@ private fun manage(vararg args: String): String {
         .redirectErrorStream(true)
         .start()
     val output = process.inputStream.bufferedReader().readText()
-    check(process.waitFor(60, TimeUnit.SECONDS) && process.exitValue() == 0) { "manage.py ${args.first()} failed: $output" }
+    check(process.waitFor(60,
+        TimeUnit.SECONDS) && process.exitValue() == 0) { "manage.py ${args.first()} failed: $output" }
     return output
 }
 

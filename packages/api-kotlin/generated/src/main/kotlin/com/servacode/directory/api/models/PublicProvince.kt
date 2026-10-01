@@ -15,6 +15,7 @@
 
 package com.servacode.directory.api.models
 
+import com.servacode.directory.api.models.Coordinates
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -27,6 +28,7 @@ import kotlinx.serialization.Contextual
  * @param code 
  * @param nameAr 
  * @param nameEn 
+ * @param mapCenter Where a map opens for this province when the user's own position is unknown. Null when no centre has been set.
  */
 @Serializable
 
@@ -42,7 +44,11 @@ data class PublicProvince (
     val nameAr: kotlin.String,
 
     @SerialName(value = "nameEn")
-    val nameEn: kotlin.String?
+    val nameEn: kotlin.String?,
+
+    /* Where a map opens for this province when the user's own position is unknown. Null when no centre has been set. */
+    @SerialName(value = "mapCenter")
+    val mapCenter: Coordinates?
 
 ) {
 

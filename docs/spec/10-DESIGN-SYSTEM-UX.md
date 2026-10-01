@@ -25,6 +25,7 @@ Generate:
 - TypeScript/CSS.
 - Kotlin.
 - Swift.
+- Android colour resources (`generated/android/values/`), for XML that cannot read the Kotlin constants.
 
 ## 3. Baseline palette
 

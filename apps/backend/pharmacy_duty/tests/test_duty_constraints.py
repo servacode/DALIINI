@@ -4,11 +4,12 @@ import pytest
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
+from facilities.models import Facility
 from pharmacy_duty.models import DutyShift
 
 
 @pytest.mark.django_db(transaction=True)
-def test_database_rejects_overlapping_duty(facility):
+def test_database_rejects_overlapping_duty(facility: Facility) -> None:
     start = timezone.now() + timedelta(hours=1)
     DutyShift.objects.create(
         facility=facility,

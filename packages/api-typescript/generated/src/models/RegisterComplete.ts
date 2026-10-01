@@ -30,6 +30,12 @@ export interface RegisterComplete {
      * @type {string}
      * @memberof RegisterComplete
      */
+    displayName: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RegisterComplete
+     */
     password: string;
     /**
      * 
@@ -50,6 +56,7 @@ export interface RegisterComplete {
  */
 export function instanceOfRegisterComplete(value: object): value is RegisterComplete {
     if (!('challengeId' in value) || value['challengeId'] === undefined) return false;
+    if (!('displayName' in value) || value['displayName'] === undefined) return false;
     if (!('password' in value) || value['password'] === undefined) return false;
     return true;
 }
@@ -65,6 +72,7 @@ export function RegisterCompleteFromJSONTyped(json: any, ignoreDiscriminator: bo
     return {
         
         'challengeId': json['challengeId'],
+        'displayName': json['displayName'],
         'password': json['password'],
         'platform': json['platform'] == null ? undefined : json['platform'],
         'deviceName': json['deviceName'] == null ? undefined : json['deviceName'],
@@ -83,6 +91,7 @@ export function RegisterCompleteToJSONTyped(value?: RegisterComplete | null, ign
     return {
         
         'challengeId': value['challengeId'],
+        'displayName': value['displayName'],
         'password': value['password'],
         'platform': value['platform'],
         'deviceName': value['deviceName'],

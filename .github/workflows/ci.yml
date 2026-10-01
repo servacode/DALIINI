@@ -8,9 +8,15 @@ on:
 permissions:
   contents: read
 
+# A newer push to the same branch/PR supersedes the running pipeline.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   governance:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -19,9 +25,19 @@ jobs:
       - run: node scripts/check-governance.mjs
       - run: node packages/design-tokens/scripts/validate.mjs
       - run: node packages/design-tokens/scripts/generate.mjs --check
+      - run: node packages/design-tokens/scripts/vocabulary.mjs --check
+      - run: node packages/design-tokens/scripts/icons.mjs --check
+      # The two source gates that need no runtime. Until now nothing ran them, which is how the
+      # secret scan came to fail on a dependency's compiled WebAssembly for an unknown length of
+      # time: a gate nobody executes reports nothing.
+      - name: Secret-shaped material and source security invariants
+        run: python3 infrastructure/quality/source_security.py
+      - name: No open P0/P1 release blocker
+        run: python3 infrastructure/quality/release_blockers.py
 
   backend-source:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     services:
       postgres:
         image: postgis/postgis:17-3.5
@@ -58,6 +74,7 @@ jobs:
 
   contract-drift:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - name: Install GeoDjango native libraries
@@ -83,3 +100,93 @@ jobs:
             exit 1
           fi
           echo "PASS: generated clients match the committed artefacts."
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      # No `version:` input: pnpm/action-setup reads packageManager from package.json.
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Admin lint
+        run: pnpm --filter @servacode/admin lint
+      - name: Admin typecheck
+        run: pnpm --filter @servacode/admin typecheck
+      - name: Admin unit tests
+        run: pnpm --filter @servacode/admin test
+      - name: Admin build
+        # Placeholder origins: the build validates they are set, nothing is contacted.
+        env:
+          ADMIN_API_ORIGIN: http://127.0.0.1:9
+          ADMIN_PUBLIC_ORIGIN: http://127.0.0.1:3100
+        run: pnpm --filter @servacode/admin build
+      - name: Web lint
+        run: pnpm --filter @servacode/public-web lint
+      - name: Web typecheck
+        run: pnpm --filter @servacode/public-web typecheck
+      # apps/web has no `test` script; --if-present picks one up once it exists.
+      - name: Web tests
+        run: pnpm --filter @servacode/public-web run --if-present test
+      - name: Web build
+        run: pnpm --filter @servacode/public-web build
+
+  # The OTP bot (services/whatsapp-bot). Deliberately outside the pnpm workspace — an
+  # unofficial WhatsApp library has no business in the website's dependency tree — so it is
+  # gated on its own. Its rules are pure, so they prove themselves with nothing installed.
+  whatsapp-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Pacing and addressing rules
+        run: node --test test/*.test.js
+        working-directory: services/whatsapp-bot
+      - name: Every source file parses
+        # The session and server modules import Baileys, which is not installed here; a syntax
+        # check still catches what a test cannot reach without a paired WhatsApp account.
+        run: node --check src/session.js && node --check src/server.js && node --check src/pair.js && node --check src/message.js && node --check src/queue.js
+        working-directory: services/whatsapp-bot
+
+  docker-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Contexts match render.yaml: the Next apps build from the monorepo root,
+          # the backend from its own directory.
+          - name: backend
+            context: apps/backend
+            file: apps/backend/Dockerfile
+          - name: web
+            context: .
+            file: apps/web/Dockerfile
+          - name: admin
+            context: .
+            file: apps/admin/Dockerfile
+          - name: db-backup
+            context: .
+            file: infrastructure/backup/Dockerfile
+          - name: whatsapp-bot
+            context: services/whatsapp-bot
+            file: services/whatsapp-bot/Dockerfile
+    name: docker-build (${{ matrix.name }})
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          push: false
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}

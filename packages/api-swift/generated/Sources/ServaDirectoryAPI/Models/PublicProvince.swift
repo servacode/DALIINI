@@ -16,12 +16,15 @@ public struct PublicProvince: Codable, JSONEncodable, Hashable {
     public var code: String
     public var nameAr: String
     public var nameEn: String?
+    /** Where a map opens for this province when the user's own position is unknown. Null when no centre has been set. */
+    public var mapCenter: Coordinates?
 
-    public init(id: UUID, code: String, nameAr: String, nameEn: String?) {
+    public init(id: UUID, code: String, nameAr: String, nameEn: String?, mapCenter: Coordinates?) {
         self.id = id
         self.code = code
         self.nameAr = nameAr
         self.nameEn = nameEn
+        self.mapCenter = mapCenter
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
@@ -29,6 +32,7 @@ public struct PublicProvince: Codable, JSONEncodable, Hashable {
         case code
         case nameAr
         case nameEn
+        case mapCenter
     }
 
     // Encodable protocol methods
@@ -39,6 +43,7 @@ public struct PublicProvince: Codable, JSONEncodable, Hashable {
         try container.encode(code, forKey: .code)
         try container.encode(nameAr, forKey: .nameAr)
         try container.encode(nameEn, forKey: .nameEn)
+        try container.encode(mapCenter, forKey: .mapCenter)
     }
 }
 

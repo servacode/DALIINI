@@ -49,6 +49,18 @@ export interface Profile {
      * @memberof Profile
      */
     phoneVerifiedAt: Date | null;
+    /**
+     * Free text, as the person writes it. Empty when they have not given one.
+     * @type {string}
+     * @memberof Profile
+     */
+    address: string;
+    /**
+     * Public URL of the profile picture, or null when there is none.
+     * @type {string}
+     * @memberof Profile
+     */
+    profileImageUrl: string | null;
 }
 
 /**
@@ -60,6 +72,8 @@ export function instanceOfProfile(value: object): value is Profile {
     if (!('phone' in value) || value['phone'] === undefined) return false;
     if (!('provinceId' in value) || value['provinceId'] === undefined) return false;
     if (!('phoneVerifiedAt' in value) || value['phoneVerifiedAt'] === undefined) return false;
+    if (!('address' in value) || value['address'] === undefined) return false;
+    if (!('profileImageUrl' in value) || value['profileImageUrl'] === undefined) return false;
     return true;
 }
 
@@ -78,6 +92,8 @@ export function ProfileFromJSONTyped(json: any, ignoreDiscriminator: boolean): P
         'phone': json['phone'],
         'provinceId': json['provinceId'],
         'phoneVerifiedAt': (json['phoneVerifiedAt'] == null ? null : new Date(json['phoneVerifiedAt'])),
+        'address': json['address'],
+        'profileImageUrl': json['profileImageUrl'],
     };
 }
 
@@ -97,6 +113,8 @@ export function ProfileToJSONTyped(value?: Profile | null, ignoreDiscriminator: 
         'phone': value['phone'],
         'provinceId': value['provinceId'],
         'phoneVerifiedAt': ((value['phoneVerifiedAt'] as any).toISOString()),
+        'address': value['address'],
+        'profileImageUrl': value['profileImageUrl'],
     };
 }
 

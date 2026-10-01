@@ -4,7 +4,7 @@ from storages.backends.s3 import S3Storage
 from .public_media import public_media_url
 
 
-class _DirectoryS3Storage(S3Storage):
+class _DirectoryS3Storage(S3Storage):  # type: ignore[misc]
     endpoint_url = settings.S3_ENDPOINT_URL
     region_name = settings.S3_REGION
     access_key = settings.S3_ACCESS_KEY_ID

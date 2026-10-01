@@ -6,9 +6,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.servacode.directory.core.datastore.DirectoryPreferencesStore
+import com.servacode.directory.core.location.fixWithoutPrompt
 import com.servacode.directory.core.location.LocationProvider
 import com.servacode.directory.core.location.LocationResult
-import com.servacode.directory.core.model.AppErrorText
+import com.servacode.directory.core.maps.MapCamera
+import com.servacode.directory.core.maps.MapCameraPolicy
+import com.servacode.directory.core.maps.MapPoint
+import com.servacode.directory.core.maps.toMapPoint
 import com.servacode.directory.core.model.BusinessHour
 import com.servacode.directory.core.model.DirectoryRoute
 import com.servacode.directory.core.model.OwnerCategoryConfig
@@ -17,15 +21,17 @@ import com.servacode.directory.core.model.OwnerFacilityDetail
 import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.network.OwnerFacilityDraftInput
 import com.servacode.directory.core.network.OwnerFacilityPatch
+import com.servacode.directory.core.network.PushAvailability
+import com.servacode.directory.core.network.UploadReader
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
+import javax.inject.Inject
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 enum class OnboardingStep {
     PROVINCE_CATEGORY,
@@ -46,6 +52,8 @@ data class OnboardingForm(
     val nameEn: String = "",
     val descriptionAr: String = "",
     val phone: String = "",
+    /** Optional. Blank clears it on the backend. */
+    val whatsapp: String = "",
     val addressAr: String = "",
 )
 
@@ -59,7 +67,14 @@ sealed interface OnboardingUiState {
         val draft: OwnerFacilityDetail?,
         val form: OnboardingForm,
         val busy: Boolean = false,
-        val message: String? = null,
+        val message: OnboardingMessage? = null,
+        /** Set once, on the submission that just succeeded; the screen may then ask for notifications. */
+        val justSubmitted: Boolean = false,
+        /** Where the location picker looks; null until known, and the picker waits for it. */
+        val pickerCamera: MapCamera? = null,
+        val pickerReady: Boolean = false,
+        /** The point the owner marked and has not saved yet. */
+        val pendingPoint: MapPoint? = null,
     ) : OnboardingUiState
     data object Error : OnboardingUiState
 }
@@ -71,8 +86,13 @@ class OnboardingViewModel @Inject constructor(
     private val save: SaveOnboardingUseCase,
     private val preferences: DirectoryPreferencesStore,
     private val locationProvider: LocationProvider,
-    private val uploadReader: OwnerUploadReader,
+    private val uploadReader: UploadReader,
+    private val push: PushAvailability,
 ) : ViewModel() {
+    /** Whether this build can receive push, and so whether a notification permission is of any use. */
+    val pushEnabled: Boolean
+        get() = push.enabled
+
     private val route = savedStateHandle.toRoute<DirectoryRoute.Onboarding>()
     private val _state = MutableStateFlow<OnboardingUiState>(OnboardingUiState.Loading)
     val state: StateFlow<OnboardingUiState> = _state.asStateFlow()
@@ -107,9 +127,15 @@ class OnboardingViewModel @Inject constructor(
                     nameEn = existing?.nameEn.orEmpty(),
                     descriptionAr = existing?.descriptionAr.orEmpty(),
                     phone = existing?.phone.orEmpty(),
+                    whatsapp = existing?.whatsapp.orEmpty(),
                     addressAr = existing?.addressAr.orEmpty(),
                 ),
             )
+            val pickerCamera = MapCameraPolicy.forPicker(
+                user = { locationProvider.fixWithoutPrompt()?.let { MapPoint(it.latitude, it.longitude) } },
+                province = { config.province.mapCenter?.toMapPoint() },
+            )
+            mutate { it.copy(pickerCamera = pickerCamera, pickerReady = true) }
         }
     }
 
@@ -125,6 +151,7 @@ class OnboardingViewModel @Inject constructor(
     fun updateNameEn(value: String) = updateForm { copy(nameEn = value) }
     fun updateDescriptionAr(value: String) = updateForm { copy(descriptionAr = value) }
     fun updatePhone(value: String) = updateForm { copy(phone = value) }
+    fun updateWhatsapp(value: String) = updateForm { copy(whatsapp = value) }
     fun updateAddressAr(value: String) = updateForm { copy(addressAr = value) }
 
     private fun updateForm(change: OnboardingForm.() -> OnboardingForm) {
@@ -166,6 +193,7 @@ class OnboardingViewModel @Inject constructor(
                     nameEn = current.form.nameEn.trim(),
                     descriptionAr = current.form.descriptionAr.trim(),
                     phone = current.form.phone.trim(),
+                    whatsapp = current.form.whatsapp.trim(),
                     addressAr = current.form.addressAr.trim(),
                 ),
             )
@@ -175,42 +203,65 @@ class OnboardingViewModel @Inject constructor(
                 it.copy(
                     draft = draft,
                     step = if (advance) OnboardingStep.MAP_POINT else it.step,
-                    message = if (advance) null else "تم حفظ المسودة تلقائيًا",
+                    message = if (advance) null else OnboardingMessage(OnboardingNotice.DRAFT_SAVED),
                 )
             }
         }.onFailure { failure ->
-                mutate { it.copy(message = "تعذر حفظ المسودة: " + AppErrorText.of(failure.toAppError())) }
+                mutate {
+                    it.copy(
+                        message = OnboardingMessage(
+                            OnboardingNotice.DRAFT_SAVE_FAILED,
+                            failure.toAppError(),
+                        ),
+                    )
+                }
             }
     }
 
-    fun selectMapPoint(latitude: Double, longitude: Double) {
+    /** A tap on the picker marks the point; nothing is saved until [confirmMapPoint]. */
+    fun markMapPoint(point: MapPoint) = mutate { it.copy(pendingPoint = point, message = null) }
+
+    /** Saves the point the owner marked and can see on the map. */
+    fun confirmMapPoint() {
         val content = _state.value as? OnboardingUiState.Content ?: return
         val draft = content.draft ?: return
+        val point = content.pendingPoint ?: return
         viewModelScope.launch {
-            save.location(draft.summary.id, latitude, longitude).onSuccess { updated ->
-                mutate { it.copy(draft = updated, step = OnboardingStep.HOURS, message = null) }
+            save.location(draft.summary.id, point.latitude, point.longitude).onSuccess { updated ->
+                mutate {
+                    it.copy(draft = updated, pendingPoint = null, step = OnboardingStep.HOURS, message = null)
+                }
             }.onFailure { failure ->
-                mutate { it.copy(message = "تعذر حفظ الموقع: " + AppErrorText.of(failure.toAppError())) }
+                mutate {
+                    it.copy(
+                        message = OnboardingMessage(
+                            OnboardingNotice.LOCATION_SAVE_FAILED,
+                            failure.toAppError(),
+                        ),
+                    )
+                }
             }
         }
     }
 
+    /** Marks where the owner is and brings the picker there; saving stays their decision. */
     fun useCurrentLocation() {
         viewModelScope.launch {
-            val current = _state.value as? OnboardingUiState.Content ?: return@launch
-            val draft = current.draft ?: return@launch
             when (val result = locationProvider.current()) {
-                is LocationResult.Available -> save.location(
-                    draft.summary.id,
-                    result.fix.latitude,
-                    result.fix.longitude,
-                ).onSuccess { updated ->
-                    mutate { it.copy(draft = updated, step = OnboardingStep.HOURS, message = null) }
-                }.onFailure { failure ->
-                mutate { it.copy(message = "تعذر حفظ الموقع: " + AppErrorText.of(failure.toAppError())) }
-            }
-                LocationResult.PermissionDenied -> mutate { it.copy(message = "يلزم السماح بالموقع") }
-                LocationResult.Unavailable -> mutate { it.copy(message = "تعذر تحديد الموقع") }
+                is LocationResult.Available -> {
+                    val point = MapPoint(result.fix.latitude, result.fix.longitude)
+                    mutate {
+                        it.copy(
+                            pendingPoint = point,
+                            pickerCamera = MapCamera(point, MapCameraPolicy.FACILITY_ZOOM),
+                            message = null,
+                        )
+                    }
+                }
+                LocationResult.PermissionDenied ->
+                    mutate { it.copy(message = OnboardingMessage(OnboardingNotice.LOCATION_PERMISSION)) }
+                LocationResult.Unavailable ->
+                    mutate { it.copy(message = OnboardingMessage(OnboardingNotice.LOCATION_UNAVAILABLE)) }
             }
         }
     }
@@ -222,7 +273,14 @@ class OnboardingViewModel @Inject constructor(
             save.hours(id, rows).onSuccess {
                 mutate { it.copy(step = OnboardingStep.PUBLIC_IMAGES, message = null) }
             }.onFailure { failure ->
-                mutate { it.copy(message = "تعذر حفظ ساعات العمل: " + AppErrorText.of(failure.toAppError())) }
+                mutate {
+                    it.copy(
+                        message = OnboardingMessage(
+                            OnboardingNotice.HOURS_SAVE_FAILED,
+                            failure.toAppError(),
+                        ),
+                    )
+                }
             }
         }
     }
@@ -236,7 +294,7 @@ class OnboardingViewModel @Inject constructor(
         val id = content.draft?.summary?.id ?: return
         viewModelScope.launch {
             val payload = uploadReader.read(uri).getOrElse {
-                mutate { it.copy(message = "تعذر قراءة الصورة") }
+                mutate { it.copy(message = OnboardingMessage(OnboardingNotice.IMAGE_UNREADABLE)) }
                 return@launch
             }
             val result = if (requirementId == null) {
@@ -249,7 +307,7 @@ class OnboardingViewModel @Inject constructor(
                     mutate {
                         it.copy(
                             draft = updated,
-                            message = "تم رفع الملف",
+                            message = OnboardingMessage(OnboardingNotice.FILE_UPLOADED),
                             step = if (requirementId == null) {
                                 OnboardingStep.SPECIALIZED_FIELDS
                             } else it.step,
@@ -257,7 +315,14 @@ class OnboardingViewModel @Inject constructor(
                     }
                 }
             }.onFailure { failure ->
-                mutate { it.copy(message = "تعذر رفع الملف: " + AppErrorText.of(failure.toAppError())) }
+                mutate {
+                    it.copy(
+                        message = OnboardingMessage(
+                            OnboardingNotice.UPLOAD_FAILED,
+                            failure.toAppError(),
+                        ),
+                    )
+                }
             }
         }
     }
@@ -284,7 +349,8 @@ class OnboardingViewModel @Inject constructor(
                             draft = updated,
                             step = OnboardingStep.STATUS,
                             busy = false,
-                            message = "تم إرسال الطلب للمراجعة",
+                            message = OnboardingMessage(OnboardingNotice.SUBMITTED),
+                            justSubmitted = true,
                         )
                     }
                 }
@@ -293,12 +359,17 @@ class OnboardingViewModel @Inject constructor(
                     it.copy(
                         step = OnboardingStep.REVIEW,
                         busy = false,
-                        message = "تعذر الإرسال: " + AppErrorText.of(failure.toAppError()),
+                        message = OnboardingMessage(
+                            OnboardingNotice.SUBMIT_FAILED,
+                            failure.toAppError(),
+                        ),
                     )
                 }
             }
         }
     }
+
+    fun notificationPromptHandled() = mutate { it.copy(justSubmitted = false) }
 
     private fun mutate(change: (OnboardingUiState.Content) -> OnboardingUiState.Content) {
         val current = _state.value as? OnboardingUiState.Content ?: return

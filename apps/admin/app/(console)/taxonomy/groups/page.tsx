@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useCan } from "../../../../components/admin-shell";
 import {
   type Column,
+  ConfirmDialog,
   DataTable,
   ErrorState,
   FormSection,
@@ -24,6 +25,7 @@ type Group = Readonly<{
   nameEn: string;
   active: boolean;
   sortOrder: number;
+  iconKey?: string;
 }>;
 
 /**
@@ -39,6 +41,13 @@ export default function TaxonomyGroupsPage() {
 
   const [draft, setDraft] = useState({ code: "", nameAr: "", nameEn: "", sortOrder: "0" });
   const [toast, setToast] = useState<string | null>(null);
+  const [editing, setEditing] = useState<{
+    id: string;
+    nameAr: string;
+    nameEn: string;
+    iconKey: string;
+    sortOrder: string;
+  } | null>(null);
   const errors = fieldErrorsFor(mutation.error);
 
   async function create(): Promise<void> {
@@ -51,6 +60,21 @@ export default function TaxonomyGroupsPage() {
     if (!ok) return;
     setDraft({ code: "", nameAr: "", nameEn: "", sortOrder: "0" });
     setToast("تمت إضافة المجموعة.");
+    groups.reload();
+  }
+
+  async function saveEdit(): Promise<void> {
+    if (!editing) return;
+    const ok = await mutation.run("categoryGroupUpdate", {
+      id: editing.id,
+      nameAr: editing.nameAr.trim(),
+      nameEn: editing.nameEn.trim(),
+      iconKey: editing.iconKey.trim(),
+      sortOrder: Number(editing.sortOrder) || 0,
+    });
+    if (!ok) return;
+    setEditing(null);
+    setToast("تم حفظ المجموعة.");
     groups.reload();
   }
 
@@ -83,15 +107,34 @@ export default function TaxonomyGroupsPage() {
       width: "1%",
       render: (row) =>
         canManage ? (
-          <button
-            type="button"
-            className="button-ghost"
-            disabled={mutation.pending}
-            data-testid={`toggle-group-${row.code}`}
-            onClick={() => toggle(row)}
-          >
-            {row.active ? "تعطيل" : "تفعيل"}
-          </button>
+          <div className="button-row">
+            <button
+              type="button"
+              className="button-ghost"
+              data-testid={`edit-group-${row.code}`}
+              onClick={() => {
+                mutation.reset();
+                setEditing({
+                  id: row.id,
+                  nameAr: row.nameAr,
+                  nameEn: row.nameEn ?? "",
+                  iconKey: row.iconKey ?? "",
+                  sortOrder: String(row.sortOrder),
+                });
+              }}
+            >
+              تعديل
+            </button>
+            <button
+              type="button"
+              className="button-ghost"
+              disabled={mutation.pending}
+              data-testid={`toggle-group-${row.code}`}
+              onClick={() => toggle(row)}
+            >
+              {row.active ? "تعطيل" : "تفعيل"}
+            </button>
+          </div>
         ) : null,
     },
   ];
@@ -167,6 +210,61 @@ export default function TaxonomyGroupsPage() {
           </label>
         </FormSection>
       ) : null}
+
+      <ConfirmDialog
+        open={editing !== null}
+        title="تعديل المجموعة"
+        body="الرمز ثابت ولا يتغير. الاسم والأيقونة والترتيب تظهر فوراً في التطبيقات."
+        confirmLabel="حفظ"
+        pending={mutation.pending}
+        error={mutation.error}
+        onConfirm={saveEdit}
+        onCancel={() => setEditing(null)}
+      >
+        {editing ? (
+          <>
+            <label className="field">
+              <span>الاسم بالعربية</span>
+              <input
+                value={editing.nameAr}
+                data-testid="edit-group-name-ar"
+                aria-invalid={Boolean(errors.nameAr)}
+                onChange={(event) => setEditing({ ...editing, nameAr: event.target.value })}
+              />
+              {errors.nameAr ? <span className="field-error">{errors.nameAr}</span> : null}
+            </label>
+            <label className="field">
+              <span>الاسم بالإنجليزية</span>
+              <input
+                dir="ltr"
+                value={editing.nameEn}
+                onChange={(event) => setEditing({ ...editing, nameEn: event.target.value })}
+              />
+            </label>
+            <label className="field">
+              <span>مفتاح الأيقونة</span>
+              <input
+                dir="ltr"
+                value={editing.iconKey}
+                data-testid="edit-group-icon"
+                aria-invalid={Boolean(errors.iconKey)}
+                onChange={(event) => setEditing({ ...editing, iconKey: event.target.value })}
+              />
+              <span className="field-hint">اسم الأيقونة كما تعرفه التطبيقات، مثل pharmacy.</span>
+              {errors.iconKey ? <span className="field-error">{errors.iconKey}</span> : null}
+            </label>
+            <label className="field">
+              <span>الترتيب</span>
+              <input
+                type="number"
+                dir="ltr"
+                value={editing.sortOrder}
+                onChange={(event) => setEditing({ ...editing, sortOrder: event.target.value })}
+              />
+            </label>
+          </>
+        ) : null}
+      </ConfirmDialog>
 
       <Toast message={toast} onDismiss={() => setToast(null)} />
     </div>

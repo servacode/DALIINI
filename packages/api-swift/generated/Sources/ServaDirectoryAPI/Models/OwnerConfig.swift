@@ -12,10 +12,10 @@ import AnyCodable
 
 public struct OwnerConfig: Codable, JSONEncodable, Hashable {
 
-    public var province: NamedRef
+    public var province: OwnerConfigProvince
     public var categories: [OwnerConfigCategory]
 
-    public init(province: NamedRef, categories: [OwnerConfigCategory]) {
+    public init(province: OwnerConfigProvince, categories: [OwnerConfigCategory]) {
         self.province = province
         self.categories = categories
     }

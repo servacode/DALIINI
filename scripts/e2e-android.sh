@@ -55,6 +55,16 @@ mc() {
     "mc alias set e2e http://e2e-minio:9000 $S3_USER $S3_PASSWORD >/dev/null 2>&1 && $*"
 }
 
+# Anonymous reads of objects only. MinIO's canned "download" policy also grants ListBucket,
+# which would let anyone enumerate every public key, a draft facility's photo included (INT-081).
+PUBLIC_READ='{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":["*"]},"Action":["s3:GetObject"],"Resource":["arn:aws:s3:::directory-public/*"]}]}'
+public_read_only() { # alias
+  docker run --rm --network "$NETWORK" -e POLICY="$PUBLIC_READ" --entrypoint sh "$MC_IMAGE" -c \
+    "mc alias set $1 http://$2:9000 $S3_USER $S3_PASSWORD >/dev/null 2>&1 \
+     && printf '%s' \"\$POLICY\" > /tmp/public-read.json \
+     && mc anonymous set-json /tmp/public-read.json $1/directory-public >/dev/null"
+}
+
 failures=0
 step() { # name, command...
   local name="$1"; shift
@@ -74,10 +84,10 @@ docker run -d --name e2e-minio --network "$NETWORK" -p "$MINIO_PORT:9000" \
 ready=0
 for _ in $(seq 1 30); do
   # Public media is readable by anyone; private evidence keeps the default: no anonymous access.
-  if mc "mc mb --ignore-existing e2e/directory-public e2e/directory-private >/dev/null \
-         && mc anonymous set download e2e/directory-public >/dev/null"; then
+  if mc "mc mb --ignore-existing e2e/directory-public e2e/directory-private >/dev/null" \
+      && public_read_only e2e e2e-minio; then
     ready=1
-    echo "minio ready: directory-public anonymous download, directory-private private"
+    echo "minio ready: directory-public anonymous object reads, directory-private private"
     break
   fi
   sleep 1
@@ -172,6 +182,9 @@ private_status="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$MINI
 echo "public object without credentials: $public_status; private object without credentials: $private_status"
 step "public media readable anonymously" test -n "$public_key" -a "$public_status" = "200"
 step "private evidence refused anonymously" test -n "$private_key" -a "$private_status" = "403"
+listing_status="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$MINIO_PORT/directory-public/")"
+echo "public bucket listing without credentials: $listing_status"
+step "public keys cannot be listed anonymously" test "$listing_status" = "403"
 
 echo
 echo "failures=$failures"

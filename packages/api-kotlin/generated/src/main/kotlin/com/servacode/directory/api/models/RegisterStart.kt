@@ -21,18 +21,14 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * 
+ * What is needed to send a code: a number, and where the account will live.  The name is not asked for here. Nothing should be collected about a person before they have shown the number is theirs, and a name given to a challenge that is never completed is a name stored for nothing.
  *
- * @param displayName 
  * @param phone 
  * @param provinceId 
  */
 @Serializable
 
 data class RegisterStart (
-
-    @SerialName(value = "displayName")
-    val displayName: kotlin.String,
 
     @SerialName(value = "phone")
     val phone: kotlin.String,

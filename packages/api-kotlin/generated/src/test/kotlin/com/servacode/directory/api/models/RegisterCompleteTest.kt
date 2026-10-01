@@ -31,6 +31,12 @@ class RegisterCompleteTest : ShouldSpec() {
             //modelInstance.challengeId shouldBe ("TODO")
         }
 
+        // to test the property `displayName`
+        should("test displayName") {
+            // uncomment below to test the property
+            //modelInstance.displayName shouldBe ("TODO")
+        }
+
         // to test the property `password`
         should("test password") {
             // uncomment below to test the property

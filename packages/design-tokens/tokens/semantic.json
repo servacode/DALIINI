@@ -4,13 +4,19 @@
     "secondary": "{colors.textSecondary}",
     "muted": "{colors.textMuted}",
     "onPrimary": "{colors.surface}",
-    "danger": "{colors.danger}"
+    "danger": "{colors.danger}",
+    "onBar": "{colors.barContent}",
+    "onBarMuted": "{colors.barContentMuted}",
+    "warning": "{colors.warningText}"
   },
   "surface": {
     "canvas": "{colors.background}",
     "default": "{colors.surface}",
     "subtle": "{colors.surfaceAlt}",
-    "brandSoft": "{colors.primarySoft}"
+    "hover": "{colors.surfaceHover}",
+    "selected": "{colors.primarySofter}",
+    "brandSoft": "{colors.primarySoft}",
+    "bar": "{colors.barDeep}"
   },
   "action": {
     "primary": "{colors.primary}",
@@ -19,12 +25,17 @@
   },
   "stroke": {
     "default": "{colors.border}",
+    "subtle": "{colors.borderSubtle}",
     "strong": "{colors.borderStrong}"
   },
   "feedback": {
     "success": "{colors.success}",
     "warning": "{colors.warning}",
     "danger": "{colors.danger}",
-    "info": "{colors.info}"
+    "info": "{colors.info}",
+    "successSoft": "{colors.successSoft}",
+    "warningSoft": "{colors.warningSoft}",
+    "dangerSoft": "{colors.dangerSoft}",
+    "infoSoft": "{colors.infoSoft}"
   }
 }

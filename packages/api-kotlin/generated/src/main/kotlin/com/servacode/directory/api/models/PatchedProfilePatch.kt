@@ -25,6 +25,7 @@ import kotlinx.serialization.Contextual
  *
  * @param displayName 
  * @param provinceId 
+ * @param address 
  */
 @Serializable
 
@@ -34,7 +35,10 @@ data class PatchedProfilePatch (
     val displayName: kotlin.String? = null,
 
     @Contextual @SerialName(value = "provinceId")
-    val provinceId: java.util.UUID? = null
+    val provinceId: java.util.UUID? = null,
+
+    @SerialName(value = "address")
+    val address: kotlin.String? = null
 
 ) {
 

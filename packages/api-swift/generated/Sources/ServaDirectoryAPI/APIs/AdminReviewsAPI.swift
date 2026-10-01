@@ -54,6 +54,173 @@ open class AdminReviewsAPI {
     }
 
     /**
+     Create a rejection template
+     
+     - parameter adminRejectionTemplateRequest: (body)  
+     - returns: AdminRejectionTemplate
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminRejectionTemplateCreate(adminRejectionTemplateRequest: AdminRejectionTemplateRequest) async throws -> AdminRejectionTemplate {
+        return try await adminRejectionTemplateCreateWithRequestBuilder(adminRejectionTemplateRequest: adminRejectionTemplateRequest).execute().body
+    }
+
+    /**
+     Create a rejection template
+     - POST /api/v1/admin/rejection-templates/
+     - Requires admin.reviews.decide, re-checked inside the handler.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter adminRejectionTemplateRequest: (body)  
+     - returns: RequestBuilder<AdminRejectionTemplate> 
+     */
+    open class func adminRejectionTemplateCreateWithRequestBuilder(adminRejectionTemplateRequest: AdminRejectionTemplateRequest) -> RequestBuilder<AdminRejectionTemplate> {
+        let localVariablePath = "/api/v1/admin/rejection-templates/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminRejectionTemplateRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminRejectionTemplate>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Delete a rejection template
+     
+     - parameter templateId: (path)  
+     - returns: Void
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminRejectionTemplateDelete(templateId: UUID) async throws {
+        return try await adminRejectionTemplateDeleteWithRequestBuilder(templateId: templateId).execute().body
+    }
+
+    /**
+     Delete a rejection template
+     - DELETE /api/v1/admin/rejection-templates/{template_id}/
+     - Past rejections keep their text; a template is only a starting point.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter templateId: (path)  
+     - returns: RequestBuilder<Void> 
+     */
+    open class func adminRejectionTemplateDeleteWithRequestBuilder(templateId: UUID) -> RequestBuilder<Void> {
+        var localVariablePath = "/api/v1/admin/rejection-templates/{template_id}/"
+        let templateIdPreEscape = "\(APIHelper.mapValueToPathItem(templateId))"
+        let templateIdPostEscape = templateIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{template_id}", with: templateIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return localVariableRequestBuilder.init(method: "DELETE", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Edit, reorder or retire a rejection template
+     
+     - parameter templateId: (path)  
+     - parameter adminRejectionTemplateRequest: (body)  
+     - returns: AdminRejectionTemplate
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminRejectionTemplateUpdate(templateId: UUID, adminRejectionTemplateRequest: AdminRejectionTemplateRequest) async throws -> AdminRejectionTemplate {
+        return try await adminRejectionTemplateUpdateWithRequestBuilder(templateId: templateId, adminRejectionTemplateRequest: adminRejectionTemplateRequest).execute().body
+    }
+
+    /**
+     Edit, reorder or retire a rejection template
+     - PUT /api/v1/admin/rejection-templates/{template_id}/
+     - Omitted fields keep their value.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter templateId: (path)  
+     - parameter adminRejectionTemplateRequest: (body)  
+     - returns: RequestBuilder<AdminRejectionTemplate> 
+     */
+    open class func adminRejectionTemplateUpdateWithRequestBuilder(templateId: UUID, adminRejectionTemplateRequest: AdminRejectionTemplateRequest) -> RequestBuilder<AdminRejectionTemplate> {
+        var localVariablePath = "/api/v1/admin/rejection-templates/{template_id}/"
+        let templateIdPreEscape = "\(APIHelper.mapValueToPathItem(templateId))"
+        let templateIdPostEscape = templateIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{template_id}", with: templateIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminRejectionTemplateRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminRejectionTemplate>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     List rejection templates
+     
+     - parameter active: (query)  (optional)
+     - returns: AdminRejectionTemplateList
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminRejectionTemplatesList(active: Bool? = nil) async throws -> AdminRejectionTemplateList {
+        return try await adminRejectionTemplatesListWithRequestBuilder(active: active).execute().body
+    }
+
+    /**
+     List rejection templates
+     - GET /api/v1/admin/rejection-templates/
+     - Ordered by `sortOrder`. `active=true` keeps only the active ones.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter active: (query)  (optional)
+     - returns: RequestBuilder<AdminRejectionTemplateList> 
+     */
+    open class func adminRejectionTemplatesListWithRequestBuilder(active: Bool? = nil) -> RequestBuilder<AdminRejectionTemplateList> {
+        let localVariablePath = "/api/v1/admin/rejection-templates/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "active": (wrappedValue: active?.encodeToJSON(), isExplode: true),
+        ])
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminRejectionTemplateList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Approve an application
      
      - parameter applicationId: (path)  
@@ -187,14 +354,17 @@ open class AdminReviewsAPI {
      List facility applications awaiting or past review
      
      - parameter category: (query) Category id of the facility the application belongs to. (optional)
+     - parameter evidence: (query) &#x60;complete&#x60; or &#x60;incomplete&#x60;: whether every required document is uploaded. (optional)
+     - parameter from: (query) Submitted on or after this day (YYYY-MM-DD, Damascus) or this ISO datetime. (optional)
      - parameter kind: (query) Application kind, for example REGISTRATION or REVERIFICATION. (optional)
      - parameter province: (query) Province id of the facility the application belongs to. (optional)
      - parameter status: (query) Application status, for example SUBMITTED or APPROVED. (optional)
+     - parameter to: (query) Submitted on or before this day (YYYY-MM-DD, Damascus) or before this datetime. (optional)
      - returns: AdminApplicationList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminReviewsList(category: String? = nil, kind: String? = nil, province: String? = nil, status: String? = nil) async throws -> AdminApplicationList {
-        return try await adminReviewsListWithRequestBuilder(category: category, kind: kind, province: province, status: status).execute().body
+    open class func adminReviewsList(category: String? = nil, evidence: String? = nil, from: String? = nil, kind: String? = nil, province: String? = nil, status: String? = nil, to: String? = nil) async throws -> AdminApplicationList {
+        return try await adminReviewsListWithRequestBuilder(category: category, evidence: evidence, from: from, kind: kind, province: province, status: status, to: to).execute().body
     }
 
     /**
@@ -205,12 +375,15 @@ open class AdminReviewsAPI {
        - type: http
        - name: bearerAccessToken
      - parameter category: (query) Category id of the facility the application belongs to. (optional)
+     - parameter evidence: (query) &#x60;complete&#x60; or &#x60;incomplete&#x60;: whether every required document is uploaded. (optional)
+     - parameter from: (query) Submitted on or after this day (YYYY-MM-DD, Damascus) or this ISO datetime. (optional)
      - parameter kind: (query) Application kind, for example REGISTRATION or REVERIFICATION. (optional)
      - parameter province: (query) Province id of the facility the application belongs to. (optional)
      - parameter status: (query) Application status, for example SUBMITTED or APPROVED. (optional)
+     - parameter to: (query) Submitted on or before this day (YYYY-MM-DD, Damascus) or before this datetime. (optional)
      - returns: RequestBuilder<AdminApplicationList> 
      */
-    open class func adminReviewsListWithRequestBuilder(category: String? = nil, kind: String? = nil, province: String? = nil, status: String? = nil) -> RequestBuilder<AdminApplicationList> {
+    open class func adminReviewsListWithRequestBuilder(category: String? = nil, evidence: String? = nil, from: String? = nil, kind: String? = nil, province: String? = nil, status: String? = nil, to: String? = nil) -> RequestBuilder<AdminApplicationList> {
         let localVariablePath = "/api/v1/admin/applications/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -218,9 +391,12 @@ open class AdminReviewsAPI {
         var localVariableUrlComponents = URLComponents(string: localVariableURLString)
         localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
             "category": (wrappedValue: category?.encodeToJSON(), isExplode: true),
+            "evidence": (wrappedValue: evidence?.encodeToJSON(), isExplode: true),
+            "from": (wrappedValue: from?.encodeToJSON(), isExplode: true),
             "kind": (wrappedValue: kind?.encodeToJSON(), isExplode: true),
             "province": (wrappedValue: province?.encodeToJSON(), isExplode: true),
             "status": (wrappedValue: status?.encodeToJSON(), isExplode: true),
+            "to": (wrappedValue: to?.encodeToJSON(), isExplode: true),
         ])
 
         let localVariableNillableHeaders: [String: Any?] = [

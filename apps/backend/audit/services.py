@@ -21,10 +21,12 @@ def _redact(value: Any) -> Any:
     if isinstance(value, dict):
         output = {}
         for key, item in value.items():
-            normalized = str(key).lower().replace("-", "_")
+            # camelCase, snake_case and kebab-case spellings all collapse to one form, so
+            # "storageKey" is caught by "storage_key" just like "storage-key".
+            normalized = str(key).lower().replace("-", "").replace("_", "")
             output[key] = (
                 "[REDACTED]"
-                if any(part in normalized for part in SENSITIVE_PARTS)
+                if any(part.replace("_", "") in normalized for part in SENSITIVE_PARTS)
                 else _redact(item)
             )
         return output

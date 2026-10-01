@@ -19,6 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.models.PublicProvince
+import com.servacode.directory.api.models.Coordinates
 
 class PublicProvinceTest : ShouldSpec() {
     init {
@@ -47,6 +48,12 @@ class PublicProvinceTest : ShouldSpec() {
         should("test nameEn") {
             // uncomment below to test the property
             //modelInstance.nameEn shouldBe ("TODO")
+        }
+
+        // to test the property `mapCenter` - Where a map opens for this province when the user's own position is unknown. Null when no centre has been set.
+        should("test mapCenter") {
+            // uncomment below to test the property
+            //modelInstance.mapCenter shouldBe ("TODO")
         }
 
     }

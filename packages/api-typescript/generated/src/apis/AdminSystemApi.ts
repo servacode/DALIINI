@@ -15,26 +15,78 @@
 
 import * as runtime from '../runtime';
 import type {
+  AdminAlertList,
   AdminDashboard,
   AdminMe,
+  AdminSearchResult,
   AdminSystemStatus,
+  AdminTasks,
   ApiError,
 } from '../models/index';
 import {
+    AdminAlertListFromJSON,
+    AdminAlertListToJSON,
     AdminDashboardFromJSON,
     AdminDashboardToJSON,
     AdminMeFromJSON,
     AdminMeToJSON,
+    AdminSearchResultFromJSON,
+    AdminSearchResultToJSON,
     AdminSystemStatusFromJSON,
     AdminSystemStatusToJSON,
+    AdminTasksFromJSON,
+    AdminTasksToJSON,
     ApiErrorFromJSON,
     ApiErrorToJSON,
 } from '../models/index';
+
+export interface AdminSearchRetrieveRequest {
+    q: string;
+}
 
 /**
  * 
  */
 export class AdminSystemApi extends runtime.BaseAPI {
+
+    /**
+     * DUTY_GAP: per province offering a duty category, the Damascus days of the next 14 with no duty shift of any ACTIVE pharmacy (critical when the first gap is today or tomorrow). STALE_FACILITY: ACTIVE facilities with no change, owner confirmation or approval for 90 days. REPORTED_FACILITY: 3 or more open reports (critical from 5). ZERO_RESULT_SEARCH: searches without results in the last 7 days, grouped by province and category because search text is never recorded. REVIEW_OVERDUE: submitted applications past the SLA (critical past twice it). MAINTENANCE_ON.
+     * Smart alerts: problems worth acting on now
+     */
+    async adminAlertsListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminAlertList>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/alerts/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminAlertListFromJSON(jsonValue));
+    }
+
+    /**
+     * DUTY_GAP: per province offering a duty category, the Damascus days of the next 14 with no duty shift of any ACTIVE pharmacy (critical when the first gap is today or tomorrow). STALE_FACILITY: ACTIVE facilities with no change, owner confirmation or approval for 90 days. REPORTED_FACILITY: 3 or more open reports (critical from 5). ZERO_RESULT_SEARCH: searches without results in the last 7 days, grouped by province and category because search text is never recorded. REVIEW_OVERDUE: submitted applications past the SLA (critical past twice it). MAINTENANCE_ON.
+     * Smart alerts: problems worth acting on now
+     */
+    async adminAlertsList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminAlertList> {
+        const response = await this.adminAlertsListRaw(initOverrides);
+        return await response.value();
+    }
 
     /**
      * Operational counters for the review desk
@@ -113,6 +165,56 @@ export class AdminSystemApi extends runtime.BaseAPI {
     }
 
     /**
+     * Up to 5 hits per group. FACILITY (admin.facilities.read): Arabic or English name, or phone digits. USER (admin.users.read, or admin.facilities.read with the phone masked to its last 4 digits): name or phone digits. APPLICATION (admin.reviews.read): facility name. A group the caller may not read is left out, not returned empty.
+     * Search facilities, users and applications at once
+     */
+    async adminSearchRetrieveRaw(requestParameters: AdminSearchRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminSearchResult>> {
+        if (requestParameters['q'] == null) {
+            throw new runtime.RequiredError(
+                'q',
+                'Required parameter "q" was null or undefined when calling adminSearchRetrieve().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['q'] != null) {
+            queryParameters['q'] = requestParameters['q'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/search/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminSearchResultFromJSON(jsonValue));
+    }
+
+    /**
+     * Up to 5 hits per group. FACILITY (admin.facilities.read): Arabic or English name, or phone digits. USER (admin.users.read, or admin.facilities.read with the phone masked to its last 4 digits): name or phone digits. APPLICATION (admin.reviews.read): facility name. A group the caller may not read is left out, not returned empty.
+     * Search facilities, users and applications at once
+     */
+    async adminSearchRetrieve(requestParameters: AdminSearchRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminSearchResult> {
+        const response = await this.adminSearchRetrieveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Reports only whether each dependency is configured. No secret, connection string or credential is returned.
      * Runtime and configuration status
      */
@@ -148,6 +250,45 @@ export class AdminSystemApi extends runtime.BaseAPI {
      */
     async adminSystemStatusRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminSystemStatus> {
         const response = await this.adminSystemStatusRetrieveRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Submitted applications split into INITIAL and REVERIFICATION, open problem reports grouped by facility (facilities with 2 or more open reports first) and facilities waiting in REVERIFICATION_REQUIRED. Each bucket has its count, how many are past the SLA (platform setting `review.slaHours`, default 48) and up to 10 oldest items with their age in hours and an `overdue` flag.
+     * The operator\'s queue: what is waiting, oldest first
+     */
+    async adminTasksRetrieveRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminTasks>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/tasks/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminTasksFromJSON(jsonValue));
+    }
+
+    /**
+     * Submitted applications split into INITIAL and REVERIFICATION, open problem reports grouped by facility (facilities with 2 or more open reports first) and facilities waiting in REVERIFICATION_REQUIRED. Each bucket has its count, how many are past the SLA (platform setting `review.slaHours`, default 48) and up to 10 oldest items with their age in hours and an `overdue` flag.
+     * The operator\'s queue: what is waiting, oldest first
+     */
+    async adminTasksRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminTasks> {
+        const response = await this.adminTasksRetrieveRaw(initOverrides);
         return await response.value();
     }
 

@@ -1,0 +1,149 @@
+/*
+ * Admin design tokens.
+ *
+ * The brand tokens (`--sd-*`) are generated from `packages/design-tokens` and shared with
+ * the native apps. This layer maps them onto the roles an operations console needs and adds
+ * the few values the brand set does not carry (tinted feedback surfaces, focus ring, shell
+ * geometry). Components read `--ad-*` only, so a brand change flows through one file.
+ */
+:root {
+  /* Brand */
+  --ad-brand: var(--sd-semantic-action-primary);
+  --ad-brand-strong: var(--sd-semantic-action-primary-pressed);
+  --ad-brand-soft: var(--sd-semantic-surface-brand-soft);
+  --ad-brand-softer: var(--sd-semantic-surface-selected);
+
+  /* Surfaces */
+  --ad-canvas: var(--sd-semantic-surface-canvas);
+  --ad-surface: var(--sd-semantic-surface-default);
+  --ad-surface-subtle: var(--sd-semantic-surface-subtle);
+  --ad-surface-hover: var(--sd-semantic-surface-hover);
+  --ad-surface-selected: var(--sd-semantic-surface-selected);
+
+  /* Shell (sidebar) — the brand's deep bar colour */
+  --ad-shell: var(--sd-semantic-surface-bar);
+  /* A shade up from the bar, derived from it so a brand change carries it along. */
+  --ad-shell-raised: color-mix(in srgb, var(--sd-semantic-surface-bar) 92%, #ffffff);
+  --ad-shell-hover: rgba(255, 255, 255, 0.06);
+  --ad-shell-active: rgba(255, 255, 255, 0.10);
+  --ad-shell-stroke: rgba(255, 255, 255, 0.08);
+  --ad-shell-text: var(--sd-semantic-content-on-bar);
+  --ad-shell-text-muted: var(--sd-semantic-content-on-bar-muted);
+  /* The brand's green, lifted enough to read on the bar's deep ground. */
+  --ad-shell-accent: color-mix(in srgb, var(--sd-semantic-action-primary) 55%, #ffffff);
+
+  /* Content */
+  --ad-text: var(--sd-semantic-content-primary);
+  --ad-text-secondary: var(--sd-semantic-content-secondary);
+  --ad-text-muted: var(--sd-semantic-content-muted);
+  --ad-text-on-brand: var(--sd-semantic-content-on-primary);
+
+  /* Strokes */
+  --ad-stroke: var(--sd-semantic-stroke-default);
+  --ad-stroke-subtle: var(--sd-semantic-stroke-subtle);
+  --ad-stroke-strong: var(--sd-semantic-stroke-strong);
+
+  /* Feedback: foreground, tinted surface, border */
+  --ad-success: var(--sd-semantic-feedback-success);
+  --ad-success-bg: var(--sd-semantic-feedback-success-soft);
+  --ad-success-border: color-mix(in srgb, var(--ad-success) 32%, var(--ad-surface));
+  --ad-warning: var(--sd-semantic-content-warning);
+  --ad-warning-bg: var(--sd-semantic-feedback-warning-soft);
+  --ad-warning-border: color-mix(in srgb, var(--sd-semantic-feedback-warning) 38%, var(--ad-surface));
+  --ad-danger: var(--sd-semantic-feedback-danger);
+  --ad-danger-strong: color-mix(in srgb, var(--ad-danger) 82%, var(--ad-text));
+  --ad-danger-bg: var(--sd-semantic-feedback-danger-soft);
+  --ad-danger-border: color-mix(in srgb, var(--ad-danger) 32%, var(--ad-surface));
+  --ad-info: var(--sd-semantic-feedback-info);
+  --ad-info-bg: var(--sd-semantic-feedback-info-soft);
+  --ad-info-border: color-mix(in srgb, var(--ad-info) 32%, var(--ad-surface));
+
+  /* Typography */
+  --ad-font: "Tajawal", "Segoe UI", Tahoma, var(--sd-typography-font-family-fallback);
+  --ad-font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --ad-text-xs: 12px;
+  --ad-text-sm: 13px;
+  --ad-text-md: 14px;
+  --ad-text-lg: 16px;
+  --ad-text-xl: 18px;
+  --ad-text-2xl: 24px;
+  --ad-text-3xl: 30px;
+  --ad-leading-tight: 1.3;
+  --ad-leading: 1.6;
+
+  /* Spacing (4px grid, from the brand scale) */
+  --ad-space-1: var(--sd-spacing-xs);
+  --ad-space-2: var(--sd-spacing-sm);
+  --ad-space-3: var(--sd-spacing-md);
+  --ad-space-4: var(--sd-spacing-base);
+  --ad-space-5: var(--sd-spacing-lg);
+  --ad-space-6: var(--sd-spacing-xl);
+  --ad-space-8: var(--sd-spacing-2xl);
+  --ad-space-10: var(--sd-spacing-3xl);
+  --ad-space-12: var(--sd-spacing-4xl);
+
+  /* Radius */
+  --ad-radius-sm: 6px;
+  --ad-radius: var(--sd-radius-small);
+  --ad-radius-md: 10px;
+  --ad-radius-lg: var(--sd-radius-medium);
+  --ad-radius-xl: var(--sd-radius-large);
+  --ad-radius-pill: var(--sd-radius-pill);
+
+  /* Elevation — quiet; borders do most of the separating */
+  --ad-shadow-xs: 0 1px 2px rgba(21, 35, 28, 0.05);
+  --ad-shadow-sm: 0 1px 3px rgba(21, 35, 28, 0.06), 0 1px 2px rgba(21, 35, 28, 0.04);
+  --ad-shadow-md: 0 4px 12px rgba(21, 35, 28, 0.08);
+  --ad-shadow-lg: 0 16px 40px rgba(4, 38, 35, 0.16), 0 2px 6px rgba(4, 38, 35, 0.06);
+  --ad-focus-ring: 0 0 0 3px color-mix(in srgb, var(--ad-brand) 28%, transparent);
+  --ad-focus-ring-danger: 0 0 0 3px color-mix(in srgb, var(--ad-danger) 28%, transparent);
+
+  /* Controls */
+  --ad-control-h: 38px;
+  --ad-control-h-sm: 32px;
+
+  /* Shell geometry */
+  --ad-sidebar-w: 264px;
+  --ad-topbar-h: 60px;
+  --ad-content-max: 1440px;
+
+  /* Motion */
+  --ad-ease: var(--sd-motion-easing-standard);
+  --ad-fast: 120ms;
+  --ad-standard: 200ms;
+
+  /* Topbar glass and dialog scrim follow the theme. */
+  --ad-topbar-bg: color-mix(in srgb, var(--ad-surface) 88%, transparent);
+  --ad-scrim: rgba(4, 38, 35, 0.42);
+  --ad-skeleton-shine: color-mix(in srgb, var(--ad-stroke) 70%, var(--ad-surface-subtle));
+
+  color-scheme: light dark;
+
+  /* Layers */
+  --ad-z-sticky: 20;
+  --ad-z-drawer: 40;
+  --ad-z-dialog: 50;
+  --ad-z-toast: 60;
+}
+
+/* An operator who pins a theme gets it regardless of the device setting. */
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+/* In the dark the shadows have nothing to fall on; borders do the separating. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ad-shadow-xs: none;
+    --ad-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --ad-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+    --ad-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+    --ad-scrim: rgba(0, 0, 0, 0.6);
+  }
+}
+:root[data-theme="dark"] {
+  --ad-shadow-xs: none;
+  --ad-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --ad-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --ad-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+  --ad-scrim: rgba(0, 0, 0, 0.6);
+}

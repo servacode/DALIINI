@@ -6,18 +6,56 @@ export const tokens = {
     "primaryDeep": "#043526",
     "primarySoft": "#DCEFE6",
     "primarySofter": "#F0F8F4",
+    "barDeep": "#042623",
+    "barContent": "#FFFFFF",
+    "barContentMuted": "#9FBDB6",
     "background": "#F7F8F5",
     "surface": "#FFFFFF",
     "surfaceAlt": "#F1F4F2",
     "textPrimary": "#15231C",
     "textSecondary": "#5D6B64",
-    "textMuted": "#7A8780",
+    "textMuted": "#64716C",
     "border": "#DDE4E0",
     "borderStrong": "#C5D0CA",
     "success": "#138A5B",
     "warning": "#C98214",
     "danger": "#C23B3B",
-    "info": "#2E6FB5"
+    "info": "#2E6FB5",
+    "surfaceHover": "#F5F7F6",
+    "borderSubtle": "#E8EDEA",
+    "warningText": "#8F5A09",
+    "successSoft": "#E7F5EE",
+    "warningSoft": "#FDF4E4",
+    "dangerSoft": "#FBECEC",
+    "infoSoft": "#EAF1FA"
+  },
+  "colorsDark": {
+    "primary": "#4CC08A",
+    "primaryStrong": "#6FD3A3",
+    "primarySoft": "#173A2C",
+    "primarySofter": "#12251D",
+    "onPrimary": "#04170F",
+    "barDeep": "#07120F",
+    "barContent": "#FFFFFF",
+    "barContentMuted": "#9FBDB6",
+    "background": "#0E1512",
+    "surface": "#151E1A",
+    "surfaceAlt": "#1B2621",
+    "surfaceHover": "#1F2B25",
+    "textPrimary": "#E7EEEA",
+    "textSecondary": "#A9B8B0",
+    "textMuted": "#8A9A92",
+    "border": "#26332D",
+    "borderSubtle": "#1F2A25",
+    "borderStrong": "#36463E",
+    "success": "#4CC08A",
+    "successSoft": "#133426",
+    "warning": "#E8A93A",
+    "warningSoft": "#3A2C12",
+    "danger": "#F07A7A",
+    "dangerSoft": "#3D1B1B",
+    "info": "#6FA8E8",
+    "infoSoft": "#162A40"
   },
   "semantic": {
     "content": {
@@ -25,13 +63,19 @@ export const tokens = {
       "secondary": "{colors.textSecondary}",
       "muted": "{colors.textMuted}",
       "onPrimary": "{colors.surface}",
-      "danger": "{colors.danger}"
+      "danger": "{colors.danger}",
+      "onBar": "{colors.barContent}",
+      "onBarMuted": "{colors.barContentMuted}",
+      "warning": "{colors.warningText}"
     },
     "surface": {
       "canvas": "{colors.background}",
       "default": "{colors.surface}",
       "subtle": "{colors.surfaceAlt}",
-      "brandSoft": "{colors.primarySoft}"
+      "hover": "{colors.surfaceHover}",
+      "selected": "{colors.primarySofter}",
+      "brandSoft": "{colors.primarySoft}",
+      "bar": "{colors.barDeep}"
     },
     "action": {
       "primary": "{colors.primary}",
@@ -40,13 +84,59 @@ export const tokens = {
     },
     "stroke": {
       "default": "{colors.border}",
+      "subtle": "{colors.borderSubtle}",
       "strong": "{colors.borderStrong}"
     },
     "feedback": {
       "success": "{colors.success}",
       "warning": "{colors.warning}",
       "danger": "{colors.danger}",
-      "info": "{colors.info}"
+      "info": "{colors.info}",
+      "successSoft": "{colors.successSoft}",
+      "warningSoft": "{colors.warningSoft}",
+      "dangerSoft": "{colors.dangerSoft}",
+      "infoSoft": "{colors.infoSoft}"
+    }
+  },
+  "semanticDark": {
+    "content": {
+      "primary": "{colorsDark.textPrimary}",
+      "secondary": "{colorsDark.textSecondary}",
+      "muted": "{colorsDark.textMuted}",
+      "onPrimary": "{colorsDark.onPrimary}",
+      "danger": "{colorsDark.danger}",
+      "onBar": "{colorsDark.barContent}",
+      "onBarMuted": "{colorsDark.barContentMuted}",
+      "warning": "{colorsDark.warning}"
+    },
+    "surface": {
+      "canvas": "{colorsDark.background}",
+      "default": "{colorsDark.surface}",
+      "subtle": "{colorsDark.surfaceAlt}",
+      "hover": "{colorsDark.surfaceHover}",
+      "selected": "{colorsDark.primarySofter}",
+      "brandSoft": "{colorsDark.primarySoft}",
+      "bar": "{colorsDark.barDeep}"
+    },
+    "action": {
+      "primary": "{colorsDark.primary}",
+      "primaryPressed": "{colorsDark.primaryStrong}",
+      "danger": "{colorsDark.danger}"
+    },
+    "stroke": {
+      "default": "{colorsDark.border}",
+      "subtle": "{colorsDark.borderSubtle}",
+      "strong": "{colorsDark.borderStrong}"
+    },
+    "feedback": {
+      "success": "{colorsDark.success}",
+      "warning": "{colorsDark.warning}",
+      "danger": "{colorsDark.danger}",
+      "info": "{colorsDark.info}",
+      "successSoft": "{colorsDark.successSoft}",
+      "warningSoft": "{colorsDark.warningSoft}",
+      "dangerSoft": "{colorsDark.dangerSoft}",
+      "infoSoft": "{colorsDark.infoSoft}"
     }
   },
   "typography": {

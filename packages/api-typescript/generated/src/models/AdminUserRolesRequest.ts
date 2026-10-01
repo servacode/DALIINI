@@ -21,10 +21,10 @@ import { mapValues } from '../runtime';
 export interface AdminUserRolesRequest {
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<number>}
      * @memberof AdminUserRolesRequest
      */
-    roleIds: Array<string>;
+    roleIds: Array<number>;
 }
 
 /**

@@ -24,6 +24,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param challengeId 
+ * @param displayName 
  * @param password 
  * @param platform 
  * @param deviceName 
@@ -34,6 +35,9 @@ data class RegisterComplete (
 
     @Contextual @SerialName(value = "challengeId")
     val challengeId: java.util.UUID,
+
+    @SerialName(value = "displayName")
+    val displayName: kotlin.String,
 
     @SerialName(value = "password")
     val password: kotlin.String,

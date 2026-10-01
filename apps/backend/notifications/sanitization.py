@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 SENSITIVE_KEYS = {
     "otp",
     "password",
@@ -14,7 +16,7 @@ SENSITIVE_KEYS = {
 }
 
 
-def safe_notification_payload(payload: dict) -> dict:
+def safe_notification_payload(payload: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("Notification payload must be an object")
     unsafe = {key for key in payload if key in SENSITIVE_KEYS}

@@ -21,13 +21,32 @@ import io.kotlintest.specs.ShouldSpec
 import com.servacode.directory.api.apis.PublicTaxonomyApi
 import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.PublicCategoryList
+import com.servacode.directory.api.models.PublicCategoryTags
 import com.servacode.directory.api.models.PublicCityList
+import com.servacode.directory.api.models.PublicLocationResolve
 import com.servacode.directory.api.models.PublicProvinceList
 
 class PublicTaxonomyApiTest : ShouldSpec() {
     init {
         // uncomment below to create an instance of PublicTaxonomyApi
         //val apiInstance = PublicTaxonomyApi()
+
+        // to test publicCategoryTagsRetrieve
+        should("test publicCategoryTagsRetrieve") {
+            // uncomment below to test publicCategoryTagsRetrieve
+            //val categoryId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : PublicCategoryTags = apiInstance.publicCategoryTagsRetrieve(categoryId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test publicLocationResolve
+        should("test publicLocationResolve") {
+            // uncomment below to test publicLocationResolve
+            //val latitude : kotlin.Double = 1.2 // kotlin.Double | 
+            //val longitude : kotlin.Double = 1.2 // kotlin.Double | 
+            //val result : PublicLocationResolve = apiInstance.publicLocationResolve(latitude, longitude)
+            //result shouldBe ("TODO")
+        }
 
         // to test publicProvinceCategoriesList
         should("test publicProvinceCategoriesList") {

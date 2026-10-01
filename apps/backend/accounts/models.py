@@ -1,19 +1,24 @@
 import uuid
 from typing import Any
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+
 
 class UserManager(BaseUserManager["User"]):
     def create_user(self, phone: str, password: str | None = None, **extra: Any) -> "User":
         if not phone:
             raise ValueError('phone is required')
         user=self.model(phone=phone, **extra)
-        if password: user.set_password(password)
-        else: user.set_unusable_password()
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
         user.save(using=self._db)
         return user
     def create_superuser(self, phone: str, password: str, **extra: Any) -> "User":
-        extra.setdefault('is_staff', True); extra.setdefault('is_superuser', True)
+        extra.setdefault('is_staff', True)
+        extra.setdefault('is_superuser', True)
         return self.create_user(phone, password, **extra)
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -28,6 +33,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     phone_verified_at=models.DateTimeField(null=True, blank=True)
     profile_image_key=models.CharField(max_length=500, blank=True)
+    # Where the person is, in their own words. Free text on purpose: an address in Syria
+    # is a neighbourhood and a landmark far more often than it is a numbered street, and
+    # a structured form would refuse the way people actually say it.
+    address=models.CharField(max_length=240, blank=True)
     is_active=models.BooleanField(default=True)
     is_staff=models.BooleanField(default=False)
     created_at=models.DateTimeField(auto_now_add=True)
@@ -40,6 +49,9 @@ class AdminPermission(models.Model):
     code = models.CharField(max_length=120, unique=True)
     description = models.CharField(max_length=240, blank=True)
 
+    def __str__(self) -> str:
+        return self.code
+
 
 class AdminRole(models.Model):
     code = models.CharField(max_length=80, unique=True)
@@ -49,6 +61,9 @@ class AdminRole(models.Model):
         related_name="roles",
         blank=True,
     )
+
+    def __str__(self) -> str:
+        return self.code
 
 
 class UserAdminRole(models.Model):
@@ -73,11 +88,15 @@ class UserAdminRole(models.Model):
             )
         ]
 
+    def __str__(self) -> str:
+        return f"{self.user_id}->{self.role_id}"
+
 
 class OTPChallenge(models.Model):
     class Purpose(models.TextChoices):
         REGISTER = "REGISTER", "Register"
         RECOVERY = "RECOVERY", "Recovery"
+        PHONE_CHANGE = "PHONE_CHANGE", "Phone change"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     phone = models.CharField(max_length=16, db_index=True)
@@ -90,6 +109,10 @@ class OTPChallenge(models.Model):
     consumed_at = models.DateTimeField(null=True, blank=True)
     metadata = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        # Never the phone or the digest: a repr can reach logs and error reports.
+        return f"{self.purpose} {self.id}"
 
 
 class AccountDeletionRequest(models.Model):
@@ -111,3 +134,6 @@ class AccountDeletionRequest(models.Model):
     verified_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     retention_notes = models.TextField(blank=True)
+
+    def __str__(self) -> str:
+        return f"{self.status} {self.id}"

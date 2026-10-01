@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from business_hours.domain import HourInterval, validate_weekly_schedule
 
 
-def test_rejects_overlap_same_day():
+def test_rejects_overlap_same_day() -> None:
     with pytest.raises(ValidationError):
         validate_weekly_schedule(
             [
@@ -16,7 +16,7 @@ def test_rejects_overlap_same_day():
         )
 
 
-def test_rejects_overlap_created_by_overnight_interval():
+def test_rejects_overlap_created_by_overnight_interval() -> None:
     with pytest.raises(ValidationError):
         validate_weekly_schedule(
             [
@@ -26,7 +26,7 @@ def test_rejects_overlap_created_by_overnight_interval():
         )
 
 
-def test_accepts_split_shift():
+def test_accepts_split_shift() -> None:
     validate_weekly_schedule(
         [
             HourInterval(0, time(9), time(12)),

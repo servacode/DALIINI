@@ -13,7 +13,9 @@ import com.servacode.directory.api.models.FacilityLocation
 import com.servacode.directory.api.models.FacilityMember
 import com.servacode.directory.api.models.OwnerConfig
 import com.servacode.directory.api.models.OwnerFacilityDetail
+import com.servacode.directory.api.models.OwnerFacilityInsights
 import com.servacode.directory.api.models.OwnerFacilitySummaryList
+import com.servacode.directory.api.models.OwnerHoursConfirmed
 import com.servacode.directory.api.models.OwnerMemberList
 import com.servacode.directory.api.models.OwnerMemberUpserted
 import com.servacode.directory.api.models.OwnerSubmitResult
@@ -23,7 +25,7 @@ interface OwnerApi {
     /**
      * GET api/v1/owner/config/
      * List categories open for owner onboarding in a province
-     * Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy.
+     * Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy, and the specialties and services the owner may pick for a facility of each.
      * Responses:
      *  - 200: 
      *  - 400: A domain rule rejected the request; `code` names the rule.
@@ -66,6 +68,39 @@ interface OwnerApi {
      */
     @POST("api/v1/owner/facilities/")
     suspend fun ownerFacilityCreate(@Body facilityCreate: FacilityCreate): Response<OwnerFacilityDetail>
+
+    /**
+     * POST api/v1/owner/facilities/{facility_id}/confirm-hours/
+     * Confirm that the facility&#39;s opening hours are still right
+     * Any owner or manager may confirm. Sets &#x60;hoursConfirmedAt&#x60;, which also moves the public &#x60;infoConfirmedAt&#x60;; &#x60;lastVerifiedAt&#x60; keeps meaning an operator approval. Replacing the hours confirms them too. 409 HOURS_NOT_SUPPORTED when the category has no opening hours.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param facilityId 
+     * @return [OwnerHoursConfirmed]
+     */
+    @POST("api/v1/owner/facilities/{facility_id}/confirm-hours/")
+    suspend fun ownerFacilityHoursConfirm(@Path("facility_id") facilityId: java.util.UUID): Response<OwnerHoursConfirmed>
+
+    /**
+     * GET api/v1/owner/facilities/{facility_id}/insights/
+     * Engagement with a facility over the last 30 days
+     * Counts of product analytics events that reference this facility.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param facilityId 
+     * @return [OwnerFacilityInsights]
+     */
+    @GET("api/v1/owner/facilities/{facility_id}/insights/")
+    suspend fun ownerFacilityInsightsRetrieve(@Path("facility_id") facilityId: java.util.UUID): Response<OwnerFacilityInsights>
 
     /**
      * PUT api/v1/owner/facilities/{facility_id}/location/

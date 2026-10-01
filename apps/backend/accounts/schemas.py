@@ -6,24 +6,26 @@ refresh digests, previous-refresh digests and password hashes are never serialis
 client is meant to store; it is not the stored digest.
 """
 
+from typing import Any
+
 from rest_framework import serializers
 
 from .models import AccountDeletionRequest
 
 
-class ChallengeAcceptedSerializer(serializers.Serializer):
+class ChallengeAcceptedSerializer(serializers.Serializer[Any]):
     """Returned when an OTP challenge is created. The code itself is never returned."""
 
     challengeId = serializers.UUIDField()
     expiresAt = serializers.DateTimeField()
 
 
-class ChallengeVerifiedSerializer(serializers.Serializer):
+class ChallengeVerifiedSerializer(serializers.Serializer[Any]):
     challengeId = serializers.UUIDField()
     verified = serializers.BooleanField()
 
 
-class SessionCredentialsSerializer(serializers.Serializer):
+class SessionCredentialsSerializer(serializers.Serializer[Any]):
     """Issued on registration, login and refresh."""
 
     accessToken = serializers.CharField(
@@ -39,11 +41,11 @@ class SessionCredentialsSerializer(serializers.Serializer):
     expiresAt = serializers.DateTimeField(help_text="Expiry of the refresh session.")
 
 
-class LogoutRequestSerializer(serializers.Serializer):
+class LogoutRequestSerializer(serializers.Serializer[Any]):
     sessionId = serializers.UUIDField(help_text="Session to revoke.")
 
 
-class UserSessionSerializer(serializers.Serializer):
+class UserSessionSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     platform = serializers.CharField(allow_blank=True)
     deviceName = serializers.CharField(allow_blank=True)
@@ -52,18 +54,26 @@ class UserSessionSerializer(serializers.Serializer):
     revoked = serializers.BooleanField()
 
 
-class UserSessionListSerializer(serializers.Serializer):
+class UserSessionListSerializer(serializers.Serializer[Any]):
     items = UserSessionSerializer(many=True)
 
 
-class ProfileSerializer(serializers.Serializer):
+class ProfileSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     displayName = serializers.CharField()
     phone = serializers.CharField(help_text="Canonical +9639XXXXXXXX form.")
     provinceId = serializers.UUIDField(allow_null=True)
     phoneVerifiedAt = serializers.DateTimeField(allow_null=True)
+    address = serializers.CharField(
+        allow_blank=True,
+        help_text="Free text, as the person writes it. Empty when they have not given one.",
+    )
+    profileImageUrl = serializers.URLField(
+        allow_null=True,
+        help_text="Public URL of the profile picture, or null when there is none.",
+    )
 
 
-class AccountDeletionRequestedSerializer(serializers.Serializer):
+class AccountDeletionRequestedSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     status = serializers.ChoiceField(choices=AccountDeletionRequest.Status.choices)

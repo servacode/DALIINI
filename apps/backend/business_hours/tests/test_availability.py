@@ -5,11 +5,12 @@ import pytest
 
 from business_hours.models import BusinessHour, TemporaryClosure
 from business_hours.services import AvailabilityState, get_facility_availability
+from facilities.models import Facility
 from pharmacy_duty.models import DutyShift
 
 
 @pytest.mark.django_db
-def test_temporary_closure_wins(facility):
+def test_temporary_closure_wins(facility: Facility) -> None:
     now = datetime(2026, 9, 17, 9, 0, tzinfo=UTC)
     local = now.astimezone(ZoneInfo("Asia/Damascus"))
     BusinessHour.objects.create(
@@ -33,7 +34,7 @@ def test_temporary_closure_wins(facility):
 
 
 @pytest.mark.django_db
-def test_duty_wins_over_regular_hours(facility):
+def test_duty_wins_over_regular_hours(facility: Facility) -> None:
     now = datetime(2026, 9, 17, 9, 0, tzinfo=UTC)
     DutyShift.objects.create(
         facility=facility,
@@ -45,7 +46,7 @@ def test_duty_wins_over_regular_hours(facility):
 
 
 @pytest.mark.django_db
-def test_overnight_business_hour_is_open_from_prior_day(facility):
+def test_overnight_business_hour_is_open_from_prior_day(facility: Facility) -> None:
     now = datetime(2026, 9, 17, 22, 30, tzinfo=UTC)
     local = now.astimezone(ZoneInfo("Asia/Damascus"))
     BusinessHour.objects.create(

@@ -34,6 +34,13 @@ import {
     CategoryCapabilitiesToJSON,
     CategoryCapabilitiesToJSONTyped,
 } from './CategoryCapabilities';
+import type { NamedIntRef } from './NamedIntRef';
+import {
+    NamedIntRefFromJSON,
+    NamedIntRefFromJSONTyped,
+    NamedIntRefToJSON,
+    NamedIntRefToJSONTyped,
+} from './NamedIntRef';
 
 /**
  * 
@@ -59,6 +66,18 @@ export interface OwnerConfigCategory {
      * @memberof OwnerConfigCategory
      */
     verificationRequirements: Array<OwnerVerificationRequirement>;
+    /**
+     * The specialties an owner may pick, as publicCategoryTagsRetrieve lists them. Their ids are what `specialtyIds` takes.
+     * @type {Array<NamedIntRef>}
+     * @memberof OwnerConfigCategory
+     */
+    specialties: Array<NamedIntRef>;
+    /**
+     * The services an owner may pick, as publicCategoryTagsRetrieve lists them. Their ids are what `serviceTagIds` takes.
+     * @type {Array<NamedIntRef>}
+     * @memberof OwnerConfigCategory
+     */
+    services: Array<NamedIntRef>;
 }
 
 /**
@@ -68,6 +87,8 @@ export function instanceOfOwnerConfigCategory(value: object): value is OwnerConf
     if (!('category' in value) || value['category'] === undefined) return false;
     if (!('capabilities' in value) || value['capabilities'] === undefined) return false;
     if (!('verificationRequirements' in value) || value['verificationRequirements'] === undefined) return false;
+    if (!('specialties' in value) || value['specialties'] === undefined) return false;
+    if (!('services' in value) || value['services'] === undefined) return false;
     return true;
 }
 
@@ -84,6 +105,8 @@ export function OwnerConfigCategoryFromJSONTyped(json: any, ignoreDiscriminator:
         'category': OwnerCategoryFromJSON(json['category']),
         'capabilities': CategoryCapabilitiesFromJSON(json['capabilities']),
         'verificationRequirements': ((json['verificationRequirements'] as Array<any>).map(OwnerVerificationRequirementFromJSON)),
+        'specialties': ((json['specialties'] as Array<any>).map(NamedIntRefFromJSON)),
+        'services': ((json['services'] as Array<any>).map(NamedIntRefFromJSON)),
     };
 }
 
@@ -101,6 +124,8 @@ export function OwnerConfigCategoryToJSONTyped(value?: OwnerConfigCategory | nul
         'category': OwnerCategoryToJSON(value['category']),
         'capabilities': CategoryCapabilitiesToJSON(value['capabilities']),
         'verificationRequirements': ((value['verificationRequirements'] as Array<any>).map(OwnerVerificationRequirementToJSON)),
+        'specialties': ((value['specialties'] as Array<any>).map(NamedIntRefToJSON)),
+        'services': ((value['services'] as Array<any>).map(NamedIntRefToJSON)),
     };
 }
 

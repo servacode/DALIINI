@@ -41,11 +41,17 @@ class AndroidLocationProvider @Inject constructor(
                     @Deprecated("Legacy callback")
                     override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) = Unit
                 }
-                runCatching {
-                    manager.requestLocationUpdates(provider, 0L, 0f, listener, Looper.getMainLooper())
-                }.onFailure {
+                fun giveUp() {
                     manager.removeUpdates(listener)
                     if (continuation.isActive) continuation.resume(null)
+                }
+                try {
+                    manager.requestLocationUpdates(provider, 0L, 0f, listener, Looper.getMainLooper())
+                } catch (withdrawn: SecurityException) {
+                    // The permission was withdrawn between the check above and this call.
+                    giveUp()
+                } catch (unknownProvider: IllegalArgumentException) {
+                    giveUp()
                 }
                 continuation.invokeOnCancellation { manager.removeUpdates(listener) }
             }
@@ -55,12 +61,24 @@ class AndroidLocationProvider @Inject constructor(
             ?: LocationResult.Unavailable
     }
 
+    /**
+     * The best position already known, where "best" is accurate first and recent second.
+     *
+     * The newest fix is often the network's, and a network fix can be a kilometre wide: it puts
+     * a route's start on the wrong street and a reader in the wrong neighbourhood. A satellite
+     * fix a minute old is worth more than a tower fix a second old, so an accurate one wins
+     * unless it is older than [STALE_MILLIS], by which time it may be a different street.
+     */
     override fun lastKnown(): LocationFix? {
         if (!hasLocationPermission()) return null
-        return listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
-            .mapNotNull { provider -> runCatching { manager.getLastKnownLocation(provider) }.getOrNull() }
-            .maxByOrNull { it.time }
-            ?.toFix()
+        val known = listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
+            .mapNotNull(::lastKnownFrom)
+        if (known.isEmpty()) return null
+        val now = System.currentTimeMillis()
+        val accurate = known.filter {
+            it.hasAccuracy() && it.accuracy <= ACCURATE_METRES && now - it.time <= STALE_MILLIS
+        }
+        return (accurate.maxByOrNull { it.time } ?: known.maxByOrNull { it.time })?.toFix()
     }
 
     override fun updates(minTimeMillis: Long): Flow<LocationResult> = callbackFlow {
@@ -85,7 +103,7 @@ class AndroidLocationProvider @Inject constructor(
             @Deprecated("Legacy callback")
             override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) = Unit
         }
-        runCatching {
+        try {
             manager.requestLocationUpdates(
                 provider,
                 minTimeMillis.coerceAtLeast(500L),
@@ -93,11 +111,23 @@ class AndroidLocationProvider @Inject constructor(
                 listener,
                 Looper.getMainLooper(),
             )
-        }.onFailure {
+        } catch (withdrawn: SecurityException) {
+            // The permission was withdrawn between the check above and this call.
+            trySend(LocationResult.PermissionDenied)
+            close()
+        } catch (unknownProvider: IllegalArgumentException) {
             trySend(LocationResult.Unavailable)
-            close(it)
+            close()
         }
         awaitClose { manager.removeUpdates(listener) }
+    }
+
+    private fun lastKnownFrom(provider: String): Location? = try {
+        manager.getLastKnownLocation(provider)
+    } catch (withdrawn: SecurityException) {
+        null
+    } catch (unknownProvider: IllegalArgumentException) {
+        null
     }
 
     private fun hasLocationPermission(): Boolean {
@@ -110,6 +140,14 @@ class AndroidLocationProvider @Inject constructor(
             Manifest.permission.ACCESS_COARSE_LOCATION,
         ) == PackageManager.PERMISSION_GRANTED
         return precise || approximate
+    }
+
+    private companion object {
+        /** Close enough that a metre matters and the answer is a street rather than a district. */
+        const val ACCURATE_METRES = 50f
+
+        /** Older than this and an accurate fix is accurate about somewhere the reader has left. */
+        const val STALE_MILLIS = 2 * 60 * 1000L
     }
 
     private fun bestProvider(): String? = when {

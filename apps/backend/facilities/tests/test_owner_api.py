@@ -5,13 +5,13 @@ from rest_framework.test import APIClient
 
 from accounts.models import User
 from directory.models import CategoryProvince
-from facilities.models import FacilityMembership
+from facilities.models import Facility, FacilityMembership
 from facilities.services import submit_facility, update_facility_core
 from locations.models import City, Neighborhood
 
 
 @pytest.mark.django_db
-def test_owner_detail_is_membership_scoped(facility, user):
+def test_owner_detail_is_membership_scoped(facility: Facility, user: User) -> None:
     other = User.objects.create_user(
         phone="+963900000002",
         password="StrongPass123!",
@@ -31,7 +31,7 @@ def test_owner_detail_is_membership_scoped(facility, user):
 
 
 @pytest.mark.django_db
-def test_cannot_downgrade_last_owner(facility, user):
+def test_cannot_downgrade_last_owner(facility: Facility, user: User) -> None:
     FacilityMembership.objects.create(
         facility=facility,
         user=user,
@@ -52,7 +52,7 @@ def test_cannot_downgrade_last_owner(facility, user):
 
 
 @pytest.mark.django_db
-def test_clearing_city_clears_existing_neighborhood(facility, user):
+def test_clearing_city_clears_existing_neighborhood(facility: Facility, user: User) -> None:
     city = City.objects.create(
         province=facility.province,
         code="raqqa-city-test",
@@ -74,7 +74,7 @@ def test_clearing_city_clears_existing_neighborhood(facility, user):
 
 
 @pytest.mark.django_db
-def test_submit_rechecks_current_owner_registration_switch(facility, user):
+def test_submit_rechecks_current_owner_registration_switch(facility: Facility, user: User) -> None:
     FacilityMembership.objects.create(
         facility=facility,
         user=user,

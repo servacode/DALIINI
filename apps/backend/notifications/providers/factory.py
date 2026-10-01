@@ -2,11 +2,12 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 from .apns import ApnsPushProvider
+from .base import PushProvider
 from .development import DevelopmentPushProvider
 from .fcm import FcmPushProvider
 
 
-def get_push_provider(platform: str):
+def get_push_provider(platform: str) -> PushProvider:
     provider = getattr(settings, "PUSH_PROVIDER", "development").lower()
     if provider == "development":
         return DevelopmentPushProvider()

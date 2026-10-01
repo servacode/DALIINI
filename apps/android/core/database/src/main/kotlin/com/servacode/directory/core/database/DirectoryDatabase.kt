@@ -9,10 +9,13 @@ import androidx.room.RoomDatabase
         CategoryCacheEntity::class,
         HomeSnapshotEntity::class,
         FacilityCacheEntity::class,
+        RecentlyViewedEntity::class,
+        EmergencyNumberEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class DirectoryDatabase : RoomDatabase() {
     abstract fun cacheDao(): CacheDao
+    abstract fun localStoresDao(): LocalStoresDao
 }

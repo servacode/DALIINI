@@ -8,6 +8,7 @@
 | **code** | **kotlin.String** |  |  |
 | **nameAr** | **kotlin.String** |  |  |
 | **nameEn** | **kotlin.String** |  |  |
+| **iconKey** | **kotlin.String** |  |  |
 | **active** | **kotlin.Boolean** |  |  |
 | **sortOrder** | **kotlin.Int** |  |  |
 

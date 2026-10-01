@@ -34,6 +34,10 @@ import kotlinx.serialization.Contextual
  * @param status 
  * @param location 
  * @param updatedAt 
+ * @param categoryNameAr 
+ * @param provinceNameAr 
+ * @param ownerName First owner membership.
+ * @param ownerPhone First owner membership.
  */
 @Serializable
 
@@ -64,7 +68,21 @@ data class AdminFacility (
     val location: Coordinates?,
 
     @Contextual @SerialName(value = "updatedAt")
-    val updatedAt: java.time.OffsetDateTime?
+    val updatedAt: java.time.OffsetDateTime?,
+
+    @SerialName(value = "categoryNameAr")
+    val categoryNameAr: kotlin.String,
+
+    @SerialName(value = "provinceNameAr")
+    val provinceNameAr: kotlin.String,
+
+    /* First owner membership. */
+    @SerialName(value = "ownerName")
+    val ownerName: kotlin.String?,
+
+    /* First owner membership. */
+    @SerialName(value = "ownerPhone")
+    val ownerPhone: kotlin.String?
 
 ) {
 

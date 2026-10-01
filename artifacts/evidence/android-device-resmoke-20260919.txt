@@ -1,0 +1,52 @@
+DEVICE-SMOKE CLEANUP — DEVICE RE-SMOKE — 2026-09-19
+Device: Samsung Galaxy A52 (SM-A525F), Android 14, One UI 6.1, three-button navigation;
+wireless debugging; adb reverse tcp:8000 and tcp:9000; scripts/local-stack.sh running.
+
+Install (the one approved uninstall)
+  before:  installed APK a6f36ac8… signed 27aa54ad… (a runner's throwaway key, unrecoverable)
+  checked: APK ee74dfd6ea475686d4b2bab72429c5b6262b0ee93e43a1063bbf928227f07eee,
+           certificate 21e9ff5c409a14cec929bb078d53625f4e3142ef1bb027337360e9e6d5b62caa,
+           package com.servacode.directory.local — all match
+  adb uninstall: Success; adb install -r: Success
+  pulled back from the phone: same SHA-256, same certificate; 0.1.0-local (1)
+  From now on debug builds carry the stable key and update with adb install -r (DECISION-041).
+  Launch: cold 1658 ms, no crash.
+
+INT-082  "منشآتي": الحالة: مسودة / فعّالة; الإجراء المطلوب: أكمِل البيانات وأرسلها للمراجعة;
+         management: مالك الجوال • مالك. No raw code anywhere.                                PASS
+INT-083  closure start/end and duty start/end are pickers ("اختر التاريخ والوقت"); date dialog
+         in Arabic with today marked; 24-hour dial opened on the Damascus time. Closure picked
+         2026-09-20 08:00-16:00 stored as 05:00Z-13:00Z; duty 2026-09-21 08:00-16:00 stored as
+         05:00Z-13:00Z (UTC+3). Lists read "من … إلى …". Both test rows deleted after.         PASS
+         (new: a closure with no reason reads " • من …": the backend returns "" not null)
+INT-085  all 36 directory rows over 2 pages equal the rule applied to the backend distance:
+         3 in metres, 33 in km (481.4 -> 481 م, 672.9 -> 673 م, 1307.5 -> 1.3 كم,
+         8841.3 -> 8.8 كم). Home: 481 م, 673 م, 879 م, 1.1 كم.                              PASS
+INT-086  without location the section is "المنشآت" with no distance; with location granted
+         (while in use, appop foreground) it is "الأقرب إليك".                                 PASS
+INT-087  MapLibre renders OpenFreeMap Liberty, labels in Arabic, no crash; markers over Raqqa;
+         marker -> facility detail; the owner location picker renders and a tap on it saved a
+         point (PUT location 200) and moved to the hours step.                        PASS, with:
+         - the map opens on the whole world, not on the province (new)
+         - back from a facility detail resets the map to the world view: MapView is created in
+           remember and destroyed on dispose; the camera is not kept (new)
+         - "عرض على الخريطة" opens the same world map, not the facility, and stacks a new map
+           each time (new)
+INT-088  no FirebaseApp / FirebaseInitProvider line in the app's log for the whole session.   PASS
+INT-089  StrictMode (debug) names the resource: android.view.SurfaceControl, reported from
+         SurfaceControl.finalize with no creation site; no other leaked Closeable or
+         registration. Reproduced one per keyboard show/hide (3 per 3 cycles, three rounds);
+         0 across 16 map->marker->detail runs and 8 map->back runs. No app code or library
+         touches SurfaceControl, SurfaceView, TextureView or inset animation control.
+         Classification: a platform-owned surface for the keyboard's animation leash, not an
+         app resource. No in-app fix without suppressing, which is not done.   OPEN — EXTERNAL
+INT-090  one back press = one level: owner draft (hours) -> its management -> منشآتي;
+         detail -> home; map -> home. "OnBackInvokedCallback is not enabled": 0. The
+         predictive-back animation needs gesture navigation; this phone uses buttons and its
+         settings were not changed.                                                         PASS
+INT-084  unchanged, OPEN (product/API gap).
+
+Logcat (app uid only): no FATAL, AndroidRuntime or ANR. Adreno/Gralloc allocation-probe errors
+when a map surface is created (4x4 buffers, formats 0x38/0x3b): vendor driver, no effect seen.
+Test data: the owner draft now has a test point from the picker (35.4, 43.1), in the local
+directory_device database only.

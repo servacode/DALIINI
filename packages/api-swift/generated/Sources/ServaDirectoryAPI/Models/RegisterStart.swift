@@ -10,21 +10,18 @@ import Foundation
 import AnyCodable
 #endif
 
+/** What is needed to send a code: a number, and where the account will live.  The name is not asked for here. Nothing should be collected about a person before they have shown the number is theirs, and a name given to a challenge that is never completed is a name stored for nothing. */
 public struct RegisterStart: Codable, JSONEncodable, Hashable {
 
-    public static let displayNameRule = StringRule(minLength: nil, maxLength: 120, pattern: nil)
-    public var displayName: String
     public var phone: String
     public var provinceId: UUID
 
-    public init(displayName: String, phone: String, provinceId: UUID) {
-        self.displayName = displayName
+    public init(phone: String, provinceId: UUID) {
         self.phone = phone
         self.provinceId = provinceId
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
-        case displayName
         case phone
         case provinceId
     }
@@ -33,7 +30,6 @@ public struct RegisterStart: Codable, JSONEncodable, Hashable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(displayName, forKey: .displayName)
         try container.encode(phone, forKey: .phone)
         try container.encode(provinceId, forKey: .provinceId)
     }

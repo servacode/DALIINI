@@ -32,6 +32,16 @@ if [[ $use_local -eq 0 ]] && ! command -v docker >/dev/null 2>&1; then
   exit 3
 fi
 
+# The container writes as root unless told otherwise, and on a Linux runner the files it leaves
+# behind then cannot be removed by the user that invoked it — which is how the cleanup below came
+# to fail with "Permission denied" while the same script worked on a developer's machine, where
+# Docker Desktop maps ownership for you. Windows has no uid to pass and needs none.
+docker_as_me=()
+case "$(uname -s)" in
+  MINGW* | MSYS* | CYGWIN*) ;;
+  *) docker_as_me=(--user "$(id -u):$(id -g)") ;;
+esac
+
 generate() {
   local generator="$1" config="$2" out="$3"
   rm -rf "$ROOT/$out"
@@ -40,7 +50,7 @@ generate() {
     openapi-generator-cli generate \
       -i "$SCHEMA" -g "$generator" -c "$ROOT/$config" -o "$ROOT/$out"
   else
-    MSYS_NO_PATHCONV=1 docker run --rm -v "$ROOT:/work" -w /work "$IMAGE" generate \
+    MSYS_NO_PATHCONV=1 docker run --rm "${docker_as_me[@]}" -v "$ROOT:/work" -w /work "$IMAGE" generate \
       -i "openapi/schema.yaml" -g "$generator" -c "$config" -o "$out"
   fi
 }

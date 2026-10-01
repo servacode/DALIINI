@@ -55,5 +55,17 @@ class ProfileTest : ShouldSpec() {
             //modelInstance.phoneVerifiedAt shouldBe ("TODO")
         }
 
+        // to test the property `address` - Free text, as the person writes it. Empty when they have not given one.
+        should("test address") {
+            // uncomment below to test the property
+            //modelInstance.address shouldBe ("TODO")
+        }
+
+        // to test the property `profileImageUrl` - Public URL of the profile picture, or null when there is none.
+        should("test profileImageUrl") {
+            // uncomment below to test the property
+            //modelInstance.profileImageUrl shouldBe ("TODO")
+        }
+
     }
 }

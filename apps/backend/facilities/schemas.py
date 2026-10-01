@@ -5,9 +5,11 @@ object storage keys, private bucket paths and reviewer notes never appear here, 
 `15-SECURITY-PRIVACY.md`.
 """
 
+from typing import Any
+
 from rest_framework import serializers
 
-from core.openapi import CoordinatesSerializer, NamedRefSerializer
+from core.openapi import CoordinatesSerializer, NamedIntRefSerializer, NamedRefSerializer
 from directory.models import Category
 from directory.schemas import CategoryCapabilitiesSerializer
 
@@ -22,7 +24,7 @@ REQUIRED_ACTIONS = [
 ]
 
 
-class OwnerVerificationRequirementSerializer(serializers.Serializer):
+class OwnerVerificationRequirementSerializer(serializers.Serializer[Any]):
     """Safe descriptor of a requirement. The evidence itself is never described here."""
 
     # The model's integer key, as the Admin contract already declares it (INT-068).
@@ -30,12 +32,14 @@ class OwnerVerificationRequirementSerializer(serializers.Serializer):
     labelAr = serializers.CharField()
     labelEn = serializers.CharField(allow_null=True)
     instructionsAr = serializers.CharField(allow_null=True)
-    required = serializers.BooleanField()
+    # The stubs see Field.required, but the serializer metaclass collects this declaration
+    # as the wire field "required" and removes it from the class; the name is the contract.
+    required = serializers.BooleanField()  # type: ignore[assignment]
     minFiles = serializers.IntegerField()
     maxFiles = serializers.IntegerField()
 
 
-class OwnerCategorySerializer(serializers.Serializer):
+class OwnerCategorySerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     nameAr = serializers.CharField()
     nameEn = serializers.CharField(allow_null=True)
@@ -43,18 +47,44 @@ class OwnerCategorySerializer(serializers.Serializer):
     specialization = serializers.ChoiceField(choices=Category.Specialization.choices)
 
 
-class OwnerConfigCategorySerializer(serializers.Serializer):
+class OwnerConfigCategorySerializer(serializers.Serializer[Any]):
     category = OwnerCategorySerializer()
     capabilities = CategoryCapabilitiesSerializer()
     verificationRequirements = OwnerVerificationRequirementSerializer(many=True)
+    specialties = NamedIntRefSerializer(
+        many=True,
+        help_text=(
+            "The specialties an owner may pick, as publicCategoryTagsRetrieve lists them. "
+            "Their ids are what `specialtyIds` takes."
+        ),
+    )
+    services = NamedIntRefSerializer(
+        many=True,
+        help_text=(
+            "The services an owner may pick, as publicCategoryTagsRetrieve lists them. "
+            "Their ids are what `serviceTagIds` takes."
+        ),
+    )
 
 
-class OwnerConfigSerializer(serializers.Serializer):
-    province = NamedRefSerializer()
+class OwnerConfigProvinceSerializer(serializers.Serializer[Any]):
+    id = serializers.UUIDField()
+    nameAr = serializers.CharField()
+    mapCenter = CoordinatesSerializer(
+        allow_null=True,
+        help_text=(
+            "Where the location picker opens when the owner's own position is unknown. "
+            "Null when no centre has been set."
+        ),
+    )
+
+
+class OwnerConfigSerializer(serializers.Serializer[Any]):
+    province = OwnerConfigProvinceSerializer()
     categories = OwnerConfigCategorySerializer(many=True)
 
 
-class OwnerFacilitySummarySerializer(serializers.Serializer):
+class OwnerFacilitySummarySerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     nameAr = serializers.CharField()
     category = NamedRefSerializer()
@@ -65,17 +95,17 @@ class OwnerFacilitySummarySerializer(serializers.Serializer):
     capabilities = CategoryCapabilitiesSerializer()
 
 
-class OwnerFacilitySummaryListSerializer(serializers.Serializer):
+class OwnerFacilitySummaryListSerializer(serializers.Serializer[Any]):
     items = OwnerFacilitySummarySerializer(many=True)
 
 
-class OwnerEvidenceRefSerializer(serializers.Serializer):
+class OwnerEvidenceRefSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     requirementId = serializers.IntegerField()
     createdAt = serializers.DateTimeField()
 
 
-class OwnerHoursEntrySerializer(serializers.Serializer):
+class OwnerHoursEntrySerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     weekday = serializers.IntegerField(min_value=0, max_value=6)
     opensAt = serializers.TimeField()
@@ -83,7 +113,7 @@ class OwnerHoursEntrySerializer(serializers.Serializer):
     sequence = serializers.IntegerField()
 
 
-class OwnerApplicationSerializer(serializers.Serializer):
+class OwnerApplicationSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     kind = serializers.ChoiceField(choices=FacilityApplication.Kind.choices)
     status = serializers.ChoiceField(choices=FacilityApplication.Status.choices)
@@ -96,25 +126,39 @@ class OwnerFacilityDetailSerializer(OwnerFacilitySummarySerializer):
     descriptionAr = serializers.CharField(allow_null=True)
     descriptionEn = serializers.CharField(allow_null=True)
     phone = serializers.CharField(allow_null=True)
+    whatsapp = serializers.CharField(allow_null=True, help_text="E.164 Syrian mobile.")
     addressAr = serializers.CharField(allow_null=True)
     addressEn = serializers.CharField(allow_null=True)
     cityId = serializers.UUIDField(allow_null=True)
     neighborhoodId = serializers.UUIDField(allow_null=True)
     location = CoordinatesSerializer(allow_null=True)
-    specialtyIds = serializers.ListField(child=serializers.UUIDField())
-    serviceTagIds = serializers.ListField(child=serializers.UUIDField())
+    specialtyIds = serializers.ListField(
+        child=serializers.IntegerField(),
+        help_text="The facility's active specialties, in order; retired ones are left out.",
+    )
+    serviceTagIds = serializers.ListField(
+        child=serializers.IntegerField(),
+        help_text="The facility's active services, in order; retired ones are left out.",
+    )
     evidence = OwnerEvidenceRefSerializer(many=True)
     hours = OwnerHoursEntrySerializer(many=True)
+    hoursConfirmedAt = serializers.DateTimeField(
+        allow_null=True,
+        help_text=(
+            "When a member last confirmed the opening hours (or replaced them). The app asks "
+            "again once this is a week old."
+        ),
+    )
     application = OwnerApplicationSerializer(allow_null=True)
 
 
-class OwnerSubmitResultSerializer(serializers.Serializer):
+class OwnerSubmitResultSerializer(serializers.Serializer[Any]):
     applicationId = serializers.UUIDField()
     status = serializers.ChoiceField(choices=FacilityApplication.Status.choices)
     submittedAt = serializers.DateTimeField()
 
 
-class OwnerFacilityImageSerializer(serializers.Serializer):
+class OwnerFacilityImageSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     url = serializers.CharField(
         help_text=(
@@ -127,27 +171,35 @@ class OwnerFacilityImageSerializer(serializers.Serializer):
     height = serializers.IntegerField()
 
 
-class OwnerFacilityImageListSerializer(serializers.Serializer):
+class OwnerFacilityImageListSerializer(serializers.Serializer[Any]):
     items = OwnerFacilityImageSerializer(many=True)
 
 
-class OwnerEvidenceCreatedSerializer(serializers.Serializer):
+class OwnerEvidenceCreatedSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     requirementId = serializers.IntegerField()
 
 
-class OwnerMemberSerializer(serializers.Serializer):
+class OwnerMemberSerializer(serializers.Serializer[Any]):
     userId = serializers.UUIDField()
     name = serializers.CharField()
     phone = serializers.CharField()
     role = serializers.ChoiceField(choices=FacilityMembership.Role.choices)
 
 
-class OwnerMemberListSerializer(serializers.Serializer):
+class OwnerMemberListSerializer(serializers.Serializer[Any]):
     items = OwnerMemberSerializer(many=True)
 
 
-class OwnerMemberUpsertedSerializer(serializers.Serializer):
+class OwnerMemberUpsertedSerializer(serializers.Serializer[Any]):
     userId = serializers.UUIDField()
     name = serializers.CharField()
     role = serializers.ChoiceField(choices=FacilityMembership.Role.choices)
+
+
+class OwnerHoursConfirmedSerializer(serializers.Serializer[Any]):
+    facilityId = serializers.UUIDField()
+    hoursConfirmedAt = serializers.DateTimeField()
+    infoConfirmedAt = serializers.DateTimeField(
+        help_text="The later of `hoursConfirmedAt` and the last operator approval."
+    )

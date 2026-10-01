@@ -1,6 +1,11 @@
 "use client";
 
-import { type ReactNode, useEffect, useId, useRef, useState } from "react";
+import { type VocabularyGroup, term, vocabulary } from "@servacode/design-tokens/vocabulary";
+import brandSymbol from "@servacode/design-tokens/brand/symbol-128.webp";
+import Link from "next/link";
+import { type ReactNode, useEffect, useEffectEvent, useId, useRef, useState } from "react";
+
+import { type IconName, type IllustrationName, Icons, Illustration } from "../icons";
 
 import {
   type ApiErrorBody,
@@ -26,23 +31,151 @@ import {
 // Page furniture
 // --------------------------------------------------------------------------------------
 
+/** The approved brand symbol (the road and the pin inside the letter); the name is set beside it as text. */
+export function BrandMark() {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- a 128px static asset; no optimisation route needed
+    <img className="brand-mark" src={brandSymbol.src} width={40} height={40} alt="" aria-hidden="true" />
+  );
+}
+
+/**
+ * The title block every screen opens with.
+ *
+ * `back` is for detail screens: it returns to the list the record came from, so the way
+ * out sits where the eye starts reading (the top inline-start corner) rather than in the
+ * browser chrome.
+ */
 export function PageHeader({
   title,
   description,
   actions,
+  eyebrow,
+  back,
 }: {
   title: string;
   description?: string;
   actions?: ReactNode;
+  eyebrow?: string;
+  back?: { href: string; label: string };
 }) {
   return (
     <header className="page-heading">
-      <div>
+      <div className="page-heading-text">
+        {back ? (
+          <Link href={back.href} className="back-link">
+            <Icons.arrowBack />
+            {back.label}
+          </Link>
+        ) : null}
+        {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
         <h1>{title}</h1>
         {description ? <p>{description}</p> : null}
       </div>
       {actions ? <div className="header-actions">{actions}</div> : null}
     </header>
+  );
+}
+
+/**
+ * A titled card. The one container for a block of related content, so every section on
+ * every screen has the same header rhythm, padding and edge.
+ */
+export function Panel({
+  title,
+  description,
+  actions,
+  flush,
+  children,
+  testId,
+}: {
+  title?: string;
+  description?: string;
+  actions?: ReactNode;
+  /** No inner padding; for a table that should run edge to edge. */
+  flush?: boolean;
+  children: ReactNode;
+  testId?: string;
+}) {
+  return (
+    <section className={flush ? "panel panel-flush" : "panel"} data-testid={testId}>
+      {title ? (
+        <header className="panel-header">
+          <div>
+            <h2>{title}</h2>
+            {description ? <p>{description}</p> : null}
+          </div>
+          {actions ? <div className="header-actions">{actions}</div> : null}
+        </header>
+      ) : null}
+      <div className="panel-body">{children}</div>
+    </section>
+  );
+}
+
+/** A headline number. Linked when there is a queue behind it to go and work. */
+export function StatCard({
+  label,
+  value,
+  icon,
+  hint,
+  href,
+  tone,
+  testId,
+  trend,
+}: {
+  label: string;
+  value: ReactNode;
+  icon?: IconName;
+  hint?: string;
+  href?: string;
+  tone?: "warning" | "info";
+  testId?: string;
+  /** Change against a previous period, under the number (see `Trend` in `./extra`). */
+  trend?: ReactNode;
+}) {
+  const Glyph = icon ? Icons[icon] : null;
+  const body = (
+    <>
+      <div className="kpi-head">
+        <span className="kpi-label">{label}</span>
+        {Glyph ? (
+          <span className="kpi-icon">
+            <Glyph />
+          </span>
+        ) : null}
+      </div>
+      <strong className="kpi-value">{value}</strong>
+      {trend ? <span className="kpi-trend">{trend}</span> : null}
+      {hint ? <span className="kpi-hint">{hint}</span> : null}
+    </>
+  );
+  return href ? (
+    <Link href={href} className="kpi" data-tone={tone} data-testid={testId}>
+      {body}
+    </Link>
+  ) : (
+    <div className="kpi" data-tone={tone} data-testid={testId}>
+      {body}
+    </div>
+  );
+}
+
+/** Label/value pairs for a record's read-only facts. */
+export function KeyValueList({
+  items,
+}: {
+  items: readonly { label: string; value: ReactNode; ltr?: boolean }[];
+}) {
+  return (
+    <dl className="kv">
+      {items.map((item) => (
+        <div key={item.label} className="kv-row">
+          <dt>{item.label}</dt>
+          <dd className={item.ltr ? "cell-ltr" : undefined}>{item.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -55,11 +188,23 @@ export function LoadingState({ label = "جارٍ التحميل…" }: { label?:
   );
 }
 
-export function EmptyState({ title, hint }: { title: string; hint?: string }) {
+export function EmptyState({
+  title,
+  hint,
+  illustration = "empty",
+  action,
+}: {
+  title: string;
+  hint?: string;
+  illustration?: IllustrationName;
+  action?: ReactNode;
+}) {
   return (
     <div className="state-block state-empty" data-testid="empty-state">
+      <Illustration name={illustration} size={88} />
       <strong>{title}</strong>
       {hint ? <span className="muted">{hint}</span> : null}
+      {action ? <div className="state-action">{action}</div> : null}
     </div>
   );
 }
@@ -165,7 +310,7 @@ export function DataTable<T>({
 export type FilterField = Readonly<{
   name: string;
   label: string;
-  type?: "text" | "select";
+  type?: "text" | "select" | "date";
   options?: readonly { value: string; label: string }[];
   placeholder?: string;
 }>;
@@ -220,6 +365,17 @@ export function FilterBar({
                 </option>
               ))}
             </select>
+          ) : field.type === "date" ? (
+            <input
+              name={field.name}
+              type="date"
+              dir="ltr"
+              value={draft[field.name] ?? ""}
+              data-testid={`filter-${field.name}`}
+              onChange={(event) =>
+                setDraft({ ...draft, [field.name]: event.target.value })
+              }
+            />
           ) : (
             <input
               name={field.name}
@@ -306,7 +462,7 @@ export function Pagination({
 // Status and permissions
 // --------------------------------------------------------------------------------------
 
-export type Tone = "neutral" | "positive" | "warning" | "danger" | "info";
+export type Tone = "neutral" | "positive" | "warning" | "danger" | "info" | "brand";
 
 export function StatusBadge({ tone = "neutral", children }: { tone?: Tone; children: ReactNode }) {
   return (
@@ -314,6 +470,28 @@ export function StatusBadge({ tone = "neutral", children }: { tone?: Tone; child
       {children}
     </span>
   );
+}
+
+/**
+ * A state shown in the platform's shared words: the label and colour come from the design
+ * package's vocabulary, so "فعّالة" or "مناوب الآن" reads and looks the same in the console,
+ * the app and the site.
+ */
+/** A vocabulary group as `{ VALUE: { label, tone } }`, for tables, filters and badges. */
+export function termsFor(group: VocabularyGroup): Record<string, { label: string; tone: Tone }> {
+  return Object.fromEntries(
+    Object.entries(vocabulary[group]).map(([key, entry]) => [key, { label: entry.ar, tone: entry.tone }]),
+  );
+}
+
+/** A vocabulary group as `{ VALUE: label }`. */
+export function labelsFor(group: VocabularyGroup): Record<string, string> {
+  return Object.fromEntries(Object.entries(vocabulary[group]).map(([key, entry]) => [key, entry.ar]));
+}
+
+export function TermBadge({ group, value }: { group: VocabularyGroup; value: string | null | undefined }) {
+  const t = term(group, value);
+  return <StatusBadge tone={t.tone}>{t.ar}</StatusBadge>;
 }
 
 /**
@@ -396,16 +574,23 @@ export function ConfirmDialog({
 }) {
   const headingId = useId();
   const dialog = useRef<HTMLDivElement>(null);
+  // Read when Escape is pressed, so the effect below runs once per opening. With `onCancel`
+  // among its dependencies it re-ran on every render of the screen behind the dialog (an
+  // inline arrow is a new function each time) and pulled focus out of the field being typed in.
+  const escape = useEffectEvent(() => {
+    if (!pending) onCancel();
+  });
 
   useEffect(() => {
     if (!open) return;
-    dialog.current?.querySelector<HTMLElement>("[data-autofocus]")?.focus();
+    // Without scrolling, so a long form opens on its first field rather than on its buttons.
+    dialog.current?.querySelector<HTMLElement>("[data-autofocus]")?.focus({ preventScroll: true });
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !pending) onCancel();
+      if (event.key === "Escape") escape();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [open, pending, onCancel]);
+  }, [open]);
 
   if (!open) return null;
 
@@ -429,6 +614,7 @@ export function ConfirmDialog({
             className={destructive ? "button-danger" : "button-primary"}
             onClick={onConfirm}
             disabled={pending}
+            aria-busy={pending || undefined}
             data-autofocus
             data-testid="confirm-accept"
           >

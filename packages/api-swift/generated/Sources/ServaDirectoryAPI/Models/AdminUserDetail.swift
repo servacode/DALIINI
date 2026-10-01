@@ -19,9 +19,9 @@ public struct AdminUserDetail: Codable, JSONEncodable, Hashable {
     public var provinceId: UUID?
     public var createdAt: Date?
     public var updatedAt: Date?
-    public var roleIds: [UUID]
+    public var roleIds: [Int]
 
-    public init(id: UUID, name: String, phone: String, active: Bool, provinceId: UUID?, createdAt: Date?, updatedAt: Date?, roleIds: [UUID]) {
+    public init(id: UUID, name: String, phone: String, active: Bool, provinceId: UUID?, createdAt: Date?, updatedAt: Date?, roleIds: [Int]) {
         self.id = id
         self.name = name
         self.phone = phone

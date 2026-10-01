@@ -1,17 +1,56 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
+    <!--
+      android:enableOnBackInvokedCallback is false on the product's decision, with evidence.
+
+      With it on, navigation-compose shrinks the screen being left into a rounded card and dims
+      the screen behind it. Photographed on an A52: leaving a facility's page, the page became a
+      small card floating over a greyed Home. That is what was reported three times as "a
+      square, like a screenshot", and it is not something the graph's own transitions can turn
+      off — they are already None in all four directions.
+
+      The gesture preview goes with it. That is the cost, and it was accepted: this device has
+      no back gesture at all (navigation_mode 0) and the system's own back animation is already
+      disabled on it (enable_back_animation 0), so the flag was buying the artefact and nothing
+      else.
+    -->
     <application
         android:name=".DirectoryApplication"
         android:allowBackup="false"
+        android:enableOnBackInvokedCallback="false"
         android:fullBackupContent="false"
-        android:label="الدليل"
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:usesCleartextTraffic="false"
         android:theme="@style/Theme.Directory">
+        <!-- Firebase's own provider would initialise FirebaseApp at every start from a
+             google-services configuration this project never ships (INT-088). PushSetup
+             initialises Firebase explicitly, from the build's values and only when it has them,
+             in Application.onCreate, which runs before any FCM service. -->
+        <provider
+            android:name="com.google.firebase.provider.FirebaseInitProvider"
+            android:authorities="${applicationId}.firebaseinitprovider"
+            tools:node="remove" />
+
+        <!-- Sentry would initialise itself from these at every start. CrashReporting initialises
+             it in Application.onCreate, and only when the build carries a DSN; without one no
+             Sentry code runs at all. -->
+        <provider
+            android:name="io.sentry.android.core.SentryInitProvider"
+            android:authorities="${applicationId}.SentryInitProvider"
+            tools:node="remove" />
+        <provider
+            android:name="io.sentry.android.core.SentryPerformanceProvider"
+            android:authorities="${applicationId}.SentryPerformanceProvider"
+            tools:node="remove" />
+
         <!-- Push arrives here. Firebase is initialised only when the build carries a
              configuration; see PushSetup. -->
         <service
@@ -24,11 +63,63 @@
 
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.Directory.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- App Links: the site's own https addresses open here, verified against
+                 https://<host>/.well-known/assetlinks.json (play/app-links.md). No custom scheme:
+                 a link that is not verified opens the site in the browser, as it should.
+
+                 The paths are only the site's pages the app has: a facility (/f/{id}), who is on
+                 duty (/duty, /duty/today), and a province (/{code}). Provinces are listed one by
+                 one, from the backend's reference data (directory/reference_data/launch_v1.py),
+                 rather than as a pattern that would also take /privacy, /faq and every other
+                 page away from the browser. DeepLinks.parse reads what arrives.
+
+                 One host only, the one the site's own links use. Its other form (www. or bare)
+                 is usually a redirect, which cannot verify, and Android 7 to 11 then verify
+                 none of the app's links. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" />
+                <data android:host="${appLinkHost}" />
+                <data android:pathPrefix="/f/" />
+                <data android:path="/duty" />
+                <data android:path="/duty/today" />
+                <data android:path="/raqqa" />
+                <data android:path="/damascus" />
+                <data android:path="/rif-dimashq" />
+                <data android:path="/aleppo" />
+                <data android:path="/homs" />
+                <data android:path="/hama" />
+                <data android:path="/latakia" />
+                <data android:path="/tartus" />
+                <data android:path="/idlib" />
+                <data android:path="/deir-ez-zor" />
+                <data android:path="/al-hasakah" />
+                <data android:path="/daraa" />
+                <data android:path="/as-suwayda" />
+                <data android:path="/quneitra" />
+            </intent-filter>
         </activity>
+
+        <!-- «المناوب الآن» on the home screen (DutyWidget). -->
+        <receiver
+            android:name=".widget.DutyWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_duty_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/duty_widget_info" />
+        </receiver>
     </application>
 </manifest>

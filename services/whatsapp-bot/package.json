@@ -1,0 +1,18 @@
+{
+  "name": "@servacode/whatsapp-bot",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Sends registration codes over a paired WhatsApp account",
+  "scripts": {
+    "start": "node src/server.js",
+    "pair": "node src/pair.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "6.7.9",
+    "pino": "9.5.0",
+    "@hapi/boom": "10.0.1",
+    "qrcode-terminal": "0.12.0"
+  }
+}

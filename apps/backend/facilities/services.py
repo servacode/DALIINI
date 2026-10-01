@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from collections import Counter
+from typing import TYPE_CHECKING, Any
+from uuid import UUID
 
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
@@ -9,7 +11,7 @@ from django.utils import timezone
 
 from audit.services import record_audit
 from directory.models import CategoryProvince, ServiceTag, Specialty
-from locations.models import City, Neighborhood, Province
+from locations.models import City, Neighborhood
 
 from .models import (
     Facility,
@@ -20,8 +22,11 @@ from .models import (
     VerificationEvidence,
 )
 
+if TYPE_CHECKING:
+    from accounts.models import User
 
-def _snapshot(facility):
+
+def _snapshot(facility: Facility) -> dict[str, Any]:
     return {
         "status": facility.status,
         "nameAr": facility.name_ar,
@@ -35,7 +40,33 @@ def _snapshot(facility):
     }
 
 
-def _owner_switch(*, province_id, category_id):
+def application_snapshot(facility: Facility) -> dict[str, Any]:
+    """What the operator reviews: the audit snapshot plus the public-facing content."""
+    point = facility.location
+    return {
+        **_snapshot(facility),
+        "nameEn": facility.name_en or None,
+        "descriptionAr": facility.description_ar or None,
+        "descriptionEn": facility.description_en or None,
+        "phone": facility.phone or None,
+        "whatsapp": facility.whatsapp or None,
+        "addressAr": facility.address_ar or None,
+        "addressEn": facility.address_en or None,
+        "location": {"latitude": point.y, "longitude": point.x} if point else None,
+        "specialtyIds": sorted(facility.specialty_links.values_list("specialty_id", flat=True)),
+        "serviceTagIds": sorted(
+            facility.service_links.values_list("service_tag_id", flat=True)
+        ),
+        "imageIds": [
+            str(value)
+            for value in facility.images.order_by("sort_order", "created_at").values_list(
+                "id", flat=True
+            )
+        ],
+    }
+
+
+def _owner_switch(*, province_id: UUID, category_id: UUID) -> CategoryProvince | None:
     return CategoryProvince.objects.select_related(
         "category__group", "category__capabilities", "province"
     ).filter(
@@ -49,7 +80,7 @@ def _owner_switch(*, province_id, category_id):
     ).first()
 
 
-def validate_owner_registration(*, province_id, category_id):
+def validate_owner_registration(*, province_id: UUID, category_id: UUID) -> CategoryProvince:
     switch = _owner_switch(province_id=province_id, category_id=category_id)
     if switch is None:
         raise ValidationError("Owner onboarding is not enabled for this selection.")
@@ -57,7 +88,9 @@ def validate_owner_registration(*, province_id, category_id):
 
 
 @transaction.atomic
-def create_facility_draft(*, actor, data, request_id=""):
+def create_facility_draft(
+    *, actor: User, data: dict[str, Any], request_id: str = ""
+) -> Facility:
     switch = validate_owner_registration(
         province_id=data["provinceId"], category_id=data["categoryId"]
     )
@@ -88,7 +121,7 @@ def create_facility_draft(*, actor, data, request_id=""):
     return facility
 
 
-def _resolve_city(*, facility, city_id):
+def _resolve_city(*, facility: Facility, city_id: UUID | None) -> City | None:
     if city_id is None:
         return None
     try:
@@ -97,7 +130,9 @@ def _resolve_city(*, facility, city_id):
         raise ValidationError({"cityId": "City is not valid for the facility province."}) from exc
 
 
-def _resolve_neighborhood(*, city, neighborhood_id):
+def _resolve_neighborhood(
+    *, city: City | None, neighborhood_id: UUID | None
+) -> Neighborhood | None:
     if neighborhood_id is None:
         return None
     if city is None:
@@ -110,7 +145,7 @@ def _resolve_neighborhood(*, city, neighborhood_id):
         ) from exc
 
 
-def _replace_specialties(facility, specialty_ids):
+def _replace_specialties(facility: Facility, specialty_ids: list[int] | None) -> None:
     if specialty_ids is None:
         return
     specialties = list(Specialty.objects.filter(pk__in=set(specialty_ids), active=True))
@@ -130,7 +165,7 @@ def _replace_specialties(facility, specialty_ids):
     )
 
 
-def _replace_service_tags(facility, tag_ids):
+def _replace_service_tags(facility: Facility, tag_ids: list[int] | None) -> None:
     if tag_ids is None:
         return
     tags = list(
@@ -147,7 +182,9 @@ def _replace_service_tags(facility, tag_ids):
 
 
 @transaction.atomic
-def update_facility_core(*, actor, facility, data, request_id=""):
+def update_facility_core(
+    *, actor: User, facility: Facility, data: dict[str, Any], request_id: str = ""
+) -> Facility:
     locked = Facility.objects.select_for_update().select_related("category").get(pk=facility.pk)
     before = _snapshot(locked)
     city_id = data.get("cityId", locked.city_id)
@@ -165,6 +202,7 @@ def update_facility_core(*, actor, facility, data, request_id=""):
         "descriptionAr": "description_ar",
         "descriptionEn": "description_en",
         "phone": "phone",
+        "whatsapp": "whatsapp",
         "addressAr": "address_ar",
         "addressEn": "address_en",
     }
@@ -195,7 +233,14 @@ def update_facility_core(*, actor, facility, data, request_id=""):
 
 
 @transaction.atomic
-def update_facility_location(*, actor, facility, latitude, longitude, request_id=""):
+def update_facility_location(
+    *,
+    actor: User,
+    facility: Facility,
+    latitude: float,
+    longitude: float,
+    request_id: str = "",
+) -> Facility:
     locked = Facility.objects.select_for_update().get(pk=facility.pk)
     before = _snapshot(locked)
     locked.location = Point(float(longitude), float(latitude), srid=4326)
@@ -213,7 +258,7 @@ def update_facility_location(*, actor, facility, latitude, longitude, request_id
     return locked
 
 
-def _required_evidence_complete(facility):
+def _required_evidence_complete(facility: Facility) -> bool:
     requirements = list(
         facility.category.verification_requirements.filter(active=True, required=True)
     )
@@ -226,7 +271,9 @@ def _required_evidence_complete(facility):
 
 
 @transaction.atomic
-def submit_facility(*, actor, facility, request_id=""):
+def submit_facility(
+    *, actor: User, facility: Facility, request_id: str = ""
+) -> FacilityApplication:
     locked = (
         # Lock the facility row only. `category__capabilities` is a reverse one-to-one,
         # so select_related emits a LEFT OUTER JOIN and PostgreSQL refuses FOR UPDATE on
@@ -236,6 +283,11 @@ def submit_facility(*, actor, facility, request_id=""):
         .select_related("category__group", "category__capabilities", "province")
         .get(pk=facility.pk)
     )
+    if locked.status in (Facility.Status.SUSPENDED, Facility.Status.CLOSED):
+        # A suspension or closure is an operator decision; resubmitting must not undo it.
+        raise ValidationError(
+            {"status": "A suspended or closed facility cannot be submitted for review."}
+        )
     validate_owner_registration(
         province_id=locked.province_id,
         category_id=locked.category_id,
@@ -271,7 +323,7 @@ def submit_facility(*, actor, facility, request_id=""):
     application.status = FacilityApplication.Status.SUBMITTED
     application.submitted_at = timezone.now()
     application.rejection_reason = ""
-    application.snapshot = _snapshot(locked)
+    application.snapshot = application_snapshot(locked)
     application.save(
         update_fields=[
             "status",

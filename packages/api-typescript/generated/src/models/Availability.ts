@@ -39,6 +39,18 @@ export interface Availability {
      * @memberof Availability
      */
     nextOpenAt: Date | null;
+    /**
+     * Whether the doors are open at this moment, by the facility's own business hours and temporary closures. Independent of duty: unlike `state`, which collapses both into one value and lets DUTY win, this stays true for a facility that is open while its duty shift runs.
+     * @type {boolean}
+     * @memberof Availability
+     */
+    isOpenNow: boolean;
+    /**
+     * Whether the facility appears on today's duty roster, taking today to be the local day in Asia/Damascus. A different question from being open: a pharmacy on tonight's roster is on duty today from midnight, hours before it opens. False simply means it is not on the roster; clients must not render that as a badge of its own.
+     * @type {boolean}
+     * @memberof Availability
+     */
+    isOnDutyToday: boolean;
 }
 
 
@@ -49,6 +61,8 @@ export interface Availability {
 export function instanceOfAvailability(value: object): value is Availability {
     if (!('state' in value) || value['state'] === undefined) return false;
     if (!('nextOpenAt' in value) || value['nextOpenAt'] === undefined) return false;
+    if (!('isOpenNow' in value) || value['isOpenNow'] === undefined) return false;
+    if (!('isOnDutyToday' in value) || value['isOnDutyToday'] === undefined) return false;
     return true;
 }
 
@@ -64,6 +78,8 @@ export function AvailabilityFromJSONTyped(json: any, ignoreDiscriminator: boolea
         
         'state': AvailabilityStateEnumFromJSON(json['state']),
         'nextOpenAt': (json['nextOpenAt'] == null ? null : new Date(json['nextOpenAt'])),
+        'isOpenNow': json['isOpenNow'],
+        'isOnDutyToday': json['isOnDutyToday'],
     };
 }
 
@@ -80,6 +96,8 @@ export function AvailabilityToJSONTyped(value?: Availability | null, ignoreDiscr
         
         'state': AvailabilityStateEnumToJSON(value['state']),
         'nextOpenAt': ((value['nextOpenAt'] as any).toISOString()),
+        'isOpenNow': value['isOpenNow'],
+        'isOnDutyToday': value['isOnDutyToday'],
     };
 }
 

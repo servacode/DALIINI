@@ -1,0 +1,74 @@
+FINAL DEVICE BASELINE CLEANUP — DEVICE VERIFICATION — 2026-09-19
+Device: Samsung Galaxy A52 (SM-A525F), Android 14, One UI 6.1, three-button navigation;
+wireless debugging; adb reverse tcp:8000 and tcp:9000; scripts/local-stack.sh, database
+migrated in place (locations 0002, directory 0005; no fixture reset).
+Build: CI run 35442547658 at c1c6c68, all gates green: assembleLocalDebug, 160 unit tests
+(0 failures, was 122), lint 0 errors (same 24 warnings), source qualifiers.
+Camera evidence: every map asks the backend for its markers with the visible viewport (bbox),
+so the local API's access log gives each map's centre and span. The device's own position is
+never written here, only distances from it.
+
+APK update (DECISION-041)
+  APK bd05995f6b9440ba2f3bcca03aad0de4ec8da0edbd3d26cd14827ed0b1521e82
+  certificate 21e9ff5c409a14cec929bb078d53625f4e3142ef1bb027337360e9e6d5b62caa (v2), the same
+  as the installed ee74dfd6 build
+  adb install -r: Success, no uninstall. firstInstallTime unchanged, lastUpdateTime moved;
+  pulled back: same SHA-256 and certificate. Location permission kept; cold start 1640 ms
+  straight to Home in Raqqa; still signed in as the fixture owner.                      PASS
+
+Before (the previous build, same log): the map asked for the whole world, zoom 0.7, centred
+0,0, 5678 km from Raqqa.
+
+A  map, location allowed: one request, zoom 14.00, 1.59 x 3.22 km, centred 1.2 m from the
+   device position; the six fixture pharmacies on screen. Pan moved the view 709 m; a
+   double tap zoomed to 15.0; double-tap-drag zoomed out to 14.27.                      PASS
+B  map, location revoked (pm revoke, restored afterwards): zoom 12.00, 6.36 x 12.87 km,
+   centred 4.8 m from Raqqa's map centre (35.9528, 39.0085); the city and its markers.   PASS
+C  detail of pharmacy 3 -> "عرض على الخريطة": zoom 16.00, centred 0.3 m from the facility;
+   its marker selected with its name above it; its neighbours visible.                   PASS
+D  map -> marker (pharmacy 1) -> its detail -> back: no new marker request; the map is the
+   same pixel for pixel except the selected marker's name (0.74 % of the map changed, all
+   in that label).                                                                        PASS
+E  owner picker (draft "e2e-m-صيدلية المالك"):
+   - location revoked: opens on Raqqa at city zoom, not on the world. A tap at the centre
+     marked a point 11.8 m from the province centre; a tap 200 px to the east moved it
+     1177.3 m east and 0.0 m north (1178.6 m expected at zoom 12). A pin at the tap; no
+     save until "حفظ هذا الموقع". Saved: PUT location 200, the backend stored
+     35.952882715277184, 39.02149721991279, exactly what the screen showed. The earlier
+     stray point (35.42, 43.06) is gone.
+   - location allowed: opens 0.3 m from the device position, zoom 16. Left without saving;
+     the stored point did not change.                                                      PASS
+F  nine steps, Detail -> Map -> Detail -> Map with two facilities: every "عرض على الخريطة"
+   centred on its facility (0 m) at zoom 16 with it selected; a marker for the detail the
+   map came from went back to it instead of stacking a copy; back from another facility's
+   detail restored the map with no request. Final stack Home > list > detail: two back
+   presses to Home, one screen each.                                                        PASS
+G  INT-095: closure 2026-09-20 08:00-16:00 without a reason; the backend stored reason '',
+   the list reads "من 2026-09-20 08:00 إلى 2026-09-20 16:00", no separator. Deleted after.  PASS
+
+Lifecycle: StrictMode (debug) reported nothing across every map created and destroyed above
+(A, B, C, D, E twice, F nine steps), including after GC forced three times in the app. The
+keyboard was not opened in this session, so INT-089 had no occasion to appear.
+Logcat (app uid only): no FATAL, AndroidRuntime or ANR. Known vendor lines (Adreno/Gralloc
+4x4 buffer probes). New, log only: "No package ID 63 found for resource ID 0x636f4a1c" after
+3 of 6 marker taps, a failed resource-name lookup with no exception and no visible effect.
+
+Test data: the owner draft's location is now the confirmed point above (Raqqa city); the
+closure created for G was deleted. Screenshots of the map around the device position were
+deleted after checking.
+
+Approved statuses (report approved 2026-09-19)
+  INT-092, INT-093, INT-094, INT-095  FIXED + DEVICE VERIFIED
+  INT-096                             FIXED IN SOURCE/CI, DEVICE NOT VERIFIED
+  INT-089                             OPEN — EXTERNAL
+  INT-084                             OPEN — product/API UX gap
+  Within P17, verified on the device by this run:
+    MapLibre rendering                DEVICE VERIFIED
+    Initial camera policy             DEVICE VERIFIED
+    Map camera restore                DEVICE VERIFIED
+    Facility focus navigation         DEVICE VERIFIED
+    Owner location picker             DEVICE VERIFIED
+  P17 as a whole stays SOURCE_IMPLEMENTED until route drawing, live navigation, voice
+  guidance, rerouting and INT-096 during a navigation are tested on the device.
+  P15 CONNECTED_VERIFIED; P16 SOURCE_IMPLEMENTED; P18 SOURCE_IMPLEMENTED, FCM
+  EXTERNAL_NOT_VERIFIED.

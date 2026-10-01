@@ -28,8 +28,10 @@ import {
 export interface AdminAuditListRequest {
     action?: string;
     actor?: string;
+    from?: string;
     requestId?: string;
     resource?: string;
+    to?: string;
 }
 
 /**
@@ -52,12 +54,20 @@ export class AdminAuditApi extends runtime.BaseAPI {
             queryParameters['actor'] = requestParameters['actor'];
         }
 
+        if (requestParameters['from'] != null) {
+            queryParameters['from'] = requestParameters['from'];
+        }
+
         if (requestParameters['requestId'] != null) {
             queryParameters['requestId'] = requestParameters['requestId'];
         }
 
         if (requestParameters['resource'] != null) {
             queryParameters['resource'] = requestParameters['resource'];
+        }
+
+        if (requestParameters['to'] != null) {
+            queryParameters['to'] = requestParameters['to'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

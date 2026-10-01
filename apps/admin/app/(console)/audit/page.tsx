@@ -2,12 +2,15 @@
 
 import { useState } from "react";
 
+import { ExportButton } from "../../../components/export-button";
 import {
   DiffViewer,
+  EmptyState,
   ErrorState,
   FilterBar,
   LoadingState,
   PageHeader,
+  Panel,
   formatDateTime,
 } from "../../../components/ui";
 import { useResource } from "../../../lib/client/use-resource";
@@ -44,13 +47,26 @@ export default function AuditPage() {
 
   return (
     <div className="stack">
-      <PageHeader title="سجل التدقيق" description="كل تغيير إداري، ومن نفّذه، ومتى." />
+      <PageHeader
+        title="سجل التدقيق"
+        description="كل تغيير إداري، ومن نفّذه، ومتى."
+        actions={
+          <ExportButton
+            name="audit"
+            params={filters}
+            label="تصدير النتائج إلى إكسل"
+            testId="export-audit"
+          />
+        }
+      />
       <FilterBar
         fields={[
           { name: "action", label: "الإجراء", placeholder: "facility.suspended" },
           { name: "resource", label: "العنصر", placeholder: "النوع أو المعرّف" },
           { name: "actor", label: "المنفّذ", placeholder: "معرّف المستخدم" },
           { name: "requestId", label: "معرّف الطلب", placeholder: "UUID" },
+          { name: "from", label: "من تاريخ", type: "date" },
+          { name: "to", label: "إلى تاريخ", type: "date" },
         ]}
         values={filters}
         onApply={setFilters}
@@ -61,9 +77,7 @@ export default function AuditPage() {
 
       {audit.data ? (
         audit.data.items.length === 0 ? (
-          <div className="state-block state-empty" data-testid="empty-state">
-            <strong>لا نتائج مطابقة</strong>
-          </div>
+          <EmptyState title="لا نتائج مطابقة" />
         ) : (
           <div className="table-wrap">
             <table className="data-table" data-testid="data-table">
@@ -79,7 +93,7 @@ export default function AuditPage() {
               </thead>
               <tbody>
                 {audit.data.items.map((row) => (
-                  <tr key={row.id}>
+                  <tr key={row.id} data-selected={expanded === row.id || undefined}>
                     <td className="cell-ltr">{formatDateTime(row.createdAt)}</td>
                     <td>
                       <code className="cell-ltr">{row.action}</code>
@@ -111,8 +125,7 @@ export default function AuditPage() {
       ) : null}
 
       {expanded && audit.data ? (
-        <section className="panel stack">
-          <h2>تفاصيل التغيير</h2>
+        <Panel title="تفاصيل التغيير">
           {(() => {
             const row = audit.data.items.find((item) => item.id === expanded);
             if (!row) return null;
@@ -129,7 +142,7 @@ export default function AuditPage() {
               </>
             );
           })()}
-        </section>
+        </Panel>
       ) : null}
     </div>
   );

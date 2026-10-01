@@ -1,18 +1,20 @@
 package com.servacode.directory.feature.search
 
 import androidx.lifecycle.ViewModel
+import com.servacode.directory.core.analytics.AnalyticsEvent
+import com.servacode.directory.core.analytics.AnalyticsTracker
 import androidx.lifecycle.viewModelScope
-import com.servacode.directory.core.model.AppErrorText
+import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
+import javax.inject.Inject
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 sealed interface SearchUiState {
     data object Idle : SearchUiState
@@ -21,14 +23,15 @@ sealed interface SearchUiState {
         val values: List<FacilitySummary>,
         val hasMore: Boolean = false,
         val loadingMore: Boolean = false,
-        val moreError: String? = null,
+        val moreError: AppError? = null,
     ) : SearchUiState
-    data class Error(val message: String) : SearchUiState
+    data class Error(val error: AppError) : SearchUiState
 }
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val search: SearchUseCase,
+    private val analytics: AnalyticsTracker,
 ) : ViewModel() {
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query.asStateFlow()
@@ -55,10 +58,19 @@ class SearchViewModel @Inject constructor(
                     } else {
                         context = result.first
                         nextCursor = result.second.nextCursor
+                        // How long what they typed was, never what it was. A search that found
+                        // nothing is its own event: it is the one number that says what the
+                        // directory is missing, and it is invisible in the first one.
+                        val length = SearchQuery.normalize(value).length
+                        val provinceId = result.first.provinceId
+                        analytics.track(AnalyticsEvent.SearchSubmitted(length, provinceId))
+                        if (result.second.items.isEmpty()) {
+                            analytics.track(AnalyticsEvent.SearchZeroResults(length, provinceId))
+                        }
                         SearchUiState.Results(result.second.items, hasMore = result.second.hasMore)
                     }
                 },
-                onFailure = { SearchUiState.Error(AppErrorText.of(it.toAppError())) },
+                onFailure = { SearchUiState.Error(it.toAppError()) },
             )
         }
     }
@@ -76,7 +88,7 @@ class SearchViewModel @Inject constructor(
                     _state.value = current.copy(values = current.values + page.items, hasMore = page.hasMore)
                 }
                 .onFailure {
-                    _state.value = current.copy(loadingMore = false, moreError = AppErrorText.of(it.toAppError()))
+                    _state.value = current.copy(loadingMore = false, moreError = it.toAppError())
                 }
         }
     }

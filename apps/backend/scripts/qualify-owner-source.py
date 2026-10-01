@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import sys
 from pathlib import Path
+from typing import cast
 
 ROOT = Path(__file__).resolve().parents[1]
 FACILITIES = ROOT / "facilities"
@@ -39,18 +40,30 @@ def check_idor_and_membership() -> None:
     require("memberships__user=user" in views, "owner queryset is not membership scoped")
     require("require_facility_member" in views, "facility member guard missing")
     require("require_facility_owner" in views, "facility owner guard missing")
-    require("FacilityMembership.objects.select_for_update()" in views, "member mutation lock missing")
+    require(
+        "FacilityMembership.objects.select_for_update()" in views, "member mutation lock missing"
+    )
     require("LAST_OWNER_PROTECTED" in views, "last-owner protection missing")
-    require("FacilityMembership.objects.filter" in permissions, "membership permission query missing")
-    require("facility=facility" in permissions and "user=user" in permissions, "membership scope missing")
+    require(
+        "FacilityMembership.objects.filter" in permissions, "membership permission query missing"
+    )
+    require(
+        "facility=facility" in permissions and "user=user" in permissions,
+        "membership scope missing",
+    )
 
 
 def check_submission_policy() -> None:
     services = read("facilities/services.py")
-    require(services.count("validate_owner_registration(") >= 3, "create/submit policy recheck missing")
+    require(
+        services.count("validate_owner_registration(") >= 3,
+        "create/submit policy recheck missing",
+    )
     require("select_for_update()" in services, "facility submission/update lock missing")
     require("_required_evidence_complete" in services, "current evidence policy check missing")
-    require("FacilityApplication.Status.SUBMITTED" in services, "submitted application guard missing")
+    require(
+        "FacilityApplication.Status.SUBMITTED" in services, "submitted application guard missing"
+    )
     check_submitted_uniqueness_invariant()
 
 
@@ -77,13 +90,13 @@ def _model_constraint_names(source: str, model: str) -> list[str]:
                 targets = [t.id for t in stmt.targets if isinstance(t, ast.Name)]
                 if "constraints" not in targets:
                     continue
-                names = []
+                names: list[str] = []
                 for call in ast.walk(stmt.value):
                     if not isinstance(call, ast.Call):
                         continue
                     for kw in call.keywords:
                         if kw.arg == "name" and isinstance(kw.value, ast.Constant):
-                            names.append(kw.value.value)
+                            names.append(cast(str, kw.value.value))
                 return names
     return []
 
@@ -129,9 +142,18 @@ def check_media_security() -> None:
 
 def check_location_integrity() -> None:
     services = read("facilities/services.py")
-    require('if "cityId" in data and city is None' in services, "city-clear neighborhood reset missing")
-    require("City.objects.get" in services and "province=facility.province" in services, "city scope check missing")
-    require("Neighborhood.objects.get" in services and "city=city" in services, "neighborhood scope check missing")
+    require(
+        'if "cityId" in data and city is None' in services,
+        "city-clear neighborhood reset missing",
+    )
+    require(
+        "City.objects.get" in services and "province=facility.province" in services,
+        "city scope check missing",
+    )
+    require(
+        "Neighborhood.objects.get" in services and "city=city" in services,
+        "neighborhood scope check missing",
+    )
 
 
 def check_python_integrity() -> None:
@@ -168,4 +190,4 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except AssertionError as exc:
         print(f"FAIL {exc}", file=sys.stderr)
-        raise SystemExit(1)
+        raise SystemExit(1) from exc

@@ -26,6 +26,8 @@ import kotlinx.serialization.Contextual
  *
  * @param state 
  * @param nextOpenAt 
+ * @param isOpenNow Whether the doors are open at this moment, by the facility's own business hours and temporary closures. Independent of duty: unlike `state`, which collapses both into one value and lets DUTY win, this stays true for a facility that is open while its duty shift runs.
+ * @param isOnDutyToday Whether the facility appears on today's duty roster, taking today to be the local day in Asia/Damascus. A different question from being open: a pharmacy on tonight's roster is on duty today from midnight, hours before it opens. False simply means it is not on the roster; clients must not render that as a badge of its own.
  */
 @Serializable
 
@@ -35,7 +37,15 @@ data class Availability (
     val state: AvailabilityStateEnum,
 
     @Contextual @SerialName(value = "nextOpenAt")
-    val nextOpenAt: java.time.OffsetDateTime?
+    val nextOpenAt: java.time.OffsetDateTime?,
+
+    /* Whether the doors are open at this moment, by the facility's own business hours and temporary closures. Independent of duty: unlike `state`, which collapses both into one value and lets DUTY win, this stays true for a facility that is open while its duty shift runs. */
+    @SerialName(value = "isOpenNow")
+    val isOpenNow: kotlin.Boolean,
+
+    /* Whether the facility appears on today's duty roster, taking today to be the local day in Asia/Damascus. A different question from being open: a pharmacy on tonight's roster is on duty today from midnight, hours before it opens. False simply means it is not on the roster; clients must not render that as a badge of its own. */
+    @SerialName(value = "isOnDutyToday")
+    val isOnDutyToday: kotlin.Boolean
 
 ) {
 

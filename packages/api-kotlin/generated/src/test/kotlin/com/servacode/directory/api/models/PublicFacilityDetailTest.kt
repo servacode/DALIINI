@@ -23,6 +23,7 @@ import com.servacode.directory.api.models.Availability
 import com.servacode.directory.api.models.BilingualRef
 import com.servacode.directory.api.models.Coordinates
 import com.servacode.directory.api.models.FacilityImage
+import com.servacode.directory.api.models.NamedIntRef
 import com.servacode.directory.api.models.NamedRef
 import com.servacode.directory.api.models.PublicHoursEntry
 
@@ -85,6 +86,66 @@ class PublicFacilityDetailTest : ShouldSpec() {
             //modelInstance.availability shouldBe ("TODO")
         }
 
+        // to test the property `addressAr` - Street address, so a row says where it is without being opened.
+        should("test addressAr") {
+            // uncomment below to test the property
+            //modelInstance.addressAr shouldBe ("TODO")
+        }
+
+        // to test the property `neighborhood`
+        should("test neighborhood") {
+            // uncomment below to test the property
+            //modelInstance.neighborhood shouldBe ("TODO")
+        }
+
+        // to test the property `phone` - Public telephone number, so a row can be called without opening it.
+        should("test phone") {
+            // uncomment below to test the property
+            //modelInstance.phone shouldBe ("TODO")
+        }
+
+        // to test the property `whatsapp` - WhatsApp contact, E.164 Syrian mobile (+9639XXXXXXXX).
+        should("test whatsapp") {
+            // uncomment below to test the property
+            //modelInstance.whatsapp shouldBe ("TODO")
+        }
+
+        // to test the property `location` - Where it is, so a row can be navigated to without opening it.
+        should("test location") {
+            // uncomment below to test the property
+            //modelInstance.location shouldBe ("TODO")
+        }
+
+        // to test the property `isFavorite` - Whether the caller has saved this facility. False for anonymous callers; resolved for a whole page in one subquery.
+        should("test isFavorite") {
+            // uncomment below to test the property
+            //modelInstance.isFavorite shouldBe ("TODO")
+        }
+
+        // to test the property `imageUrl` - The facility's first photograph, in the order its owner arranged them, or null when it has none. A public media URL; clients never build one.
+        should("test imageUrl") {
+            // uncomment below to test the property
+            //modelInstance.imageUrl shouldBe ("TODO")
+        }
+
+        // to test the property `lastVerifiedAt` - When an operator last approved this facility's details (trust signal).
+        should("test lastVerifiedAt") {
+            // uncomment below to test the property
+            //modelInstance.lastVerifiedAt shouldBe ("TODO")
+        }
+
+        // to test the property `infoConfirmedAt` - The most recent of `lastVerifiedAt` and the owner's own confirmation that the opening hours are still right. Null when neither ever happened.
+        should("test infoConfirmedAt") {
+            // uncomment below to test the property
+            //modelInstance.infoConfirmedAt shouldBe ("TODO")
+        }
+
+        // to test the property `updatedAt` - Last change to the facility record.
+        should("test updatedAt") {
+            // uncomment below to test the property
+            //modelInstance.updatedAt shouldBe ("TODO")
+        }
+
         // to test the property `descriptionAr`
         should("test descriptionAr") {
             // uncomment below to test the property
@@ -97,34 +158,10 @@ class PublicFacilityDetailTest : ShouldSpec() {
             //modelInstance.descriptionEn shouldBe ("TODO")
         }
 
-        // to test the property `phone`
-        should("test phone") {
-            // uncomment below to test the property
-            //modelInstance.phone shouldBe ("TODO")
-        }
-
-        // to test the property `addressAr`
-        should("test addressAr") {
-            // uncomment below to test the property
-            //modelInstance.addressAr shouldBe ("TODO")
-        }
-
         // to test the property `addressEn`
         should("test addressEn") {
             // uncomment below to test the property
             //modelInstance.addressEn shouldBe ("TODO")
-        }
-
-        // to test the property `neighborhood`
-        should("test neighborhood") {
-            // uncomment below to test the property
-            //modelInstance.neighborhood shouldBe ("TODO")
-        }
-
-        // to test the property `location`
-        should("test location") {
-            // uncomment below to test the property
-            //modelInstance.location shouldBe ("TODO")
         }
 
         // to test the property `images`
@@ -133,13 +170,13 @@ class PublicFacilityDetailTest : ShouldSpec() {
             //modelInstance.images shouldBe ("TODO")
         }
 
-        // to test the property `specialties`
+        // to test the property `specialties` - Active specialties, in the operators' order.
         should("test specialties") {
             // uncomment below to test the property
             //modelInstance.specialties shouldBe ("TODO")
         }
 
-        // to test the property `services`
+        // to test the property `services` - Active services, in the operators' order.
         should("test services") {
             // uncomment below to test the property
             //modelInstance.services shouldBe ("TODO")

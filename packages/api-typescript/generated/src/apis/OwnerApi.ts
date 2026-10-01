@@ -21,7 +21,9 @@ import type {
   FacilityMember,
   OwnerConfig,
   OwnerFacilityDetail,
+  OwnerFacilityInsights,
   OwnerFacilitySummaryList,
+  OwnerHoursConfirmed,
   OwnerMemberList,
   OwnerMemberUpserted,
   OwnerSubmitResult,
@@ -40,8 +42,12 @@ import {
     OwnerConfigToJSON,
     OwnerFacilityDetailFromJSON,
     OwnerFacilityDetailToJSON,
+    OwnerFacilityInsightsFromJSON,
+    OwnerFacilityInsightsToJSON,
     OwnerFacilitySummaryListFromJSON,
     OwnerFacilitySummaryListToJSON,
+    OwnerHoursConfirmedFromJSON,
+    OwnerHoursConfirmedToJSON,
     OwnerMemberListFromJSON,
     OwnerMemberListToJSON,
     OwnerMemberUpsertedFromJSON,
@@ -58,6 +64,14 @@ export interface OwnerConfigRetrieveRequest {
 
 export interface OwnerFacilityCreateRequest {
     facilityCreate: FacilityCreate;
+}
+
+export interface OwnerFacilityHoursConfirmRequest {
+    facilityId: string;
+}
+
+export interface OwnerFacilityInsightsRetrieveRequest {
+    facilityId: string;
 }
 
 export interface OwnerFacilityLocationReplaceRequest {
@@ -98,7 +112,7 @@ export interface OwnerFacilityUpdateRequest {
 export class OwnerApi extends runtime.BaseAPI {
 
     /**
-     * Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy.
+     * Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy, and the specialties and services the owner may pick for a facility of each.
      * List categories open for owner onboarding in a province
      */
     async ownerConfigRetrieveRaw(requestParameters: OwnerConfigRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OwnerConfig>> {
@@ -139,7 +153,7 @@ export class OwnerApi extends runtime.BaseAPI {
     }
 
     /**
-     * Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy.
+     * Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy, and the specialties and services the owner may pick for a facility of each.
      * List categories open for owner onboarding in a province
      */
     async ownerConfigRetrieve(requestParameters: OwnerConfigRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OwnerConfig> {
@@ -230,6 +244,100 @@ export class OwnerApi extends runtime.BaseAPI {
      */
     async ownerFacilityCreate(requestParameters: OwnerFacilityCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OwnerFacilityDetail> {
         const response = await this.ownerFacilityCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Any owner or manager may confirm. Sets `hoursConfirmedAt`, which also moves the public `infoConfirmedAt`; `lastVerifiedAt` keeps meaning an operator approval. Replacing the hours confirms them too. 409 HOURS_NOT_SUPPORTED when the category has no opening hours.
+     * Confirm that the facility\'s opening hours are still right
+     */
+    async ownerFacilityHoursConfirmRaw(requestParameters: OwnerFacilityHoursConfirmRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OwnerHoursConfirmed>> {
+        if (requestParameters['facilityId'] == null) {
+            throw new runtime.RequiredError(
+                'facilityId',
+                'Required parameter "facilityId" was null or undefined when calling ownerFacilityHoursConfirm().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/owner/facilities/{facility_id}/confirm-hours/`;
+        urlPath = urlPath.replace(`{${"facility_id"}}`, encodeURIComponent(String(requestParameters['facilityId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => OwnerHoursConfirmedFromJSON(jsonValue));
+    }
+
+    /**
+     * Any owner or manager may confirm. Sets `hoursConfirmedAt`, which also moves the public `infoConfirmedAt`; `lastVerifiedAt` keeps meaning an operator approval. Replacing the hours confirms them too. 409 HOURS_NOT_SUPPORTED when the category has no opening hours.
+     * Confirm that the facility\'s opening hours are still right
+     */
+    async ownerFacilityHoursConfirm(requestParameters: OwnerFacilityHoursConfirmRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OwnerHoursConfirmed> {
+        const response = await this.ownerFacilityHoursConfirmRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Counts of product analytics events that reference this facility.
+     * Engagement with a facility over the last 30 days
+     */
+    async ownerFacilityInsightsRetrieveRaw(requestParameters: OwnerFacilityInsightsRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OwnerFacilityInsights>> {
+        if (requestParameters['facilityId'] == null) {
+            throw new runtime.RequiredError(
+                'facilityId',
+                'Required parameter "facilityId" was null or undefined when calling ownerFacilityInsightsRetrieve().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/owner/facilities/{facility_id}/insights/`;
+        urlPath = urlPath.replace(`{${"facility_id"}}`, encodeURIComponent(String(requestParameters['facilityId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => OwnerFacilityInsightsFromJSON(jsonValue));
+    }
+
+    /**
+     * Counts of product analytics events that reference this facility.
+     * Engagement with a facility over the last 30 days
+     */
+    async ownerFacilityInsightsRetrieve(requestParameters: OwnerFacilityInsightsRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OwnerFacilityInsights> {
+        const response = await this.ownerFacilityInsightsRetrieveRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

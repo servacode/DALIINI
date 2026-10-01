@@ -12,9 +12,9 @@ import AnyCodable
 
 public struct AdminUserRolesRequest: Codable, JSONEncodable, Hashable {
 
-    public var roleIds: [UUID]
+    public var roleIds: [Int]
 
-    public init(roleIds: [UUID]) {
+    public init(roleIds: [Int]) {
         self.roleIds = roleIds
     }
 

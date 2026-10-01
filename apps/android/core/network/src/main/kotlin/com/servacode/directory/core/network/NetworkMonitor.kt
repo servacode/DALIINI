@@ -15,6 +15,16 @@ import javax.inject.Singleton
 
 interface NetworkMonitor {
     val online: Flow<Boolean>
+
+    /**
+     * True on a connection nobody is charged by the megabyte for.
+     *
+     * Downloading a province's map is tens of megabytes. On a Syrian mobile bundle that is a real
+     * cost, and spending it without being asked is not something an app gets to do; on the home
+     * or shop Wi-Fi it is free and the trip that survives a cut connection is worth having. So
+     * the app waits for this, and a reader who wants it sooner asks for it in settings.
+     */
+    val unmetered: Flow<Boolean>
 }
 
 @Singleton
@@ -23,13 +33,23 @@ class AndroidNetworkMonitor @Inject constructor(
 ) : NetworkMonitor {
     private val connectivity = context.getSystemService(ConnectivityManager::class.java)
 
-    override val online: Flow<Boolean> = callbackFlow {
+    override val online: Flow<Boolean> = capabilities { it.hasInternet() }
+
+    override val unmetered: Flow<Boolean> = capabilities {
+        it.hasInternet() && it.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+    }
+
+    /**
+     * One reading of the active connection, and another whenever the system says it changed.
+     *
+     * Both questions this monitor answers are read from the same capabilities, so they are asked
+     * the same way rather than through two subscriptions that could disagree.
+     */
+    private fun capabilities(answer: (NetworkCapabilities) -> Boolean): Flow<Boolean> = callbackFlow {
         fun publish() {
             val network = connectivity.activeNetwork
             val capabilities = network?.let(connectivity::getNetworkCapabilities)
-            val connected = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
-                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-            trySend(connected)
+            trySend(capabilities?.let(answer) == true)
         }
         val callback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) = publish()
@@ -43,4 +63,8 @@ class AndroidNetworkMonitor @Inject constructor(
         )
         awaitClose { connectivity.unregisterNetworkCallback(callback) }
     }.distinctUntilChanged()
+
+    private fun NetworkCapabilities.hasInternet(): Boolean =
+        hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+            hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
 }

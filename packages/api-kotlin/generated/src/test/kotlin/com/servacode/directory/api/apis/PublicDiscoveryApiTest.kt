@@ -22,6 +22,7 @@ import com.servacode.directory.api.apis.PublicDiscoveryApi
 import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.FacilityCursorPage
 import com.servacode.directory.api.models.MapMarkerList
+import com.servacode.directory.api.models.PublicDutyRoster
 import com.servacode.directory.api.models.PublicFacilityDetail
 import com.servacode.directory.api.models.PublicHome
 
@@ -30,24 +31,39 @@ class PublicDiscoveryApiTest : ShouldSpec() {
         // uncomment below to create an instance of PublicDiscoveryApi
         //val apiInstance = PublicDiscoveryApi()
 
+        // to test publicDutyByDateList
+        should("test publicDutyByDateList") {
+            // uncomment below to test publicDutyByDateList
+            //val provinceId : kotlin.String = provinceId_example // kotlin.String | 
+            //val categoryId : kotlin.String = categoryId_example // kotlin.String | 
+            //val cityId : kotlin.String = cityId_example // kotlin.String | 
+            //val date : kotlin.String = date_example // kotlin.String | YYYY-MM-DD
+            //val days : kotlin.Int = 56 // kotlin.Int | 1 to 7.
+            //val result : PublicDutyRoster = apiInstance.publicDutyByDateList(provinceId, categoryId, cityId, date, days)
+            //result shouldBe ("TODO")
+        }
+
         // to test publicFacilitiesList
         should("test publicFacilitiesList") {
             // uncomment below to test publicFacilitiesList
-            //val categoryId : kotlin.String = categoryId_example // kotlin.String | Category to list. Required.
             //val provinceId : kotlin.String = provinceId_example // kotlin.String | Province to scope the query to.
             //val bbox : kotlin.String = bbox_example // kotlin.String | Viewport as west,south,east,north in WGS84 decimal degrees.
+            //val categoryId : kotlin.String = categoryId_example // kotlin.String | Optional category to list. Absent means the whole province.
             //val cityId : kotlin.String = cityId_example // kotlin.String | Optional city filter.
             //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
-            //val dutyNow : kotlin.String = dutyNow_example // kotlin.String | Pass true to keep only facilities currently on duty.
+            //val dutyNow : kotlin.String = dutyNow_example // kotlin.String | Pass true to keep only facilities whose duty shift is running.
+            //val dutyToday : kotlin.String = dutyToday_example // kotlin.String | Pass true to keep only facilities on today's duty roster.
             //val latitude : kotlin.String = latitude_example // kotlin.String | Caller latitude in WGS84 decimal degrees. Must be sent with longitude.
             //val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 100, default 30.
             //val longitude : kotlin.String = longitude_example // kotlin.String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude.
             //val neighborhoodId : kotlin.String = neighborhoodId_example // kotlin.String | Optional neighbourhood filter.
-            //val openNow : kotlin.String = openNow_example // kotlin.String | Pass true to keep only facilities currently open.
+            //val openNow : kotlin.String = openNow_example // kotlin.String | Pass true to keep only facilities open at this moment.
             //val search : kotlin.String = search_example // kotlin.String | Free-text term matched against facility text.
-            //val serviceId : kotlin.String = serviceId_example // kotlin.String | Optional service-tag filter; only meaningful when the category declares serviceFilter.
-            //val specialtyId : kotlin.String = specialtyId_example // kotlin.String | Optional specialty filter; only meaningful when the category declares specialtyFilter.
-            //val result : FacilityCursorPage = apiInstance.publicFacilitiesList(categoryId, provinceId, bbox, cityId, cursor, dutyNow, latitude, limit, longitude, neighborhoodId, openNow, search, serviceId, specialtyId)
+            //val serviceId : kotlin.Int = 56 // kotlin.Int | The earlier name of serviceTagId, still accepted; it behaves the same way.
+            //val serviceTagId : kotlin.Int = 56 // kotlin.Int | Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400.
+            //val sort : kotlin.String = sort_example // kotlin.String | nearest orders by distance and needs coordinates; name orders by Arabic name. Omitted keeps the historical behaviour: nearest whenever coordinates are supplied, name otherwise. Distances are returned whenever coordinates are supplied, whichever ordering is asked for.
+            //val specialtyId : kotlin.Int = 56 // kotlin.Int | Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400.
+            //val result : FacilityCursorPage = apiInstance.publicFacilitiesList(provinceId, bbox, categoryId, cityId, cursor, dutyNow, dutyToday, latitude, limit, longitude, neighborhoodId, openNow, search, serviceId, serviceTagId, sort, specialtyId)
             //result shouldBe ("TODO")
         }
 
@@ -70,9 +86,10 @@ class PublicDiscoveryApiTest : ShouldSpec() {
             //val longitude : kotlin.String = longitude_example // kotlin.String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude.
             //val neighborhoodId : kotlin.String = neighborhoodId_example // kotlin.String | Optional neighbourhood filter.
             //val search : kotlin.String = search_example // kotlin.String | Free-text term matched against facility text.
-            //val serviceId : kotlin.String = serviceId_example // kotlin.String | Optional service-tag filter; only meaningful when the category declares serviceFilter.
-            //val specialtyId : kotlin.String = specialtyId_example // kotlin.String | Optional specialty filter; only meaningful when the category declares specialtyFilter.
-            //val result : PublicHome = apiInstance.publicHomeRetrieve(provinceId, bbox, categoryId, cityId, latitude, longitude, neighborhoodId, search, serviceId, specialtyId)
+            //val serviceId : kotlin.Int = 56 // kotlin.Int | The earlier name of serviceTagId, still accepted; it behaves the same way.
+            //val serviceTagId : kotlin.Int = 56 // kotlin.Int | Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400.
+            //val specialtyId : kotlin.Int = 56 // kotlin.Int | Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400.
+            //val result : PublicHome = apiInstance.publicHomeRetrieve(provinceId, bbox, categoryId, cityId, latitude, longitude, neighborhoodId, search, serviceId, serviceTagId, specialtyId)
             //result shouldBe ("TODO")
         }
 
@@ -83,13 +100,17 @@ class PublicDiscoveryApiTest : ShouldSpec() {
             //val bbox : kotlin.String = bbox_example // kotlin.String | Viewport as west,south,east,north in WGS84 decimal degrees.
             //val categoryId : kotlin.String = categoryId_example // kotlin.String | Optional category filter.
             //val cityId : kotlin.String = cityId_example // kotlin.String | Optional city filter.
+            //val dutyNow : kotlin.String = dutyNow_example // kotlin.String | Pass true to keep only facilities whose duty shift is running.
+            //val dutyToday : kotlin.String = dutyToday_example // kotlin.String | Pass true to keep only facilities on today's duty roster.
             //val latitude : kotlin.String = latitude_example // kotlin.String | Caller latitude in WGS84 decimal degrees. Must be sent with longitude.
             //val longitude : kotlin.String = longitude_example // kotlin.String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude.
             //val neighborhoodId : kotlin.String = neighborhoodId_example // kotlin.String | Optional neighbourhood filter.
+            //val openNow : kotlin.String = openNow_example // kotlin.String | Pass true to keep only facilities open at this moment.
             //val search : kotlin.String = search_example // kotlin.String | Free-text term matched against facility text.
-            //val serviceId : kotlin.String = serviceId_example // kotlin.String | Optional service-tag filter; only meaningful when the category declares serviceFilter.
-            //val specialtyId : kotlin.String = specialtyId_example // kotlin.String | Optional specialty filter; only meaningful when the category declares specialtyFilter.
-            //val result : MapMarkerList = apiInstance.publicMapFacilitiesList(provinceId, bbox, categoryId, cityId, latitude, longitude, neighborhoodId, search, serviceId, specialtyId)
+            //val serviceId : kotlin.Int = 56 // kotlin.Int | The earlier name of serviceTagId, still accepted; it behaves the same way.
+            //val serviceTagId : kotlin.Int = 56 // kotlin.Int | Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400.
+            //val specialtyId : kotlin.Int = 56 // kotlin.Int | Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400.
+            //val result : MapMarkerList = apiInstance.publicMapFacilitiesList(provinceId, bbox, categoryId, cityId, dutyNow, dutyToday, latitude, longitude, neighborhoodId, openNow, search, serviceId, serviceTagId, specialtyId)
             //result shouldBe ("TODO")
         }
 
@@ -107,9 +128,10 @@ class PublicDiscoveryApiTest : ShouldSpec() {
             //val longitude : kotlin.String = longitude_example // kotlin.String | Caller longitude in WGS84 decimal degrees. Must be sent with latitude.
             //val neighborhoodId : kotlin.String = neighborhoodId_example // kotlin.String | Optional neighbourhood filter.
             //val search : kotlin.String = search_example // kotlin.String | Free-text term matched against facility text.
-            //val serviceId : kotlin.String = serviceId_example // kotlin.String | Optional service-tag filter; only meaningful when the category declares serviceFilter.
-            //val specialtyId : kotlin.String = specialtyId_example // kotlin.String | Optional specialty filter; only meaningful when the category declares specialtyFilter.
-            //val result : FacilityCursorPage = apiInstance.publicSearchList(provinceId, q, bbox, categoryId, cityId, cursor, latitude, limit, longitude, neighborhoodId, search, serviceId, specialtyId)
+            //val serviceId : kotlin.Int = 56 // kotlin.Int | The earlier name of serviceTagId, still accepted; it behaves the same way.
+            //val serviceTagId : kotlin.Int = 56 // kotlin.Int | Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400.
+            //val specialtyId : kotlin.Int = 56 // kotlin.Int | Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400.
+            //val result : FacilityCursorPage = apiInstance.publicSearchList(provinceId, q, bbox, categoryId, cityId, cursor, latitude, limit, longitude, neighborhoodId, search, serviceId, serviceTagId, specialtyId)
             //result shouldBe ("TODO")
         }
 

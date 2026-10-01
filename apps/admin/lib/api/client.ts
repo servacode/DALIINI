@@ -6,6 +6,7 @@ import {
   AdminAuditApi,
   AdminFacilitiesApi,
   AdminProvincesApi,
+  AdminReportsApi,
   AdminReviewsApi,
   AdminSettingsApi,
   AdminSystemApi,
@@ -15,6 +16,11 @@ import {
   AuthApi,
   Configuration,
   ResponseError,
+  // Operations screens
+  AdminContentApi,
+  AdminDutyApi,
+  AdminExportsApi,
+  AdminNotificationsApi,
 } from "@servacode/api-typescript";
 
 /**
@@ -73,12 +79,18 @@ export function adminApis(accessToken: string) {
     auth: new AuthApi(config),
     facilities: new AdminFacilitiesApi(config),
     provinces: new AdminProvincesApi(config),
+    reports: new AdminReportsApi(config),
     reviews: new AdminReviewsApi(config),
     settings: new AdminSettingsApi(config),
     system: new AdminSystemApi(config),
     taxonomy: new AdminTaxonomyApi(config),
     users: new AdminUsersApi(config),
     verification: new AdminVerificationApi(config),
+    // Operations screens
+    content: new AdminContentApi(config),
+    duty: new AdminDutyApi(config),
+    exports: new AdminExportsApi(config),
+    notifications: new AdminNotificationsApi(config),
   };
 }
 

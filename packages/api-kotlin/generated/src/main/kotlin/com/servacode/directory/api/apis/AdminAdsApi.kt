@@ -7,11 +7,14 @@ import okhttp3.RequestBody
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+import com.servacode.directory.api.models.AdminAdImage
 import com.servacode.directory.api.models.AdminAdvertisementList
 import com.servacode.directory.api.models.AdminAdvertisementRequest
 import com.servacode.directory.api.models.AdminAdvertisementUpdateRequest
 import com.servacode.directory.api.models.AdminId
 import com.servacode.directory.api.models.ApiError
+
+import okhttp3.MultipartBody
 
 interface AdminAdsApi {
     /**
@@ -45,6 +48,23 @@ interface AdminAdsApi {
      */
     @DELETE("api/v1/admin/ads/{advertisement_id}/")
     suspend fun adminAdDelete(@Path("advertisement_id") advertisementId: java.util.UUID): Response<Unit>
+
+    /**
+     * POST api/v1/admin/ads/images/
+     * Upload an advertisement image
+     * multipart/form-data with &#x60;file&#x60;. JPEG, PNG or WebP only, at most 2 MB, each side 100 to 4096 px. The image is re-encoded to JPEG (metadata stripped) and stored in public media under a random key. Pass the returned &#x60;imageKey&#x60; when creating or updating the advertisement.
+     * Responses:
+     *  - 201: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param file JPEG, PNG or WebP, at most 2 MB, 100-4096 px a side.
+     * @return [AdminAdImage]
+     */
+    @Multipart
+    @POST("api/v1/admin/ads/images/")
+    suspend fun adminAdImageUpload(@Part file: MultipartBody.Part): Response<AdminAdImage>
 
     /**
      * PUT api/v1/admin/ads/{advertisement_id}/

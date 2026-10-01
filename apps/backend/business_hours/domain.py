@@ -14,7 +14,7 @@ class HourInterval:
     sort_order: int = 0
 
 
-def _segments(interval: HourInterval):
+def _segments(interval: HourInterval) -> list[tuple[int, int, int]]:
     start = interval.opens_at.hour * 60 + interval.opens_at.minute
     end = interval.closes_at.hour * 60 + interval.closes_at.minute
     if start == end:

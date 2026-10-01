@@ -39,6 +39,12 @@ export interface AdminCategoryGroupRequest {
     nameEn?: string;
     /**
      * 
+     * @type {string}
+     * @memberof AdminCategoryGroupRequest
+     */
+    iconKey?: string;
+    /**
+     * 
      * @type {boolean}
      * @memberof AdminCategoryGroupRequest
      */
@@ -71,6 +77,7 @@ export function AdminCategoryGroupRequestFromJSONTyped(json: any, ignoreDiscrimi
         'code': json['code'] == null ? undefined : json['code'],
         'nameAr': json['nameAr'] == null ? undefined : json['nameAr'],
         'nameEn': json['nameEn'] == null ? undefined : json['nameEn'],
+        'iconKey': json['iconKey'] == null ? undefined : json['iconKey'],
         'active': json['active'] == null ? undefined : json['active'],
         'sortOrder': json['sortOrder'] == null ? undefined : json['sortOrder'],
     };
@@ -90,6 +97,7 @@ export function AdminCategoryGroupRequestToJSONTyped(value?: AdminCategoryGroupR
         'code': value['code'],
         'nameAr': value['nameAr'],
         'nameEn': value['nameEn'],
+        'iconKey': value['iconKey'],
         'active': value['active'],
         'sortOrder': value['sortOrder'],
     };

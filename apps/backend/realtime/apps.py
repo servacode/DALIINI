@@ -5,5 +5,5 @@ class RealtimeConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "realtime"
 
-    def ready(self):
+    def ready(self) -> None:
         from . import hooks  # noqa: F401

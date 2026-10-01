@@ -29,6 +29,7 @@ import kotlinx.serialization.Contextual
  * @param latitude 
  * @param longitude 
  * @param availability 
+ * @param categoryIconKey Which mark the pin wears. A map of identical pins cannot be read.
  */
 @Serializable
 
@@ -47,7 +48,11 @@ data class MapMarker (
     val longitude: kotlin.Double,
 
     @Contextual @SerialName(value = "availability")
-    val availability: AvailabilityStateEnum
+    val availability: AvailabilityStateEnum,
+
+    /* Which mark the pin wears. A map of identical pins cannot be read. */
+    @SerialName(value = "categoryIconKey")
+    val categoryIconKey: kotlin.String?
 
 ) {
 

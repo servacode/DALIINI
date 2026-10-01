@@ -28,12 +28,13 @@ import kotlinx.serialization.Contextual
  * @param descriptionAr 
  * @param descriptionEn 
  * @param phone 
+ * @param whatsapp Optional Syrian mobile (09XXXXXXXX or +9639XXXXXXXX); blank clears it.
  * @param addressAr 
  * @param addressEn 
  * @param cityId 
  * @param neighborhoodId 
- * @param specialtyIds 
- * @param serviceTagIds 
+ * @param specialtyIds Replaces the facility's specialties. Ids come from the category's `specialties` in ownerConfigRetrieve; an empty list clears them.
+ * @param serviceTagIds Replaces the facility's services. Ids come from the category's `services` in ownerConfigRetrieve; an empty list clears them.
  */
 @Serializable
 
@@ -54,6 +55,10 @@ data class PatchedFacilityPatch (
     @SerialName(value = "phone")
     val phone: kotlin.String? = null,
 
+    /* Optional Syrian mobile (09XXXXXXXX or +9639XXXXXXXX); blank clears it. */
+    @SerialName(value = "whatsapp")
+    val whatsapp: kotlin.String? = null,
+
     @SerialName(value = "addressAr")
     val addressAr: kotlin.String? = null,
 
@@ -66,11 +71,13 @@ data class PatchedFacilityPatch (
     @Contextual @SerialName(value = "neighborhoodId")
     val neighborhoodId: java.util.UUID? = null,
 
+    /* Replaces the facility's specialties. Ids come from the category's `specialties` in ownerConfigRetrieve; an empty list clears them. */
     @SerialName(value = "specialtyIds")
-    val specialtyIds: kotlin.collections.List<@Contextual java.util.UUID>? = null,
+    val specialtyIds: kotlin.collections.List<kotlin.Int>? = null,
 
+    /* Replaces the facility's services. Ids come from the category's `services` in ownerConfigRetrieve; an empty list clears them. */
     @SerialName(value = "serviceTagIds")
-    val serviceTagIds: kotlin.collections.List<@Contextual java.util.UUID>? = null
+    val serviceTagIds: kotlin.collections.List<kotlin.Int>? = null
 
 ) {
 

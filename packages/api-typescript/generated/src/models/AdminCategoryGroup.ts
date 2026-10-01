@@ -45,6 +45,12 @@ export interface AdminCategoryGroup {
     nameEn: string;
     /**
      * 
+     * @type {string}
+     * @memberof AdminCategoryGroup
+     */
+    iconKey: string;
+    /**
+     * 
      * @type {boolean}
      * @memberof AdminCategoryGroup
      */
@@ -65,6 +71,7 @@ export function instanceOfAdminCategoryGroup(value: object): value is AdminCateg
     if (!('code' in value) || value['code'] === undefined) return false;
     if (!('nameAr' in value) || value['nameAr'] === undefined) return false;
     if (!('nameEn' in value) || value['nameEn'] === undefined) return false;
+    if (!('iconKey' in value) || value['iconKey'] === undefined) return false;
     if (!('active' in value) || value['active'] === undefined) return false;
     if (!('sortOrder' in value) || value['sortOrder'] === undefined) return false;
     return true;
@@ -84,6 +91,7 @@ export function AdminCategoryGroupFromJSONTyped(json: any, ignoreDiscriminator: 
         'code': json['code'],
         'nameAr': json['nameAr'],
         'nameEn': json['nameEn'],
+        'iconKey': json['iconKey'],
         'active': json['active'],
         'sortOrder': json['sortOrder'],
     };
@@ -104,6 +112,7 @@ export function AdminCategoryGroupToJSONTyped(value?: AdminCategoryGroup | null,
         'code': value['code'],
         'nameAr': value['nameAr'],
         'nameEn': value['nameEn'],
+        'iconKey': value['iconKey'],
         'active': value['active'],
         'sortOrder': value['sortOrder'],
     };

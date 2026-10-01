@@ -1,6 +1,19 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.Directory" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <!-- The launch theme. The system splash (Android 12+, or the AndroidX emulation below it)
+         draws the brand mark on the splash background, with dark bar icons on it, then
+         installSplashScreen() moves the window on to Theme.Directory. The app's splash
+         (feature/bootstrap) starts from the same colour and mark, so the two read as one;
+         SplashThemeTest holds them together. -->
+    <style name="Theme.Directory.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/brand_splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/brand_mark</item>
+        <item name="postSplashScreenTheme">@style/Theme.Directory</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
     </style>
 </resources>

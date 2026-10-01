@@ -47,6 +47,24 @@ export interface AdminAdvertisement {
     targetScope: AdvertisementTargetScopeEnum;
     /**
      * 
+     * @type {string}
+     * @memberof AdminAdvertisement
+     */
+    provinceId: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminAdvertisement
+     */
+    categoryId: string | null;
+    /**
+     * Where the slide's image is served from, to preview it while editing.
+     * @type {string}
+     * @memberof AdminAdvertisement
+     */
+    readonly imageUrl: string | null;
+    /**
+     * 
      * @type {boolean}
      * @memberof AdminAdvertisement
      */
@@ -86,6 +104,9 @@ export function instanceOfAdminAdvertisement(value: object): value is AdminAdver
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('titleAr' in value) || value['titleAr'] === undefined) return false;
     if (!('targetScope' in value) || value['targetScope'] === undefined) return false;
+    if (!('provinceId' in value) || value['provinceId'] === undefined) return false;
+    if (!('categoryId' in value) || value['categoryId'] === undefined) return false;
+    if (!('imageUrl' in value) || value['imageUrl'] === undefined) return false;
     if (!('enabled' in value) || value['enabled'] === undefined) return false;
     if (!('startsAt' in value) || value['startsAt'] === undefined) return false;
     if (!('endsAt' in value) || value['endsAt'] === undefined) return false;
@@ -107,6 +128,9 @@ export function AdminAdvertisementFromJSONTyped(json: any, ignoreDiscriminator: 
         'id': json['id'],
         'titleAr': json['titleAr'],
         'targetScope': AdvertisementTargetScopeEnumFromJSON(json['targetScope']),
+        'provinceId': json['provinceId'],
+        'categoryId': json['categoryId'],
+        'imageUrl': json['imageUrl'],
         'enabled': json['enabled'],
         'startsAt': (json['startsAt'] == null ? null : new Date(json['startsAt'])),
         'endsAt': (json['endsAt'] == null ? null : new Date(json['endsAt'])),
@@ -119,7 +143,7 @@ export function AdminAdvertisementToJSON(json: any): AdminAdvertisement {
     return AdminAdvertisementToJSONTyped(json, false);
 }
 
-export function AdminAdvertisementToJSONTyped(value?: AdminAdvertisement | null, ignoreDiscriminator: boolean = false): any {
+export function AdminAdvertisementToJSONTyped(value?: Omit<AdminAdvertisement, 'imageUrl'> | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
@@ -129,6 +153,8 @@ export function AdminAdvertisementToJSONTyped(value?: AdminAdvertisement | null,
         'id': value['id'],
         'titleAr': value['titleAr'],
         'targetScope': AdvertisementTargetScopeEnumToJSON(value['targetScope']),
+        'provinceId': value['provinceId'],
+        'categoryId': value['categoryId'],
         'enabled': value['enabled'],
         'startsAt': ((value['startsAt'] as any).toISOString()),
         'endsAt': ((value['endsAt'] as any).toISOString()),

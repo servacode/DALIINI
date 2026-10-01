@@ -1,11 +1,12 @@
 import pytest
 
 from directory.models import CategoryProvince
+from facilities.models import Facility
 from search.selectors import public_facilities
 
 
 @pytest.mark.django_db
-def test_public_facility_requires_public_category_switch(facility):
+def test_public_facility_requires_public_category_switch(facility: Facility) -> None:
     CategoryProvince.objects.create(
         province=facility.province,
         category=facility.category,
@@ -16,7 +17,7 @@ def test_public_facility_requires_public_category_switch(facility):
 
 
 @pytest.mark.django_db
-def test_owner_onboarding_does_not_imply_public_visibility(facility):
+def test_owner_onboarding_does_not_imply_public_visibility(facility: Facility) -> None:
     switch = CategoryProvince.objects.create(
         province=facility.province,
         category=facility.category,

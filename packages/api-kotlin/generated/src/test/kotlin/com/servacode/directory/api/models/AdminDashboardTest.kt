@@ -27,6 +27,30 @@ class AdminDashboardTest : ShouldSpec() {
         // uncomment below to create an instance of AdminDashboard
         //val modelInstance = AdminDashboard()
 
+        // to test the property `dutyActiveNow` - Facilities on a duty shift right now.
+        should("test dutyActiveNow") {
+            // uncomment below to test the property
+            //modelInstance.dutyActiveNow shouldBe ("TODO")
+        }
+
+        // to test the property `newUsers7d`
+        should("test newUsers7d") {
+            // uncomment below to test the property
+            //modelInstance.newUsers7d shouldBe ("TODO")
+        }
+
+        // to test the property `openReports` - Facility problem reports still OPEN.
+        should("test openReports") {
+            // uncomment below to test the property
+            //modelInstance.openReports shouldBe ("TODO")
+        }
+
+        // to test the property `systemWarnings` - Arabic, configuration-level warnings.
+        should("test systemWarnings") {
+            // uncomment below to test the property
+            //modelInstance.systemWarnings shouldBe ("TODO")
+        }
+
         // to test the property `pendingReviews`
         should("test pendingReviews") {
             // uncomment below to test the property

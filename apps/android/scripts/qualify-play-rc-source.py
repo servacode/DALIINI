@@ -31,6 +31,7 @@ def main() -> int:
         "apps/android/feature/account/src/main/kotlin/com/servacode/directory/feature/"
         "account/AccountScreen.kt"
     )
+    account_words = text("apps/android/feature/account/src/main/res/values/strings.xml")
 
     require("targetSdk = 36" in convention, "Play RC must target API 36")
     require(
@@ -49,7 +50,16 @@ def main() -> int:
     require("ACCESS_BACKGROUND_LOCATION" not in manifest, "background location is forbidden")
     require("READ_SMS" not in manifest and "READ_CONTACTS" not in manifest, "unexpected permission")
     require("requestAccountDeletion" in boundary, "generated API boundary lacks account deletion")
-    require("حذف الحساب" in account_screen and "تأكيد الحذف" in account_screen, "in-app deletion UI missing")
+    # The screen shows the deletion and its confirmation; the words are in the module's own
+    # strings.xml, which is where a second language replaces them.
+    require(
+        "AccountCopy.DELETE" in account_screen and "AccountCopy.DELETE_CONFIRM" in account_screen,
+        "in-app deletion UI missing",
+    )
+    require(
+        "حذف الحساب" in account_words and "تأكيد الحذف" in account_words,
+        "in-app deletion wording missing",
+    )
 
     required_files = (
         "apps/android/play/policy-baseline-2026-09-17.md",

@@ -16,4 +16,8 @@ abstract class NetworkBindings {
     @Binds
     @Singleton
     abstract fun bindNetworkMonitor(impl: AndroidNetworkMonitor): NetworkMonitor
+
+    @Binds
+    @Singleton
+    abstract fun bindLocationNameResolver(impl: BackendLocationNameResolver): LocationNameResolver
 }

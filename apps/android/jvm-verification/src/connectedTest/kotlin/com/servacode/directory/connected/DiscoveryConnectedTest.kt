@@ -126,7 +126,8 @@ class DiscoveryConnectedTest {
 
     @Test fun `detail hours arrive ordered by sequence within the day`() = runBlocking {
         val province = raqqa()
-        val split = everything(DirectoryQuery(province.id, pharmacyId(province))).single { it.nameAr.contains("فترتان") }
+        val split = everything(DirectoryQuery(province.id,
+            pharmacyId(province))).single { it.nameAr.contains("فترتان") }
 
         val detail = api.facility(split.id)
 

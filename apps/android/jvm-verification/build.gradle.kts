@@ -14,7 +14,10 @@ val androidOnly = listOf(
     "**/core/auth/AndroidKeyStoreRefreshTokenVault.kt",
     "**/core/auth/AuthBindings.kt",
     "**/core/network/NetworkMonitor.kt",
+    "**/core/network/UploadReader.kt",
     "**/core/network/NetworkBindings.kt",
+    // Builds its Retrofit service from the generated client, which is an AAR here.
+    "**/core/network/api/GeneratedAnalyticsTransport.kt",
     "**/core/network/MapProviderAdapters.kt",
     "**/core/network/MapProviderNetworkModule.kt",
     "**/core/database/CacheDao.kt",
@@ -22,28 +25,48 @@ val androidOnly = listOf(
     "**/core/database/DatabaseModule.kt",
     "**/core/database/DirectoryDatabase.kt",
     "**/core/database/PublicCacheDataSource.kt",
+    "**/core/database/LocalStoresRoom.kt",
     "**/core/datastore/PreferencesRepository.kt",
+    // The pseudonymous id lives in the same DataStore the preferences do.
+    "**/core/datastore/StoredAnonymousId.kt",
     "**/core/location/AndroidLocationProvider.kt",
     "**/core/location/LocationModule.kt",
+    "**/core/maps/MapLibreController.kt",
+    "**/core/maps/OfflineMapPacks.kt",
+    "**/core/maps/NavigationLayers.kt",
+    "**/core/maps/MapViewLifecycle.kt",
+    // A `…Copy` reads the module's own strings.xml, which is Android and not Kotlin.
+    "**/*Copy.kt",
     "**/*Screen.kt",
     "**/*Screens.kt",
     "**/*ViewModel.kt",
     "**/*ViewModels.kt",
     "**/feature/bootstrap/BootstrapModule.kt",
-    "**/feature/onboarding/OwnerUploadReader.kt",
+    // Reads the built-in emergency lines' names from the settings module's strings.xml.
+    "**/feature/settings/EmergencyLabelsModule.kt",
+    "**/feature/navigation/NavigationMap.kt",
+    "**/feature/navigation/NavigationWords.kt",
+    // A table of R ids for the voice pack: Android resources, not Kotlin.
+    "**/feature/navigation/NavigationClipResources.kt",
+    "**/feature/navigation/AndroidNavigationVoice.kt",
+    "**/feature/navigation/NavigationVoice.kt",
     "**/feature/onboarding/OnboardingMapPicker.kt",
 )
 
 // Feature modules whose repositories and use cases are platform-free.
 val features = listOf(
-    "account", "auth", "bootstrap", "directory", "duty", "facility", "home", "map", "onboarding",
-    "owner", "province", "ratings", "search",
+    "account", "auth", "bootstrap", "directory", "duty", "facility", "home", "map", "navigation",
+    "onboarding", "owner", "province", "ratings", "search", "settings",
 )
 
 sourceSets {
     main {
         kotlin.srcDir(generatedClient)
-        for (core in listOf("model", "observability", "auth", "network", "database", "datastore", "location")) {
+        val platformFreeCores = listOf(
+            "model", "observability", "analytics", "auth",
+            "network", "database", "datastore", "location", "maps",
+        )
+        for (core in platformFreeCores) {
             kotlin.srcDir(android.resolve("core/$core/src/main/kotlin"))
         }
         for (feature in features) {
@@ -57,9 +80,15 @@ sourceSets {
         kotlin.srcDir(android.resolve("core/network/src/test/kotlin"))
         kotlin.srcDir(android.resolve("core/database/src/test/kotlin"))
         kotlin.srcDir(android.resolve("core/model/src/test/kotlin"))
+        kotlin.srcDir(android.resolve("core/maps/src/test/kotlin"))
+        kotlin.srcDir(android.resolve("core/analytics/src/test/kotlin"))
         for (feature in features) {
             kotlin.srcDir(android.resolve("feature/$feature/src/test/kotlin"))
         }
+        // ViewModels are not compiled here (androidOnly), so neither are their tests. The same
+        // goes for anything that reaches into the design system: it is a Compose library and
+        // this harness has no Android framework. Those tests run in the Android unit suite.
+        kotlin.exclude("**/*ViewModelTest.kt", "**/OwnerStatusToneTest.kt")
     }
 }
 

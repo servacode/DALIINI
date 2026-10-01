@@ -16,14 +16,27 @@
 import * as runtime from '../runtime';
 import type {
   AdminAnalytics,
+  AdminStaffPerformance,
   ApiError,
 } from '../models/index';
 import {
     AdminAnalyticsFromJSON,
     AdminAnalyticsToJSON,
+    AdminStaffPerformanceFromJSON,
+    AdminStaffPerformanceToJSON,
     ApiErrorFromJSON,
     ApiErrorToJSON,
 } from '../models/index';
+
+export interface AdminAnalyticsRetrieveRequest {
+    from?: string;
+    to?: string;
+}
+
+export interface AdminAnalyticsStaffRetrieveRequest {
+    from?: string;
+    to?: string;
+}
 
 /**
  * 
@@ -31,10 +44,19 @@ import {
 export class AdminAnalyticsApi extends runtime.BaseAPI {
 
     /**
+     * Period-bound KPIs (approval median and the four event counts) cover `from` to `to`, by default the last 30 days, and `previous` holds the same KPIs for the equally long period just before, for comparison. The remaining fields are current totals.
      * Operational KPIs
      */
-    async adminAnalyticsRetrieveRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminAnalytics>> {
+    async adminAnalyticsRetrieveRaw(requestParameters: AdminAnalyticsRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminAnalytics>> {
         const queryParameters: any = {};
+
+        if (requestParameters['from'] != null) {
+            queryParameters['from'] = requestParameters['from'];
+        }
+
+        if (requestParameters['to'] != null) {
+            queryParameters['to'] = requestParameters['to'];
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -60,10 +82,58 @@ export class AdminAnalyticsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Period-bound KPIs (approval median and the four event counts) cover `from` to `to`, by default the last 30 days, and `previous` holds the same KPIs for the equally long period just before, for comparison. The remaining fields are current totals.
      * Operational KPIs
      */
-    async adminAnalyticsRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminAnalytics> {
-        const response = await this.adminAnalyticsRetrieveRaw(initOverrides);
+    async adminAnalyticsRetrieve(requestParameters: AdminAnalyticsRetrieveRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminAnalytics> {
+        const response = await this.adminAnalyticsRetrieveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Per reviewer, over applications decided in [`from`, `to`) (default last 30 days): decisions, approvals, rejections and the median submit-to-decision hours; plus problem reports they resolved or dismissed in the period.
+     * Reviewer performance in a period
+     */
+    async adminAnalyticsStaffRetrieveRaw(requestParameters: AdminAnalyticsStaffRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminStaffPerformance>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['from'] != null) {
+            queryParameters['from'] = requestParameters['from'];
+        }
+
+        if (requestParameters['to'] != null) {
+            queryParameters['to'] = requestParameters['to'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/analytics/staff/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminStaffPerformanceFromJSON(jsonValue));
+    }
+
+    /**
+     * Per reviewer, over applications decided in [`from`, `to`) (default last 30 days): decisions, approvals, rejections and the median submit-to-decision hours; plus problem reports they resolved or dismissed in the period.
+     * Reviewer performance in a period
+     */
+    async adminAnalyticsStaffRetrieve(requestParameters: AdminAnalyticsStaffRetrieveRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminStaffPerformance> {
+        const response = await this.adminAnalyticsStaffRetrieveRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

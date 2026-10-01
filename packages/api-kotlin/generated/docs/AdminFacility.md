@@ -13,6 +13,10 @@
 | **status** | [**FacilityStatusEnum**](FacilityStatusEnum.md) |  |  |
 | **location** | [**Coordinates**](Coordinates.md) |  |  |
 | **updatedAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) |  |  |
+| **categoryNameAr** | **kotlin.String** |  |  |
+| **provinceNameAr** | **kotlin.String** |  |  |
+| **ownerName** | **kotlin.String** | First owner membership. |  |
+| **ownerPhone** | **kotlin.String** | First owner membership. |  |
 
 
 

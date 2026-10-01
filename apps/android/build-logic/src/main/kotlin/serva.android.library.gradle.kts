@@ -4,7 +4,9 @@ plugins {
 
 extensions.configure<com.android.build.api.dsl.LibraryExtension> {
     namespace = "com.servacode.directory" + project.path.replace(":", ".")
-    compileSdk = 36
+    // 37: the pinned AndroidX, Compose and Coil releases require it (DECISION-040).
+    // targetSdk stays 36; compiling against newer APIs does not opt into their behaviour.
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24
@@ -19,9 +21,10 @@ extensions.configure<com.android.build.api.dsl.LibraryExtension> {
     }
 }
 
+// Looked up on the project. Inside `dependencies { }`, `extensions` is the dependency
+// handler's own, which holds no version catalog.
+val catalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
+
 dependencies {
-    add(
-        "coreLibraryDesugaring",
-        extensions.getByType<VersionCatalogsExtension>().named("libs").findLibrary("desugar-jdk-libs").get(),
-    )
+    add("coreLibraryDesugaring", catalog.findLibrary("desugar-jdk-libs").get())
 }

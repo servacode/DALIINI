@@ -27,6 +27,7 @@ import kotlinx.serialization.Contextual
  * @param code 
  * @param nameAr 
  * @param nameEn 
+ * @param iconKey 
  * @param active 
  * @param sortOrder 
  */
@@ -45,6 +46,9 @@ data class AdminCategoryGroup (
 
     @SerialName(value = "nameEn")
     val nameEn: kotlin.String,
+
+    @SerialName(value = "iconKey")
+    val iconKey: kotlin.String,
 
     @SerialName(value = "active")
     val active: kotlin.Boolean,

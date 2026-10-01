@@ -39,17 +39,28 @@ MUTATING = {"post", "put", "patch"}
 
 # Endpoints that legitimately take no request body.
 BODYLESS_MUTATIONS = {
+    ("/api/v1/account/notifications/read-all/", "post"),
+    ("/api/v1/account/notifications/{notification_id}/read/", "post"),
     ("/api/v1/admin/users/{user_id}/block/", "post"),
     ("/api/v1/admin/users/{user_id}/unblock/", "post"),
     ("/api/v1/auth/logout-all/", "post"),
     ("/api/v1/owner/facilities/{facility_id}/submit/", "post"),
+    ("/api/v1/owner/facilities/{facility_id}/confirm-hours/", "post"),
 }
 
 # Endpoints that legitimately answer 204 with no body.
 NO_CONTENT_OPERATIONS = {
+    ("/api/v1/account/password/", "post"),
     ("/api/v1/account/push-token/", "put"),
     ("/api/v1/account/push-token/unregister/", "post"),
     ("/api/v1/admin/ads/{advertisement_id}/", "delete"),
+    ("/api/v1/admin/content/faq/{entry_id}/", "delete"),
+    ("/api/v1/admin/content/pages/{slug}/", "delete"),
+    ("/api/v1/admin/duty/{shift_id}/", "delete"),
+    ("/api/v1/admin/emergency-numbers/{number_id}/", "delete"),
+    ("/api/v1/admin/rejection-templates/{template_id}/", "delete"),
+    ("/api/v1/admin/service-tags/{service_tag_id}/", "delete"),
+    ("/api/v1/admin/specialties/{specialty_id}/", "delete"),
     ("/api/v1/admin/users/{user_id}/roles/", "put"),
     ("/api/v1/auth/logout-all/", "post"),
     ("/api/v1/auth/logout/", "post"),
@@ -268,7 +279,11 @@ def test_schema_does_not_leak_internal_fields() -> None:
 
 
 def test_committed_schema_matches_the_source() -> None:
-    assert CANONICAL_SCHEMA.exists(), "openapi/schema.yaml is not committed"
+    assert CANONICAL_SCHEMA.exists(), (
+        f"no openapi/schema.yaml above {pathlib.Path(__file__).resolve()}: either it is not "
+        "committed, or these tests are running somewhere the repository root is not mounted — "
+        "the backend container mounts apps/backend alone, and openapi/ sits above it"
+    )
     generated = generate_schema()
     committed = CANONICAL_SCHEMA.read_text(encoding="utf-8")
     assert generated == committed, (
@@ -277,7 +292,10 @@ def test_committed_schema_matches_the_source() -> None:
 
 
 def test_committed_hash_matches_the_committed_schema() -> None:
-    assert CANONICAL_HASH.exists(), "openapi/schema.sha256 is not committed"
+    assert CANONICAL_HASH.exists(), (
+        f"no openapi/schema.sha256 above {pathlib.Path(__file__).resolve()}: see the message on "
+        "test_committed_schema_matches_the_source — a missing mount reads as drift otherwise"
+    )
     recorded = CANONICAL_HASH.read_text(encoding="utf-8").split()[0]
     actual = hashlib.sha256(CANONICAL_SCHEMA.read_bytes()).hexdigest()
     assert recorded == actual, "openapi/schema.sha256 does not describe openapi/schema.yaml"

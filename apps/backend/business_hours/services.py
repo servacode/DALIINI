@@ -3,11 +3,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import UTC, datetime, time, timedelta
 from enum import StrEnum
+from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
 from django.utils import timezone
 
 from .models import BusinessHour, TemporaryClosure
+
+if TYPE_CHECKING:
+    from facilities.models import Facility
 
 DAMASCUS = ZoneInfo("Asia/Damascus")
 
@@ -37,7 +41,7 @@ def _window_for(
     opens_at: time,
     closes_at: time,
     day_offset: int = 0,
-):
+) -> tuple[datetime, datetime]:
     base = now_local.date() + timedelta(days=day_offset)
     start = datetime.combine(base, opens_at, tzinfo=DAMASCUS)
     end_day = base if closes_at > opens_at else base + timedelta(days=1)
@@ -45,7 +49,7 @@ def _window_for(
     return start, end
 
 
-def _is_scheduled_open(facility, now_local: datetime) -> bool:
+def _is_scheduled_open(facility: Facility, now_local: datetime) -> bool:
     weekdays = [now_local.weekday(), (now_local.weekday() - 1) % 7]
     candidates = BusinessHour.objects.filter(
         facility=facility,
@@ -64,7 +68,7 @@ def _is_scheduled_open(facility, now_local: datetime) -> bool:
     return False
 
 
-def _is_temporarily_closed(facility, now_utc: datetime) -> bool:
+def _is_temporarily_closed(facility: Facility, now_utc: datetime) -> bool:
     return TemporaryClosure.objects.filter(
         facility=facility,
         starts_at__lte=now_utc,
@@ -72,14 +76,56 @@ def _is_temporarily_closed(facility, now_utc: datetime) -> bool:
     ).exists()
 
 
-def _is_on_duty(facility, now_utc: datetime) -> bool:
+def _is_on_duty(facility: Facility, now_utc: datetime) -> bool:
     return facility.duty_shifts.filter(
         starts_at__lte=now_utc,
         ends_at__gt=now_utc,
     ).exists()
 
 
-def get_next_open(facility, now: datetime | None = None) -> datetime | None:
+def local_day_bounds(now: datetime | None = None) -> tuple[datetime, datetime]:
+    """Today, as the country lives it: midnight to midnight in Damascus, returned in UTC.
+
+    A duty roster is published for a *day*, and the day people mean is the local one. Taking
+    the bounds from UTC would move the boundary by three hours and put a shift that begins at
+    22:00 on the wrong date for a third of its life.
+    """
+    local = _damascus(now)
+    start = datetime.combine(local.date(), time(0, 0), tzinfo=DAMASCUS)
+    return start.astimezone(UTC), (start + timedelta(days=1)).astimezone(UTC)
+
+
+def is_on_duty_today(facility: Facility, now: datetime | None = None) -> bool:
+    """Whether this facility appears on today's duty roster at all.
+
+    Deliberately not the same question as `_is_on_duty`, which asks whether a shift is running
+    at this instant. A pharmacy whose shift begins at 20:00 is on today's roster from the
+    moment the day starts, and someone planning their evening needs to see that at nine in the
+    morning. Any overlap with the local day counts, so a shift running past midnight belongs to
+    both days it touches.
+    """
+    day_start, day_end = local_day_bounds(now)
+    return facility.duty_shifts.filter(
+        starts_at__lt=day_end,
+        ends_at__gt=day_start,
+    ).exists()
+
+
+def is_open_now(facility: Facility, now: datetime | None = None) -> bool:
+    """Whether the doors are open at this moment, whatever the duty roster says.
+
+    Independent of duty on purpose. `get_facility_availability` collapses the two into one
+    value and lets DUTY win, which cannot express a pharmacy that is on duty *and* open, nor
+    one that is on duty and shut until the evening. Both are ordinary, and both have to be
+    tellable apart.
+    """
+    now_local = _damascus(now)
+    if _is_temporarily_closed(facility, now_local.astimezone(UTC)):
+        return False
+    return _is_scheduled_open(facility, now_local)
+
+
+def get_next_open(facility: Facility, now: datetime | None = None) -> datetime | None:
     now_local = _damascus(now)
     rows = list(
         BusinessHour.objects.filter(facility=facility).order_by(
@@ -107,7 +153,7 @@ def get_next_open(facility, now: datetime | None = None) -> datetime | None:
 
 
 def get_facility_availability(
-    facility,
+    facility: Facility,
     now: datetime | None = None,
 ) -> AvailabilityResult:
     now_local = _damascus(now)

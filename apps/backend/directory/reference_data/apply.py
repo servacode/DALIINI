@@ -31,6 +31,8 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
+from django.contrib.gis.geos import Point
+
 # Both `apps.get_model` implementations: (app_label, model_name) -> model class.
 GetModel = Callable[[str, str], Any]
 
@@ -92,6 +94,30 @@ def apply_dataset(dataset: Any, get_model: GetModel) -> Summary:
     _apply_capabilities(dataset, get_model, categories, summary)
     _apply_switches(dataset, get_model, categories, provinces, summary)
 
+    return summary
+
+
+def apply_map_centers(
+    dataset: Any, get_model: GetModel, summary: Summary | None = None
+) -> Summary:
+    """Give each province in `dataset.CENTERS` its map centre, unless it already has one.
+
+    Same rule as everything else here: a centre that is set, whether by an operator or by an
+    earlier run, is left as it is. A province that does not exist is skipped, because
+    creating provinces is `apply_dataset`'s job; `summary` lets a caller report both in one.
+    """
+    summary = summary if summary is not None else Summary(version=dataset.VERSION)
+    model = get_model("locations", "Province")
+    for code, (latitude, longitude) in dataset.CENTERS.items():
+        province = model.objects.filter(code=code).first()
+        if province is None:
+            continue
+        if province.map_center is not None:
+            summary.verified_one("province map center")
+            continue
+        province.map_center = Point(longitude, latitude, srid=4326)
+        province.save(update_fields=["map_center"])
+        summary.created_one("province map center")
     return summary
 
 

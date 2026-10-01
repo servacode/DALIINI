@@ -1,20 +1,28 @@
 "use client";
 
-import Link from "next/link";
+import { AlertsPanel, TaskCenter } from "../../../components/smart";
 import { useResource } from "../../../lib/client/use-resource";
 import {
   AuditTimeline,
   ErrorState,
   LoadingState,
   PageHeader,
+  Panel,
+  StatCard,
   StatusBadge,
   type Tone,
+  termsFor,
+  labelsFor,
 } from "../../../components/ui";
 
 type Dashboard = Readonly<{
   pendingReviews: number;
   reverification: number;
   activeUsers: number;
+  dutyActiveNow: number;
+  newUsers7d: number;
+  openReports: number;
+  systemWarnings: readonly string[];
   facilitiesByStatus: readonly { status: string; count: number }[];
   recentActions: readonly {
     action: string;
@@ -24,25 +32,14 @@ type Dashboard = Readonly<{
   }[];
 }>;
 
-const STATUS_LABELS: Record<string, string> = {
-  DRAFT: "مسودة",
-  SUBMITTED: "قيد المراجعة",
-  ACTIVE: "فعّالة",
-  SUSPENDED: "موقوفة",
-  CLOSED: "مغلقة",
-  REVERIFICATION_REQUIRED: "تحتاج إعادة تحقق",
-};
+const STATUS_LABELS = labelsFor("facilityStatus");
 
-const STATUS_TONES: Record<string, Tone> = {
-  ACTIVE: "positive",
-  SUSPENDED: "warning",
-  CLOSED: "danger",
-  REVERIFICATION_REQUIRED: "warning",
-  SUBMITTED: "info",
-};
+const STATUS_TONES = Object.fromEntries(
+  Object.entries(termsFor("facilityStatus")).map(([key, meta]) => [key, meta.tone]),
+) as Record<string, Tone>;
 
 export default function DashboardPage() {
-  const dashboard = useResource<Dashboard>("dashboard");
+  const dashboard = useResource<Dashboard>("dashboard", {}, { refreshMs: 60_000 });
 
   return (
     <div className="stack">
@@ -50,44 +47,80 @@ export default function DashboardPage() {
         title="لوحة المتابعة"
         description="الحالة التشغيلية الحالية وآخر الإجراءات المسجّلة."
       />
+      <AlertsPanel />
       {dashboard.loading ? <LoadingState /> : null}
       {dashboard.error ? <ErrorState error={dashboard.error} onRetry={dashboard.reload} /> : null}
       {dashboard.data ? (
         <>
+          {dashboard.data.systemWarnings.length > 0 ? (
+            <div className="notice" role="status" data-testid="system-warnings">
+              <span>
+                <strong>تنبيهات الإعداد: </strong>
+                {dashboard.data.systemWarnings.join(" · ")}
+              </span>
+            </div>
+          ) : null}
           <div className="kpi-grid">
-            <Link href="/reviews" className="kpi" data-testid="kpi-pending">
-              <strong>{dashboard.data.pendingReviews}</strong>
-              <span>طلبات بانتظار المراجعة</span>
-            </Link>
-            <div className="kpi">
-              <strong>{dashboard.data.reverification}</strong>
-              <span>منشآت تحتاج إعادة تحقق</span>
-            </div>
-            <div className="kpi">
-              <strong>{dashboard.data.activeUsers}</strong>
-              <span>حسابات فعّالة</span>
-            </div>
+            <StatCard
+              href="/reviews"
+              testId="kpi-pending"
+              label="طلبات بانتظار المراجعة"
+              value={dashboard.data.pendingReviews}
+              icon="inbox"
+              tone="info"
+              hint="فتح قائمة المراجعات"
+            />
+            <StatCard
+              label="منشآت تحتاج إعادة تحقق"
+              value={dashboard.data.reverification}
+              icon="shield"
+              tone="warning"
+            />
+            <StatCard
+              href="/reports"
+              label="بلاغات مفتوحة"
+              value={dashboard.data.openReports}
+              icon="flag"
+              tone="warning"
+              hint="فتح البلاغات"
+            />
+            <StatCard
+              label="صيدليات مناوبة الآن"
+              value={dashboard.data.dutyActiveNow}
+              icon="clock"
+            />
+            <StatCard
+              label="حسابات فعّالة"
+              value={dashboard.data.activeUsers}
+              icon="userCheck"
+              hint={`${dashboard.data.newUsers7d} حساباً جديداً خلال ٧ أيام`}
+            />
           </div>
 
-          <section className="panel stack">
-            <h2>المنشآت حسب الحالة</h2>
-            <div className="button-row">
+          <div className="grid-main-aside">
+            <TaskCenter />
+
+            <Panel title="المنشآت حسب الحالة">
               {dashboard.data.facilitiesByStatus.length === 0 ? (
                 <span className="muted">لا منشآت بعد.</span>
               ) : (
-                dashboard.data.facilitiesByStatus.map((row) => (
-                  <StatusBadge key={row.status} tone={STATUS_TONES[row.status] ?? "neutral"}>
-                    {STATUS_LABELS[row.status] ?? row.status} · {row.count}
-                  </StatusBadge>
-                ))
+                <div>
+                  {dashboard.data.facilitiesByStatus.map((row) => (
+                    <div key={row.status} className="switch-row">
+                      <StatusBadge tone={STATUS_TONES[row.status] ?? "neutral"}>
+                        {STATUS_LABELS[row.status] ?? row.status}
+                      </StatusBadge>
+                      <strong className="tabular">{row.count}</strong>
+                    </div>
+                  ))}
+                </div>
               )}
-            </div>
-          </section>
+            </Panel>
+          </div>
 
-          <section className="panel stack">
-            <h2>آخر الإجراءات</h2>
+          <Panel title="آخر الإجراءات" description="أحدث العمليات المسجّلة في سجل التدقيق.">
             <AuditTimeline entries={dashboard.data.recentActions} />
-          </section>
+          </Panel>
         </>
       ) : null}
     </div>

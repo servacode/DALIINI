@@ -25,7 +25,7 @@ from locations.models import Province
 
 # `AdminCapabilities*` still declares `supports_*` on both the request and the response.
 # It is not a list endpoint, so it is outside this batch; it is registered as INT-039 in
-# RECEIPT-AUDIT-2026-09-17.md rather than silently exempted.
+# artifacts/evidence/RECEIPT-AUDIT-2026-09-17.md rather than silently exempted.
 KNOWN_SNAKE_CASE = {
     "AdminCapabilitiesRequestSerializer",
     "AdminCapabilitiesSerializer",
@@ -101,7 +101,8 @@ def test_category_list_is_camel_case(admin_client: APIClient, facility: Facility
 def test_category_group_list_is_camel_case(admin_client: APIClient, facility: Facility) -> None:
     body = admin_client.get("/api/v1/admin/category-groups/").json()
 
-    assert _keys(body["items"]) == {"id", "code", "nameAr", "nameEn", "active", "sortOrder"}
+    expected = {"id", "code", "nameAr", "nameEn", "iconKey", "active", "sortOrder"}
+    assert _keys(body["items"]) == expected
 
 
 @pytest.mark.django_db
@@ -145,6 +146,9 @@ def test_advertisement_list_is_camel_case(admin_client: APIClient, facility: Fac
         "id",
         "titleAr",
         "targetScope",
+        "provinceId",
+        "categoryId",
+        "imageUrl",
         "enabled",
         "startsAt",
         "endsAt",

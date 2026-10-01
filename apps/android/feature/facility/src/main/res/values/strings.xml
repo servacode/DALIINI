@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What this module says. Here rather than in Kotlin so that a second language is a
+     second file beside this one and the phone's own setting chooses between them. -->
+<resources>
+    <string name="facility_back">رجوع</string>
+    <string name="facility_error">تعذر تحميل المنشأة</string>
+    <string name="facility_call">اتصال</string>
+    <string name="facility_directions">الطريق</string>
+    <string name="facility_whatsapp">واتساب</string>
+    <string name="facility_ratings">التقييمات</string>
+    <string name="facility_save">المفضلة</string>
+    <string name="facility_saved">في المفضلة</string>
+    <string name="facility_address">العنوان</string>
+    <string name="facility_hours">ساعات العمل</string>
+    <string name="facility_about">نبذة</string>
+    <!-- The same word the filters and the owner's section use for them. -->
+    <string name="facility_specialties">التخصصات</string>
+    <string name="facility_services">الخدمات</string>
+    <string name="facility_your_rating">تقييمك</string>
+    <string name="facility_rating_change">اضغط نجمة أخرى لتغيير تقييمك.</string>
+    <string name="facility_rating_remove">حذف تقييمي</string>
+    <string name="facility_sign_in_to_rate">سجّل الدخول لتقييم المنشأة</string>
+    <string name="facility_share">مشاركة</string>
+    <string name="facility_photos">الصور</string>
+    <string name="facility_photo">%1$s، صورة %2$d من %3$d</string>
+    <string name="facility_photo_open">عرض الصورة بحجم أكبر</string>
+    <string name="facility_close">إغلاق</string>
+    <!-- %1$s is the WhatsApp number as published. -->
+    <string name="facility_whatsapp_number">واتساب: %1$s</string>
+
+    <!-- The trust line. %1$s is an age: "اليوم" or "قبل ٣ أيام". -->
+    <string name="facility_verified">تم التحقق %1$s</string>
+    <string name="facility_updated">آخر تحديث %1$s</string>
+    <!-- The later of an operator's check and the owner's weekly confirmation of the hours. -->
+    <string name="facility_confirmed">آخر تأكيد للمعلومات %1$s</string>
+    <string name="facility_age_today">اليوم</string>
+    <plurals name="facility_age_days">
+        <item quantity="zero">اليوم</item>
+        <item quantity="one">قبل يوم</item>
+        <item quantity="two">قبل يومين</item>
+        <item quantity="few">قبل %d أيام</item>
+        <item quantity="many">قبل %d يومًا</item>
+        <item quantity="other">قبل %d يوم</item>
+    </plurals>
+    <plurals name="facility_age_months">
+        <item quantity="zero">هذا الشهر</item>
+        <item quantity="one">قبل شهر</item>
+        <item quantity="two">قبل شهرين</item>
+        <item quantity="few">قبل %d أشهر</item>
+        <item quantity="many">قبل %d شهرًا</item>
+        <item quantity="other">قبل %d شهر</item>
+    </plurals>
+    <plurals name="facility_age_years">
+        <item quantity="zero">هذا العام</item>
+        <item quantity="one">قبل سنة</item>
+        <item quantity="two">قبل سنتين</item>
+        <item quantity="few">قبل %d سنوات</item>
+        <item quantity="many">قبل %d سنة</item>
+        <item quantity="other">قبل %d سنة</item>
+    </plurals>
+
+    <!-- Reporting a problem with the facility's details. -->
+    <string name="facility_report">الإبلاغ عن مشكلة</string>
+    <string name="facility_report_note">ملاحظة - اختياري</string>
+    <!-- %1$d characters typed, of at most %2$d. -->
+    <string name="facility_report_note_count">%1$d / %2$d</string>
+    <string name="facility_report_send">إرسال البلاغ</string>
+    <string name="facility_report_thanks">شكراً، سيراجع فريقنا البلاغ</string>
+    <string name="facility_report_throttled">أرسلت بلاغات كثيرة خلال وقت قصير. حاول مرة أخرى لاحقاً.</string>
+    <string name="facility_report_offline">لا يوجد اتصال بالإنترنت. تحقق من الاتصال ثم أعد الإرسال.</string>
+    <string name="facility_report_failed">تعذر إرسال البلاغ. حاول مرة أخرى.</string>
+    <!-- %1$d is how many stars, out of five. -->
+    <string name="facility_rate_label">%1$d من 5</string>
+</resources>

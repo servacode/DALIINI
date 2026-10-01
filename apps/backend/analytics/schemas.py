@@ -1,9 +1,11 @@
 """Request and response contract for the analytics intake endpoint."""
 
+from typing import Any
+
 from rest_framework import serializers
 
 
-class AnalyticsEventRequestSerializer(serializers.Serializer):
+class AnalyticsEventRequestSerializer(serializers.Serializer[Any]):
     """The view reads the body directly; this describes the accepted shape.
 
     `properties` is validated server-side against the central event registry, which
@@ -22,6 +24,6 @@ class AnalyticsEventRequestSerializer(serializers.Serializer):
     )
 
 
-class AnalyticsEventAcceptedSerializer(serializers.Serializer):
+class AnalyticsEventAcceptedSerializer(serializers.Serializer[Any]):
     accepted = serializers.BooleanField()
     id = serializers.UUIDField()

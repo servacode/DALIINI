@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  AdminAdImage,
   AdminAdvertisementList,
   AdminAdvertisementRequest,
   AdminAdvertisementUpdateRequest,
@@ -22,6 +23,8 @@ import type {
   ApiError,
 } from '../models/index';
 import {
+    AdminAdImageFromJSON,
+    AdminAdImageToJSON,
     AdminAdvertisementListFromJSON,
     AdminAdvertisementListToJSON,
     AdminAdvertisementRequestFromJSON,
@@ -40,6 +43,10 @@ export interface AdminAdCreateRequest {
 
 export interface AdminAdDeleteRequest {
     advertisementId: string;
+}
+
+export interface AdminAdImageUploadRequest {
+    file: Blob;
 }
 
 export interface AdminAdUpdateRequest {
@@ -143,6 +150,73 @@ export class AdminAdsApi extends runtime.BaseAPI {
      */
     async adminAdDelete(requestParameters: AdminAdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.adminAdDeleteRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * multipart/form-data with `file`. JPEG, PNG or WebP only, at most 2 MB, each side 100 to 4096 px. The image is re-encoded to JPEG (metadata stripped) and stored in public media under a random key. Pass the returned `imageKey` when creating or updating the advertisement.
+     * Upload an advertisement image
+     */
+    async adminAdImageUploadRaw(requestParameters: AdminAdImageUploadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminAdImage>> {
+        if (requestParameters['file'] == null) {
+            throw new runtime.RequiredError(
+                'file',
+                'Required parameter "file" was null or undefined when calling adminAdImageUpload().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters['file'] != null) {
+            formParams.append('file', requestParameters['file'] as any);
+        }
+
+
+        let urlPath = `/api/v1/admin/ads/images/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminAdImageFromJSON(jsonValue));
+    }
+
+    /**
+     * multipart/form-data with `file`. JPEG, PNG or WebP only, at most 2 MB, each side 100 to 4096 px. The image is re-encoded to JPEG (metadata stripped) and stored in public media under a random key. Pass the returned `imageKey` when creating or updating the advertisement.
+     * Upload an advertisement image
+     */
+    async adminAdImageUpload(requestParameters: AdminAdImageUploadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminAdImage> {
+        const response = await this.adminAdImageUploadRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

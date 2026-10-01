@@ -16,14 +16,16 @@ public struct AdminCategoryGroup: Codable, JSONEncodable, Hashable {
     public var code: String
     public var nameAr: String
     public var nameEn: String
+    public var iconKey: String
     public var active: Bool
     public var sortOrder: Int
 
-    public init(id: UUID, code: String, nameAr: String, nameEn: String, active: Bool, sortOrder: Int) {
+    public init(id: UUID, code: String, nameAr: String, nameEn: String, iconKey: String, active: Bool, sortOrder: Int) {
         self.id = id
         self.code = code
         self.nameAr = nameAr
         self.nameEn = nameEn
+        self.iconKey = iconKey
         self.active = active
         self.sortOrder = sortOrder
     }
@@ -33,6 +35,7 @@ public struct AdminCategoryGroup: Codable, JSONEncodable, Hashable {
         case code
         case nameAr
         case nameEn
+        case iconKey
         case active
         case sortOrder
     }
@@ -45,6 +48,7 @@ public struct AdminCategoryGroup: Codable, JSONEncodable, Hashable {
         try container.encode(code, forKey: .code)
         try container.encode(nameAr, forKey: .nameAr)
         try container.encode(nameEn, forKey: .nameEn)
+        try container.encode(iconKey, forKey: .iconKey)
         try container.encode(active, forKey: .active)
         try container.encode(sortOrder, forKey: .sortOrder)
     }

@@ -4,28 +4,28 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.DirectoryRoute
 import com.servacode.directory.core.model.FacilityMember
 import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.model.OwnerFacilityDetail
 import com.servacode.directory.core.model.OwnerFacilitySummary
 import com.servacode.directory.core.model.TemporaryClosure
-import com.servacode.directory.core.model.AppErrorText
 import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.network.RealtimeInvalidation
 import com.servacode.directory.core.network.RealtimeInvalidationBus
 import com.servacode.directory.core.network.TemporaryClosureInput
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 sealed interface MyFacilitiesUiState {
     data object Loading : MyFacilitiesUiState
     data class Content(val items: List<OwnerFacilitySummary>) : MyFacilitiesUiState
-    data class Error(val message: String) : MyFacilitiesUiState
+    data class Error(val error: AppError) : MyFacilitiesUiState
 }
 
 @HiltViewModel
@@ -50,7 +50,7 @@ class MyFacilitiesViewModel @Inject constructor(
             _state.value = MyFacilitiesUiState.Loading
             _state.value = load().fold(
                 onSuccess = { MyFacilitiesUiState.Content(it) },
-                onFailure = { MyFacilitiesUiState.Error(AppErrorText.of(it.toAppError())) },
+                onFailure = { MyFacilitiesUiState.Error(it.toAppError()) },
             )
         }
     }
@@ -62,9 +62,9 @@ sealed interface ManageFacilityUiState {
         val facility: OwnerFacilityDetail,
         val closures: List<TemporaryClosure>,
         val members: List<FacilityMember>,
-        val message: String? = null,
+        val failure: AppError? = null,
     ) : ManageFacilityUiState
-    data class Error(val message: String) : ManageFacilityUiState
+    data class Error(val error: AppError) : ManageFacilityUiState
 }
 
 @HiltViewModel
@@ -99,14 +99,14 @@ class ManageFacilityViewModel @Inject constructor(
                     members = members.getOrThrow(),
                 )
             } else {
-                ManageFacilityUiState.Error(AppErrorText.of(failure.toAppError()))
+                ManageFacilityUiState.Error(failure.toAppError())
             }
         }
     }
 
     private fun report(failure: Throwable) {
         val current = _state.value as? ManageFacilityUiState.Content ?: return
-        _state.value = current.copy(message = AppErrorText.of(failure.toAppError()))
+        _state.value = current.copy(failure = failure.toAppError())
     }
 
     fun addManager(userId: String) {

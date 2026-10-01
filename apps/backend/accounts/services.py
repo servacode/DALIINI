@@ -5,6 +5,7 @@ import hmac
 import secrets
 from datetime import timedelta
 from typing import Any
+from uuid import UUID
 
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -13,6 +14,7 @@ from django.utils import timezone
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 
 from audit.services import record_audit
+from core.exceptions import ConflictError
 from facilities.models import Facility, FacilityMembership
 from locations.models import Province
 from notifications.services import (
@@ -65,7 +67,9 @@ def create_session(*, user: User, platform: str, device_name: str) -> dict[str, 
     return _session_payload(user, session, raw)
 
 
-def start_challenge(*, phone: str, purpose: str, metadata: dict | None = None) -> OTPChallenge:
+def start_challenge(
+    *, phone: str, purpose: str, metadata: dict[str, Any] | None = None
+) -> OTPChallenge:
     challenge = OTPChallenge.objects.create(
         phone=phone,
         purpose=purpose,
@@ -81,7 +85,7 @@ def start_challenge(*, phone: str, purpose: str, metadata: dict | None = None) -
 
 
 @transaction.atomic
-def verify_challenge(*, challenge_id, code: str, purpose: str) -> OTPChallenge:
+def verify_challenge(*, challenge_id: UUID, code: str, purpose: str) -> OTPChallenge:
     challenge = OTPChallenge.objects.select_for_update().filter(pk=challenge_id).first()
     if challenge is None or challenge.purpose != purpose:
         raise ValidationError({"challengeId": "Invalid or expired challenge."})
@@ -100,7 +104,7 @@ def verify_challenge(*, challenge_id, code: str, purpose: str) -> OTPChallenge:
     return challenge
 
 
-def _verified_challenge(*, challenge_id, purpose: str) -> OTPChallenge:
+def _verified_challenge(*, challenge_id: UUID, purpose: str) -> OTPChallenge:
     challenge = OTPChallenge.objects.select_for_update().filter(pk=challenge_id).first()
     now = timezone.now()
     if (
@@ -115,13 +119,31 @@ def _verified_challenge(*, challenge_id, purpose: str) -> OTPChallenge:
 
 
 @transaction.atomic
-def complete_registration(*, challenge_id, password: str, platform: str, device_name: str) -> dict:
+def complete_registration(
+    *,
+    challenge_id: UUID,
+    display_name: str,
+    password: str,
+    platform: str,
+    device_name: str,
+) -> dict[str, Any]:
+    """Open the account, now that the number has been shown to be theirs.
+
+    The name arrives here rather than with the code, so nothing about a person is
+    written down until they have proved the number and chosen a password.
+    """
     challenge = _verified_challenge(
         challenge_id=challenge_id,
         purpose=OTPChallenge.Purpose.REGISTER,
     )
     if User.objects.filter(phone=challenge.phone).exists():
-        raise ValidationError({"challengeId": "Registration cannot be completed."})
+        # Said here rather than when the code was asked for: telling an anonymous caller that a
+        # number has an account is telling them whose numbers are registered. By this point the
+        # caller has proved they receive on it, so the only person this tells is its owner.
+        raise ConflictError(
+            "PHONE_ALREADY_REGISTERED",
+            message="هذا الرقم له حساب بالفعل.",
+        )
     province = Province.objects.filter(
         pk=challenge.metadata.get("provinceId"),
         active=True,
@@ -131,7 +153,7 @@ def complete_registration(*, challenge_id, password: str, platform: str, device_
     user = User.objects.create_user(
         phone=challenge.phone,
         password=password,
-        name=challenge.metadata.get("displayName", "")[:120],
+        name=display_name[:120],
         province=province,
         phone_verified_at=timezone.now(),
     )
@@ -221,7 +243,7 @@ def _rotate_refresh(*, raw_refresh: str) -> dict[str, Any] | None:
     return _session_payload(session.user, session, raw_new)
 
 
-def revoke_session(*, user: User, session_id) -> None:
+def revoke_session(*, user: User, session_id: UUID | str) -> None:
     updated = UserSession.objects.filter(pk=session_id, user=user, revoked_at__isnull=True).update(
         revoked_at=timezone.now()
     )
@@ -236,7 +258,7 @@ def revoke_all_sessions(*, user: User) -> None:
 
 
 @transaction.atomic
-def reset_password(*, challenge_id, password: str) -> None:
+def reset_password(*, challenge_id: UUID, password: str) -> None:
     challenge = _verified_challenge(
         challenge_id=challenge_id,
         purpose=OTPChallenge.Purpose.RECOVERY,
@@ -251,6 +273,76 @@ def reset_password(*, challenge_id, password: str) -> None:
     revoke_all_sessions(user=user)
     challenge.consumed_at = timezone.now()
     challenge.save(update_fields=["consumed_at"])
+
+
+@transaction.atomic
+def change_password(*, user: User, current_password: str, new_password: str) -> None:
+    """Replace a password the caller can prove they already know.
+
+    Every session ends, this one included: `02-BASELINE-DECISIONS.md` makes a password change
+    a revocation, because the reason to change a password is usually that someone else may
+    have had it. The caller signs in again with the new one.
+    """
+    locked = User.objects.select_for_update().get(pk=user.pk)
+    if not locked.check_password(current_password):
+        raise ValidationError({"currentPassword": "Current password is incorrect."})
+    if current_password == new_password:
+        raise ValidationError({"newPassword": "The new password must differ from the old one."})
+    locked.set_password(new_password)
+    locked.save(update_fields=["password", "updated_at"])
+    revoke_all_sessions(user=locked)
+
+
+@transaction.atomic
+def start_phone_change(*, user: User, phone: str) -> OTPChallenge:
+    """Send a code to the number the account is to move to.
+
+    The code goes to the *new* number, not the old one: that is what proves the caller can
+    receive on it, which is the only thing worth proving here. The account it belongs to is
+    written into the challenge so that a code sent for one person cannot be spent by another.
+    """
+    if phone == user.phone:
+        raise ValidationError({"phone": "This is already the number of this account."})
+    if User.objects.filter(phone=phone).exclude(pk=user.pk).exists():
+        raise ValidationError({"phone": "This number belongs to another account."})
+    return start_challenge(
+        phone=phone,
+        purpose=OTPChallenge.Purpose.PHONE_CHANGE,
+        metadata={"userId": str(user.pk)},
+    )
+
+
+@transaction.atomic
+def complete_phone_change(*, user: User, challenge_id: UUID, code: str) -> User:
+    """Move the account to the number whose code has just been proved.
+
+    Every session ends, this one included. The phone is how this account signs in, so
+    changing it changes the identity — and a session issued to the old identity should not
+    outlive it. This is the same rule a password change follows, for the same reason.
+    """
+    challenge = verify_challenge(
+        challenge_id=challenge_id,
+        code=code,
+        purpose=OTPChallenge.Purpose.PHONE_CHANGE,
+    )
+    # A verified code is only good for the account it was started for.
+    if challenge.metadata.get("userId") != str(user.pk):
+        raise ValidationError({"challengeId": "Invalid or expired challenge."})
+    locked = User.objects.select_for_update().get(pk=user.pk)
+    if User.objects.filter(phone=challenge.phone).exclude(pk=locked.pk).exists():
+        raise ValidationError({"phone": "This number belongs to another account."})
+    now = timezone.now()
+    locked.phone = challenge.phone
+    locked.phone_verified_at = now
+    locked.updated_at = now
+    locked.save(update_fields=["phone", "phone_verified_at", "updated_at"])
+    challenge.consumed_at = now
+    challenge.save(update_fields=["consumed_at"])
+    revoke_all_sessions(user=locked)
+    # The number itself is not recorded: an audit trail of who moved to which number is a
+    # directory of people, and this one only needs to know that it happened.
+    record_audit(actor=locked, action="account.phone.changed", target=locked)
+    return locked
 
 
 def _identity_digest(phone: str) -> str:

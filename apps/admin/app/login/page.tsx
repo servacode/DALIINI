@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { BrandMark } from "../../components/ui";
 import { LoginForm } from "../../components/auth/login-form";
 import { hasSessionCookies } from "../../lib/auth/session";
 
@@ -15,8 +16,14 @@ export default async function LoginPage() {
   return (
     <main className="login-shell">
       <section className="panel login-card">
+        <div className="login-brand">
+          <BrandMark />
+          <div className="brand-text">
+            <strong>دليني</strong>
+            <span>لوحة الإدارة</span>
+          </div>
+        </div>
         <header className="login-header">
-          <p className="eyebrow">دليل سيرفا كود</p>
           <h1>تسجيل دخول الموظفين</h1>
           <p className="muted">هذه اللوحة مخصّصة لفريق التشغيل. الوصول مقيّد بالصلاحيات.</p>
         </header>

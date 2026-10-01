@@ -20,6 +20,7 @@ import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.models.OwnerConfigCategory
 import com.servacode.directory.api.models.CategoryCapabilities
+import com.servacode.directory.api.models.NamedIntRef
 import com.servacode.directory.api.models.OwnerCategory
 import com.servacode.directory.api.models.OwnerVerificationRequirement
 
@@ -44,6 +45,18 @@ class OwnerConfigCategoryTest : ShouldSpec() {
         should("test verificationRequirements") {
             // uncomment below to test the property
             //modelInstance.verificationRequirements shouldBe ("TODO")
+        }
+
+        // to test the property `specialties` - The specialties an owner may pick, as publicCategoryTagsRetrieve lists them. Their ids are what `specialtyIds` takes.
+        should("test specialties") {
+            // uncomment below to test the property
+            //modelInstance.specialties shouldBe ("TODO")
+        }
+
+        // to test the property `services` - The services an owner may pick, as publicCategoryTagsRetrieve lists them. Their ids are what `serviceTagIds` takes.
+        should("test services") {
+            // uncomment below to test the property
+            //modelInstance.services shouldBe ("TODO")
         }
 
     }

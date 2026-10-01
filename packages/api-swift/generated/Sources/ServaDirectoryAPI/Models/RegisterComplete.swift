@@ -12,15 +12,18 @@ import AnyCodable
 
 public struct RegisterComplete: Codable, JSONEncodable, Hashable {
 
+    public static let displayNameRule = StringRule(minLength: nil, maxLength: 120, pattern: nil)
     public static let platformRule = StringRule(minLength: nil, maxLength: 32, pattern: nil)
     public static let deviceNameRule = StringRule(minLength: nil, maxLength: 120, pattern: nil)
     public var challengeId: UUID
+    public var displayName: String
     public var password: String
     public var platform: String? = "UNKNOWN"
     public var deviceName: String? = ""
 
-    public init(challengeId: UUID, password: String, platform: String? = "UNKNOWN", deviceName: String? = "") {
+    public init(challengeId: UUID, displayName: String, password: String, platform: String? = "UNKNOWN", deviceName: String? = "") {
         self.challengeId = challengeId
+        self.displayName = displayName
         self.password = password
         self.platform = platform
         self.deviceName = deviceName
@@ -28,6 +31,7 @@ public struct RegisterComplete: Codable, JSONEncodable, Hashable {
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case challengeId
+        case displayName
         case password
         case platform
         case deviceName
@@ -38,6 +42,7 @@ public struct RegisterComplete: Codable, JSONEncodable, Hashable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(challengeId, forKey: .challengeId)
+        try container.encode(displayName, forKey: .displayName)
         try container.encode(password, forKey: .password)
         try container.encodeIfPresent(platform, forKey: .platform)
         try container.encodeIfPresent(deviceName, forKey: .deviceName)

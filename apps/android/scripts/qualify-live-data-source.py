@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -12,7 +13,7 @@ def require(condition: bool, message: str) -> None:
 
 
 def read(relative: str) -> str:
-    return (ROOT / relative).read_text()
+    return (ROOT / relative).read_text(encoding="utf-8")
 
 
 def check_realtime_contract() -> None:
@@ -53,7 +54,6 @@ def check_reconnect_and_lifecycle() -> None:
 def check_rest_truth_and_offline() -> None:
     for feature, filename in (
         ("home", "HomeViewModel.kt"),
-        ("directory", "DirectoryViewModel.kt"),
         ("facility", "FacilityViewModel.kt"),
     ):
         source = read(
@@ -62,16 +62,40 @@ def check_rest_truth_and_offline() -> None:
         require("RealtimeInvalidationBus" in source, f"realtime invalidation missing: {feature}")
         require("refresh" in source, f"REST refetch path missing: {feature}")
     owner = read("feature/owner/src/main/kotlin/com/servacode/directory/feature/owner/OwnerViewModel.kt")
-    require("event.scope.type == \"user\"" in owner, "owner user-scope invalidation missing")
+    # The user-scope rule is stated once, in the shared predicate, rather than repeated in each
+    # ViewModel that needs it.
+    require("refreshesOwnerState" in owner, "owner user-scope invalidation missing")
+    predicate = read(
+        "core/network/src/main/kotlin/com/servacode/directory/core/network/RealtimeInvalidation.kt"
+    )
+    require(
+        'ScopeType.USER' in predicate or '"user"' in predicate,
+        "owner invalidation predicate must be scoped to the user",
+    )
     screens = "\n".join(
         read(path)
         for path in (
             "feature/home/src/main/kotlin/com/servacode/directory/feature/home/HomeScreen.kt",
-            "feature/directory/src/main/kotlin/com/servacode/directory/feature/directory/DirectoryScreen.kt",
             "feature/facility/src/main/kotlin/com/servacode/directory/feature/facility/FacilityScreen.kt",
         )
     )
-    require("قد تكون قديمة" in screens, "offline time-sensitive freshness warning missing")
+    # Every screen shows the same offline notice from the design system rather than writing its
+    # own sentence, so the warning is asserted where it is now written.
+    require("DirectoryOfflineNotice" in screens, "offline notice missing from the public screens")
+    notice = read(
+        "core/designsystem/src/main/kotlin/com/servacode/directory/core/designsystem/States.kt"
+    )
+    require(
+        "R.string.ds_offline" in notice,
+        "the offline notice does not read its sentence from resources",
+    )
+    # The sentence itself is in the design system's strings.xml, so that a second language is
+    # a second file rather than a search through the components.
+    words = read("core/designsystem/src/main/res/values/strings.xml")
+    require(
+        "قد لا تكون محدثة" in words,
+        "offline time-sensitive freshness warning missing",
+    )
 
 
 def check_push_boundary() -> None:
@@ -84,8 +108,23 @@ def check_push_boundary() -> None:
     )
     require("POST_NOTIFICATIONS" in manifest, "notification permission declaration missing")
     require("registerAndroidToken" in push and "deactivateAndroidToken" in push, "push token lifecycle missing")
-    require('setOf("notificationId", "type")' in push, "identifier-only push payload policy missing")
-    require("GeneratedClientRequiredException" in boundary, "push backend boundary must fail closed before P10")
+    # A push carries identifiers only: its own id and type, and the ids and day a tap needs to
+    # open the right screen. Never words: the app reads those from the inbox over REST.
+    allowed = re.search(r"val ALLOWED = setOf\(([^)]*)\)", push)
+    keys = set(re.findall(r'"([A-Za-z]+)"', allowed.group(1))) if allowed else set()
+    identifiers = {"notificationId", "type", "date", "gapDate", "provinceId", "facilityId"}
+    require({"notificationId", "type"} <= keys <= identifiers, "identifier-only push payload policy missing")
+    # P10 shipped: the boundary is implemented over the generated client, and a failure travels
+    # as the app's own error rather than as a placeholder for a client that does not exist.
+    adapter = read(
+        "core/network/src/main/kotlin/com/servacode/directory/core/network/api/"
+        "GeneratedPushRegistration.kt"
+    )
+    require("interface PushRegistrationBoundary" in boundary, "push boundary interface missing")
+    require(
+        "PushRegistrationBoundary" in adapter,
+        "push boundary must be implemented over the generated client",
+    )
     require("apiKey" not in push and "serverKey" not in push, "push provider secret marker found")
 
 
@@ -97,7 +136,7 @@ def check_tests_and_hygiene() -> None:
         "core/network/src/test/kotlin/com/servacode/directory/core/network/PushMessageDataTest.kt",
     ):
         require((ROOT / relative).exists(), f"P18 test missing: {relative}")
-    combined = "\n".join(path.read_text() for path in ROOT.rglob("*.kt"))
+    combined = "\n".join(path.read_text(encoding="utf-8") for path in ROOT.rglob("*.kt") if "build" not in path.parts)
     require("ACCESS_BACKGROUND_LOCATION" not in combined, "background location reintroduced")
     require("firebase_server_key" not in combined.lower(), "Firebase server secret marker found")
 

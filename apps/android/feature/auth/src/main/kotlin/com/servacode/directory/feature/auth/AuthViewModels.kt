@@ -3,23 +3,34 @@ package com.servacode.directory.feature.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.servacode.directory.core.datastore.DirectoryPreferencesStore
+import com.servacode.directory.core.location.fixWithoutPrompt
+import com.servacode.directory.core.location.LocationProvider
 import com.servacode.directory.core.model.AppError
-import com.servacode.directory.core.model.AppErrorText
 import com.servacode.directory.core.model.Province
 import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.network.PublicApiBoundary
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-/** What a form shows after the backend refused it: one message, and the fields at fault. */
-data class FormFailure(val message: String, val fields: Set<String> = emptySet())
+/**
+ * What a form shows after the backend refused it: the refusal, and the fields at fault.
+ *
+ * The refusal itself rather than a sentence, because the sentence belongs to the reader's
+ * language and is read from resources where the form is drawn.
+ */
+data class FormFailure(
+    val error: AppError,
+    val fields: Set<String> = emptySet(),
+    /** The backend's code, for the one or two failures a screen answers rather than states. */
+    val code: String? = null,
+)
 
-internal fun AppError.toFormFailure() = FormFailure(AppErrorText.of(this), fieldErrors.keys)
+internal fun AppError.toFormFailure() = FormFailure(this, fieldErrors.keys, code)
 
 data class LoginUiState(
     val busy: Boolean = false,
@@ -52,7 +63,6 @@ data class ChallengeUiState(
     val step: ChallengeStep = ChallengeStep.DETAILS,
     val busy: Boolean = false,
     val failure: FormFailure? = null,
-    val provinces: List<Province> = emptyList(),
     val provinceId: String? = null,
 )
 
@@ -65,6 +75,7 @@ class RegisterViewModel @Inject constructor(
     private val auth: AuthRepository,
     private val publicApi: PublicApiBoundary,
     private val preferences: DirectoryPreferencesStore,
+    private val location: LocationProvider,
 ) : ViewModel() {
     private val _state = MutableStateFlow(ChallengeUiState())
     val state: StateFlow<ChallengeUiState> = _state.asStateFlow()
@@ -72,23 +83,37 @@ class RegisterViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val selected = preferences.values.first().selectedProvinceId
             val provinces = runCatching { publicApi.provinces() }.getOrDefault(emptyList())
-            _state.value = _state.value.copy(
-                provinces = provinces,
-                provinceId = selected?.takeIf { id -> provinces.any { it.id == id } } ?: provinces.firstOrNull()?.id,
-            )
+            _state.value = _state.value.copy(provinceId = chosen(provinces))
         }
     }
 
-    fun chooseProvince(id: String) {
-        _state.value = _state.value.copy(provinceId = id)
+    /**
+     * Which province the account is opened in, decided rather than asked.
+     *
+     * In order: where the person is standing, then what this device is already browsing, then
+     * the first in the list. It is shown rather than hidden and one tap changes it — the
+     * permission may be refused, and someone registering while away from home would otherwise
+     * have their account bound silently to the wrong directory.
+     *
+     * The position is taken only if the app already has it: registration is not the moment to
+     * put a permission dialog in front of someone.
+     */
+    private suspend fun chosen(provinces: List<Province>): String? {
+        val here = location.fixWithoutPrompt()
+            ?.let { fix -> runCatching { publicApi.resolvePlace(fix.latitude, fix.longitude) }.getOrNull() }
+            ?.province
+            ?.id
+        val known = { id: String? -> id?.takeIf { candidate -> provinces.any { it.id == candidate } } }
+        return known(here)
+            ?: known(preferences.values.first().selectedProvinceId)
+            ?: provinces.firstOrNull()?.id
     }
 
-    fun start(displayName: String, phone: String) {
+    fun start(phone: String) {
         val provinceId = _state.value.provinceId ?: return
         step(ChallengeStep.CODE) {
-            auth.startRegistration(displayName, phone, provinceId).map { challengeId = it.id }
+            auth.startRegistration(phone, provinceId).map { challengeId = it.id }
         }
     }
 
@@ -97,9 +122,9 @@ class RegisterViewModel @Inject constructor(
         step(ChallengeStep.PASSWORD) { auth.verifyRegistration(id, code) }
     }
 
-    fun complete(password: String) {
+    fun complete(displayName: String, password: String) {
         val id = challengeId ?: return
-        step(ChallengeStep.DONE) { auth.completeRegistration(id, password) }
+        step(ChallengeStep.DONE) { auth.completeRegistration(id, displayName, password) }
     }
 
     private fun step(next: ChallengeStep, action: suspend () -> Result<*>) {

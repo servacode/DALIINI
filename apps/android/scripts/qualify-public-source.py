@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PUBLIC = ("home", "province", "search", "directory", "facility", "map", "account", "ratings")
+PUBLIC = ("home", "province", "search", "facility", "map", "account", "ratings")
 
 
 def require(condition: bool, message: str) -> None:
@@ -14,12 +14,12 @@ def require(condition: bool, message: str) -> None:
 
 
 def read(path: str) -> str:
-    return (ROOT / path).read_text()
+    return (ROOT / path).read_text(encoding="utf-8")
 
 
 def feature_text(name: str) -> str:
     base = ROOT / "feature" / name / "src" / "main"
-    return "\n".join(p.read_text() for p in base.rglob("*.kt"))
+    return "\n".join(p.read_text(encoding="utf-8") for p in base.rglob("*.kt") if "build" not in p.parts)
 
 
 def check_public_features() -> None:
@@ -33,19 +33,36 @@ def check_public_features() -> None:
 
 
 def check_cache_and_privacy() -> None:
-    for feature in ("home", "directory", "facility"):
+    # Features read the cache through the PublicCache interface; PublicCacheDataSource is the
+    # Room implementation behind it, which no feature names. What matters is that a public list
+    # is served from the cache before the network, and that personal data never enters it.
+    # `directory` was a second list screen nobody could reach: Home already narrows by
+    # category, and the route that opened it was never navigated to. Removed with the
+    # module, so it is no longer among the features this gate expects to find.
+    for feature in ("home", "facility"):
         source = feature_text(feature)
-        require("PublicCacheDataSource" in source, f"cache-first path missing: {feature}")
+        require("PublicCache" in source, f"cache-first path missing: {feature}")
+        require("cacheFirst(" in source, f"cache-first read missing: {feature}")
     account = feature_text("account")
     ratings = feature_text("ratings")
-    require("PublicCacheDataSource" not in account, "account must not persist profile in public Room cache")
-    require("PublicCacheDataSource" not in ratings, "ratings must not persist personal data in public Room cache")
+    require("PublicCache" not in account, "account must not persist profile in the public cache")
+    require("PublicCache" not in ratings, "ratings must not persist personal data in the public cache")
 
 
 def check_location_and_map() -> None:
     home = feature_text("home")
-    require("ACCESS_COARSE_LOCATION" in home, "coarse location request missing")
-    require("ACCESS_FINE_LOCATION" in home, "fine location request missing")
+    # Home asks through the one shared list of foreground permissions rather than naming them,
+    # so there is a single place that decides what this app may ever request.
+    require(
+        "FOREGROUND_LOCATION_PERMISSIONS" in home,
+        "home must request location through the shared foreground permission list",
+    )
+    permissions = read(
+        "core/location/src/main/kotlin/com/servacode/directory/core/location/LocationProvider.kt"
+    )
+    require("ACCESS_COARSE_LOCATION" in permissions, "coarse location request missing")
+    require("ACCESS_FINE_LOCATION" in permissions, "fine location request missing")
+    require("ACCESS_BACKGROUND_LOCATION" not in permissions, "background location forbidden")
     require("ACCESS_BACKGROUND_LOCATION" not in home, "background location forbidden")
     mapping = feature_text("map")
     require("AndroidView" in mapping and "MapView" in mapping, "MapLibre native view missing")
@@ -61,9 +78,24 @@ def check_generated_client_boundary() -> None:
     boundary = read(
         "core/network/src/main/kotlin/com/servacode/directory/core/network/PublicApiBoundary.kt"
     )
-    require("generated P10 Kotlin API client" in boundary, "P10 generated-client ownership not documented")
-    require("UnboundGeneratedPublicApi" in boundary, "fail-closed generated client placeholder missing")
-    require("GeneratedClientRequiredException" in boundary, "unbound client must fail closed")
+    require(
+        "generated P10 Kotlin" in boundary,
+        "P10 generated-client ownership not documented",
+    )
+    # Before P10 this boundary had a fail-closed placeholder because no generated client
+    # existed. One exists now, so what must hold is that the boundary is a domain interface and
+    # the generated adapter is what implements it.
+    adapter = read(
+        "core/network/src/main/kotlin/com/servacode/directory/core/network/api/GeneratedPublicApi.kt"
+    )
+    require("interface PublicApiBoundary" in boundary, "public boundary interface missing")
+    require(
+        "PublicApiBoundary" in adapter and "com.servacode.directory.api" in adapter,
+        "public boundary must be implemented over the generated client",
+    )
+    # The pre-P10 unbound client is gone: there is a generated one, and the app fails through
+    # the error envelope rather than through a placeholder exception.
+    require("AppException" in boundary, "public boundary must surface failures as AppException")
     lowered = boundary.lower()
     require("fake" not in lowered and "mock" not in lowered, "fake production data marker found")
     require("Dto" not in boundary, "hand-authored transport DTO detected")
@@ -75,7 +107,6 @@ def check_routes() -> None:
         "Home",
         "ProvincePicker",
         "Search",
-        "Directory",
         "FacilityDetailRoute",
         "Map",
         "Account",
@@ -100,7 +131,7 @@ def check_architecture() -> None:
         source = feature_text(feature)
         viewmodels = [p for p in (ROOT / "feature" / feature).rglob("*ViewModel.kt")]
         require(viewmodels, f"ViewModel source missing: {feature}")
-        vm_text = "\n".join(p.read_text() for p in viewmodels)
+        vm_text = "\n".join(p.read_text(encoding="utf-8") for p in viewmodels)
         require("UseCase" in vm_text, f"ViewModel must depend on UseCase: {feature}")
         require("PublicApiBoundary" not in vm_text, f"ViewModel bypasses UseCase/Repository: {feature}")
         if feature not in ("home",):
@@ -113,17 +144,22 @@ def check_hygiene() -> None:
         *ROOT.rglob("*.kts"),
         *ROOT.rglob("*.xml"),
     ]
+    # Gradle's own build output is not this project's source; a fresh checkout has none of it.
+    sources = [path for path in sources if "build" not in path.parts]
     provider_policy = ROOT / (
         "core/maps/src/main/kotlin/com/servacode/directory/core/maps/NavigationModels.kt"
     )
     for path in sources:
-        text = path.read_text()
+        text = path.read_text(encoding="utf-8")
         require("ACCESS_BACKGROUND_LOCATION" not in text, f"background location found: {path}")
         if path != provider_policy and "/src/test/" not in path.as_posix():
             require("demotiles.maplibre.org" not in text, f"demo tiles found: {path}")
         if path.name != "DirectoryTokens.kt":
             require(not re.search(r"#[0-9A-Fa-f]{6,8}", text), f"hardcoded UI color: {path}")
         for line_no, line in enumerate(text.splitlines(), 1):
+            # A vector path is one geometric value; wrapping it would only make it unreadable.
+            if "android:pathData" in line:
+                continue
             require(len(line) <= 120, f"line >120: {path.relative_to(ROOT)}:{line_no}")
 
 

@@ -13,53 +13,110 @@ import AnyCodable
 open class PublicDiscoveryAPI {
 
     /**
-     List publicly visible facilities in a province and category
+     Pharmacies on duty on a given day (or up to 7 days)
      
-     - parameter categoryId: (query) Category to list. Required. 
-     - parameter provinceId: (query) Province to scope the query to. 
-     - parameter bbox: (query) Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
-     - parameter cityId: (query) Optional city filter. (optional)
-     - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
-     - parameter dutyNow: (query) Pass true to keep only facilities currently on duty. (optional)
-     - parameter latitude: (query) Caller latitude in WGS84 decimal degrees. Must be sent with longitude. (optional)
-     - parameter limit: (query) Page size, maximum 100, default 30. (optional)
-     - parameter longitude: (query) Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
-     - parameter neighborhoodId: (query) Optional neighbourhood filter. (optional)
-     - parameter openNow: (query) Pass true to keep only facilities currently open. (optional)
-     - parameter search: (query) Free-text term matched against facility text. (optional)
-     - parameter serviceId: (query) Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
-     - parameter specialtyId: (query) Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
-     - returns: FacilityCursorPage
+     - parameter provinceId: (query)  
+     - parameter categoryId: (query)  (optional)
+     - parameter cityId: (query)  (optional)
+     - parameter date: (query) YYYY-MM-DD (optional)
+     - parameter days: (query) 1 to 7. (optional)
+     - returns: PublicDutyRoster
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func publicFacilitiesList(categoryId: String, provinceId: String, bbox: String? = nil, cityId: String? = nil, cursor: String? = nil, dutyNow: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil) async throws -> FacilityCursorPage {
-        return try await publicFacilitiesListWithRequestBuilder(categoryId: categoryId, provinceId: provinceId, bbox: bbox, cityId: cityId, cursor: cursor, dutyNow: dutyNow, latitude: latitude, limit: limit, longitude: longitude, neighborhoodId: neighborhoodId, openNow: openNow, search: search, serviceId: serviceId, specialtyId: specialtyId).execute().body
+    open class func publicDutyByDateList(provinceId: String, categoryId: String? = nil, cityId: String? = nil, date: String? = nil, days: Int? = nil) async throws -> PublicDutyRoster {
+        return try await publicDutyByDateListWithRequestBuilder(provinceId: provinceId, categoryId: categoryId, cityId: cityId, date: date, days: days).execute().body
     }
 
     /**
-     List publicly visible facilities in a province and category
-     - GET /api/v1/public/facilities/
-     - Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend; openNow and dutyNow filter on that computed state rather than on a stored flag.
-     - Bearer Token:
-       - type: http
-       - name: bearerAccessToken
-     - parameter categoryId: (query) Category to list. Required. 
+     Pharmacies on duty on a given day (or up to 7 days)
+     - GET /api/v1/public/duty/
+     - Days are Damascus calendar days starting at `date` (default today). A pharmacy is listed on every day one of its duty shifts overlaps. Same visibility as the public duty-now listing. Cacheable for one minute.
+     - parameter provinceId: (query)  
+     - parameter categoryId: (query)  (optional)
+     - parameter cityId: (query)  (optional)
+     - parameter date: (query) YYYY-MM-DD (optional)
+     - parameter days: (query) 1 to 7. (optional)
+     - returns: RequestBuilder<PublicDutyRoster> 
+     */
+    open class func publicDutyByDateListWithRequestBuilder(provinceId: String, categoryId: String? = nil, cityId: String? = nil, date: String? = nil, days: Int? = nil) -> RequestBuilder<PublicDutyRoster> {
+        let localVariablePath = "/api/v1/public/duty/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "categoryId": (wrappedValue: categoryId?.encodeToJSON(), isExplode: true),
+            "cityId": (wrappedValue: cityId?.encodeToJSON(), isExplode: true),
+            "date": (wrappedValue: date?.encodeToJSON(), isExplode: true),
+            "days": (wrappedValue: days?.encodeToJSON(), isExplode: true),
+            "provinceId": (wrappedValue: provinceId.encodeToJSON(), isExplode: true),
+        ])
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<PublicDutyRoster>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false)
+    }
+
+    /**
+     List publicly visible facilities in a province, optionally in one category
+     
      - parameter provinceId: (query) Province to scope the query to. 
      - parameter bbox: (query) Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
+     - parameter categoryId: (query) Optional category to list. Absent means the whole province. (optional)
      - parameter cityId: (query) Optional city filter. (optional)
      - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
-     - parameter dutyNow: (query) Pass true to keep only facilities currently on duty. (optional)
+     - parameter dutyNow: (query) Pass true to keep only facilities whose duty shift is running. (optional)
+     - parameter dutyToday: (query) Pass true to keep only facilities on today&#39;s duty roster. (optional)
      - parameter latitude: (query) Caller latitude in WGS84 decimal degrees. Must be sent with longitude. (optional)
      - parameter limit: (query) Page size, maximum 100, default 30. (optional)
      - parameter longitude: (query) Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
      - parameter neighborhoodId: (query) Optional neighbourhood filter. (optional)
-     - parameter openNow: (query) Pass true to keep only facilities currently open. (optional)
+     - parameter openNow: (query) Pass true to keep only facilities open at this moment. (optional)
      - parameter search: (query) Free-text term matched against facility text. (optional)
-     - parameter serviceId: (query) Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
-     - parameter specialtyId: (query) Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
+     - parameter serviceId: (query) The earlier name of serviceTagId, still accepted; it behaves the same way. (optional)
+     - parameter serviceTagId: (query) Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. (optional)
+     - parameter sort: (query) nearest orders by distance and needs coordinates; name orders by Arabic name. Omitted keeps the historical behaviour: nearest whenever coordinates are supplied, name otherwise. Distances are returned whenever coordinates are supplied, whichever ordering is asked for. (optional)
+     - parameter specialtyId: (query) Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. (optional)
+     - returns: FacilityCursorPage
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func publicFacilitiesList(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, cursor: String? = nil, dutyNow: String? = nil, dutyToday: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: Int? = nil, serviceTagId: Int? = nil, sort: String? = nil, specialtyId: Int? = nil) async throws -> FacilityCursorPage {
+        return try await publicFacilitiesListWithRequestBuilder(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, cursor: cursor, dutyNow: dutyNow, dutyToday: dutyToday, latitude: latitude, limit: limit, longitude: longitude, neighborhoodId: neighborhoodId, openNow: openNow, search: search, serviceId: serviceId, serviceTagId: serviceTagId, sort: sort, specialtyId: specialtyId).execute().body
+    }
+
+    /**
+     List publicly visible facilities in a province, optionally in one category
+     - GET /api/v1/public/facilities/
+     - Ordered nearest-first when coordinates are supplied, otherwise by Arabic name. Availability is computed by the backend. The filters combine: openNow and dutyToday together mean facilities that are both, which is a different question from either alone.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter provinceId: (query) Province to scope the query to. 
+     - parameter bbox: (query) Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
+     - parameter categoryId: (query) Optional category to list. Absent means the whole province. (optional)
+     - parameter cityId: (query) Optional city filter. (optional)
+     - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     - parameter dutyNow: (query) Pass true to keep only facilities whose duty shift is running. (optional)
+     - parameter dutyToday: (query) Pass true to keep only facilities on today&#39;s duty roster. (optional)
+     - parameter latitude: (query) Caller latitude in WGS84 decimal degrees. Must be sent with longitude. (optional)
+     - parameter limit: (query) Page size, maximum 100, default 30. (optional)
+     - parameter longitude: (query) Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
+     - parameter neighborhoodId: (query) Optional neighbourhood filter. (optional)
+     - parameter openNow: (query) Pass true to keep only facilities open at this moment. (optional)
+     - parameter search: (query) Free-text term matched against facility text. (optional)
+     - parameter serviceId: (query) The earlier name of serviceTagId, still accepted; it behaves the same way. (optional)
+     - parameter serviceTagId: (query) Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. (optional)
+     - parameter sort: (query) nearest orders by distance and needs coordinates; name orders by Arabic name. Omitted keeps the historical behaviour: nearest whenever coordinates are supplied, name otherwise. Distances are returned whenever coordinates are supplied, whichever ordering is asked for. (optional)
+     - parameter specialtyId: (query) Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. (optional)
      - returns: RequestBuilder<FacilityCursorPage> 
      */
-    open class func publicFacilitiesListWithRequestBuilder(categoryId: String, provinceId: String, bbox: String? = nil, cityId: String? = nil, cursor: String? = nil, dutyNow: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil) -> RequestBuilder<FacilityCursorPage> {
+    open class func publicFacilitiesListWithRequestBuilder(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, cursor: String? = nil, dutyNow: String? = nil, dutyToday: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: Int? = nil, serviceTagId: Int? = nil, sort: String? = nil, specialtyId: Int? = nil) -> RequestBuilder<FacilityCursorPage> {
         let localVariablePath = "/api/v1/public/facilities/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -67,10 +124,11 @@ open class PublicDiscoveryAPI {
         var localVariableUrlComponents = URLComponents(string: localVariableURLString)
         localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
             "bbox": (wrappedValue: bbox?.encodeToJSON(), isExplode: true),
-            "categoryId": (wrappedValue: categoryId.encodeToJSON(), isExplode: true),
+            "categoryId": (wrappedValue: categoryId?.encodeToJSON(), isExplode: true),
             "cityId": (wrappedValue: cityId?.encodeToJSON(), isExplode: true),
             "cursor": (wrappedValue: cursor?.encodeToJSON(), isExplode: true),
             "dutyNow": (wrappedValue: dutyNow?.encodeToJSON(), isExplode: true),
+            "dutyToday": (wrappedValue: dutyToday?.encodeToJSON(), isExplode: true),
             "latitude": (wrappedValue: latitude?.encodeToJSON(), isExplode: true),
             "limit": (wrappedValue: limit?.encodeToJSON(), isExplode: true),
             "longitude": (wrappedValue: longitude?.encodeToJSON(), isExplode: true),
@@ -79,6 +137,8 @@ open class PublicDiscoveryAPI {
             "provinceId": (wrappedValue: provinceId.encodeToJSON(), isExplode: true),
             "search": (wrappedValue: search?.encodeToJSON(), isExplode: true),
             "serviceId": (wrappedValue: serviceId?.encodeToJSON(), isExplode: true),
+            "serviceTagId": (wrappedValue: serviceTagId?.encodeToJSON(), isExplode: true),
+            "sort": (wrappedValue: sort?.encodeToJSON(), isExplode: true),
             "specialtyId": (wrappedValue: specialtyId?.encodeToJSON(), isExplode: true),
         ])
 
@@ -146,13 +206,14 @@ open class PublicDiscoveryAPI {
      - parameter longitude: (query) Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
      - parameter neighborhoodId: (query) Optional neighbourhood filter. (optional)
      - parameter search: (query) Free-text term matched against facility text. (optional)
-     - parameter serviceId: (query) Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
-     - parameter specialtyId: (query) Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
+     - parameter serviceId: (query) The earlier name of serviceTagId, still accepted; it behaves the same way. (optional)
+     - parameter serviceTagId: (query) Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. (optional)
+     - parameter specialtyId: (query) Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. (optional)
      - returns: PublicHome
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func publicHomeRetrieve(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, latitude: String? = nil, longitude: String? = nil, neighborhoodId: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil) async throws -> PublicHome {
-        return try await publicHomeRetrieveWithRequestBuilder(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, latitude: latitude, longitude: longitude, neighborhoodId: neighborhoodId, search: search, serviceId: serviceId, specialtyId: specialtyId).execute().body
+    open class func publicHomeRetrieve(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, latitude: String? = nil, longitude: String? = nil, neighborhoodId: String? = nil, search: String? = nil, serviceId: Int? = nil, serviceTagId: Int? = nil, specialtyId: Int? = nil) async throws -> PublicHome {
+        return try await publicHomeRetrieveWithRequestBuilder(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, latitude: latitude, longitude: longitude, neighborhoodId: neighborhoodId, search: search, serviceId: serviceId, serviceTagId: serviceTagId, specialtyId: specialtyId).execute().body
     }
 
     /**
@@ -170,11 +231,12 @@ open class PublicDiscoveryAPI {
      - parameter longitude: (query) Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
      - parameter neighborhoodId: (query) Optional neighbourhood filter. (optional)
      - parameter search: (query) Free-text term matched against facility text. (optional)
-     - parameter serviceId: (query) Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
-     - parameter specialtyId: (query) Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
+     - parameter serviceId: (query) The earlier name of serviceTagId, still accepted; it behaves the same way. (optional)
+     - parameter serviceTagId: (query) Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. (optional)
+     - parameter specialtyId: (query) Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. (optional)
      - returns: RequestBuilder<PublicHome> 
      */
-    open class func publicHomeRetrieveWithRequestBuilder(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, latitude: String? = nil, longitude: String? = nil, neighborhoodId: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil) -> RequestBuilder<PublicHome> {
+    open class func publicHomeRetrieveWithRequestBuilder(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, latitude: String? = nil, longitude: String? = nil, neighborhoodId: String? = nil, search: String? = nil, serviceId: Int? = nil, serviceTagId: Int? = nil, specialtyId: Int? = nil) -> RequestBuilder<PublicHome> {
         let localVariablePath = "/api/v1/public/home/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -190,6 +252,7 @@ open class PublicDiscoveryAPI {
             "provinceId": (wrappedValue: provinceId.encodeToJSON(), isExplode: true),
             "search": (wrappedValue: search?.encodeToJSON(), isExplode: true),
             "serviceId": (wrappedValue: serviceId?.encodeToJSON(), isExplode: true),
+            "serviceTagId": (wrappedValue: serviceTagId?.encodeToJSON(), isExplode: true),
             "specialtyId": (wrappedValue: specialtyId?.encodeToJSON(), isExplode: true),
         ])
 
@@ -211,23 +274,27 @@ open class PublicDiscoveryAPI {
      - parameter bbox: (query) Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
      - parameter categoryId: (query) Optional category filter. (optional)
      - parameter cityId: (query) Optional city filter. (optional)
+     - parameter dutyNow: (query) Pass true to keep only facilities whose duty shift is running. (optional)
+     - parameter dutyToday: (query) Pass true to keep only facilities on today&#39;s duty roster. (optional)
      - parameter latitude: (query) Caller latitude in WGS84 decimal degrees. Must be sent with longitude. (optional)
      - parameter longitude: (query) Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
      - parameter neighborhoodId: (query) Optional neighbourhood filter. (optional)
+     - parameter openNow: (query) Pass true to keep only facilities open at this moment. (optional)
      - parameter search: (query) Free-text term matched against facility text. (optional)
-     - parameter serviceId: (query) Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
-     - parameter specialtyId: (query) Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
+     - parameter serviceId: (query) The earlier name of serviceTagId, still accepted; it behaves the same way. (optional)
+     - parameter serviceTagId: (query) Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. (optional)
+     - parameter specialtyId: (query) Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. (optional)
      - returns: MapMarkerList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func publicMapFacilitiesList(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, latitude: String? = nil, longitude: String? = nil, neighborhoodId: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil) async throws -> MapMarkerList {
-        return try await publicMapFacilitiesListWithRequestBuilder(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, latitude: latitude, longitude: longitude, neighborhoodId: neighborhoodId, search: search, serviceId: serviceId, specialtyId: specialtyId).execute().body
+    open class func publicMapFacilitiesList(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, dutyNow: String? = nil, dutyToday: String? = nil, latitude: String? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: Int? = nil, serviceTagId: Int? = nil, specialtyId: Int? = nil) async throws -> MapMarkerList {
+        return try await publicMapFacilitiesListWithRequestBuilder(provinceId: provinceId, bbox: bbox, categoryId: categoryId, cityId: cityId, dutyNow: dutyNow, dutyToday: dutyToday, latitude: latitude, longitude: longitude, neighborhoodId: neighborhoodId, openNow: openNow, search: search, serviceId: serviceId, serviceTagId: serviceTagId, specialtyId: specialtyId).execute().body
     }
 
     /**
      List compact map markers inside a viewport
      - GET /api/v1/public/map/facilities/
-     - Capped at 500 markers. Facilities without coordinates are omitted.
+     - Capped at 500 markers. Facilities without coordinates are omitted. The filters behave exactly as they do on the list endpoint and combine the same way, so a map and a list asked the same question answer the same.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken
@@ -235,15 +302,19 @@ open class PublicDiscoveryAPI {
      - parameter bbox: (query) Viewport as west,south,east,north in WGS84 decimal degrees. (optional)
      - parameter categoryId: (query) Optional category filter. (optional)
      - parameter cityId: (query) Optional city filter. (optional)
+     - parameter dutyNow: (query) Pass true to keep only facilities whose duty shift is running. (optional)
+     - parameter dutyToday: (query) Pass true to keep only facilities on today&#39;s duty roster. (optional)
      - parameter latitude: (query) Caller latitude in WGS84 decimal degrees. Must be sent with longitude. (optional)
      - parameter longitude: (query) Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
      - parameter neighborhoodId: (query) Optional neighbourhood filter. (optional)
+     - parameter openNow: (query) Pass true to keep only facilities open at this moment. (optional)
      - parameter search: (query) Free-text term matched against facility text. (optional)
-     - parameter serviceId: (query) Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
-     - parameter specialtyId: (query) Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
+     - parameter serviceId: (query) The earlier name of serviceTagId, still accepted; it behaves the same way. (optional)
+     - parameter serviceTagId: (query) Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. (optional)
+     - parameter specialtyId: (query) Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. (optional)
      - returns: RequestBuilder<MapMarkerList> 
      */
-    open class func publicMapFacilitiesListWithRequestBuilder(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, latitude: String? = nil, longitude: String? = nil, neighborhoodId: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil) -> RequestBuilder<MapMarkerList> {
+    open class func publicMapFacilitiesListWithRequestBuilder(provinceId: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, dutyNow: String? = nil, dutyToday: String? = nil, latitude: String? = nil, longitude: String? = nil, neighborhoodId: String? = nil, openNow: String? = nil, search: String? = nil, serviceId: Int? = nil, serviceTagId: Int? = nil, specialtyId: Int? = nil) -> RequestBuilder<MapMarkerList> {
         let localVariablePath = "/api/v1/public/map/facilities/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -253,12 +324,16 @@ open class PublicDiscoveryAPI {
             "bbox": (wrappedValue: bbox?.encodeToJSON(), isExplode: true),
             "categoryId": (wrappedValue: categoryId?.encodeToJSON(), isExplode: true),
             "cityId": (wrappedValue: cityId?.encodeToJSON(), isExplode: true),
+            "dutyNow": (wrappedValue: dutyNow?.encodeToJSON(), isExplode: true),
+            "dutyToday": (wrappedValue: dutyToday?.encodeToJSON(), isExplode: true),
             "latitude": (wrappedValue: latitude?.encodeToJSON(), isExplode: true),
             "longitude": (wrappedValue: longitude?.encodeToJSON(), isExplode: true),
             "neighborhoodId": (wrappedValue: neighborhoodId?.encodeToJSON(), isExplode: true),
+            "openNow": (wrappedValue: openNow?.encodeToJSON(), isExplode: true),
             "provinceId": (wrappedValue: provinceId.encodeToJSON(), isExplode: true),
             "search": (wrappedValue: search?.encodeToJSON(), isExplode: true),
             "serviceId": (wrappedValue: serviceId?.encodeToJSON(), isExplode: true),
+            "serviceTagId": (wrappedValue: serviceTagId?.encodeToJSON(), isExplode: true),
             "specialtyId": (wrappedValue: specialtyId?.encodeToJSON(), isExplode: true),
         ])
 
@@ -287,13 +362,14 @@ open class PublicDiscoveryAPI {
      - parameter longitude: (query) Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
      - parameter neighborhoodId: (query) Optional neighbourhood filter. (optional)
      - parameter search: (query) Free-text term matched against facility text. (optional)
-     - parameter serviceId: (query) Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
-     - parameter specialtyId: (query) Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
+     - parameter serviceId: (query) The earlier name of serviceTagId, still accepted; it behaves the same way. (optional)
+     - parameter serviceTagId: (query) Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. (optional)
+     - parameter specialtyId: (query) Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. (optional)
      - returns: FacilityCursorPage
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func publicSearchList(provinceId: String, q: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, cursor: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil) async throws -> FacilityCursorPage {
-        return try await publicSearchListWithRequestBuilder(provinceId: provinceId, q: q, bbox: bbox, categoryId: categoryId, cityId: cityId, cursor: cursor, latitude: latitude, limit: limit, longitude: longitude, neighborhoodId: neighborhoodId, search: search, serviceId: serviceId, specialtyId: specialtyId).execute().body
+    open class func publicSearchList(provinceId: String, q: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, cursor: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, search: String? = nil, serviceId: Int? = nil, serviceTagId: Int? = nil, specialtyId: Int? = nil) async throws -> FacilityCursorPage {
+        return try await publicSearchListWithRequestBuilder(provinceId: provinceId, q: q, bbox: bbox, categoryId: categoryId, cityId: cityId, cursor: cursor, latitude: latitude, limit: limit, longitude: longitude, neighborhoodId: neighborhoodId, search: search, serviceId: serviceId, serviceTagId: serviceTagId, specialtyId: specialtyId).execute().body
     }
 
     /**
@@ -313,11 +389,12 @@ open class PublicDiscoveryAPI {
      - parameter longitude: (query) Caller longitude in WGS84 decimal degrees. Must be sent with latitude. (optional)
      - parameter neighborhoodId: (query) Optional neighbourhood filter. (optional)
      - parameter search: (query) Free-text term matched against facility text. (optional)
-     - parameter serviceId: (query) Optional service-tag filter; only meaningful when the category declares serviceFilter. (optional)
-     - parameter specialtyId: (query) Optional specialty filter; only meaningful when the category declares specialtyFilter. (optional)
+     - parameter serviceId: (query) The earlier name of serviceTagId, still accepted; it behaves the same way. (optional)
+     - parameter serviceTagId: (query) Optional service filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares serviceFilter can match. Anything but a positive whole number is refused with 400. (optional)
+     - parameter specialtyId: (query) Optional specialty filter, an id from publicCategoryTagsRetrieve. Only facilities whose category declares specialtyFilter can match. Anything but a positive whole number is refused with 400. (optional)
      - returns: RequestBuilder<FacilityCursorPage> 
      */
-    open class func publicSearchListWithRequestBuilder(provinceId: String, q: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, cursor: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, search: String? = nil, serviceId: String? = nil, specialtyId: String? = nil) -> RequestBuilder<FacilityCursorPage> {
+    open class func publicSearchListWithRequestBuilder(provinceId: String, q: String, bbox: String? = nil, categoryId: String? = nil, cityId: String? = nil, cursor: String? = nil, latitude: String? = nil, limit: Int? = nil, longitude: String? = nil, neighborhoodId: String? = nil, search: String? = nil, serviceId: Int? = nil, serviceTagId: Int? = nil, specialtyId: Int? = nil) -> RequestBuilder<FacilityCursorPage> {
         let localVariablePath = "/api/v1/public/search/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -336,6 +413,7 @@ open class PublicDiscoveryAPI {
             "q": (wrappedValue: q.encodeToJSON(), isExplode: true),
             "search": (wrappedValue: search?.encodeToJSON(), isExplode: true),
             "serviceId": (wrappedValue: serviceId?.encodeToJSON(), isExplode: true),
+            "serviceTagId": (wrappedValue: serviceTagId?.encodeToJSON(), isExplode: true),
             "specialtyId": (wrappedValue: specialtyId?.encodeToJSON(), isExplode: true),
         ])
 

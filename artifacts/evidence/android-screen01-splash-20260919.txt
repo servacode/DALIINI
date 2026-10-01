@@ -1,0 +1,57 @@
+UI/UX REDESIGN — SCREEN 01 — SPLASH — DEVICE REVIEW — 2026-09-19/20
+Device: Samsung Galaxy A52 (SM-A525F), Android 14, One UI 6.1, three-button navigation;
+wireless debugging; local stack; the app signed in as the fixture owner, province Raqqa.
+Capture: screencap and a 30 fps screen recording decoded frame by frame. Every saved frame is
+scrubbed first (status bar icons removed, the notification band painted over when it holds dark
+text); each recording is deleted once decoded. Temporary device files live in /data/local/tmp,
+outside the media library.
+
+BEFORE (installed build bd05995f, commit c1c6c68)
+  System splash: Android's default placeholder icon (the app has no icon of its own) on
+  #FAFAFA, status bar #FAFAFA, for about 1.6 s. No brand, no name.
+  Then the app's bootstrap screen: an empty window with a Material spinner, and the status bar
+  switching to grey #757575 (the flash), then Home.
+  Both a system splash and a Compose screen, unrelated to each other: no SplashScreen API, no
+  splash attributes. Animation: the spinner only.
+
+AFTER (commit 41f7c2f, APK 3b346c2f71d62a6995639c8278726792b9ef008b62182de735eb9e8683422778,
+certificate 21e9ff5c409a14cec929bb078d53625f4e3142ef1bb027337360e9e6d5b62caa)
+  adb install -r: Success, no uninstall; firstInstallTime unchanged (2026-09-19 13:39:06);
+  location permission kept; still signed in (مالك الجوال); province still Raqqa.        PASS
+  Cold start, recorded at 30 fps from 0.35 s after launch:
+    0.00-0.93 s  system splash: white #FFFFFF, status bar #FFFFFF with dark icons, the brand
+                 mark at the window's centre (pin 174 x 246 px, centre 539,1199)
+    0.93 s       the app's splash takes over: the same mark in the same place and size
+                 (pin 176 x 248 px, centre 540,1200: anti-aliasing only), with the name, the
+                 tagline, the footer and the soft shapes fading in
+    1.13-1.50 s  fade to Home; at 1.80 s the status bar takes Home's own grey (#747474)
+    lowest mean brightness of any frame 227 (Home): no black frame, no colour flash    PASS
+  Warm start: the splash is already handing over 0.35 s after launch, the bar turns grey at
+  0.47 s, no dark frame.                                                                 PASS
+  Start-up, am start -W TotalTime, 5 cold and 5 warm alternating, measured in one session
+  against the previous build reinstalled for the comparison:
+    previous build  cold 1488 ms median (1475-1519), warm 213 ms median (203-238)
+    this build      cold 1512 ms median (1497-1537), warm 219 ms median (199-244)      PASS
+  Choreographer skipped 32-50 frames around a launch, as it did on the previous build.
+  App log (uid only): no FATAL, AndroidRuntime or ANR; StrictMode reported nothing.       PASS
+
+HOW LONG THE BRANDED COMPOSITION IS READABLE
+  The name and the tagline fade in over 250 ms and the hand-over to Home starts about 200 ms
+  later, so they are seen mid-fade rather than at full strength; most of the start is the
+  system splash showing the mark alone. Holding the splash longer would mean delaying the
+  start, which this batch forbids, so nothing holds it.
+
+FOUND AND FIXED ON THE DEVICE DURING THE REVIEW
+  1. The system splash was plain white. Android 12+ scales a splash icon without a background
+     into its own box, and a fixed 84 dp inset left nothing to draw. Now one vector with its
+     margin inside it.
+  2. The system splash drew white status icons on its white background. The launch theme now
+     asks for dark status and navigation bar icons.
+  3. The mark was 11 % larger on the system splash (pin 196 against 176 px). The canvas is now
+     288 units, the box Android uses (measured about 285 dp), with the mark in the middle 120,
+     so both draw it at 120 dp.
+  4. The splash cost start-up time: cold 1594 ms against the previous build's 1488, warm 292
+     against 213. Its first frame built everything it shows, invisible at that point, and the
+     backdrop redrew on every frame of the fade. The first frame now holds only the background
+     and the mark; the rest joins on the next frame. Start-up is back to parity, as measured
+     above.

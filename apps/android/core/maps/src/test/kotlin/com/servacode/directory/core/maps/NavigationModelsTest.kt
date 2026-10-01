@@ -35,4 +35,44 @@ class NavigationModelsTest {
             ProviderEndpointPolicy.requireConfiguredHttps("https://router.project-osrm.org/")
         }
     }
+
+    @Test
+    fun `provider policy allows a routing engine on this machine`() {
+        // The engine we host ourselves is reached over the loopback in development, where
+        // there is no certificate to present and nothing in flight leaves the machine.
+        listOf(
+            "http://localhost:8002/",
+            "http://127.0.0.1:8002/",
+            "http://10.0.2.2:8002/",
+        ).forEach { assertEquals(it, ProviderEndpointPolicy.requireConfiguredHttps(it)) }
+    }
+
+    @Test
+    fun `the loopback allowance does not open the door to anywhere else`() {
+        listOf(
+            "http://routing.example.test/",
+            "http://192.168.1.10:8002/",
+            "http://localhost.example.test/",
+        ).forEach {
+            assertThrows(ProviderConfigurationException::class.java) {
+                ProviderEndpointPolicy.requireConfiguredHttps(it)
+            }
+        }
+    }
+
+    @Test
+    fun `a placeholder endpoint is refused whatever its scheme`() {
+        assertThrows(ProviderConfigurationException::class.java) {
+            ProviderEndpointPolicy.requireConfiguredHttps("https://<ROUTING_PROVIDER_HOST>/")
+        }
+    }
+
+    @Test
+    fun `every travel mode OSRM cannot tell apart still reaches it as a road profile`() {
+        // OSRM compiles one profile into its graph and has no motorcycle at all, so the legacy
+        // adapter reads the same network as a car. Valhalla is what makes the three distinct.
+        assertEquals("driving", RoutingProfile.DRIVING.wireName)
+        assertEquals("walking", RoutingProfile.WALKING.wireName)
+        assertEquals("driving", RoutingProfile.MOTORCYCLE.wireName)
+    }
 }

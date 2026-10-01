@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What this module says. Here rather than in Kotlin so that a second language is a
+     second file beside this one and the phone's own setting chooses between them. -->
+<resources>
+    <string name="ratings_title">تقييماتي</string>
+    <string name="ratings_error">تعذر تحميل تقييماتك</string>
+    <string name="ratings_empty">لا توجد تقييمات</string>
+    <string name="ratings_empty_body">قيّم منشأة من صفحتها وستظهر هنا.</string>
+    <string name="ratings_delete">حذف التقييم</string>
+    <!-- %1$d is how many stars, out of five. -->
+    <string name="ratings_star_label">%1$d من 5</string>
+</resources>

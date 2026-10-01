@@ -1,7 +1,10 @@
 package com.servacode.directory.feature.owner
 
+import com.servacode.directory.core.model.HoursConfirmation
+import com.servacode.directory.core.model.OwnerFacilityInsights
 import com.servacode.directory.core.model.FacilityMember
 import com.servacode.directory.core.model.FacilityMemberRole
+import com.servacode.directory.core.model.OwnerConfig
 import com.servacode.directory.core.model.OwnerFacilityDetail
 import com.servacode.directory.core.model.OwnerFacilitySummary
 import com.servacode.directory.core.model.TemporaryClosure
@@ -17,8 +20,17 @@ class OwnerRepository @Inject constructor(
 
     suspend fun facility(id: String): Result<OwnerFacilityDetail> = runCatching { api.facility(id) }
 
+    /** What owners may do in [provinceId]: its categories open to them, and what each lets them pick. */
+    suspend fun config(provinceId: String): Result<OwnerConfig> = runCatching { api.ownerConfig(provinceId) }
+
     suspend fun patch(id: String, patch: OwnerFacilityPatch): Result<OwnerFacilityDetail> =
         runCatching { api.patchFacility(id, patch) }
+
+    /** "Our hours are still right": one tap, recorded by the backend as `hoursConfirmedAt`. */
+    suspend fun confirmHours(id: String): Result<HoursConfirmation> = runCatching { api.confirmHours(id) }
+
+    /** Views, calls and directions over the backend's window. Never cached: it is the owner's. */
+    suspend fun insights(id: String): Result<OwnerFacilityInsights> = runCatching { api.insights(id) }
     suspend fun closures(id: String): Result<List<TemporaryClosure>> =
         runCatching { api.temporaryClosures(id) }
     suspend fun createClosure(

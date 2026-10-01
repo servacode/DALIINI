@@ -8,16 +8,34 @@ session that registered it, so it stops receiving pushes when that session ends.
 from typing import Any
 
 from drf_spectacular.utils import extend_schema
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.openapi import VALIDATION_400, protected
+from accounts.authentication import AuthenticatedRequest
+from core.openapi import NOT_FOUND_404, VALIDATION_400, protected
+from core.pagination import CursorPage
+from core.throttles import PushTokenThrottle
+from search.views import PAGE_PARAMS
 from sessions.models import UserSession
 
-from .schemas import PushTokenRegisterSerializer, PushTokenSerializer
-from .services import deactivate_push_token, register_push_token
+from .models import Notification
+from .presenters import notification_payload
+from .schemas import (
+    NotificationPageSerializer,
+    PushTokenRegisterSerializer,
+    PushTokenSerializer,
+    UnreadCountSerializer,
+)
+from .services import (
+    deactivate_push_token,
+    mark_all_notifications_read,
+    mark_notification_read,
+    register_push_token,
+    unread_notification_count,
+)
 
 
 def _session(request: Request) -> UserSession | None:
@@ -30,6 +48,7 @@ def _session(request: Request) -> UserSession | None:
 
 
 class PushTokenView(APIView):
+    throttle_classes = [PushTokenThrottle]
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
@@ -43,7 +62,7 @@ class PushTokenView(APIView):
         request=PushTokenRegisterSerializer,
         responses={204: None, 400: VALIDATION_400, **protected()},
     )
-    def put(self, request: Request) -> Response:
+    def put(self, request: AuthenticatedRequest) -> Response:
         serializer = PushTokenRegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         register_push_token(
@@ -66,8 +85,87 @@ class PushTokenUnregisterView(APIView):
         request=PushTokenSerializer,
         responses={204: None, 400: VALIDATION_400, **protected()},
     )
-    def post(self, request: Request) -> Response:
+    def post(self, request: AuthenticatedRequest) -> Response:
         serializer = PushTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         deactivate_push_token(user=request.user, token=serializer.validated_data["token"])
         return Response(status=204)
+
+
+class NotificationCursorPagination(CursorPage):
+    """The inbox, newest first, with the id keeping the ordering total."""
+
+    ordering = ("-created_at", "id")
+
+
+class NotificationsView(APIView):
+    """The account's own inbox.
+
+    Every message the platform has sent this account is here whether or not a push ever
+    reached the device, which is what makes the inbox the record and the push only an
+    announcement.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="accountNotificationsList",
+        tags=["Account"],
+        summary="List the caller's notifications, newest first",
+        parameters=PAGE_PARAMS,
+        responses={200: NotificationPageSerializer, **protected()},
+    )
+    def get(self, request: AuthenticatedRequest) -> Response:
+        inbox = Notification.objects.filter(user=request.user).order_by("-created_at", "id")
+        paginator = NotificationCursorPagination()
+        page = paginator.paginate_queryset(inbox, request, view=self) or []
+        body = paginator.get_paginated_payload([notification_payload(row) for row in page])
+        body["unreadCount"] = unread_notification_count(user=request.user)
+        return Response(body)
+
+
+class NotificationsUnreadCountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="accountNotificationsUnreadCount",
+        tags=["Account"],
+        summary="How many of the caller's notifications are unread",
+        responses={200: UnreadCountSerializer, **protected()},
+    )
+    def get(self, request: AuthenticatedRequest) -> Response:
+        return Response({"unreadCount": unread_notification_count(user=request.user)})
+
+
+class NotificationReadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="accountNotificationMarkRead",
+        tags=["Account"],
+        summary="Mark one notification as read",
+        description="Idempotent: a message that was already read keeps the time it was read.",
+        request=None,
+        responses={200: UnreadCountSerializer, **protected(), 404: NOT_FOUND_404},
+    )
+    def post(self, request: AuthenticatedRequest, notification_id: str) -> Response:
+        try:
+            mark_notification_read(user=request.user, notification_id=notification_id)
+        except Notification.DoesNotExist:
+            raise NotFound() from None
+        return Response({"unreadCount": unread_notification_count(user=request.user)})
+
+
+class NotificationsReadAllView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="accountNotificationsMarkAllRead",
+        tags=["Account"],
+        summary="Mark every unread notification as read",
+        request=None,
+        responses={200: UnreadCountSerializer, **protected()},
+    )
+    def post(self, request: AuthenticatedRequest) -> Response:
+        mark_all_notifications_read(user=request.user)
+        return Response({"unreadCount": 0})

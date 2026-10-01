@@ -1,9 +1,14 @@
 package com.servacode.directory.core.testing
 
+import com.servacode.directory.core.model.EmergencyNumber
+import com.servacode.directory.core.model.DutyDay
+import com.servacode.directory.core.model.FacilityReportReason
 import com.servacode.directory.core.database.PublicCache
 import com.servacode.directory.core.datastore.DirectoryPreferences
 import com.servacode.directory.core.datastore.DirectoryPreferencesStore
 import com.servacode.directory.core.datastore.LocationPreference
+import com.servacode.directory.core.datastore.NotificationPreferences
+import com.servacode.directory.core.datastore.ThemePreference
 import com.servacode.directory.core.location.LocationFix
 import com.servacode.directory.core.location.LocationProvider
 import com.servacode.directory.core.location.LocationResult
@@ -11,14 +16,21 @@ import com.servacode.directory.core.model.AccountProfile
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.AppException
 import com.servacode.directory.core.model.Category
+import com.servacode.directory.core.model.CategoryTags
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.FacilitySummary
+import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.HomeSnapshot
 import com.servacode.directory.core.model.Page
 import com.servacode.directory.core.model.Province
 import com.servacode.directory.core.model.PublicMapFacility
 import com.servacode.directory.core.model.UserRating
 import com.servacode.directory.core.network.DirectoryQuery
+import com.servacode.directory.core.model.InboxPage
+import com.servacode.directory.core.model.LegalPage
+import com.servacode.directory.core.model.LegalPageKey
+import com.servacode.directory.core.model.ResolvedPlace
+import com.servacode.directory.core.network.OwnerUploadPayload
 import com.servacode.directory.core.network.PublicApiBoundary
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -67,10 +79,30 @@ class FakePublicCache : PublicCache {
         writes += "facility:${value.summary.id}"
         details[value.summary.id] = value
     }
+
+    val tags = mutableMapOf<String, CategoryTags>()
+
+    override suspend fun categoryTags(categoryId: String): CategoryTags? = tags[categoryId]
+    override suspend fun putCategoryTags(value: CategoryTags, categoryId: String, provinceId: String) {
+        writes += "tags:$categoryId"
+        tags[categoryId] = value
+    }
 }
 
-class FakePreferences(selectedProvinceId: String? = null) : DirectoryPreferencesStore {
-    private val state = MutableStateFlow(DirectoryPreferences(selectedProvinceId = selectedProvinceId))
+class FakePreferences(
+    selectedProvinceId: String? = null,
+    welcomeCompleted: Boolean = false,
+    placeLabel: String? = null,
+    placeProvinceId: String? = null,
+) : DirectoryPreferencesStore {
+    private val state = MutableStateFlow(
+        DirectoryPreferences(
+            selectedProvinceId = selectedProvinceId,
+            welcomeCompleted = welcomeCompleted,
+            placeLabel = placeLabel,
+            placeProvinceId = placeProvinceId,
+        ),
+    )
     override val values: Flow<DirectoryPreferences> = state
 
     override suspend fun selectProvince(id: String) {
@@ -79,6 +111,34 @@ class FakePreferences(selectedProvinceId: String? = null) : DirectoryPreferences
 
     override suspend fun setLocationPreference(value: LocationPreference) {
         state.value = state.value.copy(locationPreference = value)
+    }
+
+    override suspend fun setWelcomeCompleted() {
+        state.value = state.value.copy(welcomeCompleted = true)
+    }
+
+    override suspend fun rememberPlace(label: String, provinceId: String?) {
+        state.value = state.value.copy(placeLabel = label, placeProvinceId = provinceId)
+    }
+
+    override suspend fun setOfflineMapDeclined(value: Boolean) {
+        state.value = state.value.copy(offlineMapDeclined = value)
+    }
+
+    override suspend fun setThemePreference(value: ThemePreference) {
+        state.value = state.value.copy(themePreference = value)
+    }
+
+    override suspend fun setNotificationPreferences(value: NotificationPreferences) {
+        state.value = state.value.copy(notifications = value)
+    }
+
+    override suspend fun setDataSaver(enabled: Boolean) {
+        state.value = state.value.copy(dataSaver = enabled)
+    }
+
+    override suspend fun setDataSaverSuggested() {
+        state.value = state.value.copy(dataSaverSuggested = true)
     }
 }
 
@@ -114,6 +174,10 @@ val offline = AppException(AppError(AppError.Kind.OFFLINE))
 class ScriptedPublicApi : PublicApiBoundary {
     var provincesAnswer: () -> List<Province> = { throw offline }
     var homeAnswer: (Province) -> HomeSnapshot = { throw offline }
+    var adsAnswer: (String) -> List<HomeAd> = { throw offline }
+    var emergencyAnswer: (String?) -> List<EmergencyNumber> = { throw offline }
+    var rosterAnswer: (String, String?, Int) -> List<DutyDay> = { _, _, _ -> throw offline }
+    var reportAnswer: (String, FacilityReportReason, String?) -> Unit = { _, _, _ -> throw offline }
     var directoryAnswer: (DirectoryQuery, String?) -> Page<FacilitySummary> = { _, _ -> throw offline }
     var searchAnswer: (String, String?) -> Page<FacilitySummary> = { _, _ -> throw offline }
     var facilityAnswer: (String) -> FacilityDetail = { throw offline }
@@ -123,9 +187,37 @@ class ScriptedPublicApi : PublicApiBoundary {
 
     override suspend fun provinces(): List<Province> = provincesAnswer().also { calls += "provinces" }
     override suspend fun categories(provinceId: String): List<Category> = throw offline
+
+    var tagsAnswer: (String) -> CategoryTags = { throw offline }
+
+    override suspend fun categoryTags(categoryId: String): CategoryTags {
+        calls += "tags:$categoryId"
+        return tagsAnswer(categoryId)
+    }
+
     override suspend fun home(province: Province, latitude: Double?, longitude: Double?): HomeSnapshot {
         calls += "home:${province.id}:$latitude:$longitude"
         return homeAnswer(province)
+    }
+
+    override suspend fun reportFacility(facilityId: String, reason: FacilityReportReason, note: String?) {
+        calls += "report:$facilityId:$reason:${note.orEmpty()}"
+        reportAnswer(facilityId, reason, note)
+    }
+
+    override suspend fun emergencyNumbers(provinceId: String?): List<EmergencyNumber> {
+        calls += "emergency:$provinceId"
+        return emergencyAnswer(provinceId)
+    }
+
+    override suspend fun dutyRoster(provinceId: String, date: String?, days: Int): List<DutyDay> {
+        calls += "roster:$provinceId:$date:$days"
+        return rosterAnswer(provinceId, date, days)
+    }
+
+    override suspend fun ads(provinceId: String): List<HomeAd> {
+        calls += "ads:$provinceId"
+        return adsAnswer(provinceId)
     }
 
     override suspend fun search(
@@ -144,17 +236,34 @@ class ScriptedPublicApi : PublicApiBoundary {
         return directoryAnswer(query, cursor)
     }
 
+    var mapAnswer: (String?, Boolean, Boolean) -> List<PublicMapFacility> = { _, _, _ -> throw offline }
+
     override suspend fun mapFacilities(
         provinceId: String,
         west: Double,
         south: Double,
         east: Double,
         north: Double,
-    ): List<PublicMapFacility> = throw offline
+        categoryId: String?,
+        openNow: Boolean,
+        dutyNow: Boolean,
+    ): List<PublicMapFacility> {
+        calls += "map:$categoryId:$openNow:$dutyNow"
+        return mapAnswer(categoryId, openNow, dutyNow)
+    }
 
     override suspend fun facility(id: String): FacilityDetail = facilityAnswer(id).also { calls += "facility:$id" }
     override suspend fun profile(): AccountProfile = throw offline
-    override suspend fun updateProfile(displayName: String?, provinceId: String?): AccountProfile = throw offline
+    override suspend fun updateProfile(
+        displayName: String?,
+        provinceId: String?,
+        address: String?,
+    ): AccountProfile = throw offline
+
+    override suspend fun updateProfileImage(payload: OwnerUploadPayload): AccountProfile = throw offline
+    override suspend fun removeProfileImage(): AccountProfile = throw offline
+    override suspend fun startPhoneChange(phone: String): String = throw offline
+    override suspend fun confirmPhoneChange(challengeId: String, code: String): AccountProfile = throw offline
     override suspend fun requestAccountDeletion() = throw offline
     override suspend fun ratings(): List<UserRating> = ratingsAnswer().also { calls += "ratings" }
     override suspend fun upsertRating(facilityId: String, stars: Int): Int {
@@ -164,5 +273,68 @@ class ScriptedPublicApi : PublicApiBoundary {
 
     override suspend fun deleteRating(facilityId: String) {
         calls += "unrate:$facilityId"
+    }
+
+    var placeAnswer: (Double, Double) -> ResolvedPlace = { _, _ -> throw offline }
+    var favoritesAnswer: (String?) -> Page<FacilitySummary> = { throw offline }
+    var inboxAnswer: (String?) -> InboxPage = { throw offline }
+    var legalPagesAnswer: () -> List<LegalPage> = { throw offline }
+    var legalPageAnswer: (LegalPageKey) -> LegalPage = { throw offline }
+
+    /** What the fake has been told to save, so a test can assert the round trip. */
+    val saved = mutableSetOf<String>()
+    var unreadCount: Int = 0
+
+    override suspend fun resolvePlace(latitude: Double, longitude: Double): ResolvedPlace {
+        calls += "resolve:$latitude:$longitude"
+        return placeAnswer(latitude, longitude)
+    }
+
+    override suspend fun favorites(cursor: String?): Page<FacilitySummary> {
+        calls += "favorites:$cursor"
+        return favoritesAnswer(cursor)
+    }
+
+    override suspend fun addFavorite(facilityId: String): Boolean {
+        calls += "save:$facilityId"
+        saved += facilityId
+        return true
+    }
+
+    override suspend fun removeFavorite(facilityId: String): Boolean {
+        calls += "unsave:$facilityId"
+        saved -= facilityId
+        return false
+    }
+
+    override suspend fun inbox(cursor: String?): InboxPage {
+        calls += "inbox:$cursor"
+        return inboxAnswer(cursor)
+    }
+
+    override suspend fun unreadMessageCount(): Int {
+        calls += "unread"
+        return unreadCount
+    }
+
+    override suspend fun markMessageRead(messageId: String): Int {
+        calls += "read:$messageId"
+        unreadCount = (unreadCount - 1).coerceAtLeast(0)
+        return unreadCount
+    }
+
+    override suspend fun markAllMessagesRead() {
+        calls += "read-all"
+        unreadCount = 0
+    }
+
+    override suspend fun legalPages(): List<LegalPage> = legalPagesAnswer().also { calls += "legal" }
+
+    override suspend fun legalPage(key: LegalPageKey): LegalPage =
+        legalPageAnswer(key).also { calls += "legal:$key" }
+
+    override suspend fun changePassword(currentPassword: String, newPassword: String) {
+        // The words themselves are never recorded, here or anywhere else.
+        calls += "password-change"
     }
 }

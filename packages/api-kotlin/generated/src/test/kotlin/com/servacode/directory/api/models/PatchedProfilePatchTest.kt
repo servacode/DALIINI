@@ -37,5 +37,11 @@ class PatchedProfilePatchTest : ShouldSpec() {
             //modelInstance.provinceId shouldBe ("TODO")
         }
 
+        // to test the property `address`
+        should("test address") {
+            // uncomment below to test the property
+            //modelInstance.address shouldBe ("TODO")
+        }
+
     }
 }

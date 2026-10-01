@@ -45,7 +45,13 @@ class ApiEnvironmentTest {
     }
 
     @Test fun `placeholders, cleartext and queries are refused`() {
-        for (value in listOf("https://api.<ROOT_DOMAIN>/", "", "http://api.example.test/", "https://api.example.test/?x=1")) {
+        val values = listOf(
+            "https://api.<ROOT_DOMAIN>/",
+            "",
+            "http://api.example.test/",
+            "https://api.example.test/?x=1",
+        )
+        for (value in values) {
             assertThrows(value, ApiNotConfiguredException::class.java) {
                 ApiEnvironment(value).requireConfiguredBaseUrl()
             }

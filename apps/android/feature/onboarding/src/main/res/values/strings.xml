@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What this module says. Here rather than in Kotlin so that a second language is a
+     second file beside this one, and the phone's own setting chooses between them. -->
+<resources>
+    <string name="onboarding_title">إضافة / تعديل منشأة</string>
+
+    <!-- The three phases the steps are grouped into, shown as an indicator. -->
+    <string-array name="onboarding_phases">
+        <item>المنشأة</item>
+        <item>الإثباتات</item>
+        <item>المراجعة</item>
+    </string-array>
+
+    <string name="onboarding_province_required">اختر المحافظة قبل إضافة منشأة</string>
+    <string name="onboarding_province_choose">اختيار المحافظة</string>
+    <string name="onboarding_config_error">تعذر تحميل إعدادات التسجيل</string>
+    <string name="onboarding_config_error_body">أعد المحاولة بعد قليل.</string>
+    <string name="onboarding_name_ar">اسم المنشأة</string>
+    <string name="onboarding_name_en">الاسم بالإنكليزية - اختياري</string>
+    <string name="onboarding_description">الوصف</string>
+    <string name="onboarding_phone">الهاتف</string>
+    <string name="onboarding_phone_invalid">رقم الهاتف غير صالح.</string>
+    <string name="onboarding_whatsapp">واتساب - اختياري</string>
+    <string name="onboarding_whatsapp_hint">09XXXXXXXX</string>
+    <string name="onboarding_whatsapp_invalid">أدخل رقم جوال سوري صالحاً، مثل 0933123456، أو اترك الحقل فارغاً.</string>
+    <string name="onboarding_address">العنوان</string>
+    <string name="onboarding_map_note">حدد نقطة المنشأة على الخريطة أو استخدم موقعك الحالي.</string>
+    <string name="onboarding_map_waiting">جارٍ تجهيز الخريطة…</string>
+    <string name="onboarding_map_save">حفظ هذا الموقع</string>
+    <string name="onboarding_map_current">استخدام موقعي الحالي</string>
+    <string name="onboarding_map_not_configured">يجب ضبط مزود خرائط الإنتاج لاختيار النقطة من الخريطة</string>
+    <string name="onboarding_hours_note">يمكن إضافة أكثر من فترة في اليوم. إذا كان وقت الإغلاق قبل وقت الفتح فالفترة
+        تمتد بعد منتصف الليل.</string>
+    <string name="onboarding_hours_save">حفظ الساعات والمتابعة</string>
+    <string name="onboarding_opens_at">يفتح HH:mm</string>
+    <string name="onboarding_closes_at">يغلق HH:mm</string>
+    <string name="onboarding_span_add">إضافة فترة</string>
+    <string name="onboarding_span_remove">حذف الفترة</string>
+    <string name="onboarding_images_note">هذه الصور تظهر للجميع في صفحة المنشأة.</string>
+    <string name="onboarding_images_pick">اختيار صورة</string>
+    <string name="onboarding_specialized_note">الحقول المتخصصة تُعرض حسب إمكانيات التصنيف.</string>
+    <string name="onboarding_evidence_note">الإثباتات خاصة بالمراجعة ولا تظهر في صفحة المنشأة.</string>
+    <string name="onboarding_evidence_upload">رفع ملف</string>
+    <string name="onboarding_required">مطلوب</string>
+    <string name="onboarding_optional">اختياري</string>
+    <string name="onboarding_review_note">الإرسال يعيد التحقق من سياسة التسجيل والإثباتات الحالية.</string>
+    <string name="onboarding_rejection">سبب الرفض</string>
+    <string name="onboarding_submitting">جارٍ الإرسال…</string>
+    <string name="onboarding_next">التالي</string>
+    <string name="onboarding_to_review">مراجعة الطلب</string>
+    <string name="onboarding_submit">إرسال للمراجعة</string>
+    <string name="onboarding_back_to_facilities">العودة إلى منشآتي</string>
+
+    <!-- A point on the map, as coordinates: saved, or only marked so far. -->
+    <string name="onboarding_saved_point">الموقع المحفوظ: %1$s، %2$s</string>
+    <string name="onboarding_marked_point">النقطة المختارة: %1$s، %2$s</string>
+
+    <!-- Where the owner is in the form. -->
+    <string name="onboarding_step_province_category">المحافظة والتصنيف</string>
+    <string name="onboarding_step_basic_info">البيانات الأساسية</string>
+    <string name="onboarding_step_map_point">الموقع</string>
+    <string name="onboarding_step_hours">ساعات العمل</string>
+    <string name="onboarding_step_public_images">الصور العامة</string>
+    <string name="onboarding_step_specialized_fields">الحقول المتخصصة</string>
+    <string name="onboarding_step_verification_evidence">إثباتات التحقق</string>
+    <string name="onboarding_step_review">المراجعة</string>
+    <string name="onboarding_step_submit">الإرسال</string>
+    <string name="onboarding_step_status">الحالة</string>
+
+    <!-- What the owner is told after an action. The failures carry the error's own sentence. -->
+    <string name="onboarding_notice_draft_saved">تم حفظ المسودة تلقائيًا</string>
+    <string name="onboarding_notice_file_uploaded">تم رفع الملف</string>
+    <string name="onboarding_notice_submitted">تم إرسال الطلب للمراجعة</string>
+    <string name="onboarding_notice_location_permission">يلزم السماح بالموقع</string>
+    <string name="onboarding_notice_location_unavailable">تعذر تحديد الموقع</string>
+    <string name="onboarding_notice_image_unreadable">تعذر قراءة الصورة</string>
+    <string name="onboarding_notice_draft_save_failed">تعذر حفظ المسودة: %1$s</string>
+    <string name="onboarding_notice_location_save_failed">تعذر حفظ الموقع: %1$s</string>
+    <string name="onboarding_notice_hours_save_failed">تعذر حفظ ساعات العمل: %1$s</string>
+    <string name="onboarding_notice_upload_failed">تعذر رفع الملف: %1$s</string>
+    <string name="onboarding_notice_submit_failed">تعذر الإرسال: %1$s</string>
+</resources>

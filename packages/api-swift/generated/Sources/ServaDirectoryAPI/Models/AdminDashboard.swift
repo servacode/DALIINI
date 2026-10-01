@@ -12,13 +12,24 @@ import AnyCodable
 
 public struct AdminDashboard: Codable, JSONEncodable, Hashable {
 
+    /** Facilities on a duty shift right now. */
+    public var dutyActiveNow: Int
+    public var newUsers7d: Int
+    /** Facility problem reports still OPEN. */
+    public var openReports: Int
+    /** Arabic, configuration-level warnings. */
+    public var systemWarnings: [String]
     public var pendingReviews: Int
     public var reverification: Int
     public var facilitiesByStatus: [AdminFacilityStatusCount]
     public var activeUsers: Int
     public var recentActions: [AdminRecentAction]
 
-    public init(pendingReviews: Int, reverification: Int, facilitiesByStatus: [AdminFacilityStatusCount], activeUsers: Int, recentActions: [AdminRecentAction]) {
+    public init(dutyActiveNow: Int, newUsers7d: Int, openReports: Int, systemWarnings: [String], pendingReviews: Int, reverification: Int, facilitiesByStatus: [AdminFacilityStatusCount], activeUsers: Int, recentActions: [AdminRecentAction]) {
+        self.dutyActiveNow = dutyActiveNow
+        self.newUsers7d = newUsers7d
+        self.openReports = openReports
+        self.systemWarnings = systemWarnings
         self.pendingReviews = pendingReviews
         self.reverification = reverification
         self.facilitiesByStatus = facilitiesByStatus
@@ -27,6 +38,10 @@ public struct AdminDashboard: Codable, JSONEncodable, Hashable {
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
+        case dutyActiveNow
+        case newUsers7d
+        case openReports
+        case systemWarnings
         case pendingReviews
         case reverification
         case facilitiesByStatus
@@ -38,6 +53,10 @@ public struct AdminDashboard: Codable, JSONEncodable, Hashable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(dutyActiveNow, forKey: .dutyActiveNow)
+        try container.encode(newUsers7d, forKey: .newUsers7d)
+        try container.encode(openReports, forKey: .openReports)
+        try container.encode(systemWarnings, forKey: .systemWarnings)
         try container.encode(pendingReviews, forKey: .pendingReviews)
         try container.encode(reverification, forKey: .reverification)
         try container.encode(facilitiesByStatus, forKey: .facilitiesByStatus)
