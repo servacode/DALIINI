@@ -34,6 +34,14 @@ jobs:
       # The certificate every debug APK must carry (INT-091, DECISION-041). Public: it is the
       # key's fingerprint, not the key. The key itself comes from the repository's secrets.
       EXPECTED_DEBUG_CERT_SHA256: f875d994ddb187754c54b74968d6997c7d45dbca91c17a43d5501999ed248838
+      # The Firebase client configuration, so the APK can receive push (DECISION-038). These
+      # four ship inside every APK and are not secrets in the cryptographic sense, but they
+      # name a real project and are kept out of the repository all the same. Without all four
+      # the app simply runs with push off, which is what every build did before this.
+      DIRECTORY_FIREBASE_PROJECT_ID: ${{ secrets.DIRECTORY_FIREBASE_PROJECT_ID }}
+      DIRECTORY_FIREBASE_APPLICATION_ID: ${{ secrets.DIRECTORY_FIREBASE_APPLICATION_ID }}
+      DIRECTORY_FIREBASE_API_KEY: ${{ secrets.DIRECTORY_FIREBASE_API_KEY }}
+      DIRECTORY_FIREBASE_SENDER_ID: ${{ secrets.DIRECTORY_FIREBASE_SENDER_ID }}
     defaults:
       run:
         working-directory: apps/android
@@ -124,6 +132,13 @@ jobs:
             echo "signingCertSha256=$cert"
             echo "apiBaseUrl=http://localhost:8000/ (reach it with adb reverse tcp:8000 tcp:8000)"
             echo "realtimeUrl=ws://localhost:8000/ws/v1/directory/"
+            # Whether this APK can receive push at all, without naming the project it belongs to.
+            if [ -n "$DIRECTORY_FIREBASE_PROJECT_ID" ] && [ -n "$DIRECTORY_FIREBASE_APPLICATION_ID" ] \
+               && [ -n "$DIRECTORY_FIREBASE_API_KEY" ] && [ -n "$DIRECTORY_FIREBASE_SENDER_ID" ]; then
+              echo "push=configured"
+            else
+              echo "push=off (the four DIRECTORY_FIREBASE_* values are not all set)"
+            fi
             echo "commit=$GITHUB_SHA"
           } > "$dir/apk-metadata.txt"
           cat "$dir/apk-metadata.txt"
