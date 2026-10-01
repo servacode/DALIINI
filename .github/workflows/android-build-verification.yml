@@ -33,7 +33,7 @@ jobs:
       DIRECTORY_LOCAL_REALTIME_WS_URL: ws://localhost:8000/ws/v1/directory/
       # The certificate every debug APK must carry (INT-091, DECISION-041). Public: it is the
       # key's fingerprint, not the key. The key itself comes from the repository's secrets.
-      EXPECTED_DEBUG_CERT_SHA256: 21e9ff5c409a14cec929bb078d53625f4e3142ef1bb027337360e9e6d5b62caa
+      EXPECTED_DEBUG_CERT_SHA256: f875d994ddb187754c54b74968d6997c7d45dbca91c17a43d5501999ed248838
     defaults:
       run:
         working-directory: apps/android
