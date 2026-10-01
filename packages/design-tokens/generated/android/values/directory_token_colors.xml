@@ -14,7 +14,7 @@
     <color name="token_colors_surface_alt">#F1F4F2</color>
     <color name="token_colors_text_primary">#15231C</color>
     <color name="token_colors_text_secondary">#5D6B64</color>
-    <color name="token_colors_text_muted">#7A8780</color>
+    <color name="token_colors_text_muted">#64716C</color>
     <color name="token_colors_border">#DDE4E0</color>
     <color name="token_colors_border_strong">#C5D0CA</color>
     <color name="token_colors_success">#138A5B</color>
@@ -56,7 +56,7 @@
     <color name="token_colors_dark_info_soft">#162A40</color>
     <color name="token_semantic_content_primary">#15231C</color>
     <color name="token_semantic_content_secondary">#5D6B64</color>
-    <color name="token_semantic_content_muted">#7A8780</color>
+    <color name="token_semantic_content_muted">#64716C</color>
     <color name="token_semantic_content_on_primary">#FFFFFF</color>
     <color name="token_semantic_content_danger">#C23B3B</color>
     <color name="token_semantic_content_on_bar">#FFFFFF</color>

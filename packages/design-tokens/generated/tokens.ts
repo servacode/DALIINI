@@ -14,7 +14,7 @@ export const tokens = {
     "surfaceAlt": "#F1F4F2",
     "textPrimary": "#15231C",
     "textSecondary": "#5D6B64",
-    "textMuted": "#7A8780",
+    "textMuted": "#64716C",
     "border": "#DDE4E0",
     "borderStrong": "#C5D0CA",
     "success": "#138A5B",
