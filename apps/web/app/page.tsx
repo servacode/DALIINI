@@ -77,7 +77,7 @@ export default async function HomePage({
 
       <Slider slides={slides} />
 
-      <div className="shell page page-sections">
+      <div className="shell page page-full page-sections">
         {provinces === null ? (
           <Unavailable />
         ) : !chosen ? (
@@ -85,9 +85,11 @@ export default async function HomePage({
         ) : (
           <>
             <section className="ask" aria-labelledby="categories-title">
-              <h2 id="categories-title">
+              {/* The page's one h1: what this directory is, for the province in hand. Every
+                  page needs exactly one, and this page had none at all. */}
+              <h1 id="categories-title">
                 {intro?.titleAr ? intro.titleAr : `دليلك الشامل في ${chosen.nameAr}`}
-              </h2>
+              </h1>
               {categories === null ? (
                 <Unavailable />
               ) : categories.length === 0 ? (
@@ -110,9 +112,12 @@ export default async function HomePage({
             </section>
 
             {category ? (
-              <section aria-label={category.nameAr}>
-                {/* The category is named on the chip that is lit above; naming it again here
-                    only says the same word twice. The filters take that line instead. */}
+              <section aria-labelledby="facilities-title">
+                {/* The category is named on the chip that is lit above, so naming it again in
+                    sight only says the same word twice. It is still a heading, because a page
+                    whose levels jump from h1 to h3 has lost its shape for anyone reading it
+                    through a screen reader rather than looking at it. */}
+                <h2 id="facilities-title" className="sr-only">{category.nameAr}</h2>
                 <Suspense fallback={null}>
                   <FacilityFilters />
                 </Suspense>

@@ -77,6 +77,18 @@ export function SiteHeader({
           ))}
         </nav>
 
+        {/*
+          * The hawk with the flag draped either side of it, in the middle of the bar. It is a
+          * place in the row rather than a picture behind it: as a background it sat under the
+          * search box and the province button, and a crest with a form over it is a smudge.
+          *
+          * Decoration, so it is hidden from a screen reader and takes no tab stop. It is also
+          * the first thing to give way as the row narrows, and gone entirely once the row needs
+          * its width for the controls.
+          */}
+        {/* eslint-disable-next-line @next/next/no-img-element -- static brand asset, no loader */}
+        <img className="header-crest" src="/brand/syria-crest.png" alt="" aria-hidden="true" />
+
         <div className="header-end">
           {/* The picker reads the address, and reading the address is what stops a page being
               prerendered. Behind a boundary the rest of the bar still is. */}

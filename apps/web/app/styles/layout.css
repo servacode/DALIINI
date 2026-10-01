@@ -143,7 +143,8 @@
 .header-end .header-cta,
 .header-end .header-download { display: none; }
 
-/* The download is the filled one of the pair: it is what a first visitor should do. */
+/* Neither wraps. A two-line button in a bar makes the whole bar taller for one word. */
+.header-cta,
 .header-download { white-space: nowrap; }
 
 .menu-button {
@@ -197,7 +198,7 @@
 
 /* ---- Where the row fits, the panel is not needed ---- */
 
-@media (min-width: 1040px) {
+@media (min-width: 1080px) {
   .header-nav { display: flex; }
   .header-end .header-cta,
   .header-end .header-download { display: inline-flex; }
@@ -210,7 +211,7 @@
  * between a row that fits and a row that runs off the side of the screen. It folds into the
  * panel first; the links and the two buttons keep their places until the panel takes them too.
  */
-@media (max-width: 1359px) {
+@media (max-width: 1399px) {
   .header-end .search-box { display: none; }
 }
 
@@ -227,18 +228,34 @@
  * the brand's own bar colour lifted towards its primary green, so the top of the page belongs
  * to the same family as the app's own bar.
  */
-.hero-band {
+/*
+ * The opening band of a page that has one.
+ *
+ * It carries its own dark ground. It used to depend on a `.hero-band` wrapper that only the home
+ * page had, so when that page stopped using it the owners' page was left rendering white text on
+ * a white background — a heading at 1.1:1, which is to say invisible. A band that cannot be used
+ * without its background cannot fail that way again.
+ *
+ * It bleeds past the page's column to both edges of the window, which is what makes it read as a
+ * band rather than as a dark card.
+ */
+.hero {
+  display: grid;
+  gap: var(--sd-spacing-lg);
+  padding-block: var(--sd-spacing-4xl) var(--sd-spacing-3xl);
+  padding-inline: var(--gutter);
+  margin-inline: calc(50% - 50vw);
   background:
     radial-gradient(120% 140% at 85% 0%, rgb(11 107 71 / 0.55) 0%, transparent 60%),
     var(--sd-semantic-surface-bar);
   color: var(--sd-semantic-content-on-bar);
 }
 
-.hero {
-  display: grid;
-  gap: var(--sd-spacing-lg);
-  padding-block: var(--sd-spacing-4xl) var(--sd-spacing-3xl);
-  max-width: 760px;
+/* The words stay in the page's own column even though the ground runs to the edges. */
+.hero > * {
+  width: 100%;
+  max-width: var(--w-content);
+  margin-inline: auto;
 }
 
 .hero .eyebrow { color: var(--sd-semantic-content-on-bar-muted); }
@@ -255,37 +272,23 @@
   .hero { padding-block: var(--sd-spacing-5xl) var(--sd-spacing-4xl); }
 }
 
-/* The three figures under the opening: what the directory actually holds. */
-.hero-figures {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sd-spacing-xl) var(--sd-spacing-3xl);
-  padding-block: 0 var(--sd-spacing-4xl);
-  margin: 0;
-}
-
-.hero-figures div { display: grid; gap: var(--sd-spacing-2xs); }
-
-.hero-figures dt {
-  color: var(--sd-semantic-content-on-bar);
-  font-size: var(--sd-typography-roles-headline-medium-size);
-  line-height: 1.1;
-  font-weight: 700;
-}
-
-.hero-figures dd {
-  margin: 0;
-  color: var(--sd-semantic-content-on-bar-muted);
-  font-size: var(--sd-typography-roles-body-medium-size);
-}
-
 /* ---- The middle -------------------------------------------------------------------------- */
 
+/*
+ * An ordinary page: a column, centred, bounded. Pages that genuinely want the window opt out
+ * with `.page-full` rather than every page being full width and most of them suffering for it.
+ */
 .page {
   display: grid;
   gap: var(--sd-spacing-xl);
+  width: 100%;
+  max-width: var(--w-content);
+  margin-inline: auto;
   padding-block: var(--sd-spacing-2xl) var(--sd-spacing-5xl);
 }
+
+/* The home page's grid of cards, which is the one thing that earns the whole window. */
+.page-full { max-width: none; }
 
 .page > section { display: grid; gap: var(--sd-spacing-base); }
 
@@ -355,7 +358,15 @@
 
 .footer-group nav { display: grid; gap: var(--sd-spacing-sm); }
 
+/*
+ * Tall enough to hit. These were 26 pixels high, which is the height of the words and nothing
+ * else: on a phone a thumb covers about 44, so every link in the footer was a near miss. The
+ * extra height is padding inside the link, so the target grows without the list spreading out.
+ */
 .footer-group a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
   color: var(--sd-semantic-content-on-bar-muted);
   font-size: var(--sd-typography-roles-body-medium-size);
   text-decoration: none;
@@ -374,4 +385,33 @@
   border-top: 1px solid rgb(255 255 255 / 0.12);
   color: var(--sd-semantic-content-on-bar-muted);
   font-size: var(--sd-typography-roles-body-small-size);
+}
+
+/*
+ * The crest in the middle of the bar: the hawk with the flag draped either side of it.
+ *
+ * It is a place in the row rather than a picture behind it. As a background it sat under the
+ * search box and the province button, and a crest with a form over it is a smudge.
+ *
+ * It is also the one thing in the bar allowed to give way. Between the width where it fits whole
+ * and the width where it disappears it narrows, and `contain` keeps it in proportion while it
+ * does; the brand, the links and the controls never move for it.
+ */
+.header-crest {
+  /* It keeps its size or it is not there. Allowed to shrink it squeezed to twenty pixels of
+     smudge between 1400 and 1700 — present, and worse than absent. */
+  flex: none;
+  width: auto;
+  height: 58px;
+  margin-inline: auto;
+  /* Decoration between two groups of controls; nothing about it is clickable. */
+  pointer-events: none;
+}
+
+/*
+ * Below this the row needs its whole width for the brand, the links and the controls. Measured
+ * rather than guessed: at 1660 the row still has room for it and at 1640 it does not.
+ */
+@media (max-width: 1660px) {
+  .header-crest { display: none; }
 }

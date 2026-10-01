@@ -11,11 +11,22 @@
   color-scheme: light dark;
 
   /*
-   * The page is the window, with a margin rather than a column: a directory is a grid of cards,
-   * and a grid that stops two-thirds of the way across a desk monitor wastes the screen it was
-   * given. Reading text is still bounded — by `--w-prose` on the paragraph, not by the page.
+   * Three measures, and every page uses one of them.
+   *
+   * `--w-page` is the window itself: the bar, the footer, the slider and the grid of cards all
+   * run edge to edge, because a directory that stops two-thirds of the way across a desk monitor
+   * wastes the screen it was given.
+   *
+   * `--w-content` is what everything else gets. A page of questions, a form, an empty state or a
+   * list of four things does not become better for being 1900 pixels wide — it becomes a thin
+   * band of text with an acre of nothing beside it, which is what every page but the home page
+   * had become.
+   *
+   * `--w-prose` bounds a paragraph inside that, because a line that crosses a desk is scanned
+   * rather than read.
    */
   --w-page: none;
+  --w-content: 1180px;
   --w-prose: 72ch;
   --gutter: clamp(16px, 2.5vw, 48px);
 

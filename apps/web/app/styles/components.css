@@ -13,24 +13,6 @@
   box-shadow: var(--shadow-low);
 }
 
-/* A card that goes somewhere lifts under the hand; a card that only holds text does not. */
-a.card,
-.card-link {
-  display: block;
-  text-decoration: none;
-  transition:
-    transform var(--quick) var(--ease),
-    box-shadow var(--quick) var(--ease),
-    border-color var(--quick) var(--ease);
-}
-
-a.card:hover,
-.card-link:hover {
-  transform: translateY(-2px);
-  border-color: var(--sd-semantic-stroke-strong);
-  box-shadow: var(--shadow-medium);
-}
-
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -92,32 +74,7 @@ a.card:hover,
 /*
  * The row on the landing page that leads to the emergency numbers.
  *
- * Written as `a.quick-link` on purpose: `a.card` above is a class on an element and outranks a
- * bare class, so a plain `.quick-link` had its `display` quietly overruled back to a block and
- * the chevron fell under the words.
- */
-a.quick-link {
-  display: flex;
-  align-items: center;
-  gap: var(--sd-spacing-base);
-}
-
-a.quick-link > span:nth-child(2) { flex: 1; display: grid; gap: var(--sd-spacing-2xs); }
-a.quick-link strong { font-size: var(--sd-typography-roles-title-medium-size); }
-a.quick-link small { color: var(--sd-semantic-content-muted); }
-
-.feature-icon {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: var(--sd-radius-medium);
-  background: var(--sd-semantic-surface-brand-soft);
-  color: var(--sd-semantic-action-primary);
-}
-
-/* ---- Buttons ----------------------------------------------------------------------------- */
+ * Written as `a/* ---- Buttons ----------------------------------------------------------------------------- */
 
 .button {
   display: inline-flex;
@@ -364,13 +321,11 @@ textarea:focus-visible {
 .il-line { stroke: var(--sd-semantic-content-muted); }
 .il-accent { stroke: var(--sd-semantic-action-primary); }
 
-.notice,
 .note {
   border-inline-start: 3px solid var(--sd-semantic-action-primary);
   padding-inline-start: var(--sd-spacing-base);
 }
 
-.notice p,
 .note p { margin: var(--sd-spacing-xs) 0 0; }
 
 .results-summary {
@@ -600,18 +555,36 @@ tr:last-child td { border-bottom: 0; }
   gap: var(--sd-spacing-sm);
 }
 
+/*
+ * The dot is eight pixels; the thing you press is twenty-four.
+ *
+ * A dot big enough to hit is a dot too big to look at, so the button keeps its size and the mark
+ * inside it stays small — drawn by `::before` rather than by the button's own box. Spacing the
+ * row by a negative margin keeps the dots as close together as they look while their targets do
+ * not overlap.
+ */
 .slider-dots button {
-  width: 8px;
-  height: 8px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-inline: -4px;
   padding: 0;
   border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.slider-dots button::before {
+  content: "";
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: rgb(255 255 255 / 0.5);
-  cursor: pointer;
   transition: width var(--quick) var(--ease), background var(--quick) var(--ease);
 }
 
-.slider-dots button[aria-selected="true"] {
+.slider-dots button[aria-selected="true"]::before {
   width: 24px;
   border-radius: var(--sd-radius-pill);
   background: #fff;
@@ -658,25 +631,6 @@ tr:last-child td { border-bottom: 0; }
   color: var(--sd-semantic-content-on-primary);
 }
 
-.section-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sd-spacing-md);
-}
-
-.section-more {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sd-spacing-xs);
-  color: var(--sd-semantic-action-primary);
-  font-size: var(--sd-typography-roles-label-large-size);
-  font-weight: var(--sd-typography-roles-label-large-weight);
-  text-decoration: none;
-}
-
-.section-more:hover { text-decoration: underline; }
 
 /* ---- One facility, one card -------------------------------------------------------------- */
 
@@ -760,7 +714,8 @@ tr:last-child td { border-bottom: 0; }
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  min-height: 30px;
+  /* A thumb covers about 44 pixels; 30 was the height of the words. */
+  min-height: 40px;
   padding-inline: var(--sd-spacing-sm);
   border: 0;
   border-radius: var(--sd-radius-small);
@@ -1040,6 +995,7 @@ tr:last-child td { border-bottom: 0; }
   padding-block: var(--sd-spacing-md);
 }
 
+.ask h1,
 .ask h2 {
   max-width: 20ch;
   font-size: clamp(
@@ -1094,7 +1050,7 @@ tr:last-child td { border-bottom: 0; }
 }
 
 .report-reasons button {
-  min-height: 32px;
+  min-height: 40px;
   padding-inline: var(--sd-spacing-md);
   border: 1px solid var(--sd-semantic-stroke-default);
   border-radius: var(--sd-radius-pill);
@@ -1279,4 +1235,211 @@ tr:last-child td { border-bottom: 0; }
   background: var(--sd-semantic-action-primary);
   border-color: var(--sd-semantic-action-primary);
   color: var(--sd-semantic-content-on-primary);
+}
+
+/* ---- The components the pages asked for and never got ------------------------------------- */
+
+/*
+ * Twenty-four class names appeared in the markup with no rule anywhere behind them. A class with
+ * nothing behind it is not neutral: the browser falls back to its own defaults, so a grid of
+ * cards rendered as a bulleted list with the markers floating outside the cards, a form's error
+ * block read as an ordinary paragraph, and a row of emergency numbers stacked as plain text.
+ *
+ * They are all here, in one place, built from the same tokens as everything else — which is the
+ * point: a page should not be able to invent a measurement, a colour or a shadow of its own.
+ */
+
+/* A list that is a layout, not a list: markers off, spacing from the grid it sits in. */
+.features,
+.numbers,
+.verify {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+/* ---- Owners: why you would list a facility ---- */
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--sd-spacing-base);
+}
+
+.features > li {
+  display: grid;
+  gap: var(--sd-spacing-sm);
+  align-content: start;
+}
+
+.features h3 { font-size: var(--sd-typography-roles-title-medium-size); }
+
+/* ---- Emergency: a label on one side, the number to call on the other ---- */
+
+.numbers {
+  display: grid;
+  gap: var(--sd-spacing-base);
+}
+
+.number {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sd-spacing-base);
+}
+
+.number-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sd-spacing-md);
+  font-size: var(--sd-typography-roles-title-medium-size);
+  font-weight: var(--sd-typography-roles-title-medium-weight);
+}
+
+/* The number is the point of the page, so it is the largest thing on the row. */
+.call {
+  flex: none;
+  font-size: var(--sd-typography-roles-title-medium-size);
+  letter-spacing: 0.02em;
+}
+
+/* ---- How we verify: one block per question ---- */
+
+.verify {
+  display: grid;
+  gap: var(--sd-spacing-base);
+}
+
+.verify > section { display: grid; gap: var(--sd-spacing-sm); }
+
+/* ---- Duty: a day, its date, its shifts ---- */
+
+.day-date {
+  color: var(--sd-semantic-content-muted);
+  font-size: var(--sd-typography-roles-body-medium-size);
+}
+
+.duty-day {
+  display: grid;
+  gap: var(--sd-spacing-base);
+}
+
+/* A day with nobody on duty says so inside the day, set apart from a day that has a list. */
+.duty-none {
+  padding: var(--sd-spacing-base);
+  border: 1px dashed var(--sd-semantic-stroke-default);
+  border-radius: var(--sd-radius-medium);
+  text-align: center;
+}
+
+.shift {
+  display: flex;
+  align-items: center;
+  gap: var(--sd-spacing-xs);
+  color: var(--sd-semantic-content-secondary);
+  font-size: var(--sd-typography-roles-body-medium-size);
+}
+
+/* ---- The facility page's trust line ---- */
+
+.trust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sd-spacing-sm) var(--sd-spacing-base);
+  padding: var(--sd-spacing-md) var(--sd-spacing-base);
+  border-radius: var(--sd-radius-medium);
+  background: var(--sd-semantic-surface-subtle);
+  color: var(--sd-semantic-content-secondary);
+  font-size: var(--sd-typography-roles-body-medium-size);
+}
+
+/* ---- A category page's filters ---- */
+
+.filters {
+  display: grid;
+  gap: var(--sd-spacing-base);
+}
+
+/* ---- Contact: the form, and what it says back ---- */
+
+.contact,
+.contact-intro {
+  display: grid;
+  gap: var(--sd-spacing-base);
+}
+
+.contact-form {
+  display: grid;
+  gap: var(--sd-spacing-base);
+  max-width: 640px;
+}
+
+.optional {
+  color: var(--sd-semantic-content-muted);
+  font-weight: var(--sd-typography-roles-body-medium-weight, 400);
+}
+
+/* How much of the allowance is left, which is only interesting while typing. */
+.counter {
+  justify-self: start;
+  color: var(--sd-semantic-content-muted);
+  font-size: var(--sd-typography-roles-label-medium-size);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A refusal and a success look nothing alike, because they mean opposite things. */
+.form-error {
+  display: grid;
+  gap: var(--sd-spacing-xs);
+  padding: var(--sd-spacing-base);
+  border: 1px solid var(--sd-semantic-feedback-danger);
+  border-radius: var(--sd-radius-medium);
+  background: var(--sd-semantic-feedback-danger-soft);
+  color: var(--sd-semantic-feedback-danger);
+}
+
+.form-error .muted { color: inherit; opacity: 0.85; }
+
+.contact-sent {
+  display: grid;
+  gap: var(--sd-spacing-sm);
+  padding: var(--sd-spacing-lg);
+  border: 1px solid var(--sd-semantic-feedback-success);
+  border-radius: var(--sd-radius-medium);
+  background: var(--sd-semantic-feedback-success-soft);
+  color: var(--sd-semantic-feedback-success);
+}
+
+/* ---- Sharing ---- */
+
+.share {
+  display: grid;
+  gap: var(--sd-spacing-base);
+}
+
+/* Shown only when the clipboard refused, so the reader can take the link by hand. */
+.copy-manual {
+  width: 100%;
+  margin-block-start: var(--sd-spacing-sm);
+}
+
+/* ---- Written pages ---- */
+
+/* When this text was last changed: the first thing somebody checks on a policy. */
+.updated {
+  color: var(--sd-semantic-content-muted);
+  font-size: var(--sd-typography-roles-body-medium-size);
+}
+
+/* ---- The two small things the shared components use ---- */
+
+.illustration { display: block; }
+
+.rating {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sd-spacing-2xs, 4px);
+  font-variant-numeric: tabular-nums;
 }
