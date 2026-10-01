@@ -65,7 +65,10 @@ function upload(
       method: "POST",
       headers: { host: "admin.example.com", origin: "https://admin.example.com", ...headers },
       body,
-    }),
+      // Required by Node's fetch whenever the body is a stream rather than a buffer, and
+      // harmless for the cases that pass one.
+      ...(body instanceof ReadableStream ? { duplex: "half" } : {}),
+    } as RequestInit),
   );
 }
 
@@ -195,13 +198,43 @@ describe("POST /api/admin/ads/images", () => {
     expect(callWithSession).not.toHaveBeenCalled();
   });
 
-  it("refuses an oversized body with 413", async () => {
-    const big = new File([new Uint8Array(MAX_AD_IMAGE_BYTES + 128 * 1024)], "big.png");
-    const response = await upload(form(big));
+  /*
+   * The body is a stream this test owns rather than one built from a `File`.
+   *
+   * The route answers an oversized body by cancelling the stream half-read, which is the right
+   * thing to do — it is what stops the server reading a gigabyte it has already refused. Node's
+   * own fetch implementation reacts to that by continuing to write into the stream the route has
+   * just closed, which surfaces as an unhandled rejection attributed to whichever test runs
+   * next. Owning the producer means the cancellation stops it, and the test measures the route
+   * instead of the runtime.
+   */
+  it("refuses an oversized body with 413, and stops reading it", async () => {
+    const chunk = new Uint8Array(256 * 1024);
+    let written = 0;
+    let cancelled = false;
+    const body = new ReadableStream({
+      pull(controller) {
+        if (written > MAX_AD_IMAGE_BYTES + 1024 * 1024) {
+          controller.close();
+          return;
+        }
+        written += chunk.byteLength;
+        controller.enqueue(chunk);
+      },
+      cancel() {
+        cancelled = true;
+      },
+    });
+
+    const response = await upload(body, { "content-type": "multipart/form-data" });
 
     expect(response.status).toBe(413);
     expect(callWithSession).not.toHaveBeenCalled();
+    // It gave up rather than reading everything that was offered.
+    expect(cancelled).toBe(true);
+    expect(written).toBeLessThanOrEqual(MAX_AD_IMAGE_BYTES + chunk.byteLength);
   });
+
 
   it("forwards a valid image and answers with its key", async () => {
     const response = await upload(form(png()));
