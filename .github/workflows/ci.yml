@@ -135,6 +135,26 @@ jobs:
       - name: Web build
         run: pnpm --filter @servacode/public-web build
 
+  # The OTP bot (services/whatsapp-bot). Deliberately outside the pnpm workspace — an
+  # unofficial WhatsApp library has no business in the website's dependency tree — so it is
+  # gated on its own. Its rules are pure, so they prove themselves with nothing installed.
+  whatsapp-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Pacing and addressing rules
+        run: node --test test/*.test.js
+        working-directory: services/whatsapp-bot
+      - name: Every source file parses
+        # The session and server modules import Baileys, which is not installed here; a syntax
+        # check still catches what a test cannot reach without a paired WhatsApp account.
+        run: node --check src/session.js && node --check src/server.js && node --check src/pair.js && node --check src/message.js && node --check src/queue.js
+        working-directory: services/whatsapp-bot
+
   docker-build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -156,6 +176,9 @@ jobs:
           - name: db-backup
             context: .
             file: infrastructure/backup/Dockerfile
+          - name: whatsapp-bot
+            context: services/whatsapp-bot
+            file: services/whatsapp-bot/Dockerfile
     name: docker-build (${{ matrix.name }})
     steps:
       - uses: actions/checkout@v4

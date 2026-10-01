@@ -6,6 +6,7 @@ from django.core.exceptions import ImproperlyConfigured
 from .base import OtpSender
 from .development import DevelopmentOtpSender
 from .whatsapp import WhatsAppOtpSender
+from .whatsapp_bot import WhatsAppBotOtpSender
 
 
 def get_otp_sender() -> OtpSender:
@@ -20,4 +21,6 @@ def get_otp_sender() -> OtpSender:
         return DevelopmentOtpSender()
     if provider == "whatsapp":
         return WhatsAppOtpSender()
+    if provider == "whatsapp_bot":
+        return WhatsAppBotOtpSender()
     raise ImproperlyConfigured(f"Unsupported OTP provider: {provider}")

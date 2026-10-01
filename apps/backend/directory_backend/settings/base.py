@@ -21,6 +21,12 @@ WHATSAPP_PHONE_NUMBER_ID = env("WHATSAPP_PHONE_NUMBER_ID", "")
 WHATSAPP_ACCESS_TOKEN = env("WHATSAPP_ACCESS_TOKEN", "")
 WHATSAPP_TEMPLATE_NAME = env("WHATSAPP_TEMPLATE_NAME", "")
 WHATSAPP_TEMPLATE_LANGUAGE = env("WHATSAPP_TEMPLATE_LANGUAGE", "ar")
+
+# The bot service (services/whatsapp-bot), when OTP_PROVIDER=whatsapp_bot. It holds a paired
+# WhatsApp session and listens on a private network; the token is what stops anything else on
+# that network using it to send messages.
+WHATSAPP_BOT_URL = env("WHATSAPP_BOT_URL", "")
+WHATSAPP_BOT_TOKEN = env("WHATSAPP_BOT_TOKEN", "")
 DEBUG = False
 ALLOWED_HOSTS = env_csv("ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
 

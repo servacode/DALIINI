@@ -52,6 +52,11 @@ if OTP_PROVIDER.lower() == "whatsapp":
     WHATSAPP_ACCESS_TOKEN = env("WHATSAPP_ACCESS_TOKEN", required=True)
     WHATSAPP_TEMPLATE_NAME = env("WHATSAPP_TEMPLATE_NAME", required=True)
     WHATSAPP_TEMPLATE_LANGUAGE = env("WHATSAPP_TEMPLATE_LANGUAGE", "ar")
+
+if OTP_PROVIDER.lower() == "whatsapp_bot":
+    WHATSAPP_BOT_URL = env("WHATSAPP_BOT_URL", required=True)
+    WHATSAPP_BOT_TOKEN = env("WHATSAPP_BOT_TOKEN", required=True)
+
 if PUSH_PROVIDER.lower() in {"development", "test", "console"}:
     raise ImproperlyConfigured("Production push provider cannot be a test provider")
 if len(PUSH_TOKEN_ENCRYPTION_KEY) < 32:

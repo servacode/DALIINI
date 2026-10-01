@@ -67,3 +67,45 @@ def test_fcm_push_needs_its_service_account_key() -> None:
     assert refused.returncode != 0
     assert "FCM_SERVICE_ACCOUNT_JSON is required" in refused.stderr
     assert accepted.returncode == 0, accepted.stderr
+
+
+def test_the_official_whatsapp_route_needs_its_credentials() -> None:
+    # An empty value counts as missing (settings/env.py), which also neutralises whatever this
+    # machine happens to have exported.
+    whatsapp = {
+        "OTP_PROVIDER": "whatsapp",
+        "FCM_SERVICE_ACCOUNT_JSON": '{"client_email": "x"}',
+        "WHATSAPP_PHONE_NUMBER_ID": "123456",
+    }
+    # Only the token is blanked, so what the refusal names is the token and not whichever
+    # required key happens to be read first.
+    refused = _setup({**whatsapp, "WHATSAPP_ACCESS_TOKEN": ""})
+    accepted = _setup(
+        {
+            **whatsapp,
+            "WHATSAPP_ACCESS_TOKEN": "token",
+            "WHATSAPP_TEMPLATE_NAME": "daliini_otp",
+        }
+    )
+
+    assert refused.returncode != 0
+    assert "WHATSAPP_ACCESS_TOKEN" in refused.stderr
+    assert accepted.returncode == 0, accepted.stderr
+
+
+def test_the_bot_route_needs_the_address_and_the_shared_secret() -> None:
+    # Without these the sender raises on every attempt, so production fails here instead —
+    # before anyone can register and never receive a code.
+    bot = {"OTP_PROVIDER": "whatsapp_bot", "FCM_SERVICE_ACCOUNT_JSON": '{"client_email": "x"}'}
+    refused = _setup({**bot, "WHATSAPP_BOT_URL": "", "WHATSAPP_BOT_TOKEN": ""})
+    accepted = _setup(
+        {
+            **bot,
+            "WHATSAPP_BOT_URL": "http://whatsapp-bot:8085",
+            "WHATSAPP_BOT_TOKEN": "bot-secret",
+        }
+    )
+
+    assert refused.returncode != 0
+    assert "WHATSAPP_BOT_URL" in refused.stderr
+    assert accepted.returncode == 0, accepted.stderr

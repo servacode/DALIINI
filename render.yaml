@@ -106,6 +106,35 @@ services:
       - key: AWS_DEFAULT_REGION
         value: auto
 
+  # The OTP bot: a paired WhatsApp account that sends registration codes. Private on purpose
+  # — it must never be reachable from the internet — and reached by the API at
+  # http://directory-v3-staging-whatsapp-bot:8085.
+  #
+  # The disk is the account. Pairing writes credentials into it once (scan a QR from a shell on
+  # this service, or pair locally and copy the directory in); lose it and nobody can register
+  # until somebody scans again. See services/whatsapp-bot/README.md.
+  #
+  # This route runs an ordinary WhatsApp account through an unofficial library, which is outside
+  # WhatsApp's terms and can be banned without warning. Setting OTP_PROVIDER=whatsapp on the
+  # backend group moves delivery to the official Cloud API without touching this service.
+  - type: pserv
+    name: directory-v3-staging-whatsapp-bot
+    runtime: docker
+    plan: 0.5c-512mb
+    region: frankfurt
+    dockerContext: ./services/whatsapp-bot
+    dockerfilePath: ./services/whatsapp-bot/Dockerfile
+    autoDeployTrigger: checksPass
+    disk:
+      name: whatsapp-auth
+      mountPath: /app/auth
+      sizeGB: 1
+    envVars:
+      - key: PORT
+        value: "8085"
+      - key: WHATSAPP_BOT_TOKEN
+        sync: false
+
   - type: web
     name: directory-v3-staging-www
     runtime: docker
@@ -214,7 +243,24 @@ envVarGroups:
         sync: false
       - key: S3_PRIVATE_BUCKET
         sync: false
+      # development | whatsapp (official Cloud API) | whatsapp_bot (the paired account in
+      # services/whatsapp-bot). Production refuses to start when the chosen one is unconfigured.
       - key: OTP_PROVIDER
+        sync: false
+      # Required when OTP_PROVIDER=whatsapp.
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_ACCESS_TOKEN
+        sync: false
+      # The approved Authentication template and its language.
+      - key: WHATSAPP_TEMPLATE_NAME
+        sync: false
+      - key: WHATSAPP_TEMPLATE_LANGUAGE
+        value: ar
+      # Required when OTP_PROVIDER=whatsapp_bot. The token must match the bot service's own.
+      - key: WHATSAPP_BOT_URL
+        value: http://directory-v3-staging-whatsapp-bot:8085
+      - key: WHATSAPP_BOT_TOKEN
         sync: false
       - key: PUSH_PROVIDER
         sync: false

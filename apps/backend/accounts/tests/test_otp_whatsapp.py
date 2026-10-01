@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from typing import Any
 
 import pytest
 from django.core.exceptions import ImproperlyConfigured
@@ -33,13 +34,15 @@ MESSAGE = OtpMessage(phone="+963933000000", code="482913")
 class Recorder:
     """An opener that answers whatever the test says and keeps what it was asked."""
 
-    def __init__(self, status: int = 200, body: object = None, raises: Exception | None = None):
+    def __init__(
+        self, status: int = 200, body: object = None, raises: Exception | None = None
+    ) -> None:
         self.status = status
         self.body = body if body is not None else {"messages": [{"id": "wamid.x"}]}
         self.raises = raises
-        self.calls: list[tuple[str, dict, dict[str, str]]] = []
+        self.calls: list[tuple[str, dict[str, Any], dict[str, str]]] = []
 
-    def __call__(self, url: str, body: bytes, headers: dict[str, str]):
+    def __call__(self, url: str, body: bytes, headers: dict[str, str]) -> tuple[int, bytes]:
         if self.raises:
             raise self.raises
         self.calls.append((url, json.loads(body.decode("utf-8")), headers))
@@ -47,7 +50,7 @@ class Recorder:
 
 
 @override_settings(**CONFIGURED)
-def test_it_sends_the_approved_template_with_the_code_in_both_places():
+def test_it_sends_the_approved_template_with_the_code_in_both_places() -> None:
     opener = Recorder()
     WhatsAppOtpSender(opener=opener).send(MESSAGE)
 
@@ -73,7 +76,7 @@ def test_it_sends_the_approved_template_with_the_code_in_both_places():
 
 @override_settings(**CONFIGURED)
 @pytest.mark.parametrize("code", [131026, 131047, 132001, 132005, 133010])
-def test_a_number_that_can_never_receive_is_not_retried(code: int):
+def test_a_number_that_can_never_receive_is_not_retried(code: int) -> None:
     opener = Recorder(status=400, body={"error": {"code": code, "message": "nope"}})
     with pytest.raises(InvalidRecipient):
         WhatsAppOtpSender(opener=opener).send(MESSAGE)
@@ -81,25 +84,25 @@ def test_a_number_that_can_never_receive_is_not_retried(code: int):
 
 @override_settings(**CONFIGURED)
 @pytest.mark.parametrize("status", [429, 500, 502, 503])
-def test_a_failure_that_might_pass_next_time_is_transient(status: int):
+def test_a_failure_that_might_pass_next_time_is_transient(status: int) -> None:
     opener = Recorder(status=status, body={"error": {"code": 1, "message": "later"}})
     with pytest.raises(TransientOtpError):
         WhatsAppOtpSender(opener=opener).send(MESSAGE)
 
 
 @override_settings(**CONFIGURED)
-def test_a_dead_connection_is_transient_rather_than_a_crash():
+def test_a_dead_connection_is_transient_rather_than_a_crash() -> None:
     opener = Recorder(raises=OSError("connection refused"))
     with pytest.raises(TransientOtpError):
         WhatsAppOtpSender(opener=opener).send(MESSAGE)
 
 
 @override_settings(**CONFIGURED)
-def test_an_unreadable_body_does_not_become_a_permanent_refusal():
+def test_an_unreadable_body_does_not_become_a_permanent_refusal() -> None:
     # Without a readable code there is no evidence the number is at fault, so the attempt is
     # treated as one that might work again rather than as a number to give up on.
     class Garbage(Recorder):
-        def __call__(self, url, body, headers):
+        def __call__(self, url: str, body: bytes, headers: dict[str, str]) -> tuple[int, bytes]:
             return 400, b"<html>gateway</html>"
 
     with pytest.raises(TransientOtpError):
@@ -107,7 +110,7 @@ def test_an_unreadable_body_does_not_become_a_permanent_refusal():
 
 
 @override_settings(OTP_PROVIDER="whatsapp", WHATSAPP_PHONE_NUMBER_ID="", WHATSAPP_ACCESS_TOKEN="")
-def test_an_unconfigured_sender_refuses_before_reaching_the_network():
+def test_an_unconfigured_sender_refuses_before_reaching_the_network() -> None:
     opener = Recorder()
     with pytest.raises(TransientOtpError):
         WhatsAppOtpSender(opener=opener).send(MESSAGE)
@@ -115,7 +118,7 @@ def test_an_unconfigured_sender_refuses_before_reaching_the_network():
 
 
 @override_settings(**CONFIGURED)
-def test_the_code_never_reaches_the_logs(caplog):
+def test_the_code_never_reaches_the_logs(caplog: pytest.LogCaptureFixture) -> None:
     opener = Recorder(status=400, body={"error": {"code": 131026}})
     with caplog.at_level("WARNING"):
         with pytest.raises(InvalidRecipient):
@@ -132,20 +135,22 @@ def test_the_code_never_reaches_the_logs(caplog):
     assert "131026" in written
 
 
-def test_the_factory_picks_the_sender_the_deployment_names():
+def test_the_factory_picks_the_sender_the_deployment_names() -> None:
     with override_settings(OTP_PROVIDER="development"):
         assert isinstance(get_otp_sender(), DevelopmentOtpSender)
     with override_settings(**CONFIGURED):
         assert isinstance(get_otp_sender(), WhatsAppOtpSender)
 
 
-def test_an_unknown_provider_fails_loudly_rather_than_delivering_nothing():
+def test_an_unknown_provider_fails_loudly_rather_than_delivering_nothing() -> None:
     with override_settings(OTP_PROVIDER="carrier-pigeon"):
         with pytest.raises(ImproperlyConfigured):
             get_otp_sender()
 
 
-def test_the_development_sender_delivers_and_reveals_nothing(caplog):
+def test_the_development_sender_delivers_and_reveals_nothing(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     with caplog.at_level("DEBUG"):
         DevelopmentOtpSender().send(MESSAGE)
     assert "482913" not in caplog.text
