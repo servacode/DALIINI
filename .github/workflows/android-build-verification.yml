@@ -163,7 +163,11 @@ jobs:
       - name: Gate 2b — platform-free JVM harness
         if: always() && steps.assemble.outcome == 'success'
         working-directory: apps/android/jvm-verification
-        run: ../gradlew -p . test --continue --stacktrace
+        # The connected suite is compiled but not run: it needs a live backend, which
+        # scripts/e2e-android.sh provides. Compiling it here is what stops it rotting — it had
+        # drifted away from the generated client and could not build at all, while looking like
+        # seven files of coverage.
+        run: ../gradlew -p . test compileConnectedTestKotlin --continue --stacktrace
 
       - name: Gate 3 — Android lint
         id: lint

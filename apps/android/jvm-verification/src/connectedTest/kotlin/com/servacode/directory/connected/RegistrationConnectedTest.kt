@@ -15,12 +15,16 @@ class RegistrationConnectedTest {
         val device = Device()
         val raqqa = device.public.provinces().first { it.nameEn == "Raqqa" }
 
-        val challenge = device.auth.registerStart("مستخدم جديد", Accounts.REGISTRANT_PHONE, raqqa.id)
+        // The name is not asked for here any more: nothing is collected about a person before
+        // they have shown the number is theirs, so it is given at completion instead.
+        val challenge = device.auth.registerStart(Accounts.REGISTRANT_PHONE, raqqa.id)
         setOtp(challenge.id, CODE)
         val wrong = runCatching { device.auth.registerVerify(challenge.id, "000000") }.exceptionOrNull()
         device.auth.registerVerify(challenge.id, CODE)
         assertEquals(SessionState.SIGNED_OUT, device.session.state.value)
-        device.session.establish(device.auth.registerComplete(challenge.id, "NewAccount123!"))
+        device.session.establish(
+            device.auth.registerComplete(challenge.id, "مستخدم جديد", "NewAccount123!"),
+        )
 
         assertEquals(AppError.Kind.VALIDATION, (wrong as AppException).error.kind)
         assertEquals(SessionState.SIGNED_IN, device.session.state.value)
