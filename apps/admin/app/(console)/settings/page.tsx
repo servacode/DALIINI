@@ -291,7 +291,10 @@ export default function SettingsPage() {
         )
       ) : null}
 
-      <AppReleasePanel canManage={canManage} />
+      {/* Part of this screen, not a screen of its own: when the operator may not read the
+          settings at all, the page says so once and this says nothing. Two identical
+          permission notices stacked is a worse answer than one. */}
+      {settings.error ? null : <AppReleasePanel canManage={canManage} />}
 
       <Toast message={toast} onDismiss={() => setToast(null)} />
     </div>
