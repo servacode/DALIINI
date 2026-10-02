@@ -269,3 +269,48 @@ class ContactMessage(models.Model):
 
     def __str__(self) -> str:
         return f"{self.kind} {self.created_at:%Y-%m-%d}"
+
+
+class AppRelease(models.Model):
+    """What a mobile build must be to keep talking to this backend, and where to get a newer one.
+
+    One row per platform, edited by an operator. The app asks at startup and compares its own
+    version code:
+
+      - below ``minimum_version_code``: it stops and says so. A build with a known defect — one
+        that writes bad data, or trusts something it should not — must not keep running against
+        a backend that has moved past it.
+      - below ``latest_version_code``: it offers an update and carries on.
+
+    **An unconfigured backend never blocks anybody.** With no row, the endpoint answers zero
+    for both, which no version is below. Failing closed here would lock every phone out of a
+    working platform because nobody filled in a form.
+    """
+
+    class Platform(models.TextChoices):
+        ANDROID = "ANDROID", "Android"
+        IOS = "IOS", "iOS"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    platform = models.CharField(max_length=16, choices=Platform.choices, unique=True)
+    # Version codes, not names: a name is for people, and "1.10" sorts below "1.9".
+    minimum_version_code = models.PositiveIntegerField(default=0)
+    latest_version_code = models.PositiveIntegerField(default=0)
+    # Where the person is sent. Empty means the app shows the notice without a button.
+    store_url = models.URLField(blank=True)
+    # What the blocked screen says, in the reader's language. Empty falls back to the app's own
+    # wording, so a row with nothing written is still usable.
+    notice_ar = models.TextField(blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["platform"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(minimum_version_code__lte=models.F("latest_version_code")),
+                name="content_app_release_minimum_not_above_latest",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.platform} min={self.minimum_version_code} latest={self.latest_version_code}"

@@ -8,6 +8,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.AppRelease
 import com.servacode.directory.api.models.ContactMessageCreated
 import com.servacode.directory.api.models.ContactMessageRequest
 import com.servacode.directory.api.models.ContentPage
@@ -17,6 +18,29 @@ import com.servacode.directory.api.models.LegalDocument
 import com.servacode.directory.api.models.LegalDocumentList
 
 interface ContentApi {
+
+    /**
+    * enum for parameter platform
+    */
+    enum class PlatformPublicAppReleaseRetrieve(val value: kotlin.String) {
+        @SerialName(value = "ANDROID") ANDROID("ANDROID"),
+        @SerialName(value = "IOS") IOS("IOS")
+    }
+
+    /**
+     * GET api/v1/public/app-release/
+     * The minimum and newest build of the mobile app
+     * A build below &#x60;minimumVersionCode&#x60; must stop and show &#x60;noticeAr&#x60;. A build below &#x60;latestVersionCode&#x60; may offer an update and carry on. Both are zero until an operator sets them, and zero blocks nothing. Cacheable for five minutes.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *
+     * @param platform Defaults to ANDROID. (optional)
+     * @return [AppRelease]
+     */
+    @GET("api/v1/public/app-release/")
+    suspend fun publicAppReleaseRetrieve(@Query("platform") platform: PlatformPublicAppReleaseRetrieve? = null): Response<AppRelease>
+
     /**
      * POST api/v1/contact/
      * Send a message to the platform team

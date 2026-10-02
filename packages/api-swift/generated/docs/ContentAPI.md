@@ -4,6 +4,7 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**publicAppReleaseRetrieve**](ContentAPI.md#publicappreleaseretrieve) | **GET** /api/v1/public/app-release/ | The minimum and newest build of the mobile app
 [**publicContactCreate**](ContentAPI.md#publiccontactcreate) | **POST** /api/v1/contact/ | Send a message to the platform team
 [**publicContentPageRetrieve**](ContentAPI.md#publiccontentpageretrieve) | **GET** /api/v1/content/pages/{slug}/ | Retrieve one published content page
 [**publicEmergencyNumbersList**](ContentAPI.md#publicemergencynumberslist) | **GET** /api/v1/emergency-numbers/ | Emergency numbers: national, plus the province&#39;s own
@@ -11,6 +12,56 @@ Method | HTTP request | Description
 [**publicLegalDocumentRetrieve**](ContentAPI.md#publiclegaldocumentretrieve) | **GET** /api/v1/public/legal/{key}/ | Retrieve one published page
 [**publicLegalDocumentsList**](ContentAPI.md#publiclegaldocumentslist) | **GET** /api/v1/public/legal/ | List the published pages
 
+
+# **publicAppReleaseRetrieve**
+```swift
+    open class func publicAppReleaseRetrieve(platform: Platform_publicAppReleaseRetrieve? = nil, completion: @escaping (_ data: AppRelease?, _ error: Error?) -> Void)
+```
+
+The minimum and newest build of the mobile app
+
+A build below `minimumVersionCode` must stop and show `noticeAr`. A build below `latestVersionCode` may offer an update and carry on. Both are zero until an operator sets them, and zero blocks nothing. Cacheable for five minutes.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let platform = "platform_example" // String | Defaults to ANDROID. (optional)
+
+// The minimum and newest build of the mobile app
+ContentAPI.publicAppReleaseRetrieve(platform: platform) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **platform** | **String** | Defaults to ANDROID. | [optional] 
+
+### Return type
+
+[**AppRelease**](AppRelease.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **publicContactCreate**
 ```swift

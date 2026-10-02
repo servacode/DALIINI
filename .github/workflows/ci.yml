@@ -129,9 +129,8 @@ jobs:
         run: pnpm --filter @servacode/public-web lint
       - name: Web typecheck
         run: pnpm --filter @servacode/public-web typecheck
-      # apps/web has no `test` script; --if-present picks one up once it exists.
-      - name: Web tests
-        run: pnpm --filter @servacode/public-web run --if-present test
+      - name: Web unit tests
+        run: pnpm --filter @servacode/public-web test
       - name: Web build
         run: pnpm --filter @servacode/public-web build
 

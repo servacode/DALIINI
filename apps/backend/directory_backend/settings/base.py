@@ -291,7 +291,16 @@ LOGGING = {
     },
     "root": {"handlers": ["console"], "level": env("LOG_LEVEL", "INFO")},
     "loggers": {
+        # Both access logs are silenced to WARNING, and not only for noise. Their one line per
+        # request carries the full query string, and some of this API's queries carry a
+        # person's coordinates: `/public/locations/resolve/?latitude=…&longitude=…` and every
+        # nearby search. At INFO that writes where somebody stood, to several decimal places,
+        # into a log that is kept and shipped. Errors still reach the console.
+        #
+        # `django.server` is the development runserver; `django.channels.server` is Daphne,
+        # which is what actually serves production — it was the one still writing them.
         "django.server": {"level": "WARNING"},
+        "django.channels.server": {"level": "WARNING"},
         "celery": {"level": "INFO"},
     },
 }

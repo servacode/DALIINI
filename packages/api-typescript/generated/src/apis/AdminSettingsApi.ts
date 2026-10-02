@@ -15,12 +15,18 @@
 
 import * as runtime from '../runtime';
 import type {
+  AdminAppRelease,
+  AdminAppReleaseRequest,
   AdminSettingList,
   AdminSettingWriteRequest,
   AdminSettingWritten,
   ApiError,
 } from '../models/index';
 import {
+    AdminAppReleaseFromJSON,
+    AdminAppReleaseToJSON,
+    AdminAppReleaseRequestFromJSON,
+    AdminAppReleaseRequestToJSON,
     AdminSettingListFromJSON,
     AdminSettingListToJSON,
     AdminSettingWriteRequestFromJSON,
@@ -31,6 +37,15 @@ import {
     ApiErrorToJSON,
 } from '../models/index';
 
+export interface AdminAppReleaseRetrieveRequest {
+    platform?: AdminAppReleaseRetrievePlatformEnum;
+}
+
+export interface AdminAppReleaseUpdateRequest {
+    adminAppReleaseRequest: AdminAppReleaseRequest;
+    platform?: AdminAppReleaseUpdatePlatformEnum;
+}
+
 export interface AdminSettingWriteOperationRequest {
     adminSettingWriteRequest: AdminSettingWriteRequest;
 }
@@ -39,6 +54,102 @@ export interface AdminSettingWriteOperationRequest {
  * 
  */
 export class AdminSettingsApi extends runtime.BaseAPI {
+
+    /**
+     * Zeros mean nothing is enforced, which is what an unset platform reads as.
+     * What a mobile build must be
+     */
+    async adminAppReleaseRetrieveRaw(requestParameters: AdminAppReleaseRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminAppRelease>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['platform'] != null) {
+            queryParameters['platform'] = requestParameters['platform'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/app-release/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminAppReleaseFromJSON(jsonValue));
+    }
+
+    /**
+     * Zeros mean nothing is enforced, which is what an unset platform reads as.
+     * What a mobile build must be
+     */
+    async adminAppReleaseRetrieve(requestParameters: AdminAppReleaseRetrieveRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminAppRelease> {
+        const response = await this.adminAppReleaseRetrieveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Requires admin.settings.manage, re-checked inside the handler. A minimum above the latest is refused: nobody can install a build that does not exist. Audited.
+     * Set what a mobile build must be
+     */
+    async adminAppReleaseUpdateRaw(requestParameters: AdminAppReleaseUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminAppRelease>> {
+        if (requestParameters['adminAppReleaseRequest'] == null) {
+            throw new runtime.RequiredError(
+                'adminAppReleaseRequest',
+                'Required parameter "adminAppReleaseRequest" was null or undefined when calling adminAppReleaseUpdate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['platform'] != null) {
+            queryParameters['platform'] = requestParameters['platform'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/app-release/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminAppReleaseRequestToJSON(requestParameters['adminAppReleaseRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminAppReleaseFromJSON(jsonValue));
+    }
+
+    /**
+     * Requires admin.settings.manage, re-checked inside the handler. A minimum above the latest is refused: nobody can install a build that does not exist. Audited.
+     * Set what a mobile build must be
+     */
+    async adminAppReleaseUpdate(requestParameters: AdminAppReleaseUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminAppRelease> {
+        const response = await this.adminAppReleaseUpdateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Requires the manage permission, which is re-checked inside the handler.
@@ -127,3 +238,20 @@ export class AdminSettingsApi extends runtime.BaseAPI {
     }
 
 }
+
+/**
+ * @export
+ */
+export const AdminAppReleaseRetrievePlatformEnum = {
+    Android: 'ANDROID',
+    Ios: 'IOS'
+} as const;
+export type AdminAppReleaseRetrievePlatformEnum = typeof AdminAppReleaseRetrievePlatformEnum[keyof typeof AdminAppReleaseRetrievePlatformEnum];
+/**
+ * @export
+ */
+export const AdminAppReleaseUpdatePlatformEnum = {
+    Android: 'ANDROID',
+    Ios: 'IOS'
+} as const;
+export type AdminAppReleaseUpdatePlatformEnum = typeof AdminAppReleaseUpdatePlatformEnum[keyof typeof AdminAppReleaseUpdatePlatformEnum];

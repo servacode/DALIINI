@@ -62,8 +62,7 @@ class HandoffConnectedTest {
         assertEquals(List(requirement.minFiles) { requirement.id }, submitted.evidence.map { it.requirementId })
     }
 
-    @Test fun `after the operator approves,
-        the owner sees it and anyone finds the facility with its photo`() = runBlocking {
+    @Test fun `after the operator approves, the owner sees it and anyone finds it`() = runBlocking {
         assumeTrue("runs as the second half of the hand-off", phase == "public")
 
         // The owner's app re-fetches and sees the operator's decision.

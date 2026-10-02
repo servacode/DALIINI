@@ -4,7 +4,7 @@ from typing import Any
 
 from rest_framework import serializers
 
-from .models import ContactMessage, EmergencyNumber, LegalDocument
+from .models import AppRelease, ContactMessage, EmergencyNumber, LegalDocument
 
 
 class ContentPageSerializer(serializers.Serializer[Any]):
@@ -70,3 +70,24 @@ class ContactMessageRequestSerializer(serializers.Serializer[Any]):
 class ContactMessageCreatedSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     createdAt = serializers.DateTimeField()
+
+
+class AppReleaseSerializer(serializers.Serializer[Any]):
+    platform = serializers.ChoiceField(choices=AppRelease.Platform.choices)
+    minimumVersionCode = serializers.IntegerField(
+        help_text=(
+            "A build below this must stop and say so. Zero means nothing is blocked, which is "
+            "what an unconfigured backend answers."
+        ),
+    )
+    latestVersionCode = serializers.IntegerField(
+        help_text="A build below this may offer an update, but must keep working.",
+    )
+    storeUrl = serializers.CharField(
+        allow_blank=True,
+        help_text="Where to get the newer build. Empty means show the notice without a button.",
+    )
+    noticeAr = serializers.CharField(
+        allow_blank=True,
+        help_text="What the blocking screen says. Empty falls back to the app's own wording.",
+    )

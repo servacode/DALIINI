@@ -14,6 +14,7 @@ from core.openapi import NOT_FOUND_404, THROTTLED_429, VALIDATION_400
 from core.throttles import ContactThrottle
 
 from .content_schemas import (
+    AppReleaseSerializer,
     ContactMessageCreatedSerializer,
     ContactMessageRequestSerializer,
     ContentPageSerializer,
@@ -24,7 +25,7 @@ from .legal_schemas import (
     LegalDocumentListSerializer,
     LegalDocumentSerializer,
 )
-from .models import ContactMessage, EmergencyNumber, FaqEntry, LegalDocument
+from .models import AppRelease, ContactMessage, EmergencyNumber, FaqEntry, LegalDocument
 from .pages import BUILT_IN_KEYS, key_for, public_page_payload
 from .schemas import PublicAdvertisementListSerializer
 from .selectors import active_ads
@@ -272,3 +273,53 @@ class PublicContactView(APIView):
         return Response(
             {"id": str(message.pk), "createdAt": message.created_at.isoformat()}, status=201
         )
+
+
+class PublicAppReleaseView(APIView):
+    """What a mobile build must be to keep talking to this backend.
+
+    The app asks at startup. Zeros mean nothing is blocked and nothing is offered, which is
+    what an unconfigured backend answers: a platform that works must not lock every phone out
+    because nobody filled in a form.
+    """
+
+    authentication_classes = []
+    permission_classes = []
+
+    @extend_schema(
+        operation_id="publicAppReleaseRetrieve",
+        tags=["Content"],
+        summary="The minimum and newest build of the mobile app",
+        description=(
+            "A build below `minimumVersionCode` must stop and show `noticeAr`. A build below "
+            "`latestVersionCode` may offer an update and carry on. Both are zero until an "
+            "operator sets them, and zero blocks nothing. Cacheable for five minutes."
+        ),
+        parameters=[
+            OpenApiParameter(
+                "platform",
+                str,
+                OpenApiParameter.QUERY,
+                required=False,
+                enum=[choice[0] for choice in AppRelease.Platform.choices],
+                description="Defaults to ANDROID.",
+            )
+        ],
+        responses={200: AppReleaseSerializer, 400: VALIDATION_400},
+    )
+    def get(self, request: Request) -> Response:
+        platform = (request.query_params.get("platform") or AppRelease.Platform.ANDROID).upper()
+        if platform not in AppRelease.Platform.values:
+            raise ValidationError({"platform": ["Must be ANDROID or IOS."]})
+        release = AppRelease.objects.filter(platform=platform).first()
+        response = Response(
+            {
+                "platform": platform,
+                "minimumVersionCode": release.minimum_version_code if release else 0,
+                "latestVersionCode": release.latest_version_code if release else 0,
+                "storeUrl": release.store_url if release else "",
+                "noticeAr": release.notice_ar if release else "",
+            }
+        )
+        response["Cache-Control"] = PUBLIC_CACHE
+        return response

@@ -1,5 +1,6 @@
 package com.servacode.directory.core.testing
 
+import com.servacode.directory.core.model.AppRelease
 import com.servacode.directory.core.model.EmergencyNumber
 import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.core.model.FacilityReportReason
@@ -218,6 +219,14 @@ class ScriptedPublicApi : PublicApiBoundary {
     override suspend fun ads(provinceId: String): List<HomeAd> {
         calls += "ads:$provinceId"
         return adsAnswer(provinceId)
+    }
+
+    /** Overridable so a test can say this build is too old, or that nothing is configured. */
+    var appReleaseAnswer: () -> AppRelease = { AppRelease(0, 0, "", "") }
+
+    override suspend fun appRelease(): AppRelease {
+        calls += "appRelease"
+        return appReleaseAnswer()
     }
 
     override suspend fun search(

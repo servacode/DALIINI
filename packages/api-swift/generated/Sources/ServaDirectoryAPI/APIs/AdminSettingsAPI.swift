@@ -13,6 +13,108 @@ import AnyCodable
 open class AdminSettingsAPI {
 
     /**
+     * enum for parameter platform
+     */
+    public enum Platform_adminAppReleaseRetrieve: String, CaseIterable {
+        case android = "ANDROID"
+        case ios = "IOS"
+    }
+
+    /**
+     What a mobile build must be
+     
+     - parameter platform: (query) Defaults to ANDROID. (optional)
+     - returns: AdminAppRelease
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminAppReleaseRetrieve(platform: Platform_adminAppReleaseRetrieve? = nil) async throws -> AdminAppRelease {
+        return try await adminAppReleaseRetrieveWithRequestBuilder(platform: platform).execute().body
+    }
+
+    /**
+     What a mobile build must be
+     - GET /api/v1/admin/app-release/
+     - Zeros mean nothing is enforced, which is what an unset platform reads as.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter platform: (query) Defaults to ANDROID. (optional)
+     - returns: RequestBuilder<AdminAppRelease> 
+     */
+    open class func adminAppReleaseRetrieveWithRequestBuilder(platform: Platform_adminAppReleaseRetrieve? = nil) -> RequestBuilder<AdminAppRelease> {
+        let localVariablePath = "/api/v1/admin/app-release/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "platform": (wrappedValue: platform?.encodeToJSON(), isExplode: true),
+        ])
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminAppRelease>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     * enum for parameter platform
+     */
+    public enum Platform_adminAppReleaseUpdate: String, CaseIterable {
+        case android = "ANDROID"
+        case ios = "IOS"
+    }
+
+    /**
+     Set what a mobile build must be
+     
+     - parameter adminAppReleaseRequest: (body)  
+     - parameter platform: (query) Defaults to ANDROID. (optional)
+     - returns: AdminAppRelease
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminAppReleaseUpdate(adminAppReleaseRequest: AdminAppReleaseRequest, platform: Platform_adminAppReleaseUpdate? = nil) async throws -> AdminAppRelease {
+        return try await adminAppReleaseUpdateWithRequestBuilder(adminAppReleaseRequest: adminAppReleaseRequest, platform: platform).execute().body
+    }
+
+    /**
+     Set what a mobile build must be
+     - PUT /api/v1/admin/app-release/
+     - Requires admin.settings.manage, re-checked inside the handler. A minimum above the latest is refused: nobody can install a build that does not exist. Audited.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter adminAppReleaseRequest: (body)  
+     - parameter platform: (query) Defaults to ANDROID. (optional)
+     - returns: RequestBuilder<AdminAppRelease> 
+     */
+    open class func adminAppReleaseUpdateWithRequestBuilder(adminAppReleaseRequest: AdminAppReleaseRequest, platform: Platform_adminAppReleaseUpdate? = nil) -> RequestBuilder<AdminAppRelease> {
+        let localVariablePath = "/api/v1/admin/app-release/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminAppReleaseRequest)
+
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "platform": (wrappedValue: platform?.encodeToJSON(), isExplode: true),
+        ])
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminAppRelease>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Create or update a typed platform setting
      
      - parameter adminSettingWriteRequest: (body)  

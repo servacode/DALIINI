@@ -27,6 +27,7 @@ from accounts.rbac import admin_permissions_for
 from audit.models import AuditEvent
 from audit.services import record_audit
 from content_services.media import save_ad_image
+from content_services.models import AppRelease
 from core.openapi import NOT_FOUND_404, THROTTLED_429, VALIDATION_400, protected
 from core.pagination import CursorPage
 from facilities.models import Facility, FacilityApplication, FacilityReport, RejectionTemplate
@@ -40,6 +41,8 @@ from .schemas_smart import (
     AdminAdImageSerializer,
     AdminAdImageUploadSerializer,
     AdminAlertListSerializer,
+    AdminAppReleaseRequestSerializer,
+    AdminAppReleaseSerializer,
     AdminBroadcastPageSerializer,
     AdminBroadcastRequestSerializer,
     AdminBroadcastSerializer,
@@ -827,3 +830,121 @@ class AdvertisementImageUploadView(AdminView):
             {"imageKey": key, "url": storage.url(key), "width": width, "height": height},
             status=201,
         )
+
+
+def _app_release_payload(release: AppRelease | None, platform: str) -> dict[str, Any]:
+    """What an operator sees. A platform with no row reads as zeros, which refuse nobody."""
+    if release is None:
+        return {
+            "platform": platform,
+            "minimumVersionCode": 0,
+            "latestVersionCode": 0,
+            "storeUrl": "",
+            "noticeAr": "",
+            "updatedAt": None,
+        }
+    return {
+        "platform": release.platform,
+        "minimumVersionCode": release.minimum_version_code,
+        "latestVersionCode": release.latest_version_code,
+        "storeUrl": release.store_url,
+        "noticeAr": release.notice_ar,
+        "updatedAt": release.updated_at,
+    }
+
+
+def _app_release_snapshot(release: AppRelease | None, platform: str) -> dict[str, Any]:
+    """What an operator chose, without the timestamp: this goes into an audit JSON field."""
+    payload = _app_release_payload(release, platform)
+    payload.pop("updatedAt", None)
+    return payload
+
+
+class AppReleaseView(AdminView):
+    """Read and set what a mobile build must be.
+
+    The one admin screen that can stop every phone in the field, so it is audited like any
+    other mutation and the write re-checks its permission inside the handler.
+    """
+
+    required_permission = "admin.settings.read"
+
+    @staticmethod
+    def _platform(request: Any) -> str:
+        value = (request.query_params.get("platform") or AppRelease.Platform.ANDROID).upper()
+        if value not in AppRelease.Platform.values:
+            raise ValidationError({"platform": ["Must be ANDROID or IOS."]})
+        return value
+
+    @extend_schema(
+        operation_id="adminAppReleaseRetrieve",
+        tags=["Admin Settings"],
+        summary="What a mobile build must be",
+        description="Zeros mean nothing is enforced, which is what an unset platform reads as.",
+        parameters=[
+            OpenApiParameter(
+                "platform",
+                str,
+                OpenApiParameter.QUERY,
+                required=False,
+                enum=[choice[0] for choice in AppRelease.Platform.choices],
+                description="Defaults to ANDROID.",
+            )
+        ],
+        responses={200: AdminAppReleaseSerializer, 400: VALIDATION_400, **protected()},
+    )
+    def get(self, request: Any) -> Response:
+        platform = self._platform(request)
+        release = AppRelease.objects.filter(platform=platform).first()
+        return Response(_app_release_payload(release, platform))
+
+    @extend_schema(
+        operation_id="adminAppReleaseUpdate",
+        tags=["Admin Settings"],
+        summary="Set what a mobile build must be",
+        description=(
+            "Requires admin.settings.manage, re-checked inside the handler. A minimum above "
+            "the latest is refused: nobody can install a build that does not exist. Audited."
+        ),
+        parameters=[
+            OpenApiParameter(
+                "platform",
+                str,
+                OpenApiParameter.QUERY,
+                required=False,
+                enum=[choice[0] for choice in AppRelease.Platform.choices],
+                description="Defaults to ANDROID.",
+            )
+        ],
+        request=AdminAppReleaseRequestSerializer,
+        responses={200: AdminAppReleaseSerializer, 400: VALIDATION_400, **protected()},
+    )
+    def put(self, request: Any) -> Response:
+        require_permission(self, request, "admin.settings.manage")
+        platform = self._platform(request)
+        payload = AdminAppReleaseRequestSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        data = payload.validated_data
+
+        existing = AppRelease.objects.filter(platform=platform).first()
+        # The audit snapshot carries what an operator chose, not when: a JSON field cannot hold
+        # a datetime, and the event already knows its own time.
+        before = _app_release_snapshot(existing, platform) if existing else None
+        release, _ = AppRelease.objects.update_or_create(
+            platform=platform,
+            defaults={
+                "minimum_version_code": data["minimumVersionCode"],
+                "latest_version_code": data["latestVersionCode"],
+                "store_url": data["storeUrl"],
+                "notice_ar": data["noticeAr"],
+            },
+        )
+        after = _app_release_payload(release, platform)
+        record_audit(
+            actor=request.user,
+            action="app_release.updated",
+            target=release,
+            before_snapshot=before,
+            after_snapshot=_app_release_snapshot(release, platform),
+        )
+        return Response(after)

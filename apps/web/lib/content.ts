@@ -24,7 +24,11 @@ export function parseContent(body: string): ContentBlock[] {
 
   for (const raw of body.replace(/\r\n?/g, "\n").split("\n")) {
     const line = raw.trim();
-    if (!line) {
+    // A marker with nothing after it is a line somebody began and did not finish. The line is
+    // trimmed above, so "## " arrives here as "##" and would otherwise fall through to the
+    // paragraph branch and print itself — the heading branch's own empty check can never be
+    // reached. Treated as blank instead, which is what was meant.
+    if (!line || line === "##" || line === "-") {
       endParagraph();
       endList();
     } else if (line.startsWith("## ")) {

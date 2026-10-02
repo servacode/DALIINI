@@ -19,6 +19,15 @@ import { write } from "./api";
 
 export type Mutation = Readonly<{
   run: (operation: string, body?: Record<string, unknown>) => Promise<boolean>;
+  /**
+   * Run a write and read its answer, for the few operations whose answer matters.
+   *
+   * Most writes are told apart by whether they happened, which is what `run` returns. A batch
+   * is not: it reports what became of each item, and some may have been decided by somebody
+   * else between the list and the button. The value is returned rather than kept in state,
+   * because a caller reads it in the line after the await — before any re-render has run.
+   */
+  runFor: <T>(operation: string, body?: Record<string, unknown>) => Promise<T | null>;
   pending: boolean;
   error: ApiErrorBody | null;
   status: number;
@@ -46,10 +55,25 @@ export function useMutation(): Mutation {
     [router],
   );
 
+  const runFor = useCallback(
+    async <T,>(operation: string, body: Record<string, unknown> = {}): Promise<T | null> => {
+      setPending(true);
+      setError(null);
+      const result = await write<T>(operation, body);
+      setPending(false);
+      setStatus(result.ok ? 200 : result.status);
+      if (result.ok) return result.data;
+      setError(result.error);
+      if (isSessionExpired(result.error)) router.replace("/login");
+      return null;
+    },
+    [router],
+  );
+
   const reset = useCallback(() => {
     setError(null);
     setStatus(0);
   }, []);
 
-  return { run, pending, error, status, reset };
+  return { run, runFor, pending, error, status, reset };
 }

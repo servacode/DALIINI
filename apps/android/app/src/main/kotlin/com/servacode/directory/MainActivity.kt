@@ -35,6 +35,7 @@ class MainActivity : ComponentActivity() {
     /** «توفير البيانات», for every screen that would fetch a picture. */
     private val dataSaver by lazy { preferences.values.map { it.dataSaver }.distinctUntilChanged() }
     @Inject lateinit var maintenance: MaintenanceState
+    @Inject lateinit var versions: VersionCheck
     @Inject lateinit var maintenanceRetry: MaintenanceCoordinator
 
     /**
@@ -59,7 +60,11 @@ class MainActivity : ComponentActivity() {
             DirectoryTheme(darkTheme = theme.isDark(isSystemInDarkTheme())) {
                 CompositionLocalProvider(LocalDataSaver provides saving) {
                     MaintenanceGate(maintenance.status, maintenanceRetry) {
-                        DirectoryApp(session.state, entries)
+                        // Inside the maintenance gate: a backend in maintenance has nothing to
+                        // say about versions yet, and one notice at a time is enough.
+                        UpdateGate(versions.verdict, BuildConfig.VERSION_CODE, versions) {
+                            DirectoryApp(session.state, entries)
+                        }
                     }
                 }
             }

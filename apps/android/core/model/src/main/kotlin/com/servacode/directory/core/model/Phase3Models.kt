@@ -154,3 +154,25 @@ object DutyPresets {
     fun parseDate(value: String?): LocalDate? =
         value?.trim()?.takeIf { it.isNotEmpty() }?.let { runCatching { LocalDate.parse(it.take(10)) }.getOrNull() }
 }
+
+/**
+ * What this build must be for the backend to keep serving it.
+ *
+ * Zero for both is what an unconfigured backend answers, and no version is below zero: a
+ * platform that works never locks its own users out because nobody filled in a form.
+ */
+data class AppRelease(
+    val minimumVersionCode: Int,
+    val latestVersionCode: Int,
+    /** Where to get a newer build. Empty when nobody configured one. */
+    val storeUrl: String,
+    /** What to show instead of the app's own wording. Empty when the backend said nothing. */
+    val noticeAr: String,
+) {
+    /** Whether [versionCode] is too old to run against the backend that sent this. */
+    fun blocks(versionCode: Int): Boolean = versionCode < minimumVersionCode
+
+    /** Whether a newer build exists, without this one being refused. */
+    fun supersedes(versionCode: Int): Boolean =
+        !blocks(versionCode) && versionCode < latestVersionCode
+}

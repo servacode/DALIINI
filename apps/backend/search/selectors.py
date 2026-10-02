@@ -91,15 +91,26 @@ def with_distance(
     ).order_by("distance_meters", "name_ar", "id")
 
 
+# Every way a bounding box can be wrong, said once.
+BBOX_FORMAT = (
+    "bbox must be minLon,minLat,maxLon,maxLat, with each minimum below its maximum"
+)
+
+
 def within_bbox(queryset: QuerySet[Facility], bbox: str | None) -> QuerySet[Facility]:
     if not bbox:
         return queryset
-    parts = [float(value) for value in bbox.split(",")]
+    try:
+        parts = [float(value) for value in bbox.split(",")]
+    except ValueError as exc:
+        # float() quotes the offending text in its own message. The client sent it and does
+        # not need it read back, and nothing else we did not write should reach a response.
+        raise ValueError(BBOX_FORMAT) from exc
     if len(parts) != 4:
-        raise ValueError("bbox must be minLon,minLat,maxLon,maxLat")
+        raise ValueError(BBOX_FORMAT)
     min_lon, min_lat, max_lon, max_lat = parts
     if min_lon >= max_lon or min_lat >= max_lat:
-        raise ValueError("bbox bounds are invalid")
+        raise ValueError(BBOX_FORMAT)
     polygon = Polygon.from_bbox((min_lon, min_lat, max_lon, max_lat))
     polygon.srid = 4326
     return queryset.filter(location__within=polygon)

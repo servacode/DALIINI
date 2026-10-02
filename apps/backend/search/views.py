@@ -31,6 +31,7 @@ from .schemas import (
     PublicHomeSerializer,
 )
 from .selectors import (
+    BBOX_FORMAT,
     apply_text_search,
     public_facilities,
     with_distance,
@@ -143,7 +144,7 @@ def _base_from_params(
     try:
         queryset = within_bbox(queryset, params.get("bbox"))
     except (TypeError, ValueError) as exc:
-        raise ValidationError({"bbox": str(exc)}) from exc
+        raise ValidationError({"bbox": BBOX_FORMAT}) from exc
     latitude = _parse_float(params.get("latitude"), "latitude")
     longitude = _parse_float(params.get("longitude"), "longitude")
     if (latitude is None) != (longitude is None):

@@ -21,7 +21,10 @@
 export function localPhone(raw: string | null | undefined): string | null {
   const trimmed = raw?.trim();
   if (!trimmed) return null;
-  const digits = trimmed.replace(/\D/g, "");
+  // `00` is the international prefix written out, which the backend accepts on the way in
+  // (accounts/phone.py) and a person pasting a number may well use. Dropping it first makes
+  // both ends read the same number the same way.
+  const digits = trimmed.replace(/\D/g, "").replace(/^00/, "");
   const national = digits.startsWith("963") ? digits.slice(3) : digits.replace(/^0+/, "");
   const grouped = /^9\d{8}$/.test(national)
     ? `0${national}`.replace(/^(\d{4})(\d{3})(\d{3})$/, "$1 $2 $3")

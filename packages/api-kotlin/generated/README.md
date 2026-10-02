@@ -119,6 +119,8 @@ All URIs are relative to *http://localhost*
 | *AdminReviewsApi* | [**adminReviewReject**](docs/AdminReviewsApi.md#adminreviewreject) | **POST** api/v1/admin/applications/{application_id}/reject/ | Reject an application |
 | *AdminReviewsApi* | [**adminReviewRetrieve**](docs/AdminReviewsApi.md#adminreviewretrieve) | **GET** api/v1/admin/applications/{application_id}/ | Retrieve one application with its review context |
 | *AdminReviewsApi* | [**adminReviewsList**](docs/AdminReviewsApi.md#adminreviewslist) | **GET** api/v1/admin/applications/ | List facility applications awaiting or past review |
+| *AdminSettingsApi* | [**adminAppReleaseRetrieve**](docs/AdminSettingsApi.md#adminappreleaseretrieve) | **GET** api/v1/admin/app-release/ | What a mobile build must be |
+| *AdminSettingsApi* | [**adminAppReleaseUpdate**](docs/AdminSettingsApi.md#adminappreleaseupdate) | **PUT** api/v1/admin/app-release/ | Set what a mobile build must be |
 | *AdminSettingsApi* | [**adminSettingWrite**](docs/AdminSettingsApi.md#adminsettingwrite) | **PUT** api/v1/admin/settings/ | Create or update a typed platform setting |
 | *AdminSettingsApi* | [**adminSettingsList**](docs/AdminSettingsApi.md#adminsettingslist) | **GET** api/v1/admin/settings/ | List typed platform settings |
 | *AdminSystemApi* | [**adminAlertsList**](docs/AdminSystemApi.md#adminalertslist) | **GET** api/v1/admin/alerts/ | Smart alerts: problems worth acting on now |
@@ -170,6 +172,7 @@ All URIs are relative to *http://localhost*
 | *AvailabilityApi* | [**ownerFacilityTemporaryClosureCancel**](docs/AvailabilityApi.md#ownerfacilitytemporaryclosurecancel) | **DELETE** api/v1/owner/facilities/{facility_id}/temporary-closures/{closure_id}/ | Cancel a temporary closure |
 | *AvailabilityApi* | [**ownerFacilityTemporaryClosureCreate**](docs/AvailabilityApi.md#ownerfacilitytemporaryclosurecreate) | **POST** api/v1/owner/facilities/{facility_id}/temporary-closures/ | Open a temporary closure window |
 | *AvailabilityApi* | [**ownerFacilityTemporaryClosuresList**](docs/AvailabilityApi.md#ownerfacilitytemporaryclosureslist) | **GET** api/v1/owner/facilities/{facility_id}/temporary-closures/ | List temporary closures of a facility |
+| *ContentApi* | [**publicAppReleaseRetrieve**](docs/ContentApi.md#publicappreleaseretrieve) | **GET** api/v1/public/app-release/ | The minimum and newest build of the mobile app |
 | *ContentApi* | [**publicContactCreate**](docs/ContentApi.md#publiccontactcreate) | **POST** api/v1/contact/ | Send a message to the platform team |
 | *ContentApi* | [**publicContentPageRetrieve**](docs/ContentApi.md#publiccontentpageretrieve) | **GET** api/v1/content/pages/{slug}/ | Retrieve one published content page |
 | *ContentApi* | [**publicEmergencyNumbersList**](docs/ContentApi.md#publicemergencynumberslist) | **GET** api/v1/emergency-numbers/ | Emergency numbers: national, plus the province's own |
@@ -233,6 +236,8 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminAlertSeverityEnum](docs/AdminAlertSeverityEnum.md)
  - [com.servacode.directory.api.models.AdminAnalytics](docs/AdminAnalytics.md)
  - [com.servacode.directory.api.models.AdminAnalyticsPeriodKpis](docs/AdminAnalyticsPeriodKpis.md)
+ - [com.servacode.directory.api.models.AdminAppRelease](docs/AdminAppRelease.md)
+ - [com.servacode.directory.api.models.AdminAppReleaseRequest](docs/AdminAppReleaseRequest.md)
  - [com.servacode.directory.api.models.AdminApplication](docs/AdminApplication.md)
  - [com.servacode.directory.api.models.AdminApplicationDetail](docs/AdminApplicationDetail.md)
  - [com.servacode.directory.api.models.AdminApplicationList](docs/AdminApplicationList.md)
@@ -349,6 +354,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AnalyticsEventAccepted](docs/AnalyticsEventAccepted.md)
  - [com.servacode.directory.api.models.AnalyticsEventRequest](docs/AnalyticsEventRequest.md)
  - [com.servacode.directory.api.models.ApiError](docs/ApiError.md)
+ - [com.servacode.directory.api.models.AppRelease](docs/AppRelease.md)
  - [com.servacode.directory.api.models.Availability](docs/Availability.md)
  - [com.servacode.directory.api.models.AvailabilityStateEnum](docs/AvailabilityStateEnum.md)
  - [com.servacode.directory.api.models.BilingualRef](docs/BilingualRef.md)

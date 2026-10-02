@@ -19,6 +19,7 @@ urlpatterns = [
         views_smart.RejectionTemplateDetailView.as_view(),
     ),
     path("admin/notifications/broadcast/", views_smart.BroadcastSendView.as_view()),
+    path("admin/app-release/", views_smart.AppReleaseView.as_view()),
     path("admin/notifications/broadcasts/", views_smart.BroadcastHistoryView.as_view()),
     path(
         "admin/provinces/<uuid:province_id>/readiness/",

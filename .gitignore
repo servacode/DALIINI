@@ -80,3 +80,10 @@ DALINI-SOURCE.zip
 # session's scratchpad. It means nothing on another machine and grants permissions nobody asked
 # for, so it stays local.
 .claude/
+
+# scripts/verify.sh regenerates the schema here to compare it; never committed.
+.verify-schema.yaml
+
+# Playwright writes failure traces and screenshots here; they are evidence of one run.
+apps/web/test-results/
+apps/admin/test-results/

@@ -45,6 +45,9 @@
 .grid-2 { display: grid; gap: var(--ad-space-5); grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
 .grid-main-aside { display: grid; gap: var(--ad-space-5); grid-template-columns: minmax(0, 1fr) 360px; align-items: start; }
 @media (max-width: 1100px) { .grid-2, .grid-main-aside { grid-template-columns: minmax(0, 1fr); } }
+/* The broadcast page: the composer earns the width, the summary beside it only confirms. */
+.broadcast-layout { grid-template-columns: minmax(0, 1fr) 320px; }
+@media (max-width: 1100px) { .broadcast-layout { grid-template-columns: minmax(0, 1fr); } }
 
 /* Stat cards --------------------------------------------------------------------------- */
 .kpi-grid { display: grid; gap: var(--ad-space-4); grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
@@ -78,7 +81,7 @@ a.kpi .kpi-hint { color: var(--ad-brand); font-weight: 600; }
 .kpi > span:not([class]) { font-size: var(--ad-text-sm); color: var(--ad-text-secondary); }
 
 /* Buttons ------------------------------------------------------------------------------ */
-.button-primary, .button-ghost, .button-danger, .button-secondary {
+.button-primary, .button-ghost, .button-danger {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--ad-space-2);
   min-height: var(--ad-control-h);
   padding: 0 var(--ad-space-4);
@@ -293,10 +296,6 @@ label.switch-row { cursor: pointer; }
 .data-table tbody tr:hover { background: var(--ad-surface-hover); }
 .data-table tbody tr[data-selected="true"] { background: var(--ad-surface-selected); }
 .data-table td:last-child .button-row, .data-table td:last-child > .button-ghost { justify-content: flex-end; }
-.table-footer {
-  display: flex; align-items: center; justify-content: space-between; gap: var(--ad-space-3);
-  font-size: var(--ad-text-sm); color: var(--ad-text-muted);
-}
 
 .pagination { display: flex; gap: var(--ad-space-2); justify-content: flex-end; padding-block: var(--ad-space-1); }
 
@@ -358,13 +357,6 @@ label.switch-row { cursor: pointer; }
 }
 @keyframes ad-spin { to { transform: rotate(360deg); } }
 
-.skeleton-stack { display: grid; gap: var(--ad-space-2); }
-.skeleton {
-  height: 14px; border-radius: var(--ad-radius-sm);
-  background: linear-gradient(90deg, var(--ad-surface-subtle) 25%, var(--ad-skeleton-shine) 50%, var(--ad-surface-subtle) 75%);
-  background-size: 200% 100%;
-  animation: ad-shimmer 1.3s ease-in-out infinite;
-}
 @keyframes ad-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
 .notice {
@@ -1070,6 +1062,27 @@ a.alert-item:hover { background: var(--ad-surface-hover); }
 .alert-text { display: grid; gap: 2px; flex: 1; min-width: 0; }
 .alert-text span { font-size: var(--ad-text-sm); color: var(--ad-text-secondary); }
 .alert-meta { display: flex; align-items: center; gap: var(--ad-space-2); color: var(--ad-text-muted); font-size: var(--ad-text-xs); font-weight: 700; }
+/* The severity word beside the chevron. It reads as a label rather than as more of the
+   sentence, and takes its colour from the row's own severity so the two never disagree. */
+.alert-severity { white-space: nowrap; letter-spacing: 0.01em; }
+.alert-item[data-severity="critical"] .alert-severity { color: var(--ad-danger); }
+.alert-item[data-severity="warning"] .alert-severity { color: var(--ad-warning); }
+
+/* The bar that appears once rows are ticked. It sits between the filters and the table,
+   where the eye already is, and says the count before it offers the verbs — a decision about
+   fourteen reports should start with the number fourteen. */
+.bulk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ad-space-3);
+  padding: var(--ad-space-3) var(--ad-space-4);
+  border: 1px solid var(--ad-border);
+  border-radius: var(--ad-radius-md);
+  background: var(--ad-surface-selected);
+}
+.bulk-bar strong { font-variant-numeric: tabular-nums; }
 
 /* Task centre */
 .task-groups { display: grid; gap: var(--ad-space-5); }

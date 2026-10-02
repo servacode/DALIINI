@@ -16,6 +16,7 @@
 import * as runtime from '../runtime';
 import type {
   ApiError,
+  AppRelease,
   ContactMessageCreated,
   ContactMessageRequest,
   ContentPage,
@@ -27,6 +28,8 @@ import type {
 import {
     ApiErrorFromJSON,
     ApiErrorToJSON,
+    AppReleaseFromJSON,
+    AppReleaseToJSON,
     ContactMessageCreatedFromJSON,
     ContactMessageCreatedToJSON,
     ContactMessageRequestFromJSON,
@@ -42,6 +45,10 @@ import {
     LegalDocumentListFromJSON,
     LegalDocumentListToJSON,
 } from '../models/index';
+
+export interface PublicAppReleaseRetrieveRequest {
+    platform?: PublicAppReleaseRetrievePlatformEnum;
+}
 
 export interface PublicContactCreateRequest {
     contactMessageRequest: ContactMessageRequest;
@@ -63,6 +70,41 @@ export interface PublicLegalDocumentRetrieveRequest {
  * 
  */
 export class ContentApi extends runtime.BaseAPI {
+
+    /**
+     * A build below `minimumVersionCode` must stop and show `noticeAr`. A build below `latestVersionCode` may offer an update and carry on. Both are zero until an operator sets them, and zero blocks nothing. Cacheable for five minutes.
+     * The minimum and newest build of the mobile app
+     */
+    async publicAppReleaseRetrieveRaw(requestParameters: PublicAppReleaseRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AppRelease>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['platform'] != null) {
+            queryParameters['platform'] = requestParameters['platform'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/v1/public/app-release/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AppReleaseFromJSON(jsonValue));
+    }
+
+    /**
+     * A build below `minimumVersionCode` must stop and show `noticeAr`. A build below `latestVersionCode` may offer an update and carry on. Both are zero until an operator sets them, and zero blocks nothing. Cacheable for five minutes.
+     * The minimum and newest build of the mobile app
+     */
+    async publicAppReleaseRetrieve(requestParameters: PublicAppReleaseRetrieveRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AppRelease> {
+        const response = await this.publicAppReleaseRetrieveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Anonymous or signed in; a signed-in sender is linked to their account. Strictly throttled per account or per client address (3/hour by default). The client address is taken from X-Forwarded-For only when the server is configured with the number of trusted proxies.
@@ -289,3 +331,12 @@ export class ContentApi extends runtime.BaseAPI {
     }
 
 }
+
+/**
+ * @export
+ */
+export const PublicAppReleaseRetrievePlatformEnum = {
+    Android: 'ANDROID',
+    Ios: 'IOS'
+} as const;
+export type PublicAppReleaseRetrievePlatformEnum = typeof PublicAppReleaseRetrievePlatformEnum[keyof typeof PublicAppReleaseRetrievePlatformEnum];

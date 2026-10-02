@@ -19,6 +19,8 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.AdminSettingsApi
+import com.servacode.directory.api.models.AdminAppRelease
+import com.servacode.directory.api.models.AdminAppReleaseRequest
 import com.servacode.directory.api.models.AdminSettingList
 import com.servacode.directory.api.models.AdminSettingWriteRequest
 import com.servacode.directory.api.models.AdminSettingWritten
@@ -28,6 +30,23 @@ class AdminSettingsApiTest : ShouldSpec() {
     init {
         // uncomment below to create an instance of AdminSettingsApi
         //val apiInstance = AdminSettingsApi()
+
+        // to test adminAppReleaseRetrieve
+        should("test adminAppReleaseRetrieve") {
+            // uncomment below to test adminAppReleaseRetrieve
+            //val platform : kotlin.String = platform_example // kotlin.String | Defaults to ANDROID.
+            //val result : AdminAppRelease = apiInstance.adminAppReleaseRetrieve(platform)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminAppReleaseUpdate
+        should("test adminAppReleaseUpdate") {
+            // uncomment below to test adminAppReleaseUpdate
+            //val adminAppReleaseRequest : AdminAppReleaseRequest =  // AdminAppReleaseRequest | 
+            //val platform : kotlin.String = platform_example // kotlin.String | Defaults to ANDROID.
+            //val result : AdminAppRelease = apiInstance.adminAppReleaseUpdate(adminAppReleaseRequest, platform)
+            //result shouldBe ("TODO")
+        }
 
         // to test adminSettingWrite
         should("test adminSettingWrite") {

@@ -192,7 +192,9 @@ class GeneratedAdapterTest {
 
         val url = taken().url
         assertEquals("name", url.queryParameter("sort"))
-        assertEquals("35.95", url.queryParameter("latitude"))
+        // Four decimal places, always: a position leaves the phone at about ten metres so that
+        // no log or proxy downstream can hold more (core/network/Coordinates.kt).
+        assertEquals("35.9500", url.queryParameter("latitude"))
     }
 
     @Test fun `a category's choices keep the operators' order, their integer keys as string ids`() = runTest {

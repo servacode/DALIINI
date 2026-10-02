@@ -49,6 +49,136 @@ const KNOWN: Record<string, { label: string; hint?: string }> = {
  *
  * Each save is audited by the backend, so the trail records who changed which setting.
  */
+
+type AppRelease = Readonly<{
+  platform: string;
+  minimumVersionCode: number;
+  latestVersionCode: number;
+  storeUrl: string;
+  noticeAr: string;
+  updatedAt: string | null;
+}>;
+
+/**
+ * What a mobile build must be to keep working.
+ *
+ * The one control in this console that can stop every phone in the field, so it says what it
+ * will do before it does it, and it will not let the minimum pass the latest — nobody can
+ * install a build that does not exist. Zero means nothing is enforced, which is what an
+ * untouched platform reads as, and that is said rather than left to be guessed from a 0.
+ */
+function AppReleasePanel({ canManage }: { canManage: boolean }): React.JSX.Element {
+  const release = useResource<AppRelease>("appRelease");
+  const mutation = useMutation();
+  const [draft, setDraft] = useState<Partial<AppRelease>>({});
+  const [saved, setSaved] = useState<string | null>(null);
+
+  const value = { ...release.data, ...draft } as AppRelease;
+  const invalid =
+    Number(value.minimumVersionCode ?? 0) > Number(value.latestVersionCode ?? 0);
+
+  async function save(): Promise<void> {
+    if (invalid) return;
+    const ok = await mutation.run("appReleaseUpdate", {
+      minimumVersionCode: Number(value.minimumVersionCode ?? 0),
+      latestVersionCode: Number(value.latestVersionCode ?? 0),
+      storeUrl: value.storeUrl ?? "",
+      noticeAr: value.noticeAr ?? "",
+    });
+    if (!ok) return;
+    setDraft({});
+    setSaved("تم حفظ إصدار التطبيق.");
+    release.reload();
+  }
+
+  return (
+    <Panel title="إصدار التطبيق">
+      {release.loading ? <LoadingState /> : null}
+      {release.error ? <ErrorState error={release.error} onRetry={release.reload} /> : null}
+      {mutation.error ? <ErrorState error={mutation.error} /> : null}
+      {release.data ? (
+        <div className="stack">
+          <p className="field-hint">
+            نسخة أقدم من «الحدّ الأدنى» تتوقّف وتعرض الرسالة أدناه. الصفر يعني ألّا يُمنع أحد.
+          </p>
+          <label className="field">
+            <span>الحدّ الأدنى المقبول</span>
+            <input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              data-testid="release-minimum"
+              disabled={!canManage}
+              value={String(value.minimumVersionCode ?? 0)}
+              onChange={(event) =>
+                setDraft((d) => ({ ...d, minimumVersionCode: Number(event.target.value) }))
+              }
+            />
+          </label>
+          <label className="field">
+            <span>أحدث نسخة منشورة</span>
+            <input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              data-testid="release-latest"
+              disabled={!canManage}
+              value={String(value.latestVersionCode ?? 0)}
+              onChange={(event) =>
+                setDraft((d) => ({ ...d, latestVersionCode: Number(event.target.value) }))
+              }
+            />
+          </label>
+          {invalid ? (
+            <p className="field-error" data-testid="release-invalid">
+              الحدّ الأدنى لا يمكن أن يتجاوز الأحدث: لا أحد يستطيع تثبيت نسخة غير موجودة.
+            </p>
+          ) : null}
+          <label className="field">
+            <span>رابط التحديث</span>
+            <input
+              type="url"
+              data-testid="release-store"
+              disabled={!canManage}
+              placeholder="يُترك فارغًا فلا يظهر زرّ"
+              value={value.storeUrl ?? ""}
+              onChange={(event) => setDraft((d) => ({ ...d, storeUrl: event.target.value }))}
+            />
+          </label>
+          <label className="field">
+            <span>الرسالة المعروضة</span>
+            <textarea
+              rows={2}
+              data-testid="release-notice"
+              disabled={!canManage}
+              placeholder="يُترك فارغًا فيستعمل التطبيق صياغته"
+              value={value.noticeAr ?? ""}
+              onChange={(event) => setDraft((d) => ({ ...d, noticeAr: event.target.value }))}
+            />
+          </label>
+          {canManage ? (
+            <div className="button-row">
+              <button
+                type="button"
+                className="button-primary"
+                data-testid="release-save"
+                disabled={mutation.pending || invalid}
+                onClick={save}
+              >
+                حفظ
+              </button>
+            </div>
+          ) : null}
+          {release.data.updatedAt ? (
+            <p className="field-hint">آخر تغيير: {formatDateTime(release.data.updatedAt)}</p>
+          ) : null}
+        </div>
+      ) : null}
+      <Toast message={saved} onDismiss={() => setSaved(null)} />
+    </Panel>
+  );
+}
+
 export default function SettingsPage() {
   const settings = useResource<{ items: Setting[] }>("settings");
   const mutation = useMutation();
@@ -160,6 +290,11 @@ export default function SettingsPage() {
           </Panel>
         )
       ) : null}
+
+      {/* Part of this screen, not a screen of its own: when the operator may not read the
+          settings at all, the page says so once and this says nothing. Two identical
+          permission notices stacked is a worse answer than one. */}
+      {settings.error ? null : <AppReleasePanel canManage={canManage} />}
 
       <Toast message={toast} onDismiss={() => setToast(null)} />
     </div>

@@ -1110,6 +1110,110 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+  /api/v1/admin/app-release/:
+    get:
+      operationId: adminAppReleaseRetrieve
+      description: Zeros mean nothing is enforced, which is what an unset platform
+        reads as.
+      summary: What a mobile build must be
+      parameters:
+      - in: query
+        name: platform
+        schema:
+          type: string
+          enum:
+          - ANDROID
+          - IOS
+        description: Defaults to ANDROID.
+      tags:
+      - Admin Settings
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAppRelease'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+    put:
+      operationId: adminAppReleaseUpdate
+      description: 'Requires admin.settings.manage, re-checked inside the handler.
+        A minimum above the latest is refused: nobody can install a build that does
+        not exist. Audited.'
+      summary: Set what a mobile build must be
+      parameters:
+      - in: query
+        name: platform
+        schema:
+          type: string
+          enum:
+          - ANDROID
+          - IOS
+        description: Defaults to ANDROID.
+      tags:
+      - Admin Settings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminAppReleaseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminAppReleaseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminAppReleaseRequest'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAppRelease'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/admin/applications/:
     get:
       operationId: adminReviewsList
@@ -7312,6 +7416,39 @@ paths:
               schema:
                 $ref: '#/components/schemas/PublicAdvertisementList'
           description: ''
+  /api/v1/public/app-release/:
+    get:
+      operationId: publicAppReleaseRetrieve
+      description: A build below `minimumVersionCode` must stop and show `noticeAr`.
+        A build below `latestVersionCode` may offer an update and carry on. Both are
+        zero until an operator sets them, and zero blocks nothing. Cacheable for five
+        minutes.
+      summary: The minimum and newest build of the mobile app
+      parameters:
+      - in: query
+        name: platform
+        schema:
+          type: string
+          enum:
+          - ANDROID
+          - IOS
+        description: Defaults to ANDROID.
+      tags:
+      - Content
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppRelease'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
   /api/v1/public/categories/{category_id}/tags/:
     get:
       operationId: publicCategoryTagsRetrieve
@@ -8403,6 +8540,54 @@ components:
       - searches
       - to
       - zeroResultSearches
+    AdminAppRelease:
+      type: object
+      properties:
+        platform:
+          $ref: '#/components/schemas/PushPlatformEnum'
+        minimumVersionCode:
+          type: integer
+        latestVersionCode:
+          type: integer
+        storeUrl:
+          type: string
+        noticeAr:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - latestVersionCode
+      - minimumVersionCode
+      - noticeAr
+      - platform
+      - storeUrl
+      - updatedAt
+    AdminAppReleaseRequest:
+      type: object
+      properties:
+        minimumVersionCode:
+          type: integer
+          minimum: 0
+          description: A build below this is refused. Zero refuses nobody.
+        latestVersionCode:
+          type: integer
+          minimum: 0
+          description: The newest build there is. Must not be below the minimum.
+        storeUrl:
+          type: string
+          description: Where a blocked person is sent. Empty shows the notice without
+            a button.
+          maxLength: 200
+        noticeAr:
+          type: string
+          description: What the blocking screen says. Empty uses the app's own wording.
+      required:
+      - latestVersionCode
+      - minimumVersionCode
+      - noticeAr
+      - storeUrl
     AdminApplication:
       type: object
       properties:
@@ -10886,6 +11071,32 @@ components:
       - details
       - message
       - requestId
+    AppRelease:
+      type: object
+      properties:
+        platform:
+          $ref: '#/components/schemas/PushPlatformEnum'
+        minimumVersionCode:
+          type: integer
+          description: A build below this must stop and say so. Zero means nothing
+            is blocked, which is what an unconfigured backend answers.
+        latestVersionCode:
+          type: integer
+          description: A build below this may offer an update, but must keep working.
+        storeUrl:
+          type: string
+          description: Where to get the newer build. Empty means show the notice without
+            a button.
+        noticeAr:
+          type: string
+          description: What the blocking screen says. Empty falls back to the app's
+            own wording.
+      required:
+      - latestVersionCode
+      - minimumVersionCode
+      - noticeAr
+      - platform
+      - storeUrl
     Availability:
       type: object
       description: Computed server-side by the availability engine; clients must not
