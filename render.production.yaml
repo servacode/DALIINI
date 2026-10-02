@@ -189,6 +189,13 @@ services:
       # /.well-known/assetlinks.json name.
       - key: NEXT_PUBLIC_API_ORIGIN
         sync: false
+      # Where the photographs are actually served from: the object store's public base, which
+      # is a different host from the API. It is baked into the build, and without it the
+      # site's own Content-Security-Policy blocks every facility photograph — the page renders
+      # with alt text where the picture should be. This has happened once already
+      # (apps/web/next.config.ts records it), and neither blueprint carried the variable.
+      - key: NEXT_PUBLIC_MEDIA_ORIGIN
+        sync: false
       - key: NEXT_PUBLIC_PLAY_STORE_URL
         sync: false
       - key: NEXT_PUBLIC_APP_STORE_URL

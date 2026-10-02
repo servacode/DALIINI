@@ -124,3 +124,20 @@ def test_no_access_log_writes_a_request_line() -> None:
         assert f'"{logger}": {{"level": "WARNING"}}' in settings_base, (
             f"{logger} would write a request line, and some carry coordinates"
         )
+
+
+def test_the_site_is_told_where_its_photographs_live() -> None:
+    """The media origin must reach the web build, or the site blocks its own images.
+
+    `apps/web/next.config.ts` puts this origin into the Content-Security-Policy's img-src at
+    build time. Without it the policy allows the API and nothing else, every facility
+    photograph is refused by the browser, and the page renders alt text where a picture should
+    be. It has happened once; the blueprints did not carry the variable, and a browser test
+    against a real stack is what noticed.
+    """
+    www = next(s for s in BLUEPRINT["services"] if s["name"].endswith("www"))
+    keys = {entry.get("key") for entry in www["envVars"]}
+
+    assert "NEXT_PUBLIC_MEDIA_ORIGIN" in keys, (
+        "the site would block every facility photograph"
+    )
