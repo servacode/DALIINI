@@ -101,6 +101,13 @@ case " $SELECTED " in *" web "*)
   check "web tests" "vitest" pnpm --filter @servacode/public-web test
   check "web lint" "eslint" pnpm --filter @servacode/public-web lint
   check "web types" "tsc" pnpm --filter @servacode/public-web typecheck
+  # The live pass needs a backend and a built site, which scripts/e2e-android.sh provides.
+  # Named here so the table says the site's pages are unverified rather than leaving it out.
+  if [ -n "${VERIFY_SITE_URL:-}" ]; then
+    check "web pages live" "every public route" env PUBLIC_API_ORIGIN="${VERIFY_SITE_API:-}"       node scripts/verify-public-site.mjs "$VERIFY_SITE_URL"
+  else
+    record "web pages live" "SKIP" "set VERIFY_SITE_URL to a running site to check its pages"
+  fi
   if [ "$QUICK" = 1 ]; then
     record "web build" "SKIP" "--quick"
   else
