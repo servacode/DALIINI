@@ -61,7 +61,10 @@ def test_clearing_city_clears_existing_neighborhood(facility: Facility, user: Us
     neighborhood = Neighborhood.objects.create(city=city, name_ar="حي اختبار")
     facility.city = city
     facility.neighborhood = neighborhood
-    facility.save(update_fields=["city", "neighborhood"])
+    # Not yet published: the edit applies as it stands. On a live facility it would wait
+    # for review instead (test_live_changes).
+    facility.status = Facility.Status.DRAFT
+    facility.save(update_fields=["city", "neighborhood", "status"])
 
     updated = update_facility_core(
         actor=user,

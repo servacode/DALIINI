@@ -16,11 +16,13 @@
 /**
  * * `INITIAL` - Initial
  * * `REVERIFICATION` - Reverification
+ * * `CHANGE` - Change
  * @export
  */
 export const FacilityApplicationKindEnum = {
     Initial: 'INITIAL',
-    Reverification: 'REVERIFICATION'
+    Reverification: 'REVERIFICATION',
+    Change: 'CHANGE'
 } as const;
 export type FacilityApplicationKindEnum = typeof FacilityApplicationKindEnum[keyof typeof FacilityApplicationKindEnum];
 

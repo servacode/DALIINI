@@ -44,6 +44,12 @@ def _required_action(facility: Facility, application: FacilityApplication | None
 
 
 def facility_detail(facility: Facility) -> dict[str, Any]:
+    from .changes import overlay_pending
+
+    return overlay_pending(facility, _published_detail(facility))
+
+
+def _published_detail(facility: Facility) -> dict[str, Any]:
     point = facility.location
     latest = facility.applications.order_by("-updated_at").first()
     return {

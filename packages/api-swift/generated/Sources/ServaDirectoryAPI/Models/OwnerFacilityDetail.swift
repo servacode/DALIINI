@@ -40,8 +40,10 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
     /** When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old. */
     public var hoursConfirmedAt: Date?
     public var application: OwnerApplication?
+    /** Set while an edit to the live facility waits for review. The listed fields show the owner's proposed values; the public still sees the published ones. */
+    public var pendingChange: OwnerPendingChange?
 
-    public init(id: UUID, nameAr: String, category: NamedRef, province: NamedRef, status: FacilityStatusEnum, lastUpdate: Date, requiredAction: OwnerRequiredActionEnum?, capabilities: CategoryCapabilities, nameEn: String?, descriptionAr: String?, descriptionEn: String?, phone: String?, whatsapp: String?, addressAr: String?, addressEn: String?, cityId: UUID?, neighborhoodId: UUID?, location: Coordinates?, specialtyIds: [Int], serviceTagIds: [Int], evidence: [OwnerEvidenceRef], hours: [OwnerHoursEntry], hoursConfirmedAt: Date?, application: OwnerApplication?) {
+    public init(id: UUID, nameAr: String, category: NamedRef, province: NamedRef, status: FacilityStatusEnum, lastUpdate: Date, requiredAction: OwnerRequiredActionEnum?, capabilities: CategoryCapabilities, nameEn: String?, descriptionAr: String?, descriptionEn: String?, phone: String?, whatsapp: String?, addressAr: String?, addressEn: String?, cityId: UUID?, neighborhoodId: UUID?, location: Coordinates?, specialtyIds: [Int], serviceTagIds: [Int], evidence: [OwnerEvidenceRef], hours: [OwnerHoursEntry], hoursConfirmedAt: Date?, application: OwnerApplication?, pendingChange: OwnerPendingChange?) {
         self.id = id
         self.nameAr = nameAr
         self.category = category
@@ -66,6 +68,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
         self.hours = hours
         self.hoursConfirmedAt = hoursConfirmedAt
         self.application = application
+        self.pendingChange = pendingChange
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
@@ -93,6 +96,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
         case hours
         case hoursConfirmedAt
         case application
+        case pendingChange
     }
 
     // Encodable protocol methods
@@ -123,6 +127,7 @@ public struct OwnerFacilityDetail: Codable, JSONEncodable, Hashable {
         try container.encode(hours, forKey: .hours)
         try container.encode(hoursConfirmedAt, forKey: .hoursConfirmedAt)
         try container.encode(application, forKey: .application)
+        try container.encode(pendingChange, forKey: .pendingChange)
     }
 }
 

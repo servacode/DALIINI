@@ -166,8 +166,16 @@ class AdminApplicationDetailSerializer(AdminApplicationSerializer):
         allow_null=True,
         help_text=(
             "Snapshot of the last approved application of this facility (plus `approvedAt`), "
-            "for diffing a REVERIFICATION. Null when the facility was never approved."
+            "for diffing a REVERIFICATION; for a CHANGE, the facility as it is published now. "
+            "Null when the facility was never approved."
         ),
+    )
+    proposedFields = serializers.ListField(
+        child=serializers.CharField(),
+        help_text="CHANGE only: the fields the owner proposes to change; empty otherwise.",
+    )
+    revision = serializers.IntegerField(
+        help_text="CHANGE only: send it back with the approval. 0 for other kinds."
     )
     location = CoordinatesSerializer(allow_null=True)
     duplicates = AdminDuplicateCandidateSerializer(
@@ -186,6 +194,17 @@ class AdminDecisionRequestSerializer(serializers.Serializer[Any]):
         required=False,
         allow_blank=True,
         help_text="Required in practice for a rejection; recorded in the audit trail.",
+    )
+
+
+class AdminReviewDecisionRequestSerializer(AdminDecisionRequestSerializer):
+    revision = serializers.IntegerField(
+        required=False,
+        min_value=1,
+        help_text=(
+            "CHANGE only: the `revision` the reviewer saw. If the owner revised the proposal "
+            "since, approval is refused with 409 APPLICATION_CHANGED."
+        ),
     )
 
 

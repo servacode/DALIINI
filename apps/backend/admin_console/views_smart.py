@@ -73,7 +73,11 @@ FACILITY_STATUS_AR = {
     "SUSPENDED": "موقوفة",
     "CLOSED": "مغلقة",
 }
-APPLICATION_KIND_AR = {"INITIAL": "طلب أول", "REVERIFICATION": "إعادة تحقق"}
+APPLICATION_KIND_AR = {
+    "INITIAL": "طلب أول",
+    "REVERIFICATION": "إعادة تحقق",
+    "CHANGE": "تعديل بيانات",
+}
 APPLICATION_STATUS_AR = {
     "DRAFT": "مسودة",
     "SUBMITTED": "بانتظار المراجعة",
@@ -291,6 +295,8 @@ AUDIT_TITLES_AR = {
     "duty_shift.deleted": "أُلغيت وردية مناوبة",
     "facility.closure.created": "أُعلن إغلاق مؤقت",
     "facility.closure.cancelled": "أُلغي إغلاق مؤقت",
+    "facility.owner_change.submitted": "أرسل المالك تعديلاً للمراجعة",
+    "facility.owner_change.withdrawn": "تراجع المالك عن تعديله",
     "facility.admin.created": "أضافت إدارة الدليل المنشأة",
     "facility.admin.updated": "عدّلت إدارة الدليل بيانات المنشأة",
 }

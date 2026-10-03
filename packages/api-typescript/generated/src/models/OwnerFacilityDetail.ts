@@ -69,6 +69,13 @@ import {
     OwnerHoursEntryToJSON,
     OwnerHoursEntryToJSONTyped,
 } from './OwnerHoursEntry';
+import type { OwnerPendingChange } from './OwnerPendingChange';
+import {
+    OwnerPendingChangeFromJSON,
+    OwnerPendingChangeFromJSONTyped,
+    OwnerPendingChangeToJSON,
+    OwnerPendingChangeToJSONTyped,
+} from './OwnerPendingChange';
 
 /**
  * 
@@ -220,6 +227,12 @@ export interface OwnerFacilityDetail {
      * @memberof OwnerFacilityDetail
      */
     application: OwnerApplication | null;
+    /**
+     * Set while an edit to the live facility waits for review. The listed fields show the owner's proposed values; the public still sees the published ones.
+     * @type {OwnerPendingChange}
+     * @memberof OwnerFacilityDetail
+     */
+    pendingChange: OwnerPendingChange | null;
 }
 
 
@@ -252,6 +265,7 @@ export function instanceOfOwnerFacilityDetail(value: object): value is OwnerFaci
     if (!('hours' in value) || value['hours'] === undefined) return false;
     if (!('hoursConfirmedAt' in value) || value['hoursConfirmedAt'] === undefined) return false;
     if (!('application' in value) || value['application'] === undefined) return false;
+    if (!('pendingChange' in value) || value['pendingChange'] === undefined) return false;
     return true;
 }
 
@@ -289,6 +303,7 @@ export function OwnerFacilityDetailFromJSONTyped(json: any, ignoreDiscriminator:
         'hours': ((json['hours'] as Array<any>).map(OwnerHoursEntryFromJSON)),
         'hoursConfirmedAt': (json['hoursConfirmedAt'] == null ? null : new Date(json['hoursConfirmedAt'])),
         'application': OwnerApplicationFromJSON(json['application']),
+        'pendingChange': OwnerPendingChangeFromJSON(json['pendingChange']),
     };
 }
 
@@ -327,6 +342,7 @@ export function OwnerFacilityDetailToJSONTyped(value?: OwnerFacilityDetail | nul
         'hours': ((value['hours'] as Array<any>).map(OwnerHoursEntryToJSON)),
         'hoursConfirmedAt': ((value['hoursConfirmedAt'] as any).toISOString()),
         'application': OwnerApplicationToJSON(value['application']),
+        'pendingChange': OwnerPendingChangeToJSON(value['pendingChange']),
     };
 }
 

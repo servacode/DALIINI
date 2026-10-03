@@ -8,5 +8,7 @@
 
     * `REVERIFICATION` (value: `"REVERIFICATION"`)
 
+    * `CHANGE` (value: `"CHANGE"`)
+
 
 

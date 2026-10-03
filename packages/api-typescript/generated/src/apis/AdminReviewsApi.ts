@@ -18,10 +18,10 @@ import type {
   AdminApplication,
   AdminApplicationDetail,
   AdminApplicationList,
-  AdminDecisionRequest,
   AdminRejectionTemplate,
   AdminRejectionTemplateList,
   AdminRejectionTemplateRequest,
+  AdminReviewDecisionRequest,
   ApiError,
 } from '../models/index';
 import {
@@ -31,14 +31,14 @@ import {
     AdminApplicationDetailToJSON,
     AdminApplicationListFromJSON,
     AdminApplicationListToJSON,
-    AdminDecisionRequestFromJSON,
-    AdminDecisionRequestToJSON,
     AdminRejectionTemplateFromJSON,
     AdminRejectionTemplateToJSON,
     AdminRejectionTemplateListFromJSON,
     AdminRejectionTemplateListToJSON,
     AdminRejectionTemplateRequestFromJSON,
     AdminRejectionTemplateRequestToJSON,
+    AdminReviewDecisionRequestFromJSON,
+    AdminReviewDecisionRequestToJSON,
     ApiErrorFromJSON,
     ApiErrorToJSON,
 } from '../models/index';
@@ -66,12 +66,12 @@ export interface AdminRejectionTemplatesListRequest {
 
 export interface AdminReviewApproveRequest {
     applicationId: string;
-    adminDecisionRequest?: AdminDecisionRequest;
+    adminReviewDecisionRequest?: AdminReviewDecisionRequest;
 }
 
 export interface AdminReviewRejectRequest {
     applicationId: string;
-    adminDecisionRequest?: AdminDecisionRequest;
+    adminReviewDecisionRequest?: AdminReviewDecisionRequest;
 }
 
 export interface AdminReviewRetrieveRequest {
@@ -370,7 +370,7 @@ export class AdminReviewsApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: AdminDecisionRequestToJSON(requestParameters['adminDecisionRequest']),
+            body: AdminReviewDecisionRequestToJSON(requestParameters['adminReviewDecisionRequest']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => AdminApplicationFromJSON(jsonValue));
@@ -420,7 +420,7 @@ export class AdminReviewsApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: AdminDecisionRequestToJSON(requestParameters['adminDecisionRequest']),
+            body: AdminReviewDecisionRequestToJSON(requestParameters['adminReviewDecisionRequest']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => AdminApplicationFromJSON(jsonValue));

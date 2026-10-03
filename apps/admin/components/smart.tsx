@@ -75,6 +75,7 @@ type Tasks = Readonly<{
   applications: Readonly<{
     initial: Bucket<AgeItem & { id: string; facilityNameAr: string; provinceNameAr: string }>;
     reverification: Bucket<AgeItem & { id: string; facilityNameAr: string; provinceNameAr: string }>;
+    change?: Bucket<AgeItem & { id: string; facilityNameAr: string; provinceNameAr: string }>;
   }>;
   reports: Bucket<
     AgeItem & { facilityId: string; facilityNameAr: string; openCount: number; reasons: readonly string[] }
@@ -143,6 +144,19 @@ export function TaskCenter() {
         <Row key={item.id} href={`/reviews/${item.id}`} title={item.facilityNameAr} subtitle={item.provinceNameAr} item={item} />
       )),
     },
+    ...(t.applications.change
+      ? [
+          {
+            key: "change",
+            title: "تعديلات على منشآت ظاهرة",
+            href: "/reviews?kind=CHANGE",
+            bucket: t.applications.change,
+            rows: t.applications.change.oldest.map((item) => (
+              <Row key={item.id} href={`/reviews/${item.id}`} title={item.facilityNameAr} subtitle={item.provinceNameAr} item={item} />
+            )),
+          },
+        ]
+      : []),
     {
       key: "reports",
       title: "بلاغات مفتوحة",

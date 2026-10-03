@@ -38,5 +38,11 @@ class AdminTaskApplicationsTest : ShouldSpec() {
             //modelInstance.reverification shouldBe ("TODO")
         }
 
+        // to test the property `change` - Edits to live facilities, which stay published while these wait.
+        should("test change") {
+            // uncomment below to test the property
+            //modelInstance.change shouldBe ("TODO")
+        }
+
     }
 }

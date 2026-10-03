@@ -63,7 +63,12 @@ def _required_evidence_is_complete(facility: Facility) -> bool:
 
 @transaction.atomic
 def decide_application(
-    *, request: Any, application_id: UUID, approve: bool, reason: str = ""
+    *,
+    request: Any,
+    application_id: UUID,
+    approve: bool,
+    reason: str = "",
+    revision: int | None = None,
 ) -> FacilityApplication:
     application = (
         FacilityApplication.objects.select_for_update()
@@ -76,7 +81,9 @@ def decide_application(
         raise ValidationError({"reason": "Rejection reason is required."})
     facility = Facility.objects.select_for_update().get(pk=application.facility_id)
     before = _facility_snapshot(facility)
-    if approve:
+    if application.kind == FacilityApplication.Kind.CHANGE:
+        _decide_change(facility, application, approve=approve, reason=reason, revision=revision)
+    elif approve:
         if not _required_evidence_is_complete(facility):
             raise ValidationError("Current verification evidence is incomplete.")
         application.status = FacilityApplication.Status.APPROVED
@@ -113,14 +120,61 @@ def decide_application(
         target=application,
         before_snapshot=before,
         after_snapshot=_facility_snapshot(facility),
-        metadata={"reason": reason.strip() if not approve else ""},
+        metadata={
+            "reason": reason.strip() if not approve else "",
+            "kind": application.kind,
+            "facilityId": str(facility.pk),
+            **(
+                {"proposed": application.proposed_changes, "revision": application.revision}
+                if application.kind == FacilityApplication.Kind.CHANGE
+                else {}
+            ),
+        },
         request_id=_request_id(request),
     )
-    _tell_the_owners(facility, approve=approve, reason=reason.strip())
+    _tell_the_owners(
+        facility,
+        approve=approve,
+        reason=reason.strip(),
+        change=application.kind == FacilityApplication.Kind.CHANGE,
+    )
     return application
 
 
-def _tell_the_owners(facility: Facility, *, approve: bool, reason: str) -> None:
+def _decide_change(
+    facility: Facility,
+    application: FacilityApplication,
+    *,
+    approve: bool,
+    reason: str,
+    revision: int | None,
+) -> None:
+    """A live facility's proposed change: published on approval, dropped on rejection.
+
+    Either way the facility keeps its status. It was published throughout, and a rejected
+    change leaves it exactly as it was approved before.
+    """
+    from facilities.changes import apply_approved
+
+    if approve:
+        apply_approved(facility, application, revision)
+        facility.last_verified_at = timezone.now()
+        application.status = FacilityApplication.Status.APPROVED
+        application.rejection_reason = ""
+        # What was published, kept as the record the next change is compared against.
+        from facilities.services import application_snapshot
+
+        application.snapshot = application_snapshot(facility)
+        application.save(update_fields=["snapshot"])
+        facility.save()
+    else:
+        application.status = FacilityApplication.Status.REJECTED
+        application.rejection_reason = reason.strip()
+
+
+def _tell_the_owners(
+    facility: Facility, *, approve: bool, reason: str, change: bool = False
+) -> None:
     """A review decision reaches the people responsible for the facility.
 
     The message goes to the account's own inbox, which is the record, and is announced on the
@@ -129,12 +183,20 @@ def _tell_the_owners(facility: Facility, *, approve: bool, reason: str) -> None:
     reason is the reviewer's own words and is shown to the owner, who is the one asked to act
     on it.
     """
-    title = "تمت الموافقة على منشأتك" if approve else "طلب منشأتك يحتاج تعديلاً"
-    body = (
-        f"{facility.name_ar} صارت ظاهرة في الدليل."
-        if approve
-        else f"سبب الرفض: {reason}" if reason else f"راجِع طلب {facility.name_ar} وأعد إرساله."
-    )
+    if change:
+        title = "اعتُمد تعديلك" if approve else "لم يُعتمد تعديلك"
+        body = (
+            f"صارت بيانات {facility.name_ar} الجديدة ظاهرة في الدليل."
+            if approve
+            else f"بقيت {facility.name_ar} كما كانت. سبب الرفض: {reason}"
+        )
+    else:
+        title = "تمت الموافقة على منشأتك" if approve else "طلب منشأتك يحتاج تعديلاً"
+        body = (
+            f"{facility.name_ar} صارت ظاهرة في الدليل."
+            if approve
+            else f"سبب الرفض: {reason}" if reason else f"راجِع طلب {facility.name_ar} وأعد إرساله."
+        )
     for membership in facility.memberships.select_related("user"):
         notify(
             user=membership.user,

@@ -58,6 +58,7 @@ from directory.services import (
     update_category_group,
     update_verification_requirement,
 )
+from facilities.changes import review_snapshots
 from facilities.models import Facility, FacilityApplication, FacilityReport, VerificationEvidence
 from locations.models import City, Province
 from pharmacy_duty.models import DutyShift
@@ -105,6 +106,7 @@ from .schemas import (
     AdminProvinceUpdateRequestSerializer,
     AdminRecentActionSerializer,
     AdminReportDecisionRequestSerializer,
+    AdminReviewDecisionRequestSerializer,
     AdminRoleListSerializer,
     AdminSettingListSerializer,
     AdminSettingSerializer,
@@ -527,14 +529,26 @@ class ApplicationDetailView(AdminView):
             with_application_names(FacilityApplication.objects.all()), pk=application_id
         )
         facility = item.facility
+        waiting_change = (
+            item.kind == FacilityApplication.Kind.CHANGE
+            and item.status == FacilityApplication.Status.SUBMITTED
+        )
+        snapshot: dict[str, Any]
+        previous: dict[str, Any] | None
+        if waiting_change:
+            snapshot, previous = review_snapshots(item)
+        else:
+            snapshot, previous = item.snapshot, previous_snapshot(item)
         evidence = facility.evidence.select_related("requirement").all()
         images = list(facility.images.order_by("sort_order", "created_at"))
         return Response(
             {
                 **application_payload(item),
                 "facility": facility_payload(facility),
-                "snapshot": item.snapshot,
-                "previous": previous_snapshot(item),
+                "snapshot": snapshot,
+                "previous": previous,
+                "proposedFields": sorted(item.proposed_changes or {}),
+                "revision": item.revision,
                 "location": location_payload(facility),
                 "duplicates": find_duplicates(facility),
                 "publicImageIds": [str(image.id) for image in images],
@@ -568,16 +582,19 @@ class ApplicationDecisionView(AdminView):
         operation_id="adminReviewDecide",
         tags=["Admin Reviews"],
         summary="Decide an application",
-        request=AdminDecisionRequestSerializer,
+        request=AdminReviewDecisionRequestSerializer,
         responses={200: App, 400: VALIDATION_400, **protected(), 404: NOT_FOUND_404},
     )
     def post(self, request: AuthenticatedRequest, application_id: UUID) -> Response:
         try:
+            payload = AdminReviewDecisionRequestSerializer(data=request.data)
+            payload.is_valid(raise_exception=True)
             item = decide_application(
                 request=request,
                 application_id=application_id,
                 approve=self.approve,
-                reason=str(request.data.get("reason", "")),
+                reason=str(payload.validated_data.get("reason", "")),
+                revision=payload.validated_data.get("revision"),
             )
         except ObjectDoesNotExist as exc:
             # The service locks the row itself; an id that does not exist is the
@@ -598,7 +615,7 @@ class ApplicationDecisionView(AdminView):
             "locked, the current requirements are re-checked, the change is audited and "
             "the realtime event is emitted only after commit."
         ),
-        request=AdminDecisionRequestSerializer,
+        request=AdminReviewDecisionRequestSerializer,
         responses={200: App, 400: VALIDATION_400, **protected(), 404: NOT_FOUND_404},
     )
 )
@@ -612,7 +629,7 @@ class ApplicationApproveView(ApplicationDecisionView):
         tags=["Admin Reviews"],
         summary="Reject an application",
         description="A reason is recorded in the audit trail; nothing is silently deleted.",
-        request=AdminDecisionRequestSerializer,
+        request=AdminReviewDecisionRequestSerializer,
         responses={200: App, 400: VALIDATION_400, **protected(), 404: NOT_FOUND_404},
     )
 )

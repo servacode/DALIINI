@@ -264,8 +264,11 @@ class OwnerFacilityDetailView(APIView):
         tags=["Owner"],
         summary="Update the core fields of a facility",
         description=(
-            "Editing a sensitive field on an active facility moves it into "
-            "REVERIFICATION_REQUIRED, so the change is reviewed before it becomes public."
+            "On an ACTIVE facility the facility stays published: its name, address, city, "
+            "neighbourhood and map point wait for an operator as a CHANGE application "
+            "(`pendingChange` in the response), and every other field applies at once. A "
+            "second edit while one waits is merged into it. Elsewhere the edit applies as it "
+            "stands and is reviewed at the next submission."
         ),
         request=FacilityPatchSerializer,
         responses={
@@ -303,7 +306,9 @@ class OwnerFacilitySubmitView(APIView):
         description=(
             "Submission re-validates the current onboarding policy and the completeness of "
             "the current evidence requirements. Only one submitted application of a given "
-            "kind can exist per facility at a time."
+            "kind can exist per facility at a time. An ACTIVE facility is never taken down "
+            "to be reviewed: its edits are sent as they are saved, and submitting answers with "
+            "the change already waiting, or 400 when there is none."
         ),
         request=None,
         responses={
@@ -341,7 +346,10 @@ class OwnerFacilityLocationView(APIView):
         operation_id="ownerFacilityLocationReplace",
         tags=["Owner"],
         summary="Set the map point of a facility",
-        description="WGS84 decimal degrees. PostGIS remains the source of truth for geo.",
+        description=(
+            "WGS84 decimal degrees. PostGIS remains the source of truth for geo. On an ACTIVE "
+            "facility the new point waits for review and the published one stays."
+        ),
         request=FacilityLocationSerializer,
         responses={
             200: OwnerFacilityDetailSerializer,
@@ -356,13 +364,16 @@ class OwnerFacilityLocationView(APIView):
         require_facility_member(request.user, facility)
         serializer = FacilityLocationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        updated = update_facility_location(
-            actor=request.user,
-            facility=facility,
-            latitude=serializer.validated_data["latitude"],
-            longitude=serializer.validated_data["longitude"],
-            request_id=_request_id(request),
-        )
+        try:
+            updated = update_facility_location(
+                actor=request.user,
+                facility=facility,
+                latitude=serializer.validated_data["latitude"],
+                longitude=serializer.validated_data["longitude"],
+                request_id=_request_id(request),
+            )
+        except DjangoValidationError as exc:
+            raise _validation_error(exc) from exc
         return Response(facility_detail(_owned_facilities(request.user).get(pk=updated.pk)))
 
 

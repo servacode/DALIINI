@@ -22,10 +22,10 @@ import com.servacode.directory.api.apis.AdminReviewsApi
 import com.servacode.directory.api.models.AdminApplication
 import com.servacode.directory.api.models.AdminApplicationDetail
 import com.servacode.directory.api.models.AdminApplicationList
-import com.servacode.directory.api.models.AdminDecisionRequest
 import com.servacode.directory.api.models.AdminRejectionTemplate
 import com.servacode.directory.api.models.AdminRejectionTemplateList
 import com.servacode.directory.api.models.AdminRejectionTemplateRequest
+import com.servacode.directory.api.models.AdminReviewDecisionRequest
 import com.servacode.directory.api.models.ApiError
 
 class AdminReviewsApiTest : ShouldSpec() {
@@ -77,8 +77,8 @@ class AdminReviewsApiTest : ShouldSpec() {
         should("test adminReviewApprove") {
             // uncomment below to test adminReviewApprove
             //val applicationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-            //val adminDecisionRequest : AdminDecisionRequest =  // AdminDecisionRequest | 
-            //val result : AdminApplication = apiInstance.adminReviewApprove(applicationId, adminDecisionRequest)
+            //val adminReviewDecisionRequest : AdminReviewDecisionRequest =  // AdminReviewDecisionRequest | 
+            //val result : AdminApplication = apiInstance.adminReviewApprove(applicationId, adminReviewDecisionRequest)
             //result shouldBe ("TODO")
         }
 
@@ -86,8 +86,8 @@ class AdminReviewsApiTest : ShouldSpec() {
         should("test adminReviewReject") {
             // uncomment below to test adminReviewReject
             //val applicationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-            //val adminDecisionRequest : AdminDecisionRequest =  // AdminDecisionRequest | 
-            //val result : AdminApplication = apiInstance.adminReviewReject(applicationId, adminDecisionRequest)
+            //val adminReviewDecisionRequest : AdminReviewDecisionRequest =  // AdminReviewDecisionRequest | 
+            //val result : AdminApplication = apiInstance.adminReviewReject(applicationId, adminReviewDecisionRequest)
             //result shouldBe ("TODO")
         }
 

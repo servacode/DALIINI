@@ -201,8 +201,29 @@ def ensure_editable_by_owner(facility: Facility) -> None:
 def update_facility_core(
     *, actor: User, facility: Facility, data: dict[str, Any], request_id: str = ""
 ) -> Facility:
+    """Save an owner's edit.
+
+    On a live facility the name and address wait for review while the facility stays
+    published, and the rest applies at once (`facilities.changes`). Anywhere else the edit
+    applies as it stands; the facility is reviewed when it is next submitted.
+    """
+    from .changes import propose, split, takes_changes_for_review
+
     locked = Facility.objects.select_for_update().select_related("category").get(pk=facility.pk)
     ensure_editable_by_owner(locked)
+    if takes_changes_for_review(locked):
+        reviewed, live = split(data)
+        if live:
+            _write_core(actor=actor, locked=locked, data=live, request_id=request_id)
+        if reviewed:
+            propose(actor=actor, facility=locked, reviewed=reviewed, request_id=request_id)
+        return locked
+    return _write_core(actor=actor, locked=locked, data=data, request_id=request_id)
+
+
+def _write_core(
+    *, actor: User, locked: Facility, data: dict[str, Any], request_id: str
+) -> Facility:
     before = _snapshot(locked)
     city_id = data.get("cityId", locked.city_id)
     city = resolve_city(facility=locked, city_id=city_id)
@@ -232,8 +253,6 @@ def update_facility_core(
             locked.neighborhood = None
     if "neighborhoodId" in data:
         locked.neighborhood = neighborhood
-    if locked.status == Facility.Status.ACTIVE:
-        locked.status = Facility.Status.REVERIFICATION_REQUIRED
     locked.full_clean(exclude=["location"])
     locked.save()
     replace_specialties(locked, data.get("specialtyIds"))
@@ -258,13 +277,22 @@ def update_facility_location(
     longitude: float,
     request_id: str = "",
 ) -> Facility:
+    from .changes import propose, takes_changes_for_review
+
     locked = Facility.objects.select_for_update().get(pk=facility.pk)
     ensure_editable_by_owner(locked)
+    if takes_changes_for_review(locked):
+        # Where a live facility is on the map is reviewed before it moves there.
+        propose(
+            actor=actor,
+            facility=locked,
+            reviewed={"location": {"latitude": latitude, "longitude": longitude}},
+            request_id=request_id,
+        )
+        return locked
     before = _snapshot(locked)
     locked.location = Point(float(longitude), float(latitude), srid=4326)
-    if locked.status == Facility.Status.ACTIVE:
-        locked.status = Facility.Status.REVERIFICATION_REQUIRED
-    locked.save(update_fields=["location", "status", "updated_at"])
+    locked.save(update_fields=["location", "updated_at"])
     record_audit(
         actor=actor,
         action="facility.owner_location.updated",
@@ -306,6 +334,17 @@ def submit_facility(
         raise ValidationError(
             {"status": "A suspended or closed facility cannot be submitted for review."}
         )
+    if locked.status == Facility.Status.ACTIVE:
+        # A live facility is never taken down to be reviewed: its changes are sent as they
+        # are saved. Submitting again answers with the change already waiting, if any.
+        from .changes import pending_change
+
+        waiting = pending_change(locked)
+        if waiting is None:
+            raise ValidationError(
+                {"status": "This facility is live; changes are sent for review as they are saved."}
+            )
+        return waiting
     validate_owner_registration(
         province_id=locked.province_id,
         category_id=locked.category_id,

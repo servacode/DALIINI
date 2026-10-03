@@ -229,6 +229,24 @@ describe("smart console reads", () => {
   });
 });
 
+describe("review decisions", () => {
+  it("hands back the revision of a change the reviewer saw, and nothing when there is none", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.reviewApprove(apis, { id: "app-1", reason: "", revision: 3 });
+    await WRITES.reviewApprove(apis, { id: "app-2", reason: "" });
+
+    expect(calls[0]?.args[0]).toEqual({
+      applicationId: "app-1",
+      adminReviewDecisionRequest: { reason: "", revision: 3 },
+    });
+    expect(calls[1]?.args[0]).toEqual({
+      applicationId: "app-2",
+      adminReviewDecisionRequest: { reason: "" },
+    });
+  });
+});
+
 describe("facility editing", () => {
   it("creates with the whole body", async () => {
     const { apis, calls } = spyApis();

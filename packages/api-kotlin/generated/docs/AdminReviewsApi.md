@@ -241,10 +241,10 @@ val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AdminReviewsApi::class.java)
 val applicationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-val adminDecisionRequest : AdminDecisionRequest =  // AdminDecisionRequest | 
+val adminReviewDecisionRequest : AdminReviewDecisionRequest =  // AdminReviewDecisionRequest | 
 
 launch(Dispatchers.IO) {
-    val result : AdminApplication = webService.adminReviewApprove(applicationId, adminDecisionRequest)
+    val result : AdminApplication = webService.adminReviewApprove(applicationId, adminReviewDecisionRequest)
 }
 ```
 
@@ -252,7 +252,7 @@ launch(Dispatchers.IO) {
 | **applicationId** | **java.util.UUID**|  | |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
-| **adminDecisionRequest** | [**AdminDecisionRequest**](AdminDecisionRequest.md)|  | [optional] |
+| **adminReviewDecisionRequest** | [**AdminReviewDecisionRequest**](AdminReviewDecisionRequest.md)|  | [optional] |
 
 ### Return type
 
@@ -285,10 +285,10 @@ val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AdminReviewsApi::class.java)
 val applicationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-val adminDecisionRequest : AdminDecisionRequest =  // AdminDecisionRequest | 
+val adminReviewDecisionRequest : AdminReviewDecisionRequest =  // AdminReviewDecisionRequest | 
 
 launch(Dispatchers.IO) {
-    val result : AdminApplication = webService.adminReviewReject(applicationId, adminDecisionRequest)
+    val result : AdminApplication = webService.adminReviewReject(applicationId, adminReviewDecisionRequest)
 }
 ```
 
@@ -296,7 +296,7 @@ launch(Dispatchers.IO) {
 | **applicationId** | **java.util.UUID**|  | |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
-| **adminDecisionRequest** | [**AdminDecisionRequest**](AdminDecisionRequest.md)|  | [optional] |
+| **adminReviewDecisionRequest** | [**AdminReviewDecisionRequest**](AdminReviewDecisionRequest.md)|  | [optional] |
 
 ### Return type
 
