@@ -53,14 +53,21 @@ def check_reconnect_and_lifecycle() -> None:
     require("ProcessLifecycleOwner" in application, "foreground lifecycle binding missing")
 
 
+def feature_file(feature: str, filename: str) -> str:
+    """A feature's file wherever it lives: common since its screens moved (DECISION-095)."""
+    for source_set in ("commonMain", "androidMain"):
+        path = f"feature/{feature}/src/{source_set}/kotlin/com/servacode/directory/feature/{feature}/{filename}"
+        if (ROOT / path).exists():
+            return read(path)
+    raise AssertionError(f"missing: {feature}/{filename}")
+
+
 def check_rest_truth_and_offline() -> None:
     for feature, filename in (
         ("home", "HomeViewModel.kt"),
         ("facility", "FacilityViewModel.kt"),
     ):
-        source = read(
-            f"feature/{feature}/src/androidMain/kotlin/com/servacode/directory/feature/{feature}/{filename}"
-        )
+        source = feature_file(feature, filename)
         require("RealtimeInvalidationBus" in source, f"realtime invalidation missing: {feature}")
         require("refresh" in source, f"REST refetch path missing: {feature}")
     owner = read("feature/owner/src/androidMain/kotlin/com/servacode/directory/feature/owner/OwnerViewModel.kt")
@@ -74,13 +81,7 @@ def check_rest_truth_and_offline() -> None:
         'ScopeType.USER' in predicate or '"user"' in predicate,
         "owner invalidation predicate must be scoped to the user",
     )
-    screens = "\n".join(
-        read(path)
-        for path in (
-            "feature/home/src/androidMain/kotlin/com/servacode/directory/feature/home/HomeScreen.kt",
-            "feature/facility/src/androidMain/kotlin/com/servacode/directory/feature/facility/FacilityScreen.kt",
-        )
-    )
+    screens = feature_file("home", "HomeScreen.kt") + "\n" + feature_file("facility", "FacilityScreen.kt")
     # Every screen shows the same offline notice from the design system rather than writing its
     # own sentence, so the warning is asserted where it is now written.
     require("DirectoryOfflineNotice" in screens, "offline notice missing from the public screens")

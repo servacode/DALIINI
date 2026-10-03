@@ -2518,6 +2518,56 @@ iPhone was its screens, its view models and its words, all in androidMain:
 **Next:** the home and the facility page, then the account, owner, onboarding and settings
 features, the same way; the map and navigation last, with MapLibre's iPhone side.
 
+## DECISION-096 — The home is shared: the location question on each platform's own dialog
+
+**Date:** 2026-10-03 · **Phase 8.12 of the roadmap.**
+
+**Why:** the home (screen 04) is what the app opens on. It was the last screen the iPhone shell
+drew for itself. Two things in it were Android's alone:
+* the location permission, asked through Android's runtime-permission launcher;
+* the browser, which an advertisement's page opened through an Android intent.
+
+**Decision:**
+
+* **The home's screen, its two view models and its words move to common code** on the
+  DECISION-095 pattern:
+  * Hilt subclasses and a `HomeRoute` in androidMain;
+  * Compose resources in the feature;
+  * the iPhone makes the shared classes from its graph.
+
+  A sentence that the strings file wrapped across two lines is joined, as Android showed it.
+* **The location question is `rememberLocationAccess`,** an expect/actual in the home feature.
+  It says whether the position may be read, and it asks.
+  * **Android:** the same runtime-permission launcher, either location permission counting as
+    before.
+  * **iPhone:** Core Location's own question, asked once.
+    * Once the reader has answered, iOS shows nothing when asked again, so the answer already
+      given is heard at once.
+    * The usage sentence is the app's `NSLocationWhenInUseUsageDescription`.
+
+  The offer on the home now also hides when the permission was given in the phone's settings
+  while the app was open.
+* **An advertisement's page opens through Compose's `UriHandler`** on both platforms. It is
+  still only an `https` address with a host, checked by a shared, tested function; a phone that
+  cannot open it does nothing. Android's intent loses the browsable-only category it had added:
+  any app that opens https links may now take the page.
+* **The iPhone shell is now the shared screens and a navigation of its own:**
+  * the province, the home and search, each the shared screen;
+  * a home view model per province, as Android's navigation makes a new one when the province
+    changes.
+
+  What the home opens that has not moved yet (a facility, the notices, the emergency numbers)
+  opens nothing on the iPhone until it moves. The shell has no words of its own left, so
+  `Shell.strings` and its test are gone.
+* **Tests:**
+  * The home's view model, in common tests on both platforms: no province, the backend's home,
+    the saved home offline.
+  * The page-address check.
+  * A simulator test draws the shared home with its facilities and Core Location's offer, and
+    opens a facility.
+
+**Next:** the facility page (screen 08) and its report, which the home and search open.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

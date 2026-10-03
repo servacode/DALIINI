@@ -29,6 +29,8 @@ kotlin {
                 implementation(project(":core:transport"))
                 implementation(project(":feature:home"))
                 implementation(project(":feature:province"))
+                implementation(project(":feature:search"))
+                implementation(project(":core:analytics"))
                 implementation(libs.ktor.client.core)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.compose.multiplatform.runtime)

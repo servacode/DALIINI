@@ -6,8 +6,6 @@ import com.servacode.directory.core.database.RecentlyViewedStore
 import com.servacode.directory.core.datastore.DirectoryPreferencesStore
 import com.servacode.directory.core.model.RecentFacility
 import com.servacode.directory.core.network.NetworkMonitor
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -17,10 +15,10 @@ import kotlinx.coroutines.launch
 
 /**
  * What Home shows beside the directory: the facilities opened lately, whether data saver is on,
- * and whether to offer it. Its own view model, so none of it can hold up the list.
+ * and whether to offer it. Its own view model, so none of it can hold up the list. Android's
+ * navigation asks Hilt for the subclass in androidMain (DECISION-095).
  */
-@HiltViewModel
-class HomeExtrasViewModel @Inject constructor(
+open class HomeExtrasViewModel(
     recentlyViewed: RecentlyViewedStore,
     private val preferences: DirectoryPreferencesStore,
     network: NetworkMonitor,

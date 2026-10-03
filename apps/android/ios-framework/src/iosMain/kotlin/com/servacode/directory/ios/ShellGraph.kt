@@ -1,5 +1,7 @@
 package com.servacode.directory.ios
 
+import com.servacode.directory.core.analytics.AnalyticsTracker
+import com.servacode.directory.core.analytics.NoOpAnalyticsTracker
 import com.servacode.directory.core.auth.AccessTokenStore
 import com.servacode.directory.core.auth.KeychainRefreshTokenVault
 import com.servacode.directory.core.auth.MemoryAccessTokenStore
@@ -7,6 +9,7 @@ import com.servacode.directory.core.auth.RefreshTokenVault
 import com.servacode.directory.core.auth.SessionCoordinator
 import com.servacode.directory.core.database.DirectoryDatabase
 import com.servacode.directory.core.database.PublicCacheDataSource
+import com.servacode.directory.core.database.RoomRecentlyViewedStore
 import com.servacode.directory.core.database.iosDirectoryDatabase
 import com.servacode.directory.core.datastore.DirectoryDataStore
 import com.servacode.directory.core.datastore.PreferencesRepository
@@ -17,16 +20,21 @@ import com.servacode.directory.core.network.BackendLocationNameResolver
 import com.servacode.directory.core.network.IosNetworkMonitor
 import com.servacode.directory.core.network.MaintenanceState
 import com.servacode.directory.core.network.NetworkMonitor
+import com.servacode.directory.core.network.RealtimeInvalidationBus
 import com.servacode.directory.core.network.api.ApiEnvironment
 import com.servacode.directory.core.transport.ClientPlatform
 import com.servacode.directory.core.transport.KtorPublicApi
 import com.servacode.directory.core.transport.KtorRefreshGateway
 import com.servacode.directory.core.transport.TransportClients
 import com.servacode.directory.core.transport.darwinEngine
+import com.servacode.directory.feature.home.HomeAdsRepository
+import com.servacode.directory.feature.home.HomeAdsUseCase
 import com.servacode.directory.feature.home.HomeRepository
 import com.servacode.directory.feature.home.HomeUseCase
 import com.servacode.directory.feature.province.ProvinceRepository
 import com.servacode.directory.feature.province.ProvinceUseCase
+import com.servacode.directory.feature.search.SearchRepository
+import com.servacode.directory.feature.search.SearchUseCase
 import io.ktor.client.engine.HttpClientEngine
 
 /**
@@ -66,10 +74,18 @@ internal class ShellGraph(
     val preferences = PreferencesRepository(file)
     val cache = PublicCacheDataSource(database.cacheDao())
 
+    /** Nothing is measured from the iPhone yet: the analytics destination is Android's. */
+    val analytics: AnalyticsTracker = NoOpAnalyticsTracker
+    /** The realtime connection is Android's for now; the bus is here so the home can listen. */
+    val invalidations = RealtimeInvalidationBus()
+    val recentlyViewed = RoomRecentlyViewedStore(database.localStoresDao())
+
     val provinces = ProvinceUseCase(ProvinceRepository(cache, publicApi, preferences))
     val home = HomeUseCase(
         HomeRepository(cache, publicApi, preferences, location, BackendLocationNameResolver(publicApi)),
     )
+    val homeAds = HomeAdsUseCase(HomeAdsRepository(cache, publicApi))
+    val search = SearchUseCase(SearchRepository(publicApi, preferences, location))
 
     companion object {
         /** The app's graph on the phone's own Keychain, files, position and network. */

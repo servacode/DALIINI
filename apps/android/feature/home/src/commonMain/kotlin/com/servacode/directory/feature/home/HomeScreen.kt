@@ -14,13 +14,6 @@ import com.servacode.directory.core.designsystem.Sizes
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.AdAction
-import androidx.core.net.toUri
-import android.content.Intent
-import android.content.Context
-import android.content.ActivityNotFoundException
-import android.content.pm.PackageManager
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -50,11 +43,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.AdSlider
 import com.servacode.directory.core.designsystem.appErrorText
@@ -83,7 +76,6 @@ import com.servacode.directory.core.designsystem.IconSize
 import com.servacode.directory.core.designsystem.LoadMoreRow
 import com.servacode.directory.core.designsystem.Radius
 import com.servacode.directory.core.designsystem.Space
-import com.servacode.directory.core.location.FOREGROUND_LOCATION_PERMISSIONS
 import com.servacode.directory.core.model.Category
 import com.servacode.directory.core.model.CategoryTags
 import com.servacode.directory.core.model.FacilityTag
@@ -101,14 +93,14 @@ import com.servacode.directory.core.model.FacilityTag
  */
 @Composable
 fun HomeScreen(
+    viewModel: HomeViewModel,
+    extras: HomeExtrasViewModel,
     onProvince: () -> Unit,
     onSearch: () -> Unit,
     onFacility: (String) -> Unit,
     onNotifications: () -> Unit,
     bottomBar: @Composable () -> Unit = {},
     onEmergencyNumbers: () -> Unit = {},
-    viewModel: HomeViewModel = hiltViewModel(),
-    extras: HomeExtrasViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val dataSaver by extras.dataSaver.collectAsStateWithLifecycle()
@@ -121,24 +113,17 @@ fun HomeScreen(
     val hasLocation by viewModel.hasLocation.collectAsStateWithLifecycle()
     val unread by viewModel.unread.collectAsStateWithLifecycle()
     val ads by viewModel.ads.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    // The offer to use the location, and only while there is something to offer: a device that
-    // already allowed it is never asked again from here.
-    var offerLocation by rememberSaveable {
-        mutableStateOf(
-            FOREGROUND_LOCATION_PERMISSIONS.none {
-                context.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED
-            },
-        )
-    }
-    val askLocation = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions(),
-    ) { result ->
-        offerLocation = result.values.none { it }
+    // The answer the reader gave here, if they were asked: null until then.
+    var allowedHere by rememberSaveable { mutableStateOf<Boolean?>(null) }
+    val location = rememberLocationAccess { allowed ->
+        allowedHere = allowed
         // A new answer changes where the app thinks the user is, so both are asked again.
         viewModel.resolvePlace()
         viewModel.refresh()
     }
+    // The offer to use the location, and only while there is something to offer: a device that
+    // already allowed it is never asked again from here.
+    val offerLocation = !(allowedHere ?: location.allowed)
 
     // What the header says: the place the platform resolved for this device, else the province
     // the lists are scoped by. The user can still change it, but is never made to choose first.
@@ -204,7 +189,7 @@ fun HomeScreen(
                 onService = viewModel::chooseService,
                 onClearTags = viewModel::clearTags,
                 onLoadMore = viewModel::loadMore,
-                onUseLocation = { askLocation.launch(FOREGROUND_LOCATION_PERMISSIONS.toTypedArray()) },
+                onUseLocation = location::ask,
                 onRefresh = viewModel::refresh,
                 onSearch = onSearch,
                 onFacility = onFacility,
@@ -394,7 +379,7 @@ private fun HomeContent(
             }
             if (ads.isNotEmpty()) {
                 item(key = "ads") {
-                    val context = LocalContext.current
+                    val uriHandler = LocalUriHandler.current
                     AdSlider(
                         ads = ads,
                         onShown = onAdShown,
@@ -408,7 +393,7 @@ private fun HomeContent(
                                 is AdAction.OpenCategory -> snapshot.categories
                                     .firstOrNull { it.id == action.categoryId }
                                     ?.let(onCategory)
-                                is AdAction.OpenUrl -> openExternalPage(context, action.url)
+                                is AdAction.OpenUrl -> openExternalPage(uriHandler, action.url)
                             }
                         },
                         modifier = Modifier.padding(horizontal = Space.base),
@@ -823,15 +808,18 @@ private fun DataSaverOffer(onAccept: () -> Unit, onDismiss: () -> Unit, modifier
  * Opens an advertisement's page in the browser. The mapper already admitted only `https`; it is
  * checked again here, at the last moment, and a phone without a browser simply does nothing.
  */
-private fun openExternalPage(context: Context, url: String) {
-    val uri = url.toUri()
-    if (uri.scheme != "https" || uri.host.isNullOrBlank()) return
-    val intent = Intent(Intent.ACTION_VIEW, uri)
-        .addCategory(Intent.CATEGORY_BROWSABLE)
-        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+private fun openExternalPage(uriHandler: UriHandler, url: String) {
+    if (!isExternalPage(url)) return
     try {
-        context.startActivity(intent)
-    } catch (_: ActivityNotFoundException) {
+        uriHandler.openUri(url)
+    } catch (_: IllegalArgumentException) {
         // Nothing can show it; the tap is a no-op rather than a crash.
     }
+}
+
+/** An `https` address with a host: the only kind of page an advertisement may open. */
+internal fun isExternalPage(url: String): Boolean {
+    if (!url.startsWith("https://")) return false
+    val authority = url.removePrefix("https://").takeWhile { it != '/' && it != '?' && it != '#' }
+    return authority.substringAfterLast('@').substringBefore(':').isNotBlank()
 }

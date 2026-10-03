@@ -12,10 +12,6 @@ final class ShellTests: XCTestCase {
         XCTAssertTrue(configuration.allowCleartext)
     }
 
-    func testEveryWordTheScreensUseIsInTheStringsFile() {
-        XCTAssertEqual(ShellWordsKt.missingShellWords(bundle: Bundle.main), [])
-    }
-
     func testTheSharedScreensLoadInTheirViewController() {
         let controller = MainViewControllerKt.MainViewController()
 

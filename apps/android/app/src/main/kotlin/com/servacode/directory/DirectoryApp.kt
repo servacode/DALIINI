@@ -49,7 +49,7 @@ import com.servacode.directory.feature.bootstrap.WelcomeScreen
 import com.servacode.directory.feature.duty.DutyRoute
 import com.servacode.directory.feature.duty.DutyRosterRoute
 import com.servacode.directory.feature.facility.FacilityScreen
-import com.servacode.directory.feature.home.HomeScreen
+import com.servacode.directory.feature.home.HomeRoute
 import com.servacode.directory.feature.map.MapScreen
 import com.servacode.directory.feature.navigation.BuiltInNavigationScreen
 import com.servacode.directory.feature.onboarding.OnboardingScreen
@@ -201,7 +201,7 @@ fun DirectoryApp(
             )
         }
         composable<DirectoryRoute.Home> {
-            HomeScreen(
+            HomeRoute(
                 onProvince = { navController.navigate(DirectoryRoute.ProvincePicker) },
                 onSearch = { navController.navigate(DirectoryRoute.Search) },
                 onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },

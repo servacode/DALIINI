@@ -34,15 +34,14 @@ The `ios-app` job of the Android Build Verification workflow:
 3. It runs `DaliiniTests` inside the app:
    * the refresh secret kept in the Keychain and removed again;
    * the build's configuration;
-   * every word the screens use present in `ar.lproj/Shell.strings`;
    * the shared screens loading in their view controller.
 
 The shared modules' own tests run on the simulator in the `ios-shared` job.
 
 ## Not yet
 
-* The rest of the real screens. The province picker is already the shared screen
-  (DECISION-095); the home moves next and replaces the shell's own, which already draws with
-  the shared design system (DECISION-094).
+* The rest of the real screens. The province picker, the home and search are already the
+  shared screens (DECISIONS 095 and 096); the facility page moves next, and with it what the
+  home and search open.
 * The map, notices, and signing for the App Store. Signing needs the owner's Apple developer
   account.

@@ -15,8 +15,6 @@ import com.servacode.directory.core.network.RealtimeInvalidation
 import com.servacode.directory.core.analytics.AnalyticsEvent
 import com.servacode.directory.core.analytics.AnalyticsTracker
 import com.servacode.directory.core.network.RealtimeInvalidationBus
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,8 +44,11 @@ data class HomeListState(
     val error: AppError? = null,
 )
 
-@HiltViewModel
-class HomeViewModel @Inject constructor(
+/**
+ * The home's directory, on both platforms. Android's navigation asks Hilt for the subclass in
+ * androidMain; the iPhone makes this one with its graph's use cases (DECISION-095).
+ */
+open class HomeViewModel(
     private val loadHome: HomeUseCase,
     private val loadAds: HomeAdsUseCase,
     private val invalidations: RealtimeInvalidationBus,
