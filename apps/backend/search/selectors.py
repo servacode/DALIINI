@@ -17,6 +17,8 @@ from django.db.models import (
 
 from facilities.models import Facility, FacilityImage
 
+from .arabic import normalize_arabic
+
 if TYPE_CHECKING:
     from django.contrib.auth.models import AnonymousUser
     from django.db.models import F, QuerySet
@@ -117,27 +119,32 @@ def within_bbox(queryset: QuerySet[Facility], bbox: str | None) -> QuerySet[Faci
 
 
 def apply_text_search(queryset: QuerySet[Facility], term: str | None) -> QuerySet[Facility]:
+    """Match the term against every name a person might search by, in any common spelling.
+
+    `ar_contains` folds both sides (`search.arabic`), so «صيدليه» finds «صيدلية» and «احمد»
+    finds «أحمد». English names fold to lower case the same way.
+    """
     if not term:
         return queryset
-    normalized = term.strip()
+    normalized = normalize_arabic(term)
     if not normalized:
         return queryset
     return queryset.filter(
-        Q(name_ar__icontains=normalized)
-        | Q(name_en__icontains=normalized)
-        | Q(address_ar__icontains=normalized)
-        | Q(address_en__icontains=normalized)
-        | Q(city__name_ar__icontains=normalized)
-        | Q(neighborhood__name_ar__icontains=normalized)
-        | Q(category__name_ar__icontains=normalized)
+        Q(name_ar__ar_contains=normalized)
+        | Q(name_en__ar_contains=normalized)
+        | Q(address_ar__ar_contains=normalized)
+        | Q(address_en__ar_contains=normalized)
+        | Q(city__name_ar__ar_contains=normalized)
+        | Q(neighborhood__name_ar__ar_contains=normalized)
+        | Q(category__name_ar__ar_contains=normalized)
         # A retired specialty or service is not shown on the facility, so its name must not
         # be what finds it either. Each pair names one linked row.
         | Q(
-            specialty_links__specialty__name_ar__icontains=normalized,
+            specialty_links__specialty__name_ar__ar_contains=normalized,
             specialty_links__specialty__active=True,
         )
         | Q(
-            service_links__service_tag__name_ar__icontains=normalized,
+            service_links__service_tag__name_ar__ar_contains=normalized,
             service_links__service_tag__active=True,
         )
     ).distinct()

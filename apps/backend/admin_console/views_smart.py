@@ -189,7 +189,7 @@ class AdminSearchView(APIView):
         digits = _phone_digits(query)
         groups: list[dict[str, Any]] = []
         if "admin.facilities.read" in granted:
-            match = Q(name_ar__icontains=query) | Q(name_en__icontains=query)
+            match = Q(name_ar__ar_contains=query) | Q(name_en__ar_contains=query)
             if digits:
                 match |= Q(phone__contains=digits)
             facilities = (
