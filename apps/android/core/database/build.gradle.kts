@@ -21,6 +21,11 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.androidx.room.ktx)
         }
+        iosMain.dependencies {
+            // Room brings 2.6, whose driver refers to `sqlite3_load_extension`, which iOS's SQLite
+            // does not have: nothing links. 2.7 fixed it (b/434324365).
+            implementation(libs.androidx.sqlite.framework.ios)
+        }
         commonTest.dependencies {
             implementation(libs.kotlinx.coroutines.test)
         }

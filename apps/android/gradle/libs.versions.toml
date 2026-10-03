@@ -23,6 +23,9 @@ atomicfu = "0.26.1"
 ktor = "3.4.3"
 serialization = "1.9.0"
 room = "2.8.5"
+# The iPhone's driver for its system SQLite (DECISION-092). 2.7 is the first that links against
+# iOS's own library, which Apple builds without extension loading; Android keeps Room's own.
+sqliteIos = "2.7.1"
 datastore = "1.2.1"
 retrofit = "3.0.0"
 okhttp = "5.3.0"
@@ -63,6 +66,7 @@ androidx-hilt-lifecycle-viewmodel-compose = { module = "androidx.hilt:hilt-lifec
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+androidx-sqlite-framework-ios = { module = "androidx.sqlite:sqlite-framework", version.ref = "sqliteIos" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }

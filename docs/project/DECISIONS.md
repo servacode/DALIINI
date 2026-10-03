@@ -2268,7 +2268,9 @@ queries, or of the preferences' keys, would be two places to keep in step for th
     * Android, in androidMain, with its framework SQLite and the 1→2 migration (only Android
       ever had a version 1).
     * The iPhone, in iosMain, with the system's SQLite (`NativeSQLiteDriver`, linked with
-      `-lsqlite3`).
+      `-lsqlite3`). Its driver is androidx.sqlite 2.7 on the iPhone alone: the 2.6 that Room
+      brings refers to `sqlite3_load_extension`, which Apple's SQLite is built without, and
+      nothing links (b/434324365).
 * **Nothing the app stores on the iPhone goes into its backups.** The folders that hold the
   database and the preferences are excluded from iCloud backup. This matches Android's
   `allowBackup="false"` and Apple's rule for anything an app can download again.
@@ -2291,7 +2293,8 @@ queries, or of the preferences' keys, would be two places to keep in step for th
   * the location and network rules;
   * a refused connection through the real engine.
 
-  The preferences' common tests also run on Android.
+  The preferences' common tests also run on Android. The job selects Xcode 26, because Kotlin
+  2.3's iOS libraries are built against its SDK and CoreLocation does not link with an older one.
 * **The JVM harness** compiles from Maven Central alone, so it leaves out the files that need
   Room or DataStore, which come from Google Maven. It compiles exactly what it compiled while
   those files sat in androidMain.
