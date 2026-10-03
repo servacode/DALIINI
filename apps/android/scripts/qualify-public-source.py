@@ -58,7 +58,7 @@ def check_location_and_map() -> None:
         "home must request location through the shared foreground permission list",
     )
     permissions = read(
-        "core/location/src/main/kotlin/com/servacode/directory/core/location/LocationProvider.kt"
+        "core/location/src/commonMain/kotlin/com/servacode/directory/core/location/LocationProvider.kt"
     )
     require("ACCESS_COARSE_LOCATION" in permissions, "coarse location request missing")
     require("ACCESS_FINE_LOCATION" in permissions, "fine location request missing")

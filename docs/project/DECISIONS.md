@@ -1995,6 +1995,50 @@ clock conversions on `java.time`, the duty presets built on them, and deep links
   New tests pin those cases.
 * **The JVM harness** compiles the shared model and runs its tests.
 
+## DECISION-087 — The core layers are multiplatform, with Android's parts in androidMain and Hilt as before
+
+**Date:** 2026-10-03 · **Phase 8.3 of the roadmap; the third step of DECISION-085.**
+
+**Why:** the session, the preferences, the cache and the location contract are what every
+repository is built on. Each mixed platform-free code with Android code (the Keystore, DataStore,
+Room, the location manager) and with Hilt, which does not exist on iOS.
+
+**Decision:**
+
+* **`core:auth`, `core:database`, `core:datastore` and `core:location` are multiplatform
+  modules.** Each keeps one module, split by platform:
+  * `commonMain` holds the contracts and the rules: the session coordinator and token stores,
+    the cache-first rule and the stores' interfaces, the preferences' shape, the location
+    provider. Their tests are in `commonTest`.
+  * `androidMain` holds the Android implementations and their Hilt modules: the Keystore vault,
+    Room and its DAO, the DataStore, the Android location provider.
+  * The iPhone app will add `iosMain` implementations of the same contracts.
+* **`serva.kmp.hilt`** is the convention for such a module. It runs Hilt's compiler (and Room's,
+  where there is one) through KSP on the Android target, and turns on that target's Java
+  compilation (`withJava()`), because Hilt's processor writes Java. Without it the Hilt modules
+  compiled but the app's graph never saw them (`MissingBinding`).
+* **`core:inject`: `@Inject` and `@Singleton` that shared code can carry.**
+  * They are `expect` annotations. On Android they are `actual typealias`es of javax.inject's
+    own, so a shared class compiles with `javax.inject.Inject` on its constructor and Hilt
+    builds it like any other class; Dagger writes the missing factory in the app. On iOS they
+    are empty annotations.
+  * This is what lets the repositories and use cases move later without each losing its
+    `@Inject constructor` to a hand-written provider.
+  * Proven before it was adopted: a probe class in common code was injected through the app's
+    graph, and Dagger generated its factory.
+  * `-Xexpect-actual-classes` acknowledges that expect/actual classes are Beta.
+* **`MemoryAccessTokenStore`** keeps its token in a `@Volatile` field instead of an
+  `AtomicReference`, which is JVM-only. It is only ever read and replaced whole.
+* **The JVM harness** compiles the common code of the shared modules and runs their common
+  tests. Its own `typealias Inject = javax.inject.Inject` stands in for the expect declarations
+  it cannot compile, and its Android-only exclusions for these modules are gone.
+
+**Not yet:**
+* `core:network` waits on its own step. It needs Ktor in place of Retrofit and OkHttp, and a
+  client generated for Kotlin Multiplatform in place of the JVM one, which carries `java.util.UUID`
+  and `java.time` throughout.
+* `core:maps` waits for the screens' step, because it is part Compose.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

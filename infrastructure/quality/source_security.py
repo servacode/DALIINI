@@ -144,7 +144,7 @@ def main() -> int:
             "background location permission forbidden",
         )
         auth = read(
-            "apps/android/core/auth/src/main/kotlin/com/servacode/directory/core/auth/"
+            "apps/android/core/auth/src/androidMain/kotlin/com/servacode/directory/core/auth/"
             "AndroidKeyStoreRefreshTokenVault.kt"
         )
         require("AES/GCM" in auth, "Android refresh vault must use AES/GCM")
