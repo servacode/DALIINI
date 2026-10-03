@@ -104,6 +104,8 @@ export const READS = {
       provinceId: p.provinceId?.trim() ?? "",
       ...filled(p, ["cityId", "from", "to"]),
     }),
+  dutyRotations: (apis: AdminApis, p: Params) =>
+    apis.duty.adminDutyRotationsList(filled(p, ["provinceId"])),
   contentPages: (apis: AdminApis) => apis.content.adminContentPagesList(),
   contentPage: (apis: AdminApis, p: Params) =>
     apis.content.adminContentPageRetrieve({ slug: p.slug ?? "" }),
@@ -149,6 +151,13 @@ function withDates(body: Body, keys: readonly string[]): Record<string, unknown>
 
 const SCHEDULE = ["startsAt", "endsAt"] as const;
 
+/** A calendar day (`YYYY-MM-DD`) as the `Date` the generated client serialises back to a day. */
+function withDay(body: Body, key: string): Record<string, unknown> {
+  const value = body[key];
+  if (typeof value !== "string" || !value) return { ...body };
+  return { ...body, [key]: new Date(`${value}T00:00:00Z`) };
+}
+
 export const WRITES = {
   // `revision` comes back with a CHANGE: the version of the owner's proposal the reviewer saw.
   // If the owner revised it since, the backend refuses rather than publish what nobody read.
@@ -188,6 +197,28 @@ export const WRITES = {
     apis.account.accountMfaDisable({ mfaCode: { code: String(b.code ?? "") } }),
   userMfaReset: (apis: AdminApis, b: Body) =>
     apis.users.adminUserMfaReset({ userId: String(b.id) }),
+
+  // Saved duty rotations, and the months they generate (previewed unless `apply` is true).
+  dutyRotationCreate: (apis: AdminApis, b: Body) =>
+    apis.duty.adminDutyRotationCreate({ dutyRotationRequest: withDay(b, "anchorDate") as never }),
+  dutyRotationUpdate: (apis: AdminApis, b: Body) => {
+    const { id, ...fields } = b;
+    return apis.duty.adminDutyRotationUpdate({
+      rotationId: String(id),
+      patchedDutyRotationRequest: withDay(fields, "anchorDate") as never,
+    });
+  },
+  dutyRotationDelete: (apis: AdminApis, b: Body) =>
+    apis.duty.adminDutyRotationDelete({ rotationId: String(b.id) }),
+  dutyRotationGenerate: (apis: AdminApis, b: Body) =>
+    apis.duty.adminDutyRotationGenerate({
+      rotationId: String(b.id),
+      dutyRotationGenerate: {
+        fromDate: new Date(`${String(b.fromDate)}T00:00:00Z`),
+        toDate: new Date(`${String(b.toDate)}T00:00:00Z`),
+        apply: Boolean(b.apply),
+      },
+    }),
 
   facilitySuspend: (apis: AdminApis, b: Body) =>
     apis.facilities.adminFacilitySuspend({

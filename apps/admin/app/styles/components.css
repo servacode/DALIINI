@@ -1117,3 +1117,9 @@ a.alert-item:hover { background: var(--ad-surface-hover); }
 /* A wrap of checkboxes that spans the form grid: specialties, services */
 .choice-group { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--ad-space-2) var(--ad-space-5); margin: 0; padding: 0; border: 0; }
 .choice-group legend { inline-size: 100%; margin-block-end: var(--ad-space-2); font-size: var(--ad-text-sm); font-weight: 600; color: var(--ad-text-secondary); }
+
+/* Duty rotations: the pharmacies in the order they take their turn */
+.rotation-order { display: grid; gap: var(--ad-space-2); margin: 0; padding-inline-start: var(--ad-space-6); }
+.rotation-order li { display: flex; align-items: center; justify-content: space-between; gap: var(--ad-space-3); padding: var(--ad-space-1) var(--ad-space-2); border-radius: var(--ad-radius-sm); background: var(--ad-surface-subtle); }
+.rotation-order .button-ghost { min-height: var(--ad-control-h-sm); padding: 0 var(--ad-space-2); }
+.field-inline { display: flex; align-items: center; gap: var(--ad-space-2); }

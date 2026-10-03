@@ -22,6 +22,7 @@ dependencies = [
   "sentry-sdk>=2,<3",
   "uvicorn[standard]>=0.37,<1",
   "segno>=1.6,<2",
+  "openpyxl>=3.1,<4",
 ]
 
 [dependency-groups]
@@ -61,6 +62,7 @@ module = [
   "channels.layers",
   "channels.routing",
   "channels.testing",
+  "openpyxl",
   "storages.backends.s3",
 ]
 ignore_missing_imports = true

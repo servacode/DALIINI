@@ -3324,6 +3324,290 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/admin/duty/import/:
+    post:
+      operationId: adminDutyImport
+      description: 'Columns in Arabic or English: the pharmacy (`facilityId`, `pharmacy`/`الصيدلية`
+        by name, or `phone`/`الهاتف`) and either `date`/`التاريخ` with `from`/`من`
+        and `to`/`إلى` in Damascus time (an end at or before the start is the next
+        morning), or `startsAt` and `endsAt`. Every row is checked against the province''s
+        pharmacies and the stored shifts. `apply` writes all rows or none, and only
+        when no row has an error; re-applying the same file changes nothing. At most
+        2000 rows.'
+      summary: Read a duty roster from a spreadsheet; preview it, or apply it
+      tags:
+      - Admin Duty
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DutyImportRequest'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DutyImportResult'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/admin/duty/rotations/:
+    get:
+      operationId: adminDutyRotationsList
+      summary: Saved duty rotations
+      tags:
+      - Admin Duty
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DutyRotationList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+    post:
+      operationId: adminDutyRotationCreate
+      summary: Save a duty rotation
+      tags:
+      - Admin Duty
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DutyRotationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DutyRotationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DutyRotationRequest'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DutyRotation'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/admin/duty/rotations/{rotation_id}/:
+    patch:
+      operationId: adminDutyRotationUpdate
+      summary: Change a saved duty rotation
+      parameters:
+      - in: path
+        name: rotation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Duty
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDutyRotationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDutyRotationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDutyRotationRequest'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DutyRotation'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+    delete:
+      operationId: adminDutyRotationDelete
+      description: The shifts it generated stay; only the template goes.
+      summary: Delete a saved duty rotation
+      parameters:
+      - in: path
+        name: rotation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Duty
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+  /api/v1/admin/duty/rotations/{rotation_id}/generate/:
+    post:
+      operationId: adminDutyRotationGenerate
+      description: Up to three months at a time. The same checks and all-or-nothing
+        writing as an import; applying a period twice changes nothing.
+      summary: Generate a period's shifts from a rotation; preview them, or apply
+        them
+      parameters:
+      - in: path
+        name: rotation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Duty
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DutyRotationGenerate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DutyRotationGenerate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DutyRotationGenerate'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DutyImportResult'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
   /api/v1/admin/emergency-numbers/:
     get:
       operationId: adminEmergencyNumbersList
@@ -13232,6 +13516,200 @@ components:
       description: |-
         * `SAME_PHONE` - Same phone
         * `SAME_NAME_NEARBY` - Same name nearby
+    DutyImportRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+          description: CSV (UTF-8) or XLSX, first sheet, header row first.
+        provinceId:
+          type: string
+          format: uuid
+        apply:
+          type: boolean
+          default: false
+          description: False previews; true writes, refused if any row has an error.
+      required:
+      - file
+      - provinceId
+    DutyImportResult:
+      type: object
+      properties:
+        applied:
+          type: boolean
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/DutyImportRow'
+        errorCount:
+          type: integer
+        created:
+          type: integer
+        unchanged:
+          type: integer
+      required:
+      - applied
+      - created
+      - errorCount
+      - rows
+      - unchanged
+    DutyImportRow:
+      type: object
+      properties:
+        line:
+          type: integer
+          description: Row number in the file (the header is line 1).
+        facilityId:
+          type: string
+          format: uuid
+          nullable: true
+        facilityNameAr:
+          type: string
+          nullable: true
+        startsAt:
+          type: string
+          format: date-time
+          nullable: true
+        endsAt:
+          type: string
+          format: date-time
+          nullable: true
+        outcome:
+          allOf:
+          - $ref: '#/components/schemas/DutyImportRowOutcomeEnum'
+          nullable: true
+        problems:
+          type: array
+          items:
+            type: string
+          description: Why the row cannot be applied; empty when it can.
+      required:
+      - endsAt
+      - facilityId
+      - facilityNameAr
+      - line
+      - outcome
+      - problems
+      - startsAt
+    DutyImportRowOutcomeEnum:
+      enum:
+      - CREATED
+      - UPDATED
+      - UNCHANGED
+      type: string
+      description: |-
+        * `CREATED` - CREATED
+        * `UPDATED` - UPDATED
+        * `UNCHANGED` - UNCHANGED
+    DutyRotation:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        provinceId:
+          type: string
+          format: uuid
+        facilityIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 400
+          minItems: 1
+        startsAt:
+          type: string
+          format: time
+          description: Damascus time, for example 20:00.
+        endsAt:
+          type: string
+          format: time
+          description: At or before the start means the next morning.
+        perDay:
+          type: integer
+          maximum: 10
+          minimum: 1
+          default: 1
+        anchorDate:
+          type: string
+          format: date
+          description: The day the first pharmacy of the list is on duty.
+        id:
+          type: string
+          format: uuid
+      required:
+      - anchorDate
+      - endsAt
+      - facilityIds
+      - id
+      - name
+      - provinceId
+      - startsAt
+    DutyRotationGenerate:
+      type: object
+      properties:
+        fromDate:
+          type: string
+          format: date
+        toDate:
+          type: string
+          format: date
+        apply:
+          type: boolean
+          default: false
+      required:
+      - fromDate
+      - toDate
+    DutyRotationList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DutyRotation'
+      required:
+      - items
+    DutyRotationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        provinceId:
+          type: string
+          format: uuid
+        facilityIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 400
+          minItems: 1
+        startsAt:
+          type: string
+          format: time
+          description: Damascus time, for example 20:00.
+        endsAt:
+          type: string
+          format: time
+          description: At or before the start means the next morning.
+        perDay:
+          type: integer
+          maximum: 10
+          minimum: 1
+          default: 1
+        anchorDate:
+          type: string
+          format: date
+          description: The day the first pharmacy of the list is on duty.
+      required:
+      - anchorDate
+      - endsAt
+      - facilityIds
+      - name
+      - provinceId
+      - startsAt
     DutyShift:
       type: object
       properties:
@@ -14732,6 +15210,39 @@ components:
             type: integer
             minimum: 1
           description: Replaces the facility's services; an empty list clears them.
+    PatchedDutyRotationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        provinceId:
+          type: string
+          format: uuid
+        facilityIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 400
+          minItems: 1
+        startsAt:
+          type: string
+          format: time
+          description: Damascus time, for example 20:00.
+        endsAt:
+          type: string
+          format: time
+          description: At or before the start means the next morning.
+        perDay:
+          type: integer
+          maximum: 10
+          minimum: 1
+          default: 1
+        anchorDate:
+          type: string
+          format: date
+          description: The day the first pharmacy of the list is on duty.
     PatchedDutyShiftInput:
       type: object
       description: A duty shift as the client sends it. The server assigns the id.

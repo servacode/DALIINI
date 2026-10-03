@@ -1,5 +1,6 @@
 import uuid
 
+from django.conf import settings
 from django.contrib.postgres.constraints import ExclusionConstraint
 from django.contrib.postgres.fields import DateTimeRangeField, RangeOperators
 from django.core.exceptions import ValidationError
@@ -95,3 +96,31 @@ class DutyGapNudge(models.Model):
 
     def __str__(self) -> str:
         return f"{self.province_id} {self.gap_date}"
+
+
+class DutyRotation(models.Model):
+    """A recurring roster: the same pharmacies in turn, the same hours, night after night.
+
+    Most provinces run duty as a fixed rotation. Saved once, it generates any month's shifts
+    (`pharmacy_duty.rotation`): on `anchor_date` the first `per_day` pharmacies of the list are on
+    duty, the next day the following ones, and the list wraps around.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=120)
+    province = models.ForeignKey(
+        "locations.Province", on_delete=models.CASCADE, related_name="duty_rotations"
+    )
+    facility_ids = models.JSONField(default=list, help_text="Ordered facility ids.")
+    starts_at_time = models.TimeField()
+    ends_at_time = models.TimeField(help_text="At or before the start means the next morning.")
+    per_day = models.PositiveSmallIntegerField(default=1)
+    anchor_date = models.DateField()
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return self.name

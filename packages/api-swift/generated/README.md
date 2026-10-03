@@ -75,7 +75,13 @@ Class | Method | HTTP request | Description
 *AdminContentAPI* | [**adminFaqEntryCreate**](docs/AdminContentAPI.md#adminfaqentrycreate) | **POST** /api/v1/admin/content/faq/ | Add a FAQ entry
 *AdminContentAPI* | [**adminFaqEntryDelete**](docs/AdminContentAPI.md#adminfaqentrydelete) | **DELETE** /api/v1/admin/content/faq/{entry_id}/ | Delete a FAQ entry
 *AdminContentAPI* | [**adminFaqEntryUpdate**](docs/AdminContentAPI.md#adminfaqentryupdate) | **PUT** /api/v1/admin/content/faq/{entry_id}/ | Edit, reorder, publish or unpublish a FAQ entry
+*AdminDutyAPI* | [**adminDutyImport**](docs/AdminDutyAPI.md#admindutyimport) | **POST** /api/v1/admin/duty/import/ | Read a duty roster from a spreadsheet; preview it, or apply it
 *AdminDutyAPI* | [**adminDutyRosterRetrieve**](docs/AdminDutyAPI.md#admindutyrosterretrieve) | **GET** /api/v1/admin/duty/ | The duty roster of a province (or city), day by day
+*AdminDutyAPI* | [**adminDutyRotationCreate**](docs/AdminDutyAPI.md#admindutyrotationcreate) | **POST** /api/v1/admin/duty/rotations/ | Save a duty rotation
+*AdminDutyAPI* | [**adminDutyRotationDelete**](docs/AdminDutyAPI.md#admindutyrotationdelete) | **DELETE** /api/v1/admin/duty/rotations/{rotation_id}/ | Delete a saved duty rotation
+*AdminDutyAPI* | [**adminDutyRotationGenerate**](docs/AdminDutyAPI.md#admindutyrotationgenerate) | **POST** /api/v1/admin/duty/rotations/{rotation_id}/generate/ | Generate a period&#39;s shifts from a rotation; preview them, or apply them
+*AdminDutyAPI* | [**adminDutyRotationUpdate**](docs/AdminDutyAPI.md#admindutyrotationupdate) | **PATCH** /api/v1/admin/duty/rotations/{rotation_id}/ | Change a saved duty rotation
+*AdminDutyAPI* | [**adminDutyRotationsList**](docs/AdminDutyAPI.md#admindutyrotationslist) | **GET** /api/v1/admin/duty/rotations/ | Saved duty rotations
 *AdminDutyAPI* | [**adminDutyShiftCreate**](docs/AdminDutyAPI.md#admindutyshiftcreate) | **POST** /api/v1/admin/duty/ | Put a duty shift on a pharmacy&#39;s roster
 *AdminDutyAPI* | [**adminDutyShiftDelete**](docs/AdminDutyAPI.md#admindutyshiftdelete) | **DELETE** /api/v1/admin/duty/{shift_id}/ | Cancel a duty shift
 *AdminDutyAPI* | [**adminDutyShiftUpdate**](docs/AdminDutyAPI.md#admindutyshiftupdate) | **PATCH** /api/v1/admin/duty/{shift_id}/ | Move a duty shift
@@ -394,6 +400,13 @@ Class | Method | HTTP request | Description
  - [DependencyConfiguredEnum](docs/DependencyConfiguredEnum.md)
  - [DestinationEnum](docs/DestinationEnum.md)
  - [DuplicateReasonEnum](docs/DuplicateReasonEnum.md)
+ - [DutyImportResult](docs/DutyImportResult.md)
+ - [DutyImportRow](docs/DutyImportRow.md)
+ - [DutyImportRowOutcomeEnum](docs/DutyImportRowOutcomeEnum.md)
+ - [DutyRotation](docs/DutyRotation.md)
+ - [DutyRotationGenerate](docs/DutyRotationGenerate.md)
+ - [DutyRotationList](docs/DutyRotationList.md)
+ - [DutyRotationRequest](docs/DutyRotationRequest.md)
  - [DutyShift](docs/DutyShift.md)
  - [DutyShiftInput](docs/DutyShiftInput.md)
  - [DutyShiftList](docs/DutyShiftList.md)
@@ -471,6 +484,7 @@ Class | Method | HTTP request | Description
  - [PasswordChange](docs/PasswordChange.md)
  - [PatchedAdminDutyShiftUpdateRequest](docs/PatchedAdminDutyShiftUpdateRequest.md)
  - [PatchedAdminFacilityWrite](docs/PatchedAdminFacilityWrite.md)
+ - [PatchedDutyRotationRequest](docs/PatchedDutyRotationRequest.md)
  - [PatchedDutyShiftInput](docs/PatchedDutyShiftInput.md)
  - [PatchedFacilityPatch](docs/PatchedFacilityPatch.md)
  - [PatchedProfilePatch](docs/PatchedProfilePatch.md)

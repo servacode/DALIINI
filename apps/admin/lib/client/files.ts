@@ -53,6 +53,32 @@ export async function uploadAdImage(file: File): Promise<Result<AdImage>> {
   }
 }
 
+/**
+ * Send a duty roster to be previewed (`apply` false) or written. The answer is the row-by-row
+ * report either way; nothing is written unless every row is sound.
+ */
+export async function uploadDutyRoster<T>(
+  file: File,
+  provinceId: string,
+  apply: boolean,
+): Promise<Result<T>> {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("provinceId", provinceId);
+  form.append("apply", apply ? "true" : "false");
+  try {
+    const response = await fetch("/api/admin/duty/import", {
+      method: "POST",
+      credentials: "same-origin",
+      body: form,
+    });
+    if (response.ok) return { ok: true, data: (await response.json()) as T };
+    return { ok: false, status: response.status, error: await failure(response) };
+  } catch {
+    return { ok: false, status: 0, error: NETWORK_FAILURE };
+  }
+}
+
 /** The name the server chose, from `Content-Disposition`, or a plain fallback. */
 function fileNameFrom(response: Response, fallback: string): string {
   const header = response.headers.get("content-disposition") ?? "";

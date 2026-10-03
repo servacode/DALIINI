@@ -4,11 +4,71 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**adminDutyImport**](AdminDutyAPI.md#admindutyimport) | **POST** /api/v1/admin/duty/import/ | Read a duty roster from a spreadsheet; preview it, or apply it
 [**adminDutyRosterRetrieve**](AdminDutyAPI.md#admindutyrosterretrieve) | **GET** /api/v1/admin/duty/ | The duty roster of a province (or city), day by day
+[**adminDutyRotationCreate**](AdminDutyAPI.md#admindutyrotationcreate) | **POST** /api/v1/admin/duty/rotations/ | Save a duty rotation
+[**adminDutyRotationDelete**](AdminDutyAPI.md#admindutyrotationdelete) | **DELETE** /api/v1/admin/duty/rotations/{rotation_id}/ | Delete a saved duty rotation
+[**adminDutyRotationGenerate**](AdminDutyAPI.md#admindutyrotationgenerate) | **POST** /api/v1/admin/duty/rotations/{rotation_id}/generate/ | Generate a period&#39;s shifts from a rotation; preview them, or apply them
+[**adminDutyRotationUpdate**](AdminDutyAPI.md#admindutyrotationupdate) | **PATCH** /api/v1/admin/duty/rotations/{rotation_id}/ | Change a saved duty rotation
+[**adminDutyRotationsList**](AdminDutyAPI.md#admindutyrotationslist) | **GET** /api/v1/admin/duty/rotations/ | Saved duty rotations
 [**adminDutyShiftCreate**](AdminDutyAPI.md#admindutyshiftcreate) | **POST** /api/v1/admin/duty/ | Put a duty shift on a pharmacy&#39;s roster
 [**adminDutyShiftDelete**](AdminDutyAPI.md#admindutyshiftdelete) | **DELETE** /api/v1/admin/duty/{shift_id}/ | Cancel a duty shift
 [**adminDutyShiftUpdate**](AdminDutyAPI.md#admindutyshiftupdate) | **PATCH** /api/v1/admin/duty/{shift_id}/ | Move a duty shift
 
+
+# **adminDutyImport**
+```swift
+    open class func adminDutyImport(file: URL, provinceId: UUID, apply: Bool? = nil, completion: @escaping (_ data: DutyImportResult?, _ error: Error?) -> Void)
+```
+
+Read a duty roster from a spreadsheet; preview it, or apply it
+
+Columns in Arabic or English: the pharmacy (`facilityId`, `pharmacy`/`الصيدلية` by name, or `phone`/`الهاتف`) and either `date`/`التاريخ` with `from`/`من` and `to`/`إلى` in Damascus time (an end at or before the start is the next morning), or `startsAt` and `endsAt`. Every row is checked against the province's pharmacies and the stored shifts. `apply` writes all rows or none, and only when no row has an error; re-applying the same file changes nothing. At most 2000 rows.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let file = URL(string: "https://example.com")! // URL | CSV (UTF-8) or XLSX, first sheet, header row first.
+let provinceId = 987 // UUID | 
+let apply = true // Bool | False previews; true writes, refused if any row has an error. (optional) (default to false)
+
+// Read a duty roster from a spreadsheet; preview it, or apply it
+AdminDutyAPI.adminDutyImport(file: file, provinceId: provinceId, apply: apply) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **file** | **URL** | CSV (UTF-8) or XLSX, first sheet, header row first. | 
+ **provinceId** | **UUID** |  | 
+ **apply** | **Bool** | False previews; true writes, refused if any row has an error. | [optional] [default to false]
+
+### Return type
+
+[**DutyImportResult**](DutyImportResult.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **adminDutyRosterRetrieve**
 ```swift
@@ -54,6 +114,250 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**AdminDutyRoster**](AdminDutyRoster.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminDutyRotationCreate**
+```swift
+    open class func adminDutyRotationCreate(dutyRotationRequest: DutyRotationRequest, completion: @escaping (_ data: DutyRotation?, _ error: Error?) -> Void)
+```
+
+Save a duty rotation
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let dutyRotationRequest = DutyRotationRequest(name: "name_example", provinceId: 123, facilityIds: [123], startsAt: "startsAt_example", endsAt: "endsAt_example", perDay: 123, anchorDate: Date()) // DutyRotationRequest | 
+
+// Save a duty rotation
+AdminDutyAPI.adminDutyRotationCreate(dutyRotationRequest: dutyRotationRequest) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **dutyRotationRequest** | [**DutyRotationRequest**](DutyRotationRequest.md) |  | 
+
+### Return type
+
+[**DutyRotation**](DutyRotation.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminDutyRotationDelete**
+```swift
+    open class func adminDutyRotationDelete(rotationId: UUID, completion: @escaping (_ data: Void?, _ error: Error?) -> Void)
+```
+
+Delete a saved duty rotation
+
+The shifts it generated stay; only the template goes.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let rotationId = 987 // UUID | 
+
+// Delete a saved duty rotation
+AdminDutyAPI.adminDutyRotationDelete(rotationId: rotationId) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **rotationId** | **UUID** |  | 
+
+### Return type
+
+Void (empty response body)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminDutyRotationGenerate**
+```swift
+    open class func adminDutyRotationGenerate(rotationId: UUID, dutyRotationGenerate: DutyRotationGenerate, completion: @escaping (_ data: DutyImportResult?, _ error: Error?) -> Void)
+```
+
+Generate a period's shifts from a rotation; preview them, or apply them
+
+Up to three months at a time. The same checks and all-or-nothing writing as an import; applying a period twice changes nothing.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let rotationId = 987 // UUID | 
+let dutyRotationGenerate = DutyRotationGenerate(fromDate: Date(), toDate: Date(), apply: false) // DutyRotationGenerate | 
+
+// Generate a period's shifts from a rotation; preview them, or apply them
+AdminDutyAPI.adminDutyRotationGenerate(rotationId: rotationId, dutyRotationGenerate: dutyRotationGenerate) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **rotationId** | **UUID** |  | 
+ **dutyRotationGenerate** | [**DutyRotationGenerate**](DutyRotationGenerate.md) |  | 
+
+### Return type
+
+[**DutyImportResult**](DutyImportResult.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminDutyRotationUpdate**
+```swift
+    open class func adminDutyRotationUpdate(rotationId: UUID, patchedDutyRotationRequest: PatchedDutyRotationRequest? = nil, completion: @escaping (_ data: DutyRotation?, _ error: Error?) -> Void)
+```
+
+Change a saved duty rotation
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let rotationId = 987 // UUID | 
+let patchedDutyRotationRequest = PatchedDutyRotationRequest(name: "name_example", provinceId: 123, facilityIds: [123], startsAt: "startsAt_example", endsAt: "endsAt_example", perDay: 123, anchorDate: Date()) // PatchedDutyRotationRequest |  (optional)
+
+// Change a saved duty rotation
+AdminDutyAPI.adminDutyRotationUpdate(rotationId: rotationId, patchedDutyRotationRequest: patchedDutyRotationRequest) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **rotationId** | **UUID** |  | 
+ **patchedDutyRotationRequest** | [**PatchedDutyRotationRequest**](PatchedDutyRotationRequest.md) |  | [optional] 
+
+### Return type
+
+[**DutyRotation**](DutyRotation.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminDutyRotationsList**
+```swift
+    open class func adminDutyRotationsList(completion: @escaping (_ data: DutyRotationList?, _ error: Error?) -> Void)
+```
+
+Saved duty rotations
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+
+// Saved duty rotations
+AdminDutyAPI.adminDutyRotationsList() { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**DutyRotationList**](DutyRotationList.md)
 
 ### Authorization
 

@@ -94,7 +94,13 @@ All URIs are relative to *http://localhost*
 | *AdminContentApi* | [**adminFaqEntryCreate**](docs/AdminContentApi.md#adminfaqentrycreate) | **POST** api/v1/admin/content/faq/ | Add a FAQ entry |
 | *AdminContentApi* | [**adminFaqEntryDelete**](docs/AdminContentApi.md#adminfaqentrydelete) | **DELETE** api/v1/admin/content/faq/{entry_id}/ | Delete a FAQ entry |
 | *AdminContentApi* | [**adminFaqEntryUpdate**](docs/AdminContentApi.md#adminfaqentryupdate) | **PUT** api/v1/admin/content/faq/{entry_id}/ | Edit, reorder, publish or unpublish a FAQ entry |
+| *AdminDutyApi* | [**adminDutyImport**](docs/AdminDutyApi.md#admindutyimport) | **POST** api/v1/admin/duty/import/ | Read a duty roster from a spreadsheet; preview it, or apply it |
 | *AdminDutyApi* | [**adminDutyRosterRetrieve**](docs/AdminDutyApi.md#admindutyrosterretrieve) | **GET** api/v1/admin/duty/ | The duty roster of a province (or city), day by day |
+| *AdminDutyApi* | [**adminDutyRotationCreate**](docs/AdminDutyApi.md#admindutyrotationcreate) | **POST** api/v1/admin/duty/rotations/ | Save a duty rotation |
+| *AdminDutyApi* | [**adminDutyRotationDelete**](docs/AdminDutyApi.md#admindutyrotationdelete) | **DELETE** api/v1/admin/duty/rotations/{rotation_id}/ | Delete a saved duty rotation |
+| *AdminDutyApi* | [**adminDutyRotationGenerate**](docs/AdminDutyApi.md#admindutyrotationgenerate) | **POST** api/v1/admin/duty/rotations/{rotation_id}/generate/ | Generate a period's shifts from a rotation; preview them, or apply them |
+| *AdminDutyApi* | [**adminDutyRotationUpdate**](docs/AdminDutyApi.md#admindutyrotationupdate) | **PATCH** api/v1/admin/duty/rotations/{rotation_id}/ | Change a saved duty rotation |
+| *AdminDutyApi* | [**adminDutyRotationsList**](docs/AdminDutyApi.md#admindutyrotationslist) | **GET** api/v1/admin/duty/rotations/ | Saved duty rotations |
 | *AdminDutyApi* | [**adminDutyShiftCreate**](docs/AdminDutyApi.md#admindutyshiftcreate) | **POST** api/v1/admin/duty/ | Put a duty shift on a pharmacy's roster |
 | *AdminDutyApi* | [**adminDutyShiftDelete**](docs/AdminDutyApi.md#admindutyshiftdelete) | **DELETE** api/v1/admin/duty/{shift_id}/ | Cancel a duty shift |
 | *AdminDutyApi* | [**adminDutyShiftUpdate**](docs/AdminDutyApi.md#admindutyshiftupdate) | **PATCH** api/v1/admin/duty/{shift_id}/ | Move a duty shift |
@@ -414,6 +420,13 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.DependencyConfiguredEnum](docs/DependencyConfiguredEnum.md)
  - [com.servacode.directory.api.models.DestinationEnum](docs/DestinationEnum.md)
  - [com.servacode.directory.api.models.DuplicateReasonEnum](docs/DuplicateReasonEnum.md)
+ - [com.servacode.directory.api.models.DutyImportResult](docs/DutyImportResult.md)
+ - [com.servacode.directory.api.models.DutyImportRow](docs/DutyImportRow.md)
+ - [com.servacode.directory.api.models.DutyImportRowOutcomeEnum](docs/DutyImportRowOutcomeEnum.md)
+ - [com.servacode.directory.api.models.DutyRotation](docs/DutyRotation.md)
+ - [com.servacode.directory.api.models.DutyRotationGenerate](docs/DutyRotationGenerate.md)
+ - [com.servacode.directory.api.models.DutyRotationList](docs/DutyRotationList.md)
+ - [com.servacode.directory.api.models.DutyRotationRequest](docs/DutyRotationRequest.md)
  - [com.servacode.directory.api.models.DutyShift](docs/DutyShift.md)
  - [com.servacode.directory.api.models.DutyShiftInput](docs/DutyShiftInput.md)
  - [com.servacode.directory.api.models.DutyShiftList](docs/DutyShiftList.md)
@@ -491,6 +504,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.PasswordChange](docs/PasswordChange.md)
  - [com.servacode.directory.api.models.PatchedAdminDutyShiftUpdateRequest](docs/PatchedAdminDutyShiftUpdateRequest.md)
  - [com.servacode.directory.api.models.PatchedAdminFacilityWrite](docs/PatchedAdminFacilityWrite.md)
+ - [com.servacode.directory.api.models.PatchedDutyRotationRequest](docs/PatchedDutyRotationRequest.md)
  - [com.servacode.directory.api.models.PatchedDutyShiftInput](docs/PatchedDutyShiftInput.md)
  - [com.servacode.directory.api.models.PatchedFacilityPatch](docs/PatchedFacilityPatch.md)
  - [com.servacode.directory.api.models.PatchedProfilePatch](docs/PatchedProfilePatch.md)
