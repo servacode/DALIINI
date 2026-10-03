@@ -54,7 +54,7 @@ artifacts/evidence/**/*.json
 apps/admin/.playwright-browsers/
 apps/admin/test-results/
 apps/admin/playwright-report/
-apps/admin/.e2e-admin.log
+apps/admin/.e2e-admin.log*
 
 # Playwright sessions created by global setup
 apps/admin/tests/e2e/.auth/

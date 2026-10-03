@@ -1178,6 +1178,40 @@ got. And the app's notification switches were a local filter: a muted kind still
   (`duty.shift.admin_changed`) and any kind outside the three categories are always pushed: a
   switch hides news, never something addressed to the owner's own work.
 
+## DECISION-068 — The end-to-end suites run on compose, in a stack of their own
+
+**Date:** 2026-10-03 · **Phase 2.8 of the roadmap.**
+
+**Why:** `scripts/e2e-admin.sh`, `scripts/e2e-android.sh` and `scripts/local-stack.sh` assumed
+one Windows machine. They used hand-made containers (`p10pg`, `p10redis`, a pre-built
+`directory-v3-p2dev:local`) and `netstat`/`taskkill`, and pulled MinIO images that are no longer
+published. On a fresh machine, or any machine but that one, they could not start at all. So the
+console's browser suite had not run since the two-step sign-in was added, and one of its
+assertions had gone stale unnoticed.
+
+**Decision:**
+
+* **A separate stack.** `infrastructure/docker/compose.e2e.yml` layers the suites' own stack over
+  the development compose file: project `daliini-e2e`, its own containers and volumes, wiped
+  before every run. Only the API (`E2E_API_PORT`, 8021) and object storage (`E2E_S3_PORT`, 9021)
+  are published, so the development stack keeps its ports and its data.
+* **One library.** `scripts/lib/stack.sh` brings the stack up, runs `manage.py` in it, serves the
+  console's production build, and frees a port with whatever the machine has: `lsof`, `fuser` or
+  `taskkill`. The suites, `verify-all.sh` and `local-stack.sh` all use it. The storage-isolation
+  check reads keys from the database rather than from a storage client.
+* **One image.** The API, worker and beat share one image, `daliini-backend:local`, which
+  `osm-boundaries.sh` also borrows for GDAL. `STACK_NO_BUILD=1` uses an image already built.
+* **The phone session** (`local-stack.sh up`) is the development stack, seeded, with boundaries
+  imported when present and one photograph uploaded through the owner API. The console runs with
+  `pnpm dev:admin`.
+* **`scripts/verify.sh`** runs the backend checks in the development stack's API container. It
+  first syncs the dev group into the container's environment, and fails if it cannot. Before
+  this, a missing mypy read as a pass, because the check only looked for error lines. Caches go
+  to `/tmp`. The repository's `openapi/` is mounted at `/openapi`, so the contract tests run
+  there instead of being deselected.
+* Shell scripts are kept LF by `.gitattributes`: one had been committed with CRLF, which bash on
+  Linux cannot run.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

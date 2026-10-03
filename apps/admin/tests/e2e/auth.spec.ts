@@ -152,7 +152,14 @@ test.describe("with an established session", () => {
     expect(me.userId).toBeTruthy();
     expect(me.displayName).toBe(FULL.name);
     expect(me.permissions.length).toBeGreaterThan(10);
-    expect(Object.keys(me).sort()).toEqual(["displayName", "permissions", "userId"]);
+    expect(Object.keys(me).sort()).toEqual(["displayName", "mfa", "permissions", "userId"]);
+    // The second step's state, never its secret.
+    expect(Object.keys(me.mfa).sort()).toEqual([
+      "enabled",
+      "recoveryCodesLeft",
+      "required",
+      "verified",
+    ]);
     await expect(page.getByTestId("operator-name")).toContainText(FULL.name);
   });
 
