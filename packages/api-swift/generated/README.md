@@ -39,6 +39,8 @@ Class | Method | HTTP request | Description
 *AccountAPI* | [**accountMfaSetup**](docs/AccountAPI.md#accountmfasetup) | **POST** /api/v1/account/mfa/setup/ | Start setting up an authenticator app
 *AccountAPI* | [**accountMfaVerify**](docs/AccountAPI.md#accountmfaverify) | **POST** /api/v1/account/mfa/verify/ | Pass the second step for this session
 *AccountAPI* | [**accountNotificationMarkRead**](docs/AccountAPI.md#accountnotificationmarkread) | **POST** /api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read
+*AccountAPI* | [**accountNotificationPreferencesRetrieve**](docs/AccountAPI.md#accountnotificationpreferencesretrieve) | **GET** /api/v1/account/notification-preferences/ | Which kinds of notice are pushed to this account&#39;s devices
+*AccountAPI* | [**accountNotificationPreferencesUpdate**](docs/AccountAPI.md#accountnotificationpreferencesupdate) | **PATCH** /api/v1/account/notification-preferences/ | Change which kinds of notice are pushed
 *AccountAPI* | [**accountNotificationsList**](docs/AccountAPI.md#accountnotificationslist) | **GET** /api/v1/account/notifications/ | List the caller&#39;s notifications, newest first
 *AccountAPI* | [**accountNotificationsMarkAllRead**](docs/AccountAPI.md#accountnotificationsmarkallread) | **POST** /api/v1/account/notifications/read-all/ | Mark every unread notification as read
 *AccountAPI* | [**accountNotificationsUnreadCount**](docs/AccountAPI.md#accountnotificationsunreadcount) | **GET** /api/v1/account/notifications/unread-count/ | How many of the caller&#39;s notifications are unread
@@ -55,6 +57,7 @@ Class | Method | HTTP request | Description
 *AdminAdsAPI* | [**adminAdCreate**](docs/AdminAdsAPI.md#adminadcreate) | **POST** /api/v1/admin/ads/ | Create an advertisement
 *AdminAdsAPI* | [**adminAdDelete**](docs/AdminAdsAPI.md#adminaddelete) | **DELETE** /api/v1/admin/ads/{advertisement_id}/ | Delete an advertisement
 *AdminAdsAPI* | [**adminAdImageUpload**](docs/AdminAdsAPI.md#adminadimageupload) | **POST** /api/v1/admin/ads/images/ | Upload an advertisement image
+*AdminAdsAPI* | [**adminAdStatsRetrieve**](docs/AdminAdsAPI.md#adminadstatsretrieve) | **GET** /api/v1/admin/ads/stats/ | Impressions and clicks of each advertisement over a period
 *AdminAdsAPI* | [**adminAdUpdate**](docs/AdminAdsAPI.md#adminadupdate) | **PUT** /api/v1/admin/ads/{advertisement_id}/ | Edit an advertisement, its schedule or its activation
 *AdminAdsAPI* | [**adminAdsList**](docs/AdminAdsAPI.md#adminadslist) | **GET** /api/v1/admin/ads/ | List advertisements
 *AdminAnalyticsAPI* | [**adminAnalyticsRetrieve**](docs/AdminAnalyticsAPI.md#adminanalyticsretrieve) | **GET** /api/v1/admin/analytics/ | Operational KPIs
@@ -233,6 +236,8 @@ Class | Method | HTTP request | Description
  - [AccountDeletionStatusEnum](docs/AccountDeletionStatusEnum.md)
  - [AccountRating](docs/AccountRating.md)
  - [AccountRatingList](docs/AccountRatingList.md)
+ - [AdStat](docs/AdStat.md)
+ - [AdStats](docs/AdStats.md)
  - [AdminAdImage](docs/AdminAdImage.md)
  - [AdminAdvertisement](docs/AdminAdvertisement.md)
  - [AdminAdvertisementList](docs/AdminAdvertisementList.md)
@@ -459,6 +464,7 @@ Class | Method | HTTP request | Description
  - [NamedRef](docs/NamedRef.md)
  - [Notification](docs/Notification.md)
  - [NotificationPage](docs/NotificationPage.md)
+ - [NotificationPreferences](docs/NotificationPreferences.md)
  - [OwnerApplication](docs/OwnerApplication.md)
  - [OwnerCategory](docs/OwnerCategory.md)
  - [OwnerConfig](docs/OwnerConfig.md)
@@ -487,6 +493,7 @@ Class | Method | HTTP request | Description
  - [PatchedDutyRotationRequest](docs/PatchedDutyRotationRequest.md)
  - [PatchedDutyShiftInput](docs/PatchedDutyShiftInput.md)
  - [PatchedFacilityPatch](docs/PatchedFacilityPatch.md)
+ - [PatchedNotificationPreferences](docs/PatchedNotificationPreferences.md)
  - [PatchedProfilePatch](docs/PatchedProfilePatch.md)
  - [PhoneChangeStart](docs/PhoneChangeStart.md)
  - [PlatformStatus](docs/PlatformStatus.md)

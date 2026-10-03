@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useCan } from "../../../components/admin-shell";
 import { Icons } from "../../../components/icons";
+import { type Period, PeriodPicker, lastDays, periodLabel } from "../../../components/period-picker";
 import {
   ConfirmDialog,
   EmptyState,
@@ -16,6 +17,7 @@ import {
   formatDateTime,
 } from "../../../components/ui";
 import { SlidePreview } from "../../../components/ui/extra";
+import { damascusDay } from "../../../lib/client/calendar";
 import { uploadAdImage } from "../../../lib/client/files";
 import { useMutation } from "../../../lib/client/use-mutation";
 import { useResource } from "../../../lib/client/use-resource";
@@ -34,6 +36,40 @@ type Advertisement = Readonly<{
   sortOrder: number;
   slideDurationMs: number;
 }>;
+
+/** How often each advertisement was seen and pressed in the apps, over a period. */
+type AdStats = Readonly<{
+  fromDate: string;
+  toDate: string;
+  items: readonly Readonly<{
+    adId: string;
+    impressions: number;
+    clicks: number;
+    clickRate: number | null;
+  }>[];
+}>;
+
+const NUMBER = new Intl.NumberFormat("ar-SY");
+const PERCENT = new Intl.NumberFormat("ar-SY", { style: "percent", maximumFractionDigits: 1 });
+
+/** A dash while the numbers load, or for an advertisement created after they were read. */
+function count(value: number | undefined): string {
+  return value === undefined ? "—" : NUMBER.format(value);
+}
+
+/**
+ * The period the numbers cover, as the backend read it. The generated client turns its date
+ * fields into `Date`s, so they arrive as UTC midnight (`2026-09-04T00:00:00.000Z`); the day is
+ * the first ten characters either way.
+ */
+function covered(stats: AdStats): Period {
+  return { from: stats.fromDate.slice(0, 10), to: stats.toDate.slice(0, 10) };
+}
+
+/** No views means no rate, not a rate of zero. */
+function rate(value: number | null | undefined): string {
+  return value == null ? "—" : PERCENT.format(value);
+}
 
 const SCOPES = [
   ["GLOBAL", "كل المحافظات"],
@@ -129,6 +165,10 @@ function imageSize(url: string): Promise<{ width: number; height: number } | nul
  */
 export default function AdsPage() {
   const ads = useResource<{ items: Advertisement[] }>("ads");
+  const [today] = useState(() => damascusDay(new Date()));
+  const [period, setPeriod] = useState<Period>(() => lastDays(30, damascusDay(new Date())));
+  const stats = useResource<AdStats>("adStats", period);
+  const statOf = new Map((stats.data?.items ?? []).map((item) => [item.adId, item]));
   const provinces = useResource<{ items: { id: string; nameAr: string }[] }>("provinces");
   const categories = useResource<{ items: { id: string; nameAr: string }[] }>("categories");
   const mutation = useMutation();
@@ -293,87 +333,104 @@ export default function AdsPage() {
         ads.data.items.length === 0 ? (
           <EmptyState title="لا إعلانات بعد" />
         ) : (
-          <div className="table-wrap">
-            <table className="data-table" data-testid="data-table">
-              <caption className="sr-only">الإعلانات</caption>
-              <thead>
-                <tr>
-                  <th scope="col">العنوان</th>
-                  <th scope="col">الاستهداف</th>
-                  <th scope="col">من</th>
-                  <th scope="col">إلى</th>
-                  <th scope="col">الحالة</th>
-                  <th scope="col" />
-                </tr>
-              </thead>
-              <tbody>
-                {ads.data.items.map((ad) => (
-                  <tr key={ad.id}>
-                    <td>{ad.titleAr || "—"}</td>
-                    <td>{SCOPES.find(([value]) => value === ad.targetScope)?.[1]}</td>
-                    <td className="cell-ltr">{formatDateTime(ad.startsAt)}</td>
-                    <td className="cell-ltr">{formatDateTime(ad.endsAt)}</td>
-                    <td>
-                      <StatusBadge tone={ad.enabled ? "positive" : "neutral"}>
-                        {ad.enabled ? "فعّال" : "متوقف"}
-                      </StatusBadge>
-                    </td>
-                    <td>
-                      {canManage ? (
-                        <div className="button-row">
-                          <button
-                            type="button"
-                            className="button-ghost"
-                            data-testid={`edit-ad-${ad.id}`}
-                            onClick={() =>
-                              openEditor(
-                                {
-                                  ...BLANK,
-                                  id: ad.id,
-                                  titleAr: ad.titleAr,
-                                  targetScope: ad.targetScope,
-                                  provinceId: ad.provinceId ?? "",
-                                  categoryId: ad.categoryId ?? "",
-                                  startsAt: toLocalInput(ad.startsAt),
-                                  endsAt: toLocalInput(ad.endsAt),
-                                  enabled: ad.enabled,
-                                  sortOrder: String(ad.sortOrder),
-                                  slideDurationMs: String(ad.slideDurationMs),
-                                },
-                                ad.imageUrl,
-                              )
-                            }
-                          >
-                            تعديل
-                          </button>
-                          <button
-                            type="button"
-                            className="button-ghost"
-                            data-testid={`toggle-ad-${ad.id}`}
-                            onClick={() => toggle(ad)}
-                          >
-                            {ad.enabled ? "إيقاف" : "تفعيل"}
-                          </button>
-                          <button
-                            type="button"
-                            className="button-ghost"
-                            data-tone="danger"
-                            data-testid={`delete-ad-${ad.id}`}
-                            onClick={() => {
-                              mutation.reset();
-                              setRemoving(ad);
-                            }}
-                          >
-                            حذف
-                          </button>
-                        </div>
-                      ) : null}
-                    </td>
+          <>
+            <PeriodPicker value={period} today={today} onChange={setPeriod} />
+            {stats.error ? <ErrorState error={stats.error} onRetry={stats.reload} /> : null}
+            <div className="table-wrap">
+              <table className="data-table" data-testid="data-table">
+                <caption className="sr-only">
+                  الإعلانات
+                  {stats.data
+                    ? `، وأرقامها للفترة ${periodLabel(covered(stats.data))}`
+                    : null}
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">العنوان</th>
+                    <th scope="col">الاستهداف</th>
+                    <th scope="col">من</th>
+                    <th scope="col">إلى</th>
+                    <th scope="col">الحالة</th>
+                    <th scope="col">المشاهدات</th>
+                    <th scope="col">النقرات</th>
+                    <th scope="col">نسبة النقر</th>
+                    <th scope="col" />
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {ads.data.items.map((ad) => (
+                    <tr key={ad.id}>
+                      <td>{ad.titleAr || "—"}</td>
+                      <td>{SCOPES.find(([value]) => value === ad.targetScope)?.[1]}</td>
+                      <td className="cell-ltr">{formatDateTime(ad.startsAt)}</td>
+                      <td className="cell-ltr">{formatDateTime(ad.endsAt)}</td>
+                      <td>
+                        <StatusBadge tone={ad.enabled ? "positive" : "neutral"}>
+                          {ad.enabled ? "فعّال" : "متوقف"}
+                        </StatusBadge>
+                      </td>
+                      <td className="cell-ltr" data-testid={`ad-impressions-${ad.id}`}>
+                        {count(statOf.get(ad.id)?.impressions)}
+                      </td>
+                      <td className="cell-ltr">{count(statOf.get(ad.id)?.clicks)}</td>
+                      <td className="cell-ltr">{rate(statOf.get(ad.id)?.clickRate)}</td>
+                      <td>
+                        {canManage ? (
+                          <div className="button-row">
+                            <button
+                              type="button"
+                              className="button-ghost"
+                              data-testid={`edit-ad-${ad.id}`}
+                              onClick={() =>
+                                openEditor(
+                                  {
+                                    ...BLANK,
+                                    id: ad.id,
+                                    titleAr: ad.titleAr,
+                                    targetScope: ad.targetScope,
+                                    provinceId: ad.provinceId ?? "",
+                                    categoryId: ad.categoryId ?? "",
+                                    startsAt: toLocalInput(ad.startsAt),
+                                    endsAt: toLocalInput(ad.endsAt),
+                                    enabled: ad.enabled,
+                                    sortOrder: String(ad.sortOrder),
+                                    slideDurationMs: String(ad.slideDurationMs),
+                                  },
+                                  ad.imageUrl,
+                                )
+                              }
+                            >
+                              تعديل
+                            </button>
+                            <button
+                              type="button"
+                              className="button-ghost"
+                              data-testid={`toggle-ad-${ad.id}`}
+                              onClick={() => toggle(ad)}
+                            >
+                              {ad.enabled ? "إيقاف" : "تفعيل"}
+                            </button>
+                            <button
+                              type="button"
+                              className="button-ghost"
+                              data-tone="danger"
+                              data-testid={`delete-ad-${ad.id}`}
+                              onClick={() => {
+                                mutation.reset();
+                                setRemoving(ad);
+                              }}
+                            >
+                              حذف
+                            </button>
+                          </div>
+                        ) : null}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )
       ) : null}
 

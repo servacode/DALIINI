@@ -371,6 +371,19 @@ describe("operations screens: reads", () => {
     });
   });
 
+  it("asks for the advertisements' numbers over the chosen period only", async () => {
+    const { apis, calls } = spyApis();
+
+    await READS.adStats(apis, { from: "2026-09-01", to: "2026-09-30", id: "x" });
+
+    expect(isReadOperation("adStats")).toBe(true);
+    expect(isWriteOperation("adStats")).toBe(false);
+    expect(calls[0]).toEqual({
+      name: "ads.adminAdStatsRetrieve",
+      args: [{ from: "2026-09-01", to: "2026-09-30" }],
+    });
+  });
+
   it("pages the inbox and the broadcast history by cursor, with their filters", async () => {
     const { apis, calls } = spyApis();
 

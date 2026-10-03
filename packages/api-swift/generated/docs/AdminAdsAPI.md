@@ -7,6 +7,7 @@ Method | HTTP request | Description
 [**adminAdCreate**](AdminAdsAPI.md#adminadcreate) | **POST** /api/v1/admin/ads/ | Create an advertisement
 [**adminAdDelete**](AdminAdsAPI.md#adminaddelete) | **DELETE** /api/v1/admin/ads/{advertisement_id}/ | Delete an advertisement
 [**adminAdImageUpload**](AdminAdsAPI.md#adminadimageupload) | **POST** /api/v1/admin/ads/images/ | Upload an advertisement image
+[**adminAdStatsRetrieve**](AdminAdsAPI.md#adminadstatsretrieve) | **GET** /api/v1/admin/ads/stats/ | Impressions and clicks of each advertisement over a period
 [**adminAdUpdate**](AdminAdsAPI.md#adminadupdate) | **PUT** /api/v1/admin/ads/{advertisement_id}/ | Edit an advertisement, its schedule or its activation
 [**adminAdsList**](AdminAdsAPI.md#adminadslist) | **GET** /api/v1/admin/ads/ | List advertisements
 
@@ -155,6 +156,58 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminAdStatsRetrieve**
+```swift
+    open class func adminAdStatsRetrieve(from: String? = nil, to: String? = nil, completion: @escaping (_ data: AdStats?, _ error: Error?) -> Void)
+```
+
+Impressions and clicks of each advertisement over a period
+
+Counted from the apps' `ad_impression` and `ad_click` events, by Damascus day. The default is the last 30 days; at most a year. Every advertisement is listed, those never shown with zeros.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let from = "from_example" // String |  (optional)
+let to = "to_example" // String |  (optional)
+
+// Impressions and clicks of each advertisement over a period
+AdminAdsAPI.adminAdStatsRetrieve(from: from, to: to) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **from** | **String** |  | [optional] 
+ **to** | **String** |  | [optional] 
+
+### Return type
+
+[**AdStats**](AdStats.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

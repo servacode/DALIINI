@@ -3,6 +3,7 @@ package com.servacode.directory.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.servacode.directory.core.database.Loaded
+import com.servacode.directory.core.model.AdAction
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.Category
 import com.servacode.directory.core.model.CategoryTags
@@ -96,6 +97,13 @@ class HomeViewModel @Inject constructor(
     val ads: StateFlow<List<HomeAd>> = _ads.asStateFlow()
     private var adsProvince: String? = null
     private var loadingAds: Job? = null
+
+    /**
+     * The advertisements already counted as seen in [seenIn]; see [AnalyticsEvent.AdImpression].
+     * Kept apart from [adsProvince] so a pull to refresh does not count the same slides again.
+     */
+    private val seenAds = mutableSetOf<String>()
+    private var seenIn: String? = null
 
     private var loading: Job? = null
     private var listing: Job? = null
@@ -299,6 +307,27 @@ class HomeViewModel @Inject constructor(
         }
         if (_list.value.items.isEmpty() && _list.value.error == null) reload()
         if (snapshot.province.id != adsProvince) refreshAds(snapshot.province.id)
+    }
+
+    /** A slide settled on screen. */
+    fun adShown(ad: HomeAd) {
+        val provinceId = adsProvince ?: return
+        if (provinceId != seenIn) {
+            seenAds.clear()
+            seenIn = provinceId
+        }
+        if (seenAds.add(ad.id)) analytics.track(AnalyticsEvent.AdImpression(ad.id, provinceId))
+    }
+
+    /** A slide was pressed; where it leads is the screen's to follow. */
+    fun adOpened(ad: HomeAd) {
+        val actionType = when (ad.action) {
+            AdAction.None -> "NONE"
+            is AdAction.OpenFacility -> "FACILITY"
+            is AdAction.OpenCategory -> "CATEGORY"
+            is AdAction.OpenUrl -> "EXTERNAL_URL"
+        }
+        analytics.track(AnalyticsEvent.AdClick(ad.id, actionType))
     }
 
     private fun refreshAds(provinceId: String) {

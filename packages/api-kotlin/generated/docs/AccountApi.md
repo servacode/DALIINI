@@ -17,6 +17,8 @@ All URIs are relative to *http://localhost*
 | [**accountMfaSetup**](AccountApi.md#accountMfaSetup) | **POST** api/v1/account/mfa/setup/ | Start setting up an authenticator app |
 | [**accountMfaVerify**](AccountApi.md#accountMfaVerify) | **POST** api/v1/account/mfa/verify/ | Pass the second step for this session |
 | [**accountNotificationMarkRead**](AccountApi.md#accountNotificationMarkRead) | **POST** api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read |
+| [**accountNotificationPreferencesRetrieve**](AccountApi.md#accountNotificationPreferencesRetrieve) | **GET** api/v1/account/notification-preferences/ | Which kinds of notice are pushed to this account&#39;s devices |
+| [**accountNotificationPreferencesUpdate**](AccountApi.md#accountNotificationPreferencesUpdate) | **PATCH** api/v1/account/notification-preferences/ | Change which kinds of notice are pushed |
 | [**accountNotificationsList**](AccountApi.md#accountNotificationsList) | **GET** api/v1/account/notifications/ | List the caller&#39;s notifications, newest first |
 | [**accountNotificationsMarkAllRead**](AccountApi.md#accountNotificationsMarkAllRead) | **POST** api/v1/account/notifications/read-all/ | Mark every unread notification as read |
 | [**accountNotificationsUnreadCount**](AccountApi.md#accountNotificationsUnreadCount) | **GET** api/v1/account/notifications/unread-count/ | How many of the caller&#39;s notifications are unread |
@@ -563,6 +565,87 @@ Configure bearerAccessToken:
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Which kinds of notice are pushed to this account&#39;s devices
+
+All are on until the account turns one off. Only the push is governed: every message still reaches the inbox. A staff change to an owner&#39;s own duty shift, and any kind outside these three, is always pushed.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+
+launch(Dispatchers.IO) {
+    val result : NotificationPreferences = webService.accountNotificationPreferencesRetrieve()
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**NotificationPreferences**](NotificationPreferences.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Change which kinds of notice are pushed
+
+Only the fields sent change.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+val patchedNotificationPreferences : PatchedNotificationPreferences =  // PatchedNotificationPreferences | 
+
+launch(Dispatchers.IO) {
+    val result : NotificationPreferences = webService.accountNotificationPreferencesUpdate(patchedNotificationPreferences)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **patchedNotificationPreferences** | [**PatchedNotificationPreferences**](PatchedNotificationPreferences.md)|  | [optional] |
+
+### Return type
+
+[**NotificationPreferences**](NotificationPreferences.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
  - **Accept**: application/json
 
 

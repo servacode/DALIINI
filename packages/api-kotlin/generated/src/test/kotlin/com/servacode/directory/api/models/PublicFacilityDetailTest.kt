@@ -38,6 +38,12 @@ class PublicFacilityDetailTest : ShouldSpec() {
             //modelInstance.id shouldBe ("TODO")
         }
 
+        // to test the property `slug` - Readable words for the facility's link, from its Arabic name (`/f/{id}/{slug}`). Decoration only: the id is the address, so a rename never breaks a link.
+        should("test slug") {
+            // uncomment below to test the property
+            //modelInstance.slug shouldBe ("TODO")
+        }
+
         // to test the property `nameAr`
         should("test nameAr") {
             // uncomment below to test the property

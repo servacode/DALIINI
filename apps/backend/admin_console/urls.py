@@ -5,6 +5,7 @@ from accounts.views_mfa import AdminUserMfaResetView
 from . import (
     exports,
     views,
+    views_ad_stats,
     views_content,
     views_duty,
     views_duty_import,
@@ -127,6 +128,7 @@ urlpatterns = [
         views.VerificationRequirementDetailView.as_view(),
     ),
     path("admin/ads/", views.AdvertisementListView.as_view()),
+    path("admin/ads/stats/", views_ad_stats.AdStatsView.as_view()),
     path("admin/ads/<uuid:advertisement_id>/", views.AdvertisementDetailView.as_view()),
     path("admin/audit/", views.AuditListView.as_view()),
     path("admin/analytics/", views.AnalyticsView.as_view()),

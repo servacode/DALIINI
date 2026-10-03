@@ -76,6 +76,8 @@ export const READS = {
   verificationRequirements: (apis: AdminApis) =>
     apis.verification.adminVerificationRequirementsList(),
   ads: (apis: AdminApis) => apis.ads.adminAdsList(),
+  adStats: (apis: AdminApis, p: Params) =>
+    apis.ads.adminAdStatsRetrieve(filled(p, ["from", "to"])),
   settings: (apis: AdminApis) => apis.settings.adminSettingsList(),
   // What a mobile build must be. Its own entry rather than part of `settings`, because it is
   // a different endpoint with a different shape — and the one that can stop every phone.

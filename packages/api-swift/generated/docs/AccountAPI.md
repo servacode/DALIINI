@@ -17,6 +17,8 @@ Method | HTTP request | Description
 [**accountMfaSetup**](AccountAPI.md#accountmfasetup) | **POST** /api/v1/account/mfa/setup/ | Start setting up an authenticator app
 [**accountMfaVerify**](AccountAPI.md#accountmfaverify) | **POST** /api/v1/account/mfa/verify/ | Pass the second step for this session
 [**accountNotificationMarkRead**](AccountAPI.md#accountnotificationmarkread) | **POST** /api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read
+[**accountNotificationPreferencesRetrieve**](AccountAPI.md#accountnotificationpreferencesretrieve) | **GET** /api/v1/account/notification-preferences/ | Which kinds of notice are pushed to this account&#39;s devices
+[**accountNotificationPreferencesUpdate**](AccountAPI.md#accountnotificationpreferencesupdate) | **PATCH** /api/v1/account/notification-preferences/ | Change which kinds of notice are pushed
 [**accountNotificationsList**](AccountAPI.md#accountnotificationslist) | **GET** /api/v1/account/notifications/ | List the caller&#39;s notifications, newest first
 [**accountNotificationsMarkAllRead**](AccountAPI.md#accountnotificationsmarkallread) | **POST** /api/v1/account/notifications/read-all/ | Mark every unread notification as read
 [**accountNotificationsUnreadCount**](AccountAPI.md#accountnotificationsunreadcount) | **GET** /api/v1/account/notifications/unread-count/ | How many of the caller&#39;s notifications are unread
@@ -662,6 +664,102 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **accountNotificationPreferencesRetrieve**
+```swift
+    open class func accountNotificationPreferencesRetrieve(completion: @escaping (_ data: NotificationPreferences?, _ error: Error?) -> Void)
+```
+
+Which kinds of notice are pushed to this account's devices
+
+All are on until the account turns one off. Only the push is governed: every message still reaches the inbox. A staff change to an owner's own duty shift, and any kind outside these three, is always pushed.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+
+// Which kinds of notice are pushed to this account's devices
+AccountAPI.accountNotificationPreferencesRetrieve() { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**NotificationPreferences**](NotificationPreferences.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **accountNotificationPreferencesUpdate**
+```swift
+    open class func accountNotificationPreferencesUpdate(patchedNotificationPreferences: PatchedNotificationPreferences? = nil, completion: @escaping (_ data: NotificationPreferences?, _ error: Error?) -> Void)
+```
+
+Change which kinds of notice are pushed
+
+Only the fields sent change.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let patchedNotificationPreferences = PatchedNotificationPreferences(dutyReminders: false, provinceNews: false, applicationStatus: false) // PatchedNotificationPreferences |  (optional)
+
+// Change which kinds of notice are pushed
+AccountAPI.accountNotificationPreferencesUpdate(patchedNotificationPreferences: patchedNotificationPreferences) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **patchedNotificationPreferences** | [**PatchedNotificationPreferences**](PatchedNotificationPreferences.md) |  | [optional] 
+
+### Return type
+
+[**NotificationPreferences**](NotificationPreferences.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

@@ -128,6 +128,8 @@ class AnalyticsQueueTest {
             AnalyticsEvent.PhoneTap("f"),
             AnalyticsEvent.DirectionsStart("f", "valhalla"),
             AnalyticsEvent.RatingSubmit("f", 4),
+            AnalyticsEvent.AdImpression("a", "p"),
+            AnalyticsEvent.AdClick("a", "FACILITY"),
         )
         for (event in used) {
             assertTrue("${event.name} is not in the backend registry", event.name in registered)

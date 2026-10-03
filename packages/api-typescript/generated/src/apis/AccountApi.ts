@@ -30,7 +30,9 @@ import type {
   MfaSetup,
   MfaStatus,
   NotificationPage,
+  NotificationPreferences,
   PasswordChange,
+  PatchedNotificationPreferences,
   PatchedProfilePatch,
   PhoneChangeStart,
   Profile,
@@ -70,8 +72,12 @@ import {
     MfaStatusToJSON,
     NotificationPageFromJSON,
     NotificationPageToJSON,
+    NotificationPreferencesFromJSON,
+    NotificationPreferencesToJSON,
     PasswordChangeFromJSON,
     PasswordChangeToJSON,
+    PatchedNotificationPreferencesFromJSON,
+    PatchedNotificationPreferencesToJSON,
     PatchedProfilePatchFromJSON,
     PatchedProfilePatchToJSON,
     PhoneChangeStartFromJSON,
@@ -127,6 +133,10 @@ export interface AccountMfaVerifyRequest {
 
 export interface AccountNotificationMarkReadRequest {
     notificationId: string;
+}
+
+export interface AccountNotificationPreferencesUpdateRequest {
+    patchedNotificationPreferences?: PatchedNotificationPreferences;
 }
 
 export interface AccountNotificationsListRequest {
@@ -754,6 +764,87 @@ export class AccountApi extends runtime.BaseAPI {
      */
     async accountNotificationMarkRead(requestParameters: AccountNotificationMarkReadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UnreadCount> {
         const response = await this.accountNotificationMarkReadRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * All are on until the account turns one off. Only the push is governed: every message still reaches the inbox. A staff change to an owner\'s own duty shift, and any kind outside these three, is always pushed.
+     * Which kinds of notice are pushed to this account\'s devices
+     */
+    async accountNotificationPreferencesRetrieveRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationPreferences>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/notification-preferences/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationPreferencesFromJSON(jsonValue));
+    }
+
+    /**
+     * All are on until the account turns one off. Only the push is governed: every message still reaches the inbox. A staff change to an owner\'s own duty shift, and any kind outside these three, is always pushed.
+     * Which kinds of notice are pushed to this account\'s devices
+     */
+    async accountNotificationPreferencesRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationPreferences> {
+        const response = await this.accountNotificationPreferencesRetrieveRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Only the fields sent change.
+     * Change which kinds of notice are pushed
+     */
+    async accountNotificationPreferencesUpdateRaw(requestParameters: AccountNotificationPreferencesUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationPreferences>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/notification-preferences/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PatchedNotificationPreferencesToJSON(requestParameters['patchedNotificationPreferences']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationPreferencesFromJSON(jsonValue));
+    }
+
+    /**
+     * Only the fields sent change.
+     * Change which kinds of notice are pushed
+     */
+    async accountNotificationPreferencesUpdate(requestParameters: AccountNotificationPreferencesUpdateRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationPreferences> {
+        const response = await this.accountNotificationPreferencesUpdateRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -58,6 +58,8 @@ All URIs are relative to *http://localhost*
 | *AccountApi* | [**accountMfaSetup**](docs/AccountApi.md#accountmfasetup) | **POST** api/v1/account/mfa/setup/ | Start setting up an authenticator app |
 | *AccountApi* | [**accountMfaVerify**](docs/AccountApi.md#accountmfaverify) | **POST** api/v1/account/mfa/verify/ | Pass the second step for this session |
 | *AccountApi* | [**accountNotificationMarkRead**](docs/AccountApi.md#accountnotificationmarkread) | **POST** api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read |
+| *AccountApi* | [**accountNotificationPreferencesRetrieve**](docs/AccountApi.md#accountnotificationpreferencesretrieve) | **GET** api/v1/account/notification-preferences/ | Which kinds of notice are pushed to this account's devices |
+| *AccountApi* | [**accountNotificationPreferencesUpdate**](docs/AccountApi.md#accountnotificationpreferencesupdate) | **PATCH** api/v1/account/notification-preferences/ | Change which kinds of notice are pushed |
 | *AccountApi* | [**accountNotificationsList**](docs/AccountApi.md#accountnotificationslist) | **GET** api/v1/account/notifications/ | List the caller's notifications, newest first |
 | *AccountApi* | [**accountNotificationsMarkAllRead**](docs/AccountApi.md#accountnotificationsmarkallread) | **POST** api/v1/account/notifications/read-all/ | Mark every unread notification as read |
 | *AccountApi* | [**accountNotificationsUnreadCount**](docs/AccountApi.md#accountnotificationsunreadcount) | **GET** api/v1/account/notifications/unread-count/ | How many of the caller's notifications are unread |
@@ -74,6 +76,7 @@ All URIs are relative to *http://localhost*
 | *AdminAdsApi* | [**adminAdCreate**](docs/AdminAdsApi.md#adminadcreate) | **POST** api/v1/admin/ads/ | Create an advertisement |
 | *AdminAdsApi* | [**adminAdDelete**](docs/AdminAdsApi.md#adminaddelete) | **DELETE** api/v1/admin/ads/{advertisement_id}/ | Delete an advertisement |
 | *AdminAdsApi* | [**adminAdImageUpload**](docs/AdminAdsApi.md#adminadimageupload) | **POST** api/v1/admin/ads/images/ | Upload an advertisement image |
+| *AdminAdsApi* | [**adminAdStatsRetrieve**](docs/AdminAdsApi.md#adminadstatsretrieve) | **GET** api/v1/admin/ads/stats/ | Impressions and clicks of each advertisement over a period |
 | *AdminAdsApi* | [**adminAdUpdate**](docs/AdminAdsApi.md#adminadupdate) | **PUT** api/v1/admin/ads/{advertisement_id}/ | Edit an advertisement, its schedule or its activation |
 | *AdminAdsApi* | [**adminAdsList**](docs/AdminAdsApi.md#adminadslist) | **GET** api/v1/admin/ads/ | List advertisements |
 | *AdminAnalyticsApi* | [**adminAnalyticsRetrieve**](docs/AdminAnalyticsApi.md#adminanalyticsretrieve) | **GET** api/v1/admin/analytics/ | Operational KPIs |
@@ -253,6 +256,8 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AccountDeletionStatusEnum](docs/AccountDeletionStatusEnum.md)
  - [com.servacode.directory.api.models.AccountRating](docs/AccountRating.md)
  - [com.servacode.directory.api.models.AccountRatingList](docs/AccountRatingList.md)
+ - [com.servacode.directory.api.models.AdStat](docs/AdStat.md)
+ - [com.servacode.directory.api.models.AdStats](docs/AdStats.md)
  - [com.servacode.directory.api.models.AdminAdImage](docs/AdminAdImage.md)
  - [com.servacode.directory.api.models.AdminAdvertisement](docs/AdminAdvertisement.md)
  - [com.servacode.directory.api.models.AdminAdvertisementList](docs/AdminAdvertisementList.md)
@@ -479,6 +484,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.NamedRef](docs/NamedRef.md)
  - [com.servacode.directory.api.models.Notification](docs/Notification.md)
  - [com.servacode.directory.api.models.NotificationPage](docs/NotificationPage.md)
+ - [com.servacode.directory.api.models.NotificationPreferences](docs/NotificationPreferences.md)
  - [com.servacode.directory.api.models.OwnerApplication](docs/OwnerApplication.md)
  - [com.servacode.directory.api.models.OwnerCategory](docs/OwnerCategory.md)
  - [com.servacode.directory.api.models.OwnerConfig](docs/OwnerConfig.md)
@@ -507,6 +513,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.PatchedDutyRotationRequest](docs/PatchedDutyRotationRequest.md)
  - [com.servacode.directory.api.models.PatchedDutyShiftInput](docs/PatchedDutyShiftInput.md)
  - [com.servacode.directory.api.models.PatchedFacilityPatch](docs/PatchedFacilityPatch.md)
+ - [com.servacode.directory.api.models.PatchedNotificationPreferences](docs/PatchedNotificationPreferences.md)
  - [com.servacode.directory.api.models.PatchedProfilePatch](docs/PatchedProfilePatch.md)
  - [com.servacode.directory.api.models.PhoneChangeStart](docs/PhoneChangeStart.md)
  - [com.servacode.directory.api.models.PlatformStatus](docs/PlatformStatus.md)

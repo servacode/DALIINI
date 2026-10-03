@@ -24,8 +24,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -649,10 +652,20 @@ fun AdSlider(
     ads: List<HomeAd>,
     onAd: (HomeAd) -> Unit,
     modifier: Modifier = Modifier,
+    onShown: (HomeAd) -> Unit = {},
 ) {
     if (ads.isEmpty()) return
     val pages = rememberPagerState(pageCount = { ads.size })
     val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val shown by rememberUpdatedState(onShown)
+
+    // A slide is seen once it has settled while the page is in front of someone; one swiped
+    // past mid-scroll, or turning behind another screen, is not.
+    LaunchedEffect(pages, ads) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            snapshotFlow { pages.settledPage }.collect { page -> ads.getOrNull(page)?.let(shown) }
+        }
+    }
 
     if (ads.size > 1) {
         LaunchedEffect(pages, ads) {

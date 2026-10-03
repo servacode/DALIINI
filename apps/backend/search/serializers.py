@@ -10,6 +10,7 @@ from business_hours.services import (
 )
 from directory.tags import ORDER as TAG_ORDER
 from directory.tags import named
+from facilities.slugs import facility_slug
 from storage.backends import PublicS3Storage
 
 _UNSET = object()
@@ -81,6 +82,7 @@ def compact_facility(facility: Any) -> dict[str, Any]:
     distance = getattr(facility, "distance_meters", None)
     return {
         "id": str(facility.id),
+        "slug": facility_slug(facility.name_ar),
         "nameAr": facility.name_ar,
         "nameEn": facility.name_en or None,
         "category": {

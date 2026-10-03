@@ -113,6 +113,22 @@ sealed interface AnalyticsEvent {
         override val name = "rating_submit"
         override val properties = mapOf("facilityId" to facilityId, "stars" to stars.toString())
     }
+
+    /**
+     * A slide settled on screen. Counted once per advertisement per province on the home page,
+     * so a slider cycling for a minute is one view and not twelve; the console divides clicks by
+     * these to give each advertisement its rate.
+     */
+    data class AdImpression(val adId: String, val provinceId: String) : AnalyticsEvent {
+        override val name = "ad_impression"
+        override val properties = mapOf("adId" to adId, "provinceId" to provinceId)
+    }
+
+    /** A slide was pressed. [actionType] is the backend's name for where it leads (`FACILITY`…). */
+    data class AdClick(val adId: String, val actionType: String) : AnalyticsEvent {
+        override val name = "ad_click"
+        override val properties = mapOf("adId" to adId, "actionType" to actionType)
+    }
 }
 
 /**

@@ -137,6 +137,51 @@ open class AdminAdsAPI {
     }
 
     /**
+     Impressions and clicks of each advertisement over a period
+     
+     - parameter from: (query)  (optional)
+     - parameter to: (query)  (optional)
+     - returns: AdStats
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminAdStatsRetrieve(from: String? = nil, to: String? = nil) async throws -> AdStats {
+        return try await adminAdStatsRetrieveWithRequestBuilder(from: from, to: to).execute().body
+    }
+
+    /**
+     Impressions and clicks of each advertisement over a period
+     - GET /api/v1/admin/ads/stats/
+     - Counted from the apps' `ad_impression` and `ad_click` events, by Damascus day. The default is the last 30 days; at most a year. Every advertisement is listed, those never shown with zeros.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter from: (query)  (optional)
+     - parameter to: (query)  (optional)
+     - returns: RequestBuilder<AdStats> 
+     */
+    open class func adminAdStatsRetrieveWithRequestBuilder(from: String? = nil, to: String? = nil) -> RequestBuilder<AdStats> {
+        let localVariablePath = "/api/v1/admin/ads/stats/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "from": (wrappedValue: from?.encodeToJSON(), isExplode: true),
+            "to": (wrappedValue: to?.encodeToJSON(), isExplode: true),
+        ])
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdStats>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Edit an advertisement, its schedule or its activation
      
      - parameter advertisementId: (path)  

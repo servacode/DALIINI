@@ -7,6 +7,7 @@ import okhttp3.RequestBody
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+import com.servacode.directory.api.models.AdStats
 import com.servacode.directory.api.models.AdminAdImage
 import com.servacode.directory.api.models.AdminAdvertisementList
 import com.servacode.directory.api.models.AdminAdvertisementRequest
@@ -65,6 +66,23 @@ interface AdminAdsApi {
     @Multipart
     @POST("api/v1/admin/ads/images/")
     suspend fun adminAdImageUpload(@Part file: MultipartBody.Part): Response<AdminAdImage>
+
+    /**
+     * GET api/v1/admin/ads/stats/
+     * Impressions and clicks of each advertisement over a period
+     * Counted from the apps&#39; &#x60;ad_impression&#x60; and &#x60;ad_click&#x60; events, by Damascus day. The default is the last 30 days; at most a year. Every advertisement is listed, those never shown with zeros.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param from  (optional)
+     * @param to  (optional)
+     * @return [AdStats]
+     */
+    @GET("api/v1/admin/ads/stats/")
+    suspend fun adminAdStatsRetrieve(@Query("from") from: kotlin.String? = null, @Query("to") to: kotlin.String? = null): Response<AdStats>
 
     /**
      * PUT api/v1/admin/ads/{advertisement_id}/

@@ -34,7 +34,9 @@ import com.servacode.directory.api.models.MfaRecoveryCodes
 import com.servacode.directory.api.models.MfaSetup
 import com.servacode.directory.api.models.MfaStatus
 import com.servacode.directory.api.models.NotificationPage
+import com.servacode.directory.api.models.NotificationPreferences
 import com.servacode.directory.api.models.PasswordChange
+import com.servacode.directory.api.models.PatchedNotificationPreferences
 import com.servacode.directory.api.models.PatchedProfilePatch
 import com.servacode.directory.api.models.PhoneChangeStart
 import com.servacode.directory.api.models.Profile
@@ -146,6 +148,21 @@ class AccountApiTest : ShouldSpec() {
             // uncomment below to test accountNotificationMarkRead
             //val notificationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //val result : UnreadCount = apiInstance.accountNotificationMarkRead(notificationId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountNotificationPreferencesRetrieve
+        should("test accountNotificationPreferencesRetrieve") {
+            // uncomment below to test accountNotificationPreferencesRetrieve
+            //val result : NotificationPreferences = apiInstance.accountNotificationPreferencesRetrieve()
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountNotificationPreferencesUpdate
+        should("test accountNotificationPreferencesUpdate") {
+            // uncomment below to test accountNotificationPreferencesUpdate
+            //val patchedNotificationPreferences : PatchedNotificationPreferences =  // PatchedNotificationPreferences | 
+            //val result : NotificationPreferences = apiInstance.accountNotificationPreferencesUpdate(patchedNotificationPreferences)
             //result shouldBe ("TODO")
         }
 
