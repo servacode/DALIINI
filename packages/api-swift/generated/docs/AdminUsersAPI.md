@@ -6,6 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**adminRolesList**](AdminUsersAPI.md#adminroleslist) | **GET** /api/v1/admin/roles/ | List admin roles and their permission codes
 [**adminUserBlock**](AdminUsersAPI.md#adminuserblock) | **POST** /api/v1/admin/users/{user_id}/block/ | Block a user account
+[**adminUserMfaReset**](AdminUsersAPI.md#adminusermfareset) | **POST** /api/v1/admin/users/{user_id}/mfa/reset/ | Clear an operator&#39;s authenticator after they lost it
 [**adminUserRetrieve**](AdminUsersAPI.md#adminuserretrieve) | **GET** /api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned
 [**adminUserRolesReplace**](AdminUsersAPI.md#adminuserrolesreplace) | **PUT** /api/v1/admin/users/{user_id}/roles/ | Replace the admin roles of a user
 [**adminUserUnblock**](AdminUsersAPI.md#adminuserunblock) | **POST** /api/v1/admin/users/{user_id}/unblock/ | Unblock a user account
@@ -94,6 +95,56 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**AdminUser**](AdminUser.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminUserMfaReset**
+```swift
+    open class func adminUserMfaReset(userId: UUID, completion: @escaping (_ data: Void?, _ error: Error?) -> Void)
+```
+
+Clear an operator's authenticator after they lost it
+
+They set up a new one at their next console sign-in. Their recovery codes are cleared too. Audited.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let userId = 987 // UUID | 
+
+// Clear an operator's authenticator after they lost it
+AdminUsersAPI.adminUserMfaReset(userId: userId) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **userId** | **UUID** |  | 
+
+### Return type
+
+Void (empty response body)
 
 ### Authorization
 

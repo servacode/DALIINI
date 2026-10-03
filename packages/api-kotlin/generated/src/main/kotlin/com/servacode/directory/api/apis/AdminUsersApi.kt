@@ -46,6 +46,22 @@ interface AdminUsersApi {
     suspend fun adminUserBlock(@Path("user_id") userId: java.util.UUID): Response<AdminUser>
 
     /**
+     * POST api/v1/admin/users/{user_id}/mfa/reset/
+     * Clear an operator&#39;s authenticator after they lost it
+     * They set up a new one at their next console sign-in. Their recovery codes are cleared too. Audited.
+     * Responses:
+     *  - 204: No response body
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param userId 
+     * @return [Unit]
+     */
+    @POST("api/v1/admin/users/{user_id}/mfa/reset/")
+    suspend fun adminUserMfaReset(@Path("user_id") userId: java.util.UUID): Response<Unit>
+
+    /**
      * GET api/v1/admin/users/{user_id}/
      * Retrieve one user with the roles assigned
      * 

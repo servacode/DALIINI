@@ -7,6 +7,7 @@ import { type ReactNode, createContext, useContext, useState } from "react";
 import { logout } from "../lib/client/api";
 import { useResource } from "../lib/client/use-resource";
 import { type IconName, Icons } from "./icons";
+import { type MfaState, MfaSetupScreen, MfaVerifyScreen, mfaStep } from "./mfa";
 import { GlobalSearch } from "./global-search";
 import { ThemeToggle } from "./theme-toggle";
 import { TopbarStatus } from "./topbar-status";
@@ -28,6 +29,7 @@ export type AdminIdentity = Readonly<{
   userId: string;
   displayName: string;
   permissions: readonly string[];
+  mfa?: MfaState;
 }>;
 
 const IdentityContext = createContext<AdminIdentity | null>(null);
@@ -207,6 +209,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
     );
   }
 
+  // The second sign-in step comes before the console (DECISION-065): its code for this
+  // session, or setting it up where the deployment requires it.
+  const step = mfaStep(me.data.mfa);
+  if (step === "verify") return <MfaVerifyScreen onDone={me.reload} />;
+  if (step === "setup") return <MfaSetupScreen onDone={me.reload} />;
+
   const identity = me.data;
   const can = (page: Page) => identity.permissions.includes(page.permission);
   const groups = NAVIGATION.map((group) => ({
@@ -269,7 +277,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </span>
             <div className="sidebar-user">
               <strong>{identity.displayName}</strong>
-              <span>فريق التشغيل</span>
+              <Link href="/security" data-testid="security-link">
+                الأمان والتحقق بخطوتين
+              </Link>
             </div>
             <button
               type="button"

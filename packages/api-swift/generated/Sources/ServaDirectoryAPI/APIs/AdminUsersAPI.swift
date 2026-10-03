@@ -91,6 +91,48 @@ open class AdminUsersAPI {
     }
 
     /**
+     Clear an operator's authenticator after they lost it
+     
+     - parameter userId: (path)  
+     - returns: Void
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminUserMfaReset(userId: UUID) async throws {
+        return try await adminUserMfaResetWithRequestBuilder(userId: userId).execute().body
+    }
+
+    /**
+     Clear an operator's authenticator after they lost it
+     - POST /api/v1/admin/users/{user_id}/mfa/reset/
+     - They set up a new one at their next console sign-in. Their recovery codes are cleared too. Audited.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter userId: (path)  
+     - returns: RequestBuilder<Void> 
+     */
+    open class func adminUserMfaResetWithRequestBuilder(userId: UUID) -> RequestBuilder<Void> {
+        var localVariablePath = "/api/v1/admin/users/{user_id}/mfa/reset/"
+        let userIdPreEscape = "\(APIHelper.mapValueToPathItem(userId))"
+        let userIdPostEscape = userIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{user_id}", with: userIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Retrieve one user with the roles assigned
      
      - parameter userId: (path)  

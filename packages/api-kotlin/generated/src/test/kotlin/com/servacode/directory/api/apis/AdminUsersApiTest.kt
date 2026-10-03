@@ -46,6 +46,13 @@ class AdminUsersApiTest : ShouldSpec() {
             //result shouldBe ("TODO")
         }
 
+        // to test adminUserMfaReset
+        should("test adminUserMfaReset") {
+            // uncomment below to test adminUserMfaReset
+            //val userId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //apiInstance.adminUserMfaReset(userId)
+        }
+
         // to test adminUserRetrieve
         should("test adminUserRetrieve") {
             // uncomment below to test adminUserRetrieve

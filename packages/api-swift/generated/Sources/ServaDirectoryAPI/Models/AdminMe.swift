@@ -15,18 +15,22 @@ public struct AdminMe: Codable, JSONEncodable, Hashable {
 
     public var userId: UUID
     public var displayName: String
+    /** The second sign-in step for this operator and session (accountMfaRetrieve). */
+    public var mfa: MfaStatus
     /** Every permission code the caller holds, deduplicated and sorted. An operator whose roles carry no permissions gets an empty list, which is a valid state. */
     public var permissions: [String]
 
-    public init(userId: UUID, displayName: String, permissions: [String]) {
+    public init(userId: UUID, displayName: String, mfa: MfaStatus, permissions: [String]) {
         self.userId = userId
         self.displayName = displayName
+        self.mfa = mfa
         self.permissions = permissions
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case userId
         case displayName
+        case mfa
         case permissions
     }
 
@@ -36,6 +40,7 @@ public struct AdminMe: Codable, JSONEncodable, Hashable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(userId, forKey: .userId)
         try container.encode(displayName, forKey: .displayName)
+        try container.encode(mfa, forKey: .mfa)
         try container.encode(permissions, forKey: .permissions)
     }
 }

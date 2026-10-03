@@ -41,6 +41,10 @@ export interface AdminUserBlockRequest {
     userId: string;
 }
 
+export interface AdminUserMfaResetRequest {
+    userId: string;
+}
+
 export interface AdminUserRetrieveRequest {
     userId: string;
 }
@@ -149,6 +153,52 @@ export class AdminUsersApi extends runtime.BaseAPI {
     async adminUserBlock(requestParameters: AdminUserBlockRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminUser> {
         const response = await this.adminUserBlockRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     * They set up a new one at their next console sign-in. Their recovery codes are cleared too. Audited.
+     * Clear an operator\'s authenticator after they lost it
+     */
+    async adminUserMfaResetRaw(requestParameters: AdminUserMfaResetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['userId'] == null) {
+            throw new runtime.RequiredError(
+                'userId',
+                'Required parameter "userId" was null or undefined when calling adminUserMfaReset().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/users/{user_id}/mfa/reset/`;
+        urlPath = urlPath.replace(`{${"user_id"}}`, encodeURIComponent(String(requestParameters['userId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * They set up a new one at their next console sign-in. Their recovery codes are cleared too. Audited.
+     * Clear an operator\'s authenticator after they lost it
+     */
+    async adminUserMfaReset(requestParameters: AdminUserMfaResetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.adminUserMfaResetRaw(requestParameters, initOverrides);
     }
 
     /**

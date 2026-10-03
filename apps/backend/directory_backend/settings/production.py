@@ -24,6 +24,8 @@ S3_PRIVATE_BUCKET = env("S3_PRIVATE_BUCKET", required=True)
 OTP_PROVIDER = env("OTP_PROVIDER", required=True)
 PUSH_PROVIDER = env("PUSH_PROVIDER", required=True)
 PUSH_TOKEN_ENCRYPTION_KEY = env("PUSH_TOKEN_ENCRYPTION_KEY", required=True)
+MFA_ENCRYPTION_KEY = env("MFA_ENCRYPTION_KEY", required=True)
+STAFF_MFA_REQUIRED = env_bool("STAFF_MFA_REQUIRED", True)
 ANALYTICS_HASH_SALT = env("ANALYTICS_HASH_SALT", required=True)
 FCM_PROJECT_ID = env("FCM_PROJECT_ID", "")
 FCM_SERVICE_ACCOUNT_JSON = env("FCM_SERVICE_ACCOUNT_JSON", "")
@@ -61,6 +63,8 @@ if PUSH_PROVIDER.lower() in {"development", "test", "console"}:
     raise ImproperlyConfigured("Production push provider cannot be a test provider")
 if len(PUSH_TOKEN_ENCRYPTION_KEY) < 32:
     raise ImproperlyConfigured("Production PUSH_TOKEN_ENCRYPTION_KEY is too short")
+if len(MFA_ENCRYPTION_KEY) < 32:
+    raise ImproperlyConfigured("Production MFA_ENCRYPTION_KEY is too short")
 if len(ANALYTICS_HASH_SALT) < 32:
     raise ImproperlyConfigured("Production ANALYTICS_HASH_SALT is too short")
 if PUSH_PROVIDER.lower() == "fcm" and not FCM_PROJECT_ID:

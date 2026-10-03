@@ -228,6 +228,9 @@ envVarGroups:
         sync: false
       - key: PUSH_TOKEN_ENCRYPTION_KEY
         sync: false
+      # Encrypts operators' authenticator secrets (DECISION-065); 32+ characters.
+      - key: MFA_ENCRYPTION_KEY
+        sync: false
       - key: ANALYTICS_HASH_SALT
         sync: false
       - key: ALLOWED_HOSTS

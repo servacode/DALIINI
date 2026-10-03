@@ -15,6 +15,7 @@ from typing import Any
 
 from rest_framework import serializers
 
+from accounts.views_mfa import MfaStatusSerializer
 from content_services.models import Advertisement
 from core.openapi import CoordinatesSerializer
 from core.pagination import CursorEnvelope
@@ -341,6 +342,9 @@ class AdminMeSerializer(serializers.Serializer[Any]):
 
     userId = serializers.UUIDField()
     displayName = serializers.CharField()
+    mfa = MfaStatusSerializer(
+        help_text="The second sign-in step for this operator and session (accountMfaRetrieve)."
+    )
     permissions = serializers.ListField(
         child=serializers.CharField(),
         help_text=(

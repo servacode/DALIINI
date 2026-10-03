@@ -17,6 +17,10 @@ import com.servacode.directory.api.models.DeletionRequest
 import com.servacode.directory.api.models.FavoriteList
 import com.servacode.directory.api.models.FavoriteState
 import com.servacode.directory.api.models.FavoriteWrite
+import com.servacode.directory.api.models.MfaCode
+import com.servacode.directory.api.models.MfaRecoveryCodes
+import com.servacode.directory.api.models.MfaSetup
+import com.servacode.directory.api.models.MfaStatus
 import com.servacode.directory.api.models.NotificationPage
 import com.servacode.directory.api.models.PasswordChange
 import com.servacode.directory.api.models.PatchedProfilePatch
@@ -141,6 +145,86 @@ interface AccountApi {
      */
     @GET("api/v1/account/invitations/")
     suspend fun accountInvitationsList(): Response<ReceivedInvitationList>
+
+    /**
+     * POST api/v1/account/mfa/confirm/
+     * Confirm the authenticator with its first code
+     * Enables it, marks this session as having passed the second step, and returns ten recovery codes, shown this once.
+     * Responses:
+     *  - 200: 
+     *  - 400: A domain rule rejected the request; `code` names the rule.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param mfaCode 
+     * @return [MfaRecoveryCodes]
+     */
+    @POST("api/v1/account/mfa/confirm/")
+    suspend fun accountMfaConfirm(@Body mfaCode: MfaCode): Response<MfaRecoveryCodes>
+
+    /**
+     * POST api/v1/account/mfa/disable/
+     * Switch the authenticator off
+     * Needs a current code from the app. Refused with 409 MFA_REQUIRED_BY_POLICY where every operator must have one.
+     * Responses:
+     *  - 200: 
+     *  - 400: A domain rule rejected the request; `code` names the rule.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param mfaCode 
+     * @return [MfaStatus]
+     */
+    @POST("api/v1/account/mfa/disable/")
+    suspend fun accountMfaDisable(@Body mfaCode: MfaCode): Response<MfaStatus>
+
+    /**
+     * GET api/v1/account/mfa/
+     * The second sign-in step, for this account and session
+     * 
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @return [MfaStatus]
+     */
+    @GET("api/v1/account/mfa/")
+    suspend fun accountMfaRetrieve(): Response<MfaStatus>
+
+    /**
+     * POST api/v1/account/mfa/setup/
+     * Start setting up an authenticator app
+     * Operators only. Returns a new secret and its QR code; nothing is enabled until a code from the app confirms it. Starting again replaces an unconfirmed secret.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @return [MfaSetup]
+     */
+    @POST("api/v1/account/mfa/setup/")
+    suspend fun accountMfaSetup(): Response<MfaSetup>
+
+    /**
+     * POST api/v1/account/mfa/verify/
+     * Pass the second step for this session
+     * A code from the app, or one of the recovery codes (each works once).
+     * Responses:
+     *  - 200: 
+     *  - 400: A domain rule rejected the request; `code` names the rule.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param mfaCode 
+     * @return [MfaStatus]
+     */
+    @POST("api/v1/account/mfa/verify/")
+    suspend fun accountMfaVerify(@Body mfaCode: MfaCode): Response<MfaStatus>
 
     /**
      * POST api/v1/account/notifications/{notification_id}/read/

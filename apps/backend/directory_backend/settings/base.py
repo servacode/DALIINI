@@ -140,6 +140,8 @@ REST_FRAMEWORK = {
         "search": env("THROTTLE_SEARCH", "120/minute"),
         "owner_submit": env("THROTTLE_OWNER_SUBMIT", "10/hour"),
         "owner_invite": env("THROTTLE_OWNER_INVITE", "30/hour"),
+        # Six-digit codes: ten tries an hour per account makes guessing one hopeless.
+        "mfa": env("THROTTLE_MFA", "10/hour"),
         "evidence_upload": env("THROTTLE_EVIDENCE_UPLOAD", "30/hour"),
         "facility_report": env("THROTTLE_FACILITY_REPORT", "5/hour"),
         "contact": env("THROTTLE_CONTACT", "3/hour"),
@@ -271,6 +273,12 @@ S3_PUBLIC_MEDIA_BASE_URL = env(
 )
 PUSH_PROVIDER = env("PUSH_PROVIDER", "development")
 PUSH_TOKEN_ENCRYPTION_KEY = env("PUSH_TOKEN_ENCRYPTION_KEY", "development-push-token-key")
+# Encrypts operators' authenticator secrets (accounts/mfa.py). Its own key, so rotating the push
+# key does not lock every operator out of the console.
+MFA_ENCRYPTION_KEY = env("MFA_ENCRYPTION_KEY", "development-mfa-key-not-for-production")
+# Whether an operator must set up an authenticator before the console answers. Off for local
+# work and tests; production turns it on.
+STAFF_MFA_REQUIRED = env_bool("STAFF_MFA_REQUIRED", False)
 FCM_PROJECT_ID = env("FCM_PROJECT_ID", "")
 # The Firebase service account key (its JSON, or that JSON in base64) the FCM transport signs
 # in with; see notifications/providers/fcm_http.py. A secret: set it, never commit it.

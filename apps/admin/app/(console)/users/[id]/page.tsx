@@ -43,7 +43,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
   const roles = useResource<{ items: Role[] }>("roles", {}, { enabled: canManageRoles });
   const mutation = useMutation();
 
-  const [dialog, setDialog] = useState<"block" | "unblock" | "roles" | null>(null);
+  const [dialog, setDialog] = useState<"block" | "unblock" | "roles" | "mfa" | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   // The checkboxes are derived from what the server says, not mirrored into state by an
@@ -59,6 +59,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
     if (dialog === "block") ok = await mutation.run("userBlock", { id });
     if (dialog === "unblock") ok = await mutation.run("userUnblock", { id });
     if (dialog === "roles") ok = await mutation.run("userRoles", { id, roleIds: selected });
+    if (dialog === "mfa") ok = await mutation.run("userMfaReset", { id });
     if (!ok) return;
     setDialog(null);
     setToast("تم تنفيذ الإجراء وتسجيله في سجل التدقيق.");
@@ -163,6 +164,17 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
                 >
                   حفظ الأدوار
                 </button>
+                <button
+                  type="button"
+                  className="button-ghost"
+                  data-testid="mfa-reset"
+                  onClick={() => {
+                    mutation.reset();
+                    setDialog("mfa");
+                  }}
+                >
+                  إعادة ضبط التحقق بخطوتين
+                </button>
               </div>
             </>
           ) : null}
@@ -195,6 +207,18 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
         title="استبدال الأدوار الإدارية"
         body="تحدد هذه الأدوار ما يستطيع المستخدم فعله داخل اللوحة. يُستبدل الطقم بالكامل."
         confirmLabel="تأكيد الاستبدال"
+        destructive
+        pending={mutation.pending}
+        error={mutation.error}
+        onConfirm={submit}
+        onCancel={() => setDialog(null)}
+      />
+
+      <ConfirmDialog
+        open={dialog === "mfa"}
+        title="إعادة ضبط التحقق بخطوتين"
+        body="لمن فقد هاتفه ورموزه الاحتياطية. يُمسح تطبيق المصادقة المرتبط بالحساب ورموزه، ويُطلب منه إعداد جديد عند دخوله التالي إلى اللوحة. تحقق من هويته قبل التأكيد."
+        confirmLabel="إعادة الضبط"
         destructive
         pending={mutation.pending}
         error={mutation.error}

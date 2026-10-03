@@ -297,6 +297,196 @@ open class AccountAPI {
     }
 
     /**
+     Confirm the authenticator with its first code
+     
+     - parameter mfaCode: (body)  
+     - returns: MfaRecoveryCodes
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountMfaConfirm(mfaCode: MfaCode) async throws -> MfaRecoveryCodes {
+        return try await accountMfaConfirmWithRequestBuilder(mfaCode: mfaCode).execute().body
+    }
+
+    /**
+     Confirm the authenticator with its first code
+     - POST /api/v1/account/mfa/confirm/
+     - Enables it, marks this session as having passed the second step, and returns ten recovery codes, shown this once.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter mfaCode: (body)  
+     - returns: RequestBuilder<MfaRecoveryCodes> 
+     */
+    open class func accountMfaConfirmWithRequestBuilder(mfaCode: MfaCode) -> RequestBuilder<MfaRecoveryCodes> {
+        let localVariablePath = "/api/v1/account/mfa/confirm/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: mfaCode)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<MfaRecoveryCodes>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Switch the authenticator off
+     
+     - parameter mfaCode: (body)  
+     - returns: MfaStatus
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountMfaDisable(mfaCode: MfaCode) async throws -> MfaStatus {
+        return try await accountMfaDisableWithRequestBuilder(mfaCode: mfaCode).execute().body
+    }
+
+    /**
+     Switch the authenticator off
+     - POST /api/v1/account/mfa/disable/
+     - Needs a current code from the app. Refused with 409 MFA_REQUIRED_BY_POLICY where every operator must have one.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter mfaCode: (body)  
+     - returns: RequestBuilder<MfaStatus> 
+     */
+    open class func accountMfaDisableWithRequestBuilder(mfaCode: MfaCode) -> RequestBuilder<MfaStatus> {
+        let localVariablePath = "/api/v1/account/mfa/disable/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: mfaCode)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<MfaStatus>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     The second sign-in step, for this account and session
+     
+     - returns: MfaStatus
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountMfaRetrieve() async throws -> MfaStatus {
+        return try await accountMfaRetrieveWithRequestBuilder().execute().body
+    }
+
+    /**
+     The second sign-in step, for this account and session
+     - GET /api/v1/account/mfa/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<MfaStatus> 
+     */
+    open class func accountMfaRetrieveWithRequestBuilder() -> RequestBuilder<MfaStatus> {
+        let localVariablePath = "/api/v1/account/mfa/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<MfaStatus>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Start setting up an authenticator app
+     
+     - returns: MfaSetup
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountMfaSetup() async throws -> MfaSetup {
+        return try await accountMfaSetupWithRequestBuilder().execute().body
+    }
+
+    /**
+     Start setting up an authenticator app
+     - POST /api/v1/account/mfa/setup/
+     - Operators only. Returns a new secret and its QR code; nothing is enabled until a code from the app confirms it. Starting again replaces an unconfirmed secret.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<MfaSetup> 
+     */
+    open class func accountMfaSetupWithRequestBuilder() -> RequestBuilder<MfaSetup> {
+        let localVariablePath = "/api/v1/account/mfa/setup/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<MfaSetup>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Pass the second step for this session
+     
+     - parameter mfaCode: (body)  
+     - returns: MfaStatus
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountMfaVerify(mfaCode: MfaCode) async throws -> MfaStatus {
+        return try await accountMfaVerifyWithRequestBuilder(mfaCode: mfaCode).execute().body
+    }
+
+    /**
+     Pass the second step for this session
+     - POST /api/v1/account/mfa/verify/
+     - A code from the app, or one of the recovery codes (each works once).
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter mfaCode: (body)  
+     - returns: RequestBuilder<MfaStatus> 
+     */
+    open class func accountMfaVerifyWithRequestBuilder(mfaCode: MfaCode) -> RequestBuilder<MfaStatus> {
+        let localVariablePath = "/api/v1/account/mfa/verify/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: mfaCode)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<MfaStatus>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Mark one notification as read
      
      - parameter notificationId: (path)  

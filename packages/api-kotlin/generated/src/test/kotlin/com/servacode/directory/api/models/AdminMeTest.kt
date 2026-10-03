@@ -19,6 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.models.AdminMe
+import com.servacode.directory.api.models.MfaStatus
 
 class AdminMeTest : ShouldSpec() {
     init {
@@ -35,6 +36,12 @@ class AdminMeTest : ShouldSpec() {
         should("test displayName") {
             // uncomment below to test the property
             //modelInstance.displayName shouldBe ("TODO")
+        }
+
+        // to test the property `mfa` - The second sign-in step for this operator and session (accountMfaRetrieve).
+        should("test mfa") {
+            // uncomment below to test the property
+            //modelInstance.mfa shouldBe ("TODO")
         }
 
         // to test the property `permissions` - Every permission code the caller holds, deduplicated and sorted. An operator whose roles carry no permissions gets an empty list, which is a valid state.

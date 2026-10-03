@@ -49,6 +49,8 @@ BODYLESS_MUTATIONS = {
     ("/api/v1/account/invitations/{invitation_id}/accept/", "post"),
     ("/api/v1/account/invitations/{invitation_id}/decline/", "post"),
     ("/api/v1/owner/claims/{claim_id}/submit/", "post"),
+    ("/api/v1/account/mfa/setup/", "post"),
+    ("/api/v1/admin/users/{user_id}/mfa/reset/", "post"),
 }
 
 # Endpoints that legitimately answer 204 with no body.
@@ -79,6 +81,7 @@ NO_CONTENT_OPERATIONS = {
     ("/api/v1/owner/claims/{claim_id}/", "delete"),
     ("/api/v1/owner/claims/{claim_id}/evidence/{evidence_id}/", "delete"),
     ("/api/v1/owner/facilities/{facility_id}/invitations/{invitation_id}/", "delete"),
+    ("/api/v1/admin/users/{user_id}/mfa/reset/", "post"),
 }
 
 PUBLIC_PREFIXES = ("/api/v1/public/",)

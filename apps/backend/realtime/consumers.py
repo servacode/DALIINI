@@ -115,7 +115,22 @@ class DirectoryConsumer(AsyncJsonWebsocketConsumer):  # type: ignore[misc]
         user = await User.objects.filter(pk=self.authenticated_user_id).afirst()
         if user is None:
             return False
-        return await self._permission_sync(user, permission_code)
+        if not await self._permission_sync(user, permission_code):
+            return False
+        return await self._second_step_passed(user)
+
+    async def _second_step_passed(self, user: Any) -> bool:
+        """The console's events need the same second step as the console (DECISION-065)."""
+        from asgiref.sync import sync_to_async
+
+        from accounts.authentication import live_sessions_for
+        from accounts.mfa import console_block
+
+        if self.authenticated_claims is None:
+            return False
+        session = await live_sessions_for(self.authenticated_claims).afirst()
+        block = await sync_to_async(console_block)(user, session)
+        return block is None
 
     @staticmethod
     async def _permission_sync(user: Any, permission_code: str) -> bool:

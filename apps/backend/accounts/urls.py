@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import views, views_mfa
 
 urlpatterns = [
     path("auth/register/start/", views.RegisterStartView.as_view()),
@@ -21,4 +21,9 @@ urlpatterns = [
     path("account/phone/confirm/", views.PhoneChangeConfirmView.as_view()),
     path("account/password/", views.PasswordChangeView.as_view()),
     path("account/deletion-request/", views.AccountDeletionRequestView.as_view()),
+    path("account/mfa/", views_mfa.MfaStatusView.as_view()),
+    path("account/mfa/setup/", views_mfa.MfaSetupView.as_view()),
+    path("account/mfa/confirm/", views_mfa.MfaConfirmView.as_view()),
+    path("account/mfa/verify/", views_mfa.MfaVerifyView.as_view()),
+    path("account/mfa/disable/", views_mfa.MfaDisableView.as_view()),
 ]
