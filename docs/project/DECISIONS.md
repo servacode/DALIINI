@@ -2385,6 +2385,81 @@ in Kotlin.
 
 **Next:** the screens move to Compose Multiplatform for both apps.
 
+## DECISION-094 — The design system is shared: Compose Multiplatform, with its pictures drawn from the token package
+
+**Date:** 2026-10-03 · **Phase 8.10 of the roadmap.**
+
+**Why:** the screens move to Compose Multiplatform next (DECISION-051), and every screen is
+built from the design system: its theme, components, words, icons and illustrations. That
+module was an Android library, Android through its resources rather than its code. Its words,
+fonts, icons and illustrations were `R` ids, and its pictures took their dark colours from
+Android's night resources.
+
+**Decision:**
+
+* **`:core:designsystem` is a multiplatform module on Compose Multiplatform 1.12.1**, on a new
+  convention, `serva.kmp.compose`.
+  * On Android, its Compose is androidx Compose itself, at the app's versions: Compose UI 1.12.1,
+    material3 1.4.0 and lifecycle 2.11.0. The app's classpath is unchanged.
+  * On the iPhone, it is JetBrains' build, with material3 1.9.0 (what its Gradle plugin pairs
+    with 1.12).
+* **Icons and illustrations are drawn, not looked up.**
+  * The token package now also writes the shared set's path data as Kotlin
+    (`DirectoryVectors.kt`), beside the web's TypeScript and Android's vector drawables.
+  * The design system builds that path data into vectors in the theme's colours:
+    * an icon is a `DirectoryGlyph`, a path with a colour of the theme;
+    * an illustration has three layers: soft ground, lines, accent.
+  * So a picture follows the theme the reader chose, light or dark, on both platforms, without
+    Android's night configuration. The site and the console draw the same paths.
+  * The fourteen icons this module drew itself keep their exact paths, strokes and colours
+    (`ModuleGlyphs`).
+  * A tinted icon wears its tint, as before. The one drawn untinted, the red close mark, wears
+    the theme's danger and on-primary colours.
+* **Words, faces and the brand symbol are Compose resources**, read the same way on both
+  platforms.
+  * They are assembled at build time from their owners, so no file is copied into the
+    repository:
+    * the module's own words and its brand symbol;
+    * the vocabulary the token package generates;
+    * the brand's faces from the token package.
+  * Compose resources keep a string exactly as written, where Android's resources had trimmed and
+    folded it. Two differences came out:
+    * **The list separator.** Android had trimmed "، " to "،", so lists were joined without a
+      space. The space now stays, which is what was written.
+    * **One sentence wrapped across two lines in the file.** It is now one line, and a test
+      forbids a wrapped word.
+  * `@ReadOnlyComposable` comes off the screens' word getters that read the design system's
+    words, because Compose Multiplatform's `stringResource` is not read-only.
+* **What only Android has stays in androidMain:**
+  * The theme's night configuration for Android resources, and the system bars' appearance
+    (`PlatformTheme`). The iPhone's is empty for now.
+  * `SystemBarsColor`.
+  * The Android resources that Android's XML, widget, notifications and map pins name by id:
+    * the brand colours, `brand_mark` and the symbols;
+    * the token package's colours and drawables;
+    * the five words the widget and notifications read;
+    * the three category drawables MapLibre paints into pins.
+
+  Tests hold the copied words and the category drawables to the shared ones, key by key.
+* **Pictures from the network are Coil on both platforms.** Android keeps its Coil (3.6). The
+  iPhone's is 3.4, the newest built with Kotlin 2.3: 3.5 and later are built with 2.4, whose
+  libraries this compiler cannot read on iOS.
+* **The iPhone shell draws with the design system:** the theme, the top bar, menus, the loading,
+  error and offline states, and the icons. Its errors use the shared sentences.
+* **Every Gradle module but the app is now multiplatform.** CI's unit tests and lint are
+  `testAndroidHostTest`, `:app:testLocalDebugUnitTest`, `lintAndroidMain` and
+  `:app:lintLocalDebug`; `testDebugUnitTest` and `lintDebug` no longer name any module.
+* **Tests:**
+  * Android host tests: the copied words, the category drawables against the glyphs, the status
+    tones.
+  * Common tests, on Android and on the simulator: colours, glyphs in both themes,
+    illustrations, one mark per category.
+  * A simulator test draws the theme with a shared word, an error's sentence, an icon and an
+    illustration, in light and in dark.
+
+**Next:** the screens. Android's screens and view models move from each feature's androidMain to
+common code, one feature at a time, and replace the shell's two.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

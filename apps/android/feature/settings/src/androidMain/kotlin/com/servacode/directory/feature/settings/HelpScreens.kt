@@ -1,5 +1,6 @@
 package com.servacode.directory.feature.settings
 
+import com.servacode.directory.core.designsystem.DirectoryGlyph
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -144,7 +145,7 @@ fun LegalPageScreen(
     }
 }
 
-private fun LegalPageKey.icon(): Int = when (this) {
+private fun LegalPageKey.icon(): DirectoryGlyph = when (this) {
     LegalPageKey.ABOUT -> DirectoryIcons.info
     LegalPageKey.PRIVACY -> DirectoryIcons.verified
     LegalPageKey.TERMS -> DirectoryIcons.document

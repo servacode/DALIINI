@@ -23,7 +23,11 @@ kotlin {
         // As in serva.android.library: java.time, which the generated API client and
         // kotlinx-datetime use on Android, predates minSdk 24 (API 26).
         enableCoreLibraryDesugaring = true
-        withHostTestBuilder {}
+        withHostTestBuilder {}.configure {
+            // A module whose host tests read its own Android resources by id opts in, in its own
+            // gradle.properties; AGP allows the host tests to be set up only once, here.
+            isIncludeAndroidResources = findProperty("serva.hostTestAndroidResources") == "true"
+        }
     }
     iosArm64()
     iosSimulatorArm64()

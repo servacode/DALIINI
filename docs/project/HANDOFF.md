@@ -57,12 +57,13 @@ through #49 to #52. Phase 7's code is done, and phase 8 has begun:
 | 8.7 | the shared boundaries on Ktor for the iPhone, call for call as Android's adapters, with their tests ported | 091 |
 | 8.8 | the preferences and the database shared whole; the iPhone's location, network monitor and HTTP engine, tested on the simulator | 092 |
 | 8.9 | the iPhone app's shell: an Xcode project from `project.yml`, one Kotlin framework, the Keychain, two Compose screens, tested in CI | 093 |
+| 8.10 | the design system shared on Compose Multiplatform: icons and illustrations drawn from the token package's paths, words and faces as Compose resources | 094 |
 
 **Now: phase 8, the iPhone app from the Android code** (DECISION-051). The shared layers move
 into Kotlin Multiplatform one module at a time, each step leaving the Android app green and
-unchanged; everything below the screens is shared, and the iPhone app builds and is tested in CI
-with its first two screens. The screens moving to Compose Multiplatform for both apps is next
-(ROADMAP ٨). Everything else that remains waits on the owner: the server and domain
+unchanged; everything below the screens is shared, the design system too, and the iPhone app
+builds and is tested in CI with its first two screens. The screens moving to Compose
+Multiplatform for both apps, one feature at a time, is next (ROADMAP ٨). Everything else that remains waits on the owner: the server and domain
 (EXT-007, EXT-001), approving the launch texts and graphic, the Play account (EXT-003), and then
 the closed test and the public release, step by step in `docs/runbooks/launch.md`. An owner
 portal on the web was offered at the start of phase 3 and set aside: owners use the Android app.

@@ -528,7 +528,7 @@ object AuthCopy {
     val SIGN_IN: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_sign_in)
     val BACK: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_back)
     const val APP_NAME = DirectoryBrand.NAME
-    val WELCOME: String @Composable @ReadOnlyComposable get() = DirectoryWords.TAGLINE
+    val WELCOME: String @Composable get() = DirectoryWords.TAGLINE
     val NO_ACCOUNT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_no_account)
     val CREATE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_create)
     val CREATE_ACCOUNT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_create_account)

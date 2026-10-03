@@ -1,5 +1,6 @@
 package com.servacode.directory.feature.home
 
+import com.servacode.directory.core.designsystem.DirectoryGlyph
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.heightIn
@@ -20,7 +21,6 @@ import android.content.ActivityNotFoundException
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -716,8 +716,7 @@ private fun LazyListScope.facilityList(
  * says what its word says, so the chips can be picked out at a glance once they are familiar,
  * without the word ever being replaced.
  */
-@DrawableRes
-private fun chipIcon(chip: HomeChip): Int = when (chip) {
+private fun chipIcon(chip: HomeChip): DirectoryGlyph = when (chip) {
     HomeChip.NEAREST -> DirectoryIcons.route
     HomeChip.OPEN_NOW -> DirectoryIcons.clock
     HomeChip.DUTY_TODAY -> DirectoryIcons.schedule

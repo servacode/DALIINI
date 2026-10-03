@@ -586,7 +586,7 @@ object FacilityCopy {
     @Composable @ReadOnlyComposable
     fun noteCount(length: Int, max: Int): String = stringResource(R.string.facility_report_note_count, length, max)
 
-    @Composable @ReadOnlyComposable
+    @Composable
     fun reason(reason: FacilityReportReason): String = DirectoryVocabulary.reportReason(reason)
 
     @Composable @ReadOnlyComposable

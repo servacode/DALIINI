@@ -173,6 +173,11 @@ def check_hygiene() -> None:
             # A vector path is one geometric value; wrapping it would only make it unreadable.
             if "android:pathData" in line:
                 continue
+            # A shared word is one value too: Compose resources keep a line break and its
+            # indentation as written, where Android's own resources folded them into a space
+            # (DECISION-094), so a long sentence stays on one line.
+            if "/composeResources/values/" in path.as_posix() and "<string " in line:
+                continue
             require(len(line) <= 120, f"line >120: {path.relative_to(ROOT)}:{line_no}")
 
 

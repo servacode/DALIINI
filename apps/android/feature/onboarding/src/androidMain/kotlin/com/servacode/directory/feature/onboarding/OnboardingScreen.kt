@@ -634,7 +634,6 @@ private fun stepLabel(step: OnboardingStep): String = stringResource(
  * error's own sentence as well, because "could not save" alone does not say what to do next.
  */
 @Composable
-@ReadOnlyComposable
 private fun noticeText(message: OnboardingMessage): String = when (message.notice) {
     OnboardingNotice.DRAFT_SAVED -> stringResource(R.string.onboarding_notice_draft_saved)
     OnboardingNotice.FILE_UPLOADED -> stringResource(R.string.onboarding_notice_file_uploaded)
@@ -658,7 +657,6 @@ private fun noticeText(message: OnboardingMessage): String = when (message.notic
 
 /** The error's own sentence, or the one for an error nobody named. */
 @Composable
-@ReadOnlyComposable
 private fun OnboardingMessage.reason(): String =
     appErrorText(error ?: AppError(AppError.Kind.UNEXPECTED))
 

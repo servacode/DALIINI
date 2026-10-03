@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The words the design system says on its own, and the words more than one module needs.
+
+     A control that carries its own label — the eye on a password field, the cross on a search
+     field, the answer on a dialog — says it from here, so the same sentence is not written into
+     fourteen screens. A second language is a second file beside this one. -->
+<resources>
+    <!-- Controls. -->
+    <string name="ds_show_password">إظهار كلمة المرور</string>
+    <string name="ds_hide_password">إخفاء كلمة المرور</string>
+    <string name="ds_clear_search">مسح البحث</string>
+    <string name="ds_cancel">إلغاء</string>
+    <string name="ds_next">التالي</string>
+    <string name="ds_confirm">تأكيد</string>
+    <string name="ds_back">رجوع</string>
+    <string name="ds_retry">إعادة المحاولة</string>
+    <string name="ds_refresh">تحديث</string>
+    <string name="ds_load_more">عرض المزيد</string>
+    <string name="ds_open_details">عرض التفاصيل</string>
+
+    <!-- A field that opens a date and time picker, named by the field it belongs to. -->
+    <string name="ds_pick_datetime">%1$s: اختر التاريخ والوقت</string>
+
+    <!-- What the app is working from when the network is gone. -->
+    <string name="ds_offline">غير متصل — تعرض بيانات محفوظة قد لا تكون محدثة</string>
+
+    <!-- The home advertisement slider, as a screen reader says it. -->
+    <string name="ds_ad_label">إعلان</string>
+    <string name="ds_ad_open">فتح الإعلان</string>
+    <string name="ds_ad_position">إعلان %1$d من %2$d</string>
+
+    <!-- The backend is in maintenance (product spec §17). Its own message is shown when it sends
+         one; these words stand in when it does not. -->
+    <string name="ds_maintenance_title">الخدمة قيد الصيانة</string>
+    <string name="ds_maintenance_body">نعمل على تحسين الخدمة وسنعود قريبًا. لا حاجة لإغلاق التطبيق.</string>
+    <string name="ds_maintenance_auto_retry">سيعيد التطبيق المحاولة تلقائيًا.</string>
+
+    <!-- A build the backend no longer accepts. Like maintenance, the backend may send its own
+         words; these stand in when it does not. Unlike maintenance, waiting changes nothing. -->
+    <string name="ds_update_required_title">هذه النسخة قديمة</string>
+    <string name="ds_update_required_body">صدرت نسخة أحدث من دليني، وهذه لم تعد تعمل. حدّثها لتتابع.</string>
+    <string name="ds_update_required_action">تحديث التطبيق</string>
+
+    <!-- Whether today's roster names this facility. Open, closed and on duty now are the shared
+         vocabulary's (vocab_availability_*). -->
+    <string name="ds_on_duty_today">مناوبة اليوم</string>
+
+    <string name="ds_no_ratings">لا توجد تقييمات بعد</string>
+
+    <!-- A weekday number that names no day. The days themselves are vocab_weekday_*. -->
+    <string name="directory_weekday_unknown">—</string>
+
+    <!-- What goes between items of a list. A comma is not the same mark in every language. -->
+    <string name="directory_list_separator">، </string>
+
+    <!-- What the app is for, under its name where there is room for it. The name itself is not
+         here: it is a proper noun, it must match the launcher's label, and DirectoryBrand.NAME is
+         where the manifest and the app agree on it. -->
+    <string name="ds_tagline">أقرب الخدمات الصحية إليك</string>
+
+    <!-- Why something was refused. The backend sends a code; AppErrorMessages turns it into one of
+         these, and the backend's own message - English, and written for developers - is never
+         shown. -->
+    <string name="ds_error_authentication_failed">بيانات الدخول غير صحيحة أو انتهت الجلسة.</string>
+    <string name="ds_error_authentication_required">سجّل الدخول للمتابعة.</string>
+    <string name="ds_error_permission_denied">لا تملك الصلاحية لهذا الإجراء.</string>
+    <string name="ds_error_not_found">العنصر المطلوب غير موجود.</string>
+    <string name="ds_error_throttled">محاولات كثيرة. حاول بعد قليل.</string>
+    <string name="ds_error_validation">تحقق من البيانات المدخلة.</string>
+    <string name="ds_error_province_required">اختر المحافظة أولًا.</string>
+    <string name="ds_error_phone_already_registered">هذا الرقم له حساب بالفعل. سجّل الدخول أو استعد كلمة المرور.</string>
+    <string name="ds_error_duty_not_supported">هذا القسم لا يدعم المناوبة.</string>
+    <string name="ds_error_duty_overlap">وقت المناوبة يتداخل مع مناوبة أخرى أو غير صالح.</string>
+    <string name="ds_error_duty_during_closure">المنشأة مغلقة مؤقتاً في هذا الوقت، فلا يمكن جدولة مناوبة خلاله.</string>
+    <string name="ds_error_hours_not_supported">هذا القسم لا يدعم ساعات العمل.</string>
+    <string name="ds_error_invalid_hours">ساعات العمل غير صالحة.</string>
+    <string name="ds_error_photos_not_supported">هذا القسم لا يدعم الصور.</string>
+    <string name="ds_error_closure_not_supported">هذا القسم لا يدعم الإغلاق المؤقت.</string>
+    <string name="ds_error_evidence_max_files">تجاوزت العدد المسموح من الملفات لهذا المتطلب.</string>
+    <string name="ds_error_evidence_locked">لا يمكن تعديل المستندات أثناء المراجعة.</string>
+    <string name="ds_error_facility_locked">لا يمكن تعديل المنشأة أثناء مراجعتها. عدّلها بعد القرار.</string>
+    <string name="ds_error_otp_recipient_invalid">تعذّر إرسال الرمز. تأكد أن الرقم صحيح ومفعّل على واتساب.</string>
+    <string name="ds_error_otp_unavailable">تعذّر إرسال رمز التحقق الآن. حاول بعد قليل.</string>
+    <string name="ds_error_last_owner">لا يمكن إزالة المالك الوحيد للمنشأة.</string>
+    <string name="ds_error_maintenance">الخدمة قيد الصيانة حاليًا. حاول بعد قليل.</string>
+    <string name="ds_error_offline">لا يوجد اتصال بالإنترنت.</string>
+    <string name="ds_error_session_expired">انتهت الجلسة. سجّل الدخول من جديد.</string>
+    <string name="ds_error_conflict">لا يمكن تنفيذ هذا الإجراء الآن.</string>
+    <string name="ds_error_server">حدث خطأ في الخادم. حاول لاحقًا.</string>
+    <string name="ds_error_unexpected">حدث خطأ غير متوقع.</string>
+
+    <!-- What is being asked of an owner. Where their facility stands is vocab_facility_status_*. -->
+    <string name="ds_owner_action_review_rejection">راجِع سبب الرفض وعدّل الطلب</string>
+    <string name="ds_owner_action_complete_and_submit">أكمِل البيانات وأرسلها للمراجعة</string>
+    <string name="ds_owner_action_reverify_and_submit">حدّث البيانات وأرسلها لإعادة التحقق</string>
+    <string name="ds_owner_action_wait_for_review">بانتطار المراجعة</string>
+    <string name="ds_owner_action_contact_support">تواصل مع الدعم</string>
+    <string name="ds_owner_action_unknown">يلزم إجراء، راجِع تفاصيل المنشأة</string>
+    <string name="ds_owner_role_owner">مالك</string>
+    <string name="ds_owner_role_manager">مدير</string>
+
+    <!-- The state (vocab_availability_*), and when it opens next: "closed - opens 08:00". -->
+    <string name="ds_availability_next_open">%1$s • يفتح %2$s</string>
+
+    <!-- How far it is. The number is rounded before it gets here. -->
+    <string name="ds_distance_metres">%1$d م</string>
+    <string name="ds_distance_kilometres">%1$d.%2$d كم</string>
+
+    <!-- From when to when, and a closure's reason before its period. -->
+    <string name="ds_period">من %1$s إلى %2$s</string>
+    <string name="ds_closure_with_reason">%1$s • %2$s</string>
+</resources>

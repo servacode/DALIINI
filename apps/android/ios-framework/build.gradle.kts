@@ -18,13 +18,12 @@ kotlin {
     }
     sourceSets {
         iosMain {
-            // The brand's colours, generated from the same tokens as the site and Android.
-            kotlin.srcDir(rootProject.file("../../packages/design-tokens/generated"))
             dependencies {
                 api(project(":core:auth"))
                 implementation(project(":core:model"))
                 implementation(project(":core:database"))
                 implementation(project(":core:datastore"))
+                implementation(project(":core:designsystem"))
                 implementation(project(":core:location"))
                 implementation(project(":core:network"))
                 implementation(project(":core:transport"))
@@ -35,6 +34,7 @@ kotlin {
                 implementation(libs.compose.multiplatform.runtime)
                 implementation(libs.compose.multiplatform.foundation)
                 implementation(libs.compose.multiplatform.ui)
+                implementation(libs.compose.multiplatform.material3)
             }
         }
         iosTest.dependencies {

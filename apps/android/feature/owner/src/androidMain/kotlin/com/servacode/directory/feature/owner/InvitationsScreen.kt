@@ -178,7 +178,7 @@ object InvitationsCopy {
     val DECLINE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.received_invitation_decline)
 
     /** Who asked, and for which part: "سامر يدعوك إلى إدارتها بصفة مدير". */
-    @Composable @ReadOnlyComposable
+    @Composable
     fun body(invitation: ReceivedInvitation): String {
         val role = OwnerWords.role(invitation.role)
         return invitation.invitedByName?.takeIf { it.isNotBlank() }

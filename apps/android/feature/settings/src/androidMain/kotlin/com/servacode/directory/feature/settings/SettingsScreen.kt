@@ -1,5 +1,6 @@
 package com.servacode.directory.feature.settings
 
+import com.servacode.directory.core.designsystem.DirectoryGlyph
 import com.servacode.directory.core.designsystem.DirectorySwitchRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -259,7 +260,7 @@ private fun AppearanceSection(viewModel: AppearanceViewModel = hiltViewModel()) 
     }
 }
 
-private fun themeIcon(option: ThemePreference): Int = when (option) {
+private fun themeIcon(option: ThemePreference): DirectoryGlyph = when (option) {
     ThemePreference.SYSTEM -> DirectoryIcons.settings
     ThemePreference.LIGHT -> DirectoryIcons.sun
     ThemePreference.DARK -> DirectoryIcons.moon
