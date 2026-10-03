@@ -112,7 +112,7 @@ def check_voice_and_map() -> None:
 def check_location_policy() -> None:
     manifest = read("app/src/main/AndroidManifest.xml")
     location = read(
-        "core/location/src/main/kotlin/com/servacode/directory/core/location/AndroidLocationProvider.kt"
+        "core/location/src/androidMain/kotlin/com/servacode/directory/core/location/AndroidLocationProvider.kt"
     )
     require("ACCESS_BACKGROUND_LOCATION" not in manifest, "background location permission is forbidden")
     require("requestLocationUpdates" in location, "foreground navigation updates missing")

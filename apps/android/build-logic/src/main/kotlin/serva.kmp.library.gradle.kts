@@ -25,6 +25,12 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
+    compilerOptions {
+        // Expect/actual classes are Beta; the shared modules use them for the injection
+        // annotations (DECISION-087) and accept that.
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
     sourceSets {
         commonTest.dependencies {
             implementation(kotlin("test"))

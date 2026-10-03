@@ -19,6 +19,7 @@ EXPECTED_MODULES = {
     ":core:maps",
     ":core:analytics",
     ":core:observability",
+    ":core:inject",
     ":core:testing",
     ":feature:bootstrap",
     ":feature:home",
@@ -78,7 +79,7 @@ def check_security() -> None:
     require("ACCESS_BACKGROUND_LOCATION" not in manifest, "background location is forbidden in Core V3")
     require('android:usesCleartextTraffic="false"' in manifest, "cleartext traffic must be disabled")
     vault = text(
-        "core/auth/src/main/kotlin/com/servacode/directory/core/auth/AndroidKeyStoreRefreshTokenVault.kt"
+        "core/auth/src/androidMain/kotlin/com/servacode/directory/core/auth/AndroidKeyStoreRefreshTokenVault.kt"
     )
     require('KEYSTORE = "AndroidKeyStore"' in vault, "Android Keystore is required")
     require('TRANSFORMATION = "AES/GCM/NoPadding"' in vault, "AES/GCM is required")
@@ -87,10 +88,15 @@ def check_security() -> None:
         ".putstring(\"refresh_token\"" not in lowered,
         "raw refresh token preference storage is forbidden",
     )
-    coordinator = text("core/auth/src/main/kotlin/com/servacode/directory/core/auth/SessionCoordinator.kt")
+    coordinator = text("core/auth/src/commonMain/kotlin/com/servacode/directory/core/auth/SessionCoordinator.kt")
     require("Mutex()" in coordinator and "withLock" in coordinator, "refresh mutex missing")
-    access = text("core/auth/src/main/kotlin/com/servacode/directory/core/auth/AccessTokenStore.kt")
-    require("AtomicReference" in access, "access token must be memory-backed")
+    access = text("core/auth/src/commonMain/kotlin/com/servacode/directory/core/auth/AccessTokenStore.kt")
+    # A field in memory and nothing that persists (DECISION-087 replaced the JVM-only
+    # AtomicReference with a volatile field).
+    require(
+        "@Volatile private var token" in access and "Preferences" not in access and "DataStore" not in access,
+        "access token must be memory-backed",
+    )
 
 
 def check_architecture() -> None:

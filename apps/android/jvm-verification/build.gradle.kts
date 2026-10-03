@@ -11,8 +11,6 @@ val generatedClient = rootDir.resolve("../../../packages/api-kotlin/generated/sr
 // Files that need the Android framework, an AAR, Room, DataStore or Compose. Everything else
 // in these directories is compiled here exactly as the app compiles it.
 val androidOnly = listOf(
-    "**/core/auth/AndroidKeyStoreRefreshTokenVault.kt",
-    "**/core/auth/AuthBindings.kt",
     "**/core/network/NetworkMonitor.kt",
     "**/core/network/UploadReader.kt",
     "**/core/network/NetworkBindings.kt",
@@ -20,17 +18,6 @@ val androidOnly = listOf(
     "**/core/network/api/GeneratedAnalyticsTransport.kt",
     "**/core/network/MapProviderAdapters.kt",
     "**/core/network/MapProviderNetworkModule.kt",
-    "**/core/database/CacheDao.kt",
-    "**/core/database/CacheEntities.kt",
-    "**/core/database/DatabaseModule.kt",
-    "**/core/database/DirectoryDatabase.kt",
-    "**/core/database/PublicCacheDataSource.kt",
-    "**/core/database/LocalStoresRoom.kt",
-    "**/core/datastore/PreferencesRepository.kt",
-    // The pseudonymous id lives in the same DataStore the preferences do.
-    "**/core/datastore/StoredAnonymousId.kt",
-    "**/core/location/AndroidLocationProvider.kt",
-    "**/core/location/LocationModule.kt",
     "**/core/maps/MapLibreController.kt",
     "**/core/maps/OfflineMapPacks.kt",
     "**/core/maps/NavigationLayers.kt",
@@ -59,16 +46,17 @@ val features = listOf(
     "onboarding", "owner", "province", "ratings", "search", "settings",
 )
 
-// Kotlin Multiplatform modules shared with the iPhone app (DECISION-085): their common code is
-// compiled here too, so the JVM harness keeps seeing the whole app.
-val sharedCores = listOf("model", "observability", "analytics")
+// Kotlin Multiplatform modules shared with the iPhone app (DECISIONS 085 to 087): their common
+// code and its tests are compiled here too, so the JVM harness keeps seeing the whole app. Their
+// androidMain, where Room, DataStore, the Keystore and Hilt's modules live, is not.
+val sharedCores = listOf(
+    "model", "observability", "analytics", "auth", "database", "datastore", "location",
+)
 
 sourceSets {
     main {
         kotlin.srcDir(generatedClient)
-        val platformFreeCores = listOf(
-            "auth", "network", "database", "datastore", "location", "maps",
-        )
+        val platformFreeCores = listOf("network", "maps")
         for (core in platformFreeCores) {
             kotlin.srcDir(android.resolve("core/$core/src/main/kotlin"))
         }
@@ -82,9 +70,7 @@ sourceSets {
     }
     test {
         kotlin.srcDir(android.resolve("core/testing/src/main/kotlin"))
-        kotlin.srcDir(android.resolve("core/auth/src/test/kotlin"))
         kotlin.srcDir(android.resolve("core/network/src/test/kotlin"))
-        kotlin.srcDir(android.resolve("core/database/src/test/kotlin"))
         kotlin.srcDir(android.resolve("core/maps/src/test/kotlin"))
         for (core in sharedCores) {
             kotlin.srcDir(android.resolve("core/$core/src/commonTest/kotlin"))
