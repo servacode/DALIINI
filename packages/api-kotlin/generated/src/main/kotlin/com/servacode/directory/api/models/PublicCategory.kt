@@ -26,6 +26,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param id 
+ * @param slug Stable, readable and never changed once set: the category's address on the site.
  * @param nameAr 
  * @param nameEn 
  * @param iconKey 
@@ -38,6 +39,10 @@ data class PublicCategory (
 
     @Contextual @SerialName(value = "id")
     val id: java.util.UUID,
+
+    /* Stable, readable and never changed once set: the category's address on the site. */
+    @SerialName(value = "slug")
+    val slug: kotlin.String,
 
     @SerialName(value = "nameAr")
     val nameAr: kotlin.String,

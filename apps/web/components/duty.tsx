@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getDutyByProvince, getDutyRosterByProvince, type DutyDay, type DutyShift } from "../lib/api";
 import { dayLabel, shiftSpan } from "../lib/dates";
+import { facilityPath } from "../lib/paths";
 import { Empty, FacilityList, Icon, Rating, StatusBadge, Unavailable } from "./ui";
 
 /*
@@ -167,7 +168,7 @@ function RosterList({ day, showState = false }: { day: DutyDay; showState?: bool
       {day.items.map((f) => (
         <li key={f.id} className="card row">
           <div>
-            <Link href={`/f/${f.id}`} className="title-link">{f.nameAr}</Link>
+            <Link href={facilityPath(f)} className="title-link">{f.nameAr}</Link>
             <div className="meta">
               <span>{f.category.nameAr}</span>
               {f.city ? <span>· {f.city.nameAr}</span> : null}

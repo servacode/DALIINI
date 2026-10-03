@@ -101,6 +101,32 @@ try {
       const body = response.ok ? await response.text() : "";
       const ok = response.ok && !FAILURE_TEXT.some((t) => body.includes(t));
       record(path, ok ? "PASS" : "FAIL", ok ? "a real province from the API" : `answered ${response.status}`);
+
+      // Its first category, by slug, and a facility listed in it. The facility is asked for by
+      // id alone, as every link shared before slugs was: it must arrive at its readable address.
+      const province = provinces.items[0];
+      const categories = await fetch(`${api}/api/v1/public/provinces/${province.id}/categories/`).then((r) => r.json());
+      const category = categories.items?.[0];
+      if (category?.slug) {
+        const listPath = `/${encodeURIComponent(slug)}/${encodeURIComponent(category.slug)}`;
+        const list = await fetch(`${base}${listPath}`);
+        const listBody = list.ok ? await list.text() : "";
+        const listOk = list.ok && !FAILURE_TEXT.some((t) => listBody.includes(t));
+        record(listPath, listOk ? "PASS" : "FAIL", listOk ? "a category, by its slug" : `answered ${list.status}`);
+
+        const facilities = await fetch(
+          `${api}/api/v1/public/facilities/?provinceId=${province.id}&categoryId=${category.id}&limit=1`,
+        ).then((r) => r.json());
+        const facility = facilities.items?.[0];
+        if (facility) {
+          const short = `/f/${facility.id}`;
+          const reached = await fetch(`${base}${short}`, { redirect: "follow" });
+          const landed = new URL(reached.url).pathname;
+          const wanted = facility.slug ? `${short}/${encodeURIComponent(facility.slug)}` : short;
+          const ok = reached.ok && landed === wanted;
+          record(short, ok ? "PASS" : "FAIL", ok ? "redirected to its readable address" : `landed on ${landed} (${reached.status})`);
+        }
+      }
     }
   }
 } catch (error) {

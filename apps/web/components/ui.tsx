@@ -5,8 +5,9 @@ import type { AvailabilityState } from "../lib/api";
 import { publicConfig } from "../lib/config";
 
 /*
- * Small presentational pieces shared by the directory pages. All are server
- * components rendering plain HTML/CSS so pages ship no client JavaScript.
+ * Small presentational pieces shared by the directory pages. None of them carries state or an
+ * effect, so they render on the server and add nothing to a page's script; the interactive parts
+ * (the cards, the header, the slider, the forms) live in their own client components.
  */
 
 /** The platform's shared icon, drawn from the design package; decorative, so hidden from readers. */

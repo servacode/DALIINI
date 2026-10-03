@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs, Empty, Unavailable } from "../../components/ui";
 import { getCategories, getProvinceByCode } from "../../lib/api";
+import { categoryPath } from "../../lib/paths";
 import { UNAVAILABLE_METADATA, pageMetadata } from "../../lib/seo";
 
 /*
@@ -46,7 +47,7 @@ export default async function ProvincePage({ params }: Props) {
         <ul className="grid">
           {categories.map((c) => (
             <li key={c.id}>
-              <Link className="card tile" href={`/${province.code}/${c.id}`}>
+              <Link className="card tile" href={categoryPath(province.code, c)}>
                 {c.nameAr}
                 <small>{c.group.nameAr}</small>
               </Link>

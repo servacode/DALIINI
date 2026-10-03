@@ -1,10 +1,12 @@
 "use client";
 
 import { term } from "@servacode/design-tokens/vocabulary";
+import Link from "next/link";
 import { useCallback, useState } from "react";
 import type { CompactFacility, FacilityDetail, HoursEntry } from "../lib/api";
 import { directionsLink, localPhone, telLink, whatsAppFor } from "../lib/links";
 import { WEEKDAYS_AR, WEEKDAY_DISPLAY_ORDER } from "../lib/dates";
+import { facilityPath } from "../lib/paths";
 import { CardDialog } from "./card-dialog";
 import { Icon, Rating, StatusBadge } from "./ui";
 
@@ -16,10 +18,10 @@ import { Icon, Rating, StatusBadge } from "./ui";
  * category's own mark on a soft ground rather than a grey rectangle: an empty frame reads as
  * something that failed to load, and nothing failed.
  *
- * Everything a card offers happens on the card. There is no page behind it and nothing opens
- * over it: call, WhatsApp and the route are one tap, the opening hours unfold in place, and the
- * link is shared from where it is read. A visitor never loses the list they were reading, so
- * they never have to find their way back to it.
+ * What a visitor usually wants happens on the card: call, WhatsApp and the route are one tap,
+ * the opening hours and the report open over the list rather than away from it, and the link is
+ * shared from where it is read. The name leads to the facility's own page, for everything else
+ * (its photographs, its map, the whole week of hours).
  *
  * The hours are fetched the first time they are asked for. Twelve cards would otherwise mean
  * twelve requests for a week of hours nobody opened.
@@ -97,7 +99,7 @@ function Card({ f }: { f: CompactFacility }) {
    * goes to the clipboard, which is what a person would have done by hand anyway.
    */
   const share = useCallback(async () => {
-    const url = `${window.location.origin}/f/${f.id}`;
+    const url = `${window.location.origin}${facilityPath(f)}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: f.nameAr, url });
@@ -110,7 +112,7 @@ function Card({ f }: { f: CompactFacility }) {
       if (!navigator.share) setHint("failed");
     }
     window.setTimeout(() => setHint(null), 2500);
-  }, [f.id, f.nameAr]);
+  }, [f]);
 
   const report = useCallback(
     async (reason: string) => {
@@ -163,7 +165,9 @@ function Card({ f }: { f: CompactFacility }) {
 
       <div className="facility-body">
         {/* What it is. */}
-        <h3>{f.nameAr}</h3>
+        <h3>
+          <Link href={facilityPath(f)} className="title-link">{f.nameAr}</Link>
+        </h3>
         <div className="facility-where">
           <span className="meta">
             <span>{f.category.nameAr}</span>
@@ -172,11 +176,6 @@ function Card({ f }: { f: CompactFacility }) {
           <Rating average={f.ratingAverage} count={f.ratingCount} />
         </div>
 
-        {/*
-          * The number itself, not the word "call": a browser on a desk cannot dial, so a button
-          * saying "call" leads nowhere there. It is set as a fact among the facts, and on a
-          * phone it is still a `tel:` link and still dials.
-          */}
         {/* Where it is, in words rather than on a map: a reader knows their own streets. */}
         {where ? <p className="facility-address">{where}</p> : null}
 

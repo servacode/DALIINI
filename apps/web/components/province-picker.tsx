@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import type { Province } from "../lib/api";
 import { Icon } from "./ui";
 
@@ -15,16 +15,66 @@ import { Icon } from "./ui";
  * Choosing a province clears the category with it: a category belongs to the province it was
  * offered for, and carrying it across would ask for a list that cannot exist.
  *
+ * Which province is current is read, in order, from the address (a province page's own path, or
+ * the home page's `?p=`), then from the visitor's last choice, then the first province. The bar
+ * is on every page, and a page like /duty names no province: it used to show the first one
+ * whatever had been chosen. Choosing on the home page keeps the home page; anywhere else it opens
+ * that province's page, since `?p=` means nothing on /duty or /search.
+ *
  * This is a listbox and not a `<select>`. A native menu is drawn by the operating system: on the
  * dark bar it opened as a small white slab with a blue bar through it, in the system's own font,
  * at the system's own size — the one part of the site the site does not get to design. The cost
  * of owning it is the keyboard, which is handled here in full: arrows, Home and End move,
  * Enter and Space choose, Escape closes and returns the focus to the button.
  */
-export function ProvincePicker({ provinces, current }: { provinces: Province[]; current: string }) {
+const REMEMBERED = "daliini-province";
+const listeners = new Set<() => void>();
+
+/* The last choice, as a store React can read without an effect: other tabs report through the
+   `storage` event, this one through the listeners. The server has none, so it renders without. */
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  window.addEventListener("storage", listener);
+  return () => {
+    listeners.delete(listener);
+    window.removeEventListener("storage", listener);
+  };
+}
+
+function readRemembered(): string | null {
+  try {
+    return window.localStorage.getItem(REMEMBERED);
+  } catch {
+    return null;
+  }
+}
+
+function remember(code: string): void {
+  try {
+    if (window.localStorage.getItem(REMEMBERED) === code) return;
+    window.localStorage.setItem(REMEMBERED, code);
+  } catch {
+    /* Private windows and blocked storage: the address still carries the choice. */
+    return;
+  }
+  listeners.forEach((listener) => listener());
+}
+
+export function ProvincePicker({ provinces }: { provinces: Province[] }) {
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname() || "/";
   const params = useSearchParams();
+  const codes = provinces.map((province) => province.code);
+  const firstSegment = pathname.split("/")[1] ?? "";
+  const named =
+    (codes.includes(firstSegment) ? firstSegment : null) ??
+    (codes.includes(params.get("p") ?? "") ? params.get("p") : null);
+  const remembered = useSyncExternalStore(subscribe, readRemembered, () => null);
+  useEffect(() => {
+    if (named) remember(named);
+  }, [named]);
+
+  const current = named ?? (remembered && codes.includes(remembered) ? remembered : codes[0] ?? "");
 
   const listId = useId();
   const [open, setOpen] = useState(false);
@@ -52,10 +102,15 @@ export function ProvincePicker({ provinces, current }: { provinces: Province[]; 
     setOpen(false);
     button.current?.focus();
     if (!province || province.code === current) return;
-    const next = new URLSearchParams(params.toString());
-    next.set("p", province.code);
-    next.delete("c");
-    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+    remember(province.code);
+    if (pathname === "/") {
+      const next = new URLSearchParams(params.toString());
+      next.set("p", province.code);
+      next.delete("c");
+      router.replace(`/?${next.toString()}`, { scroll: false });
+    } else {
+      router.push(`/${province.code}`);
+    }
   };
 
   const show = () => {

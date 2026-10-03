@@ -49,6 +49,7 @@ class PublicProvinceCategoriesView(APIView):
         items = [
             {
                 "id": str(switch.category_id),
+                "slug": switch.category.slug,
                 "nameAr": switch.category.name_ar,
                 "nameEn": switch.category.name_en or None,
                 "iconKey": switch.category.icon_key or None,

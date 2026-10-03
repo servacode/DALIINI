@@ -41,6 +41,12 @@ export interface PublicCategory {
      */
     id: string;
     /**
+     * Stable, readable and never changed once set: the category's address on the site.
+     * @type {string}
+     * @memberof PublicCategory
+     */
+    slug: string;
+    /**
      * 
      * @type {string}
      * @memberof PublicCategory
@@ -77,6 +83,7 @@ export interface PublicCategory {
  */
 export function instanceOfPublicCategory(value: object): value is PublicCategory {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('slug' in value) || value['slug'] === undefined) return false;
     if (!('nameAr' in value) || value['nameAr'] === undefined) return false;
     if (!('nameEn' in value) || value['nameEn'] === undefined) return false;
     if (!('iconKey' in value) || value['iconKey'] === undefined) return false;
@@ -96,6 +103,7 @@ export function PublicCategoryFromJSONTyped(json: any, ignoreDiscriminator: bool
     return {
         
         'id': json['id'],
+        'slug': json['slug'],
         'nameAr': json['nameAr'],
         'nameEn': json['nameEn'],
         'iconKey': json['iconKey'],
@@ -116,6 +124,7 @@ export function PublicCategoryToJSONTyped(value?: PublicCategory | null, ignoreD
     return {
         
         'id': value['id'],
+        'slug': value['slug'],
         'nameAr': value['nameAr'],
         'nameEn': value['nameEn'],
         'iconKey': value['iconKey'],

@@ -203,6 +203,8 @@
   .header-end .header-cta,
   .header-end .header-download { display: inline-flex; }
   .menu-button { display: none; }
+  /* The theme switch borrows the menu button's look, not its fate: it stays at every width. */
+  .menu-button.theme-toggle { display: inline-grid; }
   .header-panel { display: none; }
 }
 

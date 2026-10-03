@@ -19,7 +19,10 @@ import { SITE_NAME, absoluteUrl, publicConfig } from "../lib/config";
  */
 const INTRO_SLUG = "home-intro";
 
-/* ISR: the landing page is rebuilt at most every five minutes. */
+/*
+ * The page reads its address (`?p`, `?c`, the filters), so it renders for each request; what is
+ * cached, for five minutes, is every answer it asks the API for.
+ */
 export const revalidate = 300;
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };

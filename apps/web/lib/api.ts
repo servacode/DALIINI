@@ -28,6 +28,8 @@ export interface Ref { id: string; nameAr: string; nameEn?: string | null }
 
 export interface CompactFacility {
   id: string;
+  /* Readable words for its address, made from the Arabic name (`lib/paths.ts`). */
+  slug: string;
   nameAr: string;
   nameEn: string | null;
   category: Ref;
@@ -70,6 +72,8 @@ export interface Province { id: string; code: string; nameAr: string; nameEn: st
 
 export interface Category {
   id: string;
+  /* Fixed in the reference data and never changed: the category's address on the site. */
+  slug: string;
   nameAr: string;
   nameEn: string | null;
   iconKey: string | null;

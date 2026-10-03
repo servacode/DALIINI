@@ -324,6 +324,8 @@ def test_raqqa_public_taxonomy_shows_pharmacies_only() -> None:
 
     assert [item["nameAr"] for item in body["items"]] == ["صيدليات"]
     assert body["items"][0]["capabilities"]["duty"] is True
+    # The site addresses the category by this, so it is the reference data's, not generated.
+    assert body["items"][0]["slug"] == "pharmacy"
 
 
 @pytest.mark.django_db
