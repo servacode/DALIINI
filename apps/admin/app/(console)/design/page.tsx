@@ -108,7 +108,10 @@ export default function DesignPage() {
         </div>
       </Panel>
 
-      <Panel title="الخطوط" description="خط تجوّل بأوزانه الأربعة.">
+      <Panel
+        title="الخطوط"
+        description="Alexandria للعناوين والأرقام الكبيرة، وIBM Plex Sans Arabic لكل ما يُقرأ."
+      >
         <KeyValueList
           items={TYPE.map(([label, sample, size, weight]) => ({
             label: `${label} · ${size}`,

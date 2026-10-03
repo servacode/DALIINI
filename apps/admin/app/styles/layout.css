@@ -68,7 +68,8 @@
   content: ""; position: absolute;
   inset-inline-start: 0; inset-block: 9px;
   width: 3px; border-radius: 0 3px 3px 0;
-  background: var(--ad-shell-accent);
+  /* Gold marks where the operator is, as it marks what is on duty: the one place it appears. */
+  background: var(--ad-accent);
 }
 [dir="rtl"] .nav-link[aria-current="page"]::before { border-radius: 3px 0 0 3px; }
 .nav-link:focus-visible { box-shadow: 0 0 0 2px var(--ad-shell-accent); }

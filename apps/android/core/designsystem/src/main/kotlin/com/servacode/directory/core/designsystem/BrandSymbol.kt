@@ -52,7 +52,7 @@ fun BrandSymbol(modifier: Modifier = Modifier, size: Dp = BrandMarkSize) {
 /**
  * The symbol with the name under it, as the app introduces itself.
  *
- * The name is set in the app's own bold, which is Tajawal: the same typeface every other word in
+ * The name is set in the app's display face, Alexandria: the same typeface every title in
  * the app is set in, so the title belongs to the page rather than to the picture above it.
  */
 @Composable

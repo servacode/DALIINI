@@ -25,7 +25,7 @@ import com.servacode.directory.core.model.OwnerFacilityStatus
  * How a state reads, as the shared vocabulary (`packages/design-tokens/vocabulary.json`) assigns
  * it. The same six tones colour the same states in the app, the site and the console.
  */
-enum class StatusTone { NEUTRAL, POSITIVE, WARNING, DANGER, INFO, BRAND }
+enum class StatusTone { NEUTRAL, POSITIVE, WARNING, DANGER, INFO, BRAND, ACCENT }
 
 /**
  * The tone of each state, copied from the vocabulary's `tone` fields. Plain functions, so a test
@@ -35,7 +35,7 @@ object StatusTones {
     fun availability(state: AvailabilityState): StatusTone = when (state) {
         AvailabilityState.OPEN -> StatusTone.POSITIVE
         AvailabilityState.CLOSED -> StatusTone.DANGER
-        AvailabilityState.DUTY -> StatusTone.WARNING
+        AvailabilityState.DUTY -> StatusTone.ACCENT
         AvailabilityState.TEMP_CLOSED -> StatusTone.INFO
     }
 

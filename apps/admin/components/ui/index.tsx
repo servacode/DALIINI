@@ -463,7 +463,7 @@ export function Pagination({
 // Status and permissions
 // --------------------------------------------------------------------------------------
 
-export type Tone = "neutral" | "positive" | "warning" | "danger" | "info" | "brand";
+export type Tone = "neutral" | "positive" | "warning" | "danger" | "info" | "brand" | "accent";
 
 export function StatusBadge({ tone = "neutral", children }: { tone?: Tone; children: ReactNode }) {
   return (

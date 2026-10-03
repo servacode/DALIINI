@@ -36,20 +36,27 @@ import com.servacode.directory.designsystem.generated.DirectoryTokens
 private fun color(hex: String): Color = Color(hex.toColorInt())
 
 /**
- * Tajawal, the token font (`typography.fontFamily.primary`), read from the design-token package
- * (`packages/design-tokens/fonts/android`, SIL OFL — `fonts/OFL.txt`) so the app sets the same
- * files as the site and the console. Arabic is the app's first language, so the type it is set in
- * belongs to the design system, not to a screen.
+ * The brand's two faces, read from the design-token package (`packages/design-tokens/fonts/android`,
+ * SIL OFL) so the app sets the same files as the site and the console (DECISION-060).
  *
- * Tajawal has no 600. The type scale asks for it on titles and labels; it is set at 700, which is
- * also what a browser picks for 600 from these four weights, so the app and the site agree.
+ * IBM Plex Sans Arabic (`typography.fontFamily.primary`) sets everything read: body, labels,
+ * fields, lists. It has the four weights the scale uses, 400 to 700, so nothing is substituted.
  */
-val Tajawal = FontFamily(
-    Font(R.font.tajawal_regular, FontWeight.Normal),
-    Font(R.font.tajawal_medium, FontWeight.Medium),
-    Font(R.font.tajawal_bold, FontWeight.SemiBold),
-    Font(R.font.tajawal_bold, FontWeight.Bold),
-    Font(R.font.tajawal_extrabold, FontWeight.ExtraBold),
+val PlexArabic = FontFamily(
+    Font(R.font.plex_arabic_regular, FontWeight.Normal),
+    Font(R.font.plex_arabic_medium, FontWeight.Medium),
+    Font(R.font.plex_arabic_semibold, FontWeight.SemiBold),
+    Font(R.font.plex_arabic_bold, FontWeight.Bold),
+)
+
+/**
+ * Alexandria (`typography.fontFamily.display`) sets titles and the big numbers: the roles whose
+ * token says `family: display`. Used with restraint, it is what gives a screen its voice.
+ */
+val Alexandria = FontFamily(
+    Font(R.font.alexandria_semibold, FontWeight.SemiBold),
+    Font(R.font.alexandria_bold, FontWeight.Bold),
+    Font(R.font.alexandria_extrabold, FontWeight.ExtraBold),
 )
 
 /**
@@ -149,6 +156,7 @@ data class DirectoryToneColors(
     val danger: ToneColors,
     val info: ToneColors,
     val brand: ToneColors,
+    val accent: ToneColors,
 ) {
     fun of(tone: StatusTone): ToneColors = when (tone) {
         StatusTone.NEUTRAL -> neutral
@@ -157,6 +165,7 @@ data class DirectoryToneColors(
         StatusTone.DANGER -> danger
         StatusTone.INFO -> info
         StatusTone.BRAND -> brand
+        StatusTone.ACCENT -> accent
     }
 
     companion object {
@@ -187,6 +196,12 @@ data class DirectoryToneColors(
                 color(DirectoryTokens.SemanticActionPrimary),
                 color(DirectoryTokens.SemanticSurfaceBrandSoft),
             ),
+            // Gold, for on duty now alone: the darker content gold, because the fill gold is
+            // too light to carry a word on its own soft ground.
+            accent = ToneColors(
+                color(DirectoryTokens.SemanticAccentContent),
+                color(DirectoryTokens.SemanticAccentSoft),
+            ),
         )
 
         val dark = DirectoryToneColors(
@@ -214,6 +229,10 @@ data class DirectoryToneColors(
                 color(DirectoryTokens.SemanticDarkActionPrimary),
                 color(DirectoryTokens.SemanticDarkSurfaceBrandSoft),
             ),
+            accent = ToneColors(
+                color(DirectoryTokens.SemanticDarkAccentContent),
+                color(DirectoryTokens.SemanticDarkAccentSoft),
+            ),
         )
     }
 }
@@ -239,6 +258,10 @@ object BrandColors {
     val info = color(DirectoryTokens.SemanticFeedbackInfo)
     val stroke = color(DirectoryTokens.SemanticStrokeDefault)
 
+    /** Gold: on duty now, and the one solid button that leads to it. Dark words on it. */
+    val accent = color(DirectoryTokens.SemanticAccentDefault)
+    val onAccent = color(DirectoryTokens.SemanticAccentOnAccent)
+
     /**
      * The app's two bars, top and bottom, and what may be written on them.
      *
@@ -251,75 +274,91 @@ object BrandColors {
     val onBarMuted = color(DirectoryTokens.SemanticContentOnBarMuted)
 }
 
-private fun tajawal(size: Int, lineHeight: Int, weight: Int) = TextStyle(
-    fontFamily = Tajawal,
+/** The face a role's token names: `display` is Alexandria, anything else Plex. */
+private fun face(family: String): FontFamily = if (family == "display") Alexandria else PlexArabic
+
+private fun role(family: String, size: Int, lineHeight: Int, weight: Int) = TextStyle(
+    fontFamily = face(family),
     fontWeight = FontWeight(weight),
     fontSize = size.sp,
     lineHeight = lineHeight.sp,
 )
 
 private val DirectoryTypography = Typography(
-    displaySmall = tajawal(
+    displaySmall = role(
+        DirectoryTokens.TypographyRolesDisplayFamily,
         DirectoryTokens.TypographyRolesDisplaySize,
         DirectoryTokens.TypographyRolesDisplayLineHeight,
         DirectoryTokens.TypographyRolesDisplayWeight,
     ),
-    headlineLarge = tajawal(
+    headlineLarge = role(
+        DirectoryTokens.TypographyRolesHeadlineLargeFamily,
         DirectoryTokens.TypographyRolesHeadlineLargeSize,
         DirectoryTokens.TypographyRolesHeadlineLargeLineHeight,
         DirectoryTokens.TypographyRolesHeadlineLargeWeight,
     ),
-    headlineMedium = tajawal(
+    headlineMedium = role(
+        DirectoryTokens.TypographyRolesHeadlineMediumFamily,
         DirectoryTokens.TypographyRolesHeadlineMediumSize,
         DirectoryTokens.TypographyRolesHeadlineMediumLineHeight,
         DirectoryTokens.TypographyRolesHeadlineMediumWeight,
     ),
-    headlineSmall = tajawal(
+    headlineSmall = role(
+        DirectoryTokens.TypographyRolesTitleLargeFamily,
         DirectoryTokens.TypographyRolesTitleLargeSize,
         DirectoryTokens.TypographyRolesTitleLargeLineHeight,
         DirectoryTokens.TypographyRolesTitleLargeWeight,
     ),
-    titleLarge = tajawal(
+    titleLarge = role(
+        DirectoryTokens.TypographyRolesTitleLargeFamily,
         DirectoryTokens.TypographyRolesTitleLargeSize,
         DirectoryTokens.TypographyRolesTitleLargeLineHeight,
         DirectoryTokens.TypographyRolesTitleLargeWeight,
     ),
-    titleMedium = tajawal(
+    titleMedium = role(
+        DirectoryTokens.TypographyRolesTitleMediumFamily,
         DirectoryTokens.TypographyRolesTitleMediumSize,
         DirectoryTokens.TypographyRolesTitleMediumLineHeight,
         DirectoryTokens.TypographyRolesTitleMediumWeight,
     ),
-    titleSmall = tajawal(
+    titleSmall = role(
+        DirectoryTokens.TypographyRolesLabelLargeFamily,
         DirectoryTokens.TypographyRolesLabelLargeSize,
         DirectoryTokens.TypographyRolesLabelLargeLineHeight,
         DirectoryTokens.TypographyRolesLabelLargeWeight,
     ),
-    bodyLarge = tajawal(
+    bodyLarge = role(
+        DirectoryTokens.TypographyRolesBodyLargeFamily,
         DirectoryTokens.TypographyRolesBodyLargeSize,
         DirectoryTokens.TypographyRolesBodyLargeLineHeight,
         DirectoryTokens.TypographyRolesBodyLargeWeight,
     ),
-    bodyMedium = tajawal(
+    bodyMedium = role(
+        DirectoryTokens.TypographyRolesBodyMediumFamily,
         DirectoryTokens.TypographyRolesBodyMediumSize,
         DirectoryTokens.TypographyRolesBodyMediumLineHeight,
         DirectoryTokens.TypographyRolesBodyMediumWeight,
     ),
-    bodySmall = tajawal(
+    bodySmall = role(
+        DirectoryTokens.TypographyRolesBodySmallFamily,
         DirectoryTokens.TypographyRolesBodySmallSize,
         DirectoryTokens.TypographyRolesBodySmallLineHeight,
         DirectoryTokens.TypographyRolesBodySmallWeight,
     ),
-    labelLarge = tajawal(
+    labelLarge = role(
+        DirectoryTokens.TypographyRolesLabelLargeFamily,
         DirectoryTokens.TypographyRolesLabelLargeSize,
         DirectoryTokens.TypographyRolesLabelLargeLineHeight,
         DirectoryTokens.TypographyRolesLabelLargeWeight,
     ),
-    labelMedium = tajawal(
+    labelMedium = role(
+        DirectoryTokens.TypographyRolesLabelMediumFamily,
         DirectoryTokens.TypographyRolesLabelMediumSize,
         DirectoryTokens.TypographyRolesLabelMediumLineHeight,
         DirectoryTokens.TypographyRolesLabelMediumWeight,
     ),
-    labelSmall = tajawal(
+    labelSmall = role(
+        DirectoryTokens.TypographyRolesLabelMediumFamily,
         DirectoryTokens.TypographyRolesLabelMediumSize,
         DirectoryTokens.TypographyRolesLabelMediumLineHeight,
         DirectoryTokens.TypographyRolesLabelMediumWeight,

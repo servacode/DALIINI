@@ -73,6 +73,7 @@ a.kpi:hover { border-color: var(--ad-brand); box-shadow: var(--ad-shadow-sm); }
 .kpi[data-tone="warning"] .kpi-icon { background: var(--ad-warning-bg); color: var(--ad-warning); }
 .kpi[data-tone="info"] .kpi-icon { background: var(--ad-info-bg); color: var(--ad-info); }
 .kpi strong, .kpi-value {
+  font-family: var(--ad-font-display);
   font-size: var(--ad-text-3xl); font-weight: 800; line-height: 1.1;
   font-variant-numeric: tabular-nums; color: var(--ad-text);
 }
@@ -316,6 +317,7 @@ label.switch-row { cursor: pointer; }
 .badge-warning { background: var(--ad-warning-bg); color: var(--ad-warning); border-color: var(--ad-warning-border); }
 .badge-danger { background: var(--ad-danger-bg); color: var(--ad-danger); border-color: var(--ad-danger-border); }
 .badge-info { background: var(--ad-info-bg); color: var(--ad-info); border-color: var(--ad-info-border); }
+.badge-accent { background: var(--ad-accent-bg); color: var(--ad-accent-text); border-color: var(--ad-accent-border); }
 
 /* States ------------------------------------------------------------------------------- */
 .state-block {

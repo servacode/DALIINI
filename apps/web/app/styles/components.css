@@ -304,6 +304,12 @@ textarea:focus-visible {
   color: var(--sd-semantic-content-on-primary);
 }
 
+/* Gold belongs to one state only: on duty now, the thing people come for. */
+.badge-accent {
+  background: var(--sd-semantic-accent-soft);
+  color: var(--sd-semantic-accent-content);
+}
+
 /* ---- States ------------------------------------------------------------------------------ */
 
 .state {
@@ -1035,6 +1041,8 @@ tr:last-child td { border-bottom: 0; }
 .badge-solid.badge-danger { background: var(--sd-semantic-feedback-danger); }
 .badge-solid.badge-info { background: var(--sd-semantic-feedback-info); }
 .badge-solid.badge-brand { background: var(--sd-semantic-action-primary); }
+/* The one solid ground with dark words: gold is too light to carry white. */
+.badge-solid.badge-accent { background: var(--sd-semantic-accent-default); color: var(--sd-semantic-accent-on-accent); }
 
 /* ---- The rest of a card, without leaving it ---------------------------------------------- */
 
