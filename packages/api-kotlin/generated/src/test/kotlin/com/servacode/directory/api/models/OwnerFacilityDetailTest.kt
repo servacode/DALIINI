@@ -26,6 +26,7 @@ import com.servacode.directory.api.models.NamedRef
 import com.servacode.directory.api.models.OwnerApplication
 import com.servacode.directory.api.models.OwnerEvidenceRef
 import com.servacode.directory.api.models.OwnerHoursEntry
+import com.servacode.directory.api.models.OwnerPendingChange
 import com.servacode.directory.api.models.OwnerRequiredActionEnum
 
 class OwnerFacilityDetailTest : ShouldSpec() {
@@ -175,6 +176,12 @@ class OwnerFacilityDetailTest : ShouldSpec() {
         should("test application") {
             // uncomment below to test the property
             //modelInstance.application shouldBe ("TODO")
+        }
+
+        // to test the property `pendingChange` - Set while an edit to the live facility waits for review. The listed fields show the owner's proposed values; the public still sees the published ones.
+        should("test pendingChange") {
+            // uncomment below to test the property
+            //modelInstance.pendingChange shouldBe ("TODO")
         }
 
     }

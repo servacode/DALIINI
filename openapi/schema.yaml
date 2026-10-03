@@ -189,6 +189,439 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+  /api/v1/account/invitations/:
+    get:
+      operationId: accountInvitationsList
+      summary: Invitations waiting for this account's phone number
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceivedInvitationList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/account/invitations/{invitation_id}/accept/:
+    post:
+      operationId: accountInvitationAccept
+      description: Only the account whose phone number was invited can accept; any
+        other caller gets 404. An invitation to own raises a manager to owner and
+        never lowers anyone. 409 INVITATION_EXPIRED or INVITATION_CLOSED when it can
+        no longer be accepted.
+      summary: Join the facility an invitation is for
+      parameters:
+      - in: path
+        name: invitation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Accepted'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/account/invitations/{invitation_id}/decline/:
+    post:
+      operationId: accountInvitationDecline
+      summary: Decline an invitation
+      parameters:
+      - in: path
+        name: invitation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/account/mfa/:
+    get:
+      operationId: accountMfaRetrieve
+      summary: The second sign-in step, for this account and session
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfaStatus'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/account/mfa/confirm/:
+    post:
+      operationId: accountMfaConfirm
+      description: Enables it, marks this session as having passed the second step,
+        and returns ten recovery codes, shown this once.
+      summary: Confirm the authenticator with its first code
+      tags:
+      - Account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MfaCode'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MfaCode'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MfaCode'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfaRecoveryCodes'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/account/mfa/disable/:
+    post:
+      operationId: accountMfaDisable
+      description: Needs a current code from the app. Refused with 409 MFA_REQUIRED_BY_POLICY
+        where every operator must have one.
+      summary: Switch the authenticator off
+      tags:
+      - Account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MfaCode'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MfaCode'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MfaCode'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfaStatus'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/account/mfa/setup/:
+    post:
+      operationId: accountMfaSetup
+      description: Operators only. Returns a new secret and its QR code; nothing is
+        enabled until a code from the app confirms it. Starting again replaces an
+        unconfirmed secret.
+      summary: Start setting up an authenticator app
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfaSetup'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/account/mfa/verify/:
+    post:
+      operationId: accountMfaVerify
+      description: A code from the app, or one of the recovery codes (each works once).
+      summary: Pass the second step for this session
+      tags:
+      - Account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MfaCode'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MfaCode'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MfaCode'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfaStatus'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/account/notification-preferences/:
+    get:
+      operationId: accountNotificationPreferencesRetrieve
+      description: 'All are on until the account turns one off. Only the push is governed:
+        every message still reaches the inbox. A staff change to an owner''s own duty
+        shift, and any kind outside these three, is always pushed.'
+      summary: Which kinds of notice are pushed to this account's devices
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreferences'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+    patch:
+      operationId: accountNotificationPreferencesUpdate
+      description: Only the fields sent change.
+      summary: Change which kinds of notice are pushed
+      tags:
+      - Account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationPreferences'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationPreferences'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationPreferences'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreferences'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/account/notifications/:
     get:
       operationId: accountNotificationsList
@@ -991,6 +1424,53 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+  /api/v1/admin/ads/stats/:
+    get:
+      operationId: adminAdStatsRetrieve
+      description: Counted from the apps' `ad_impression` and `ad_click` events, by
+        Damascus day. The default is the last 30 days; at most a year. Every advertisement
+        is listed, those never shown with zeros.
+      summary: Impressions and clicks of each advertisement over a period
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+      - in: query
+        name: to
+        schema:
+          type: string
+      tags:
+      - Admin Ads
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdStats'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/admin/alerts/:
     get:
       operationId: adminAlertsList
@@ -1056,6 +1536,56 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdminAnalytics'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/admin/analytics/series/:
+    get:
+      operationId: adminAnalyticsSeriesRetrieve
+      description: Every day from `from` to `to` is present, a quiet day as zeros.
+        The event series are the same four the period totals count; `newUsers` are
+        accounts created, `approvals` applications approved and `reports` problem
+        reports received.
+      summary: The period's numbers, one Damascus day at a time
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: ISO date or datetime; default 30 days before `to`.
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: ISO date or datetime; a bare date includes that whole day.
+      tags:
+      - Admin Analytics
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAnalyticsSeries'
           description: ''
         '400':
           content:
@@ -1231,8 +1761,9 @@ paths:
   /api/v1/admin/applications/:
     get:
       operationId: adminReviewsList
-      description: Capped at 200 rows. Every filter is optional and combines with
-        the rest.
+      description: Newest submission first, in cursor pages. Every filter is optional
+        and combines with the rest. A draft that was never submitted sorts by when
+        it was started.
       summary: List facility applications awaiting or past review
       parameters:
       - in: query
@@ -1240,6 +1771,11 @@ paths:
         schema:
           type: string
         description: Category id of the facility the application belongs to.
+      - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque token returned as `nextCursor` by the previous page.
       - in: query
         name: evidence
         schema:
@@ -1257,6 +1793,11 @@ paths:
         schema:
           type: string
         description: Application kind, for example REGISTRATION or REVERIFICATION.
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Page size, maximum 200, default 50.
       - in: query
         name: province
         schema:
@@ -1368,13 +1909,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AdminDecisionRequest'
+              $ref: '#/components/schemas/AdminReviewDecisionRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AdminDecisionRequest'
+              $ref: '#/components/schemas/AdminReviewDecisionRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AdminDecisionRequest'
+              $ref: '#/components/schemas/AdminReviewDecisionRequest'
       security:
       - bearerAccessToken: []
       responses:
@@ -1429,13 +1970,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AdminDecisionRequest'
+              $ref: '#/components/schemas/AdminReviewDecisionRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AdminDecisionRequest'
+              $ref: '#/components/schemas/AdminReviewDecisionRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AdminDecisionRequest'
+              $ref: '#/components/schemas/AdminReviewDecisionRequest'
       security:
       - bearerAccessToken: []
       responses:
@@ -1475,8 +2016,8 @@ paths:
   /api/v1/admin/audit/:
     get:
       operationId: adminAuditList
-      description: Capped at 250 rows. Snapshots and metadata are stored redacted.
-        Every filter is optional and combines with the rest.
+      description: Newest first, in cursor pages. Snapshots and metadata are stored
+        redacted. Every filter is optional and combines with the rest.
       summary: Search the audit trail
       parameters:
       - in: query
@@ -1490,10 +2031,20 @@ paths:
           type: string
         description: Actor user id.
       - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque token returned as `nextCursor` by the previous page.
+      - in: query
         name: from
         schema:
           type: string
         description: ISO date or datetime; keeps entries created at or after it.
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Page size, maximum 200, default 50.
       - in: query
         name: requestId
         schema:
@@ -2947,6 +3498,290 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/admin/duty/import/:
+    post:
+      operationId: adminDutyImport
+      description: 'Columns in Arabic or English: the pharmacy (`facilityId`, `pharmacy`/`الصيدلية`
+        by name, or `phone`/`الهاتف`) and either `date`/`التاريخ` with `from`/`من`
+        and `to`/`إلى` in Damascus time (an end at or before the start is the next
+        morning), or `startsAt` and `endsAt`. Every row is checked against the province''s
+        pharmacies and the stored shifts. `apply` writes all rows or none, and only
+        when no row has an error; re-applying the same file changes nothing. At most
+        2000 rows.'
+      summary: Read a duty roster from a spreadsheet; preview it, or apply it
+      tags:
+      - Admin Duty
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DutyImportRequest'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DutyImportResult'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/admin/duty/rotations/:
+    get:
+      operationId: adminDutyRotationsList
+      summary: Saved duty rotations
+      tags:
+      - Admin Duty
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DutyRotationList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+    post:
+      operationId: adminDutyRotationCreate
+      summary: Save a duty rotation
+      tags:
+      - Admin Duty
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DutyRotationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DutyRotationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DutyRotationRequest'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DutyRotation'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/admin/duty/rotations/{rotation_id}/:
+    patch:
+      operationId: adminDutyRotationUpdate
+      summary: Change a saved duty rotation
+      parameters:
+      - in: path
+        name: rotation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Duty
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDutyRotationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDutyRotationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDutyRotationRequest'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DutyRotation'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+    delete:
+      operationId: adminDutyRotationDelete
+      description: The shifts it generated stay; only the template goes.
+      summary: Delete a saved duty rotation
+      parameters:
+      - in: path
+        name: rotation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Duty
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+  /api/v1/admin/duty/rotations/{rotation_id}/generate/:
+    post:
+      operationId: adminDutyRotationGenerate
+      description: Up to three months at a time. The same checks and all-or-nothing
+        writing as an import; applying a period twice changes nothing.
+      summary: Generate a period's shifts from a rotation; preview them, or apply
+        them
+      parameters:
+      - in: path
+        name: rotation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Duty
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DutyRotationGenerate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DutyRotationGenerate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DutyRotationGenerate'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DutyImportResult'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
   /api/v1/admin/emergency-numbers/:
     get:
       operationId: adminEmergencyNumbersList
@@ -3383,8 +4218,8 @@ paths:
   /api/v1/admin/facilities/:
     get:
       operationId: adminFacilitiesList
-      description: Capped at 250 rows. Every filter is optional and combines with
-        the rest. Each row carries `qualityScore` (0-100) and `qualityIssues`, computed
+      description: In cursor pages. Every filter is optional and combines with the
+        rest. Each row carries `qualityScore` (0-100) and `qualityIssues`, computed
         in the same query.
       summary: List facilities for operations
       parameters:
@@ -3393,6 +4228,16 @@ paths:
         schema:
           type: string
         description: Category id.
+      - in: query
+        name: city
+        schema:
+          type: string
+        description: City id.
+      - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque token returned as `nextCursor` by the previous page.
       - in: query
         name: issue
         schema:
@@ -3406,6 +4251,11 @@ paths:
           - OPEN_REPORTS
           - STALE
         description: Keep facilities that have this quality issue.
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Page size, maximum 200, default 50.
       - in: query
         name: ordering
         schema:
@@ -3462,9 +4312,60 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+    post:
+      operationId: adminFacilityCreate
+      description: Listed by the directory itself, with no owner; an owner can claim
+        it later. ACTIVE (the default) publishes it at once and counts as verified.
+        The same validation as an owner's edit applies. Requires `admin.facilities.edit`;
+        audited.
+      summary: Add a facility to the directory
+      tags:
+      - Admin Facilities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminFacilityCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminFacilityCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminFacilityCreate'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminFacilityDetail'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/admin/facilities/{facility_id}/:
     get:
       operationId: adminFacilityRetrieve
+      description: Everything the console shows and edits, with the quality score.
       summary: Retrieve one facility
       parameters:
       - in: path
@@ -3482,8 +4383,72 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AdminFacilityQuality'
+                $ref: '#/components/schemas/AdminFacilityDetail'
           description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+    patch:
+      operationId: adminFacilityUpdate
+      description: 'Only the fields sent change. The status is left as it is: an operator''s
+        correction does not send a live facility back for re-verification. Moving
+        it to another province clears its city unless one is sent; another category
+        clears its specialties and services unless they are sent. Requires `admin.facilities.edit`;
+        audited with both snapshots, and the owners are notified.'
+      summary: Correct a facility's details
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Facilities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminFacilityWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminFacilityWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminFacilityWrite'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminFacilityDetail'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
@@ -3731,6 +4696,79 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/admin/facilities/map/:
+    get:
+      operationId: adminFacilitiesMap
+      description: |-
+        Every located facility the filters select, as points (DECISION-075).
+
+        The same filters as the list, so "the map of what I am looking at" is one click. Only what
+        a pin needs travels: the name, the state and the coordinates. A facility without a location
+        is counted rather than dropped silently, so the operator can go and fix it.
+      summary: Located facilities as map points, with the same filters as the list
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Category id.
+      - in: query
+        name: city
+        schema:
+          type: string
+        description: City id.
+      - in: query
+        name: issue
+        schema:
+          type: string
+        description: One of NO_PHOTOS, NO_HOURS, NO_LOCATION, NO_PHONE, STALE, OPEN_REPORTS,
+          NOT_VERIFIED_RECENTLY.
+      - in: query
+        name: province
+        schema:
+          type: string
+        description: Province id.
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Free text matched against the facility names.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Facility status.
+      tags:
+      - Admin Facilities
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminFacilityMap'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/admin/me/:
     get:
       operationId: adminMeRetrieve
@@ -3852,6 +4890,36 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Request validation failed; `code` is VALIDATION_ERROR and `details`
             is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/admin/permissions/:
+    get:
+      operationId: adminPermissionsList
+      description: The full catalogue, ordered by code. Labels for display belong
+        to the client.
+      summary: Every permission a role can carry
+      tags:
+      - Admin Users
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminPermissionList'
+          description: ''
         '401':
           content:
             application/json:
@@ -4287,14 +5355,24 @@ paths:
   /api/v1/admin/reports/:
     get:
       operationId: adminReportsList
-      description: Newest first, capped at 250 rows.
+      description: Newest first, in cursor pages.
       summary: List facility problem reports
       parameters:
+      - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque token returned as `nextCursor` by the previous page.
       - in: query
         name: facility
         schema:
           type: string
         description: Facility id.
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Page size, maximum 200, default 50.
       - in: query
         name: status
         schema:
@@ -4500,7 +5578,7 @@ paths:
   /api/v1/admin/roles/:
     get:
       operationId: adminRolesList
-      summary: List admin roles and their permission codes
+      summary: List admin roles, their permission codes and how many hold each
       tags:
       - Admin Users
       security:
@@ -4525,6 +5603,168 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+    post:
+      operationId: adminRoleCreate
+      description: Requires `admin.roles.manage`, which is re-checked inside the handler.
+      summary: Create a role with the permissions it carries
+      tags:
+      - Admin Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminRoleCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminRoleCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminRoleCreateRequest'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminRole'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/admin/roles/{role_id}/:
+    patch:
+      operationId: adminRoleUpdate
+      description: Omitted fields keep their value. Takes effect for every holder
+        on their next request. Refused (409) for the owner role, and when it would
+        leave nobody able to grant roles.
+      summary: Rename a role or change the permissions it carries
+      parameters:
+      - in: path
+        name: role_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Admin Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminRoleUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminRoleUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminRoleUpdateRequest'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminRole'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+    delete:
+      operationId: adminRoleDelete
+      description: Refused (409) while any account holds the role, blocked accounts
+        included, so a role is never taken from somebody as a side effect; and for
+        the owner role.
+      summary: Delete a role nobody holds
+      parameters:
+      - in: path
+        name: role_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Admin Users
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
   /api/v1/admin/search/:
     get:
       operationId: adminSearchRetrieve
@@ -4864,9 +6104,12 @@ paths:
   /api/v1/admin/system/status/:
     get:
       operationId: adminSystemStatusRetrieve
-      description: Reports only whether each dependency is configured. No secret,
-        connection string or credential is returned.
-      summary: Runtime and configuration status
+      description: The database, Redis and the workers, the scheduler's heartbeat,
+        storage, the verification-code channel, push, backups, error reporting and
+        maintenance mode, each with a status and a sentence (DECISION-073). Probes
+        time out after two seconds. No host, URL, credential or exception text is
+        returned.
+      summary: Every dependency, asked directly
       tags:
       - Admin System
       security:
@@ -4929,9 +6172,25 @@ paths:
     get:
       operationId: adminUsersList
       description: Password hashes and session secret material are never returned.
-        Capped at 250 rows. Both filters are optional.
+        Newest first unless `ordering` says otherwise, in cursor pages. Every filter
+        is optional.
       summary: Search user accounts
       parameters:
+      - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque token returned as `nextCursor` by the previous page.
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Page size, maximum 200, default 50.
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: createdAt, -createdAt (the default), name or -name.
       - in: query
         name: q
         schema:
@@ -5038,6 +6297,46 @@ paths:
               schema:
                 $ref: '#/components/schemas/AdminUser'
           description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+  /api/v1/admin/users/{user_id}/mfa/reset/:
+    post:
+      operationId: adminUserMfaReset
+      description: They set up a new one at their next console sign-in. Their recovery
+        codes are cleared too. Audited.
+      summary: Clear an operator's authenticator after they lost it
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Users
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
         '401':
           content:
             application/json:
@@ -6090,6 +7389,408 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/owner/claimable-facilities/:
+    get:
+      operationId: ownerClaimableFacilitiesList
+      description: For «هذه منشأتي». Matches the Arabic or English name, Arabic spelling
+        folded as in search. At most 20 results; `q` needs two characters.
+      summary: Find a published facility nobody owns yet
+      parameters:
+      - in: query
+        name: categoryId
+        schema:
+          type: string
+        description: Keep facilities of this category.
+      - in: query
+        name: provinceId
+        schema:
+          type: string
+        description: Keep facilities in this province.
+      - in: query
+        name: q
+        schema:
+          type: string
+        required: true
+      tags:
+      - Owner
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimableFacilityList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/owner/claims/:
+    get:
+      operationId: ownerClaimsList
+      summary: This account's claims, newest first
+      tags:
+      - Owner
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+    post:
+      operationId: ownerClaimStart
+      description: Returns the open claim this account already has for the facility,
+        if any. 404 when the facility is not claimable; 409 FACILITY_ALREADY_OWNED
+        when it has an owner, TOO_MANY_CLAIMS past five open claims.
+      summary: Start claiming a facility
+      tags:
+      - Owner
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClaimStart'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClaimStart'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClaimStart'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Claim'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/owner/claims/{claim_id}/:
+    get:
+      operationId: ownerClaimRetrieve
+      summary: One of this account's claims
+      parameters:
+      - in: path
+        name: claim_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Owner
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Claim'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+    delete:
+      operationId: ownerClaimWithdraw
+      summary: Withdraw a claim and delete its documents
+      parameters:
+      - in: path
+        name: claim_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Owner
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/owner/claims/{claim_id}/evidence/:
+    post:
+      operationId: ownerClaimEvidenceCreate
+      description: Private, like a facility's own documents. It belongs to the claim
+        until the claim is approved, and is deleted if the claim is withdrawn or rejected.
+      summary: Upload a verification document for a claim
+      parameters:
+      - in: path
+        name: claim_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Media
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EvidenceUpload'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimEvidence'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/owner/claims/{claim_id}/evidence/{evidence_id}/:
+    delete:
+      operationId: ownerClaimEvidenceDelete
+      summary: Remove a document from a claim not yet sent
+      parameters:
+      - in: path
+        name: claim_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: evidence_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Media
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/owner/claims/{claim_id}/submit/:
+    post:
+      operationId: ownerClaimSubmit
+      description: Every required document must be uploaded to the claim. 409 CLAIM_PENDING
+        while another claim on the same facility is being reviewed; FACILITY_ALREADY_OWNED
+        if it gained an owner meanwhile.
+      summary: Send a claim for review
+      parameters:
+      - in: path
+        name: claim_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Owner
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Claim'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
   /api/v1/owner/config/:
     get:
       operationId: ownerConfigRetrieve
@@ -6262,8 +7963,11 @@ paths:
             the caller.
     patch:
       operationId: ownerFacilityUpdate
-      description: Editing a sensitive field on an active facility moves it into REVERIFICATION_REQUIRED,
-        so the change is reviewed before it becomes public.
+      description: 'On an ACTIVE facility the facility stays published: its name,
+        address, city, neighbourhood and map point wait for an operator as a CHANGE
+        application (`pendingChange` in the response), and every other field applies
+        at once. A second edit while one waits is merged into it. Elsewhere the edit
+        applies as it stands and is reviewed at the next submission.'
       summary: Update the core fields of a facility
       parameters:
       - in: path
@@ -7000,11 +8704,178 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/owner/facilities/{facility_id}/invitations/:
+    get:
+      operationId: ownerFacilityInvitationsList
+      description: Owners only. Newest first.
+      summary: Invitations sent for a facility
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Owner
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+    post:
+      operationId: ownerFacilityInvitationCreate
+      description: Owners only. The answer is the same whether or not the number has
+        an account, so this cannot be used to find out who is registered. A person
+        with an account is notified at once; anyone else finds the invitation when
+        they sign up with that number. It lasts seven days; inviting the same number
+        again renews it. 409 ALREADY_MEMBER when the number belongs to a member already.
+      summary: Invite someone to help run a facility, by phone number
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Owner
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvitationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvitationRequest'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/owner/facilities/{facility_id}/invitations/{invitation_id}/:
+    delete:
+      operationId: ownerFacilityInvitationRevoke
+      summary: Withdraw an invitation that has not been answered
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: invitation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Owner
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
   /api/v1/owner/facilities/{facility_id}/location/:
     put:
       operationId: ownerFacilityLocationReplace
       description: WGS84 decimal degrees. PostGIS remains the source of truth for
-        geo.
+        geo. On an ACTIVE facility the new point waits for review and the published
+        one stays.
       summary: Set the map point of a facility
       parameters:
       - in: path
@@ -7114,7 +8985,10 @@ paths:
             the caller.
     post:
       operationId: ownerFacilityMemberUpsert
-      description: Only an owner may call this, and the last owner cannot be demoted.
+      description: 'Only an owner may call this, and the last owner cannot be demoted.
+        Adding a new member by account id is deprecated: invite them by phone number
+        with ownerFacilityInvitationCreate, which they accept themselves. Changing
+        the role of an existing member stays here.'
       summary: Add a member or change a member role
       parameters:
       - in: path
@@ -7235,9 +9109,11 @@ paths:
   /api/v1/owner/facilities/{facility_id}/submit/:
     post:
       operationId: ownerFacilitySubmit
-      description: Submission re-validates the current onboarding policy and the completeness
-        of the current evidence requirements. Only one submitted application of a
-        given kind can exist per facility at a time.
+      description: 'Submission re-validates the current onboarding policy and the
+        completeness of the current evidence requirements. Only one submitted application
+        of a given kind can exist per facility at a time. An ACTIVE facility is never
+        taken down to be reviewed: its edits are sent as they are saved, and submitting
+        answers with the change already waiting, or 400 when there is none.'
       summary: Submit a facility for review
       parameters:
       - in: path
@@ -8202,6 +10078,17 @@ paths:
             is populated.
 components:
   schemas:
+    Accepted:
+      type: object
+      properties:
+        facilityId:
+          type: string
+          format: uuid
+        role:
+          $ref: '#/components/schemas/FacilityMemberRoleEnum'
+      required:
+      - facilityId
+      - role
     AccountDeletionRequested:
       type: object
       properties:
@@ -8252,6 +10139,48 @@ components:
             $ref: '#/components/schemas/AccountRating'
       required:
       - items
+    AdStat:
+      type: object
+      properties:
+        adId:
+          type: string
+          format: uuid
+        titleAr:
+          type: string
+        impressions:
+          type: integer
+          minimum: 0
+        clicks:
+          type: integer
+          minimum: 0
+        clickRate:
+          type: number
+          format: double
+          nullable: true
+          description: Clicks per impression, 0..1; null with no impressions.
+      required:
+      - adId
+      - clickRate
+      - clicks
+      - impressions
+      - titleAr
+    AdStats:
+      type: object
+      properties:
+        fromDate:
+          type: string
+          format: date
+        toDate:
+          type: string
+          format: date
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdStat'
+      required:
+      - fromDate
+      - items
+      - toDate
     AdminAdImage:
       type: object
       properties:
@@ -8572,6 +10501,36 @@ components:
       - searches
       - to
       - zeroResultSearches
+    AdminAnalyticsDay:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          description: A Damascus calendar day.
+        searches:
+          type: integer
+        zeroResultSearches:
+          type: integer
+        facilityViews:
+          type: integer
+        directionsRequests:
+          type: integer
+        newUsers:
+          type: integer
+        approvals:
+          type: integer
+        reports:
+          type: integer
+      required:
+      - approvals
+      - date
+      - directionsRequests
+      - facilityViews
+      - newUsers
+      - reports
+      - searches
+      - zeroResultSearches
     AdminAnalyticsPeriodKpis:
       type: object
       description: The period-bound KPIs of the comparison period, `from` inclusive,
@@ -8603,6 +10562,26 @@ components:
       - searches
       - to
       - zeroResultSearches
+    AdminAnalyticsSeries:
+      type: object
+      properties:
+        from:
+          type: string
+          format: date-time
+          description: Period start, inclusive.
+        to:
+          type: string
+          format: date-time
+          description: Period end, exclusive.
+        days:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminAnalyticsDay'
+          description: Every day of the period, in order.
+      required:
+      - days
+      - from
+      - to
     AdminAppRelease:
       type: object
       properties:
@@ -8698,7 +10677,17 @@ components:
         ownerPhone:
           type: string
           nullable: true
+        applicantName:
+          type: string
+          nullable: true
+          description: 'CLAIM only: who asks to own the facility.'
+        applicantPhone:
+          type: string
+          nullable: true
+          description: CLAIM only.
       required:
+      - applicantName
+      - applicantPhone
       - categoryId
       - categoryNameAr
       - evidenceComplete
@@ -8761,6 +10750,14 @@ components:
         ownerPhone:
           type: string
           nullable: true
+        applicantName:
+          type: string
+          nullable: true
+          description: 'CLAIM only: who asks to own the facility.'
+        applicantPhone:
+          type: string
+          nullable: true
+          description: CLAIM only.
         facility:
           $ref: '#/components/schemas/AdminFacility'
         snapshot:
@@ -8772,8 +10769,17 @@ components:
           additionalProperties: {}
           nullable: true
           description: Snapshot of the last approved application of this facility
-            (plus `approvedAt`), for diffing a REVERIFICATION. Null when the facility
-            was never approved.
+            (plus `approvedAt`), for diffing a REVERIFICATION; for a CHANGE, the facility
+            as it is published now. Null when the facility was never approved.
+        proposedFields:
+          type: array
+          items:
+            type: string
+          description: 'CHANGE only: the fields the owner proposes to change; empty
+            otherwise.'
+        revision:
+          type: integer
+          description: 'CHANGE only: send it back with the approval. 0 for other kinds.'
         location:
           allOf:
           - $ref: '#/components/schemas/Coordinates'
@@ -8802,6 +10808,8 @@ components:
           items:
             $ref: '#/components/schemas/AdminAuditTrailEntry'
       required:
+      - applicantName
+      - applicantPhone
       - audit
       - categoryId
       - categoryNameAr
@@ -8817,24 +10825,37 @@ components:
       - ownerName
       - ownerPhone
       - previous
+      - proposedFields
       - provinceId
       - provinceNameAr
       - publicImageIds
       - publicImages
       - rejectionReason
       - reviewedAt
+      - revision
       - snapshot
       - status
       - submittedAt
     AdminApplicationList:
       type: object
+      description: The two fields every cursor page adds beside its `items`.
       properties:
+        nextCursor:
+          type: string
+          nullable: true
+          description: Opaque token for the next page, or null on the last page. Send
+            it back unchanged as the `cursor` query parameter; never parse it.
+        hasMore:
+          type: boolean
+          description: True when `nextCursor` is set.
         items:
           type: array
           items:
             $ref: '#/components/schemas/AdminApplication'
       required:
+      - hasMore
       - items
+      - nextCursor
     AdminAuditEntry:
       type: object
       description: Snapshots in `metadata` are redacted before they are recorded.
@@ -8871,13 +10892,24 @@ components:
       - targetType
     AdminAuditList:
       type: object
+      description: The two fields every cursor page adds beside its `items`.
       properties:
+        nextCursor:
+          type: string
+          nullable: true
+          description: Opaque token for the next page, or null on the last page. Send
+            it back unchanged as the `cursor` query parameter; never parse it.
+        hasMore:
+          type: boolean
+          description: True when `nextCursor` is set.
         items:
           type: array
           items:
             $ref: '#/components/schemas/AdminAuditEntry'
       required:
+      - hasMore
       - items
+      - nextCursor
     AdminAuditTrailEntry:
       type: object
       properties:
@@ -9710,15 +11742,281 @@ components:
       - provinceNameAr
       - status
       - updatedAt
+    AdminFacilityCreate:
+      type: object
+      description: |-
+        Every detail an operator may set. On create, `categoryId`, `provinceId` and `nameAr`
+        are required; on update every field is optional and only the ones sent change.
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+        provinceId:
+          type: string
+          format: uuid
+        cityId:
+          type: string
+          format: uuid
+          nullable: true
+        neighborhoodId:
+          type: string
+          format: uuid
+          nullable: true
+        nameAr:
+          type: string
+          maxLength: 160
+        nameEn:
+          type: string
+          maxLength: 160
+        descriptionAr:
+          type: string
+        descriptionEn:
+          type: string
+        phone:
+          type: string
+          maxLength: 16
+        whatsapp:
+          type: string
+          description: Optional Syrian mobile (09XXXXXXXX or +9639XXXXXXXX); blank
+            clears it.
+          maxLength: 20
+        addressAr:
+          type: string
+          maxLength: 255
+        addressEn:
+          type: string
+          maxLength: 255
+        location:
+          allOf:
+          - $ref: '#/components/schemas/Coordinates'
+          nullable: true
+          description: Null removes the pin.
+        specialtyIds:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+          description: Replaces the facility's specialties; an empty list clears them.
+        serviceTagIds:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+          description: Replaces the facility's services; an empty list clears them.
+        status:
+          allOf:
+          - $ref: '#/components/schemas/AdminFacilityCreateStatusEnum'
+          description: |-
+            ACTIVE (the default) publishes it at once; DRAFT keeps it hidden.
+
+            * `ACTIVE` - ACTIVE
+            * `DRAFT` - DRAFT
+      required:
+      - categoryId
+      - nameAr
+      - provinceId
+    AdminFacilityCreateStatusEnum:
+      enum:
+      - ACTIVE
+      - DRAFT
+      type: string
+      description: |-
+        * `ACTIVE` - ACTIVE
+        * `DRAFT` - DRAFT
+    AdminFacilityDetail:
+      type: object
+      description: One facility as the console reads and edits it.
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+          nullable: true
+        categoryId:
+          type: string
+          format: uuid
+        provinceId:
+          type: string
+          format: uuid
+        cityId:
+          type: string
+          format: uuid
+          nullable: true
+        status:
+          $ref: '#/components/schemas/FacilityStatusEnum'
+        location:
+          allOf:
+          - $ref: '#/components/schemas/Coordinates'
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        categoryNameAr:
+          type: string
+        provinceNameAr:
+          type: string
+        ownerName:
+          type: string
+          nullable: true
+          description: First owner membership.
+        ownerPhone:
+          type: string
+          nullable: true
+          description: First owner membership.
+        qualityScore:
+          type: integer
+          maximum: 100
+          minimum: 0
+          description: 100 minus a fixed penalty per issue.
+        qualityIssues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacilityQualityIssueEnum'
+          description: NO_PHOTOS 10, NO_HOURS 15, NO_LOCATION 20, NO_PHONE 20, STALE
+            10 (nothing changed or confirmed for 90 days), OPEN_REPORTS 15, NOT_VERIFIED_RECENTLY
+            10 (never approved, or not in 180 days). Photos and hours count only where
+            the category supports them.
+        neighborhoodId:
+          type: string
+          format: uuid
+          nullable: true
+        descriptionAr:
+          type: string
+          nullable: true
+        descriptionEn:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        whatsapp:
+          type: string
+          nullable: true
+        addressAr:
+          type: string
+          nullable: true
+        addressEn:
+          type: string
+          nullable: true
+        specialtyIds:
+          type: array
+          items:
+            type: integer
+        serviceTagIds:
+          type: array
+          items:
+            type: integer
+        ownerCount:
+          type: integer
+          minimum: 0
+          description: 0 for a facility the directory listed itself and nobody claimed.
+        activatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastVerifiedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+      - activatedAt
+      - addressAr
+      - addressEn
+      - categoryId
+      - categoryNameAr
+      - cityId
+      - createdAt
+      - descriptionAr
+      - descriptionEn
+      - id
+      - lastVerifiedAt
+      - location
+      - nameAr
+      - nameEn
+      - neighborhoodId
+      - ownerCount
+      - ownerName
+      - ownerPhone
+      - phone
+      - provinceId
+      - provinceNameAr
+      - qualityIssues
+      - qualityScore
+      - serviceTagIds
+      - specialtyIds
+      - status
+      - updatedAt
+      - whatsapp
     AdminFacilityList:
       type: object
+      description: The two fields every cursor page adds beside its `items`.
       properties:
+        nextCursor:
+          type: string
+          nullable: true
+          description: Opaque token for the next page, or null on the last page. Send
+            it back unchanged as the `cursor` query parameter; never parse it.
+        hasMore:
+          type: boolean
+          description: True when `nextCursor` is set.
         items:
           type: array
           items:
             $ref: '#/components/schemas/AdminFacilityQuality'
       required:
+      - hasMore
       - items
+      - nextCursor
+    AdminFacilityMap:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminFacilityPoint'
+        truncated:
+          type: boolean
+          description: True when more facilities matched than the map draws (5,000).
+        withoutLocation:
+          type: integer
+          description: Facilities the filters select that have no location yet.
+      required:
+      - items
+      - truncated
+      - withoutLocation
+    AdminFacilityPoint:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        status:
+          $ref: '#/components/schemas/FacilityStatusEnum'
+        categoryId:
+          type: string
+          format: uuid
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+      required:
+      - categoryId
+      - id
+      - latitude
+      - longitude
+      - nameAr
+      - status
     AdminFacilityQuality:
       type: object
       description: An Admin facility row with its data-quality score (see `admin_console.quality`).
@@ -9837,13 +12135,24 @@ components:
       - status
     AdminFacilityReportList:
       type: object
+      description: The two fields every cursor page adds beside its `items`.
       properties:
+        nextCursor:
+          type: string
+          nullable: true
+          description: Opaque token for the next page, or null on the last page. Send
+            it back unchanged as the `cursor` query parameter; never parse it.
+        hasMore:
+          type: boolean
+          description: True when `nextCursor` is set.
         items:
           type: array
           items:
             $ref: '#/components/schemas/AdminFacilityReport'
       required:
+      - hasMore
       - items
+      - nextCursor
     AdminFacilityStatusCount:
       type: object
       properties:
@@ -9907,6 +12216,109 @@ components:
       required:
       - answerAr
       - questionAr
+    AdminHealthCheck:
+      type: object
+      description: One dependency, asked directly. No host, URL, credential or exception
+        text.
+      properties:
+        key:
+          $ref: '#/components/schemas/AdminHealthCheckKeyEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/AdminHealthStatusEnum'
+          description: |-
+            `warning`: working, but someone should look. `off`: not used by this deployment (a development stack).
+
+            * `ok` - ok
+            * `warning` - warning
+            * `failed` - failed
+            * `off` - off
+        summary:
+          type: string
+          description: One sentence for the operator, in Arabic.
+        latencyMs:
+          type: integer
+          nullable: true
+        lastOkAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastFailureAt:
+          type: string
+          format: date-time
+          nullable: true
+        metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminHealthMetric'
+      required:
+      - key
+      - lastFailureAt
+      - lastOkAt
+      - latencyMs
+      - metrics
+      - status
+      - summary
+    AdminHealthCheckKeyEnum:
+      enum:
+      - database
+      - redis
+      - worker
+      - scheduler
+      - storage
+      - disk
+      - map
+      - otp
+      - push
+      - backup
+      - errors
+      - maintenance
+      type: string
+      description: |-
+        * `database` - database
+        * `redis` - redis
+        * `worker` - worker
+        * `scheduler` - scheduler
+        * `storage` - storage
+        * `disk` - disk
+        * `map` - map
+        * `otp` - otp
+        * `push` - push
+        * `backup` - backup
+        * `errors` - errors
+        * `maintenance` - maintenance
+    AdminHealthMetric:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: integer
+      required:
+      - key
+      - value
+    AdminHealthOverallEnum:
+      enum:
+      - ok
+      - warning
+      - failed
+      type: string
+      description: |-
+        * `ok` - ok
+        * `warning` - warning
+        * `failed` - failed
+    AdminHealthStatusEnum:
+      enum:
+      - ok
+      - warning
+      - failed
+      - 'off'
+      type: string
+      description: |-
+        * `ok` - ok
+        * `warning` - warning
+        * `failed` - failed
+        * `off` - off
     AdminId:
       type: object
       properties:
@@ -9952,6 +12364,10 @@ components:
           format: uuid
         displayName:
           type: string
+        mfa:
+          allOf:
+          - $ref: '#/components/schemas/MfaStatus'
+          description: The second sign-in step for this operator and session (accountMfaRetrieve).
         permissions:
           type: array
           items:
@@ -9961,8 +12377,28 @@ components:
             is a valid state.
       required:
       - displayName
+      - mfa
       - permissions
       - userId
+    AdminPermission:
+      type: object
+      properties:
+        code:
+          type: string
+        description:
+          type: string
+      required:
+      - code
+      - description
+    AdminPermissionList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminPermission'
+      required:
+      - items
     AdminProvince:
       type: object
       properties:
@@ -10221,6 +12657,18 @@ components:
           type: string
           description: Recorded in the audit trail.
           maxLength: 500
+    AdminReviewDecisionRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: Required in practice for a rejection; recorded in the audit
+            trail.
+        revision:
+          type: integer
+          minimum: 1
+          description: 'CHANGE only: the `revision` the reviewer saw. If the owner
+            revised the proposal since, approval is refused with 409 APPLICATION_CHANGED.'
     AdminRole:
       type: object
       properties:
@@ -10234,9 +12682,37 @@ components:
           type: array
           items:
             type: string
+        holderCount:
+          type: integer
+          description: Active accounts holding this role now. Blocked accounts are
+            not counted.
+        locked:
+          type: boolean
+          description: 'The platform''s own role (`owner`): it holds every permission
+            and the console can neither edit nor delete it.'
       required:
       - code
+      - holderCount
       - id
+      - locked
+      - name
+      - permissions
+    AdminRoleCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        code:
+          type: string
+          description: Lower-case Latin letters, digits and hyphens. Generated when
+            omitted.
+          pattern: ^[a-z][a-z0-9-]{1,79}$
+        permissions:
+          type: array
+          items:
+            type: string
+      required:
       - name
       - permissions
     AdminRoleList:
@@ -10554,21 +13030,19 @@ components:
       - to
     AdminSystemStatus:
       type: object
-      description: Configuration presence only. No credential or connection string
+      description: Each dependency asked directly, with a short timeout. No credential
         is exposed.
       properties:
         apiVersion:
           type: string
         environment:
           type: string
-        database:
-          $ref: '#/components/schemas/DatabaseHealthEnum'
-        redis:
-          $ref: '#/components/schemas/DependencyConfiguredEnum'
-        celery:
-          $ref: '#/components/schemas/DependencyConfiguredEnum'
-        storage:
-          $ref: '#/components/schemas/DependencyConfiguredEnum'
+        overall:
+          $ref: '#/components/schemas/AdminHealthOverallEnum'
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminHealthCheck'
         schemaHash:
           type: string
         checkedAt:
@@ -10576,13 +13050,11 @@ components:
           format: date-time
       required:
       - apiVersion
-      - celery
       - checkedAt
-      - database
+      - checks
       - environment
-      - redis
+      - overall
       - schemaHash
-      - storage
     AdminTagUpdateRequest:
       type: object
       description: |-
@@ -10657,7 +13129,18 @@ components:
           $ref: '#/components/schemas/AdminTaskApplicationBucket'
         reverification:
           $ref: '#/components/schemas/AdminTaskApplicationBucket'
+        change:
+          allOf:
+          - $ref: '#/components/schemas/AdminTaskApplicationBucket'
+          description: Edits to live facilities, which stay published while these
+            wait.
+        claim:
+          allOf:
+          - $ref: '#/components/schemas/AdminTaskApplicationBucket'
+          description: Requests to own a facility that nobody owns.
       required:
+      - change
+      - claim
       - initial
       - reverification
     AdminTaskReportGroup:
@@ -10912,13 +13395,24 @@ components:
       - updatedAt
     AdminUserList:
       type: object
+      description: The two fields every cursor page adds beside its `items`.
       properties:
+        nextCursor:
+          type: string
+          nullable: true
+          description: Opaque token for the next page, or null on the last page. Send
+            it back unchanged as the `cursor` query parameter; never parse it.
+        hasMore:
+          type: boolean
+          description: True when `nextCursor` is set.
         items:
           type: array
           items:
             $ref: '#/components/schemas/AdminUser'
       required:
+      - hasMore
       - items
+      - nextCursor
     AdminUserRolesRequest:
       type: object
       properties:
@@ -11364,12 +13858,161 @@ components:
       required:
       - challengeId
       - code
+    Claim:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/FacilityApplicationStatusEnum'
+        rejectionReason:
+          type: string
+          nullable: true
+        submittedAt:
+          type: string
+          format: date-time
+          nullable: true
+        reviewedAt:
+          type: string
+          format: date-time
+          nullable: true
+        facility:
+          $ref: '#/components/schemas/ClaimFacility'
+        requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClaimRequirement'
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClaimEvidence'
+      required:
+      - evidence
+      - facility
+      - id
+      - rejectionReason
+      - requirements
+      - reviewedAt
+      - status
+      - submittedAt
+    ClaimEvidence:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        requirementId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+      - createdAt
+      - id
+      - requirementId
+    ClaimFacility:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        categoryNameAr:
+          type: string
+        provinceNameAr:
+          type: string
+        addressAr:
+          type: string
+          nullable: true
+      required:
+      - addressAr
+      - categoryNameAr
+      - id
+      - nameAr
+      - provinceNameAr
+    ClaimList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Claim'
+      required:
+      - items
+    ClaimRequirement:
+      type: object
+      properties:
+        id:
+          type: integer
+        labelAr:
+          type: string
+        required:
+          type: boolean
+        minFiles:
+          type: integer
+        maxFiles:
+          type: integer
+      required:
+      - id
+      - labelAr
+      - maxFiles
+      - minFiles
+      - required
+    ClaimStart:
+      type: object
+      properties:
+        facilityId:
+          type: string
+          format: uuid
+      required:
+      - facilityId
+    ClaimableFacility:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        categoryNameAr:
+          type: string
+        provinceNameAr:
+          type: string
+        cityNameAr:
+          type: string
+          nullable: true
+        addressAr:
+          type: string
+          nullable: true
+      required:
+      - addressAr
+      - categoryNameAr
+      - cityNameAr
+      - id
+      - nameAr
+      - provinceNameAr
+    ClaimableFacilityList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClaimableFacility'
+      required:
+      - items
     CompactFacility:
       type: object
       properties:
         id:
           type: string
           format: uuid
+        slug:
+          type: string
+          description: 'Readable words for the facility''s link, from its Arabic name
+            (`/f/{id}/{slug}`). Decoration only: the id is the address, so a rename
+            never breaks a link.'
         nameAr:
           type: string
         nameEn:
@@ -11462,6 +14105,7 @@ components:
       - phone
       - ratingAverage
       - ratingCount
+      - slug
       - updatedAt
       - whatsapp
     ContactMessageCreated:
@@ -11566,14 +14210,6 @@ components:
       required:
       - latitude
       - longitude
-    DatabaseHealthEnum:
-      enum:
-      - ok
-      - unavailable
-      type: string
-      description: |-
-        * `ok` - ok
-        * `unavailable` - unavailable
     DeletionRequest:
       type: object
       properties:
@@ -11581,14 +14217,6 @@ components:
           type: boolean
       required:
       - confirm
-    DependencyConfiguredEnum:
-      enum:
-      - configured
-      - unconfigured
-      type: string
-      description: |-
-        * `configured` - configured
-        * `unconfigured` - unconfigured
     DestinationEnum:
       enum:
       - NONE
@@ -11607,6 +14235,200 @@ components:
       description: |-
         * `SAME_PHONE` - Same phone
         * `SAME_NAME_NEARBY` - Same name nearby
+    DutyImportRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+          description: CSV (UTF-8) or XLSX, first sheet, header row first.
+        provinceId:
+          type: string
+          format: uuid
+        apply:
+          type: boolean
+          default: false
+          description: False previews; true writes, refused if any row has an error.
+      required:
+      - file
+      - provinceId
+    DutyImportResult:
+      type: object
+      properties:
+        applied:
+          type: boolean
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/DutyImportRow'
+        errorCount:
+          type: integer
+        created:
+          type: integer
+        unchanged:
+          type: integer
+      required:
+      - applied
+      - created
+      - errorCount
+      - rows
+      - unchanged
+    DutyImportRow:
+      type: object
+      properties:
+        line:
+          type: integer
+          description: Row number in the file (the header is line 1).
+        facilityId:
+          type: string
+          format: uuid
+          nullable: true
+        facilityNameAr:
+          type: string
+          nullable: true
+        startsAt:
+          type: string
+          format: date-time
+          nullable: true
+        endsAt:
+          type: string
+          format: date-time
+          nullable: true
+        outcome:
+          allOf:
+          - $ref: '#/components/schemas/DutyImportRowOutcomeEnum'
+          nullable: true
+        problems:
+          type: array
+          items:
+            type: string
+          description: Why the row cannot be applied; empty when it can.
+      required:
+      - endsAt
+      - facilityId
+      - facilityNameAr
+      - line
+      - outcome
+      - problems
+      - startsAt
+    DutyImportRowOutcomeEnum:
+      enum:
+      - CREATED
+      - UPDATED
+      - UNCHANGED
+      type: string
+      description: |-
+        * `CREATED` - CREATED
+        * `UPDATED` - UPDATED
+        * `UNCHANGED` - UNCHANGED
+    DutyRotation:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        provinceId:
+          type: string
+          format: uuid
+        facilityIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 400
+          minItems: 1
+        startsAt:
+          type: string
+          format: time
+          description: Damascus time, for example 20:00.
+        endsAt:
+          type: string
+          format: time
+          description: At or before the start means the next morning.
+        perDay:
+          type: integer
+          maximum: 10
+          minimum: 1
+          default: 1
+        anchorDate:
+          type: string
+          format: date
+          description: The day the first pharmacy of the list is on duty.
+        id:
+          type: string
+          format: uuid
+      required:
+      - anchorDate
+      - endsAt
+      - facilityIds
+      - id
+      - name
+      - provinceId
+      - startsAt
+    DutyRotationGenerate:
+      type: object
+      properties:
+        fromDate:
+          type: string
+          format: date
+        toDate:
+          type: string
+          format: date
+        apply:
+          type: boolean
+          default: false
+      required:
+      - fromDate
+      - toDate
+    DutyRotationList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DutyRotation'
+      required:
+      - items
+    DutyRotationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        provinceId:
+          type: string
+          format: uuid
+        facilityIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 400
+          minItems: 1
+        startsAt:
+          type: string
+          format: time
+          description: Damascus time, for example 20:00.
+        endsAt:
+          type: string
+          format: time
+          description: At or before the start means the next morning.
+        perDay:
+          type: integer
+          maximum: 10
+          minimum: 1
+          default: 1
+        anchorDate:
+          type: string
+          format: date
+          description: The day the first pharmacy of the list is on duty.
+      required:
+      - anchorDate
+      - endsAt
+      - facilityIds
+      - name
+      - provinceId
+      - startsAt
     DutyShift:
       type: object
       properties:
@@ -11748,10 +14570,14 @@ components:
       enum:
       - INITIAL
       - REVERIFICATION
+      - CHANGE
+      - CLAIM
       type: string
       description: |-
         * `INITIAL` - Initial
         * `REVERIFICATION` - Reverification
+        * `CHANGE` - Change
+        * `CLAIM` - Claim
     FacilityApplicationStatusEnum:
       enum:
       - DRAFT
@@ -11981,6 +14807,11 @@ components:
         id:
           type: string
           format: uuid
+        slug:
+          type: string
+          description: 'Readable words for the facility''s link, from its Arabic name
+            (`/f/{id}/{slug}`). Decoration only: the id is the address, so a rename
+            never breaks a link.'
         nameAr:
           type: string
         nameEn:
@@ -12078,6 +14909,7 @@ components:
       - phone
       - ratingAverage
       - ratingCount
+      - slug
       - updatedAt
       - whatsapp
     FavoriteList:
@@ -12160,6 +14992,81 @@ components:
       - ratings
       - serviceFilter
       - specialtyFilter
+    Invitation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        phone:
+          type: string
+        role:
+          $ref: '#/components/schemas/FacilityMemberRoleEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/InvitationStatusEnum'
+          description: |-
+            EXPIRED is a PENDING invitation past `expiresAt`.
+
+            * `PENDING` - PENDING
+            * `ACCEPTED` - ACCEPTED
+            * `DECLINED` - DECLINED
+            * `REVOKED` - REVOKED
+            * `EXPIRED` - EXPIRED
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        respondedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - createdAt
+      - expiresAt
+      - id
+      - phone
+      - respondedAt
+      - role
+      - status
+    InvitationList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Invitation'
+      required:
+      - items
+    InvitationRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+          description: Syrian mobile, 09XXXXXXXX or +9639XXXXXXXX.
+          maxLength: 20
+        role:
+          allOf:
+          - $ref: '#/components/schemas/FacilityMemberRoleEnum'
+          default: MANAGER
+      required:
+      - phone
+    InvitationStatusEnum:
+      enum:
+      - PENDING
+      - ACCEPTED
+      - DECLINED
+      - REVOKED
+      - EXPIRED
+      type: string
+      description: |-
+        * `PENDING` - PENDING
+        * `ACCEPTED` - ACCEPTED
+        * `DECLINED` - DECLINED
+        * `REVOKED` - REVOKED
+        * `EXPIRED` - EXPIRED
     KeyEnum:
       enum:
       - ABOUT
@@ -12289,6 +15196,61 @@ components:
             $ref: '#/components/schemas/MapMarker'
       required:
       - items
+    MfaCode:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Six digits from the app, or a recovery code where accepted.
+          maxLength: 20
+      required:
+      - code
+    MfaRecoveryCodes:
+      type: object
+      properties:
+        recoveryCodes:
+          type: array
+          items:
+            type: string
+          description: Ten one-time codes. Shown this once; only their digests are
+            kept.
+      required:
+      - recoveryCodes
+    MfaSetup:
+      type: object
+      properties:
+        secret:
+          type: string
+          description: Base32, for typing into an app by hand.
+        otpauthUri:
+          type: string
+        qrSvgDataUri:
+          type: string
+          description: The same URI as a QR code, an SVG data URI.
+      required:
+      - otpauthUri
+      - qrSvgDataUri
+      - secret
+    MfaStatus:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          description: An authenticator is set up and confirmed.
+        required:
+          type: boolean
+          description: This deployment requires every operator to have one.
+        verified:
+          type: boolean
+          description: This session passed the second step.
+        recoveryCodesLeft:
+          type: integer
+          minimum: 0
+      required:
+      - enabled
+      - recoveryCodesLeft
+      - required
+      - verified
     NamedIntRef:
       type: object
       description: 'An integer id plus its Arabic display name: a specialty or a service.'
@@ -12376,6 +15338,23 @@ components:
       - items
       - nextCursor
       - unreadCount
+    NotificationPreferences:
+      type: object
+      properties:
+        dutyReminders:
+          type: boolean
+          description: Days nobody covers on the province's duty roster.
+        provinceNews:
+          type: boolean
+          description: What the platform announces to the account's province.
+        applicationStatus:
+          type: boolean
+          description: 'An owner''s applications and facilities: decisions, hours
+            to confirm.'
+      required:
+      - applicationStatus
+      - dutyReminders
+      - provinceNews
     OwnerApplication:
       type: object
       properties:
@@ -12593,6 +15572,13 @@ components:
           allOf:
           - $ref: '#/components/schemas/OwnerApplication'
           nullable: true
+        pendingChange:
+          allOf:
+          - $ref: '#/components/schemas/OwnerPendingChange'
+          nullable: true
+          description: Set while an edit to the live facility waits for review. The
+            listed fields show the owner's proposed values; the public still sees
+            the published ones.
       required:
       - addressAr
       - addressEn
@@ -12611,6 +15597,7 @@ components:
       - nameAr
       - nameEn
       - neighborhoodId
+      - pendingChange
       - phone
       - province
       - requiredAction
@@ -12798,6 +15785,29 @@ components:
       - name
       - role
       - userId
+    OwnerPendingChange:
+      type: object
+      description: A live facility's edit waiting for review; the facility stays published
+        meanwhile.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The CHANGE application.
+        proposedFields:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProposedFieldsEnum'
+          description: Which of the values in this response are proposed rather than
+            published.
+        submittedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - id
+      - proposedFields
+      - submittedAt
     OwnerRequiredActionEnum:
       enum:
       - REVIEW_REJECTION
@@ -12881,6 +15891,110 @@ components:
         endsAt:
           type: string
           format: date-time
+    PatchedAdminFacilityWrite:
+      type: object
+      description: |-
+        Every detail an operator may set. On create, `categoryId`, `provinceId` and `nameAr`
+        are required; on update every field is optional and only the ones sent change.
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+        provinceId:
+          type: string
+          format: uuid
+        cityId:
+          type: string
+          format: uuid
+          nullable: true
+        neighborhoodId:
+          type: string
+          format: uuid
+          nullable: true
+        nameAr:
+          type: string
+          maxLength: 160
+        nameEn:
+          type: string
+          maxLength: 160
+        descriptionAr:
+          type: string
+        descriptionEn:
+          type: string
+        phone:
+          type: string
+          maxLength: 16
+        whatsapp:
+          type: string
+          description: Optional Syrian mobile (09XXXXXXXX or +9639XXXXXXXX); blank
+            clears it.
+          maxLength: 20
+        addressAr:
+          type: string
+          maxLength: 255
+        addressEn:
+          type: string
+          maxLength: 255
+        location:
+          allOf:
+          - $ref: '#/components/schemas/Coordinates'
+          nullable: true
+          description: Null removes the pin.
+        specialtyIds:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+          description: Replaces the facility's specialties; an empty list clears them.
+        serviceTagIds:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+          description: Replaces the facility's services; an empty list clears them.
+    PatchedAdminRoleUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        permissions:
+          type: array
+          items:
+            type: string
+    PatchedDutyRotationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        provinceId:
+          type: string
+          format: uuid
+        facilityIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          maxItems: 400
+          minItems: 1
+        startsAt:
+          type: string
+          format: time
+          description: Damascus time, for example 20:00.
+        endsAt:
+          type: string
+          format: time
+          description: At or before the start means the next morning.
+        perDay:
+          type: integer
+          maximum: 10
+          minimum: 1
+          default: 1
+        anchorDate:
+          type: string
+          format: date
+          description: The day the first pharmacy of the list is on duty.
     PatchedDutyShiftInput:
       type: object
       description: A duty shift as the client sends it. The server assigns the id.
@@ -12940,6 +16054,19 @@ components:
             minimum: 1
           description: Replaces the facility's services. Ids come from the category's
             `services` in ownerConfigRetrieve; an empty list clears them.
+    PatchedNotificationPreferences:
+      type: object
+      properties:
+        dutyReminders:
+          type: boolean
+          description: Days nobody covers on the province's duty roster.
+        provinceNews:
+          type: boolean
+          description: What the platform announces to the account's province.
+        applicationStatus:
+          type: boolean
+          description: 'An owner''s applications and facilities: decisions, hours
+            to confirm.'
     PatchedProfilePatch:
       type: object
       properties:
@@ -13020,6 +16147,24 @@ components:
           format: binary
       required:
       - file
+    ProposedFieldsEnum:
+      enum:
+      - nameAr
+      - nameEn
+      - addressAr
+      - addressEn
+      - cityId
+      - neighborhoodId
+      - location
+      type: string
+      description: |-
+        * `nameAr` - nameAr
+        * `nameEn` - nameEn
+        * `addressAr` - addressAr
+        * `addressEn` - addressEn
+        * `cityId` - cityId
+        * `neighborhoodId` - neighborhoodId
+        * `location` - location
     PublicAdvertisement:
       type: object
       properties:
@@ -13070,6 +16215,11 @@ components:
         id:
           type: string
           format: uuid
+        slug:
+          type: string
+          description: 'Stable, readable and never changed once set: the category''s
+            address on the site.'
+          pattern: ^[-a-zA-Z0-9_]+$
         nameAr:
           type: string
         nameEn:
@@ -13089,6 +16239,7 @@ components:
       - id
       - nameAr
       - nameEn
+      - slug
     PublicCategoryList:
       type: object
       properties:
@@ -13201,6 +16352,11 @@ components:
         id:
           type: string
           format: uuid
+        slug:
+          type: string
+          description: 'Readable words for the facility''s link, from its Arabic name
+            (`/f/{id}/{slug}`). Decoration only: the id is the address, so a rename
+            never breaks a link.'
         nameAr:
           type: string
         nameEn:
@@ -13326,6 +16482,7 @@ components:
       - ratingAverage
       - ratingCount
       - services
+      - slug
       - specialties
       - updatedAt
       - whatsapp
@@ -13518,6 +16675,58 @@ components:
           minimum: 1
       required:
       - stars
+    ReceivedFacility:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        categoryNameAr:
+          type: string
+        provinceNameAr:
+          type: string
+      required:
+      - categoryNameAr
+      - id
+      - nameAr
+      - provinceNameAr
+    ReceivedInvitation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        role:
+          $ref: '#/components/schemas/FacilityMemberRoleEnum'
+        facility:
+          $ref: '#/components/schemas/ReceivedFacility'
+        invitedByName:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+      - createdAt
+      - expiresAt
+      - facility
+      - id
+      - invitedByName
+      - role
+    ReceivedInvitationList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReceivedInvitation'
+      required:
+      - items
     RecoveryReset:
       type: object
       properties:

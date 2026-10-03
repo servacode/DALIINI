@@ -76,8 +76,8 @@ interface AdminSystemApi {
 
     /**
      * GET api/v1/admin/system/status/
-     * Runtime and configuration status
-     * Reports only whether each dependency is configured. No secret, connection string or credential is returned.
+     * Every dependency, asked directly
+     * The database, Redis and the workers, the scheduler&#39;s heartbeat, storage, the verification-code channel, push, backups, error reporting and maintenance mode, each with a status and a sentence (DECISION-073). Probes time out after two seconds. No host, URL, credential or exception text is returned.
      * Responses:
      *  - 200: 
      *  - 401: No valid access token was supplied.

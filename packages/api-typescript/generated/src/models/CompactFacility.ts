@@ -55,6 +55,12 @@ export interface CompactFacility {
      */
     id: string;
     /**
+     * Readable words for the facility's link, from its Arabic name (`/f/{id}/{slug}`). Decoration only: the id is the address, so a rename never breaks a link.
+     * @type {string}
+     * @memberof CompactFacility
+     */
+    slug: string;
+    /**
      * 
      * @type {string}
      * @memberof CompactFacility
@@ -169,6 +175,7 @@ export interface CompactFacility {
  */
 export function instanceOfCompactFacility(value: object): value is CompactFacility {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('slug' in value) || value['slug'] === undefined) return false;
     if (!('nameAr' in value) || value['nameAr'] === undefined) return false;
     if (!('nameEn' in value) || value['nameEn'] === undefined) return false;
     if (!('category' in value) || value['category'] === undefined) return false;
@@ -201,6 +208,7 @@ export function CompactFacilityFromJSONTyped(json: any, ignoreDiscriminator: boo
     return {
         
         'id': json['id'],
+        'slug': json['slug'],
         'nameAr': json['nameAr'],
         'nameEn': json['nameEn'],
         'category': BilingualRefFromJSON(json['category']),
@@ -234,6 +242,7 @@ export function CompactFacilityToJSONTyped(value?: CompactFacility | null, ignor
     return {
         
         'id': value['id'],
+        'slug': value['slug'],
         'nameAr': value['nameAr'],
         'nameEn': value['nameEn'],
         'category': BilingualRefToJSON(value['category']),

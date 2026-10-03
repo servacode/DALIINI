@@ -23,12 +23,28 @@ import com.servacode.directory.api.models.AdminDutyRoster
 import com.servacode.directory.api.models.AdminDutyShift
 import com.servacode.directory.api.models.AdminDutyShiftCreateRequest
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.DutyImportResult
+import com.servacode.directory.api.models.DutyRotation
+import com.servacode.directory.api.models.DutyRotationGenerate
+import com.servacode.directory.api.models.DutyRotationList
+import com.servacode.directory.api.models.DutyRotationRequest
 import com.servacode.directory.api.models.PatchedAdminDutyShiftUpdateRequest
+import com.servacode.directory.api.models.PatchedDutyRotationRequest
 
 class AdminDutyApiTest : ShouldSpec() {
     init {
         // uncomment below to create an instance of AdminDutyApi
         //val apiInstance = AdminDutyApi()
+
+        // to test adminDutyImport
+        should("test adminDutyImport") {
+            // uncomment below to test adminDutyImport
+            //val file : java.io.File = BINARY_DATA_HERE // java.io.File | CSV (UTF-8) or XLSX, first sheet, header row first.
+            //val provinceId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val apply : kotlin.Boolean = true // kotlin.Boolean | False previews; true writes, refused if any row has an error.
+            //val result : DutyImportResult = apiInstance.adminDutyImport(file, provinceId, apply)
+            //result shouldBe ("TODO")
+        }
 
         // to test adminDutyRosterRetrieve
         should("test adminDutyRosterRetrieve") {
@@ -38,6 +54,46 @@ class AdminDutyApiTest : ShouldSpec() {
             //val from : kotlin.String = from_example // kotlin.String | YYYY-MM-DD
             //val to : kotlin.String = to_example // kotlin.String | YYYY-MM-DD
             //val result : AdminDutyRoster = apiInstance.adminDutyRosterRetrieve(provinceId, cityId, from, to)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminDutyRotationCreate
+        should("test adminDutyRotationCreate") {
+            // uncomment below to test adminDutyRotationCreate
+            //val dutyRotationRequest : DutyRotationRequest =  // DutyRotationRequest | 
+            //val result : DutyRotation = apiInstance.adminDutyRotationCreate(dutyRotationRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminDutyRotationDelete
+        should("test adminDutyRotationDelete") {
+            // uncomment below to test adminDutyRotationDelete
+            //val rotationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //apiInstance.adminDutyRotationDelete(rotationId)
+        }
+
+        // to test adminDutyRotationGenerate
+        should("test adminDutyRotationGenerate") {
+            // uncomment below to test adminDutyRotationGenerate
+            //val rotationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val dutyRotationGenerate : DutyRotationGenerate =  // DutyRotationGenerate | 
+            //val result : DutyImportResult = apiInstance.adminDutyRotationGenerate(rotationId, dutyRotationGenerate)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminDutyRotationUpdate
+        should("test adminDutyRotationUpdate") {
+            // uncomment below to test adminDutyRotationUpdate
+            //val rotationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val patchedDutyRotationRequest : PatchedDutyRotationRequest =  // PatchedDutyRotationRequest | 
+            //val result : DutyRotation = apiInstance.adminDutyRotationUpdate(rotationId, patchedDutyRotationRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminDutyRotationsList
+        should("test adminDutyRotationsList") {
+            // uncomment below to test adminDutyRotationsList
+            //val result : DutyRotationList = apiInstance.adminDutyRotationsList()
             //result shouldBe ("TODO")
         }
 

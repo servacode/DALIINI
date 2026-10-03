@@ -166,23 +166,25 @@ Name | Type | Description  | Notes
 
 # **adminReportsList**
 ```swift
-    open class func adminReportsList(facility: String? = nil, status: String? = nil, completion: @escaping (_ data: AdminFacilityReportList?, _ error: Error?) -> Void)
+    open class func adminReportsList(cursor: String? = nil, facility: String? = nil, limit: Int? = nil, status: String? = nil, completion: @escaping (_ data: AdminFacilityReportList?, _ error: Error?) -> Void)
 ```
 
 List facility problem reports
 
-Newest first, capped at 250 rows.
+Newest first, in cursor pages.
 
 ### Example
 ```swift
 // The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
 import ServaDirectoryAPI
 
+let cursor = "cursor_example" // String | Opaque token returned as `nextCursor` by the previous page. (optional)
 let facility = "facility_example" // String | Facility id. (optional)
+let limit = 987 // Int | Page size, maximum 200, default 50. (optional)
 let status = "status_example" // String | OPEN, RESOLVED or DISMISSED. (optional)
 
 // List facility problem reports
-AdminReportsAPI.adminReportsList(facility: facility, status: status) { (response, error) in
+AdminReportsAPI.adminReportsList(cursor: cursor, facility: facility, limit: limit, status: status) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -198,7 +200,9 @@ AdminReportsAPI.adminReportsList(facility: facility, status: status) { (response
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **cursor** | **String** | Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] 
  **facility** | **String** | Facility id. | [optional] 
+ **limit** | **Int** | Page size, maximum 200, default 50. | [optional] 
  **status** | **String** | OPEN, RESOLVED or DISMISSED. | [optional] 
 
 ### Return type

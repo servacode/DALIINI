@@ -1,15 +1,17 @@
-"""Cut every brand raster the app ships from the one approved artwork.
+"""Cut every brand raster the platform ships from the one approved mark.
 
-The owner supplies a single picture: the letter with the road and the pin, the name under it.
-Everything else — the symbol the app draws, the launcher icon at five densities, the round icon,
-the store's 512 — is a crop or a scaling of that file, and none of them is drawn by hand. Run
-this after replacing `docs/design/brand/dalini-logo.png` and commit what it writes.
+The mark is drawn once, as vectors: `packages/design-tokens/brand/mark.svg` — the letter, the road
+that winds through it and the pin it leads to (DECISION-060). `docs/design/brand/dalini-mark.png`
+is that file rendered at 2048 px, and everything else — the symbol the app draws, the launcher
+icon at five densities, the round icon, the store's 512, the site's and the console's icons, the
+web symbol — is a scaling of it, none drawn by hand. After changing the SVG, re-render the master
+(see `docs/design/BRAND-ASSETS.md`), run this, and commit what it writes.
 
 Two rules decide the geometry, and both come from Android rather than from taste:
 
-* The wordmark is left out of every asset. A name baked into a picture cannot be set in the
-  app's typeface, read aloud, or corrected without an image editor, so the app draws the letter
-  and writes the name itself (`BrandLockup`).
+* The name is never part of an asset. A name baked into a picture cannot be set in the app's
+  typeface, read aloud, or corrected without an image editor, so every surface draws the mark and
+  writes the name itself (`BrandLockup` on Android).
 * On an adaptive icon the launcher shows the middle 72 of a 108 canvas and may mask it to a
   circle, so the mark is scaled until the circle that encloses its ink is 66 units across. That
   is the size Android guarantees is never clipped, whatever shape the launcher prefers.
@@ -20,7 +22,6 @@ Needs Pillow: `python -m pip install pillow`.
 from __future__ import annotations
 
 import json
-from collections import deque
 from pathlib import Path
 
 import numpy as np
@@ -28,13 +29,21 @@ from PIL import Image, ImageDraw
 
 REPO = Path(__file__).resolve().parents[3]
 ANDROID = REPO / "apps/android"
-SOURCE = REPO / "docs/design/brand/dalini-logo.png"
+SOURCE = REPO / "docs/design/brand/dalini-mark.png"
 TOKENS = REPO / "packages/design-tokens/tokens/colors.json"
 
-SYMBOL = ANDROID / "core/designsystem/src/main/res/drawable-nodpi/brand_symbol.webp"
-SPLASH = ANDROID / "core/designsystem/src/main/res/drawable-nodpi/splash_symbol.webp"
+SYMBOL = ANDROID / "core/designsystem/src/androidMain/res/drawable-nodpi/brand_symbol.webp"
+SPLASH = ANDROID / "core/designsystem/src/androidMain/res/drawable-nodpi/splash_symbol.webp"
 APP_RES = ANDROID / "app/src/main/res"
 STORE_ICON = REPO / "docs/design/brand/play-store-icon.png"
+WEB_SYMBOLS = REPO / "packages/design-tokens/brand"
+WEB_ICONS = {
+    # The tab icon of each site, and the one a phone puts on its home screen. Next.js serves each
+    # file at its own path and writes the <link> for it.
+    REPO / "apps/web/app/icon.png": 512,
+    REPO / "apps/admin/app/icon.png": 512,
+    REPO / "apps/web/app/apple-icon.png": 180,
+}
 
 # The adaptive canvas, the part of it a launcher shows, and the circle inside that part which
 # no mask ever cuts into. Android's numbers, in the units it states them in.
@@ -51,43 +60,13 @@ SPLASH_PIXELS = 864  # 288 dp at 3x, so the mark stays sharp where the system dr
 INK = 24  # Below this the pixel is the artwork's glow fading out, not the mark.
 
 
-def largest_ink_island(alpha: np.ndarray) -> np.ndarray:
-    """The letter, without the word under it: the biggest thing in the picture."""
-    ink = alpha > INK
-    seen = np.zeros(ink.shape, dtype=bool)
-    height, width = ink.shape
-    best: list[tuple[int, int]] = []
-    for row in range(height):
-        for column in range(width):
-            if not ink[row, column] or seen[row, column]:
-                continue
-            stack = deque([(row, column)])
-            seen[row, column] = True
-            island: list[tuple[int, int]] = []
-            while stack:
-                y, x = stack.pop()
-                island.append((y, x))
-                for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                    ny, nx = y + dy, x + dx
-                    if 0 <= ny < height and 0 <= nx < width and ink[ny, nx] and not seen[ny, nx]:
-                        seen[ny, nx] = True
-                        stack.append((ny, nx))
-            if len(island) > len(best):
-                best = island
-    mask = np.zeros(ink.shape, dtype=bool)
-    rows, columns = zip(*best)
-    mask[np.array(rows), np.array(columns)] = True
-    return mask
-
-
 def mark(source: Image.Image) -> Image.Image:
-    """The letter alone, trimmed and centred on a square of its own."""
-    alpha = np.array(source.split()[3])
-    kept = largest_ink_island(alpha)
-    pixels = np.array(source)
-    pixels[..., 3] = np.where(kept, alpha, 0)
-    letter = Image.fromarray(pixels, "RGBA")
-    letter = letter.crop(letter.split()[3].getbbox())
+    """The mark, trimmed to its ink and centred on a square of its own.
+
+    The letter, the road and the pin are separate shapes, so the whole picture is kept: the
+    master holds the mark and nothing else.
+    """
+    letter = source.crop(source.split()[3].getbbox())
     side = max(letter.size)
     square = Image.new("RGBA", (side, side), (0, 0, 0, 0))
     square.paste(letter, ((side - letter.width) // 2, (side - letter.height) // 2), letter)
@@ -166,6 +145,18 @@ def main() -> int:
     print("the store's icon, square and opaque as Play requires:")
     store = centred(512, letter, round(512 * units / VIEWPORT), background=tint)
     write(store.convert("RGB"), STORE_ICON, format="PNG")
+
+    print("the symbol the site and the console draw beside the name:")
+    for side in (64, 128, 256):
+        write(letter.resize((side, side), Image.LANCZOS), WEB_SYMBOLS / f"symbol-{side}.webp",
+              format="WEBP", quality=94, method=6)
+
+    print("the web icons, the same tile as the launcher's:")
+    for path, side in WEB_ICONS.items():
+        square = centred(side, letter, round(side * units / VIEWPORT), background=tint)
+        # Apple draws its own corners and wants an opaque square; a tab icon keeps the rounding.
+        icon = square.convert("RGB") if "apple" in path.name else rounded(square, side * 0.225)
+        write(icon, path, format="PNG", optimize=True)
     return 0
 
 

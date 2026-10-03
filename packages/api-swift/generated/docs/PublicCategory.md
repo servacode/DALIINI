@@ -4,6 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **UUID** |  | 
+**slug** | **String** | Stable, readable and never changed once set: the category&#39;s address on the site. | 
 **nameAr** | **String** |  | 
 **nameEn** | **String** |  | 
 **iconKey** | **String** |  | 

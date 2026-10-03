@@ -241,10 +241,10 @@ val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AdminReviewsApi::class.java)
 val applicationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-val adminDecisionRequest : AdminDecisionRequest =  // AdminDecisionRequest | 
+val adminReviewDecisionRequest : AdminReviewDecisionRequest =  // AdminReviewDecisionRequest | 
 
 launch(Dispatchers.IO) {
-    val result : AdminApplication = webService.adminReviewApprove(applicationId, adminDecisionRequest)
+    val result : AdminApplication = webService.adminReviewApprove(applicationId, adminReviewDecisionRequest)
 }
 ```
 
@@ -252,7 +252,7 @@ launch(Dispatchers.IO) {
 | **applicationId** | **java.util.UUID**|  | |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
-| **adminDecisionRequest** | [**AdminDecisionRequest**](AdminDecisionRequest.md)|  | [optional] |
+| **adminReviewDecisionRequest** | [**AdminReviewDecisionRequest**](AdminReviewDecisionRequest.md)|  | [optional] |
 
 ### Return type
 
@@ -285,10 +285,10 @@ val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AdminReviewsApi::class.java)
 val applicationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-val adminDecisionRequest : AdminDecisionRequest =  // AdminDecisionRequest | 
+val adminReviewDecisionRequest : AdminReviewDecisionRequest =  // AdminReviewDecisionRequest | 
 
 launch(Dispatchers.IO) {
-    val result : AdminApplication = webService.adminReviewReject(applicationId, adminDecisionRequest)
+    val result : AdminApplication = webService.adminReviewReject(applicationId, adminReviewDecisionRequest)
 }
 ```
 
@@ -296,7 +296,7 @@ launch(Dispatchers.IO) {
 | **applicationId** | **java.util.UUID**|  | |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
-| **adminDecisionRequest** | [**AdminDecisionRequest**](AdminDecisionRequest.md)|  | [optional] |
+| **adminReviewDecisionRequest** | [**AdminReviewDecisionRequest**](AdminReviewDecisionRequest.md)|  | [optional] |
 
 ### Return type
 
@@ -358,7 +358,7 @@ Configure bearerAccessToken:
 
 List facility applications awaiting or past review
 
-Capped at 200 rows. Every filter is optional and combines with the rest.
+Newest submission first, in cursor pages. Every filter is optional and combines with the rest. A draft that was never submitted sorts by when it was started.
 
 ### Example
 ```kotlin
@@ -371,23 +371,27 @@ val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AdminReviewsApi::class.java)
 val category : kotlin.String = category_example // kotlin.String | Category id of the facility the application belongs to.
+val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
 val evidence : kotlin.String = evidence_example // kotlin.String | `complete` or `incomplete`: whether every required document is uploaded.
 val from : kotlin.String = from_example // kotlin.String | Submitted on or after this day (YYYY-MM-DD, Damascus) or this ISO datetime.
 val kind : kotlin.String = kind_example // kotlin.String | Application kind, for example REGISTRATION or REVERIFICATION.
+val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 200, default 50.
 val province : kotlin.String = province_example // kotlin.String | Province id of the facility the application belongs to.
 val status : kotlin.String = status_example // kotlin.String | Application status, for example SUBMITTED or APPROVED.
 val to : kotlin.String = to_example // kotlin.String | Submitted on or before this day (YYYY-MM-DD, Damascus) or before this datetime.
 
 launch(Dispatchers.IO) {
-    val result : AdminApplicationList = webService.adminReviewsList(category, evidence, from, kind, province, status, to)
+    val result : AdminApplicationList = webService.adminReviewsList(category, cursor, evidence, from, kind, limit, province, status, to)
 }
 ```
 
 ### Parameters
 | **category** | **kotlin.String**| Category id of the facility the application belongs to. | [optional] |
+| **cursor** | **kotlin.String**| Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] |
 | **evidence** | **kotlin.String**| &#x60;complete&#x60; or &#x60;incomplete&#x60;: whether every required document is uploaded. | [optional] |
 | **from** | **kotlin.String**| Submitted on or after this day (YYYY-MM-DD, Damascus) or this ISO datetime. | [optional] |
 | **kind** | **kotlin.String**| Application kind, for example REGISTRATION or REVERIFICATION. | [optional] |
+| **limit** | **kotlin.Int**| Page size, maximum 200, default 50. | [optional] |
 | **province** | **kotlin.String**| Province id of the facility the application belongs to. | [optional] |
 | **status** | **kotlin.String**| Application status, for example SUBMITTED or APPROVED. | [optional] |
 | Name | Type | Description  | Notes |

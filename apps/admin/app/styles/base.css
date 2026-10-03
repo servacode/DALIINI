@@ -17,6 +17,8 @@ html, body {
 }
 
 h1, h2, h3, h4 { margin: 0; line-height: var(--ad-leading-tight); font-weight: 700; color: var(--ad-text); }
+/* Page and section titles in the display face; table and form text stays in the body face. */
+h1, h2 { font-family: var(--ad-font-display); }
 h1 { font-size: var(--ad-text-2xl); letter-spacing: -0.01em; }
 h2 { font-size: var(--ad-text-lg); }
 h3 { font-size: var(--ad-text-md); }

@@ -3,8 +3,8 @@ import { resolve } from 'node:path';
 
 /*
  * The platform's icon set. Sources are 24px stroke drawings in icons/*.svg; this emits the same
- * drawings for the web (path data rendered by each app's <Icon>) and for Android (vector
- * drawables named dl_ic_<name>). Shapes are normalised to paths so both outputs agree.
+ * drawings for the web (path data rendered by each app's <Icon>), for Android's XML (vector
+ * drawables named dl_ic_<name>) and for the apps' shared Kotlin (DirectoryVectors.kt). Shapes are normalised to paths so both outputs agree.
  * Directional icons are marked to mirror in right-to-left layouts.
  */
 const check = process.argv.includes('--check');
@@ -69,8 +69,35 @@ export const illustrationPaths = ${JSON.stringify(illustrations, null, 2)} as co
 export type IllustrationName = keyof typeof illustrationPaths;
 `;
 
+// The same drawings as Kotlin path data for the app's shared design system (DECISION-094), which
+// builds them into vectors on Android and on the iPhone alike and colours them from the theme as
+// it draws: no resource file, and an illustration follows a theme the reader chose, not only the
+// phone's. Pure Kotlin, like DirectoryTokens, so it compiles anywhere.
+const kotlinList = (paths, indent) =>
+  paths.length === 0 ? 'emptyList()' : `listOf(\n${paths.map((d) => `${indent}    ${JSON.stringify(d)},`).join('\n')}\n${indent})`;
+const kotlinVectors = `// GENERATED — DO NOT EDIT (source: icons/*.svg, illustrations/*.svg)
+package com.servacode.directory.designsystem.generated
+
+/** One 24px icon: path data drawn with a 1.8 stroke, round caps and joins, in the current colour. */
+class IconPaths(val paths: List<String>, val mirrored: Boolean)
+
+/**
+ * One 120px illustration, in three layers: [soft] filled with the soft brand surface, [line]
+ * stroked in the muted content colour and [accent] in the brand colour, at width 2.5.
+ */
+class IllustrationPaths(val soft: List<String>, val line: List<String>, val accent: List<String>)
+
+object DirectoryIconPaths {
+${Object.entries(icons).map(([name, paths]) => `    val ${name} = IconPaths(\n        ${kotlinList(paths, '        ')},\n        mirrored = ${MIRRORED.has(name)},\n    )`).join('\n')}
+}
+
+object DirectoryIllustrationPaths {
+${Object.entries(illustrations).map(([name, l]) => `    val ${name} = IllustrationPaths(\n        soft = ${kotlinList(l.soft, '        ')},\n        line = ${kotlinList(l.line, '        ')},\n        accent = ${kotlinList(l.accent, '        ')},\n    )`).join('\n')}
+}
+`;
+
 const snake = (s) => s.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`);
-const out = { 'generated/icons.ts': tsFull };
+const out = { 'generated/icons.ts': tsFull, 'generated/DirectoryVectors.kt': kotlinVectors };
 for (const [name, layers] of Object.entries(illustrations)) {
   const draw = (paths, extra) => paths.map((d) => `    <path\n        android:pathData="${d}"\n${extra}" />`).join('\n');
   const stroke = (color) => `        android:fillColor="#00000000"\n        android:strokeColor="${color}"\n        android:strokeWidth="2.5"\n        android:strokeLineCap="round"\n        android:strokeLineJoin="round`;

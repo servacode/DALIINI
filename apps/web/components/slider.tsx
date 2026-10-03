@@ -11,7 +11,7 @@ import { Icon } from "./ui";
  * What it does and why:
  *
  *  - **It advances itself, but not while you are looking at it.** A hand on a slide, a cursor
- *    over it or a键 focus inside it holds the strip until you leave, because a carousel that
+ *    over it or a keyboard focus inside it holds the strip until you leave, because a carousel that
  *    moves while somebody is reading it is a carousel nobody finishes reading.
  *  - **Each slide holds for its own time.** The console sets `slideDurationMs` per slide; one
  *    can be held longer without slowing the rest.
@@ -61,7 +61,7 @@ export function Slider({ slides }: { slides: Slide[] }) {
     <section
       className="slider"
       aria-roledescription="carousel"
-      aria-label="إعلانات وإعلانات المنصة"
+      aria-label="إعلانات المنصة"
       onMouseEnter={() => setHeld(true)}
       onMouseLeave={() => setHeld(false)}
       onFocusCapture={() => setHeld(true)}

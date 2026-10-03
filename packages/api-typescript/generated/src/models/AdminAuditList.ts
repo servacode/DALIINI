@@ -22,11 +22,23 @@ import {
 } from './AdminAuditEntry';
 
 /**
- * 
+ * The two fields every cursor page adds beside its `items`.
  * @export
  * @interface AdminAuditList
  */
 export interface AdminAuditList {
+    /**
+     * Opaque token for the next page, or null on the last page. Send it back unchanged as the `cursor` query parameter; never parse it.
+     * @type {string}
+     * @memberof AdminAuditList
+     */
+    nextCursor: string | null;
+    /**
+     * True when `nextCursor` is set.
+     * @type {boolean}
+     * @memberof AdminAuditList
+     */
+    hasMore: boolean;
     /**
      * 
      * @type {Array<AdminAuditEntry>}
@@ -39,6 +51,8 @@ export interface AdminAuditList {
  * Check if a given object implements the AdminAuditList interface.
  */
 export function instanceOfAdminAuditList(value: object): value is AdminAuditList {
+    if (!('nextCursor' in value) || value['nextCursor'] === undefined) return false;
+    if (!('hasMore' in value) || value['hasMore'] === undefined) return false;
     if (!('items' in value) || value['items'] === undefined) return false;
     return true;
 }
@@ -53,6 +67,8 @@ export function AdminAuditListFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
+        'nextCursor': json['nextCursor'],
+        'hasMore': json['hasMore'],
         'items': ((json['items'] as Array<any>).map(AdminAuditEntryFromJSON)),
     };
 }
@@ -68,6 +84,8 @@ export function AdminAuditListToJSONTyped(value?: AdminAuditList | null, ignoreD
 
     return {
         
+        'nextCursor': value['nextCursor'],
+        'hasMore': value['hasMore'],
         'items': ((value['items'] as Array<any>).map(AdminAuditEntryToJSON)),
     };
 }

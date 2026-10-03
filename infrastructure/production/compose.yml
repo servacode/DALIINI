@@ -1,0 +1,318 @@
+# The platform on one server (DECISION-080).
+#
+#   cp infrastructure/production/production.env.example /srv/daliini/production.env   # fill it in
+#   docker compose -f infrastructure/production/compose.yml --env-file /srv/daliini/production.env up -d --build
+#
+# Staging is the same file with its own env file, whose COMPOSE_PROJECT_NAME (daliini-staging)
+# overrides the name below; see README.md beside this file. Nothing here carries a secret: every credential comes from the env
+# file, which lives on the server and never in the repository.
+#
+# What is not on this server, on purpose:
+# - Object storage (photographs, verification documents) is an S3 service elsewhere, so a lost
+#   disk loses neither, and the media is served from the storage provider's own edge.
+# - Backups go to a different S3 bucket from the media, so one credential cannot reach both.
+#
+# Only Caddy publishes ports. Everything else talks on the compose network and is reached from
+# outside through Caddy, under the domain names in the Caddyfile.
+
+name: daliini
+
+x-backend-env: &backend-env
+  # production or staging; staging inherits production's fail-closed posture.
+  DJANGO_SETTINGS_MODULE: directory_backend.settings.${ENVIRONMENT:-production}
+  ENVIRONMENT: ${ENVIRONMENT:-production}
+  SECRET_KEY: ${SECRET_KEY:?}
+  ACCESS_TOKEN_SIGNING_KEY: ${ACCESS_TOKEN_SIGNING_KEY:?}
+  REFRESH_HMAC_SECRET: ${REFRESH_HMAC_SECRET:?}
+  RECOVERY_HMAC_SECRET: ${RECOVERY_HMAC_SECRET:?}
+  PUSH_TOKEN_ENCRYPTION_KEY: ${PUSH_TOKEN_ENCRYPTION_KEY:?}
+  MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?}
+  ANALYTICS_HASH_SALT: ${ANALYTICS_HASH_SALT:?}
+  DATABASE_URL: postgresql://${POSTGRES_USER:-daliini}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:-daliini}
+  REDIS_URL: redis://redis:6379/0
+  ALLOWED_HOSTS: api.${ROOT_DOMAIN:?}
+  CORS_ALLOWED_ORIGINS: https://${ROOT_DOMAIN:?},https://www.${ROOT_DOMAIN:?},https://admin.${ROOT_DOMAIN:?}
+  CSRF_TRUSTED_ORIGINS: https://${ROOT_DOMAIN:?},https://www.${ROOT_DOMAIN:?},https://admin.${ROOT_DOMAIN:?}
+  S3_ENDPOINT_URL: ${S3_ENDPOINT_URL:?}
+  S3_REGION: ${S3_REGION:-auto}
+  S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?}
+  S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?}
+  S3_PUBLIC_BUCKET: ${S3_PUBLIC_BUCKET:?}
+  S3_PRIVATE_BUCKET: ${S3_PRIVATE_BUCKET:?}
+  S3_PUBLIC_MEDIA_BASE_URL: ${S3_PUBLIC_MEDIA_BASE_URL:?}
+  OTP_PROVIDER: ${OTP_PROVIDER:?}
+  WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:-}
+  WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN:-}
+  WHATSAPP_TEMPLATE_NAME: ${WHATSAPP_TEMPLATE_NAME:-}
+  WHATSAPP_TEMPLATE_LANGUAGE: ${WHATSAPP_TEMPLATE_LANGUAGE:-ar}
+  WHATSAPP_BOT_URL: http://whatsapp-bot:8085
+  # Connections per process (DECISION-083): the API's two workers hold at most 16 between them.
+  DB_POOL_MAX_SIZE: ${DB_POOL_MAX_SIZE:-8}
+  MAP_TILES_INTERNAL_URL: http://martin:3000
+  ROUTING_INTERNAL_URL: http://valhalla:8002
+  WHATSAPP_BOT_TOKEN: ${WHATSAPP_BOT_TOKEN:-}
+  PUSH_PROVIDER: ${PUSH_PROVIDER:?}
+  FCM_PROJECT_ID: ${FCM_PROJECT_ID:-}
+  FCM_SERVICE_ACCOUNT_JSON: ${FCM_SERVICE_ACCOUNT_JSON:-}
+  SENTRY_DSN: ${SENTRY_DSN:-}
+  SENTRY_ENVIRONMENT: ${ENVIRONMENT:-production}
+  WEB_SERVER_API_KEY: ${WEB_SERVER_API_KEY:?}
+  THROTTLE_WEB_SERVER: 6000/minute
+  THROTTLE_CONTACT: 3/hour
+  # Caddy is the one proxy the API sees; it hands over the visitor's own address, which it
+  # takes from Cloudflare's header only when the request comes from Cloudflare (Caddyfile).
+  DRF_NUM_PROXIES: "1"
+
+x-backend: &backend
+  # IMAGE_REGISTRY empty: the images are built on this server (`up -d --build`). Set to
+  # ghcr.io/servacode/: they are the ones CI published for RELEASE, pulled (docs/runbooks/deploy.md).
+  image: ${IMAGE_REGISTRY:-}daliini-backend:${RELEASE:-local}
+  build:
+    context: ../../apps/backend
+    dockerfile: Dockerfile
+  environment: *backend-env
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  logging: &logging
+    driver: json-file
+    options:
+      max-size: "20m"
+      max-file: "5"
+
+services:
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      ROOT_DOMAIN: ${ROOT_DOMAIN:?}
+      ACME_EMAIL: ${ACME_EMAIL:?}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      default:
+        # The site and the console call the API by its public name, and on this network that
+        # name is Caddy: the call keeps its Host, arrives as HTTPS under the real certificate,
+        # and never leaves the server. Calling `api:8000` instead would be refused twice, by
+        # ALLOWED_HOSTS and by the production settings' redirect to HTTPS.
+        aliases:
+          - api.${ROOT_DOMAIN:?}
+    logging: *logging
+
+  postgres:
+    image: postgis/postgis:17-3.5
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-daliini}
+      POSTGRES_USER: ${POSTGRES_USER:-daliini}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-daliini} -d ${POSTGRES_DB:-daliini}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    shm_size: 256mb
+    logging: *logging
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Queued work, rate limits and the realtime layer live here: evicting a key would lose a
+    # job or reset a limit, so it refuses writes instead.
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - redis:/data
+    logging: *logging
+
+  # Applies the schema before anything serves it: the API waits for this to finish.
+  migrate:
+    <<: *backend
+    restart: "no"
+    command: ["sh", "-c", "uv run python manage.py check --deploy && uv run python manage.py migrate --noinput"]
+    healthcheck:
+      disable: true
+
+  api:
+    <<: *backend
+    command:
+      - sh
+      - -c
+      - >-
+        exec uv run uvicorn directory_backend.asgi:application --host 0.0.0.0 --port 8000
+        --workers ${WEB_CONCURRENCY:-2} --lifespan off --no-access-log --no-server-header
+        --no-proxy-headers
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    <<: *backend
+    command: ["uv", "run", "celery", "-A", "directory_backend", "worker", "-l", "INFO"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    # The image's HEALTHCHECK probes HTTP; the worker serves none.
+    healthcheck:
+      disable: true
+
+  beat:
+    <<: *backend
+    command: ["uv", "run", "celery", "-A", "directory_backend", "beat", "-l", "INFO", "-s", "/tmp/celerybeat-schedule"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      disable: true
+
+  whatsapp-bot:
+    image: ${IMAGE_REGISTRY:-}daliini-whatsapp-bot:${RELEASE:-local}
+    build:
+      context: ../../services/whatsapp-bot
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: "8085"
+      WHATSAPP_BOT_TOKEN: ${WHATSAPP_BOT_TOKEN:-}
+    volumes:
+      # The paired session: lose it and the number must be paired again from the phone.
+      - whatsapp_auth:/app/auth
+    logging: *logging
+
+  web:
+    image: ${IMAGE_REGISTRY:-}daliini-web:${RELEASE:-local}
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+      # Read when the site is built, not when it runs: a change here needs `--build`.
+      args:
+        NEXT_PUBLIC_ROOT_DOMAIN: ${ROOT_DOMAIN:?}
+        NEXT_PUBLIC_API_ORIGIN: https://api.${ROOT_DOMAIN:?}
+        PUBLIC_API_ORIGIN: https://api.${ROOT_DOMAIN:?}
+        NEXT_PUBLIC_MEDIA_ORIGIN: ${MEDIA_ORIGIN:?}
+        NEXT_PUBLIC_MAP_STYLE_URL: ${MAP_STYLE_URL:-}
+        NEXT_PUBLIC_MAP_ORIGINS: ${MAP_ORIGINS:-}
+        NEXT_PUBLIC_PLAY_STORE_URL: ${PLAY_STORE_URL:-}
+        NEXT_PUBLIC_APP_STORE_URL: ${APP_STORE_URL:-}
+        NEXT_PUBLIC_APP_DOWNLOAD_URL: ${APP_DOWNLOAD_URL:-}
+        NEXT_PUBLIC_ANDROID_PACKAGE: com.servacode.directory
+        SUPPORT_EMAIL: ${SUPPORT_EMAIL:?}
+        PRIVACY_CONTACT_EMAIL: ${PRIVACY_CONTACT_EMAIL:?}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "10000"
+      # Through Caddy, by its alias on this network (see caddy).
+      PUBLIC_API_ORIGIN: https://api.${ROOT_DOMAIN:?}
+      NEXT_PUBLIC_ROOT_DOMAIN: ${ROOT_DOMAIN:?}
+      NEXT_PUBLIC_API_ORIGIN: https://api.${ROOT_DOMAIN:?}
+      NEXT_PUBLIC_MEDIA_ORIGIN: ${MEDIA_ORIGIN:?}
+      WEB_SERVER_API_KEY: ${WEB_SERVER_API_KEY:?}
+      SUPPORT_EMAIL: ${SUPPORT_EMAIL:?}
+      PRIVACY_CONTACT_EMAIL: ${PRIVACY_CONTACT_EMAIL:?}
+      # The release key's fingerprint, for /.well-known/assetlinks.json (App Links).
+      ANDROID_CERT_SHA256: ${ANDROID_CERT_SHA256:-}
+    depends_on:
+      - api
+    logging: *logging
+
+  admin:
+    image: ${IMAGE_REGISTRY:-}daliini-admin:${RELEASE:-local}
+    build:
+      context: ../..
+      dockerfile: apps/admin/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "10000"
+      # Through Caddy, by its alias on this network (see caddy): never out to the public edge.
+      ADMIN_API_ORIGIN: https://api.${ROOT_DOMAIN:?}
+      # What operators type; session cookies are bound to it.
+      ADMIN_PUBLIC_ORIGIN: https://admin.${ROOT_DOMAIN:?}
+      ADMIN_PUBLIC_MEDIA_ORIGIN: ${MEDIA_ORIGIN:?}
+      ADMIN_MAP_STYLE_URL: ${MAP_STYLE_URL:-}
+      ADMIN_MAP_ORIGINS: ${MAP_ORIGINS:-}
+      NEXT_PUBLIC_APP_NAME: Directory Admin
+      NEXT_PUBLIC_ROOT_DOMAIN: ${ROOT_DOMAIN:?}
+    depends_on:
+      - api
+    logging: *logging
+
+  # The base map (DECISION-082): the PMTiles archive, the style bound to maps.<ROOT>, glyphs
+  # generated from the brand's Arabic font and the icons drawn for the map. map/build-map.sh
+  # builds the archive and the routing graph into $MAP_DIR/releases/ and points
+  # $MAP_DIR/current at the newest; until the first build Martin has nothing to serve and
+  # restarts, which costs the site its map and nothing else.
+  martin:
+    image: ghcr.io/maplibre/martin:1.16.1
+    restart: unless-stopped
+    command:
+      - /map/syria.pmtiles
+      - --font
+      - /fonts
+      - --sprite
+      - /sprites/daliini
+      - --style
+      - /map/styles
+    volumes:
+      - ${MAP_DIR:-/srv/daliini/map}/current:/map:ro
+      - ../../packages/design-tokens/fonts/android/font:/fonts:ro
+      - ../../maps/sprite/daliini:/sprites/daliini:ro
+    logging: *logging
+
+  # Routing for the app's guidance (DECISION-082), over the graph built from the same extract.
+  # Caddy lets through only POST /route and GET /status.
+  valhalla:
+    image: ghcr.io/valhalla/valhalla:3.9.0
+    restart: unless-stopped
+    command: ["valhalla_service", "/data/valhalla.json", "2"]
+    volumes:
+      - ${MAP_DIR:-/srv/daliini/map}/current/valhalla:/data:ro
+    logging: *logging
+
+  # Hourly, by the server's own timer (README.md): `docker compose run --rm backup`.
+  backup:
+    image: ${IMAGE_REGISTRY:-}daliini-backup:${RELEASE:-local}
+    build:
+      context: ../..
+      dockerfile: infrastructure/backup/Dockerfile
+    profiles: ["tools"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-daliini}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:-daliini}
+      BACKUP_S3_BUCKET: ${BACKUP_S3_BUCKET:?}
+      BACKUP_S3_PREFIX: ${BACKUP_S3_PREFIX:-daliini/postgres}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+      AWS_ACCESS_KEY_ID: ${BACKUP_S3_ACCESS_KEY_ID:?}
+      AWS_SECRET_ACCESS_KEY: ${BACKUP_S3_SECRET_ACCESS_KEY:?}
+      AWS_ENDPOINT_URL: ${BACKUP_S3_ENDPOINT_URL:?}
+      AWS_DEFAULT_REGION: ${BACKUP_S3_REGION:-auto}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    logging: *logging
+
+volumes:
+  postgres:
+  redis:
+  whatsapp_auth:
+  caddy_data:
+  caddy_config:

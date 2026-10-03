@@ -27,6 +27,7 @@ Name | Type | Description | Notes
 **hours** | [OwnerHoursEntry] |  | 
 **hoursConfirmedAt** | **Date** | When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old. | 
 **application** | [**OwnerApplication**](OwnerApplication.md) |  | 
+**pendingChange** | [**OwnerPendingChange**](OwnerPendingChange.md) | Set while an edit to the live facility waits for review. The listed fields show the owner&#39;s proposed values; the public still sees the published ones. | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

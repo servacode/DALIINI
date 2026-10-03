@@ -178,6 +178,315 @@ open class AccountAPI {
     }
 
     /**
+     Join the facility an invitation is for
+     
+     - parameter invitationId: (path)  
+     - returns: Accepted
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountInvitationAccept(invitationId: UUID) async throws -> Accepted {
+        return try await accountInvitationAcceptWithRequestBuilder(invitationId: invitationId).execute().body
+    }
+
+    /**
+     Join the facility an invitation is for
+     - POST /api/v1/account/invitations/{invitation_id}/accept/
+     - Only the account whose phone number was invited can accept; any other caller gets 404. An invitation to own raises a manager to owner and never lowers anyone. 409 INVITATION_EXPIRED or INVITATION_CLOSED when it can no longer be accepted.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter invitationId: (path)  
+     - returns: RequestBuilder<Accepted> 
+     */
+    open class func accountInvitationAcceptWithRequestBuilder(invitationId: UUID) -> RequestBuilder<Accepted> {
+        var localVariablePath = "/api/v1/account/invitations/{invitation_id}/accept/"
+        let invitationIdPreEscape = "\(APIHelper.mapValueToPathItem(invitationId))"
+        let invitationIdPostEscape = invitationIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{invitation_id}", with: invitationIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Accepted>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Decline an invitation
+     
+     - parameter invitationId: (path)  
+     - returns: Void
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountInvitationDecline(invitationId: UUID) async throws {
+        return try await accountInvitationDeclineWithRequestBuilder(invitationId: invitationId).execute().body
+    }
+
+    /**
+     Decline an invitation
+     - POST /api/v1/account/invitations/{invitation_id}/decline/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter invitationId: (path)  
+     - returns: RequestBuilder<Void> 
+     */
+    open class func accountInvitationDeclineWithRequestBuilder(invitationId: UUID) -> RequestBuilder<Void> {
+        var localVariablePath = "/api/v1/account/invitations/{invitation_id}/decline/"
+        let invitationIdPreEscape = "\(APIHelper.mapValueToPathItem(invitationId))"
+        let invitationIdPostEscape = invitationIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{invitation_id}", with: invitationIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Invitations waiting for this account's phone number
+     
+     - returns: ReceivedInvitationList
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountInvitationsList() async throws -> ReceivedInvitationList {
+        return try await accountInvitationsListWithRequestBuilder().execute().body
+    }
+
+    /**
+     Invitations waiting for this account's phone number
+     - GET /api/v1/account/invitations/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<ReceivedInvitationList> 
+     */
+    open class func accountInvitationsListWithRequestBuilder() -> RequestBuilder<ReceivedInvitationList> {
+        let localVariablePath = "/api/v1/account/invitations/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<ReceivedInvitationList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Confirm the authenticator with its first code
+     
+     - parameter mfaCode: (body)  
+     - returns: MfaRecoveryCodes
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountMfaConfirm(mfaCode: MfaCode) async throws -> MfaRecoveryCodes {
+        return try await accountMfaConfirmWithRequestBuilder(mfaCode: mfaCode).execute().body
+    }
+
+    /**
+     Confirm the authenticator with its first code
+     - POST /api/v1/account/mfa/confirm/
+     - Enables it, marks this session as having passed the second step, and returns ten recovery codes, shown this once.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter mfaCode: (body)  
+     - returns: RequestBuilder<MfaRecoveryCodes> 
+     */
+    open class func accountMfaConfirmWithRequestBuilder(mfaCode: MfaCode) -> RequestBuilder<MfaRecoveryCodes> {
+        let localVariablePath = "/api/v1/account/mfa/confirm/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: mfaCode)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<MfaRecoveryCodes>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Switch the authenticator off
+     
+     - parameter mfaCode: (body)  
+     - returns: MfaStatus
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountMfaDisable(mfaCode: MfaCode) async throws -> MfaStatus {
+        return try await accountMfaDisableWithRequestBuilder(mfaCode: mfaCode).execute().body
+    }
+
+    /**
+     Switch the authenticator off
+     - POST /api/v1/account/mfa/disable/
+     - Needs a current code from the app. Refused with 409 MFA_REQUIRED_BY_POLICY where every operator must have one.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter mfaCode: (body)  
+     - returns: RequestBuilder<MfaStatus> 
+     */
+    open class func accountMfaDisableWithRequestBuilder(mfaCode: MfaCode) -> RequestBuilder<MfaStatus> {
+        let localVariablePath = "/api/v1/account/mfa/disable/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: mfaCode)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<MfaStatus>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     The second sign-in step, for this account and session
+     
+     - returns: MfaStatus
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountMfaRetrieve() async throws -> MfaStatus {
+        return try await accountMfaRetrieveWithRequestBuilder().execute().body
+    }
+
+    /**
+     The second sign-in step, for this account and session
+     - GET /api/v1/account/mfa/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<MfaStatus> 
+     */
+    open class func accountMfaRetrieveWithRequestBuilder() -> RequestBuilder<MfaStatus> {
+        let localVariablePath = "/api/v1/account/mfa/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<MfaStatus>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Start setting up an authenticator app
+     
+     - returns: MfaSetup
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountMfaSetup() async throws -> MfaSetup {
+        return try await accountMfaSetupWithRequestBuilder().execute().body
+    }
+
+    /**
+     Start setting up an authenticator app
+     - POST /api/v1/account/mfa/setup/
+     - Operators only. Returns a new secret and its QR code; nothing is enabled until a code from the app confirms it. Starting again replaces an unconfirmed secret.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<MfaSetup> 
+     */
+    open class func accountMfaSetupWithRequestBuilder() -> RequestBuilder<MfaSetup> {
+        let localVariablePath = "/api/v1/account/mfa/setup/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<MfaSetup>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Pass the second step for this session
+     
+     - parameter mfaCode: (body)  
+     - returns: MfaStatus
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountMfaVerify(mfaCode: MfaCode) async throws -> MfaStatus {
+        return try await accountMfaVerifyWithRequestBuilder(mfaCode: mfaCode).execute().body
+    }
+
+    /**
+     Pass the second step for this session
+     - POST /api/v1/account/mfa/verify/
+     - A code from the app, or one of the recovery codes (each works once).
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter mfaCode: (body)  
+     - returns: RequestBuilder<MfaStatus> 
+     */
+    open class func accountMfaVerifyWithRequestBuilder(mfaCode: MfaCode) -> RequestBuilder<MfaStatus> {
+        let localVariablePath = "/api/v1/account/mfa/verify/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: mfaCode)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<MfaStatus>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Mark one notification as read
      
      - parameter notificationId: (path)  
@@ -217,6 +526,82 @@ open class AccountAPI {
         let localVariableRequestBuilder: RequestBuilder<UnreadCount>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
 
         return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Which kinds of notice are pushed to this account's devices
+     
+     - returns: NotificationPreferences
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountNotificationPreferencesRetrieve() async throws -> NotificationPreferences {
+        return try await accountNotificationPreferencesRetrieveWithRequestBuilder().execute().body
+    }
+
+    /**
+     Which kinds of notice are pushed to this account's devices
+     - GET /api/v1/account/notification-preferences/
+     - All are on until the account turns one off. Only the push is governed: every message still reaches the inbox. A staff change to an owner's own duty shift, and any kind outside these three, is always pushed.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<NotificationPreferences> 
+     */
+    open class func accountNotificationPreferencesRetrieveWithRequestBuilder() -> RequestBuilder<NotificationPreferences> {
+        let localVariablePath = "/api/v1/account/notification-preferences/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<NotificationPreferences>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Change which kinds of notice are pushed
+     
+     - parameter patchedNotificationPreferences: (body)  (optional)
+     - returns: NotificationPreferences
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountNotificationPreferencesUpdate(patchedNotificationPreferences: PatchedNotificationPreferences? = nil) async throws -> NotificationPreferences {
+        return try await accountNotificationPreferencesUpdateWithRequestBuilder(patchedNotificationPreferences: patchedNotificationPreferences).execute().body
+    }
+
+    /**
+     Change which kinds of notice are pushed
+     - PATCH /api/v1/account/notification-preferences/
+     - Only the fields sent change.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter patchedNotificationPreferences: (body)  (optional)
+     - returns: RequestBuilder<NotificationPreferences> 
+     */
+    open class func accountNotificationPreferencesUpdateWithRequestBuilder(patchedNotificationPreferences: PatchedNotificationPreferences? = nil) -> RequestBuilder<NotificationPreferences> {
+        let localVariablePath = "/api/v1/account/notification-preferences/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: patchedNotificationPreferences)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<NotificationPreferences>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "PATCH", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
     }
 
     /**

@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { MfaStatus } from './MfaStatus';
+import {
+    MfaStatusFromJSON,
+    MfaStatusFromJSONTyped,
+    MfaStatusToJSON,
+    MfaStatusToJSONTyped,
+} from './MfaStatus';
+
 /**
  * Who the caller is and what they may do, for the Admin shell to render against.
  * 
@@ -39,6 +47,12 @@ export interface AdminMe {
      */
     displayName: string;
     /**
+     * The second sign-in step for this operator and session (accountMfaRetrieve).
+     * @type {MfaStatus}
+     * @memberof AdminMe
+     */
+    mfa: MfaStatus;
+    /**
      * Every permission code the caller holds, deduplicated and sorted. An operator whose roles carry no permissions gets an empty list, which is a valid state.
      * @type {Array<string>}
      * @memberof AdminMe
@@ -52,6 +66,7 @@ export interface AdminMe {
 export function instanceOfAdminMe(value: object): value is AdminMe {
     if (!('userId' in value) || value['userId'] === undefined) return false;
     if (!('displayName' in value) || value['displayName'] === undefined) return false;
+    if (!('mfa' in value) || value['mfa'] === undefined) return false;
     if (!('permissions' in value) || value['permissions'] === undefined) return false;
     return true;
 }
@@ -68,6 +83,7 @@ export function AdminMeFromJSONTyped(json: any, ignoreDiscriminator: boolean): A
         
         'userId': json['userId'],
         'displayName': json['displayName'],
+        'mfa': MfaStatusFromJSON(json['mfa']),
         'permissions': json['permissions'],
     };
 }
@@ -85,6 +101,7 @@ export function AdminMeToJSONTyped(value?: AdminMe | null, ignoreDiscriminator: 
         
         'userId': value['userId'],
         'displayName': value['displayName'],
+        'mfa': MfaStatusToJSON(value['mfa']),
         'permissions': value['permissions'],
     };
 }

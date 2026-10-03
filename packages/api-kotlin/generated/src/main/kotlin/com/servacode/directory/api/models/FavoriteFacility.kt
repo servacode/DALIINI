@@ -28,6 +28,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param id 
+ * @param slug Readable words for the facility's link, from its Arabic name (`/f/{id}/{slug}`). Decoration only: the id is the address, so a rename never breaks a link.
  * @param nameAr 
  * @param nameEn 
  * @param category 
@@ -54,6 +55,10 @@ data class FavoriteFacility (
 
     @Contextual @SerialName(value = "id")
     val id: java.util.UUID,
+
+    /* Readable words for the facility's link, from its Arabic name (`/f/{id}/{slug}`). Decoration only: the id is the address, so a rename never breaks a link. */
+    @SerialName(value = "slug")
+    val slug: kotlin.String,
 
     @SerialName(value = "nameAr")
     val nameAr: kotlin.String,

@@ -1,5 +1,9 @@
 # Implementation Plan
 
+> **Superseded as the plan of record.** Since 2026-10-03 the plan is `ROADMAP.md`, and the
+> project's current state is in `HANDOFF.md`. What follows is kept as the record of the work
+> before that date, which decisions and evidence still cite.
+
 Updated: 2026-09-24 (complete product batch)
 
 ## Verification baseline

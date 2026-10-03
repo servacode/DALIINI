@@ -67,6 +67,8 @@ def test_review_detail_has_previous_duplicates_images_and_location(
     admin_api: Any, owned: Facility, user: User
 ) -> None:
     operator = admin_api("admin.reviews.read", "admin.facilities.read")
+    owned.status = Facility.Status.DRAFT
+    owned.save(update_fields=["status"])
     first = submit_facility(actor=user, facility=owned)
     decide_application(
         request=SimpleNamespace(user=operator.user, request_id=""),

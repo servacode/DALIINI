@@ -122,12 +122,13 @@ def main() -> int:
         "owner IDOR membership check missing",
     )
 
-    admin_views = read("apps/backend/admin_console/views.py")
+    # The evidence stream lives with the rest of the review queue (views_reviews, phase 2.9).
+    evidence_views = read("apps/backend/admin_console/views_reviews.py")
     require(
-        "Cache-Control" in admin_views and "no-store" in admin_views,
+        "Cache-Control" in evidence_views and "no-store" in evidence_views,
         "evidence no-store missing",
     )
-    require("verification_evidence.viewed" in admin_views, "evidence access audit missing")
+    require("verification_evidence.viewed" in evidence_views, "evidence access audit missing")
 
     publisher = read("apps/backend/realtime/publisher.py")
     require("transaction.on_commit" in publisher, "realtime must publish after commit")
@@ -143,7 +144,7 @@ def main() -> int:
             "background location permission forbidden",
         )
         auth = read(
-            "apps/android/core/auth/src/main/kotlin/com/servacode/directory/core/auth/"
+            "apps/android/core/auth/src/androidMain/kotlin/com/servacode/directory/core/auth/"
             "AndroidKeyStoreRefreshTokenVault.kt"
         )
         require("AES/GCM" in auth, "Android refresh vault must use AES/GCM")

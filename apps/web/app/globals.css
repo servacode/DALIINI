@@ -10,9 +10,9 @@
  * is what keeps twenty pages looking like one site, and what lets the site follow the device's
  * dark mode the way the app and the console already do.
  *
- * Tajawal is self-hosted from the design package in small unicode-range subsets (~12 KB each)
- * with font-display: swap, so a slow connection shows text at once in the system face and swaps
- * when the brand face arrives.
+ * The two brand faces, Alexandria for titles and IBM Plex Sans Arabic for everything read, are
+ * self-hosted from the design package in unicode-range subsets with font-display: swap, so a slow
+ * connection shows text at once in the system face and swaps when the brand face arrives.
  */
 @import "@servacode/design-tokens/fonts.css";
 @import "@servacode/design-tokens/tokens.css";

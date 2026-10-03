@@ -7,6 +7,7 @@ All URIs are relative to *http://localhost*
 | [**adminAdCreate**](AdminAdsApi.md#adminAdCreate) | **POST** api/v1/admin/ads/ | Create an advertisement |
 | [**adminAdDelete**](AdminAdsApi.md#adminAdDelete) | **DELETE** api/v1/admin/ads/{advertisement_id}/ | Delete an advertisement |
 | [**adminAdImageUpload**](AdminAdsApi.md#adminAdImageUpload) | **POST** api/v1/admin/ads/images/ | Upload an advertisement image |
+| [**adminAdStatsRetrieve**](AdminAdsApi.md#adminAdStatsRetrieve) | **GET** api/v1/admin/ads/stats/ | Impressions and clicks of each advertisement over a period |
 | [**adminAdUpdate**](AdminAdsApi.md#adminAdUpdate) | **PUT** api/v1/admin/ads/{advertisement_id}/ | Edit an advertisement, its schedule or its activation |
 | [**adminAdsList**](AdminAdsApi.md#adminAdsList) | **GET** api/v1/admin/ads/ | List advertisements |
 
@@ -133,6 +134,50 @@ Configure bearerAccessToken:
 ### HTTP request headers
 
  - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
+
+
+Impressions and clicks of each advertisement over a period
+
+Counted from the apps&#39; &#x60;ad_impression&#x60; and &#x60;ad_click&#x60; events, by Damascus day. The default is the last 30 days; at most a year. Every advertisement is listed, those never shown with zeros.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminAdsApi::class.java)
+val from : kotlin.String = from_example // kotlin.String | 
+val to : kotlin.String = to_example // kotlin.String | 
+
+launch(Dispatchers.IO) {
+    val result : AdStats = webService.adminAdStatsRetrieve(from, to)
+}
+```
+
+### Parameters
+| **from** | **kotlin.String**|  | [optional] |
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **to** | **kotlin.String**|  | [optional] |
+
+### Return type
+
+[**AdStats**](AdStats.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 

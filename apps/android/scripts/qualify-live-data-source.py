@@ -17,8 +17,10 @@ def read(relative: str) -> str:
 
 
 def check_realtime_contract() -> None:
-    models = read("core/network/src/main/kotlin/com/servacode/directory/core/network/RealtimeModels.kt")
-    stream = read("core/network/src/main/kotlin/com/servacode/directory/core/network/RealtimeStream.kt")
+    models = read("core/network/src/commonMain/kotlin/com/servacode/directory/core/network/RealtimeModels.kt")
+    stream = read("core/network/src/commonMain/kotlin/com/servacode/directory/core/network/RealtimeStream.kt") + read(
+        "core/network/src/androidMain/kotlin/com/servacode/directory/core/network/OkHttpRealtimeStream.kt"
+    )
     for event in (
         "public.province.configuration_changed",
         "public.facility.changed",
@@ -38,9 +40,9 @@ def check_realtime_contract() -> None:
 
 
 def check_reconnect_and_lifecycle() -> None:
-    policy = read("core/network/src/main/kotlin/com/servacode/directory/core/network/ReconnectPolicy.kt")
+    policy = read("core/network/src/commonMain/kotlin/com/servacode/directory/core/network/ReconnectPolicy.kt")
     coordinator = read("app/src/main/kotlin/com/servacode/directory/RealtimeCoordinator.kt")
-    monitor = read("core/network/src/main/kotlin/com/servacode/directory/core/network/NetworkMonitor.kt")
+    monitor = read("core/network/src/androidMain/kotlin/com/servacode/directory/core/network/AndroidNetworkMonitor.kt")
     application = read("app/src/main/kotlin/com/servacode/directory/DirectoryApplication.kt")
     require("baseMillis: Long = 1_000L" in policy, "1s reconnect base missing")
     require("maxMillis: Long = 30_000L" in policy, "30s reconnect cap missing")
@@ -57,16 +59,16 @@ def check_rest_truth_and_offline() -> None:
         ("facility", "FacilityViewModel.kt"),
     ):
         source = read(
-            f"feature/{feature}/src/main/kotlin/com/servacode/directory/feature/{feature}/{filename}"
+            f"feature/{feature}/src/androidMain/kotlin/com/servacode/directory/feature/{feature}/{filename}"
         )
         require("RealtimeInvalidationBus" in source, f"realtime invalidation missing: {feature}")
         require("refresh" in source, f"REST refetch path missing: {feature}")
-    owner = read("feature/owner/src/main/kotlin/com/servacode/directory/feature/owner/OwnerViewModel.kt")
+    owner = read("feature/owner/src/androidMain/kotlin/com/servacode/directory/feature/owner/OwnerViewModel.kt")
     # The user-scope rule is stated once, in the shared predicate, rather than repeated in each
     # ViewModel that needs it.
     require("refreshesOwnerState" in owner, "owner user-scope invalidation missing")
     predicate = read(
-        "core/network/src/main/kotlin/com/servacode/directory/core/network/RealtimeInvalidation.kt"
+        "core/network/src/commonMain/kotlin/com/servacode/directory/core/network/RealtimeInvalidation.kt"
     )
     require(
         'ScopeType.USER' in predicate or '"user"' in predicate,
@@ -75,23 +77,24 @@ def check_rest_truth_and_offline() -> None:
     screens = "\n".join(
         read(path)
         for path in (
-            "feature/home/src/main/kotlin/com/servacode/directory/feature/home/HomeScreen.kt",
-            "feature/facility/src/main/kotlin/com/servacode/directory/feature/facility/FacilityScreen.kt",
+            "feature/home/src/androidMain/kotlin/com/servacode/directory/feature/home/HomeScreen.kt",
+            "feature/facility/src/androidMain/kotlin/com/servacode/directory/feature/facility/FacilityScreen.kt",
         )
     )
     # Every screen shows the same offline notice from the design system rather than writing its
     # own sentence, so the warning is asserted where it is now written.
     require("DirectoryOfflineNotice" in screens, "offline notice missing from the public screens")
     notice = read(
-        "core/designsystem/src/main/kotlin/com/servacode/directory/core/designsystem/States.kt"
+        "core/designsystem/src/commonMain/kotlin/com/servacode/directory/core/designsystem/States.kt"
     )
     require(
-        "R.string.ds_offline" in notice,
+        "Res.string.ds_offline" in notice,
         "the offline notice does not read its sentence from resources",
     )
     # The sentence itself is in the design system's strings.xml, so that a second language is
-    # a second file rather than a search through the components.
-    words = read("core/designsystem/src/main/res/values/strings.xml")
+    # a second file rather than a search through the components. Compose resources since
+    # DECISION-094, read the same way on Android and on the iPhone.
+    words = read("core/designsystem/src/commonMain/composeResources/values/strings.xml")
     require(
         "قد لا تكون محدثة" in words,
         "offline time-sensitive freshness warning missing",
@@ -101,10 +104,10 @@ def check_rest_truth_and_offline() -> None:
 def check_push_boundary() -> None:
     manifest = read("app/src/main/AndroidManifest.xml")
     push = read(
-        "core/network/src/main/kotlin/com/servacode/directory/core/network/PushRegistrationCoordinator.kt"
+        "core/network/src/commonMain/kotlin/com/servacode/directory/core/network/PushRegistrationCoordinator.kt"
     )
     boundary = read(
-        "core/network/src/main/kotlin/com/servacode/directory/core/network/PushRegistrationBoundary.kt"
+        "core/network/src/commonMain/kotlin/com/servacode/directory/core/network/PushRegistrationBoundary.kt"
     )
     require("POST_NOTIFICATIONS" in manifest, "notification permission declaration missing")
     require("registerAndroidToken" in push and "deactivateAndroidToken" in push, "push token lifecycle missing")
@@ -117,7 +120,7 @@ def check_push_boundary() -> None:
     # P10 shipped: the boundary is implemented over the generated client, and a failure travels
     # as the app's own error rather than as a placeholder for a client that does not exist.
     adapter = read(
-        "core/network/src/main/kotlin/com/servacode/directory/core/network/api/"
+        "core/network/src/androidMain/kotlin/com/servacode/directory/core/network/api/"
         "GeneratedPushRegistration.kt"
     )
     require("interface PushRegistrationBoundary" in boundary, "push boundary interface missing")
@@ -130,10 +133,10 @@ def check_push_boundary() -> None:
 
 def check_tests_and_hygiene() -> None:
     for relative in (
-        "core/network/src/test/kotlin/com/servacode/directory/core/network/ReconnectPolicyTest.kt",
-        "core/network/src/test/kotlin/com/servacode/directory/core/network/RealtimeConfigTest.kt",
-        "core/network/src/test/kotlin/com/servacode/directory/core/network/RealtimeEventDeduplicatorTest.kt",
-        "core/network/src/test/kotlin/com/servacode/directory/core/network/PushMessageDataTest.kt",
+        "core/network/src/commonTest/kotlin/com/servacode/directory/core/network/ReconnectPolicyTest.kt",
+        "core/network/src/commonTest/kotlin/com/servacode/directory/core/network/RealtimeConfigTest.kt",
+        "core/network/src/commonTest/kotlin/com/servacode/directory/core/network/RealtimeEventDeduplicatorTest.kt",
+        "core/network/src/commonTest/kotlin/com/servacode/directory/core/network/PushMessageDataTest.kt",
     ):
         require((ROOT / relative).exists(), f"P18 test missing: {relative}")
     combined = "\n".join(path.read_text(encoding="utf-8") for path in ROOT.rglob("*.kt") if "build" not in path.parts)

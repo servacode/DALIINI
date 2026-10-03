@@ -14,6 +14,22 @@
     <!-- What a notification is filed under in the phone's settings, and what it says when the
          message carried no words of its own. -->
     <string name="app_notification_channel">التحديثات</string>
+    <string name="app_navigation_channel">الملاحة</string>
+    <string name="app_navigation_title">الملاحة جارية</string>
+    <string name="app_navigation_remaining">تبقّى %1$s، نحو %2$s</string>
+    <string name="app_navigation_rerouting">يُعاد حساب الطريق…</string>
+    <plurals name="app_navigation_minutes">
+        <item quantity="zero">أقل من دقيقة</item>
+        <item quantity="one">دقيقة</item>
+        <item quantity="two">دقيقتين</item>
+        <item quantity="few">%d دقائق</item>
+        <item quantity="many">%d دقيقة</item>
+        <item quantity="other">%d دقيقة</item>
+    </plurals>
+    <string name="app_update_available_title">يتوفر إصدار أحدث من دليني</string>
+    <string name="app_update_available_body">هذه النسخة ما زالت تعمل، والأحدث فيها تحسينات وإصلاحات.</string>
+    <string name="app_update_available_action">تحديث</string>
+    <string name="app_update_available_later">لاحقاً</string>
     <string name="app_notification_body">لديك تحديث جديد</string>
 
     <!-- The home-screen widget: its name in the launcher's list, what the list says about it,

@@ -19,6 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.AccountApi
+import com.servacode.directory.api.models.Accepted
 import com.servacode.directory.api.models.AccountDeletionRequested
 import com.servacode.directory.api.models.AccountRatingList
 import com.servacode.directory.api.models.ApiError
@@ -28,13 +29,20 @@ import com.servacode.directory.api.models.DeletionRequest
 import com.servacode.directory.api.models.FavoriteList
 import com.servacode.directory.api.models.FavoriteState
 import com.servacode.directory.api.models.FavoriteWrite
+import com.servacode.directory.api.models.MfaCode
+import com.servacode.directory.api.models.MfaRecoveryCodes
+import com.servacode.directory.api.models.MfaSetup
+import com.servacode.directory.api.models.MfaStatus
 import com.servacode.directory.api.models.NotificationPage
+import com.servacode.directory.api.models.NotificationPreferences
 import com.servacode.directory.api.models.PasswordChange
+import com.servacode.directory.api.models.PatchedNotificationPreferences
 import com.servacode.directory.api.models.PatchedProfilePatch
 import com.servacode.directory.api.models.PhoneChangeStart
 import com.servacode.directory.api.models.Profile
 import com.servacode.directory.api.models.PushToken
 import com.servacode.directory.api.models.PushTokenRegister
+import com.servacode.directory.api.models.ReceivedInvitationList
 import com.servacode.directory.api.models.UnreadCount
 
 class AccountApiTest : ShouldSpec() {
@@ -75,11 +83,86 @@ class AccountApiTest : ShouldSpec() {
             //result shouldBe ("TODO")
         }
 
+        // to test accountInvitationAccept
+        should("test accountInvitationAccept") {
+            // uncomment below to test accountInvitationAccept
+            //val invitationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : Accepted = apiInstance.accountInvitationAccept(invitationId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountInvitationDecline
+        should("test accountInvitationDecline") {
+            // uncomment below to test accountInvitationDecline
+            //val invitationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //apiInstance.accountInvitationDecline(invitationId)
+        }
+
+        // to test accountInvitationsList
+        should("test accountInvitationsList") {
+            // uncomment below to test accountInvitationsList
+            //val result : ReceivedInvitationList = apiInstance.accountInvitationsList()
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountMfaConfirm
+        should("test accountMfaConfirm") {
+            // uncomment below to test accountMfaConfirm
+            //val mfaCode : MfaCode =  // MfaCode | 
+            //val result : MfaRecoveryCodes = apiInstance.accountMfaConfirm(mfaCode)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountMfaDisable
+        should("test accountMfaDisable") {
+            // uncomment below to test accountMfaDisable
+            //val mfaCode : MfaCode =  // MfaCode | 
+            //val result : MfaStatus = apiInstance.accountMfaDisable(mfaCode)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountMfaRetrieve
+        should("test accountMfaRetrieve") {
+            // uncomment below to test accountMfaRetrieve
+            //val result : MfaStatus = apiInstance.accountMfaRetrieve()
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountMfaSetup
+        should("test accountMfaSetup") {
+            // uncomment below to test accountMfaSetup
+            //val result : MfaSetup = apiInstance.accountMfaSetup()
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountMfaVerify
+        should("test accountMfaVerify") {
+            // uncomment below to test accountMfaVerify
+            //val mfaCode : MfaCode =  // MfaCode | 
+            //val result : MfaStatus = apiInstance.accountMfaVerify(mfaCode)
+            //result shouldBe ("TODO")
+        }
+
         // to test accountNotificationMarkRead
         should("test accountNotificationMarkRead") {
             // uncomment below to test accountNotificationMarkRead
             //val notificationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //val result : UnreadCount = apiInstance.accountNotificationMarkRead(notificationId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountNotificationPreferencesRetrieve
+        should("test accountNotificationPreferencesRetrieve") {
+            // uncomment below to test accountNotificationPreferencesRetrieve
+            //val result : NotificationPreferences = apiInstance.accountNotificationPreferencesRetrieve()
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountNotificationPreferencesUpdate
+        should("test accountNotificationPreferencesUpdate") {
+            // uncomment below to test accountNotificationPreferencesUpdate
+            //val patchedNotificationPreferences : PatchedNotificationPreferences =  // PatchedNotificationPreferences | 
+            //val result : NotificationPreferences = apiInstance.accountNotificationPreferencesUpdate(patchedNotificationPreferences)
             //result shouldBe ("TODO")
         }
 

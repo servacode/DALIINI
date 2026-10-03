@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -24,14 +25,14 @@ def main() -> int:
     app_gradle = text("apps/android/app/build.gradle.kts")
     manifest = text("apps/android/app/src/main/AndroidManifest.xml")
     boundary = text(
-        "apps/android/core/network/src/main/kotlin/com/servacode/directory/core/network/"
+        "apps/android/core/network/src/commonMain/kotlin/com/servacode/directory/core/network/"
         "PublicApiBoundary.kt"
     )
     account_screen = text(
-        "apps/android/feature/account/src/main/kotlin/com/servacode/directory/feature/"
+        "apps/android/feature/account/src/androidMain/kotlin/com/servacode/directory/feature/"
         "account/AccountScreen.kt"
     )
-    account_words = text("apps/android/feature/account/src/main/res/values/strings.xml")
+    account_words = text("apps/android/feature/account/src/androidMain/res/values/strings.xml")
 
     require("targetSdk = 36" in convention, "Play RC must target API 36")
     require(
@@ -84,6 +85,24 @@ def main() -> int:
     require(listing["locale"] == "ar", "Arabic listing baseline missing")
     require(listing["assets"]["phoneScreenshots"] == [], "fabricated screenshots must not be committed")
 
+    # Every dependency is pinned to one version in the catalog, so the same commit always builds
+    # from the same libraries and lockfiles would only repeat it (DECISION-079). A version that
+    # floats ("1.+", "latest.release", a range) would end that, so none may appear.
+    floating = re.compile(r'"[^"\n]*\+"|latest\.(release|integration)|"[\[(][0-9][^"\n]*,[^"\n]*[\])]"')
+    for build_file in [
+        ANDROID / "gradle/libs.versions.toml",
+        *ANDROID.glob("**/*.gradle.kts"),
+    ]:
+        if "/build/" in build_file.as_posix():
+            continue
+        for line_no, line in enumerate(build_file.read_text(encoding="utf-8").splitlines(), 1):
+            if line.strip().startswith(("//", "#")):
+                continue
+            require(
+                not floating.search(line),
+                f"floating dependency version: {build_file.relative_to(ROOT)}:{line_no}",
+            )
+
     for path in ANDROID.rglob("*"):
         if not path.is_file():
             continue
@@ -93,7 +112,7 @@ def main() -> int:
             f"signing material in repo: {path}",
         )
 
-    print(json.dumps({"status": "PASS", "checks": 7}))
+    print(json.dumps({"status": "PASS", "checks": 8}))
     return 0
 
 

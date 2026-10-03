@@ -7,6 +7,7 @@ import okhttp3.RequestBody
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+import com.servacode.directory.api.models.Accepted
 import com.servacode.directory.api.models.AccountDeletionRequested
 import com.servacode.directory.api.models.AccountRatingList
 import com.servacode.directory.api.models.ApiError
@@ -16,13 +17,20 @@ import com.servacode.directory.api.models.DeletionRequest
 import com.servacode.directory.api.models.FavoriteList
 import com.servacode.directory.api.models.FavoriteState
 import com.servacode.directory.api.models.FavoriteWrite
+import com.servacode.directory.api.models.MfaCode
+import com.servacode.directory.api.models.MfaRecoveryCodes
+import com.servacode.directory.api.models.MfaSetup
+import com.servacode.directory.api.models.MfaStatus
 import com.servacode.directory.api.models.NotificationPage
+import com.servacode.directory.api.models.NotificationPreferences
 import com.servacode.directory.api.models.PasswordChange
+import com.servacode.directory.api.models.PatchedNotificationPreferences
 import com.servacode.directory.api.models.PatchedProfilePatch
 import com.servacode.directory.api.models.PhoneChangeStart
 import com.servacode.directory.api.models.Profile
 import com.servacode.directory.api.models.PushToken
 import com.servacode.directory.api.models.PushTokenRegister
+import com.servacode.directory.api.models.ReceivedInvitationList
 import com.servacode.directory.api.models.UnreadCount
 
 import okhttp3.MultipartBody
@@ -93,6 +101,134 @@ interface AccountApi {
     suspend fun accountFavoritesList(@Query("cursor") cursor: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null): Response<FavoriteList>
 
     /**
+     * POST api/v1/account/invitations/{invitation_id}/accept/
+     * Join the facility an invitation is for
+     * Only the account whose phone number was invited can accept; any other caller gets 404. An invitation to own raises a manager to owner and never lowers anyone. 409 INVITATION_EXPIRED or INVITATION_CLOSED when it can no longer be accepted.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param invitationId 
+     * @return [Accepted]
+     */
+    @POST("api/v1/account/invitations/{invitation_id}/accept/")
+    suspend fun accountInvitationAccept(@Path("invitation_id") invitationId: java.util.UUID): Response<Accepted>
+
+    /**
+     * POST api/v1/account/invitations/{invitation_id}/decline/
+     * Decline an invitation
+     * 
+     * Responses:
+     *  - 204: No response body
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param invitationId 
+     * @return [Unit]
+     */
+    @POST("api/v1/account/invitations/{invitation_id}/decline/")
+    suspend fun accountInvitationDecline(@Path("invitation_id") invitationId: java.util.UUID): Response<Unit>
+
+    /**
+     * GET api/v1/account/invitations/
+     * Invitations waiting for this account&#39;s phone number
+     * 
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @return [ReceivedInvitationList]
+     */
+    @GET("api/v1/account/invitations/")
+    suspend fun accountInvitationsList(): Response<ReceivedInvitationList>
+
+    /**
+     * POST api/v1/account/mfa/confirm/
+     * Confirm the authenticator with its first code
+     * Enables it, marks this session as having passed the second step, and returns ten recovery codes, shown this once.
+     * Responses:
+     *  - 200: 
+     *  - 400: A domain rule rejected the request; `code` names the rule.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param mfaCode 
+     * @return [MfaRecoveryCodes]
+     */
+    @POST("api/v1/account/mfa/confirm/")
+    suspend fun accountMfaConfirm(@Body mfaCode: MfaCode): Response<MfaRecoveryCodes>
+
+    /**
+     * POST api/v1/account/mfa/disable/
+     * Switch the authenticator off
+     * Needs a current code from the app. Refused with 409 MFA_REQUIRED_BY_POLICY where every operator must have one.
+     * Responses:
+     *  - 200: 
+     *  - 400: A domain rule rejected the request; `code` names the rule.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param mfaCode 
+     * @return [MfaStatus]
+     */
+    @POST("api/v1/account/mfa/disable/")
+    suspend fun accountMfaDisable(@Body mfaCode: MfaCode): Response<MfaStatus>
+
+    /**
+     * GET api/v1/account/mfa/
+     * The second sign-in step, for this account and session
+     * 
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @return [MfaStatus]
+     */
+    @GET("api/v1/account/mfa/")
+    suspend fun accountMfaRetrieve(): Response<MfaStatus>
+
+    /**
+     * POST api/v1/account/mfa/setup/
+     * Start setting up an authenticator app
+     * Operators only. Returns a new secret and its QR code; nothing is enabled until a code from the app confirms it. Starting again replaces an unconfirmed secret.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @return [MfaSetup]
+     */
+    @POST("api/v1/account/mfa/setup/")
+    suspend fun accountMfaSetup(): Response<MfaSetup>
+
+    /**
+     * POST api/v1/account/mfa/verify/
+     * Pass the second step for this session
+     * A code from the app, or one of the recovery codes (each works once).
+     * Responses:
+     *  - 200: 
+     *  - 400: A domain rule rejected the request; `code` names the rule.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param mfaCode 
+     * @return [MfaStatus]
+     */
+    @POST("api/v1/account/mfa/verify/")
+    suspend fun accountMfaVerify(@Body mfaCode: MfaCode): Response<MfaStatus>
+
+    /**
      * POST api/v1/account/notifications/{notification_id}/read/
      * Mark one notification as read
      * Idempotent: a message that was already read keeps the time it was read.
@@ -107,6 +243,36 @@ interface AccountApi {
      */
     @POST("api/v1/account/notifications/{notification_id}/read/")
     suspend fun accountNotificationMarkRead(@Path("notification_id") notificationId: java.util.UUID): Response<UnreadCount>
+
+    /**
+     * GET api/v1/account/notification-preferences/
+     * Which kinds of notice are pushed to this account&#39;s devices
+     * All are on until the account turns one off. Only the push is governed: every message still reaches the inbox. A staff change to an owner&#39;s own duty shift, and any kind outside these three, is always pushed.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @return [NotificationPreferences]
+     */
+    @GET("api/v1/account/notification-preferences/")
+    suspend fun accountNotificationPreferencesRetrieve(): Response<NotificationPreferences>
+
+    /**
+     * PATCH api/v1/account/notification-preferences/
+     * Change which kinds of notice are pushed
+     * Only the fields sent change.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param patchedNotificationPreferences  (optional)
+     * @return [NotificationPreferences]
+     */
+    @PATCH("api/v1/account/notification-preferences/")
+    suspend fun accountNotificationPreferencesUpdate(@Body patchedNotificationPreferences: PatchedNotificationPreferences? = null): Response<NotificationPreferences>
 
     /**
      * GET api/v1/account/notifications/

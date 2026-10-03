@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.authentication import AuthenticatedRequest
+from audit.services import record_audit
 from business_hours.permissions import require_facility_manager
 from core.openapi import CONFLICT_409, NOT_FOUND_404, VALIDATION_400, protected
 from facilities.models import Facility
@@ -15,7 +16,7 @@ from facilities.models import Facility
 from .models import DutyShift
 from .schemas import DutyShiftListSerializer
 from .serializers import DutyShiftInputSerializer, DutyShiftSerializer
-from .services import require_duty_capability, save_shift
+from .services import require_duty_capability, save_shift, shift_snapshot
 
 
 class DutyListCreateView(APIView):
@@ -64,6 +65,14 @@ class DutyListCreateView(APIView):
                 facility=facility, source=DutyShift.Source.OWNER, **serializer.validated_data
             )
         )
+        record_audit(
+            actor=request.user,
+            action="duty_shift.created",
+            target=row,
+            after_snapshot=shift_snapshot(row),
+            metadata={"facilityId": str(facility.pk)},
+            request_id=getattr(request, "request_id", ""),
+        )
         return Response(DutyShiftSerializer(row).data, status=201)
 
 
@@ -94,9 +103,21 @@ class DutyDetailView(APIView):
         )
         serializer = DutyShiftInputSerializer(row, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
+        before, was = shift_snapshot(row), (row.starts_at, row.ends_at)
         for key, value in serializer.validated_data.items():
             setattr(row, key, value)
         save_shift(row)
+        # Compared as instants: the same time sent with another offset is not a change.
+        if (row.starts_at, row.ends_at) != was:
+            record_audit(
+                actor=request.user,
+                action="duty_shift.updated",
+                target=row,
+                before_snapshot=before,
+                after_snapshot=shift_snapshot(row),
+                metadata={"facilityId": str(facility.pk)},
+                request_id=getattr(request, "request_id", ""),
+            )
         return Response(DutyShiftSerializer(row).data)
 
     @extend_schema(
@@ -105,9 +126,18 @@ class DutyDetailView(APIView):
         summary="Remove a duty shift",
         responses={204: None, **protected(), 404: NOT_FOUND_404},
     )
+    @transaction.atomic
     def delete(self, request: AuthenticatedRequest, facility_id: UUID, shift_id: UUID) -> Response:
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
         row = get_object_or_404(DutyShift, pk=shift_id, facility=facility)
+        record_audit(
+            actor=request.user,
+            action="duty_shift.deleted",
+            target=row,
+            before_snapshot=shift_snapshot(row),
+            metadata={"facilityId": str(facility.pk)},
+            request_id=getattr(request, "request_id", ""),
+        )
         row.delete()
         return Response(status=204)

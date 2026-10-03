@@ -5,6 +5,7 @@
 | Name | Type | Description | Notes |
 | ------------ | ------------- | ------------- | ------------- |
 | **id** | [**java.util.UUID**](java.util.UUID.md) |  |  |
+| **slug** | **kotlin.String** | Readable words for the facility&#39;s link, from its Arabic name (&#x60;/f/{id}/{slug}&#x60;). Decoration only: the id is the address, so a rename never breaks a link. |  |
 | **nameAr** | **kotlin.String** |  |  |
 | **nameEn** | **kotlin.String** |  |  |
 | **category** | [**BilingualRef**](BilingualRef.md) |  |  |

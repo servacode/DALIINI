@@ -12,6 +12,6 @@ Do not mark an item complete without matching Play Console evidence.
 - [ ] Target audience completed accurately.
 - [ ] Location permission use matches while-in-use behavior; no background location declaration.
 - [ ] Notification permission behavior documented.
-- [ ] Foreground-service declaration reviewed if navigation later uses an FGS.
+- [ ] Foreground-service declaration: navigation now runs a `location` foreground service while a trip is under way (DECISION-078). Declare it under App content → Foreground service permissions as "Navigation", with a short video of a trip continuing with the screen locked. The app still asks for no background location permission.
 - [ ] Country availability intentionally selected from territories actually offered by Play Console.
 - [ ] Developer identity/contact requirements completed in the account.

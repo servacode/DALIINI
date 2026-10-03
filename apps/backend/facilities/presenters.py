@@ -44,6 +44,12 @@ def _required_action(facility: Facility, application: FacilityApplication | None
 
 
 def facility_detail(facility: Facility) -> dict[str, Any]:
+    from .changes import overlay_pending
+
+    return overlay_pending(facility, _published_detail(facility))
+
+
+def _published_detail(facility: Facility) -> dict[str, Any]:
     point = facility.location
     latest = facility.applications.order_by("-updated_at").first()
     return {
@@ -81,6 +87,8 @@ def facility_detail(facility: Facility) -> dict[str, Any]:
                 "createdAt": item.created_at.isoformat(),
             }
             for item in facility.evidence.all()
+            # A claimant's documents are theirs until the claim is approved.
+            if item.application_id is None
         ],
         "hours": serialize_hours(facility.business_hours.order_by("weekday", "sort_order")),
         "hoursConfirmedAt": (

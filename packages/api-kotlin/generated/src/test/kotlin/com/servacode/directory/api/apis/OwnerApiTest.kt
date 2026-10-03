@@ -20,9 +20,16 @@ import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.OwnerApi
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.Claim
+import com.servacode.directory.api.models.ClaimList
+import com.servacode.directory.api.models.ClaimStart
+import com.servacode.directory.api.models.ClaimableFacilityList
 import com.servacode.directory.api.models.FacilityCreate
 import com.servacode.directory.api.models.FacilityLocation
 import com.servacode.directory.api.models.FacilityMember
+import com.servacode.directory.api.models.Invitation
+import com.servacode.directory.api.models.InvitationList
+import com.servacode.directory.api.models.InvitationRequest
 import com.servacode.directory.api.models.OwnerConfig
 import com.servacode.directory.api.models.OwnerFacilityDetail
 import com.servacode.directory.api.models.OwnerFacilityInsights
@@ -37,6 +44,54 @@ class OwnerApiTest : ShouldSpec() {
     init {
         // uncomment below to create an instance of OwnerApi
         //val apiInstance = OwnerApi()
+
+        // to test ownerClaimRetrieve
+        should("test ownerClaimRetrieve") {
+            // uncomment below to test ownerClaimRetrieve
+            //val claimId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : Claim = apiInstance.ownerClaimRetrieve(claimId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test ownerClaimStart
+        should("test ownerClaimStart") {
+            // uncomment below to test ownerClaimStart
+            //val claimStart : ClaimStart =  // ClaimStart | 
+            //val result : Claim = apiInstance.ownerClaimStart(claimStart)
+            //result shouldBe ("TODO")
+        }
+
+        // to test ownerClaimSubmit
+        should("test ownerClaimSubmit") {
+            // uncomment below to test ownerClaimSubmit
+            //val claimId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : Claim = apiInstance.ownerClaimSubmit(claimId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test ownerClaimWithdraw
+        should("test ownerClaimWithdraw") {
+            // uncomment below to test ownerClaimWithdraw
+            //val claimId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //apiInstance.ownerClaimWithdraw(claimId)
+        }
+
+        // to test ownerClaimableFacilitiesList
+        should("test ownerClaimableFacilitiesList") {
+            // uncomment below to test ownerClaimableFacilitiesList
+            //val q : kotlin.String = q_example // kotlin.String | 
+            //val categoryId : kotlin.String = categoryId_example // kotlin.String | Keep facilities of this category.
+            //val provinceId : kotlin.String = provinceId_example // kotlin.String | Keep facilities in this province.
+            //val result : ClaimableFacilityList = apiInstance.ownerClaimableFacilitiesList(q, categoryId, provinceId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test ownerClaimsList
+        should("test ownerClaimsList") {
+            // uncomment below to test ownerClaimsList
+            //val result : ClaimList = apiInstance.ownerClaimsList()
+            //result shouldBe ("TODO")
+        }
 
         // to test ownerConfigRetrieve
         should("test ownerConfigRetrieve") {
@@ -74,6 +129,31 @@ class OwnerApiTest : ShouldSpec() {
             // uncomment below to test ownerFacilityInsightsRetrieve
             //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //val result : OwnerFacilityInsights = apiInstance.ownerFacilityInsightsRetrieve(facilityId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test ownerFacilityInvitationCreate
+        should("test ownerFacilityInvitationCreate") {
+            // uncomment below to test ownerFacilityInvitationCreate
+            //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val invitationRequest : InvitationRequest =  // InvitationRequest | 
+            //val result : Invitation = apiInstance.ownerFacilityInvitationCreate(facilityId, invitationRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test ownerFacilityInvitationRevoke
+        should("test ownerFacilityInvitationRevoke") {
+            // uncomment below to test ownerFacilityInvitationRevoke
+            //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val invitationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //apiInstance.ownerFacilityInvitationRevoke(facilityId, invitationId)
+        }
+
+        // to test ownerFacilityInvitationsList
+        should("test ownerFacilityInvitationsList") {
+            // uncomment below to test ownerFacilityInvitationsList
+            //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : InvitationList = apiInstance.ownerFacilityInvitationsList(facilityId)
             //result shouldBe ("TODO")
         }
 

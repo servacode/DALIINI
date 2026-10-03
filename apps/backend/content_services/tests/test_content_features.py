@@ -22,7 +22,8 @@ def test_builtin_legal_pages_are_content_pages() -> None:
     response = APIClient().get("/api/v1/content/pages/privacy/")
     assert response.status_code == 200
     body = response.json()
-    assert (body["slug"], body["kind"], body["version"]) == ("privacy", "LEGAL", 1)
+    # Version 2: the second draft replaced the first (0007, DECISION-084).
+    assert (body["slug"], body["kind"], body["version"]) == ("privacy", "LEGAL", 2)
     assert response["Cache-Control"] == "public, max-age=300"
     assert APIClient().get("/api/v1/content/pages/faq/").json()["kind"] == "FAQ"
     assert APIClient().get("/api/v1/content/pages/nothing-here/").status_code == 404

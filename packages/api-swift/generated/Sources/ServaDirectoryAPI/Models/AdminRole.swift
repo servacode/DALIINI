@@ -16,12 +16,18 @@ public struct AdminRole: Codable, JSONEncodable, Hashable {
     public var code: String
     public var name: String
     public var permissions: [String]
+    /** Active accounts holding this role now. Blocked accounts are not counted. */
+    public var holderCount: Int
+    /** The platform's own role (`owner`): it holds every permission and the console can neither edit nor delete it. */
+    public var locked: Bool
 
-    public init(id: Int, code: String, name: String, permissions: [String]) {
+    public init(id: Int, code: String, name: String, permissions: [String], holderCount: Int, locked: Bool) {
         self.id = id
         self.code = code
         self.name = name
         self.permissions = permissions
+        self.holderCount = holderCount
+        self.locked = locked
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
@@ -29,6 +35,8 @@ public struct AdminRole: Codable, JSONEncodable, Hashable {
         case code
         case name
         case permissions
+        case holderCount
+        case locked
     }
 
     // Encodable protocol methods
@@ -39,6 +47,8 @@ public struct AdminRole: Codable, JSONEncodable, Hashable {
         try container.encode(code, forKey: .code)
         try container.encode(name, forKey: .name)
         try container.encode(permissions, forKey: .permissions)
+        try container.encode(holderCount, forKey: .holderCount)
+        try container.encode(locked, forKey: .locked)
     }
 }
 

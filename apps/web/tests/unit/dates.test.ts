@@ -108,3 +108,12 @@ describe("the week", () => {
     expect(WEEKDAY_DISPLAY_ORDER[0]).toBe(5);
   });
 });
+
+describe("damascusWeekday", () => {
+  it("numbers the day as the backend does, Monday first, in Damascus time", async () => {
+    const { damascusWeekday } = await import("../../lib/dates");
+    // 2026-10-04 is a Sunday; 22:30 UTC on the 4th is already Monday 01:30 in Damascus (UTC+3).
+    expect(damascusWeekday(new Date("2026-10-04T12:00:00Z"))).toBe(6);
+    expect(damascusWeekday(new Date("2026-10-04T22:30:00Z"))).toBe(0);
+  });
+});

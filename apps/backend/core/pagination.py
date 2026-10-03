@@ -14,6 +14,9 @@ crosses the boundary here; the client sends it back as `?cursor=`.
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
+from django.core.exceptions import ImproperlyConfigured
+from drf_spectacular.utils import OpenApiParameter
+from rest_framework import serializers
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
@@ -85,3 +88,56 @@ class CursorPage(CursorPagination):
                 },
             },
         }
+
+
+class QueryOrderedCursorPage(CursorPage):
+    """Cursor pages of a queryset that already carries its ordering.
+
+    The console's lists choose their order from the caller's filters (a facility list sorts by
+    quality or by last change), so the order is read from the queryset rather than declared
+    here. The same rule holds: it must end in a unique column.
+    """
+
+    page_size = 50
+    max_page_size = 200
+
+    def get_ordering(self, request: Any, queryset: Any, view: Any) -> tuple[str, ...]:
+        ordering = tuple(str(field) for field in queryset.query.order_by)
+        if not ordering or ordering[-1].lstrip("-") not in {"id", "pk"}:
+            raise ImproperlyConfigured(
+                f"A cursor page needs an ordering that ends in the primary key; got {ordering}."
+            )
+        return ordering
+
+
+class CursorEnvelope(serializers.Serializer[Any]):
+    """The two fields every cursor page adds beside its `items`."""
+
+    nextCursor = serializers.CharField(
+        allow_null=True,
+        help_text=(
+            "Opaque token for the next page, or null on the last page. Send it back "
+            "unchanged as the `cursor` query parameter; never parse it."
+        ),
+    )
+    hasMore = serializers.BooleanField(help_text="True when `nextCursor` is set.")
+
+
+def page_parameters(page: type[CursorPage]) -> list[OpenApiParameter]:
+    """The `cursor` and `limit` query parameters of a view paginated by `page`."""
+    return [
+        OpenApiParameter(
+            "cursor",
+            str,
+            OpenApiParameter.QUERY,
+            required=False,
+            description="Opaque token returned as `nextCursor` by the previous page.",
+        ),
+        OpenApiParameter(
+            "limit",
+            int,
+            OpenApiParameter.QUERY,
+            required=False,
+            description=f"Page size, maximum {page.max_page_size}, default {page.page_size}.",
+        ),
+    ]

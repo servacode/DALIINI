@@ -5,10 +5,8 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **apiVersion** | **String** |  | 
 **environment** | **String** |  | 
-**database** | [**DatabaseHealthEnum**](DatabaseHealthEnum.md) |  | 
-**redis** | [**DependencyConfiguredEnum**](DependencyConfiguredEnum.md) |  | 
-**celery** | [**DependencyConfiguredEnum**](DependencyConfiguredEnum.md) |  | 
-**storage** | [**DependencyConfiguredEnum**](DependencyConfiguredEnum.md) |  | 
+**overall** | [**AdminHealthOverallEnum**](AdminHealthOverallEnum.md) |  | 
+**checks** | [AdminHealthCheck] |  | 
 **schemaHash** | **String** |  | 
 **checkedAt** | **Date** |  | 
 

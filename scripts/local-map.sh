@@ -57,11 +57,12 @@ import boto3
 from botocore.client import Config
 
 root, work, prefix = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2]), sys.argv[3]
-stack = (root / "scripts" / "local-stack.sh").read_text(encoding="utf-8")
+# The development credentials, from the compose file that gives the object store its users.
+stack = (root / "infrastructure" / "docker" / "compose.yml").read_text(encoding="utf-8")
 s3 = boto3.client(
     "s3", endpoint_url="http://127.0.0.1:9000",
-    aws_access_key_id=re.search(r'S3_USER="([^"]+)"', stack).group(1),
-    aws_secret_access_key=re.search(r'S3_PASSWORD="([^"]+)"', stack).group(1),
+    aws_access_key_id=re.search(r"S3_ACCESS_KEY_ID: (\S+)", stack).group(1),
+    aws_secret_access_key=re.search(r"S3_SECRET_ACCESS_KEY: (\S+)", stack).group(1),
     config=Config(signature_version="s3v4"), region_name="us-east-1",
 )
 s3.put_object(Bucket="directory-public", Key=f"{prefix}/style.json",

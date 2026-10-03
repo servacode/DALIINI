@@ -39,6 +39,18 @@ export interface AdminTaskApplications {
      * @memberof AdminTaskApplications
      */
     reverification: AdminTaskApplicationBucket;
+    /**
+     * Edits to live facilities, which stay published while these wait.
+     * @type {AdminTaskApplicationBucket}
+     * @memberof AdminTaskApplications
+     */
+    change: AdminTaskApplicationBucket;
+    /**
+     * Requests to own a facility that nobody owns.
+     * @type {AdminTaskApplicationBucket}
+     * @memberof AdminTaskApplications
+     */
+    claim: AdminTaskApplicationBucket;
 }
 
 /**
@@ -47,6 +59,8 @@ export interface AdminTaskApplications {
 export function instanceOfAdminTaskApplications(value: object): value is AdminTaskApplications {
     if (!('initial' in value) || value['initial'] === undefined) return false;
     if (!('reverification' in value) || value['reverification'] === undefined) return false;
+    if (!('change' in value) || value['change'] === undefined) return false;
+    if (!('claim' in value) || value['claim'] === undefined) return false;
     return true;
 }
 
@@ -62,6 +76,8 @@ export function AdminTaskApplicationsFromJSONTyped(json: any, ignoreDiscriminato
         
         'initial': AdminTaskApplicationBucketFromJSON(json['initial']),
         'reverification': AdminTaskApplicationBucketFromJSON(json['reverification']),
+        'change': AdminTaskApplicationBucketFromJSON(json['change']),
+        'claim': AdminTaskApplicationBucketFromJSON(json['claim']),
     };
 }
 
@@ -78,6 +94,8 @@ export function AdminTaskApplicationsToJSONTyped(value?: AdminTaskApplications |
         
         'initial': AdminTaskApplicationBucketToJSON(value['initial']),
         'reverification': AdminTaskApplicationBucketToJSON(value['reverification']),
+        'change': AdminTaskApplicationBucketToJSON(value['change']),
+        'claim': AdminTaskApplicationBucketToJSON(value['claim']),
     };
 }
 

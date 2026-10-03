@@ -1,23 +1,26 @@
+// Shared with the iPhone app (DECISIONS 089 and 095): the search feature's repositories, use
+// cases, screen, view model and words in common code; Hilt's view model in androidMain.
 plugins {
-    id("serva.android.library")
-    id("serva.android.compose")
-    id("serva.android.hilt")
+    id("serva.kmp.feature")
 }
 
-dependencies {
-    implementation(project(":core:model"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:network"))
-    implementation(project(":core:analytics"))
-    implementation(project(":core:datastore"))
-    implementation(project(":core:location"))
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.material3)
-    testImplementation(libs.junit)
-    testImplementation(project(":core:testing"))
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(project(":core:model"))
+            implementation(project(":core:network"))
+            implementation(project(":core:analytics"))
+            implementation(project(":core:datastore"))
+            implementation(project(":core:location"))
+            implementation(project(":core:inject"))
+            implementation(libs.kotlinx.coroutines.core)
+        }
+        androidMain.dependencies {
+            implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
+        }
+        getByName("androidHostTest").dependencies {
+            implementation(libs.junit)
+            implementation(project(":core:testing"))
+        }
+    }
 }

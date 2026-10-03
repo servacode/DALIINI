@@ -142,34 +142,40 @@ open class AdminReportsAPI {
     /**
      List facility problem reports
      
+     - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
      - parameter facility: (query) Facility id. (optional)
+     - parameter limit: (query) Page size, maximum 200, default 50. (optional)
      - parameter status: (query) OPEN, RESOLVED or DISMISSED. (optional)
      - returns: AdminFacilityReportList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminReportsList(facility: String? = nil, status: String? = nil) async throws -> AdminFacilityReportList {
-        return try await adminReportsListWithRequestBuilder(facility: facility, status: status).execute().body
+    open class func adminReportsList(cursor: String? = nil, facility: String? = nil, limit: Int? = nil, status: String? = nil) async throws -> AdminFacilityReportList {
+        return try await adminReportsListWithRequestBuilder(cursor: cursor, facility: facility, limit: limit, status: status).execute().body
     }
 
     /**
      List facility problem reports
      - GET /api/v1/admin/reports/
-     - Newest first, capped at 250 rows.
+     - Newest first, in cursor pages.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken
+     - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
      - parameter facility: (query) Facility id. (optional)
+     - parameter limit: (query) Page size, maximum 200, default 50. (optional)
      - parameter status: (query) OPEN, RESOLVED or DISMISSED. (optional)
      - returns: RequestBuilder<AdminFacilityReportList> 
      */
-    open class func adminReportsListWithRequestBuilder(facility: String? = nil, status: String? = nil) -> RequestBuilder<AdminFacilityReportList> {
+    open class func adminReportsListWithRequestBuilder(cursor: String? = nil, facility: String? = nil, limit: Int? = nil, status: String? = nil) -> RequestBuilder<AdminFacilityReportList> {
         let localVariablePath = "/api/v1/admin/reports/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
 
         var localVariableUrlComponents = URLComponents(string: localVariableURLString)
         localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "cursor": (wrappedValue: cursor?.encodeToJSON(), isExplode: true),
             "facility": (wrappedValue: facility?.encodeToJSON(), isExplode: true),
+            "limit": (wrappedValue: limit?.encodeToJSON(), isExplode: true),
             "status": (wrappedValue: status?.encodeToJSON(), isExplode: true),
         ])
 

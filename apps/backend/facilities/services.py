@@ -122,7 +122,7 @@ def create_facility_draft(
     return facility
 
 
-def _resolve_city(*, facility: Facility, city_id: UUID | None) -> City | None:
+def resolve_city(*, facility: Facility, city_id: UUID | None) -> City | None:
     if city_id is None:
         return None
     try:
@@ -131,7 +131,7 @@ def _resolve_city(*, facility: Facility, city_id: UUID | None) -> City | None:
         raise ValidationError({"cityId": "City is not valid for the facility province."}) from exc
 
 
-def _resolve_neighborhood(
+def resolve_neighborhood(
     *, city: City | None, neighborhood_id: UUID | None
 ) -> Neighborhood | None:
     if neighborhood_id is None:
@@ -146,7 +146,7 @@ def _resolve_neighborhood(
         ) from exc
 
 
-def _replace_specialties(facility: Facility, specialty_ids: list[int] | None) -> None:
+def replace_specialties(facility: Facility, specialty_ids: list[int] | None) -> None:
     if specialty_ids is None:
         return
     specialties = list(Specialty.objects.filter(pk__in=set(specialty_ids), active=True))
@@ -166,7 +166,7 @@ def _replace_specialties(facility: Facility, specialty_ids: list[int] | None) ->
     )
 
 
-def _replace_service_tags(facility: Facility, tag_ids: list[int] | None) -> None:
+def replace_service_tags(facility: Facility, tag_ids: list[int] | None) -> None:
     if tag_ids is None:
         return
     tags = list(
@@ -201,15 +201,36 @@ def ensure_editable_by_owner(facility: Facility) -> None:
 def update_facility_core(
     *, actor: User, facility: Facility, data: dict[str, Any], request_id: str = ""
 ) -> Facility:
+    """Save an owner's edit.
+
+    On a live facility the name and address wait for review while the facility stays
+    published, and the rest applies at once (`facilities.changes`). Anywhere else the edit
+    applies as it stands; the facility is reviewed when it is next submitted.
+    """
+    from .changes import propose, split, takes_changes_for_review
+
     locked = Facility.objects.select_for_update().select_related("category").get(pk=facility.pk)
     ensure_editable_by_owner(locked)
+    if takes_changes_for_review(locked):
+        reviewed, live = split(data)
+        if live:
+            _write_core(actor=actor, locked=locked, data=live, request_id=request_id)
+        if reviewed:
+            propose(actor=actor, facility=locked, reviewed=reviewed, request_id=request_id)
+        return locked
+    return _write_core(actor=actor, locked=locked, data=data, request_id=request_id)
+
+
+def _write_core(
+    *, actor: User, locked: Facility, data: dict[str, Any], request_id: str
+) -> Facility:
     before = _snapshot(locked)
     city_id = data.get("cityId", locked.city_id)
-    city = _resolve_city(facility=locked, city_id=city_id)
+    city = resolve_city(facility=locked, city_id=city_id)
     neighborhood_id = data.get("neighborhoodId", locked.neighborhood_id)
     if "cityId" in data and city is None and "neighborhoodId" not in data:
         neighborhood_id = None
-    neighborhood = _resolve_neighborhood(
+    neighborhood = resolve_neighborhood(
         city=city,
         neighborhood_id=neighborhood_id,
     )
@@ -232,12 +253,10 @@ def update_facility_core(
             locked.neighborhood = None
     if "neighborhoodId" in data:
         locked.neighborhood = neighborhood
-    if locked.status == Facility.Status.ACTIVE:
-        locked.status = Facility.Status.REVERIFICATION_REQUIRED
     locked.full_clean(exclude=["location"])
     locked.save()
-    _replace_specialties(locked, data.get("specialtyIds"))
-    _replace_service_tags(locked, data.get("serviceTagIds"))
+    replace_specialties(locked, data.get("specialtyIds"))
+    replace_service_tags(locked, data.get("serviceTagIds"))
     record_audit(
         actor=actor,
         action="facility.owner_core.updated",
@@ -258,13 +277,22 @@ def update_facility_location(
     longitude: float,
     request_id: str = "",
 ) -> Facility:
+    from .changes import propose, takes_changes_for_review
+
     locked = Facility.objects.select_for_update().get(pk=facility.pk)
     ensure_editable_by_owner(locked)
+    if takes_changes_for_review(locked):
+        # Where a live facility is on the map is reviewed before it moves there.
+        propose(
+            actor=actor,
+            facility=locked,
+            reviewed={"location": {"latitude": latitude, "longitude": longitude}},
+            request_id=request_id,
+        )
+        return locked
     before = _snapshot(locked)
     locked.location = Point(float(longitude), float(latitude), srid=4326)
-    if locked.status == Facility.Status.ACTIVE:
-        locked.status = Facility.Status.REVERIFICATION_REQUIRED
-    locked.save(update_fields=["location", "status", "updated_at"])
+    locked.save(update_fields=["location", "updated_at"])
     record_audit(
         actor=actor,
         action="facility.owner_location.updated",
@@ -281,7 +309,9 @@ def _required_evidence_complete(facility: Facility) -> bool:
         facility.category.verification_requirements.filter(active=True, required=True)
     )
     counts = Counter(
-        VerificationEvidence.objects.filter(facility=facility).values_list(
+        VerificationEvidence.objects.filter(
+            facility=facility, application__isnull=True
+        ).values_list(
             "requirement_id", flat=True
         )
     )
@@ -306,6 +336,17 @@ def submit_facility(
         raise ValidationError(
             {"status": "A suspended or closed facility cannot be submitted for review."}
         )
+    if locked.status == Facility.Status.ACTIVE:
+        # A live facility is never taken down to be reviewed: its changes are sent as they
+        # are saved. Submitting again answers with the change already waiting, if any.
+        from .changes import pending_change
+
+        waiting = pending_change(locked)
+        if waiting is None:
+            raise ValidationError(
+                {"status": "This facility is live; changes are sent for review as they are saved."}
+            )
+        return waiting
     validate_owner_registration(
         province_id=locked.province_id,
         category_id=locked.category_id,

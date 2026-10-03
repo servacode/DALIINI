@@ -12,15 +12,19 @@ import AnyCodable
 
 public struct PublicCategory: Codable, JSONEncodable, Hashable {
 
+    public static let slugRule = StringRule(minLength: nil, maxLength: nil, pattern: "/^[-a-zA-Z0-9_]+$/")
     public var id: UUID
+    /** Stable, readable and never changed once set: the category's address on the site. */
+    public var slug: String
     public var nameAr: String
     public var nameEn: String?
     public var iconKey: String?
     public var group: NamedRef
     public var capabilities: CategoryCapabilities
 
-    public init(id: UUID, nameAr: String, nameEn: String?, iconKey: String?, group: NamedRef, capabilities: CategoryCapabilities) {
+    public init(id: UUID, slug: String, nameAr: String, nameEn: String?, iconKey: String?, group: NamedRef, capabilities: CategoryCapabilities) {
         self.id = id
+        self.slug = slug
         self.nameAr = nameAr
         self.nameEn = nameEn
         self.iconKey = iconKey
@@ -30,6 +34,7 @@ public struct PublicCategory: Codable, JSONEncodable, Hashable {
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case id
+        case slug
         case nameAr
         case nameEn
         case iconKey
@@ -42,6 +47,7 @@ public struct PublicCategory: Codable, JSONEncodable, Hashable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
+        try container.encode(slug, forKey: .slug)
         try container.encode(nameAr, forKey: .nameAr)
         try container.encode(nameEn, forKey: .nameEn)
         try container.encode(iconKey, forKey: .iconKey)

@@ -46,6 +46,11 @@ BODYLESS_MUTATIONS = {
     ("/api/v1/auth/logout-all/", "post"),
     ("/api/v1/owner/facilities/{facility_id}/submit/", "post"),
     ("/api/v1/owner/facilities/{facility_id}/confirm-hours/", "post"),
+    ("/api/v1/account/invitations/{invitation_id}/accept/", "post"),
+    ("/api/v1/account/invitations/{invitation_id}/decline/", "post"),
+    ("/api/v1/owner/claims/{claim_id}/submit/", "post"),
+    ("/api/v1/account/mfa/setup/", "post"),
+    ("/api/v1/admin/users/{user_id}/mfa/reset/", "post"),
 }
 
 # Endpoints that legitimately answer 204 with no body.
@@ -72,6 +77,13 @@ NO_CONTENT_OPERATIONS = {
     ("/api/v1/owner/facilities/{facility_id}/images/{image_id}/", "delete"),
     ("/api/v1/owner/facilities/{facility_id}/members/{user_id}/", "delete"),
     ("/api/v1/owner/facilities/{facility_id}/temporary-closures/{closure_id}/", "delete"),
+    ("/api/v1/account/invitations/{invitation_id}/decline/", "post"),
+    ("/api/v1/owner/claims/{claim_id}/", "delete"),
+    ("/api/v1/owner/claims/{claim_id}/evidence/{evidence_id}/", "delete"),
+    ("/api/v1/owner/facilities/{facility_id}/invitations/{invitation_id}/", "delete"),
+    ("/api/v1/admin/users/{user_id}/mfa/reset/", "post"),
+    ("/api/v1/admin/duty/rotations/{rotation_id}/", "delete"),
+    ("/api/v1/admin/roles/{role_id}/", "delete"),
 }
 
 PUBLIC_PREFIXES = ("/api/v1/public/",)

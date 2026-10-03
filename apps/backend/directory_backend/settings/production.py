@@ -1,7 +1,7 @@
 from django.core.exceptions import ImproperlyConfigured
 
 from .base import *  # noqa: F403
-from .base import CHANNEL_LAYERS
+from .base import CHANNEL_LAYERS, REST_FRAMEWORK
 from .env import env, env_bool, env_csv
 
 DEBUG = env_bool("DEBUG", False)
@@ -24,6 +24,8 @@ S3_PRIVATE_BUCKET = env("S3_PRIVATE_BUCKET", required=True)
 OTP_PROVIDER = env("OTP_PROVIDER", required=True)
 PUSH_PROVIDER = env("PUSH_PROVIDER", required=True)
 PUSH_TOKEN_ENCRYPTION_KEY = env("PUSH_TOKEN_ENCRYPTION_KEY", required=True)
+MFA_ENCRYPTION_KEY = env("MFA_ENCRYPTION_KEY", required=True)
+STAFF_MFA_REQUIRED = env_bool("STAFF_MFA_REQUIRED", True)
 ANALYTICS_HASH_SALT = env("ANALYTICS_HASH_SALT", required=True)
 FCM_PROJECT_ID = env("FCM_PROJECT_ID", "")
 FCM_SERVICE_ACCOUNT_JSON = env("FCM_SERVICE_ACCOUNT_JSON", "")
@@ -61,12 +63,19 @@ if PUSH_PROVIDER.lower() in {"development", "test", "console"}:
     raise ImproperlyConfigured("Production push provider cannot be a test provider")
 if len(PUSH_TOKEN_ENCRYPTION_KEY) < 32:
     raise ImproperlyConfigured("Production PUSH_TOKEN_ENCRYPTION_KEY is too short")
+if len(MFA_ENCRYPTION_KEY) < 32:
+    raise ImproperlyConfigured("Production MFA_ENCRYPTION_KEY is too short")
 if len(ANALYTICS_HASH_SALT) < 32:
     raise ImproperlyConfigured("Production ANALYTICS_HASH_SALT is too short")
 if PUSH_PROVIDER.lower() == "fcm" and not FCM_PROJECT_ID:
     raise ImproperlyConfigured("FCM_PROJECT_ID is required when PUSH_PROVIDER=fcm")
 if PUSH_PROVIDER.lower() == "fcm" and not FCM_SERVICE_ACCOUNT_JSON.strip():
     raise ImproperlyConfigured("FCM_SERVICE_ACCOUNT_JSON is required when PUSH_PROVIDER=fcm")
+
+# Every throttle tells anonymous callers apart by address. Behind a proxy that address is the
+# proxy's own unless this says how many proxies to trust, and every visitor in the country would
+# share one limit. So it must be said, even when the answer is "0" (nothing in front).
+REST_FRAMEWORK["NUM_PROXIES"] = int(env("DRF_NUM_PROXIES", required=True))
 
 CHANNEL_LAYERS["default"]["CONFIG"]["hosts"] = [REDIS_URL]
 CELERY_BROKER_URL = REDIS_URL

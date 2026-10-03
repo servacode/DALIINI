@@ -34,6 +34,10 @@ jobs:
         run: python3 infrastructure/quality/source_security.py
       - name: No open P0/P1 release blocker
         run: python3 infrastructure/quality/release_blockers.py
+      - name: The production stack's shape and fail-closed rules
+        run: |
+          python3 -c 'import yaml' 2>/dev/null || sudo apt-get install -y python3-yaml
+          python3 infrastructure/scripts/qualify-production-stack.py
 
   backend-source:
     runs-on: ubuntu-latest
@@ -94,9 +98,9 @@ jobs:
         run: ./scripts/generate-api-clients.sh
       - name: Fail on generated client drift
         run: |
-          if [[ -n "$(git status --porcelain -- packages/api-typescript packages/api-kotlin packages/api-swift)" ]]; then
+          if [[ -n "$(git status --porcelain -- packages/api-typescript packages/api-kotlin packages/api-swift packages/api-kotlin-multiplatform)" ]]; then
             echo "FAIL: generated clients differ from the committed artefacts." >&2
-            git --no-pager status --porcelain -- packages/api-typescript packages/api-kotlin packages/api-swift >&2
+            git --no-pager status --porcelain -- packages/api-typescript packages/api-kotlin packages/api-swift packages/api-kotlin-multiplatform >&2
             exit 1
           fi
           echo "PASS: generated clients match the committed artefacts."
@@ -161,8 +165,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Contexts match render.yaml: the Next apps build from the monorepo root,
-          # the backend from its own directory.
+          # Contexts match infrastructure/production/compose.yml: the Next apps build from the
+          # monorepo root, the backend from its own directory.
           - name: backend
             context: apps/backend
             file: apps/backend/Dockerfile
@@ -189,3 +193,53 @@ jobs:
           push: false
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+  # The production stack as the server runs it (DECISION-080): every image built, the whole stack
+  # started with throwaway values, and each name asked through Caddy, TLS included.
+  # The base map's Arabic labels, drawn by the site's own MapLibre and RTL plugin in a real
+  # browser (DECISION-082): one tile of Raqqa served by Martin with the brand's glyphs and the
+  # map's icons. The labels must come out joined and right to left, and the style must load at
+  # all: an expression MapLibre on the web refuses fails the whole map, not one layer.
+  map-labels:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @servacode/public-web exec playwright install --with-deps chromium
+      - name: Serve one tile of Raqqa
+        run: |
+          map="$RUNNER_TEMP/map"
+          python3 infrastructure/production/map/fixture.py "$map"
+          python3 infrastructure/production/map/bind-style.py http://127.0.0.1:3000 "$map/syria.pmtiles" "$map/styles/daliini.json"
+          infrastructure/production/map/serve.sh "$map"
+      - name: Draw it and read the labels back
+        working-directory: apps/web
+        run: >-
+          node scripts/map-render-check.mjs --style http://127.0.0.1:3000/style/daliini
+          --out "$RUNNER_TEMP/labels" --min-arabic 2
+          --view "city:38.995,35.942,12.6:الرقة|المنصورة"
+          --view "street:39.0089,35.9506,13.6:الرقة|شارع تل أبيض"
+          --view "pharmacy:39.0115,35.9515,15.6:صيدلية الشفاء"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-labels
+          path: ${{ runner.temp }}/labels
+
+  production-stack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      # Then five thousand made-up facilities and forty visitors for a minute, through Caddy,
+      # held to each screen's p95 (infrastructure/load/public.js, DECISION-083).
+      - name: Boot the stack, ask it, and load it
+        env:
+          SMOKE_LOAD: '1'
+        run: infrastructure/production/smoke.sh

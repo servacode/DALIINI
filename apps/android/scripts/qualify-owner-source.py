@@ -35,11 +35,11 @@ def check_feature_architecture() -> None:
 
 def check_onboarding() -> None:
     vm = read(
-        "feature/onboarding/src/main/kotlin/com/servacode/directory/feature/onboarding/"
+        "feature/onboarding/src/androidMain/kotlin/com/servacode/directory/feature/onboarding/"
         "OnboardingViewModel.kt"
     )
     screen = read(
-        "feature/onboarding/src/main/kotlin/com/servacode/directory/feature/onboarding/"
+        "feature/onboarding/src/androidMain/kotlin/com/servacode/directory/feature/onboarding/"
         "OnboardingScreen.kt"
     )
     steps = (
@@ -71,13 +71,13 @@ def check_onboarding() -> None:
 
 def check_generated_boundary() -> None:
     boundary = read(
-        "core/network/src/main/kotlin/com/servacode/directory/core/network/OwnerApiBoundary.kt"
+        "core/network/src/commonMain/kotlin/com/servacode/directory/core/network/OwnerApiBoundary.kt"
     )
     # Before P10 this boundary failed closed because no generated client existed. One exists
     # now, so what has to hold is that the boundary stays a domain interface: no transport type
     # crosses it, and the generated adapter is the only implementation.
     adapter = read(
-        "core/network/src/main/kotlin/com/servacode/directory/core/network/api/GeneratedOwnerApi.kt"
+        "core/network/src/androidMain/kotlin/com/servacode/directory/core/network/api/GeneratedOwnerApi.kt"
     )
     require("interface OwnerApiBoundary" in boundary, "owner boundary interface missing")
     require(
@@ -98,7 +98,7 @@ def check_manage_and_duty() -> None:
     require("startNow(endsAt" in duty, "start-now must use owner-selected end time")
     require("DutyValidator.isValid" in duty, "duty validation missing")
     require(
-        (ROOT / "feature/duty/src/test/kotlin/com/servacode/directory/feature/duty/DutyValidatorTest.kt").exists(),
+        (ROOT / "feature/duty/src/androidHostTest/kotlin/com/servacode/directory/feature/duty/DutyValidatorTest.kt").exists(),
         "duty validator test missing",
     )
 
@@ -108,7 +108,7 @@ def check_routes_and_map() -> None:
     for route in ("MyFacilities", "Onboarding", "ManageFacility", "Duty"):
         require(f"DirectoryRoute.{route}" in app, f"owner route not wired: {route}")
     picker = read(
-        "feature/onboarding/src/main/kotlin/com/servacode/directory/feature/onboarding/"
+        "feature/onboarding/src/androidMain/kotlin/com/servacode/directory/feature/onboarding/"
         "OnboardingMapPicker.kt"
     )
     require("MapView" in picker and "MapLibreController" in picker, "MapLibre native picker missing")
@@ -122,7 +122,8 @@ def check_hygiene() -> None:
         *(ROOT / "feature/duty").rglob("*.kt"),
         *(ROOT / "core/network").rglob("*.kt"),
     ]
-    for path in sources:
+    # The sources as written: what a build generates (KSP's factories, Compose's `Res`) is not.
+    for path in (path for path in sources if "build" not in path.parts):
         text = path.read_text(encoding="utf-8")
         require("storage_key" not in text, f"raw storage key reference found: {path}")
         require("ACCESS_BACKGROUND_LOCATION" not in text, f"background location found: {path}")

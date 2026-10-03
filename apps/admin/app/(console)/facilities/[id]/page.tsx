@@ -10,6 +10,7 @@ import {
   KeyValueList,
   LoadingState,
   PageHeader,
+  Pagination,
   Panel,
   StatusBadge,
   type Tone,
@@ -18,6 +19,7 @@ import {
 } from "../../../../components/ui";
 import { useMutation } from "../../../../lib/client/use-mutation";
 import { REASONS } from "../../reports/page";
+import { useCursorPage } from "../../../../lib/client/use-cursor-page";
 import { useLookups } from "../../../../lib/client/use-lookups";
 import { useResource } from "../../../../lib/client/use-resource";
 import { QUALITY_ISSUES, QualityMeter, STATUS } from "../page";
@@ -32,6 +34,11 @@ type Facility = Readonly<{
   cityId: string | null;
   updatedAt: string | null;
   location: { latitude: number; longitude: number } | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  addressAr?: string | null;
+  descriptionAr?: string | null;
+  ownerCount?: number;
   categoryNameAr?: string;
   provinceNameAr?: string;
   ownerName?: string | null;
@@ -100,6 +107,7 @@ export default function FacilityDetailPage({ params }: { params: Promise<{ id: s
   const facility = useResource<Facility>("facility", { id });
   const mutation = useMutation();
   const canManage = useCan("admin.facilities.manage");
+  const canEdit = useCan("admin.facilities.edit");
 
   const [action, setAction] = useState<keyof typeof ACTIONS | null>(null);
   const [reason, setReason] = useState("");
@@ -126,9 +134,14 @@ export default function FacilityDetailPage({ params }: { params: Promise<{ id: s
         title={facility.data?.nameAr ?? "منشأة"}
         description="الحالة التشغيلية والإجراءات المتاحة."
         actions={
-          canManage && status ? (
+          (canManage || canEdit) && status ? (
             <div className="button-row">
-              {status === "ACTIVE" ? (
+              {canEdit ? (
+                <Link className="button-ghost" href={`/facilities/${id}/edit`} data-testid="edit">
+                  تعديل البيانات
+                </Link>
+              ) : null}
+              {canManage && status === "ACTIVE" ? (
                 <button
                   type="button"
                   className="button-danger"
@@ -141,7 +154,7 @@ export default function FacilityDetailPage({ params }: { params: Promise<{ id: s
                   إيقاف
                 </button>
               ) : null}
-              {status === "SUSPENDED" ? (
+              {canManage && status === "SUSPENDED" ? (
                 <button
                   type="button"
                   className="button-primary"
@@ -154,7 +167,7 @@ export default function FacilityDetailPage({ params }: { params: Promise<{ id: s
                   إعادة تفعيل
                 </button>
               ) : null}
-              {status !== "CLOSED" ? (
+              {canManage && status !== "CLOSED" ? (
                 <button
                   type="button"
                   className="button-danger"
@@ -215,7 +228,18 @@ export default function FacilityDetailPage({ params }: { params: Promise<{ id: s
                     },
                   ]
                 : []),
-              { label: "المالك", value: facility.data.ownerName ?? "—" },
+              { label: "الهاتف", value: facility.data.phone ?? "—", ltr: true },
+              { label: "واتساب", value: facility.data.whatsapp ?? "—", ltr: true },
+              { label: "العنوان", value: facility.data.addressAr ?? "—" },
+              ...(facility.data.descriptionAr
+                ? [{ label: "الوصف", value: facility.data.descriptionAr }]
+                : []),
+              {
+                label: "المالك",
+                value:
+                  facility.data.ownerName ??
+                  (facility.data.ownerCount === 0 ? "أضافتها إدارة الدليل، بلا مالك بعد" : "—"),
+              },
               { label: "هاتف المالك", value: facility.data.ownerPhone ?? "—", ltr: true },
               {
                 label: "الموقع",
@@ -288,14 +312,19 @@ export default function FacilityDetailPage({ params }: { params: Promise<{ id: s
 
 /** Open and past problem reports for one facility, read-only here; decisions happen on /reports. */
 function FacilityReports({ facilityId }: { facilityId: string }) {
-  const reports = useResource<{
-    items: { id: string; reason: string; note: string; status: string; createdAt: string }[];
+  const reports = useCursorPage<{
+    id: string;
+    reason: string;
+    note: string;
+    status: string;
+    createdAt: string;
   }>("reports", { facility: facilityId });
   if (reports.loading) return <LoadingState />;
   if (reports.error) return <ErrorState error={reports.error} onRetry={reports.reload} />;
   const items = reports.data?.items ?? [];
   if (items.length === 0) return <span className="muted">لا بلاغات.</span>;
   return (
+    <>
     <ol className="timeline">
       {items.map((report) => (
         <li key={report.id}>
@@ -310,6 +339,8 @@ function FacilityReports({ facilityId }: { facilityId: string }) {
         </li>
       ))}
     </ol>
+    {reports.pagination ? <Pagination {...reports.pagination} /> : null}
+    </>
   );
 }
 

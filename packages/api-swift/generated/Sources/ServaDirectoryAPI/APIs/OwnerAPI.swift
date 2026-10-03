@@ -13,6 +13,253 @@ import AnyCodable
 open class OwnerAPI {
 
     /**
+     One of this account's claims
+     
+     - parameter claimId: (path)  
+     - returns: Claim
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func ownerClaimRetrieve(claimId: UUID) async throws -> Claim {
+        return try await ownerClaimRetrieveWithRequestBuilder(claimId: claimId).execute().body
+    }
+
+    /**
+     One of this account's claims
+     - GET /api/v1/owner/claims/{claim_id}/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter claimId: (path)  
+     - returns: RequestBuilder<Claim> 
+     */
+    open class func ownerClaimRetrieveWithRequestBuilder(claimId: UUID) -> RequestBuilder<Claim> {
+        var localVariablePath = "/api/v1/owner/claims/{claim_id}/"
+        let claimIdPreEscape = "\(APIHelper.mapValueToPathItem(claimId))"
+        let claimIdPostEscape = claimIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{claim_id}", with: claimIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Claim>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Start claiming a facility
+     
+     - parameter claimStart: (body)  
+     - returns: Claim
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func ownerClaimStart(claimStart: ClaimStart) async throws -> Claim {
+        return try await ownerClaimStartWithRequestBuilder(claimStart: claimStart).execute().body
+    }
+
+    /**
+     Start claiming a facility
+     - POST /api/v1/owner/claims/
+     - Returns the open claim this account already has for the facility, if any. 404 when the facility is not claimable; 409 FACILITY_ALREADY_OWNED when it has an owner, TOO_MANY_CLAIMS past five open claims.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter claimStart: (body)  
+     - returns: RequestBuilder<Claim> 
+     */
+    open class func ownerClaimStartWithRequestBuilder(claimStart: ClaimStart) -> RequestBuilder<Claim> {
+        let localVariablePath = "/api/v1/owner/claims/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: claimStart)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Claim>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Send a claim for review
+     
+     - parameter claimId: (path)  
+     - returns: Claim
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func ownerClaimSubmit(claimId: UUID) async throws -> Claim {
+        return try await ownerClaimSubmitWithRequestBuilder(claimId: claimId).execute().body
+    }
+
+    /**
+     Send a claim for review
+     - POST /api/v1/owner/claims/{claim_id}/submit/
+     - Every required document must be uploaded to the claim. 409 CLAIM_PENDING while another claim on the same facility is being reviewed; FACILITY_ALREADY_OWNED if it gained an owner meanwhile.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter claimId: (path)  
+     - returns: RequestBuilder<Claim> 
+     */
+    open class func ownerClaimSubmitWithRequestBuilder(claimId: UUID) -> RequestBuilder<Claim> {
+        var localVariablePath = "/api/v1/owner/claims/{claim_id}/submit/"
+        let claimIdPreEscape = "\(APIHelper.mapValueToPathItem(claimId))"
+        let claimIdPostEscape = claimIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{claim_id}", with: claimIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Claim>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Withdraw a claim and delete its documents
+     
+     - parameter claimId: (path)  
+     - returns: Void
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func ownerClaimWithdraw(claimId: UUID) async throws {
+        return try await ownerClaimWithdrawWithRequestBuilder(claimId: claimId).execute().body
+    }
+
+    /**
+     Withdraw a claim and delete its documents
+     - DELETE /api/v1/owner/claims/{claim_id}/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter claimId: (path)  
+     - returns: RequestBuilder<Void> 
+     */
+    open class func ownerClaimWithdrawWithRequestBuilder(claimId: UUID) -> RequestBuilder<Void> {
+        var localVariablePath = "/api/v1/owner/claims/{claim_id}/"
+        let claimIdPreEscape = "\(APIHelper.mapValueToPathItem(claimId))"
+        let claimIdPostEscape = claimIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{claim_id}", with: claimIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return localVariableRequestBuilder.init(method: "DELETE", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Find a published facility nobody owns yet
+     
+     - parameter q: (query)  
+     - parameter categoryId: (query) Keep facilities of this category. (optional)
+     - parameter provinceId: (query) Keep facilities in this province. (optional)
+     - returns: ClaimableFacilityList
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func ownerClaimableFacilitiesList(q: String, categoryId: String? = nil, provinceId: String? = nil) async throws -> ClaimableFacilityList {
+        return try await ownerClaimableFacilitiesListWithRequestBuilder(q: q, categoryId: categoryId, provinceId: provinceId).execute().body
+    }
+
+    /**
+     Find a published facility nobody owns yet
+     - GET /api/v1/owner/claimable-facilities/
+     - For «هذه منشأتي». Matches the Arabic or English name, Arabic spelling folded as in search. At most 20 results; `q` needs two characters.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter q: (query)  
+     - parameter categoryId: (query) Keep facilities of this category. (optional)
+     - parameter provinceId: (query) Keep facilities in this province. (optional)
+     - returns: RequestBuilder<ClaimableFacilityList> 
+     */
+    open class func ownerClaimableFacilitiesListWithRequestBuilder(q: String, categoryId: String? = nil, provinceId: String? = nil) -> RequestBuilder<ClaimableFacilityList> {
+        let localVariablePath = "/api/v1/owner/claimable-facilities/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "categoryId": (wrappedValue: categoryId?.encodeToJSON(), isExplode: true),
+            "provinceId": (wrappedValue: provinceId?.encodeToJSON(), isExplode: true),
+            "q": (wrappedValue: q.encodeToJSON(), isExplode: true),
+        ])
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<ClaimableFacilityList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     This account's claims, newest first
+     
+     - returns: ClaimList
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func ownerClaimsList() async throws -> ClaimList {
+        return try await ownerClaimsListWithRequestBuilder().execute().body
+    }
+
+    /**
+     This account's claims, newest first
+     - GET /api/v1/owner/claims/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<ClaimList> 
+     */
+    open class func ownerClaimsListWithRequestBuilder() -> RequestBuilder<ClaimList> {
+        let localVariablePath = "/api/v1/owner/claims/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<ClaimList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      List categories open for owner onboarding in a province
      
      - parameter provinceId: (query) Province to inspect. 
@@ -214,6 +461,138 @@ open class OwnerAPI {
     }
 
     /**
+     Invite someone to help run a facility, by phone number
+     
+     - parameter facilityId: (path)  
+     - parameter invitationRequest: (body)  
+     - returns: Invitation
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func ownerFacilityInvitationCreate(facilityId: UUID, invitationRequest: InvitationRequest) async throws -> Invitation {
+        return try await ownerFacilityInvitationCreateWithRequestBuilder(facilityId: facilityId, invitationRequest: invitationRequest).execute().body
+    }
+
+    /**
+     Invite someone to help run a facility, by phone number
+     - POST /api/v1/owner/facilities/{facility_id}/invitations/
+     - Owners only. The answer is the same whether or not the number has an account, so this cannot be used to find out who is registered. A person with an account is notified at once; anyone else finds the invitation when they sign up with that number. It lasts seven days; inviting the same number again renews it. 409 ALREADY_MEMBER when the number belongs to a member already.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter facilityId: (path)  
+     - parameter invitationRequest: (body)  
+     - returns: RequestBuilder<Invitation> 
+     */
+    open class func ownerFacilityInvitationCreateWithRequestBuilder(facilityId: UUID, invitationRequest: InvitationRequest) -> RequestBuilder<Invitation> {
+        var localVariablePath = "/api/v1/owner/facilities/{facility_id}/invitations/"
+        let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
+        let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{facility_id}", with: facilityIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: invitationRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Invitation>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Withdraw an invitation that has not been answered
+     
+     - parameter facilityId: (path)  
+     - parameter invitationId: (path)  
+     - returns: Void
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func ownerFacilityInvitationRevoke(facilityId: UUID, invitationId: UUID) async throws {
+        return try await ownerFacilityInvitationRevokeWithRequestBuilder(facilityId: facilityId, invitationId: invitationId).execute().body
+    }
+
+    /**
+     Withdraw an invitation that has not been answered
+     - DELETE /api/v1/owner/facilities/{facility_id}/invitations/{invitation_id}/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter facilityId: (path)  
+     - parameter invitationId: (path)  
+     - returns: RequestBuilder<Void> 
+     */
+    open class func ownerFacilityInvitationRevokeWithRequestBuilder(facilityId: UUID, invitationId: UUID) -> RequestBuilder<Void> {
+        var localVariablePath = "/api/v1/owner/facilities/{facility_id}/invitations/{invitation_id}/"
+        let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
+        let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{facility_id}", with: facilityIdPostEscape, options: .literal, range: nil)
+        let invitationIdPreEscape = "\(APIHelper.mapValueToPathItem(invitationId))"
+        let invitationIdPostEscape = invitationIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{invitation_id}", with: invitationIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return localVariableRequestBuilder.init(method: "DELETE", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Invitations sent for a facility
+     
+     - parameter facilityId: (path)  
+     - returns: InvitationList
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func ownerFacilityInvitationsList(facilityId: UUID) async throws -> InvitationList {
+        return try await ownerFacilityInvitationsListWithRequestBuilder(facilityId: facilityId).execute().body
+    }
+
+    /**
+     Invitations sent for a facility
+     - GET /api/v1/owner/facilities/{facility_id}/invitations/
+     - Owners only. Newest first.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter facilityId: (path)  
+     - returns: RequestBuilder<InvitationList> 
+     */
+    open class func ownerFacilityInvitationsListWithRequestBuilder(facilityId: UUID) -> RequestBuilder<InvitationList> {
+        var localVariablePath = "/api/v1/owner/facilities/{facility_id}/invitations/"
+        let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
+        let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{facility_id}", with: facilityIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<InvitationList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Set the map point of a facility
      
      - parameter facilityId: (path)  
@@ -228,7 +607,7 @@ open class OwnerAPI {
     /**
      Set the map point of a facility
      - PUT /api/v1/owner/facilities/{facility_id}/location/
-     - WGS84 decimal degrees. PostGIS remains the source of truth for geo.
+     - WGS84 decimal degrees. PostGIS remains the source of truth for geo. On an ACTIVE facility the new point waits for review and the published one stays.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken
@@ -319,7 +698,7 @@ open class OwnerAPI {
     /**
      Add a member or change a member role
      - POST /api/v1/owner/facilities/{facility_id}/members/
-     - Only an owner may call this, and the last owner cannot be demoted.
+     - Only an owner may call this, and the last owner cannot be demoted. Adding a new member by account id is deprecated: invite them by phone number with ownerFacilityInvitationCreate, which they accept themselves. Changing the role of an existing member stays here.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken
@@ -444,7 +823,7 @@ open class OwnerAPI {
     /**
      Submit a facility for review
      - POST /api/v1/owner/facilities/{facility_id}/submit/
-     - Submission re-validates the current onboarding policy and the completeness of the current evidence requirements. Only one submitted application of a given kind can exist per facility at a time.
+     - Submission re-validates the current onboarding policy and the completeness of the current evidence requirements. Only one submitted application of a given kind can exist per facility at a time. An ACTIVE facility is never taken down to be reviewed: its edits are sent as they are saved, and submitting answers with the change already waiting, or 400 when there is none.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken
@@ -487,7 +866,7 @@ open class OwnerAPI {
     /**
      Update the core fields of a facility
      - PATCH /api/v1/owner/facilities/{facility_id}/
-     - Editing a sensitive field on an active facility moves it into REVERIFICATION_REQUIRED, so the change is reviewed before it becomes public.
+     - On an ACTIVE facility the facility stays published: its name, address, city, neighbourhood and map point wait for an operator as a CHANGE application (`pendingChange` in the response), and every other field applies at once. A second edit while one waits is merged into it. Elsewhere the edit applies as it stands and is reviewed at the next submission.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken

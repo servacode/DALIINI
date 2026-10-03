@@ -33,6 +33,7 @@ function filled(params: Params, keys: readonly string[]): Record<string, string>
 
 export const READS = {
   me: (apis: AdminApis) => apis.system.adminMeRetrieve(),
+  mfaStatus: (apis: AdminApis) => apis.account.accountMfaRetrieve(),
   dashboard: (apis: AdminApis) => apis.system.adminDashboardRetrieve(),
   tasks: (apis: AdminApis) => apis.system.adminTasksRetrieve(),
   alerts: (apis: AdminApis) => apis.system.adminAlertsList(),
@@ -41,14 +42,39 @@ export const READS = {
   systemStatus: (apis: AdminApis) => apis.system.adminSystemStatusRetrieve(),
   reviews: (apis: AdminApis, p: Params) =>
     apis.reviews.adminReviewsList(
-      filled(p, ["kind", "status", "province", "category", "from", "to", "evidence"]),
+      filled(p, [
+        "kind",
+        "status",
+        "province",
+        "category",
+        "from",
+        "to",
+        "evidence",
+        "cursor",
+        "limit",
+      ]) as never,
     ),
   review: (apis: AdminApis, p: Params) =>
     apis.reviews.adminReviewRetrieve({ applicationId: p.id! }),
 
   facilities: (apis: AdminApis, p: Params) =>
     apis.facilities.adminFacilitiesList(
-      filled(p, ["status", "province", "category", "q", "issue", "ordering"]) as never,
+      filled(p, [
+        "status",
+        "province",
+        "city",
+        "category",
+        "q",
+        "issue",
+        "ordering",
+        "cursor",
+        "limit",
+      ]) as never,
+    ),
+  // Located facilities as points, with the list's own filters (DECISION-075).
+  facilitiesMap: (apis: AdminApis, p: Params) =>
+    apis.facilities.adminFacilitiesMap(
+      filled(p, ["status", "province", "city", "category", "q", "issue"]) as never,
     ),
   facilityTimeline: (apis: AdminApis, p: Params) =>
     apis.facilities.adminFacilityTimelineRetrieve({ facilityId: p.id! }),
@@ -56,9 +82,12 @@ export const READS = {
     apis.facilities.adminFacilityRetrieve({ facilityId: p.id! }),
 
   users: (apis: AdminApis, p: Params) =>
-    apis.users.adminUsersList(filled(p, ["q", "status", "role"])),
+    apis.users.adminUsersList(
+      filled(p, ["q", "status", "role", "ordering", "cursor", "limit"]) as never,
+    ),
   user: (apis: AdminApis, p: Params) => apis.users.adminUserRetrieve({ userId: p.id! }),
   roles: (apis: AdminApis) => apis.users.adminRolesList(),
+  permissions: (apis: AdminApis) => apis.users.adminPermissionsList(),
 
   categoryGroups: (apis: AdminApis) => apis.taxonomy.adminCategoryGroupsList(),
   categories: (apis: AdminApis) => apis.taxonomy.adminCategoriesList(),
@@ -66,6 +95,8 @@ export const READS = {
   verificationRequirements: (apis: AdminApis) =>
     apis.verification.adminVerificationRequirementsList(),
   ads: (apis: AdminApis) => apis.ads.adminAdsList(),
+  adStats: (apis: AdminApis, p: Params) =>
+    apis.ads.adminAdStatsRetrieve(filled(p, ["from", "to"])),
   settings: (apis: AdminApis) => apis.settings.adminSettingsList(),
   // What a mobile build must be. Its own entry rather than part of `settings`, because it is
   // a different endpoint with a different shape — and the one that can stop every phone.
@@ -73,17 +104,31 @@ export const READS = {
 
   audit: (apis: AdminApis, p: Params) =>
     apis.audit.adminAuditList(
-      filled(p, ["actor", "action", "resource", "requestId", "from", "to"]),
+      filled(p, [
+        "actor",
+        "action",
+        "resource",
+        "requestId",
+        "from",
+        "to",
+        "cursor",
+        "limit",
+      ]) as never,
     ),
 
   reports: (apis: AdminApis, p: Params) =>
-    apis.reports.adminReportsList(filled(p, ["status", "facility"])),
+    apis.reports.adminReportsList(
+      filled(p, ["status", "facility", "cursor", "limit"]) as never,
+    ),
   provinceCities: (apis: AdminApis, p: Params) =>
     apis.provinces.adminProvinceCitiesList({ provinceId: p.id! }),
 
   // Operations screens
   analyticsPeriod: (apis: AdminApis, p: Params) =>
     apis.analytics.adminAnalyticsRetrieve(filled(p, ["from", "to"])),
+  // The same period, one Damascus day at a time, for the charts (DECISION-075).
+  analyticsSeries: (apis: AdminApis, p: Params) =>
+    apis.analytics.adminAnalyticsSeriesRetrieve(filled(p, ["from", "to"]) as never),
   staffPerformance: (apis: AdminApis, p: Params) =>
     apis.analytics.adminAnalyticsStaffRetrieve(filled(p, ["from", "to"])),
   provinceReadiness: (apis: AdminApis, p: Params) =>
@@ -94,6 +139,8 @@ export const READS = {
       provinceId: p.provinceId?.trim() ?? "",
       ...filled(p, ["cityId", "from", "to"]),
     }),
+  dutyRotations: (apis: AdminApis, p: Params) =>
+    apis.duty.adminDutyRotationsList(filled(p, ["provinceId"])),
   contentPages: (apis: AdminApis) => apis.content.adminContentPagesList(),
   contentPage: (apis: AdminApis, p: Params) =>
     apis.content.adminContentPageRetrieve({ slug: p.slug ?? "" }),
@@ -101,9 +148,11 @@ export const READS = {
   emergencyNumbers: (apis: AdminApis, p: Params) =>
     apis.content.adminEmergencyNumbersList(filled(p, ["provinceId"])),
   contactMessages: (apis: AdminApis, p: Params) =>
-    apis.content.adminContactMessagesList(filled(p, ["status", "kind", "cursor"])),
+    apis.content.adminContactMessagesList(
+      filled(p, ["status", "kind", "cursor", "limit"]) as never,
+    ),
   broadcasts: (apis: AdminApis, p: Params) =>
-    apis.notifications.adminNotificationBroadcastsList(filled(p, ["cursor"])),
+    apis.notifications.adminNotificationBroadcastsList(filled(p, ["cursor", "limit"]) as never),
   rejectionTemplates: (apis: AdminApis, p: Params) =>
     apis.reviews.adminRejectionTemplatesList(p.active === "true" ? { active: true } : {}),
 
@@ -139,16 +188,73 @@ function withDates(body: Body, keys: readonly string[]): Record<string, unknown>
 
 const SCHEDULE = ["startsAt", "endsAt"] as const;
 
+/** A calendar day (`YYYY-MM-DD`) as the `Date` the generated client serialises back to a day. */
+function withDay(body: Body, key: string): Record<string, unknown> {
+  const value = body[key];
+  if (typeof value !== "string" || !value) return { ...body };
+  return { ...body, [key]: new Date(`${value}T00:00:00Z`) };
+}
+
 export const WRITES = {
+  // `revision` comes back with a CHANGE: the version of the owner's proposal the reviewer saw.
+  // If the owner revised it since, the backend refuses rather than publish what nobody read.
   reviewApprove: (apis: AdminApis, b: Body) =>
     apis.reviews.adminReviewApprove({
       applicationId: String(b.id),
-      adminDecisionRequest: { reason: String(b.reason ?? "") },
+      adminReviewDecisionRequest: {
+        reason: String(b.reason ?? ""),
+        ...(b.revision ? { revision: Number(b.revision) } : {}),
+      },
     }),
   reviewReject: (apis: AdminApis, b: Body) =>
     apis.reviews.adminReviewReject({
       applicationId: String(b.id),
-      adminDecisionRequest: { reason: String(b.reason ?? "") },
+      adminReviewDecisionRequest: { reason: String(b.reason ?? "") },
+    }),
+
+  // The record an operator adds or corrects. `location` arrives as `{latitude, longitude}` or
+  // null, and the id of an update travels beside the fields rather than among them.
+  facilityCreate: (apis: AdminApis, b: Body) =>
+    apis.facilities.adminFacilityCreate({ adminFacilityCreate: b as never }),
+  facilityUpdate: (apis: AdminApis, b: Body) => {
+    const { id, ...fields } = b;
+    return apis.facilities.adminFacilityUpdate({
+      facilityId: String(id),
+      patchedAdminFacilityWrite: fields as never,
+    });
+  },
+
+  // The operator's own second sign-in step (DECISION-065). The code travels in the body only.
+  mfaSetup: (apis: AdminApis) => apis.account.accountMfaSetup(),
+  mfaConfirm: (apis: AdminApis, b: Body) =>
+    apis.account.accountMfaConfirm({ mfaCode: { code: String(b.code ?? "") } }),
+  mfaVerify: (apis: AdminApis, b: Body) =>
+    apis.account.accountMfaVerify({ mfaCode: { code: String(b.code ?? "") } }),
+  mfaDisable: (apis: AdminApis, b: Body) =>
+    apis.account.accountMfaDisable({ mfaCode: { code: String(b.code ?? "") } }),
+  userMfaReset: (apis: AdminApis, b: Body) =>
+    apis.users.adminUserMfaReset({ userId: String(b.id) }),
+
+  // Saved duty rotations, and the months they generate (previewed unless `apply` is true).
+  dutyRotationCreate: (apis: AdminApis, b: Body) =>
+    apis.duty.adminDutyRotationCreate({ dutyRotationRequest: withDay(b, "anchorDate") as never }),
+  dutyRotationUpdate: (apis: AdminApis, b: Body) => {
+    const { id, ...fields } = b;
+    return apis.duty.adminDutyRotationUpdate({
+      rotationId: String(id),
+      patchedDutyRotationRequest: withDay(fields, "anchorDate") as never,
+    });
+  },
+  dutyRotationDelete: (apis: AdminApis, b: Body) =>
+    apis.duty.adminDutyRotationDelete({ rotationId: String(b.id) }),
+  dutyRotationGenerate: (apis: AdminApis, b: Body) =>
+    apis.duty.adminDutyRotationGenerate({
+      rotationId: String(b.id),
+      dutyRotationGenerate: {
+        fromDate: new Date(`${String(b.fromDate)}T00:00:00Z`),
+        toDate: new Date(`${String(b.toDate)}T00:00:00Z`),
+        apply: Boolean(b.apply),
+      },
     }),
 
   facilitySuspend: (apis: AdminApis, b: Body) =>
@@ -176,6 +282,25 @@ export const WRITES = {
       // `AdminRole` is keyed by an integer; the screen holds the ids as checkbox strings.
       adminUserRolesRequest: { roleIds: ((b.roleIds as unknown[] | undefined) ?? []).map(Number) },
     }),
+  // The role editor (DECISION-072). The code is generated by the backend when none is given.
+  roleCreate: (apis: AdminApis, b: Body) =>
+    apis.users.adminRoleCreate({
+      adminRoleCreateRequest: {
+        name: String(b.name ?? ""),
+        permissions: ((b.permissions as unknown[] | undefined) ?? []).map(String),
+      },
+    }),
+  roleUpdate: (apis: AdminApis, b: Body) =>
+    apis.users.adminRoleUpdate({
+      roleId: Number(b.id),
+      patchedAdminRoleUpdateRequest: {
+        ...(b.name === undefined ? {} : { name: String(b.name) }),
+        ...(b.permissions === undefined
+          ? {}
+          : { permissions: (b.permissions as unknown[]).map(String) }),
+      },
+    }),
+  roleDelete: (apis: AdminApis, b: Body) => apis.users.adminRoleDelete({ roleId: Number(b.id) }),
 
   categoryGroupCreate: (apis: AdminApis, b: Body) =>
     apis.taxonomy.adminCategoryGroupCreate({ adminCategoryGroupRequest: b }),

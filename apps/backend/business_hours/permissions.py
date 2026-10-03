@@ -1,5 +1,5 @@
 from django.contrib.auth.models import AnonymousUser
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied
 
 from accounts.models import User
 from facilities.models import Facility, FacilityMembership
@@ -14,4 +14,6 @@ def require_facility_manager(user: User | AnonymousUser | None, facility: Facili
         role__in=[FacilityMembership.Role.OWNER, FacilityMembership.Role.MANAGER],
     ).exists()
     if not allowed:
-        raise PermissionDenied("Facility membership required.")
+        # Not found rather than forbidden: a stranger must not learn from the answer that a
+        # facility with this id exists, which is what the owner's own facility routes already do.
+        raise NotFound()

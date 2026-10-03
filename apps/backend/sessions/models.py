@@ -21,6 +21,9 @@ class UserSession(models.Model):
     expires_at = models.DateTimeField()
     revoked_at = models.DateTimeField(null=True, blank=True)
     compromised_at = models.DateTimeField(null=True, blank=True)
+    # When this session passed the authenticator step. A console request from a session that
+    # has not is refused for an operator who has one (DECISION-065).
+    mfa_verified_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self) -> str:
         # Never a refresh digest: a repr can reach logs and error reports.

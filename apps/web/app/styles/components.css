@@ -304,6 +304,12 @@ textarea:focus-visible {
   color: var(--sd-semantic-content-on-primary);
 }
 
+/* Gold belongs to one state only: on duty now, the thing people come for. */
+.badge-accent {
+  background: var(--sd-semantic-accent-soft);
+  color: var(--sd-semantic-accent-content);
+}
+
 /* ---- States ------------------------------------------------------------------------------ */
 
 .state {
@@ -635,16 +641,14 @@ tr:last-child td { border-bottom: 0; }
 /* ---- One facility, one card -------------------------------------------------------------- */
 
 /*
- * A photograph on top, the name and the rest beneath it. The photograph is the reason the card
- * exists: a row of text tells you a pharmacy is open, a picture tells you which door to look for.
- *
- * The cards are all one height in a row and the photograph is always the same shape, because a
- * grid of cards that each end somewhere different reads as a mistake rather than as a grid.
+ * A compact card: the thumbnail and what the facility is on top, the ways to reach it in one row
+ * underneath. One column on a phone, as many as fit on a desk; every card is the same shape, so
+ * a grid of them reads as a list rather than as a wall of different-sized boxes.
  */
 .facility-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: var(--sd-spacing-lg);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr));
+  gap: var(--sd-spacing-md);
   padding: 0;
   margin: 0;
   list-style: none;
@@ -653,102 +657,57 @@ tr:last-child td { border-bottom: 0; }
 .facility-grid > li { display: flex; }
 
 .facility-card {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  grid-template-areas:
+    "thumb main"
+    "ways ways";
+  align-content: start;
+  gap: var(--sd-spacing-md);
   width: 100%;
-  overflow: hidden;
+  padding: var(--sd-spacing-md);
   border: 1px solid var(--sd-semantic-stroke-subtle);
   border-radius: var(--sd-radius-large);
   background: var(--sd-semantic-surface-default);
   box-shadow: var(--shadow-low);
-  text-decoration: none;
   transition:
-    transform var(--quick) var(--ease),
-    box-shadow var(--quick) var(--ease),
-    border-color var(--quick) var(--ease);
+    border-color var(--quick) var(--ease),
+    box-shadow var(--quick) var(--ease);
 }
 
 .facility-card:hover {
-  transform: translateY(-3px);
   border-color: var(--sd-semantic-stroke-strong);
   box-shadow: var(--shadow-medium);
 }
 
-.facility-photo {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* 4:3 — a shopfront is wider than it is tall, and every card crops to the same shape. */
-  aspect-ratio: 4 / 3;
-  background: var(--sd-semantic-surface-subtle);
-  color: var(--sd-semantic-content-muted);
+.facility-thumb {
+  grid-area: thumb;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
   overflow: hidden;
-}
-
-.facility-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform calc(var(--quick) * 3) var(--ease);
-}
-
-.facility-card:hover .facility-photo img { transform: scale(1.04); }
-
-/* The strip above the picture: the state on one side, the two things to look at on the other. */
-.facility-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sd-spacing-xs);
-  padding: var(--sd-spacing-sm) var(--sd-spacing-md);
-  border-block-end: 1px solid var(--sd-semantic-stroke-subtle);
-}
-
-.facility-bar-actions {
-  display: flex;
-  gap: var(--sd-spacing-2xs);
-}
-
-.facility-bar-actions button {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sd-spacing-xs);
-  /* A thumb covers about 44 pixels; 30 was the height of the words. */
-  min-height: 40px;
-  padding-inline: var(--sd-spacing-sm);
-  border: 0;
-  border-radius: var(--sd-radius-small);
-  background: none;
-  color: var(--sd-semantic-content-muted);
-  font: inherit;
-  font-size: var(--sd-typography-roles-label-medium-size);
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background var(--quick) var(--ease), color var(--quick) var(--ease);
-}
-
-.facility-bar-actions button:hover {
-  background: var(--sd-semantic-surface-hover);
+  border-radius: var(--sd-radius-medium);
+  background: var(--sd-semantic-surface-brand-soft);
   color: var(--sd-semantic-action-primary);
 }
 
-/*
- * Three bands, in the order somebody reads them: what it is, then the two things they would do
- * with it, then the things they might. Nothing is spread across four rows of buttons; the two
- * doing-things are real buttons and the rest is one quiet line, so twenty cards read as a list
- * rather than as twenty control panels.
- */
-.facility-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sd-spacing-sm);
-  /* The body grows, so the quiet line lands on the floor of every card in the row alike. */
-  flex: 1;
-  padding: var(--sd-spacing-base);
+.facility-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.facility-body h3 {
+.facility-main {
+  grid-area: main;
+  display: grid;
+  align-content: start;
+  gap: var(--sd-spacing-2xs);
+  min-width: 0;
+}
+
+.facility-main h3 {
+  min-width: 0;
   color: var(--sd-semantic-content-primary);
   font-size: var(--sd-typography-roles-title-medium-size);
   line-height: var(--sd-typography-roles-title-medium-line-height);
@@ -760,100 +719,143 @@ tr:last-child td { border-bottom: 0; }
   overflow: hidden;
 }
 
-/* Where it is and what people made of it, on one line: both are the same kind of aside. */
-.facility-where {
+/* Open or not, what it is, which part of town, and what people made of it: one line. */
+.facility-sub {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sd-spacing-xs);
-}
-
-.facility-where .meta { gap: var(--sd-spacing-xs); }
-
-/* The street, said plainly. Two lines at most; a card is not an envelope. */
-.facility-address {
+  align-items: center;
+  gap: var(--sd-spacing-2xs) var(--sd-spacing-sm);
   color: var(--sd-semantic-content-muted);
   font-size: var(--sd-typography-roles-body-medium-size);
   line-height: var(--sd-typography-roles-body-medium-line-height);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+}
+
+.facility-sub > span:not(.badge) + span::before {
+  content: "·";
+  margin-inline-end: var(--sd-spacing-sm);
+}
+
+/* The street, said plainly, on one line. The page has the rest. */
+.facility-address {
   overflow: hidden;
+  color: var(--sd-semantic-content-secondary);
+  font-size: var(--sd-typography-roles-body-medium-size);
+  line-height: var(--sd-typography-roles-body-medium-line-height);
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /*
- * The number, with the two ways to use it sitting on the end of it.
- *
- * A browser on a desk cannot dial, so the digits are there to be read and copied; the handset
- * and the WhatsApp mark on either side are for the phone that can. The digits read left to right
- * inside a right-to-left card, being digits rather than words, and they sit centred between the
- * two so the field is one shape whatever the number's length.
+ * The ways to reach it. Calling is the widest because it carries the number; WhatsApp and the
+ * route are the same height beside it; hours, share and report are quiet icons at the far end.
+ * Every target is at least 40 pixels: a thumb covers about 44.
  */
-.facility-phone {
+.facility-ways {
+  grid-area: ways;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--sd-spacing-sm);
-  padding: 5px;
-  border: 1px solid var(--sd-semantic-stroke-subtle);
+  gap: var(--sd-spacing-xs);
+  padding-block-start: var(--sd-spacing-md);
+  border-block-start: 1px solid var(--sd-semantic-stroke-subtle);
+}
+
+.way-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sd-spacing-xs);
+  min-width: 40px;
+  height: 40px;
+  padding-inline: var(--sd-spacing-sm);
   border-radius: var(--sd-radius-pill);
   background: var(--sd-semantic-surface-subtle);
   color: var(--sd-semantic-content-primary);
-  font-size: var(--sd-typography-roles-body-large-size);
+  font-size: var(--sd-typography-roles-label-large-size);
   font-weight: var(--sd-typography-roles-label-large-weight);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: filter var(--quick) var(--ease), background var(--quick) var(--ease);
+}
+
+.way-button:hover {
+  background: var(--sd-semantic-surface-hover);
+}
+
+/* The icon keeps its size however long the number beside it is. */
+.way-button svg { flex: none; }
+
+.way-call {
+  flex: 1 1 auto;
+  max-width: 190px;
+  background: var(--sd-semantic-action-primary);
+  color: var(--sd-semantic-content-on-primary);
   letter-spacing: 0.02em;
 }
 
-/* The number takes what is left between the two, and is centred in it. */
-.facility-phone > .ltr {
-  flex: 1;
-  text-align: center;
-}
-
-.way {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  box-shadow: var(--shadow-low);
-  transition: transform var(--quick) var(--ease), filter var(--quick) var(--ease);
-}
-
-.way:hover {
-  transform: scale(1.06);
-  filter: brightness(1.08);
-}
-
-.way-call {
-  background: var(--sd-semantic-action-primary);
-  color: var(--sd-semantic-content-on-primary);
+.way-call:hover {
+  background: var(--sd-semantic-action-primary-pressed);
 }
 
 /* WhatsApp's own green: the mark is only recognised in it, and a reader scanning a page of
    cards finds it by colour before they read anything. */
-.way-whatsapp {
+.way-whatsapp,
+.way-whatsapp:hover {
   background: #25d366;
   color: #07351d;
 }
 
+.way-whatsapp:hover { filter: brightness(1.06); }
 
+.facility-more {
+  display: grid;
+  margin-inline-start: auto;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--sd-radius-pill);
+  background: none;
+  color: var(--sd-semantic-content-muted);
+  cursor: pointer;
+  transition: background var(--quick) var(--ease), color var(--quick) var(--ease);
+}
 
-/* The two doing-things, side by side and equal: neither is the lesser of the pair. */
-.facility-actions {
+.facility-more:hover {
+  background: var(--sd-semantic-surface-hover);
+  color: var(--sd-semantic-action-primary);
+}
+
+/* The card's menu: four plain rows, the last one red because it reports a fault. */
+.card-menu {
+  display: grid;
+  gap: var(--sd-spacing-2xs);
+}
+
+.card-menu > button,
+.card-menu > a {
   display: flex;
-  gap: var(--sd-spacing-sm);
-  /* Pushed to the floor, so a card with a short name ends where its neighbours do. */
-  margin-block-start: auto;
+  align-items: center;
+  gap: var(--sd-spacing-md);
+  min-height: 48px;
+  padding-inline: var(--sd-spacing-md);
+  border: 0;
+  border-radius: var(--sd-radius-medium);
+  background: none;
+  color: var(--sd-semantic-content-primary);
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
 }
 
-.facility-actions .button {
-  flex: 1;
-  /* Three labels in a 260px card: the icon may go before the word wraps. */
-  min-width: 0;
-  padding-inline: var(--sd-spacing-sm);
-}
+.card-menu > button:hover,
+.card-menu > a:hover { background: var(--sd-semantic-surface-hover); }
+
+.card-menu svg { color: var(--sd-semantic-action-primary); }
+
+.card-menu .danger,
+.card-menu .danger svg { color: var(--sd-semantic-feedback-danger); }
 
 /*
  * Reporting is red, and outlined rather than filled: red says what the button is for, and the
@@ -871,6 +873,7 @@ tr:last-child td { border-bottom: 0; }
 }
 
 .facility-hint {
+  grid-column: 1 / -1;
   color: var(--sd-semantic-action-primary);
   font-size: var(--sd-typography-roles-label-medium-size);
 }
@@ -1035,6 +1038,8 @@ tr:last-child td { border-bottom: 0; }
 .badge-solid.badge-danger { background: var(--sd-semantic-feedback-danger); }
 .badge-solid.badge-info { background: var(--sd-semantic-feedback-info); }
 .badge-solid.badge-brand { background: var(--sd-semantic-action-primary); }
+/* The one solid ground with dark words: gold is too light to carry white. */
+.badge-solid.badge-accent { background: var(--sd-semantic-accent-default); color: var(--sd-semantic-accent-on-accent); }
 
 /* ---- The rest of a card, without leaving it ---------------------------------------------- */
 
@@ -1443,3 +1448,251 @@ tr:last-child td { border-bottom: 0; }
   gap: var(--sd-spacing-2xs, 4px);
   font-variant-numeric: tabular-nums;
 }
+
+/* ---- A facility's own page (DECISION-070) ------------------------------------------------- */
+
+.facility-page { gap: var(--sd-spacing-lg); }
+
+/*
+ * The photographs: the first one large, the next two beside it on a desk; on a phone a strip that
+ * scrolls sideways and snaps, so every picture is a swipe away and none pushes the name down.
+ */
+.facility-gallery {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 86%;
+  gap: var(--sd-spacing-sm);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  border-radius: var(--sd-radius-large);
+}
+
+.facility-gallery img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--sd-radius-large);
+  background: var(--sd-semantic-surface-subtle);
+  scroll-snap-align: start;
+}
+
+.facility-gallery[data-count="1"] { grid-auto-columns: 100%; }
+
+@media (min-width: 960px) {
+  .facility-gallery {
+    grid-auto-flow: row;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: repeat(2, 1fr);
+    max-height: 420px;
+    overflow: hidden;
+  }
+
+  .facility-gallery img { aspect-ratio: auto; height: 100%; }
+  .facility-gallery img:first-child { grid-row: 1 / span 2; }
+  .facility-gallery img:nth-child(n + 4) { display: none; }
+  .facility-gallery[data-count="1"] { grid-template-columns: 1fr; grid-template-rows: none; }
+  .facility-gallery[data-count="1"] img { aspect-ratio: 21 / 9; }
+  .facility-gallery[data-count="2"] { grid-template-rows: 1fr; grid-template-columns: 1fr 1fr; }
+  .facility-gallery[data-count="2"] img:first-child { grid-row: auto; }
+}
+
+.facility-header {
+  display: grid;
+  gap: var(--sd-spacing-sm);
+}
+
+.facility-header .facility-sub { font-size: var(--sd-typography-roles-body-large-size); }
+
+.facility-description {
+  max-width: var(--w-prose);
+  color: var(--sd-semantic-content-secondary);
+}
+
+.notice-duty {
+  display: flex;
+  align-items: center;
+  gap: var(--sd-spacing-sm);
+  padding: var(--sd-spacing-md);
+  border-radius: var(--sd-radius-medium);
+  background: var(--sd-semantic-accent-soft);
+  color: var(--sd-semantic-accent-content);
+}
+
+/* The page and, beside it on a desk, the ways to reach the place, staying in view as one reads. */
+.facility-layout {
+  display: grid;
+  gap: var(--sd-spacing-xl);
+}
+
+.facility-content {
+  display: grid;
+  align-content: start;
+  gap: var(--sd-spacing-xl);
+  min-width: 0;
+}
+
+.facility-content section { display: grid; gap: var(--sd-spacing-md); }
+
+.facility-aside {
+  display: grid;
+  align-content: start;
+  gap: var(--sd-spacing-lg);
+}
+
+.facility-contact {
+  display: grid;
+  gap: var(--sd-spacing-sm);
+}
+
+.facility-contact .button { width: 100%; justify-content: center; }
+
+.facility-call {
+  min-height: 52px;
+  font-size: var(--sd-typography-roles-title-medium-size);
+  letter-spacing: 0.02em;
+}
+
+.facility-contact-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: var(--sd-spacing-sm);
+}
+
+@media (min-width: 960px) {
+  .facility-layout { grid-template-columns: minmax(0, 1fr) 340px; }
+  .facility-aside { position: sticky; top: var(--sd-spacing-lg); }
+  .facility-open-app { display: none; }
+}
+
+/* On a phone the dock along the bottom carries the same three buttons; once is enough. */
+@media (max-width: 959px) {
+  .facility-contact { display: none; }
+  .facility-open-app { justify-self: start; }
+}
+
+/* The week, with today marked: the row a reader is looking for, found without counting. */
+.hours-table { width: 100%; }
+
+.hours-table tr[aria-current] th,
+.hours-table tr[aria-current] td {
+  color: var(--sd-semantic-content-primary);
+  font-weight: var(--sd-typography-roles-label-large-weight);
+}
+
+.hours-table tr[aria-current] { background: var(--sd-semantic-surface-brand-soft); }
+
+.today-mark {
+  margin-inline-start: var(--sd-spacing-sm);
+  padding: 0 var(--sd-spacing-xs);
+  border-radius: var(--sd-radius-small);
+  background: var(--sd-semantic-action-primary);
+  color: var(--sd-semantic-content-on-primary);
+  font-size: var(--sd-typography-roles-label-medium-size);
+}
+
+/* WhatsApp's own green, for the one button that is WhatsApp. */
+.button-whatsapp,
+.button-whatsapp:hover {
+  background: #25d366;
+  border-color: #25d366;
+  color: #07351d;
+}
+
+/*
+ * On a phone the three ways to reach the place ride along the bottom of the screen. Above the
+ * page's own end, so nothing is hidden behind it; gone on a desk, where the panel beside the
+ * page does the same job.
+ */
+.facility-dock {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  gap: var(--sd-spacing-sm);
+  padding: var(--sd-spacing-sm) var(--gutter) calc(var(--sd-spacing-sm) + env(safe-area-inset-bottom));
+  border-block-start: 1px solid var(--sd-semantic-stroke-subtle);
+  background: var(--sd-semantic-surface-default);
+  box-shadow: var(--shadow-medium);
+}
+
+.facility-dock .button { flex: 1; justify-content: center; min-height: 48px; }
+
+.facility-page { padding-block-end: calc(var(--sd-spacing-5xl) + 64px); }
+
+@media (min-width: 960px) {
+  .facility-dock { display: none; }
+  .facility-page { padding-block-end: var(--sd-spacing-5xl); }
+}
+
+/* In the narrow panel beside the page the share row is a footnote, not a section. */
+.facility-aside .share { display: grid; gap: var(--sd-spacing-sm); }
+
+.facility-aside .share h2 {
+  font-size: var(--sd-typography-roles-title-medium-size);
+  line-height: var(--sd-typography-roles-title-medium-line-height);
+}
+
+.facility-aside .share .button { padding-inline: var(--sd-spacing-md); }
+
+/* ---- The map (DECISION-071) --------------------------------------------------------------- */
+
+.facility-map {
+  width: 100%;
+  height: clamp(260px, 42vh, 420px);
+  overflow: hidden;
+  border: 1px solid var(--sd-semantic-stroke-subtle);
+  border-radius: var(--sd-radius-large);
+  background: var(--sd-semantic-surface-subtle);
+}
+
+/*
+ * A pin: a drop in the facility's state colour, with a white ring so it reads on any map. Gold for
+ * on duty is the identity's own; the rest follow the status badges. The drop is drawn by
+ * ::before, because MapLibre positions the marker element through its own `transform`, which
+ * would undo a rotation set on the element itself.
+ */
+.map-pin {
+  --pin: var(--sd-semantic-content-muted);
+  display: block;
+  width: 30px;
+  height: 36px;
+  cursor: pointer;
+}
+
+.map-pin::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 2px;
+  top: 0;
+  width: 26px;
+  height: 26px;
+  border: 3px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  background: var(--pin);
+  box-shadow: var(--shadow-medium);
+  transform: rotate(-45deg);
+}
+
+.map-pin:focus-visible { outline: 3px solid var(--sd-semantic-accent-default); outline-offset: 2px; border-radius: 50%; }
+.map-pin-open { --pin: var(--sd-semantic-feedback-success); }
+.map-pin-duty { --pin: var(--sd-semantic-accent-default); }
+.map-pin-closed { --pin: var(--sd-semantic-feedback-danger); }
+.map-pin-temp-closed { --pin: var(--sd-semantic-feedback-info); }
+
+/* The map's own controls take the page's type rather than the library's. */
+.facility-map .maplibregl-ctrl-attrib,
+.facility-map .maplibregl-cooperative-gesture-screen { font-family: inherit; }
+
+/* A map whose style could not be loaded steps aside; the list beside it is the same places. */
+.facility-map[data-failed] { display: none; }
+
+/* The ways to reach a pharmacy on the duty roster, as on a card. */
+.roster-ways {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sd-spacing-xs);
+  margin-block-start: var(--sd-spacing-sm);
+}
+
+.roster-row .meta { align-items: center; }

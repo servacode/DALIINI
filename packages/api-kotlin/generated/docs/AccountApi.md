@@ -8,7 +8,17 @@ All URIs are relative to *http://localhost*
 | [**accountFavoriteAdd**](AccountApi.md#accountFavoriteAdd) | **POST** api/v1/account/favorites/ | Save a facility |
 | [**accountFavoriteRemove**](AccountApi.md#accountFavoriteRemove) | **DELETE** api/v1/account/favorites/{facility_id}/ | Remove a facility the caller had saved |
 | [**accountFavoritesList**](AccountApi.md#accountFavoritesList) | **GET** api/v1/account/favorites/ | List the facilities the caller has saved |
+| [**accountInvitationAccept**](AccountApi.md#accountInvitationAccept) | **POST** api/v1/account/invitations/{invitation_id}/accept/ | Join the facility an invitation is for |
+| [**accountInvitationDecline**](AccountApi.md#accountInvitationDecline) | **POST** api/v1/account/invitations/{invitation_id}/decline/ | Decline an invitation |
+| [**accountInvitationsList**](AccountApi.md#accountInvitationsList) | **GET** api/v1/account/invitations/ | Invitations waiting for this account&#39;s phone number |
+| [**accountMfaConfirm**](AccountApi.md#accountMfaConfirm) | **POST** api/v1/account/mfa/confirm/ | Confirm the authenticator with its first code |
+| [**accountMfaDisable**](AccountApi.md#accountMfaDisable) | **POST** api/v1/account/mfa/disable/ | Switch the authenticator off |
+| [**accountMfaRetrieve**](AccountApi.md#accountMfaRetrieve) | **GET** api/v1/account/mfa/ | The second sign-in step, for this account and session |
+| [**accountMfaSetup**](AccountApi.md#accountMfaSetup) | **POST** api/v1/account/mfa/setup/ | Start setting up an authenticator app |
+| [**accountMfaVerify**](AccountApi.md#accountMfaVerify) | **POST** api/v1/account/mfa/verify/ | Pass the second step for this session |
 | [**accountNotificationMarkRead**](AccountApi.md#accountNotificationMarkRead) | **POST** api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read |
+| [**accountNotificationPreferencesRetrieve**](AccountApi.md#accountNotificationPreferencesRetrieve) | **GET** api/v1/account/notification-preferences/ | Which kinds of notice are pushed to this account&#39;s devices |
+| [**accountNotificationPreferencesUpdate**](AccountApi.md#accountNotificationPreferencesUpdate) | **PATCH** api/v1/account/notification-preferences/ | Change which kinds of notice are pushed |
 | [**accountNotificationsList**](AccountApi.md#accountNotificationsList) | **GET** api/v1/account/notifications/ | List the caller&#39;s notifications, newest first |
 | [**accountNotificationsMarkAllRead**](AccountApi.md#accountNotificationsMarkAllRead) | **POST** api/v1/account/notifications/read-all/ | Mark every unread notification as read |
 | [**accountNotificationsUnreadCount**](AccountApi.md#accountNotificationsUnreadCount) | **GET** api/v1/account/notifications/unread-count/ | How many of the caller&#39;s notifications are unread |
@@ -195,6 +205,327 @@ Configure bearerAccessToken:
  - **Accept**: application/json
 
 
+Join the facility an invitation is for
+
+Only the account whose phone number was invited can accept; any other caller gets 404. An invitation to own raises a manager to owner and never lowers anyone. 409 INVITATION_EXPIRED or INVITATION_CLOSED when it can no longer be accepted.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+val invitationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+
+launch(Dispatchers.IO) {
+    val result : Accepted = webService.accountInvitationAccept(invitationId)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **invitationId** | **java.util.UUID**|  | |
+
+### Return type
+
+[**Accepted**](Accepted.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Decline an invitation
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+val invitationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+
+launch(Dispatchers.IO) {
+    webService.accountInvitationDecline(invitationId)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **invitationId** | **java.util.UUID**|  | |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Invitations waiting for this account&#39;s phone number
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+
+launch(Dispatchers.IO) {
+    val result : ReceivedInvitationList = webService.accountInvitationsList()
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**ReceivedInvitationList**](ReceivedInvitationList.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Confirm the authenticator with its first code
+
+Enables it, marks this session as having passed the second step, and returns ten recovery codes, shown this once.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+val mfaCode : MfaCode =  // MfaCode | 
+
+launch(Dispatchers.IO) {
+    val result : MfaRecoveryCodes = webService.accountMfaConfirm(mfaCode)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **mfaCode** | [**MfaCode**](MfaCode.md)|  | |
+
+### Return type
+
+[**MfaRecoveryCodes**](MfaRecoveryCodes.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+Switch the authenticator off
+
+Needs a current code from the app. Refused with 409 MFA_REQUIRED_BY_POLICY where every operator must have one.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+val mfaCode : MfaCode =  // MfaCode | 
+
+launch(Dispatchers.IO) {
+    val result : MfaStatus = webService.accountMfaDisable(mfaCode)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **mfaCode** | [**MfaCode**](MfaCode.md)|  | |
+
+### Return type
+
+[**MfaStatus**](MfaStatus.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+The second sign-in step, for this account and session
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+
+launch(Dispatchers.IO) {
+    val result : MfaStatus = webService.accountMfaRetrieve()
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**MfaStatus**](MfaStatus.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Start setting up an authenticator app
+
+Operators only. Returns a new secret and its QR code; nothing is enabled until a code from the app confirms it. Starting again replaces an unconfirmed secret.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+
+launch(Dispatchers.IO) {
+    val result : MfaSetup = webService.accountMfaSetup()
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**MfaSetup**](MfaSetup.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Pass the second step for this session
+
+A code from the app, or one of the recovery codes (each works once).
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+val mfaCode : MfaCode =  // MfaCode | 
+
+launch(Dispatchers.IO) {
+    val result : MfaStatus = webService.accountMfaVerify(mfaCode)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **mfaCode** | [**MfaCode**](MfaCode.md)|  | |
+
+### Return type
+
+[**MfaStatus**](MfaStatus.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
 Mark one notification as read
 
 Idempotent: a message that was already read keeps the time it was read.
@@ -234,6 +565,87 @@ Configure bearerAccessToken:
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Which kinds of notice are pushed to this account&#39;s devices
+
+All are on until the account turns one off. Only the push is governed: every message still reaches the inbox. A staff change to an owner&#39;s own duty shift, and any kind outside these three, is always pushed.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+
+launch(Dispatchers.IO) {
+    val result : NotificationPreferences = webService.accountNotificationPreferencesRetrieve()
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**NotificationPreferences**](NotificationPreferences.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Change which kinds of notice are pushed
+
+Only the fields sent change.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+val patchedNotificationPreferences : PatchedNotificationPreferences =  // PatchedNotificationPreferences | 
+
+launch(Dispatchers.IO) {
+    val result : NotificationPreferences = webService.accountNotificationPreferencesUpdate(patchedNotificationPreferences)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **patchedNotificationPreferences** | [**PatchedNotificationPreferences**](PatchedNotificationPreferences.md)|  | [optional] |
+
+### Return type
+
+[**NotificationPreferences**](NotificationPreferences.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
  - **Accept**: application/json
 
 

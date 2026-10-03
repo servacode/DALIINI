@@ -13,13 +13,16 @@ dependencies = [
   "channels-redis>=4.3,<5",
   "celery>=5.5,<6",
   "redis>=6,<7",
-  "psycopg[binary]>=3.2,<4",
+  "psycopg[binary,pool]>=3.2,<4",
   "argon2-cffi>=25,<26",
   "Pillow>=12.3.0,<13",
   "django-storages[s3]>=1.14,<2",
   "dj-database-url>=3,<4",
   "cryptography>=50,<51",
   "sentry-sdk>=2,<3",
+  "uvicorn[standard]>=0.37,<1",
+  "segno>=1.6,<2",
+  "openpyxl>=3.1,<4",
 ]
 
 [dependency-groups]
@@ -52,6 +55,7 @@ exclude = ["migrations/"]
 # them is typed Any.
 [[tool.mypy.overrides]]
 module = [
+  "botocore.config",
   "celery",
   "celery.exceptions",
   "celery.schedules",
@@ -59,6 +63,7 @@ module = [
   "channels.layers",
   "channels.routing",
   "channels.testing",
+  "openpyxl",
   "storages.backends.s3",
 ]
 ignore_missing_imports = true

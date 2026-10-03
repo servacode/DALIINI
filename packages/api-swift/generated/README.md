@@ -30,7 +30,17 @@ Class | Method | HTTP request | Description
 *AccountAPI* | [**accountFavoriteAdd**](docs/AccountAPI.md#accountfavoriteadd) | **POST** /api/v1/account/favorites/ | Save a facility
 *AccountAPI* | [**accountFavoriteRemove**](docs/AccountAPI.md#accountfavoriteremove) | **DELETE** /api/v1/account/favorites/{facility_id}/ | Remove a facility the caller had saved
 *AccountAPI* | [**accountFavoritesList**](docs/AccountAPI.md#accountfavoriteslist) | **GET** /api/v1/account/favorites/ | List the facilities the caller has saved
+*AccountAPI* | [**accountInvitationAccept**](docs/AccountAPI.md#accountinvitationaccept) | **POST** /api/v1/account/invitations/{invitation_id}/accept/ | Join the facility an invitation is for
+*AccountAPI* | [**accountInvitationDecline**](docs/AccountAPI.md#accountinvitationdecline) | **POST** /api/v1/account/invitations/{invitation_id}/decline/ | Decline an invitation
+*AccountAPI* | [**accountInvitationsList**](docs/AccountAPI.md#accountinvitationslist) | **GET** /api/v1/account/invitations/ | Invitations waiting for this account&#39;s phone number
+*AccountAPI* | [**accountMfaConfirm**](docs/AccountAPI.md#accountmfaconfirm) | **POST** /api/v1/account/mfa/confirm/ | Confirm the authenticator with its first code
+*AccountAPI* | [**accountMfaDisable**](docs/AccountAPI.md#accountmfadisable) | **POST** /api/v1/account/mfa/disable/ | Switch the authenticator off
+*AccountAPI* | [**accountMfaRetrieve**](docs/AccountAPI.md#accountmfaretrieve) | **GET** /api/v1/account/mfa/ | The second sign-in step, for this account and session
+*AccountAPI* | [**accountMfaSetup**](docs/AccountAPI.md#accountmfasetup) | **POST** /api/v1/account/mfa/setup/ | Start setting up an authenticator app
+*AccountAPI* | [**accountMfaVerify**](docs/AccountAPI.md#accountmfaverify) | **POST** /api/v1/account/mfa/verify/ | Pass the second step for this session
 *AccountAPI* | [**accountNotificationMarkRead**](docs/AccountAPI.md#accountnotificationmarkread) | **POST** /api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read
+*AccountAPI* | [**accountNotificationPreferencesRetrieve**](docs/AccountAPI.md#accountnotificationpreferencesretrieve) | **GET** /api/v1/account/notification-preferences/ | Which kinds of notice are pushed to this account&#39;s devices
+*AccountAPI* | [**accountNotificationPreferencesUpdate**](docs/AccountAPI.md#accountnotificationpreferencesupdate) | **PATCH** /api/v1/account/notification-preferences/ | Change which kinds of notice are pushed
 *AccountAPI* | [**accountNotificationsList**](docs/AccountAPI.md#accountnotificationslist) | **GET** /api/v1/account/notifications/ | List the caller&#39;s notifications, newest first
 *AccountAPI* | [**accountNotificationsMarkAllRead**](docs/AccountAPI.md#accountnotificationsmarkallread) | **POST** /api/v1/account/notifications/read-all/ | Mark every unread notification as read
 *AccountAPI* | [**accountNotificationsUnreadCount**](docs/AccountAPI.md#accountnotificationsunreadcount) | **GET** /api/v1/account/notifications/unread-count/ | How many of the caller&#39;s notifications are unread
@@ -47,9 +57,11 @@ Class | Method | HTTP request | Description
 *AdminAdsAPI* | [**adminAdCreate**](docs/AdminAdsAPI.md#adminadcreate) | **POST** /api/v1/admin/ads/ | Create an advertisement
 *AdminAdsAPI* | [**adminAdDelete**](docs/AdminAdsAPI.md#adminaddelete) | **DELETE** /api/v1/admin/ads/{advertisement_id}/ | Delete an advertisement
 *AdminAdsAPI* | [**adminAdImageUpload**](docs/AdminAdsAPI.md#adminadimageupload) | **POST** /api/v1/admin/ads/images/ | Upload an advertisement image
+*AdminAdsAPI* | [**adminAdStatsRetrieve**](docs/AdminAdsAPI.md#adminadstatsretrieve) | **GET** /api/v1/admin/ads/stats/ | Impressions and clicks of each advertisement over a period
 *AdminAdsAPI* | [**adminAdUpdate**](docs/AdminAdsAPI.md#adminadupdate) | **PUT** /api/v1/admin/ads/{advertisement_id}/ | Edit an advertisement, its schedule or its activation
 *AdminAdsAPI* | [**adminAdsList**](docs/AdminAdsAPI.md#adminadslist) | **GET** /api/v1/admin/ads/ | List advertisements
 *AdminAnalyticsAPI* | [**adminAnalyticsRetrieve**](docs/AdminAnalyticsAPI.md#adminanalyticsretrieve) | **GET** /api/v1/admin/analytics/ | Operational KPIs
+*AdminAnalyticsAPI* | [**adminAnalyticsSeriesRetrieve**](docs/AdminAnalyticsAPI.md#adminanalyticsseriesretrieve) | **GET** /api/v1/admin/analytics/series/ | The period&#39;s numbers, one Damascus day at a time
 *AdminAnalyticsAPI* | [**adminAnalyticsStaffRetrieve**](docs/AdminAnalyticsAPI.md#adminanalyticsstaffretrieve) | **GET** /api/v1/admin/analytics/staff/ | Reviewer performance in a period
 *AdminAuditAPI* | [**adminAuditList**](docs/AdminAuditAPI.md#adminauditlist) | **GET** /api/v1/admin/audit/ | Search the audit trail
 *AdminContentAPI* | [**adminContactMessageHandle**](docs/AdminContentAPI.md#admincontactmessagehandle) | **POST** /api/v1/admin/contact-messages/{message_id}/handle/ | Mark a contact message handled
@@ -67,7 +79,13 @@ Class | Method | HTTP request | Description
 *AdminContentAPI* | [**adminFaqEntryCreate**](docs/AdminContentAPI.md#adminfaqentrycreate) | **POST** /api/v1/admin/content/faq/ | Add a FAQ entry
 *AdminContentAPI* | [**adminFaqEntryDelete**](docs/AdminContentAPI.md#adminfaqentrydelete) | **DELETE** /api/v1/admin/content/faq/{entry_id}/ | Delete a FAQ entry
 *AdminContentAPI* | [**adminFaqEntryUpdate**](docs/AdminContentAPI.md#adminfaqentryupdate) | **PUT** /api/v1/admin/content/faq/{entry_id}/ | Edit, reorder, publish or unpublish a FAQ entry
+*AdminDutyAPI* | [**adminDutyImport**](docs/AdminDutyAPI.md#admindutyimport) | **POST** /api/v1/admin/duty/import/ | Read a duty roster from a spreadsheet; preview it, or apply it
 *AdminDutyAPI* | [**adminDutyRosterRetrieve**](docs/AdminDutyAPI.md#admindutyrosterretrieve) | **GET** /api/v1/admin/duty/ | The duty roster of a province (or city), day by day
+*AdminDutyAPI* | [**adminDutyRotationCreate**](docs/AdminDutyAPI.md#admindutyrotationcreate) | **POST** /api/v1/admin/duty/rotations/ | Save a duty rotation
+*AdminDutyAPI* | [**adminDutyRotationDelete**](docs/AdminDutyAPI.md#admindutyrotationdelete) | **DELETE** /api/v1/admin/duty/rotations/{rotation_id}/ | Delete a saved duty rotation
+*AdminDutyAPI* | [**adminDutyRotationGenerate**](docs/AdminDutyAPI.md#admindutyrotationgenerate) | **POST** /api/v1/admin/duty/rotations/{rotation_id}/generate/ | Generate a period&#39;s shifts from a rotation; preview them, or apply them
+*AdminDutyAPI* | [**adminDutyRotationUpdate**](docs/AdminDutyAPI.md#admindutyrotationupdate) | **PATCH** /api/v1/admin/duty/rotations/{rotation_id}/ | Change a saved duty rotation
+*AdminDutyAPI* | [**adminDutyRotationsList**](docs/AdminDutyAPI.md#admindutyrotationslist) | **GET** /api/v1/admin/duty/rotations/ | Saved duty rotations
 *AdminDutyAPI* | [**adminDutyShiftCreate**](docs/AdminDutyAPI.md#admindutyshiftcreate) | **POST** /api/v1/admin/duty/ | Put a duty shift on a pharmacy&#39;s roster
 *AdminDutyAPI* | [**adminDutyShiftDelete**](docs/AdminDutyAPI.md#admindutyshiftdelete) | **DELETE** /api/v1/admin/duty/{shift_id}/ | Cancel a duty shift
 *AdminDutyAPI* | [**adminDutyShiftUpdate**](docs/AdminDutyAPI.md#admindutyshiftupdate) | **PATCH** /api/v1/admin/duty/{shift_id}/ | Move a duty shift
@@ -75,11 +93,14 @@ Class | Method | HTTP request | Description
 *AdminExportsAPI* | [**adminExportFacilitiesCsv**](docs/AdminExportsAPI.md#adminexportfacilitiescsv) | **GET** /api/v1/admin/exports/facilities.csv | Export the facility list as CSV
 *AdminExportsAPI* | [**adminExportReportsCsv**](docs/AdminExportsAPI.md#adminexportreportscsv) | **GET** /api/v1/admin/exports/reports.csv | Export problem reports as CSV
 *AdminFacilitiesAPI* | [**adminFacilitiesList**](docs/AdminFacilitiesAPI.md#adminfacilitieslist) | **GET** /api/v1/admin/facilities/ | List facilities for operations
+*AdminFacilitiesAPI* | [**adminFacilitiesMap**](docs/AdminFacilitiesAPI.md#adminfacilitiesmap) | **GET** /api/v1/admin/facilities/map/ | Located facilities as map points, with the same filters as the list
 *AdminFacilitiesAPI* | [**adminFacilityClose**](docs/AdminFacilitiesAPI.md#adminfacilityclose) | **POST** /api/v1/admin/facilities/{facility_id}/close/ | Close a facility
+*AdminFacilitiesAPI* | [**adminFacilityCreate**](docs/AdminFacilitiesAPI.md#adminfacilitycreate) | **POST** /api/v1/admin/facilities/ | Add a facility to the directory
 *AdminFacilitiesAPI* | [**adminFacilityReactivate**](docs/AdminFacilitiesAPI.md#adminfacilityreactivate) | **POST** /api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility
 *AdminFacilitiesAPI* | [**adminFacilityRetrieve**](docs/AdminFacilitiesAPI.md#adminfacilityretrieve) | **GET** /api/v1/admin/facilities/{facility_id}/ | Retrieve one facility
 *AdminFacilitiesAPI* | [**adminFacilitySuspend**](docs/AdminFacilitiesAPI.md#adminfacilitysuspend) | **POST** /api/v1/admin/facilities/{facility_id}/suspend/ | Suspend a facility
 *AdminFacilitiesAPI* | [**adminFacilityTimelineRetrieve**](docs/AdminFacilitiesAPI.md#adminfacilitytimelineretrieve) | **GET** /api/v1/admin/facilities/{facility_id}/timeline/ | Everything that happened to a facility, newest first
+*AdminFacilitiesAPI* | [**adminFacilityUpdate**](docs/AdminFacilitiesAPI.md#adminfacilityupdate) | **PATCH** /api/v1/admin/facilities/{facility_id}/ | Correct a facility&#39;s details
 *AdminNotificationsAPI* | [**adminNotificationBroadcast**](docs/AdminNotificationsAPI.md#adminnotificationbroadcast) | **POST** /api/v1/admin/notifications/broadcast/ | Send a notification to many users
 *AdminNotificationsAPI* | [**adminNotificationBroadcastsList**](docs/AdminNotificationsAPI.md#adminnotificationbroadcastslist) | **GET** /api/v1/admin/notifications/broadcasts/ | Broadcast history, newest first
 *AdminProvincesAPI* | [**adminProvinceCitiesList**](docs/AdminProvincesAPI.md#adminprovincecitieslist) | **GET** /api/v1/admin/provinces/{province_id}/cities/ | List every city of a province, active or not
@@ -108,7 +129,7 @@ Class | Method | HTTP request | Description
 *AdminSystemAPI* | [**adminDashboardRetrieve**](docs/AdminSystemAPI.md#admindashboardretrieve) | **GET** /api/v1/admin/dashboard/ | Operational counters for the review desk
 *AdminSystemAPI* | [**adminMeRetrieve**](docs/AdminSystemAPI.md#adminmeretrieve) | **GET** /api/v1/admin/me/ | The current operator and the permissions they hold
 *AdminSystemAPI* | [**adminSearchRetrieve**](docs/AdminSystemAPI.md#adminsearchretrieve) | **GET** /api/v1/admin/search/ | Search facilities, users and applications at once
-*AdminSystemAPI* | [**adminSystemStatusRetrieve**](docs/AdminSystemAPI.md#adminsystemstatusretrieve) | **GET** /api/v1/admin/system/status/ | Runtime and configuration status
+*AdminSystemAPI* | [**adminSystemStatusRetrieve**](docs/AdminSystemAPI.md#adminsystemstatusretrieve) | **GET** /api/v1/admin/system/status/ | Every dependency, asked directly
 *AdminSystemAPI* | [**adminTasksRetrieve**](docs/AdminSystemAPI.md#admintasksretrieve) | **GET** /api/v1/admin/tasks/ | The operator&#39;s queue: what is waiting, oldest first
 *AdminTaxonomyAPI* | [**adminCategoriesList**](docs/AdminTaxonomyAPI.md#admincategorieslist) | **GET** /api/v1/admin/categories/ | List categories
 *AdminTaxonomyAPI* | [**adminCategoryCapabilitiesReplace**](docs/AdminTaxonomyAPI.md#admincategorycapabilitiesreplace) | **PUT** /api/v1/admin/categories/{category_id}/capabilities/ | Set the capability flags of a category
@@ -126,8 +147,13 @@ Class | Method | HTTP request | Description
 *AdminTaxonomyAPI* | [**adminServiceTagUpdate**](docs/AdminTaxonomyAPI.md#adminservicetagupdate) | **PUT** /api/v1/admin/service-tags/{service_tag_id}/ | Rename, reorder, retire or bring back a service
 *AdminTaxonomyAPI* | [**adminSpecialtyDelete**](docs/AdminTaxonomyAPI.md#adminspecialtydelete) | **DELETE** /api/v1/admin/specialties/{specialty_id}/ | Delete a specialty no facility lists
 *AdminTaxonomyAPI* | [**adminSpecialtyUpdate**](docs/AdminTaxonomyAPI.md#adminspecialtyupdate) | **PUT** /api/v1/admin/specialties/{specialty_id}/ | Rename, reorder, retire or bring back a specialty
-*AdminUsersAPI* | [**adminRolesList**](docs/AdminUsersAPI.md#adminroleslist) | **GET** /api/v1/admin/roles/ | List admin roles and their permission codes
+*AdminUsersAPI* | [**adminPermissionsList**](docs/AdminUsersAPI.md#adminpermissionslist) | **GET** /api/v1/admin/permissions/ | Every permission a role can carry
+*AdminUsersAPI* | [**adminRoleCreate**](docs/AdminUsersAPI.md#adminrolecreate) | **POST** /api/v1/admin/roles/ | Create a role with the permissions it carries
+*AdminUsersAPI* | [**adminRoleDelete**](docs/AdminUsersAPI.md#adminroledelete) | **DELETE** /api/v1/admin/roles/{role_id}/ | Delete a role nobody holds
+*AdminUsersAPI* | [**adminRoleUpdate**](docs/AdminUsersAPI.md#adminroleupdate) | **PATCH** /api/v1/admin/roles/{role_id}/ | Rename a role or change the permissions it carries
+*AdminUsersAPI* | [**adminRolesList**](docs/AdminUsersAPI.md#adminroleslist) | **GET** /api/v1/admin/roles/ | List admin roles, their permission codes and how many hold each
 *AdminUsersAPI* | [**adminUserBlock**](docs/AdminUsersAPI.md#adminuserblock) | **POST** /api/v1/admin/users/{user_id}/block/ | Block a user account
+*AdminUsersAPI* | [**adminUserMfaReset**](docs/AdminUsersAPI.md#adminusermfareset) | **POST** /api/v1/admin/users/{user_id}/mfa/reset/ | Clear an operator&#39;s authenticator after they lost it
 *AdminUsersAPI* | [**adminUserRetrieve**](docs/AdminUsersAPI.md#adminuserretrieve) | **GET** /api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned
 *AdminUsersAPI* | [**adminUserRolesReplace**](docs/AdminUsersAPI.md#adminuserrolesreplace) | **PUT** /api/v1/admin/users/{user_id}/roles/ | Replace the admin roles of a user
 *AdminUsersAPI* | [**adminUserUnblock**](docs/AdminUsersAPI.md#adminuserunblock) | **POST** /api/v1/admin/users/{user_id}/unblock/ | Unblock a user account
@@ -164,16 +190,27 @@ Class | Method | HTTP request | Description
 *DutyAPI* | [**ownerFacilityDutyDelete**](docs/DutyAPI.md#ownerfacilitydutydelete) | **DELETE** /api/v1/owner/facilities/{facility_id}/duty/{shift_id}/ | Remove a duty shift
 *DutyAPI* | [**ownerFacilityDutyList**](docs/DutyAPI.md#ownerfacilitydutylist) | **GET** /api/v1/owner/facilities/{facility_id}/duty/ | List duty shifts of a facility
 *DutyAPI* | [**ownerFacilityDutyUpdate**](docs/DutyAPI.md#ownerfacilitydutyupdate) | **PATCH** /api/v1/owner/facilities/{facility_id}/duty/{shift_id}/ | Adjust a duty shift
+*MediaAPI* | [**ownerClaimEvidenceCreate**](docs/MediaAPI.md#ownerclaimevidencecreate) | **POST** /api/v1/owner/claims/{claim_id}/evidence/ | Upload a verification document for a claim
+*MediaAPI* | [**ownerClaimEvidenceDelete**](docs/MediaAPI.md#ownerclaimevidencedelete) | **DELETE** /api/v1/owner/claims/{claim_id}/evidence/{evidence_id}/ | Remove a document from a claim not yet sent
 *MediaAPI* | [**ownerFacilityEvidenceCreate**](docs/MediaAPI.md#ownerfacilityevidencecreate) | **POST** /api/v1/owner/facilities/{facility_id}/evidence/ | Upload private verification evidence
 *MediaAPI* | [**ownerFacilityEvidenceDelete**](docs/MediaAPI.md#ownerfacilityevidencedelete) | **DELETE** /api/v1/owner/facilities/{facility_id}/evidence/{evidence_id}/ | Delete a piece of verification evidence
 *MediaAPI* | [**ownerFacilityImageCreate**](docs/MediaAPI.md#ownerfacilityimagecreate) | **POST** /api/v1/owner/facilities/{facility_id}/images/ | Upload a public facility image
 *MediaAPI* | [**ownerFacilityImageDelete**](docs/MediaAPI.md#ownerfacilityimagedelete) | **DELETE** /api/v1/owner/facilities/{facility_id}/images/{image_id}/ | Delete a public facility image
 *MediaAPI* | [**ownerFacilityImagesList**](docs/MediaAPI.md#ownerfacilityimageslist) | **GET** /api/v1/owner/facilities/{facility_id}/images/ | List the public images of a facility
+*OwnerAPI* | [**ownerClaimRetrieve**](docs/OwnerAPI.md#ownerclaimretrieve) | **GET** /api/v1/owner/claims/{claim_id}/ | One of this account&#39;s claims
+*OwnerAPI* | [**ownerClaimStart**](docs/OwnerAPI.md#ownerclaimstart) | **POST** /api/v1/owner/claims/ | Start claiming a facility
+*OwnerAPI* | [**ownerClaimSubmit**](docs/OwnerAPI.md#ownerclaimsubmit) | **POST** /api/v1/owner/claims/{claim_id}/submit/ | Send a claim for review
+*OwnerAPI* | [**ownerClaimWithdraw**](docs/OwnerAPI.md#ownerclaimwithdraw) | **DELETE** /api/v1/owner/claims/{claim_id}/ | Withdraw a claim and delete its documents
+*OwnerAPI* | [**ownerClaimableFacilitiesList**](docs/OwnerAPI.md#ownerclaimablefacilitieslist) | **GET** /api/v1/owner/claimable-facilities/ | Find a published facility nobody owns yet
+*OwnerAPI* | [**ownerClaimsList**](docs/OwnerAPI.md#ownerclaimslist) | **GET** /api/v1/owner/claims/ | This account&#39;s claims, newest first
 *OwnerAPI* | [**ownerConfigRetrieve**](docs/OwnerAPI.md#ownerconfigretrieve) | **GET** /api/v1/owner/config/ | List categories open for owner onboarding in a province
 *OwnerAPI* | [**ownerFacilitiesList**](docs/OwnerAPI.md#ownerfacilitieslist) | **GET** /api/v1/owner/facilities/ | List the facilities the caller belongs to
 *OwnerAPI* | [**ownerFacilityCreate**](docs/OwnerAPI.md#ownerfacilitycreate) | **POST** /api/v1/owner/facilities/ | Create a facility draft
 *OwnerAPI* | [**ownerFacilityHoursConfirm**](docs/OwnerAPI.md#ownerfacilityhoursconfirm) | **POST** /api/v1/owner/facilities/{facility_id}/confirm-hours/ | Confirm that the facility&#39;s opening hours are still right
 *OwnerAPI* | [**ownerFacilityInsightsRetrieve**](docs/OwnerAPI.md#ownerfacilityinsightsretrieve) | **GET** /api/v1/owner/facilities/{facility_id}/insights/ | Engagement with a facility over the last 30 days
+*OwnerAPI* | [**ownerFacilityInvitationCreate**](docs/OwnerAPI.md#ownerfacilityinvitationcreate) | **POST** /api/v1/owner/facilities/{facility_id}/invitations/ | Invite someone to help run a facility, by phone number
+*OwnerAPI* | [**ownerFacilityInvitationRevoke**](docs/OwnerAPI.md#ownerfacilityinvitationrevoke) | **DELETE** /api/v1/owner/facilities/{facility_id}/invitations/{invitation_id}/ | Withdraw an invitation that has not been answered
+*OwnerAPI* | [**ownerFacilityInvitationsList**](docs/OwnerAPI.md#ownerfacilityinvitationslist) | **GET** /api/v1/owner/facilities/{facility_id}/invitations/ | Invitations sent for a facility
 *OwnerAPI* | [**ownerFacilityLocationReplace**](docs/OwnerAPI.md#ownerfacilitylocationreplace) | **PUT** /api/v1/owner/facilities/{facility_id}/location/ | Set the map point of a facility
 *OwnerAPI* | [**ownerFacilityMemberDelete**](docs/OwnerAPI.md#ownerfacilitymemberdelete) | **DELETE** /api/v1/owner/facilities/{facility_id}/members/{user_id}/ | Remove a member from a facility
 *OwnerAPI* | [**ownerFacilityMemberUpsert**](docs/OwnerAPI.md#ownerfacilitymemberupsert) | **POST** /api/v1/owner/facilities/{facility_id}/members/ | Add a member or change a member role
@@ -200,10 +237,13 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
+ - [Accepted](docs/Accepted.md)
  - [AccountDeletionRequested](docs/AccountDeletionRequested.md)
  - [AccountDeletionStatusEnum](docs/AccountDeletionStatusEnum.md)
  - [AccountRating](docs/AccountRating.md)
  - [AccountRatingList](docs/AccountRatingList.md)
+ - [AdStat](docs/AdStat.md)
+ - [AdStats](docs/AdStats.md)
  - [AdminAdImage](docs/AdminAdImage.md)
  - [AdminAdvertisement](docs/AdminAdvertisement.md)
  - [AdminAdvertisementList](docs/AdminAdvertisementList.md)
@@ -215,7 +255,9 @@ Class | Method | HTTP request | Description
  - [AdminAlertList](docs/AdminAlertList.md)
  - [AdminAlertSeverityEnum](docs/AdminAlertSeverityEnum.md)
  - [AdminAnalytics](docs/AdminAnalytics.md)
+ - [AdminAnalyticsDay](docs/AdminAnalyticsDay.md)
  - [AdminAnalyticsPeriodKpis](docs/AdminAnalyticsPeriodKpis.md)
+ - [AdminAnalyticsSeries](docs/AdminAnalyticsSeries.md)
  - [AdminAppRelease](docs/AdminAppRelease.md)
  - [AdminAppReleaseRequest](docs/AdminAppReleaseRequest.md)
  - [AdminApplication](docs/AdminApplication.md)
@@ -260,7 +302,12 @@ Class | Method | HTTP request | Description
  - [AdminEventCount](docs/AdminEventCount.md)
  - [AdminEvidenceRef](docs/AdminEvidenceRef.md)
  - [AdminFacility](docs/AdminFacility.md)
+ - [AdminFacilityCreate](docs/AdminFacilityCreate.md)
+ - [AdminFacilityCreateStatusEnum](docs/AdminFacilityCreateStatusEnum.md)
+ - [AdminFacilityDetail](docs/AdminFacilityDetail.md)
  - [AdminFacilityList](docs/AdminFacilityList.md)
+ - [AdminFacilityMap](docs/AdminFacilityMap.md)
+ - [AdminFacilityPoint](docs/AdminFacilityPoint.md)
  - [AdminFacilityQuality](docs/AdminFacilityQuality.md)
  - [AdminFacilityReport](docs/AdminFacilityReport.md)
  - [AdminFacilityReportList](docs/AdminFacilityReportList.md)
@@ -268,9 +315,16 @@ Class | Method | HTTP request | Description
  - [AdminFaqEntry](docs/AdminFaqEntry.md)
  - [AdminFaqEntryList](docs/AdminFaqEntryList.md)
  - [AdminFaqEntryRequest](docs/AdminFaqEntryRequest.md)
+ - [AdminHealthCheck](docs/AdminHealthCheck.md)
+ - [AdminHealthCheckKeyEnum](docs/AdminHealthCheckKeyEnum.md)
+ - [AdminHealthMetric](docs/AdminHealthMetric.md)
+ - [AdminHealthOverallEnum](docs/AdminHealthOverallEnum.md)
+ - [AdminHealthStatusEnum](docs/AdminHealthStatusEnum.md)
  - [AdminId](docs/AdminId.md)
  - [AdminLinkEntityTypeEnum](docs/AdminLinkEntityTypeEnum.md)
  - [AdminMe](docs/AdminMe.md)
+ - [AdminPermission](docs/AdminPermission.md)
+ - [AdminPermissionList](docs/AdminPermissionList.md)
  - [AdminProvince](docs/AdminProvince.md)
  - [AdminProvinceList](docs/AdminProvinceList.md)
  - [AdminProvinceReadiness](docs/AdminProvinceReadiness.md)
@@ -289,7 +343,9 @@ Class | Method | HTTP request | Description
  - [AdminReportBulkResponse](docs/AdminReportBulkResponse.md)
  - [AdminReportBulkResult](docs/AdminReportBulkResult.md)
  - [AdminReportDecisionRequest](docs/AdminReportDecisionRequest.md)
+ - [AdminReviewDecisionRequest](docs/AdminReviewDecisionRequest.md)
  - [AdminRole](docs/AdminRole.md)
+ - [AdminRoleCreateRequest](docs/AdminRoleCreateRequest.md)
  - [AdminRoleList](docs/AdminRoleList.md)
  - [AdminSearchGroup](docs/AdminSearchGroup.md)
  - [AdminSearchHit](docs/AdminSearchHit.md)
@@ -347,6 +403,14 @@ Class | Method | HTTP request | Description
  - [ChallengeAccepted](docs/ChallengeAccepted.md)
  - [ChallengeVerified](docs/ChallengeVerified.md)
  - [ChallengeVerify](docs/ChallengeVerify.md)
+ - [Claim](docs/Claim.md)
+ - [ClaimEvidence](docs/ClaimEvidence.md)
+ - [ClaimFacility](docs/ClaimFacility.md)
+ - [ClaimList](docs/ClaimList.md)
+ - [ClaimRequirement](docs/ClaimRequirement.md)
+ - [ClaimStart](docs/ClaimStart.md)
+ - [ClaimableFacility](docs/ClaimableFacility.md)
+ - [ClaimableFacilityList](docs/ClaimableFacilityList.md)
  - [CompactFacility](docs/CompactFacility.md)
  - [ContactMessageCreated](docs/ContactMessageCreated.md)
  - [ContactMessageKindEnum](docs/ContactMessageKindEnum.md)
@@ -354,11 +418,16 @@ Class | Method | HTTP request | Description
  - [ContentPage](docs/ContentPage.md)
  - [ContentPageKindEnum](docs/ContentPageKindEnum.md)
  - [Coordinates](docs/Coordinates.md)
- - [DatabaseHealthEnum](docs/DatabaseHealthEnum.md)
  - [DeletionRequest](docs/DeletionRequest.md)
- - [DependencyConfiguredEnum](docs/DependencyConfiguredEnum.md)
  - [DestinationEnum](docs/DestinationEnum.md)
  - [DuplicateReasonEnum](docs/DuplicateReasonEnum.md)
+ - [DutyImportResult](docs/DutyImportResult.md)
+ - [DutyImportRow](docs/DutyImportRow.md)
+ - [DutyImportRowOutcomeEnum](docs/DutyImportRowOutcomeEnum.md)
+ - [DutyRotation](docs/DutyRotation.md)
+ - [DutyRotationGenerate](docs/DutyRotationGenerate.md)
+ - [DutyRotationList](docs/DutyRotationList.md)
+ - [DutyRotationRequest](docs/DutyRotationRequest.md)
  - [DutyShift](docs/DutyShift.md)
  - [DutyShiftInput](docs/DutyShiftInput.md)
  - [DutyShiftList](docs/DutyShiftList.md)
@@ -391,6 +460,10 @@ Class | Method | HTTP request | Description
  - [FavoriteWrite](docs/FavoriteWrite.md)
  - [HomeCategory](docs/HomeCategory.md)
  - [HomeCategoryCapabilities](docs/HomeCategoryCapabilities.md)
+ - [Invitation](docs/Invitation.md)
+ - [InvitationList](docs/InvitationList.md)
+ - [InvitationRequest](docs/InvitationRequest.md)
+ - [InvitationStatusEnum](docs/InvitationStatusEnum.md)
  - [KeyEnum](docs/KeyEnum.md)
  - [LegalDocument](docs/LegalDocument.md)
  - [LegalDocumentList](docs/LegalDocumentList.md)
@@ -399,10 +472,15 @@ Class | Method | HTTP request | Description
  - [LogoutRequest](docs/LogoutRequest.md)
  - [MapMarker](docs/MapMarker.md)
  - [MapMarkerList](docs/MapMarkerList.md)
+ - [MfaCode](docs/MfaCode.md)
+ - [MfaRecoveryCodes](docs/MfaRecoveryCodes.md)
+ - [MfaSetup](docs/MfaSetup.md)
+ - [MfaStatus](docs/MfaStatus.md)
  - [NamedIntRef](docs/NamedIntRef.md)
  - [NamedRef](docs/NamedRef.md)
  - [Notification](docs/Notification.md)
  - [NotificationPage](docs/NotificationPage.md)
+ - [NotificationPreferences](docs/NotificationPreferences.md)
  - [OwnerApplication](docs/OwnerApplication.md)
  - [OwnerCategory](docs/OwnerCategory.md)
  - [OwnerConfig](docs/OwnerConfig.md)
@@ -421,17 +499,23 @@ Class | Method | HTTP request | Description
  - [OwnerMember](docs/OwnerMember.md)
  - [OwnerMemberList](docs/OwnerMemberList.md)
  - [OwnerMemberUpserted](docs/OwnerMemberUpserted.md)
+ - [OwnerPendingChange](docs/OwnerPendingChange.md)
  - [OwnerRequiredActionEnum](docs/OwnerRequiredActionEnum.md)
  - [OwnerSubmitResult](docs/OwnerSubmitResult.md)
  - [OwnerVerificationRequirement](docs/OwnerVerificationRequirement.md)
  - [PasswordChange](docs/PasswordChange.md)
  - [PatchedAdminDutyShiftUpdateRequest](docs/PatchedAdminDutyShiftUpdateRequest.md)
+ - [PatchedAdminFacilityWrite](docs/PatchedAdminFacilityWrite.md)
+ - [PatchedAdminRoleUpdateRequest](docs/PatchedAdminRoleUpdateRequest.md)
+ - [PatchedDutyRotationRequest](docs/PatchedDutyRotationRequest.md)
  - [PatchedDutyShiftInput](docs/PatchedDutyShiftInput.md)
  - [PatchedFacilityPatch](docs/PatchedFacilityPatch.md)
+ - [PatchedNotificationPreferences](docs/PatchedNotificationPreferences.md)
  - [PatchedProfilePatch](docs/PatchedProfilePatch.md)
  - [PhoneChangeStart](docs/PhoneChangeStart.md)
  - [PlatformStatus](docs/PlatformStatus.md)
  - [Profile](docs/Profile.md)
+ - [ProposedFieldsEnum](docs/ProposedFieldsEnum.md)
  - [PublicAdvertisement](docs/PublicAdvertisement.md)
  - [PublicAdvertisementList](docs/PublicAdvertisementList.md)
  - [PublicCategory](docs/PublicCategory.md)
@@ -453,6 +537,9 @@ Class | Method | HTTP request | Description
  - [PushToken](docs/PushToken.md)
  - [PushTokenRegister](docs/PushTokenRegister.md)
  - [RatingWrite](docs/RatingWrite.md)
+ - [ReceivedFacility](docs/ReceivedFacility.md)
+ - [ReceivedInvitation](docs/ReceivedInvitation.md)
+ - [ReceivedInvitationList](docs/ReceivedInvitationList.md)
  - [RecoveryReset](docs/RecoveryReset.md)
  - [RecoveryStart](docs/RecoveryStart.md)
  - [Refresh](docs/Refresh.md)

@@ -10,8 +10,10 @@ import Foundation
 import AnyCodable
 #endif
 
-/** * &#x60;INITIAL&#x60; - Initial * &#x60;REVERIFICATION&#x60; - Reverification */
+/** * &#x60;INITIAL&#x60; - Initial * &#x60;REVERIFICATION&#x60; - Reverification * &#x60;CHANGE&#x60; - Change * &#x60;CLAIM&#x60; - Claim */
 public enum FacilityApplicationKindEnum: String, Codable, CaseIterable {
     case initial = "INITIAL"
     case reverification = "REVERIFICATION"
+    case change = "CHANGE"
+    case claim = "CLAIM"
 }

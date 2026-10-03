@@ -4,12 +4,118 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**ownerClaimEvidenceCreate**](MediaAPI.md#ownerclaimevidencecreate) | **POST** /api/v1/owner/claims/{claim_id}/evidence/ | Upload a verification document for a claim
+[**ownerClaimEvidenceDelete**](MediaAPI.md#ownerclaimevidencedelete) | **DELETE** /api/v1/owner/claims/{claim_id}/evidence/{evidence_id}/ | Remove a document from a claim not yet sent
 [**ownerFacilityEvidenceCreate**](MediaAPI.md#ownerfacilityevidencecreate) | **POST** /api/v1/owner/facilities/{facility_id}/evidence/ | Upload private verification evidence
 [**ownerFacilityEvidenceDelete**](MediaAPI.md#ownerfacilityevidencedelete) | **DELETE** /api/v1/owner/facilities/{facility_id}/evidence/{evidence_id}/ | Delete a piece of verification evidence
 [**ownerFacilityImageCreate**](MediaAPI.md#ownerfacilityimagecreate) | **POST** /api/v1/owner/facilities/{facility_id}/images/ | Upload a public facility image
 [**ownerFacilityImageDelete**](MediaAPI.md#ownerfacilityimagedelete) | **DELETE** /api/v1/owner/facilities/{facility_id}/images/{image_id}/ | Delete a public facility image
 [**ownerFacilityImagesList**](MediaAPI.md#ownerfacilityimageslist) | **GET** /api/v1/owner/facilities/{facility_id}/images/ | List the public images of a facility
 
+
+# **ownerClaimEvidenceCreate**
+```swift
+    open class func ownerClaimEvidenceCreate(claimId: UUID, requirementId: Int, file: URL, completion: @escaping (_ data: ClaimEvidence?, _ error: Error?) -> Void)
+```
+
+Upload a verification document for a claim
+
+Private, like a facility's own documents. It belongs to the claim until the claim is approved, and is deleted if the claim is withdrawn or rejected.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let claimId = 987 // UUID | 
+let requirementId = 987 // Int | 
+let file = URL(string: "https://example.com")! // URL | 
+
+// Upload a verification document for a claim
+MediaAPI.ownerClaimEvidenceCreate(claimId: claimId, requirementId: requirementId, file: file) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **claimId** | **UUID** |  | 
+ **requirementId** | **Int** |  | 
+ **file** | **URL** |  | 
+
+### Return type
+
+[**ClaimEvidence**](ClaimEvidence.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **ownerClaimEvidenceDelete**
+```swift
+    open class func ownerClaimEvidenceDelete(claimId: UUID, evidenceId: UUID, completion: @escaping (_ data: Void?, _ error: Error?) -> Void)
+```
+
+Remove a document from a claim not yet sent
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let claimId = 987 // UUID | 
+let evidenceId = 987 // UUID | 
+
+// Remove a document from a claim not yet sent
+MediaAPI.ownerClaimEvidenceDelete(claimId: claimId, evidenceId: evidenceId) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **claimId** | **UUID** |  | 
+ **evidenceId** | **UUID** |  | 
+
+### Return type
+
+Void (empty response body)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ownerFacilityEvidenceCreate**
 ```swift

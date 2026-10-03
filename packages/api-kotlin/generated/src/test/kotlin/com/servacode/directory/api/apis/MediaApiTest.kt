@@ -20,6 +20,7 @@ import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.MediaApi
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.ClaimEvidence
 import com.servacode.directory.api.models.OwnerEvidenceCreated
 import com.servacode.directory.api.models.OwnerFacilityImage
 import com.servacode.directory.api.models.OwnerFacilityImageList
@@ -28,6 +29,24 @@ class MediaApiTest : ShouldSpec() {
     init {
         // uncomment below to create an instance of MediaApi
         //val apiInstance = MediaApi()
+
+        // to test ownerClaimEvidenceCreate
+        should("test ownerClaimEvidenceCreate") {
+            // uncomment below to test ownerClaimEvidenceCreate
+            //val claimId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val requirementId : kotlin.Int = 56 // kotlin.Int | 
+            //val file : java.io.File = BINARY_DATA_HERE // java.io.File | 
+            //val result : ClaimEvidence = apiInstance.ownerClaimEvidenceCreate(claimId, requirementId, file)
+            //result shouldBe ("TODO")
+        }
+
+        // to test ownerClaimEvidenceDelete
+        should("test ownerClaimEvidenceDelete") {
+            // uncomment below to test ownerClaimEvidenceDelete
+            //val claimId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val evidenceId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //apiInstance.ownerClaimEvidenceDelete(claimId, evidenceId)
+        }
 
         // to test ownerFacilityEvidenceCreate
         should("test ownerFacilityEvidenceCreate") {

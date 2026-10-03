@@ -27,6 +27,8 @@ import kotlinx.serialization.Contextual
  * @param code 
  * @param name 
  * @param permissions 
+ * @param holderCount Active accounts holding this role now. Blocked accounts are not counted.
+ * @param locked The platform's own role (`owner`): it holds every permission and the console can neither edit nor delete it.
  */
 @Serializable
 
@@ -42,7 +44,15 @@ data class AdminRole (
     val name: kotlin.String,
 
     @SerialName(value = "permissions")
-    val permissions: kotlin.collections.List<kotlin.String>
+    val permissions: kotlin.collections.List<kotlin.String>,
+
+    /* Active accounts holding this role now. Blocked accounts are not counted. */
+    @SerialName(value = "holderCount")
+    val holderCount: kotlin.Int,
+
+    /* The platform's own role (`owner`): it holds every permission and the console can neither edit nor delete it. */
+    @SerialName(value = "locked")
+    val locked: kotlin.Boolean
 
 ) {
 

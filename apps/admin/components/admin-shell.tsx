@@ -7,6 +7,7 @@ import { type ReactNode, createContext, useContext, useState } from "react";
 import { logout } from "../lib/client/api";
 import { useResource } from "../lib/client/use-resource";
 import { type IconName, Icons } from "./icons";
+import { type MfaState, MfaSetupScreen, MfaVerifyScreen, mfaStep } from "./mfa";
 import { GlobalSearch } from "./global-search";
 import { ThemeToggle } from "./theme-toggle";
 import { TopbarStatus } from "./topbar-status";
@@ -28,6 +29,7 @@ export type AdminIdentity = Readonly<{
   userId: string;
   displayName: string;
   permissions: readonly string[];
+  mfa?: MfaState;
 }>;
 
 const IdentityContext = createContext<AdminIdentity | null>(null);
@@ -77,13 +79,19 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
         key: "duty",
         label: "المناوبات",
         icon: "moon",
-        pages: [{ href: "/duty", label: "جدول المناوبات", permission: "admin.duty.read" }],
+        pages: [
+          { href: "/duty", label: "جدول المناوبات", permission: "admin.duty.read" },
+          { href: "/duty/import", label: "الاستيراد والقوالب", permission: "admin.duty.manage" },
+        ],
       },
       {
         key: "facilities",
         label: "المنشآت",
         icon: "building",
-        pages: [{ href: "/facilities", label: "المنشآت", permission: "admin.facilities.read" }],
+        pages: [
+          { href: "/facilities", label: "المنشآت", permission: "admin.facilities.read" },
+          { href: "/facilities/map", label: "الخريطة", permission: "admin.facilities.read" },
+        ],
       },
       {
         key: "users",
@@ -91,6 +99,7 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
         icon: "users",
         pages: [
           { href: "/users", label: "المستخدمون", permission: "admin.users.read" },
+          { href: "/users/roles", label: "الأدوار والصلاحيات", permission: "admin.roles.read" },
           { href: "/users/broadcast", label: "إرسال إشعار", permission: "admin.notifications.send" },
         ],
       },
@@ -207,6 +216,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
     );
   }
 
+  // The second sign-in step comes before the console (DECISION-065): its code for this
+  // session, or setting it up where the deployment requires it.
+  const step = mfaStep(me.data.mfa);
+  if (step === "verify") return <MfaVerifyScreen onDone={me.reload} />;
+  if (step === "setup") return <MfaSetupScreen onDone={me.reload} />;
+
   const identity = me.data;
   const can = (page: Page) => identity.permissions.includes(page.permission);
   const groups = NAVIGATION.map((group) => ({
@@ -269,7 +284,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </span>
             <div className="sidebar-user">
               <strong>{identity.displayName}</strong>
-              <span>فريق التشغيل</span>
+              <Link href="/security" data-testid="security-link">
+                الأمان والتحقق بخطوتين
+              </Link>
             </div>
             <button
               type="button"

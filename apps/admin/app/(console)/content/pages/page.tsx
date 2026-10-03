@@ -95,6 +95,8 @@ export default function ContentPagesPage() {
     {
       key: "title",
       header: "الصفحة",
+      required: true,
+      sortValue: (row) => row.titleAr,
       render: (row) => (
         <div className="cell-stack">
           <Link href={`/content/pages/${encodeURIComponent(row.slug)}`}>{row.titleAr}</Link>
@@ -140,6 +142,8 @@ export default function ContentPagesPage() {
       key: "updatedAt",
       header: "آخر تعديل",
       ltr: true,
+      sortValue: (row) => row.updatedAt,
+      sortFirst: "desc",
       render: (row) => formatDateTime(row.updatedAt),
     },
     {

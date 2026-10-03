@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+from uuid import UUID
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
@@ -20,7 +21,10 @@ class DirectoryConsumer(AsyncJsonWebsocketConsumer):  # type: ignore[misc]
         for group in self.joined_groups:
             await self.channel_layer.group_discard(group, self.channel_name)
 
-    async def receive_json(self, content: dict[str, Any], **kwargs: Any) -> None:
+    async def receive_json(self, content: Any, **kwargs: Any) -> None:
+        if not isinstance(content, dict):
+            await self.send_json({"type": "error", "code": "UNKNOWN_ACTION"})
+            return
         action = content.get("action")
         if action == "authenticate":
             await self._authenticate(content)
@@ -51,8 +55,8 @@ class DirectoryConsumer(AsyncJsonWebsocketConsumer):  # type: ignore[misc]
         await self.send_json({"type": "auth", "ok": True})
 
     async def _subscribe_province(self, content: dict[str, Any]) -> None:
-        province_id = content.get("provinceId")
-        if not province_id or not await self._province_is_active(province_id):
+        province_id = _as_uuid(content.get("provinceId"))
+        if province_id is None or not await self._province_is_active(province_id):
             await self.send_json({"type": "error", "code": "INVALID_PROVINCE"})
             return
         group = province_group(province_id)
@@ -111,7 +115,22 @@ class DirectoryConsumer(AsyncJsonWebsocketConsumer):  # type: ignore[misc]
         user = await User.objects.filter(pk=self.authenticated_user_id).afirst()
         if user is None:
             return False
-        return await self._permission_sync(user, permission_code)
+        if not await self._permission_sync(user, permission_code):
+            return False
+        return await self._second_step_passed(user)
+
+    async def _second_step_passed(self, user: Any) -> bool:
+        """The console's events need the same second step as the console (DECISION-065)."""
+        from asgiref.sync import sync_to_async
+
+        from accounts.authentication import live_sessions_for
+        from accounts.mfa import console_block
+
+        if self.authenticated_claims is None:
+            return False
+        session = await live_sessions_for(self.authenticated_claims).afirst()
+        block = await sync_to_async(console_block)(user, session)
+        return block is None
 
     @staticmethod
     async def _permission_sync(user: Any, permission_code: str) -> bool:
@@ -125,7 +144,7 @@ class DirectoryConsumer(AsyncJsonWebsocketConsumer):  # type: ignore[misc]
         )
 
     @staticmethod
-    async def _province_is_active(province_id: str) -> bool:
+    async def _province_is_active(province_id: UUID) -> bool:
         return await Province.objects.filter(pk=province_id, active=True).aexists()
 
     @staticmethod
@@ -143,3 +162,18 @@ class DirectoryConsumer(AsyncJsonWebsocketConsumer):  # type: ignore[misc]
         except (TypeError, ValueError, DjangoValidationError):
             return None
         return (session.user_id, claims) if session else None
+
+
+def _as_uuid(value: object) -> UUID | None:
+    """The province id a client sent, or None when it is not one.
+
+    Anything that is not a UUID used to reach the database and fail there, which closed the
+    socket with a server error. Parsing it also settles its spelling: an id sent in capitals
+    joins the same group the publisher sends to.
+    """
+    if not isinstance(value, str):
+        return None
+    try:
+        return UUID(value)
+    except ValueError:
+        return None

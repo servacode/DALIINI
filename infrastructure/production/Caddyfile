@@ -1,0 +1,98 @@
+# The server's front door (DECISION-080): TLS, the five names, and the visitor's real address.
+#
+# Certificates are Caddy's own (Let's Encrypt, renewed by itself). Behind Cloudflare, set SSL/TLS
+# to "Full (strict)" and leave Cloudflare's "Always Use HTTPS" off: renewals answer a challenge
+# over plain HTTP, and Caddy itself redirects every other HTTP request (README.md, "DNS and TLS").
+#
+# No access log is written. A request line can carry a position (`lat`, `lng`), and a log that
+# records where somebody stood must not exist; the backend holds its own loggers to the same rule.
+
+{
+	email {$ACME_EMAIL}
+	servers {
+		# Cloudflare's published ranges (https://www.cloudflare.com/ips, fetched 2026-10-03).
+		# A request from one of them is taken to be from the visitor Cloudflare names in
+		# CF-Connecting-IP; from anywhere else the header is ignored, so it cannot be forged.
+		trusted_proxies static 173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22 2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32
+		client_ip_headers CF-Connecting-IP
+	}
+}
+
+(edge) {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+}
+
+# The API, its realtime socket (/ws/v1/directory/) and its health probes. The backend counts one
+# proxy in front of it (DRF_NUM_PROXIES=1), and this is it: it hands over exactly one address,
+# the visitor's.
+api.{$ROOT_DOMAIN} {
+	import edge
+	reverse_proxy api:8000 {
+		header_up X-Forwarded-For {client_ip}
+	}
+}
+
+# The public site. www is the same site under its old habit, sent to the one address.
+{$ROOT_DOMAIN}, www.{$ROOT_DOMAIN} {
+	import edge
+	@www host www.{$ROOT_DOMAIN}
+	redir @www https://{$ROOT_DOMAIN}{uri} permanent
+	reverse_proxy web:10000 {
+		header_up X-Forwarded-For {client_ip}
+	}
+}
+
+# The operators' console.
+admin.{$ROOT_DOMAIN} {
+	import edge
+	reverse_proxy admin:10000 {
+		header_up X-Forwarded-For {client_ip}
+	}
+}
+
+# The base map and the routing engine (DECISION-082). Martin serves the style, the tiles, the
+# glyphs and the icons; they change only when the map is rebuilt (monthly), so browsers and
+# Cloudflare keep them a day, and the style an hour so a rebuild reaches everyone the same day.
+# Valhalla is reached for one thing, a route, and only by POST: a route's body holds two
+# positions, Valhalla writes each request line to its log, and positions must not be in a log.
+# Its other actions (matrices, isochrones) are heavy and nothing here uses them.
+maps.{$ROOT_DOMAIN} {
+	import edge
+	handle_path /routing/* {
+		@route {
+			method POST
+			path /route
+		}
+		@status {
+			method GET
+			path /status
+		}
+		handle @route {
+			reverse_proxy valhalla:8002 {
+				header_down Cache-Control "no-store"
+			}
+		}
+		handle @status {
+			reverse_proxy valhalla:8002 {
+				header_down Cache-Control "no-store"
+			}
+		}
+		handle {
+			respond 404
+		}
+	}
+	handle /style/* {
+		reverse_proxy martin:3000 {
+			header_down Cache-Control "public, max-age=3600"
+		}
+	}
+	handle {
+		reverse_proxy martin:3000 {
+			header_down Cache-Control "public, max-age=86400"
+		}
+	}
+}

@@ -58,8 +58,16 @@
   --ad-info-bg: var(--sd-semantic-feedback-info-soft);
   --ad-info-border: color-mix(in srgb, var(--ad-info) 32%, var(--ad-surface));
 
+  /* Gold: on duty now, and the active place in the shell. Nothing else wears it. */
+  --ad-accent: var(--sd-semantic-accent-default);
+  --ad-accent-text: var(--sd-semantic-accent-content);
+  --ad-accent-bg: var(--sd-semantic-accent-soft);
+  --ad-accent-on: var(--sd-semantic-accent-on-accent);
+  --ad-accent-border: color-mix(in srgb, var(--ad-accent) 38%, var(--ad-surface));
+
   /* Typography */
-  --ad-font: "Tajawal", "Segoe UI", Tahoma, var(--sd-typography-font-family-fallback);
+  --ad-font: var(--sd-typography-font-family-primary), "Segoe UI", var(--sd-typography-font-family-fallback);
+  --ad-font-display: var(--sd-typography-font-family-display), var(--ad-font);
   --ad-font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --ad-text-xs: 12px;
   --ad-text-sm: 13px;

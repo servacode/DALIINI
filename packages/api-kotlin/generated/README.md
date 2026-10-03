@@ -49,7 +49,17 @@ All URIs are relative to *http://localhost*
 | *AccountApi* | [**accountFavoriteAdd**](docs/AccountApi.md#accountfavoriteadd) | **POST** api/v1/account/favorites/ | Save a facility |
 | *AccountApi* | [**accountFavoriteRemove**](docs/AccountApi.md#accountfavoriteremove) | **DELETE** api/v1/account/favorites/{facility_id}/ | Remove a facility the caller had saved |
 | *AccountApi* | [**accountFavoritesList**](docs/AccountApi.md#accountfavoriteslist) | **GET** api/v1/account/favorites/ | List the facilities the caller has saved |
+| *AccountApi* | [**accountInvitationAccept**](docs/AccountApi.md#accountinvitationaccept) | **POST** api/v1/account/invitations/{invitation_id}/accept/ | Join the facility an invitation is for |
+| *AccountApi* | [**accountInvitationDecline**](docs/AccountApi.md#accountinvitationdecline) | **POST** api/v1/account/invitations/{invitation_id}/decline/ | Decline an invitation |
+| *AccountApi* | [**accountInvitationsList**](docs/AccountApi.md#accountinvitationslist) | **GET** api/v1/account/invitations/ | Invitations waiting for this account's phone number |
+| *AccountApi* | [**accountMfaConfirm**](docs/AccountApi.md#accountmfaconfirm) | **POST** api/v1/account/mfa/confirm/ | Confirm the authenticator with its first code |
+| *AccountApi* | [**accountMfaDisable**](docs/AccountApi.md#accountmfadisable) | **POST** api/v1/account/mfa/disable/ | Switch the authenticator off |
+| *AccountApi* | [**accountMfaRetrieve**](docs/AccountApi.md#accountmfaretrieve) | **GET** api/v1/account/mfa/ | The second sign-in step, for this account and session |
+| *AccountApi* | [**accountMfaSetup**](docs/AccountApi.md#accountmfasetup) | **POST** api/v1/account/mfa/setup/ | Start setting up an authenticator app |
+| *AccountApi* | [**accountMfaVerify**](docs/AccountApi.md#accountmfaverify) | **POST** api/v1/account/mfa/verify/ | Pass the second step for this session |
 | *AccountApi* | [**accountNotificationMarkRead**](docs/AccountApi.md#accountnotificationmarkread) | **POST** api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read |
+| *AccountApi* | [**accountNotificationPreferencesRetrieve**](docs/AccountApi.md#accountnotificationpreferencesretrieve) | **GET** api/v1/account/notification-preferences/ | Which kinds of notice are pushed to this account's devices |
+| *AccountApi* | [**accountNotificationPreferencesUpdate**](docs/AccountApi.md#accountnotificationpreferencesupdate) | **PATCH** api/v1/account/notification-preferences/ | Change which kinds of notice are pushed |
 | *AccountApi* | [**accountNotificationsList**](docs/AccountApi.md#accountnotificationslist) | **GET** api/v1/account/notifications/ | List the caller's notifications, newest first |
 | *AccountApi* | [**accountNotificationsMarkAllRead**](docs/AccountApi.md#accountnotificationsmarkallread) | **POST** api/v1/account/notifications/read-all/ | Mark every unread notification as read |
 | *AccountApi* | [**accountNotificationsUnreadCount**](docs/AccountApi.md#accountnotificationsunreadcount) | **GET** api/v1/account/notifications/unread-count/ | How many of the caller's notifications are unread |
@@ -66,9 +76,11 @@ All URIs are relative to *http://localhost*
 | *AdminAdsApi* | [**adminAdCreate**](docs/AdminAdsApi.md#adminadcreate) | **POST** api/v1/admin/ads/ | Create an advertisement |
 | *AdminAdsApi* | [**adminAdDelete**](docs/AdminAdsApi.md#adminaddelete) | **DELETE** api/v1/admin/ads/{advertisement_id}/ | Delete an advertisement |
 | *AdminAdsApi* | [**adminAdImageUpload**](docs/AdminAdsApi.md#adminadimageupload) | **POST** api/v1/admin/ads/images/ | Upload an advertisement image |
+| *AdminAdsApi* | [**adminAdStatsRetrieve**](docs/AdminAdsApi.md#adminadstatsretrieve) | **GET** api/v1/admin/ads/stats/ | Impressions and clicks of each advertisement over a period |
 | *AdminAdsApi* | [**adminAdUpdate**](docs/AdminAdsApi.md#adminadupdate) | **PUT** api/v1/admin/ads/{advertisement_id}/ | Edit an advertisement, its schedule or its activation |
 | *AdminAdsApi* | [**adminAdsList**](docs/AdminAdsApi.md#adminadslist) | **GET** api/v1/admin/ads/ | List advertisements |
 | *AdminAnalyticsApi* | [**adminAnalyticsRetrieve**](docs/AdminAnalyticsApi.md#adminanalyticsretrieve) | **GET** api/v1/admin/analytics/ | Operational KPIs |
+| *AdminAnalyticsApi* | [**adminAnalyticsSeriesRetrieve**](docs/AdminAnalyticsApi.md#adminanalyticsseriesretrieve) | **GET** api/v1/admin/analytics/series/ | The period's numbers, one Damascus day at a time |
 | *AdminAnalyticsApi* | [**adminAnalyticsStaffRetrieve**](docs/AdminAnalyticsApi.md#adminanalyticsstaffretrieve) | **GET** api/v1/admin/analytics/staff/ | Reviewer performance in a period |
 | *AdminAuditApi* | [**adminAuditList**](docs/AdminAuditApi.md#adminauditlist) | **GET** api/v1/admin/audit/ | Search the audit trail |
 | *AdminContentApi* | [**adminContactMessageHandle**](docs/AdminContentApi.md#admincontactmessagehandle) | **POST** api/v1/admin/contact-messages/{message_id}/handle/ | Mark a contact message handled |
@@ -86,7 +98,13 @@ All URIs are relative to *http://localhost*
 | *AdminContentApi* | [**adminFaqEntryCreate**](docs/AdminContentApi.md#adminfaqentrycreate) | **POST** api/v1/admin/content/faq/ | Add a FAQ entry |
 | *AdminContentApi* | [**adminFaqEntryDelete**](docs/AdminContentApi.md#adminfaqentrydelete) | **DELETE** api/v1/admin/content/faq/{entry_id}/ | Delete a FAQ entry |
 | *AdminContentApi* | [**adminFaqEntryUpdate**](docs/AdminContentApi.md#adminfaqentryupdate) | **PUT** api/v1/admin/content/faq/{entry_id}/ | Edit, reorder, publish or unpublish a FAQ entry |
+| *AdminDutyApi* | [**adminDutyImport**](docs/AdminDutyApi.md#admindutyimport) | **POST** api/v1/admin/duty/import/ | Read a duty roster from a spreadsheet; preview it, or apply it |
 | *AdminDutyApi* | [**adminDutyRosterRetrieve**](docs/AdminDutyApi.md#admindutyrosterretrieve) | **GET** api/v1/admin/duty/ | The duty roster of a province (or city), day by day |
+| *AdminDutyApi* | [**adminDutyRotationCreate**](docs/AdminDutyApi.md#admindutyrotationcreate) | **POST** api/v1/admin/duty/rotations/ | Save a duty rotation |
+| *AdminDutyApi* | [**adminDutyRotationDelete**](docs/AdminDutyApi.md#admindutyrotationdelete) | **DELETE** api/v1/admin/duty/rotations/{rotation_id}/ | Delete a saved duty rotation |
+| *AdminDutyApi* | [**adminDutyRotationGenerate**](docs/AdminDutyApi.md#admindutyrotationgenerate) | **POST** api/v1/admin/duty/rotations/{rotation_id}/generate/ | Generate a period's shifts from a rotation; preview them, or apply them |
+| *AdminDutyApi* | [**adminDutyRotationUpdate**](docs/AdminDutyApi.md#admindutyrotationupdate) | **PATCH** api/v1/admin/duty/rotations/{rotation_id}/ | Change a saved duty rotation |
+| *AdminDutyApi* | [**adminDutyRotationsList**](docs/AdminDutyApi.md#admindutyrotationslist) | **GET** api/v1/admin/duty/rotations/ | Saved duty rotations |
 | *AdminDutyApi* | [**adminDutyShiftCreate**](docs/AdminDutyApi.md#admindutyshiftcreate) | **POST** api/v1/admin/duty/ | Put a duty shift on a pharmacy's roster |
 | *AdminDutyApi* | [**adminDutyShiftDelete**](docs/AdminDutyApi.md#admindutyshiftdelete) | **DELETE** api/v1/admin/duty/{shift_id}/ | Cancel a duty shift |
 | *AdminDutyApi* | [**adminDutyShiftUpdate**](docs/AdminDutyApi.md#admindutyshiftupdate) | **PATCH** api/v1/admin/duty/{shift_id}/ | Move a duty shift |
@@ -94,11 +112,14 @@ All URIs are relative to *http://localhost*
 | *AdminExportsApi* | [**adminExportFacilitiesCsv**](docs/AdminExportsApi.md#adminexportfacilitiescsv) | **GET** api/v1/admin/exports/facilities.csv | Export the facility list as CSV |
 | *AdminExportsApi* | [**adminExportReportsCsv**](docs/AdminExportsApi.md#adminexportreportscsv) | **GET** api/v1/admin/exports/reports.csv | Export problem reports as CSV |
 | *AdminFacilitiesApi* | [**adminFacilitiesList**](docs/AdminFacilitiesApi.md#adminfacilitieslist) | **GET** api/v1/admin/facilities/ | List facilities for operations |
+| *AdminFacilitiesApi* | [**adminFacilitiesMap**](docs/AdminFacilitiesApi.md#adminfacilitiesmap) | **GET** api/v1/admin/facilities/map/ | Located facilities as map points, with the same filters as the list |
 | *AdminFacilitiesApi* | [**adminFacilityClose**](docs/AdminFacilitiesApi.md#adminfacilityclose) | **POST** api/v1/admin/facilities/{facility_id}/close/ | Close a facility |
+| *AdminFacilitiesApi* | [**adminFacilityCreate**](docs/AdminFacilitiesApi.md#adminfacilitycreate) | **POST** api/v1/admin/facilities/ | Add a facility to the directory |
 | *AdminFacilitiesApi* | [**adminFacilityReactivate**](docs/AdminFacilitiesApi.md#adminfacilityreactivate) | **POST** api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility |
 | *AdminFacilitiesApi* | [**adminFacilityRetrieve**](docs/AdminFacilitiesApi.md#adminfacilityretrieve) | **GET** api/v1/admin/facilities/{facility_id}/ | Retrieve one facility |
 | *AdminFacilitiesApi* | [**adminFacilitySuspend**](docs/AdminFacilitiesApi.md#adminfacilitysuspend) | **POST** api/v1/admin/facilities/{facility_id}/suspend/ | Suspend a facility |
 | *AdminFacilitiesApi* | [**adminFacilityTimelineRetrieve**](docs/AdminFacilitiesApi.md#adminfacilitytimelineretrieve) | **GET** api/v1/admin/facilities/{facility_id}/timeline/ | Everything that happened to a facility, newest first |
+| *AdminFacilitiesApi* | [**adminFacilityUpdate**](docs/AdminFacilitiesApi.md#adminfacilityupdate) | **PATCH** api/v1/admin/facilities/{facility_id}/ | Correct a facility's details |
 | *AdminNotificationsApi* | [**adminNotificationBroadcast**](docs/AdminNotificationsApi.md#adminnotificationbroadcast) | **POST** api/v1/admin/notifications/broadcast/ | Send a notification to many users |
 | *AdminNotificationsApi* | [**adminNotificationBroadcastsList**](docs/AdminNotificationsApi.md#adminnotificationbroadcastslist) | **GET** api/v1/admin/notifications/broadcasts/ | Broadcast history, newest first |
 | *AdminProvincesApi* | [**adminProvinceCitiesList**](docs/AdminProvincesApi.md#adminprovincecitieslist) | **GET** api/v1/admin/provinces/{province_id}/cities/ | List every city of a province, active or not |
@@ -127,7 +148,7 @@ All URIs are relative to *http://localhost*
 | *AdminSystemApi* | [**adminDashboardRetrieve**](docs/AdminSystemApi.md#admindashboardretrieve) | **GET** api/v1/admin/dashboard/ | Operational counters for the review desk |
 | *AdminSystemApi* | [**adminMeRetrieve**](docs/AdminSystemApi.md#adminmeretrieve) | **GET** api/v1/admin/me/ | The current operator and the permissions they hold |
 | *AdminSystemApi* | [**adminSearchRetrieve**](docs/AdminSystemApi.md#adminsearchretrieve) | **GET** api/v1/admin/search/ | Search facilities, users and applications at once |
-| *AdminSystemApi* | [**adminSystemStatusRetrieve**](docs/AdminSystemApi.md#adminsystemstatusretrieve) | **GET** api/v1/admin/system/status/ | Runtime and configuration status |
+| *AdminSystemApi* | [**adminSystemStatusRetrieve**](docs/AdminSystemApi.md#adminsystemstatusretrieve) | **GET** api/v1/admin/system/status/ | Every dependency, asked directly |
 | *AdminSystemApi* | [**adminTasksRetrieve**](docs/AdminSystemApi.md#admintasksretrieve) | **GET** api/v1/admin/tasks/ | The operator's queue: what is waiting, oldest first |
 | *AdminTaxonomyApi* | [**adminCategoriesList**](docs/AdminTaxonomyApi.md#admincategorieslist) | **GET** api/v1/admin/categories/ | List categories |
 | *AdminTaxonomyApi* | [**adminCategoryCapabilitiesReplace**](docs/AdminTaxonomyApi.md#admincategorycapabilitiesreplace) | **PUT** api/v1/admin/categories/{category_id}/capabilities/ | Set the capability flags of a category |
@@ -145,8 +166,13 @@ All URIs are relative to *http://localhost*
 | *AdminTaxonomyApi* | [**adminServiceTagUpdate**](docs/AdminTaxonomyApi.md#adminservicetagupdate) | **PUT** api/v1/admin/service-tags/{service_tag_id}/ | Rename, reorder, retire or bring back a service |
 | *AdminTaxonomyApi* | [**adminSpecialtyDelete**](docs/AdminTaxonomyApi.md#adminspecialtydelete) | **DELETE** api/v1/admin/specialties/{specialty_id}/ | Delete a specialty no facility lists |
 | *AdminTaxonomyApi* | [**adminSpecialtyUpdate**](docs/AdminTaxonomyApi.md#adminspecialtyupdate) | **PUT** api/v1/admin/specialties/{specialty_id}/ | Rename, reorder, retire or bring back a specialty |
-| *AdminUsersApi* | [**adminRolesList**](docs/AdminUsersApi.md#adminroleslist) | **GET** api/v1/admin/roles/ | List admin roles and their permission codes |
+| *AdminUsersApi* | [**adminPermissionsList**](docs/AdminUsersApi.md#adminpermissionslist) | **GET** api/v1/admin/permissions/ | Every permission a role can carry |
+| *AdminUsersApi* | [**adminRoleCreate**](docs/AdminUsersApi.md#adminrolecreate) | **POST** api/v1/admin/roles/ | Create a role with the permissions it carries |
+| *AdminUsersApi* | [**adminRoleDelete**](docs/AdminUsersApi.md#adminroledelete) | **DELETE** api/v1/admin/roles/{role_id}/ | Delete a role nobody holds |
+| *AdminUsersApi* | [**adminRoleUpdate**](docs/AdminUsersApi.md#adminroleupdate) | **PATCH** api/v1/admin/roles/{role_id}/ | Rename a role or change the permissions it carries |
+| *AdminUsersApi* | [**adminRolesList**](docs/AdminUsersApi.md#adminroleslist) | **GET** api/v1/admin/roles/ | List admin roles, their permission codes and how many hold each |
 | *AdminUsersApi* | [**adminUserBlock**](docs/AdminUsersApi.md#adminuserblock) | **POST** api/v1/admin/users/{user_id}/block/ | Block a user account |
+| *AdminUsersApi* | [**adminUserMfaReset**](docs/AdminUsersApi.md#adminusermfareset) | **POST** api/v1/admin/users/{user_id}/mfa/reset/ | Clear an operator's authenticator after they lost it |
 | *AdminUsersApi* | [**adminUserRetrieve**](docs/AdminUsersApi.md#adminuserretrieve) | **GET** api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned |
 | *AdminUsersApi* | [**adminUserRolesReplace**](docs/AdminUsersApi.md#adminuserrolesreplace) | **PUT** api/v1/admin/users/{user_id}/roles/ | Replace the admin roles of a user |
 | *AdminUsersApi* | [**adminUserUnblock**](docs/AdminUsersApi.md#adminuserunblock) | **POST** api/v1/admin/users/{user_id}/unblock/ | Unblock a user account |
@@ -183,16 +209,27 @@ All URIs are relative to *http://localhost*
 | *DutyApi* | [**ownerFacilityDutyDelete**](docs/DutyApi.md#ownerfacilitydutydelete) | **DELETE** api/v1/owner/facilities/{facility_id}/duty/{shift_id}/ | Remove a duty shift |
 | *DutyApi* | [**ownerFacilityDutyList**](docs/DutyApi.md#ownerfacilitydutylist) | **GET** api/v1/owner/facilities/{facility_id}/duty/ | List duty shifts of a facility |
 | *DutyApi* | [**ownerFacilityDutyUpdate**](docs/DutyApi.md#ownerfacilitydutyupdate) | **PATCH** api/v1/owner/facilities/{facility_id}/duty/{shift_id}/ | Adjust a duty shift |
+| *MediaApi* | [**ownerClaimEvidenceCreate**](docs/MediaApi.md#ownerclaimevidencecreate) | **POST** api/v1/owner/claims/{claim_id}/evidence/ | Upload a verification document for a claim |
+| *MediaApi* | [**ownerClaimEvidenceDelete**](docs/MediaApi.md#ownerclaimevidencedelete) | **DELETE** api/v1/owner/claims/{claim_id}/evidence/{evidence_id}/ | Remove a document from a claim not yet sent |
 | *MediaApi* | [**ownerFacilityEvidenceCreate**](docs/MediaApi.md#ownerfacilityevidencecreate) | **POST** api/v1/owner/facilities/{facility_id}/evidence/ | Upload private verification evidence |
 | *MediaApi* | [**ownerFacilityEvidenceDelete**](docs/MediaApi.md#ownerfacilityevidencedelete) | **DELETE** api/v1/owner/facilities/{facility_id}/evidence/{evidence_id}/ | Delete a piece of verification evidence |
 | *MediaApi* | [**ownerFacilityImageCreate**](docs/MediaApi.md#ownerfacilityimagecreate) | **POST** api/v1/owner/facilities/{facility_id}/images/ | Upload a public facility image |
 | *MediaApi* | [**ownerFacilityImageDelete**](docs/MediaApi.md#ownerfacilityimagedelete) | **DELETE** api/v1/owner/facilities/{facility_id}/images/{image_id}/ | Delete a public facility image |
 | *MediaApi* | [**ownerFacilityImagesList**](docs/MediaApi.md#ownerfacilityimageslist) | **GET** api/v1/owner/facilities/{facility_id}/images/ | List the public images of a facility |
+| *OwnerApi* | [**ownerClaimRetrieve**](docs/OwnerApi.md#ownerclaimretrieve) | **GET** api/v1/owner/claims/{claim_id}/ | One of this account's claims |
+| *OwnerApi* | [**ownerClaimStart**](docs/OwnerApi.md#ownerclaimstart) | **POST** api/v1/owner/claims/ | Start claiming a facility |
+| *OwnerApi* | [**ownerClaimSubmit**](docs/OwnerApi.md#ownerclaimsubmit) | **POST** api/v1/owner/claims/{claim_id}/submit/ | Send a claim for review |
+| *OwnerApi* | [**ownerClaimWithdraw**](docs/OwnerApi.md#ownerclaimwithdraw) | **DELETE** api/v1/owner/claims/{claim_id}/ | Withdraw a claim and delete its documents |
+| *OwnerApi* | [**ownerClaimableFacilitiesList**](docs/OwnerApi.md#ownerclaimablefacilitieslist) | **GET** api/v1/owner/claimable-facilities/ | Find a published facility nobody owns yet |
+| *OwnerApi* | [**ownerClaimsList**](docs/OwnerApi.md#ownerclaimslist) | **GET** api/v1/owner/claims/ | This account's claims, newest first |
 | *OwnerApi* | [**ownerConfigRetrieve**](docs/OwnerApi.md#ownerconfigretrieve) | **GET** api/v1/owner/config/ | List categories open for owner onboarding in a province |
 | *OwnerApi* | [**ownerFacilitiesList**](docs/OwnerApi.md#ownerfacilitieslist) | **GET** api/v1/owner/facilities/ | List the facilities the caller belongs to |
 | *OwnerApi* | [**ownerFacilityCreate**](docs/OwnerApi.md#ownerfacilitycreate) | **POST** api/v1/owner/facilities/ | Create a facility draft |
 | *OwnerApi* | [**ownerFacilityHoursConfirm**](docs/OwnerApi.md#ownerfacilityhoursconfirm) | **POST** api/v1/owner/facilities/{facility_id}/confirm-hours/ | Confirm that the facility's opening hours are still right |
 | *OwnerApi* | [**ownerFacilityInsightsRetrieve**](docs/OwnerApi.md#ownerfacilityinsightsretrieve) | **GET** api/v1/owner/facilities/{facility_id}/insights/ | Engagement with a facility over the last 30 days |
+| *OwnerApi* | [**ownerFacilityInvitationCreate**](docs/OwnerApi.md#ownerfacilityinvitationcreate) | **POST** api/v1/owner/facilities/{facility_id}/invitations/ | Invite someone to help run a facility, by phone number |
+| *OwnerApi* | [**ownerFacilityInvitationRevoke**](docs/OwnerApi.md#ownerfacilityinvitationrevoke) | **DELETE** api/v1/owner/facilities/{facility_id}/invitations/{invitation_id}/ | Withdraw an invitation that has not been answered |
+| *OwnerApi* | [**ownerFacilityInvitationsList**](docs/OwnerApi.md#ownerfacilityinvitationslist) | **GET** api/v1/owner/facilities/{facility_id}/invitations/ | Invitations sent for a facility |
 | *OwnerApi* | [**ownerFacilityLocationReplace**](docs/OwnerApi.md#ownerfacilitylocationreplace) | **PUT** api/v1/owner/facilities/{facility_id}/location/ | Set the map point of a facility |
 | *OwnerApi* | [**ownerFacilityMemberDelete**](docs/OwnerApi.md#ownerfacilitymemberdelete) | **DELETE** api/v1/owner/facilities/{facility_id}/members/{user_id}/ | Remove a member from a facility |
 | *OwnerApi* | [**ownerFacilityMemberUpsert**](docs/OwnerApi.md#ownerfacilitymemberupsert) | **POST** api/v1/owner/facilities/{facility_id}/members/ | Add a member or change a member role |
@@ -220,10 +257,13 @@ All URIs are relative to *http://localhost*
 <a id="documentation-for-models"></a>
 ## Documentation for Models
 
+ - [com.servacode.directory.api.models.Accepted](docs/Accepted.md)
  - [com.servacode.directory.api.models.AccountDeletionRequested](docs/AccountDeletionRequested.md)
  - [com.servacode.directory.api.models.AccountDeletionStatusEnum](docs/AccountDeletionStatusEnum.md)
  - [com.servacode.directory.api.models.AccountRating](docs/AccountRating.md)
  - [com.servacode.directory.api.models.AccountRatingList](docs/AccountRatingList.md)
+ - [com.servacode.directory.api.models.AdStat](docs/AdStat.md)
+ - [com.servacode.directory.api.models.AdStats](docs/AdStats.md)
  - [com.servacode.directory.api.models.AdminAdImage](docs/AdminAdImage.md)
  - [com.servacode.directory.api.models.AdminAdvertisement](docs/AdminAdvertisement.md)
  - [com.servacode.directory.api.models.AdminAdvertisementList](docs/AdminAdvertisementList.md)
@@ -235,7 +275,9 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminAlertList](docs/AdminAlertList.md)
  - [com.servacode.directory.api.models.AdminAlertSeverityEnum](docs/AdminAlertSeverityEnum.md)
  - [com.servacode.directory.api.models.AdminAnalytics](docs/AdminAnalytics.md)
+ - [com.servacode.directory.api.models.AdminAnalyticsDay](docs/AdminAnalyticsDay.md)
  - [com.servacode.directory.api.models.AdminAnalyticsPeriodKpis](docs/AdminAnalyticsPeriodKpis.md)
+ - [com.servacode.directory.api.models.AdminAnalyticsSeries](docs/AdminAnalyticsSeries.md)
  - [com.servacode.directory.api.models.AdminAppRelease](docs/AdminAppRelease.md)
  - [com.servacode.directory.api.models.AdminAppReleaseRequest](docs/AdminAppReleaseRequest.md)
  - [com.servacode.directory.api.models.AdminApplication](docs/AdminApplication.md)
@@ -280,7 +322,12 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminEventCount](docs/AdminEventCount.md)
  - [com.servacode.directory.api.models.AdminEvidenceRef](docs/AdminEvidenceRef.md)
  - [com.servacode.directory.api.models.AdminFacility](docs/AdminFacility.md)
+ - [com.servacode.directory.api.models.AdminFacilityCreate](docs/AdminFacilityCreate.md)
+ - [com.servacode.directory.api.models.AdminFacilityCreateStatusEnum](docs/AdminFacilityCreateStatusEnum.md)
+ - [com.servacode.directory.api.models.AdminFacilityDetail](docs/AdminFacilityDetail.md)
  - [com.servacode.directory.api.models.AdminFacilityList](docs/AdminFacilityList.md)
+ - [com.servacode.directory.api.models.AdminFacilityMap](docs/AdminFacilityMap.md)
+ - [com.servacode.directory.api.models.AdminFacilityPoint](docs/AdminFacilityPoint.md)
  - [com.servacode.directory.api.models.AdminFacilityQuality](docs/AdminFacilityQuality.md)
  - [com.servacode.directory.api.models.AdminFacilityReport](docs/AdminFacilityReport.md)
  - [com.servacode.directory.api.models.AdminFacilityReportList](docs/AdminFacilityReportList.md)
@@ -288,9 +335,16 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminFaqEntry](docs/AdminFaqEntry.md)
  - [com.servacode.directory.api.models.AdminFaqEntryList](docs/AdminFaqEntryList.md)
  - [com.servacode.directory.api.models.AdminFaqEntryRequest](docs/AdminFaqEntryRequest.md)
+ - [com.servacode.directory.api.models.AdminHealthCheck](docs/AdminHealthCheck.md)
+ - [com.servacode.directory.api.models.AdminHealthCheckKeyEnum](docs/AdminHealthCheckKeyEnum.md)
+ - [com.servacode.directory.api.models.AdminHealthMetric](docs/AdminHealthMetric.md)
+ - [com.servacode.directory.api.models.AdminHealthOverallEnum](docs/AdminHealthOverallEnum.md)
+ - [com.servacode.directory.api.models.AdminHealthStatusEnum](docs/AdminHealthStatusEnum.md)
  - [com.servacode.directory.api.models.AdminId](docs/AdminId.md)
  - [com.servacode.directory.api.models.AdminLinkEntityTypeEnum](docs/AdminLinkEntityTypeEnum.md)
  - [com.servacode.directory.api.models.AdminMe](docs/AdminMe.md)
+ - [com.servacode.directory.api.models.AdminPermission](docs/AdminPermission.md)
+ - [com.servacode.directory.api.models.AdminPermissionList](docs/AdminPermissionList.md)
  - [com.servacode.directory.api.models.AdminProvince](docs/AdminProvince.md)
  - [com.servacode.directory.api.models.AdminProvinceList](docs/AdminProvinceList.md)
  - [com.servacode.directory.api.models.AdminProvinceReadiness](docs/AdminProvinceReadiness.md)
@@ -309,7 +363,9 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminReportBulkResponse](docs/AdminReportBulkResponse.md)
  - [com.servacode.directory.api.models.AdminReportBulkResult](docs/AdminReportBulkResult.md)
  - [com.servacode.directory.api.models.AdminReportDecisionRequest](docs/AdminReportDecisionRequest.md)
+ - [com.servacode.directory.api.models.AdminReviewDecisionRequest](docs/AdminReviewDecisionRequest.md)
  - [com.servacode.directory.api.models.AdminRole](docs/AdminRole.md)
+ - [com.servacode.directory.api.models.AdminRoleCreateRequest](docs/AdminRoleCreateRequest.md)
  - [com.servacode.directory.api.models.AdminRoleList](docs/AdminRoleList.md)
  - [com.servacode.directory.api.models.AdminSearchGroup](docs/AdminSearchGroup.md)
  - [com.servacode.directory.api.models.AdminSearchHit](docs/AdminSearchHit.md)
@@ -367,6 +423,14 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.ChallengeAccepted](docs/ChallengeAccepted.md)
  - [com.servacode.directory.api.models.ChallengeVerified](docs/ChallengeVerified.md)
  - [com.servacode.directory.api.models.ChallengeVerify](docs/ChallengeVerify.md)
+ - [com.servacode.directory.api.models.Claim](docs/Claim.md)
+ - [com.servacode.directory.api.models.ClaimEvidence](docs/ClaimEvidence.md)
+ - [com.servacode.directory.api.models.ClaimFacility](docs/ClaimFacility.md)
+ - [com.servacode.directory.api.models.ClaimList](docs/ClaimList.md)
+ - [com.servacode.directory.api.models.ClaimRequirement](docs/ClaimRequirement.md)
+ - [com.servacode.directory.api.models.ClaimStart](docs/ClaimStart.md)
+ - [com.servacode.directory.api.models.ClaimableFacility](docs/ClaimableFacility.md)
+ - [com.servacode.directory.api.models.ClaimableFacilityList](docs/ClaimableFacilityList.md)
  - [com.servacode.directory.api.models.CompactFacility](docs/CompactFacility.md)
  - [com.servacode.directory.api.models.ContactMessageCreated](docs/ContactMessageCreated.md)
  - [com.servacode.directory.api.models.ContactMessageKindEnum](docs/ContactMessageKindEnum.md)
@@ -374,11 +438,16 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.ContentPage](docs/ContentPage.md)
  - [com.servacode.directory.api.models.ContentPageKindEnum](docs/ContentPageKindEnum.md)
  - [com.servacode.directory.api.models.Coordinates](docs/Coordinates.md)
- - [com.servacode.directory.api.models.DatabaseHealthEnum](docs/DatabaseHealthEnum.md)
  - [com.servacode.directory.api.models.DeletionRequest](docs/DeletionRequest.md)
- - [com.servacode.directory.api.models.DependencyConfiguredEnum](docs/DependencyConfiguredEnum.md)
  - [com.servacode.directory.api.models.DestinationEnum](docs/DestinationEnum.md)
  - [com.servacode.directory.api.models.DuplicateReasonEnum](docs/DuplicateReasonEnum.md)
+ - [com.servacode.directory.api.models.DutyImportResult](docs/DutyImportResult.md)
+ - [com.servacode.directory.api.models.DutyImportRow](docs/DutyImportRow.md)
+ - [com.servacode.directory.api.models.DutyImportRowOutcomeEnum](docs/DutyImportRowOutcomeEnum.md)
+ - [com.servacode.directory.api.models.DutyRotation](docs/DutyRotation.md)
+ - [com.servacode.directory.api.models.DutyRotationGenerate](docs/DutyRotationGenerate.md)
+ - [com.servacode.directory.api.models.DutyRotationList](docs/DutyRotationList.md)
+ - [com.servacode.directory.api.models.DutyRotationRequest](docs/DutyRotationRequest.md)
  - [com.servacode.directory.api.models.DutyShift](docs/DutyShift.md)
  - [com.servacode.directory.api.models.DutyShiftInput](docs/DutyShiftInput.md)
  - [com.servacode.directory.api.models.DutyShiftList](docs/DutyShiftList.md)
@@ -411,6 +480,10 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.FavoriteWrite](docs/FavoriteWrite.md)
  - [com.servacode.directory.api.models.HomeCategory](docs/HomeCategory.md)
  - [com.servacode.directory.api.models.HomeCategoryCapabilities](docs/HomeCategoryCapabilities.md)
+ - [com.servacode.directory.api.models.Invitation](docs/Invitation.md)
+ - [com.servacode.directory.api.models.InvitationList](docs/InvitationList.md)
+ - [com.servacode.directory.api.models.InvitationRequest](docs/InvitationRequest.md)
+ - [com.servacode.directory.api.models.InvitationStatusEnum](docs/InvitationStatusEnum.md)
  - [com.servacode.directory.api.models.KeyEnum](docs/KeyEnum.md)
  - [com.servacode.directory.api.models.LegalDocument](docs/LegalDocument.md)
  - [com.servacode.directory.api.models.LegalDocumentList](docs/LegalDocumentList.md)
@@ -419,10 +492,15 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.LogoutRequest](docs/LogoutRequest.md)
  - [com.servacode.directory.api.models.MapMarker](docs/MapMarker.md)
  - [com.servacode.directory.api.models.MapMarkerList](docs/MapMarkerList.md)
+ - [com.servacode.directory.api.models.MfaCode](docs/MfaCode.md)
+ - [com.servacode.directory.api.models.MfaRecoveryCodes](docs/MfaRecoveryCodes.md)
+ - [com.servacode.directory.api.models.MfaSetup](docs/MfaSetup.md)
+ - [com.servacode.directory.api.models.MfaStatus](docs/MfaStatus.md)
  - [com.servacode.directory.api.models.NamedIntRef](docs/NamedIntRef.md)
  - [com.servacode.directory.api.models.NamedRef](docs/NamedRef.md)
  - [com.servacode.directory.api.models.Notification](docs/Notification.md)
  - [com.servacode.directory.api.models.NotificationPage](docs/NotificationPage.md)
+ - [com.servacode.directory.api.models.NotificationPreferences](docs/NotificationPreferences.md)
  - [com.servacode.directory.api.models.OwnerApplication](docs/OwnerApplication.md)
  - [com.servacode.directory.api.models.OwnerCategory](docs/OwnerCategory.md)
  - [com.servacode.directory.api.models.OwnerConfig](docs/OwnerConfig.md)
@@ -441,17 +519,23 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.OwnerMember](docs/OwnerMember.md)
  - [com.servacode.directory.api.models.OwnerMemberList](docs/OwnerMemberList.md)
  - [com.servacode.directory.api.models.OwnerMemberUpserted](docs/OwnerMemberUpserted.md)
+ - [com.servacode.directory.api.models.OwnerPendingChange](docs/OwnerPendingChange.md)
  - [com.servacode.directory.api.models.OwnerRequiredActionEnum](docs/OwnerRequiredActionEnum.md)
  - [com.servacode.directory.api.models.OwnerSubmitResult](docs/OwnerSubmitResult.md)
  - [com.servacode.directory.api.models.OwnerVerificationRequirement](docs/OwnerVerificationRequirement.md)
  - [com.servacode.directory.api.models.PasswordChange](docs/PasswordChange.md)
  - [com.servacode.directory.api.models.PatchedAdminDutyShiftUpdateRequest](docs/PatchedAdminDutyShiftUpdateRequest.md)
+ - [com.servacode.directory.api.models.PatchedAdminFacilityWrite](docs/PatchedAdminFacilityWrite.md)
+ - [com.servacode.directory.api.models.PatchedAdminRoleUpdateRequest](docs/PatchedAdminRoleUpdateRequest.md)
+ - [com.servacode.directory.api.models.PatchedDutyRotationRequest](docs/PatchedDutyRotationRequest.md)
  - [com.servacode.directory.api.models.PatchedDutyShiftInput](docs/PatchedDutyShiftInput.md)
  - [com.servacode.directory.api.models.PatchedFacilityPatch](docs/PatchedFacilityPatch.md)
+ - [com.servacode.directory.api.models.PatchedNotificationPreferences](docs/PatchedNotificationPreferences.md)
  - [com.servacode.directory.api.models.PatchedProfilePatch](docs/PatchedProfilePatch.md)
  - [com.servacode.directory.api.models.PhoneChangeStart](docs/PhoneChangeStart.md)
  - [com.servacode.directory.api.models.PlatformStatus](docs/PlatformStatus.md)
  - [com.servacode.directory.api.models.Profile](docs/Profile.md)
+ - [com.servacode.directory.api.models.ProposedFieldsEnum](docs/ProposedFieldsEnum.md)
  - [com.servacode.directory.api.models.PublicAdvertisement](docs/PublicAdvertisement.md)
  - [com.servacode.directory.api.models.PublicAdvertisementList](docs/PublicAdvertisementList.md)
  - [com.servacode.directory.api.models.PublicCategory](docs/PublicCategory.md)
@@ -473,6 +557,9 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.PushToken](docs/PushToken.md)
  - [com.servacode.directory.api.models.PushTokenRegister](docs/PushTokenRegister.md)
  - [com.servacode.directory.api.models.RatingWrite](docs/RatingWrite.md)
+ - [com.servacode.directory.api.models.ReceivedFacility](docs/ReceivedFacility.md)
+ - [com.servacode.directory.api.models.ReceivedInvitation](docs/ReceivedInvitation.md)
+ - [com.servacode.directory.api.models.ReceivedInvitationList](docs/ReceivedInvitationList.md)
  - [com.servacode.directory.api.models.RecoveryReset](docs/RecoveryReset.md)
  - [com.servacode.directory.api.models.RecoveryStart](docs/RecoveryStart.md)
  - [com.servacode.directory.api.models.Refresh](docs/Refresh.md)

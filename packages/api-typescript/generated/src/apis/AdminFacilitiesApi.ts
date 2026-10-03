@@ -17,30 +17,51 @@ import * as runtime from '../runtime';
 import type {
   AdminDecisionRequest,
   AdminFacility,
+  AdminFacilityCreate,
+  AdminFacilityDetail,
   AdminFacilityList,
-  AdminFacilityQuality,
+  AdminFacilityMap,
   AdminTimeline,
   ApiError,
+  PatchedAdminFacilityWrite,
 } from '../models/index';
 import {
     AdminDecisionRequestFromJSON,
     AdminDecisionRequestToJSON,
     AdminFacilityFromJSON,
     AdminFacilityToJSON,
+    AdminFacilityCreateFromJSON,
+    AdminFacilityCreateToJSON,
+    AdminFacilityDetailFromJSON,
+    AdminFacilityDetailToJSON,
     AdminFacilityListFromJSON,
     AdminFacilityListToJSON,
-    AdminFacilityQualityFromJSON,
-    AdminFacilityQualityToJSON,
+    AdminFacilityMapFromJSON,
+    AdminFacilityMapToJSON,
     AdminTimelineFromJSON,
     AdminTimelineToJSON,
     ApiErrorFromJSON,
     ApiErrorToJSON,
+    PatchedAdminFacilityWriteFromJSON,
+    PatchedAdminFacilityWriteToJSON,
 } from '../models/index';
 
 export interface AdminFacilitiesListRequest {
     category?: string;
+    city?: string;
+    cursor?: string;
     issue?: AdminFacilitiesListIssueEnum;
+    limit?: number;
     ordering?: AdminFacilitiesListOrderingEnum;
+    province?: string;
+    q?: string;
+    status?: string;
+}
+
+export interface AdminFacilitiesMapRequest {
+    category?: string;
+    city?: string;
+    issue?: string;
     province?: string;
     q?: string;
     status?: string;
@@ -49,6 +70,10 @@ export interface AdminFacilitiesListRequest {
 export interface AdminFacilityCloseRequest {
     facilityId: string;
     adminDecisionRequest?: AdminDecisionRequest;
+}
+
+export interface AdminFacilityCreateRequest {
+    adminFacilityCreate: AdminFacilityCreate;
 }
 
 export interface AdminFacilityReactivateRequest {
@@ -69,13 +94,18 @@ export interface AdminFacilityTimelineRetrieveRequest {
     facilityId: string;
 }
 
+export interface AdminFacilityUpdateRequest {
+    facilityId: string;
+    patchedAdminFacilityWrite?: PatchedAdminFacilityWrite;
+}
+
 /**
  * 
  */
 export class AdminFacilitiesApi extends runtime.BaseAPI {
 
     /**
-     * Capped at 250 rows. Every filter is optional and combines with the rest. Each row carries `qualityScore` (0-100) and `qualityIssues`, computed in the same query.
+     * In cursor pages. Every filter is optional and combines with the rest. Each row carries `qualityScore` (0-100) and `qualityIssues`, computed in the same query.
      * List facilities for operations
      */
     async adminFacilitiesListRaw(requestParameters: AdminFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminFacilityList>> {
@@ -85,8 +115,20 @@ export class AdminFacilitiesApi extends runtime.BaseAPI {
             queryParameters['category'] = requestParameters['category'];
         }
 
+        if (requestParameters['city'] != null) {
+            queryParameters['city'] = requestParameters['city'];
+        }
+
+        if (requestParameters['cursor'] != null) {
+            queryParameters['cursor'] = requestParameters['cursor'];
+        }
+
         if (requestParameters['issue'] != null) {
             queryParameters['issue'] = requestParameters['issue'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
         }
 
         if (requestParameters['ordering'] != null) {
@@ -129,11 +171,74 @@ export class AdminFacilitiesApi extends runtime.BaseAPI {
     }
 
     /**
-     * Capped at 250 rows. Every filter is optional and combines with the rest. Each row carries `qualityScore` (0-100) and `qualityIssues`, computed in the same query.
+     * In cursor pages. Every filter is optional and combines with the rest. Each row carries `qualityScore` (0-100) and `qualityIssues`, computed in the same query.
      * List facilities for operations
      */
     async adminFacilitiesList(requestParameters: AdminFacilitiesListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacilityList> {
         const response = await this.adminFacilitiesListRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Every located facility the filters select, as points (DECISION-075).  The same filters as the list, so \"the map of what I am looking at\" is one click. Only what a pin needs travels: the name, the state and the coordinates. A facility without a location is counted rather than dropped silently, so the operator can go and fix it.
+     * Located facilities as map points, with the same filters as the list
+     */
+    async adminFacilitiesMapRaw(requestParameters: AdminFacilitiesMapRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminFacilityMap>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['category'] != null) {
+            queryParameters['category'] = requestParameters['category'];
+        }
+
+        if (requestParameters['city'] != null) {
+            queryParameters['city'] = requestParameters['city'];
+        }
+
+        if (requestParameters['issue'] != null) {
+            queryParameters['issue'] = requestParameters['issue'];
+        }
+
+        if (requestParameters['province'] != null) {
+            queryParameters['province'] = requestParameters['province'];
+        }
+
+        if (requestParameters['q'] != null) {
+            queryParameters['q'] = requestParameters['q'];
+        }
+
+        if (requestParameters['status'] != null) {
+            queryParameters['status'] = requestParameters['status'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/facilities/map/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminFacilityMapFromJSON(jsonValue));
+    }
+
+    /**
+     * Every located facility the filters select, as points (DECISION-075).  The same filters as the list, so \"the map of what I am looking at\" is one click. Only what a pin needs travels: the name, the state and the coordinates. A facility without a location is counted rather than dropped silently, so the operator can go and fix it.
+     * Located facilities as map points, with the same filters as the list
+     */
+    async adminFacilitiesMap(requestParameters: AdminFacilitiesMapRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacilityMap> {
+        const response = await this.adminFacilitiesMapRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -186,6 +291,55 @@ export class AdminFacilitiesApi extends runtime.BaseAPI {
     }
 
     /**
+     * Listed by the directory itself, with no owner; an owner can claim it later. ACTIVE (the default) publishes it at once and counts as verified. The same validation as an owner\'s edit applies. Requires `admin.facilities.edit`; audited.
+     * Add a facility to the directory
+     */
+    async adminFacilityCreateRaw(requestParameters: AdminFacilityCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminFacilityDetail>> {
+        if (requestParameters['adminFacilityCreate'] == null) {
+            throw new runtime.RequiredError(
+                'adminFacilityCreate',
+                'Required parameter "adminFacilityCreate" was null or undefined when calling adminFacilityCreate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/facilities/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminFacilityCreateToJSON(requestParameters['adminFacilityCreate']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminFacilityDetailFromJSON(jsonValue));
+    }
+
+    /**
+     * Listed by the directory itself, with no owner; an owner can claim it later. ACTIVE (the default) publishes it at once and counts as verified. The same validation as an owner\'s edit applies. Requires `admin.facilities.edit`; audited.
+     * Add a facility to the directory
+     */
+    async adminFacilityCreate(requestParameters: AdminFacilityCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacilityDetail> {
+        const response = await this.adminFacilityCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Reactivate a suspended facility
      */
     async adminFacilityReactivateRaw(requestParameters: AdminFacilityReactivateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminFacility>> {
@@ -234,9 +388,10 @@ export class AdminFacilitiesApi extends runtime.BaseAPI {
     }
 
     /**
+     * Everything the console shows and edits, with the quality score.
      * Retrieve one facility
      */
-    async adminFacilityRetrieveRaw(requestParameters: AdminFacilityRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminFacilityQuality>> {
+    async adminFacilityRetrieveRaw(requestParameters: AdminFacilityRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminFacilityDetail>> {
         if (requestParameters['facilityId'] == null) {
             throw new runtime.RequiredError(
                 'facilityId',
@@ -267,13 +422,14 @@ export class AdminFacilitiesApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => AdminFacilityQualityFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminFacilityDetailFromJSON(jsonValue));
     }
 
     /**
+     * Everything the console shows and edits, with the quality score.
      * Retrieve one facility
      */
-    async adminFacilityRetrieve(requestParameters: AdminFacilityRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacilityQuality> {
+    async adminFacilityRetrieve(requestParameters: AdminFacilityRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacilityDetail> {
         const response = await this.adminFacilityRetrieveRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -372,6 +528,56 @@ export class AdminFacilitiesApi extends runtime.BaseAPI {
      */
     async adminFacilityTimelineRetrieve(requestParameters: AdminFacilityTimelineRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminTimeline> {
         const response = await this.adminFacilityTimelineRetrieveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Only the fields sent change. The status is left as it is: an operator\'s correction does not send a live facility back for re-verification. Moving it to another province clears its city unless one is sent; another category clears its specialties and services unless they are sent. Requires `admin.facilities.edit`; audited with both snapshots, and the owners are notified.
+     * Correct a facility\'s details
+     */
+    async adminFacilityUpdateRaw(requestParameters: AdminFacilityUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminFacilityDetail>> {
+        if (requestParameters['facilityId'] == null) {
+            throw new runtime.RequiredError(
+                'facilityId',
+                'Required parameter "facilityId" was null or undefined when calling adminFacilityUpdate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/facilities/{facility_id}/`;
+        urlPath = urlPath.replace(`{${"facility_id"}}`, encodeURIComponent(String(requestParameters['facilityId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PatchedAdminFacilityWriteToJSON(requestParameters['patchedAdminFacilityWrite']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminFacilityDetailFromJSON(jsonValue));
+    }
+
+    /**
+     * Only the fields sent change. The status is left as it is: an operator\'s correction does not send a live facility back for re-verification. Moving it to another province clears its city unless one is sent; another category clears its specialties and services unless they are sent. Requires `admin.facilities.edit`; audited with both snapshots, and the owners are notified.
+     * Correct a facility\'s details
+     */
+    async adminFacilityUpdate(requestParameters: AdminFacilityUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacilityDetail> {
+        const response = await this.adminFacilityUpdateRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

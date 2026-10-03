@@ -3,7 +3,7 @@
   "availability": {
     "OPEN": {"ar": "مفتوح الآن", "tone": "positive"},
     "CLOSED": {"ar": "مغلق الآن", "tone": "danger"},
-    "DUTY": {"ar": "مناوب الآن", "tone": "warning"},
+    "DUTY": {"ar": "مناوب الآن", "tone": "accent"},
     "TEMP_CLOSED": {"ar": "مغلق مؤقتاً", "tone": "info"}
   },
   "facilityStatus": {
@@ -22,7 +22,9 @@
   },
   "applicationKind": {
     "INITIAL": {"ar": "تسجيل جديد", "tone": "info"},
-    "REVERIFICATION": {"ar": "إعادة تحقق", "tone": "warning"}
+    "REVERIFICATION": {"ar": "إعادة تحقق", "tone": "warning"},
+    "CHANGE": {"ar": "تعديل بيانات", "tone": "info"},
+    "CLAIM": {"ar": "مطالبة بملكية", "tone": "brand"}
   },
   "reportReason": {
     "WRONG_INFO": {"ar": "معلومات خاطئة", "tone": "warning"},

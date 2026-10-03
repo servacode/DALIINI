@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getDutyByProvince, getDutyRosterByProvince, type DutyDay, type DutyShift } from "../lib/api";
 import { dayLabel, shiftSpan } from "../lib/dates";
+import { directionsLink, localPhone, telLink, whatsAppFor } from "../lib/links";
+import { facilityPath } from "../lib/paths";
 import { Empty, FacilityList, Icon, Rating, StatusBadge, Unavailable } from "./ui";
 
 /*
@@ -158,6 +160,8 @@ function WeekDay({ day, index, provinceId }: { day: DutyDay; index: number; prov
 /*
  * The day's pharmacies with their shift times. The availability badge is shown
  * for today only: it describes this moment, which says nothing about tomorrow.
+ * Each row carries the same ways to reach the pharmacy as a card does: a roster is
+ * read at night by someone who wants to call, not to open another page first.
  */
 function RosterList({ day, showState = false }: { day: DutyDay; showState?: boolean }) {
   const shifts = new Map<string, DutyShift[]>();
@@ -165,20 +169,62 @@ function RosterList({ day, showState = false }: { day: DutyDay; showState?: bool
   return (
     <ul className="list">
       {day.items.map((f) => (
-        <li key={f.id} className="card row">
+        <li key={f.id} className="card roster-row">
           <div>
-            <Link href={`/f/${f.id}`} className="title-link">{f.nameAr}</Link>
+            <Link href={facilityPath(f)} className="title-link">{f.nameAr}</Link>
             <div className="meta">
+              {showState ? <StatusBadge state={f.availability.state} /> : null}
               <span>{f.category.nameAr}</span>
               {f.city ? <span>· {f.city.nameAr}</span> : null}
               <Rating average={f.ratingAverage} count={f.ratingCount} />
             </div>
             <ShiftTimes shifts={shifts.get(f.id) ?? []} day={day.date} />
+            <RosterWays f={f} />
           </div>
-          {showState ? <StatusBadge state={f.availability.state} /> : null}
         </li>
       ))}
     </ul>
+  );
+}
+
+function RosterWays({ f }: { f: DutyDay["items"][number] }) {
+  const tel = telLink(f.phone);
+  const wa = whatsAppFor(f.whatsapp, f.phone);
+  const directions = directionsLink(f.location);
+  if (!tel && !wa && !directions) return null;
+  return (
+    <div className="roster-ways">
+      {tel ? (
+        <a className="way-button way-call" href={tel} aria-label={`اتصل بـ${f.nameAr}: ${localPhone(f.phone)}`}>
+          <Icon name="phone" size={17} />
+          <span className="ltr">{localPhone(f.phone)}</span>
+        </a>
+      ) : null}
+      {wa ? (
+        <a
+          className="way-button way-whatsapp"
+          href={wa}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`راسل ${f.nameAr} على واتساب`}
+          title="واتساب"
+        >
+          <Icon name="whatsapp" size={17} />
+        </a>
+      ) : null}
+      {directions ? (
+        <a
+          className="way-button"
+          href={directions}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`الطريق إلى ${f.nameAr}`}
+          title="الطريق"
+        >
+          <Icon name="directions" size={17} />
+        </a>
+      ) : null}
+    </div>
   );
 }
 

@@ -11,6 +11,7 @@ from django.db import transaction
 from django.db.models import QuerySet
 from django.utils import timezone
 
+from health.beacons import PUSH, record_failure
 from realtime.events import EventName, RealtimeEvent, ScopeType
 from realtime.publisher import publish_after_commit
 
@@ -155,6 +156,12 @@ def push_notification(notification: Notification, *, title: str, body: str) -> N
     provider is logged and skipped (permanent). TransientPushError propagates after the
     remaining devices were attempted, so the caller can retry only what is left.
     """
+    from .preferences import push_wanted
+
+    if not push_wanted(notification.user, notification.type):
+        # The account turned this kind off. The message stays in its inbox.
+        logger.info("push.muted_by_preference", extra={"notification_id": str(notification.pk)})
+        return
     data = {"notificationId": str(notification.id), "type": notification.type}
     data.update(push_routing(notification.payload))
     delivered = NotificationPushDelivery.objects.filter(notification=notification).values(
@@ -189,12 +196,14 @@ def push_notification(notification: Notification, *, title: str, body: str) -> N
                 logger.info("push.token_deactivated", extra={"device_id": str(locked.pk)})
                 continue
             except ImproperlyConfigured:
+                record_failure(PUSH, "misconfigured")
                 logger.error(
                     "push.provider_misconfigured",
                     extra={"platform": locked.platform, "notification_id": str(notification.pk)},
                 )
                 continue
             except TransientPushError as exc:
+                record_failure(PUSH, "transient")
                 logger.warning(
                     "push.send_failed_transient",
                     extra={"device_id": str(locked.pk), "notification_id": str(notification.pk)},

@@ -32,6 +32,9 @@ x-backend-env: &backend-env
   PUSH_PROVIDER: development
 
 x-backend: &backend
+  # One image for the API, the worker and beat, under a name the scripts can use too
+  # (`scripts/osm-boundaries.sh` borrows its GDAL).
+  image: daliini-backend:local
   build:
     context: ../../apps/backend
     dockerfile: Dockerfile
@@ -40,8 +43,12 @@ x-backend: &backend
   volumes:
     # The source is mounted so a change is picked up without a rebuild. The image's own
     # virtual environment is kept by the anonymous volume, which the mount would otherwise hide.
+    # `pnpm stack:up` renews that volume, so a dependency added to the image is not hidden
+    # behind the previous build's copy.
     - ../../apps/backend:/app
     - /app/.venv
+    # The committed contract, where the contract tests look for it (`/openapi`, beside `/app`).
+    - ../../openapi:/openapi:ro
   depends_on:
     postgres:
       condition: service_healthy
@@ -98,18 +105,27 @@ services:
     depends_on:
       - s3
     entrypoint: ["sh", "-c"]
+    # Safe to run on every start: a bucket that already exists is left alone, and any other
+    # failure still stops the stack, because the API cannot store a photograph without them.
     command:
       - >-
-        for i in $$(seq 1 60); do wget -q -O /dev/null http://s3:9333/cluster/status && break; sleep 1; done;
-        printf 's3.bucket.create -name directory-public\ns3.bucket.create -name directory-private\n'
-        | weed shell -master=s3:9333 -filer=s3:8888
+        for i in $$(seq 1 60); do wget -q -O /dev/null http://s3:8888/ && break; sleep 1; done;
+        existing=$$(echo s3.bucket.list | weed shell -master=s3:9333 -filer=s3:8888) || exit 1;
+        for bucket in directory-public directory-private; do
+        echo "$$existing" | grep -qw "$$bucket" ||
+        echo "s3.bucket.create -name $$bucket" | weed shell -master=s3:9333 -filer=s3:8888 || exit 1;
+        done
 
   api:
     <<: *backend
     command:
       - sh
       - -c
-      - uv run python manage.py migrate --noinput && uv run python manage.py runserver 0.0.0.0:8000
+      # The same server as production, reloading when the mounted source changes.
+      - >-
+        uv run python manage.py migrate --noinput &&
+        exec uv run uvicorn directory_backend.asgi:application --host 0.0.0.0 --port 8000
+        --reload --lifespan off --no-access-log --no-proxy-headers
     ports:
       - "8000:8000"
 

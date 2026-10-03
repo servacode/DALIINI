@@ -137,3 +137,33 @@ class AccountDeletionRequest(models.Model):
 
     def __str__(self) -> str:
         return f"{self.status} {self.id}"
+
+
+class StaffTotpDevice(models.Model):
+    """An operator's authenticator app: the second step that guards the console (DECISION-065).
+
+    The shared secret is stored encrypted (`accounts.mfa`), never returned after setup, and
+    `last_used_step` keeps a code from being used twice within its window.
+    """
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="totp_device")
+    secret_ciphertext = models.TextField()
+    confirmed_at = models.DateTimeField(null=True, blank=True)
+    last_used_step = models.BigIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        # Never the secret, sealed or not: a repr can reach logs and error reports.
+        return f"authenticator of {self.user_id}"
+
+
+class StaffRecoveryCode(models.Model):
+    """A one-time code for an operator who lost their authenticator. Only its digest is kept."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="recovery_codes")
+    digest = models.CharField(max_length=64, unique=True)
+    used_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"recovery code of {self.user_id}"

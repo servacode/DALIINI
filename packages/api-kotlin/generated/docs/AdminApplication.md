@@ -19,6 +19,8 @@
 | **provinceNameAr** | **kotlin.String** |  |  |
 | **ownerName** | **kotlin.String** |  |  |
 | **ownerPhone** | **kotlin.String** |  |  |
+| **applicantName** | **kotlin.String** | CLAIM only: who asks to own the facility. |  |
+| **applicantPhone** | **kotlin.String** | CLAIM only. |  |
 
 
 

@@ -22,10 +22,10 @@ import com.servacode.directory.api.apis.AdminReviewsApi
 import com.servacode.directory.api.models.AdminApplication
 import com.servacode.directory.api.models.AdminApplicationDetail
 import com.servacode.directory.api.models.AdminApplicationList
-import com.servacode.directory.api.models.AdminDecisionRequest
 import com.servacode.directory.api.models.AdminRejectionTemplate
 import com.servacode.directory.api.models.AdminRejectionTemplateList
 import com.servacode.directory.api.models.AdminRejectionTemplateRequest
+import com.servacode.directory.api.models.AdminReviewDecisionRequest
 import com.servacode.directory.api.models.ApiError
 
 class AdminReviewsApiTest : ShouldSpec() {
@@ -77,8 +77,8 @@ class AdminReviewsApiTest : ShouldSpec() {
         should("test adminReviewApprove") {
             // uncomment below to test adminReviewApprove
             //val applicationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-            //val adminDecisionRequest : AdminDecisionRequest =  // AdminDecisionRequest | 
-            //val result : AdminApplication = apiInstance.adminReviewApprove(applicationId, adminDecisionRequest)
+            //val adminReviewDecisionRequest : AdminReviewDecisionRequest =  // AdminReviewDecisionRequest | 
+            //val result : AdminApplication = apiInstance.adminReviewApprove(applicationId, adminReviewDecisionRequest)
             //result shouldBe ("TODO")
         }
 
@@ -86,8 +86,8 @@ class AdminReviewsApiTest : ShouldSpec() {
         should("test adminReviewReject") {
             // uncomment below to test adminReviewReject
             //val applicationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-            //val adminDecisionRequest : AdminDecisionRequest =  // AdminDecisionRequest | 
-            //val result : AdminApplication = apiInstance.adminReviewReject(applicationId, adminDecisionRequest)
+            //val adminReviewDecisionRequest : AdminReviewDecisionRequest =  // AdminReviewDecisionRequest | 
+            //val result : AdminApplication = apiInstance.adminReviewReject(applicationId, adminReviewDecisionRequest)
             //result shouldBe ("TODO")
         }
 
@@ -103,13 +103,15 @@ class AdminReviewsApiTest : ShouldSpec() {
         should("test adminReviewsList") {
             // uncomment below to test adminReviewsList
             //val category : kotlin.String = category_example // kotlin.String | Category id of the facility the application belongs to.
+            //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
             //val evidence : kotlin.String = evidence_example // kotlin.String | `complete` or `incomplete`: whether every required document is uploaded.
             //val from : kotlin.String = from_example // kotlin.String | Submitted on or after this day (YYYY-MM-DD, Damascus) or this ISO datetime.
             //val kind : kotlin.String = kind_example // kotlin.String | Application kind, for example REGISTRATION or REVERIFICATION.
+            //val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 200, default 50.
             //val province : kotlin.String = province_example // kotlin.String | Province id of the facility the application belongs to.
             //val status : kotlin.String = status_example // kotlin.String | Application status, for example SUBMITTED or APPROVED.
             //val to : kotlin.String = to_example // kotlin.String | Submitted on or before this day (YYYY-MM-DD, Damascus) or before this datetime.
-            //val result : AdminApplicationList = apiInstance.adminReviewsList(category, evidence, from, kind, province, status, to)
+            //val result : AdminApplicationList = apiInstance.adminReviewsList(category, cursor, evidence, from, kind, limit, province, status, to)
             //result shouldBe ("TODO")
         }
 

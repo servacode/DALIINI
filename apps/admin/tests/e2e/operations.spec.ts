@@ -156,6 +156,103 @@ test.describe("user lifecycle", () => {
   });
 });
 
+test.describe("tables", () => {
+  test("a header asks the backend for its order, and a hidden column stays hidden", async ({
+    page,
+  }) => {
+    await openConsole(page);
+    await page.goto("/facilities");
+    await expect(page.getByTestId("data-table")).toBeVisible();
+
+    await page.getByTestId("sort-updatedAt").click();
+    await expect(page).toHaveURL(/ordering=-updatedAt/);
+    await expect(page.getByTestId("sort-updatedAt").locator("xpath=..")).toHaveAttribute(
+      "aria-sort",
+      "descending",
+    );
+
+    await page.getByTestId("table-columns").click();
+    await page.getByTestId("column-category").uncheck();
+    await page.reload();
+    await expect(page.getByTestId("data-table")).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "التصنيف" })).toHaveCount(0);
+    await expect(page.getByTestId("sort-updatedAt").locator("xpath=..")).toHaveAttribute(
+      "aria-sort",
+      "descending",
+    );
+  });
+});
+
+test.describe("charts and the map", () => {
+  test("the analytics page draws the period day by day, with its numbers as a table", async ({
+    page,
+  }) => {
+    await openConsole(page);
+    await page.goto("/analytics");
+    const usage = page.locator(".chart").first();
+    await expect(usage).toBeVisible();
+    await expect(usage.locator(".chart-legend")).toContainText("بحث");
+    // Thirty days back, both ends included: the hidden table has a row for each.
+    expect(await usage.locator("table tbody tr").count()).toBeGreaterThanOrEqual(30);
+  });
+
+  test("the map page counts what it can place and links to what it cannot", async ({ page }) => {
+    await openConsole(page);
+    await page.goto("/facilities/map");
+    await expect(page.getByTestId("map-summary")).toContainText("على الخريطة");
+
+    const points = await readOperation<{ items: unknown[]; withoutLocation: number }>(
+      page,
+      "facilitiesMap",
+    );
+    if (points.withoutLocation > 0) {
+      await expect(page.getByTestId("map-unlocated")).toHaveAttribute("href", /issue=NO_LOCATION/);
+    }
+  });
+});
+
+test.describe("roles", () => {
+  test("a role is created with its permissions, then deleted", async ({ page }) => {
+    const name = `e2e-دور ${Date.now()}`;
+    await openConsole(page);
+    await page.goto("/users/roles");
+
+    await page.getByTestId("new-role").click();
+    await page.getByTestId("role-name").fill(name);
+    await page.getByTestId("area-reviews").getByRole("button", { name: "اختيار الكل" }).click();
+    await page.getByTestId("save-role").click();
+    const row = page.getByTestId("data-table").getByRole("row").filter({ hasText: name });
+    await expect(row).toContainText("٥ من");
+
+    const roles = await readOperation<{ items: { code: string; name: string; permissions: string[] }[] }>(
+      page,
+      "roles",
+    );
+    const created = roles.items.find((role) => role.name === name)!;
+    expect(created.permissions).toContain("admin.reviews.decide");
+
+    await page.getByTestId(`delete-role-${created.code}`).click();
+    await page.getByTestId("confirm-accept").click();
+    await expect(row).toHaveCount(0);
+
+    const audit = await readOperation<{ items: { action: string }[] }>(page, "audit", {
+      resource: "AdminRole",
+    });
+    const actions = audit.items.map((item) => item.action);
+    expect(actions).toContain("admin_role.created");
+    expect(actions).toContain("admin_role.deleted");
+  });
+
+  test("the last way to grant roles cannot be taken away", async ({ page }) => {
+    await openConsole(page);
+    await page.goto("/users/roles");
+    await page.getByTestId("edit-role-e2e-full").click();
+    await page.getByTestId("perm-admin.roles.manage").uncheck();
+    await page.getByTestId("save-role").click();
+    await expect(page.getByTestId("role-sheet")).toContainText("لن يبقى أحد يستطيع منح الأدوار");
+  });
+});
+
 test.describe("Cycle J", () => {
   test("a province switch changes what the public API serves", async ({ page }) => {
     await openConsole(page);
@@ -415,6 +512,9 @@ test.describe("read-only screens", () => {
     await openConsole(page);
     await page.goto("/system");
     await expect(page.getByRole("heading", { name: "الاعتماديات" })).toBeVisible();
+    // Asked, not assumed: the database card reports a real answer and how long it took.
+    await expect(page.getByTestId("health-database")).toContainText("يعمل");
+    await expect(page.getByTestId("health-database")).toContainText("زمن الاستجابة");
 
     const body = (await page.locator("body").textContent()) ?? "";
     for (const leak of ["postgres://", "redis://", "password", "SECRET", "amazonaws"]) {

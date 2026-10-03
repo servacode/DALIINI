@@ -46,9 +46,13 @@ import kotlinx.serialization.Contextual
  * @param provinceNameAr 
  * @param ownerName 
  * @param ownerPhone 
+ * @param applicantName CLAIM only: who asks to own the facility.
+ * @param applicantPhone CLAIM only.
  * @param facility 
  * @param snapshot Redacted submission snapshot.
- * @param previous Snapshot of the last approved application of this facility (plus `approvedAt`), for diffing a REVERIFICATION. Null when the facility was never approved.
+ * @param previous Snapshot of the last approved application of this facility (plus `approvedAt`), for diffing a REVERIFICATION; for a CHANGE, the facility as it is published now. Null when the facility was never approved.
+ * @param proposedFields CHANGE only: the fields the owner proposes to change; empty otherwise.
+ * @param revision CHANGE only: send it back with the approval. 0 for other kinds.
  * @param location 
  * @param duplicates Up to 5 other facilities with the same phone, or the same normalized Arabic name within 200 m.
  * @param publicImageIds 
@@ -106,6 +110,14 @@ data class AdminApplicationDetail (
     @SerialName(value = "ownerPhone")
     val ownerPhone: kotlin.String?,
 
+    /* CLAIM only: who asks to own the facility. */
+    @SerialName(value = "applicantName")
+    val applicantName: kotlin.String?,
+
+    /* CLAIM only. */
+    @SerialName(value = "applicantPhone")
+    val applicantPhone: kotlin.String?,
+
     @SerialName(value = "facility")
     val facility: AdminFacility,
 
@@ -113,9 +125,17 @@ data class AdminApplicationDetail (
     @Contextual @SerialName(value = "snapshot")
     val snapshot: kotlin.collections.Map<kotlin.String, kotlinx.serialization.json.JsonElement>,
 
-    /* Snapshot of the last approved application of this facility (plus `approvedAt`), for diffing a REVERIFICATION. Null when the facility was never approved. */
+    /* Snapshot of the last approved application of this facility (plus `approvedAt`), for diffing a REVERIFICATION; for a CHANGE, the facility as it is published now. Null when the facility was never approved. */
     @Contextual @SerialName(value = "previous")
     val previous: kotlin.collections.Map<kotlin.String, kotlinx.serialization.json.JsonElement>?,
+
+    /* CHANGE only: the fields the owner proposes to change; empty otherwise. */
+    @SerialName(value = "proposedFields")
+    val proposedFields: kotlin.collections.List<kotlin.String>,
+
+    /* CHANGE only: send it back with the approval. 0 for other kinds. */
+    @SerialName(value = "revision")
+    val revision: kotlin.Int,
 
     @SerialName(value = "location")
     val location: Coordinates?,

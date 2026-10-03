@@ -9,10 +9,13 @@ import kotlinx.serialization.Serializable
 
 import com.servacode.directory.api.models.AdminDecisionRequest
 import com.servacode.directory.api.models.AdminFacility
+import com.servacode.directory.api.models.AdminFacilityCreate
+import com.servacode.directory.api.models.AdminFacilityDetail
 import com.servacode.directory.api.models.AdminFacilityList
-import com.servacode.directory.api.models.AdminFacilityQuality
+import com.servacode.directory.api.models.AdminFacilityMap
 import com.servacode.directory.api.models.AdminTimeline
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.PatchedAdminFacilityWrite
 
 interface AdminFacilitiesApi {
 
@@ -43,7 +46,7 @@ interface AdminFacilitiesApi {
     /**
      * GET api/v1/admin/facilities/
      * List facilities for operations
-     * Capped at 250 rows. Every filter is optional and combines with the rest. Each row carries &#x60;qualityScore&#x60; (0-100) and &#x60;qualityIssues&#x60;, computed in the same query.
+     * In cursor pages. Every filter is optional and combines with the rest. Each row carries &#x60;qualityScore&#x60; (0-100) and &#x60;qualityIssues&#x60;, computed in the same query.
      * Responses:
      *  - 200: 
      *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
@@ -51,7 +54,10 @@ interface AdminFacilitiesApi {
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *
      * @param category Category id. (optional)
+     * @param city City id. (optional)
+     * @param cursor Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
      * @param issue Keep facilities that have this quality issue. (optional)
+     * @param limit Page size, maximum 200, default 50. (optional)
      * @param ordering Sort order; the default is &#x60;-updatedAt&#x60; (most recently changed). (optional)
      * @param province Province id. (optional)
      * @param q Free text matched against the Arabic and English facility names. (optional)
@@ -59,7 +65,28 @@ interface AdminFacilitiesApi {
      * @return [AdminFacilityList]
      */
     @GET("api/v1/admin/facilities/")
-    suspend fun adminFacilitiesList(@Query("category") category: kotlin.String? = null, @Query("issue") issue: IssueAdminFacilitiesList? = null, @Query("ordering") ordering: OrderingAdminFacilitiesList? = null, @Query("province") province: kotlin.String? = null, @Query("q") q: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminFacilityList>
+    suspend fun adminFacilitiesList(@Query("category") category: kotlin.String? = null, @Query("city") city: kotlin.String? = null, @Query("cursor") cursor: kotlin.String? = null, @Query("issue") issue: IssueAdminFacilitiesList? = null, @Query("limit") limit: kotlin.Int? = null, @Query("ordering") ordering: OrderingAdminFacilitiesList? = null, @Query("province") province: kotlin.String? = null, @Query("q") q: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminFacilityList>
+
+    /**
+     * GET api/v1/admin/facilities/map/
+     * Located facilities as map points, with the same filters as the list
+     * Every located facility the filters select, as points (DECISION-075).  The same filters as the list, so \&quot;the map of what I am looking at\&quot; is one click. Only what a pin needs travels: the name, the state and the coordinates. A facility without a location is counted rather than dropped silently, so the operator can go and fix it.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param category Category id. (optional)
+     * @param city City id. (optional)
+     * @param issue One of NO_PHOTOS, NO_HOURS, NO_LOCATION, NO_PHONE, STALE, OPEN_REPORTS, NOT_VERIFIED_RECENTLY. (optional)
+     * @param province Province id. (optional)
+     * @param q Free text matched against the facility names. (optional)
+     * @param status Facility status. (optional)
+     * @return [AdminFacilityMap]
+     */
+    @GET("api/v1/admin/facilities/map/")
+    suspend fun adminFacilitiesMap(@Query("category") category: kotlin.String? = null, @Query("city") city: kotlin.String? = null, @Query("issue") issue: kotlin.String? = null, @Query("province") province: kotlin.String? = null, @Query("q") q: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminFacilityMap>
 
     /**
      * POST api/v1/admin/facilities/{facility_id}/close/
@@ -78,6 +105,22 @@ interface AdminFacilitiesApi {
      */
     @POST("api/v1/admin/facilities/{facility_id}/close/")
     suspend fun adminFacilityClose(@Path("facility_id") facilityId: java.util.UUID, @Body adminDecisionRequest: AdminDecisionRequest? = null): Response<AdminFacility>
+
+    /**
+     * POST api/v1/admin/facilities/
+     * Add a facility to the directory
+     * Listed by the directory itself, with no owner; an owner can claim it later. ACTIVE (the default) publishes it at once and counts as verified. The same validation as an owner&#39;s edit applies. Requires &#x60;admin.facilities.edit&#x60;; audited.
+     * Responses:
+     *  - 201: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param adminFacilityCreate 
+     * @return [AdminFacilityDetail]
+     */
+    @POST("api/v1/admin/facilities/")
+    suspend fun adminFacilityCreate(@Body adminFacilityCreate: AdminFacilityCreate): Response<AdminFacilityDetail>
 
     /**
      * POST api/v1/admin/facilities/{facility_id}/reactivate/
@@ -100,7 +143,7 @@ interface AdminFacilitiesApi {
     /**
      * GET api/v1/admin/facilities/{facility_id}/
      * Retrieve one facility
-     * 
+     * Everything the console shows and edits, with the quality score.
      * Responses:
      *  - 200: 
      *  - 401: No valid access token was supplied.
@@ -108,10 +151,10 @@ interface AdminFacilitiesApi {
      *  - 404: The addressed resource does not exist or is not visible to the caller.
      *
      * @param facilityId 
-     * @return [AdminFacilityQuality]
+     * @return [AdminFacilityDetail]
      */
     @GET("api/v1/admin/facilities/{facility_id}/")
-    suspend fun adminFacilityRetrieve(@Path("facility_id") facilityId: java.util.UUID): Response<AdminFacilityQuality>
+    suspend fun adminFacilityRetrieve(@Path("facility_id") facilityId: java.util.UUID): Response<AdminFacilityDetail>
 
     /**
      * POST api/v1/admin/facilities/{facility_id}/suspend/
@@ -146,5 +189,23 @@ interface AdminFacilitiesApi {
      */
     @GET("api/v1/admin/facilities/{facility_id}/timeline/")
     suspend fun adminFacilityTimelineRetrieve(@Path("facility_id") facilityId: java.util.UUID): Response<AdminTimeline>
+
+    /**
+     * PATCH api/v1/admin/facilities/{facility_id}/
+     * Correct a facility&#39;s details
+     * Only the fields sent change. The status is left as it is: an operator&#39;s correction does not send a live facility back for re-verification. Moving it to another province clears its city unless one is sent; another category clears its specialties and services unless they are sent. Requires &#x60;admin.facilities.edit&#x60;; audited with both snapshots, and the owners are notified.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param facilityId 
+     * @param patchedAdminFacilityWrite  (optional)
+     * @return [AdminFacilityDetail]
+     */
+    @PATCH("api/v1/admin/facilities/{facility_id}/")
+    suspend fun adminFacilityUpdate(@Path("facility_id") facilityId: java.util.UUID, @Body patchedAdminFacilityWrite: PatchedAdminFacilityWrite? = null): Response<AdminFacilityDetail>
 
 }

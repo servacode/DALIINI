@@ -2,6 +2,7 @@ from typing import Any
 
 from rest_framework.permissions import BasePermission
 
+from accounts.mfa import console_block, refuse
 from accounts.rbac import is_admin_operator, user_has_admin_permission
 
 
@@ -10,7 +11,13 @@ class HasAdminPermission(BasePermission):
 
     def has_permission(self, request: Any, view: Any) -> bool:
         code = getattr(view, "required_permission", "")
-        return bool(code) and user_has_admin_permission(request.user, code)
+        if not (code and user_has_admin_permission(request.user, code)):
+            return False
+        # The permission is there; the session must also have passed the second step.
+        block = console_block(request.user, getattr(request, "user_session", None))
+        if block is not None:
+            raise refuse(block)
+        return True
 
 
 class IsAdminOperator(BasePermission):

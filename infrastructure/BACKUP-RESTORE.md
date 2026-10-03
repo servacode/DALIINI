@@ -1,19 +1,29 @@
 # Database backup and restore (scripts)
 
 Operational companion to `docs/runbooks/backup-restore.md`, covering the two scripts and
-the Render cron job that runs them. Render's managed Postgres snapshots remain the first
-line of recovery; these logical dumps are the provider-independent copy.
+the server timer that runs them (DECISION-080). The database lives on the production server,
+so these dumps, kept in a bucket off the server, are the recovery: a lost disk is restored
+from them.
 
-## Nightly backup
+## Hourly backup
 
-- Render cron `directory-v3-staging-db-backup` (render.yaml) runs daily at 02:17 UTC from
-  `infrastructure/backup/Dockerfile` (postgres:17 client + awscli).
+- The server's systemd timer runs `docker compose run --rm backup` every hour at 17 minutes
+  past (DECISION-081), so at most an hour of changes can be lost
+  (`infrastructure/production/README.md`); the image is `infrastructure/backup/Dockerfile`
+  (postgres:17 client + awscli).
 - `scripts/db-backup.sh`: `pg_dump -Fc` → gzip → `s3://$BACKUP_S3_BUCKET/$BACKUP_S3_PREFIX/db-<UTC stamp>.dump.gz`
   plus a `.sha256` sidecar, then deletes objects older than `BACKUP_RETENTION_DAYS` (default 14).
 - Env: `DATABASE_URL`, `BACKUP_S3_BUCKET`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,
   optional `AWS_ENDPOINT_URL` (R2/MinIO), `AWS_DEFAULT_REGION`, `BACKUP_S3_PREFIX`.
 - Use a bucket separate from the media buckets, with credentials scoped to it.
-- Verify: the cron's last run is green in Render and the newest object is < 26 h old.
+- Verify: `systemctl status daliini-backup.timer` shows the last run succeeded, and the newest
+  object is less than two hours old.
+- Each run writes its outcome back to the database it dumped (`health_servicesignal`, row
+  `backup`). The console's «حالة النظام» page reads it: green within 2 h of the last
+  backup, amber up to 26 h, red after that or when the last attempt failed (DECISION-073,
+  DECISION-081).
+  The write is best-effort and never fails a backup; a pruning error after the upload does
+  not count as a failed backup.
 
 ## Restore
 
@@ -34,7 +44,7 @@ backup job's environment cannot point a restore at production by accident.
 3. Restoring over a live environment: scale the API, worker and beat to zero first, restore,
    run `python manage.py migrate --check`, then scale back up.
 
-The target needs the PostGIS extension available (Render Postgres 17 has it).
+The target needs the PostGIS extension available (the stack's `postgis/postgis:17` has it).
 
 ## Restore drill
 

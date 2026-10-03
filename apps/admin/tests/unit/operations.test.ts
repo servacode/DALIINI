@@ -209,6 +209,87 @@ describe("smart console reads", () => {
 
     expect(calls[0]?.args[0]).toEqual({ issue: "STALE", ordering: "qualityScore" });
   });
+
+  it("hands back the cursor and the page size on every paged list, and nothing undeclared", async () => {
+    const { apis, calls } = spyApis();
+
+    for (const name of ["reviews", "facilities", "users", "audit", "reports"] as const) {
+      await READS[name](apis, { cursor: "cD0yMDI2", limit: "25", upstreamOnly: "x" });
+    }
+
+    for (const call of calls) expect(call.args[0]).toEqual({ cursor: "cD0yMDI2", limit: "25" });
+  });
+
+  it("filters the facility list by city on the server", async () => {
+    const { apis, calls } = spyApis();
+
+    await READS.facilities(apis, { province: "p-1", city: "c-1", status: "ACTIVE" });
+
+    expect(calls[0]?.args[0]).toEqual({ province: "p-1", city: "c-1", status: "ACTIVE" });
+  });
+});
+
+describe("review decisions", () => {
+  it("hands back the revision of a change the reviewer saw, and nothing when there is none", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.reviewApprove(apis, { id: "app-1", reason: "", revision: 3 });
+    await WRITES.reviewApprove(apis, { id: "app-2", reason: "" });
+
+    expect(calls[0]?.args[0]).toEqual({
+      applicationId: "app-1",
+      adminReviewDecisionRequest: { reason: "", revision: 3 },
+    });
+    expect(calls[1]?.args[0]).toEqual({
+      applicationId: "app-2",
+      adminReviewDecisionRequest: { reason: "" },
+    });
+  });
+});
+
+describe("duty rotations", () => {
+  it("sends calendar days as the dates the generated client turns back into days", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.dutyRotationGenerate(apis, {
+      id: "rot-1",
+      fromDate: "2026-12-01",
+      toDate: "2026-12-31",
+      apply: true,
+    });
+    await WRITES.dutyRotationCreate(apis, { name: "ليلية", anchorDate: "2026-12-01" });
+
+    const generate = calls[0]?.args[0] as { dutyRotationGenerate: { fromDate: Date; apply: boolean } };
+    expect(generate.dutyRotationGenerate.fromDate.toISOString().slice(0, 10)).toBe("2026-12-01");
+    expect(generate.dutyRotationGenerate.apply).toBe(true);
+    const created = calls[1]?.args[0] as { dutyRotationRequest: { anchorDate: Date } };
+    expect(created.dutyRotationRequest.anchorDate.toISOString().slice(0, 10)).toBe("2026-12-01");
+  });
+});
+
+describe("facility editing", () => {
+  it("creates with the whole body", async () => {
+    const { apis, calls } = spyApis();
+    const body = { categoryId: "c", provinceId: "p", nameAr: "صيدلية", location: null };
+
+    await WRITES.facilityCreate(apis, body);
+
+    expect(calls[0]).toEqual({
+      name: "facilities.adminFacilityCreate",
+      args: [{ adminFacilityCreate: body }],
+    });
+  });
+
+  it("updates with the id beside the fields, never among them", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.facilityUpdate(apis, { id: "f-1", phone: "0221234567" });
+
+    expect(calls[0]).toEqual({
+      name: "facilities.adminFacilityUpdate",
+      args: [{ facilityId: "f-1", patchedAdminFacilityWrite: { phone: "0221234567" } }],
+    });
+  });
 });
 
 // Operations screens
@@ -290,10 +371,23 @@ describe("operations screens: reads", () => {
     });
   });
 
+  it("asks for the advertisements' numbers over the chosen period only", async () => {
+    const { apis, calls } = spyApis();
+
+    await READS.adStats(apis, { from: "2026-09-01", to: "2026-09-30", id: "x" });
+
+    expect(isReadOperation("adStats")).toBe(true);
+    expect(isWriteOperation("adStats")).toBe(false);
+    expect(calls[0]).toEqual({
+      name: "ads.adminAdStatsRetrieve",
+      args: [{ from: "2026-09-01", to: "2026-09-30" }],
+    });
+  });
+
   it("pages the inbox and the broadcast history by cursor, with their filters", async () => {
     const { apis, calls } = spyApis();
 
-    await READS.contactMessages(apis, { status: "open", kind: "", cursor: "c-2", limit: "999" });
+    await READS.contactMessages(apis, { status: "open", kind: "", cursor: "c-2", other: "x" });
     await READS.broadcasts(apis, { cursor: "" });
 
     expect(calls[0]?.args[0]).toEqual({ status: "open", cursor: "c-2" });
@@ -519,5 +613,24 @@ describe("specialties and services", () => {
 
     expect(calls[0]?.args[0]).toEqual({ userId: "u-1", adminUserRolesRequest: { roleIds: [3, 12] } });
     expect(calls[1]?.args[0]).toEqual({ userId: "u-2", adminUserRolesRequest: { roleIds: [] } });
+  });
+
+  it("edits a role by its integer key and leaves out what was not changed", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.roleCreate(apis, { name: "مراجع", permissions: ["admin.reviews.read"] });
+    await WRITES.roleUpdate(apis, { id: "4", name: "مراجع أول" });
+    await WRITES.roleUpdate(apis, { id: 4, permissions: [] });
+    await WRITES.roleDelete(apis, { id: "4" });
+
+    expect(calls.map((call) => [call.name, call.args[0]])).toEqual([
+      [
+        "users.adminRoleCreate",
+        { adminRoleCreateRequest: { name: "مراجع", permissions: ["admin.reviews.read"] } },
+      ],
+      ["users.adminRoleUpdate", { roleId: 4, patchedAdminRoleUpdateRequest: { name: "مراجع أول" } }],
+      ["users.adminRoleUpdate", { roleId: 4, patchedAdminRoleUpdateRequest: { permissions: [] } }],
+      ["users.adminRoleDelete", { roleId: 4 }],
+    ]);
   });
 });

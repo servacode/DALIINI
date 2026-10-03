@@ -755,12 +755,14 @@ function PharmacyPicker({
     return () => window.clearTimeout(timer);
   }, [text]);
 
-  const facilities = useResource<{ items: Pharmacy[] }>(
+  // The city is filtered by the server: filtering one page in the browser would hide every
+  // pharmacy of that city that happened to fall on a later page.
+  const facilities = useResource<{ items: Pharmacy[]; hasMore?: boolean }>(
     "facilities",
-    { province: provinceId, category: categoryId, status: "ACTIVE", q: search },
+    { province: provinceId, city: cityId, category: categoryId, status: "ACTIVE", q: search },
     { enabled: !categories.loading },
   );
-  const items = (facilities.data?.items ?? []).filter((item) => !cityId || item.cityId === cityId);
+  const items = facilities.data?.items ?? [];
   const cityName = (id: string | null) => cities.find((item) => item.id === id)?.nameAr;
 
   return (
@@ -831,8 +833,8 @@ function PharmacyPicker({
           </fieldset>
         )
       ) : null}
-      {(facilities.data?.items.length ?? 0) >= 250 ? (
-        <p className="field-hint">تظهر أول ٢٥٠ نتيجة. اكتب جزءاً من الاسم لتضييق البحث.</p>
+      {facilities.data?.hasMore ? (
+        <p className="field-hint">تظهر أول {items.length} نتيجة. اكتب جزءاً من الاسم لتضييق البحث.</p>
       ) : null}
     </div>
   );

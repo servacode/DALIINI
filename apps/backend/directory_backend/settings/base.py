@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +27,10 @@ WHATSAPP_TEMPLATE_LANGUAGE = env("WHATSAPP_TEMPLATE_LANGUAGE", "ar")
 # WhatsApp session and listens on a private network; the token is what stops anything else on
 # that network using it to send messages.
 WHATSAPP_BOT_URL = env("WHATSAPP_BOT_URL", "")
+# The map host's services on the stack's network, for the system page (DECISION-082). Empty: the
+# map is not served by this deployment, and the page says so.
+MAP_TILES_INTERNAL_URL = env("MAP_TILES_INTERNAL_URL", "")
+ROUTING_INTERNAL_URL = env("ROUTING_INTERNAL_URL", "")
 WHATSAPP_BOT_TOKEN = env("WHATSAPP_BOT_TOKEN", "")
 DEBUG = False
 ALLOWED_HOSTS = env_csv("ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
@@ -65,6 +70,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # First: probes from inside the machine must not depend on the Host header or HTTPS.
+    "health.middleware.HealthProbeMiddleware",
     "core.middleware.RequestIdMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "platform_settings.middleware.MaintenanceModeMiddleware",
@@ -77,13 +84,23 @@ ROOT_URLCONF = "directory_backend.urls"
 WSGI_APPLICATION = "directory_backend.wsgi.application"
 ASGI_APPLICATION = "directory_backend.asgi.application"
 
+# A pool of connections per process, not a persistent connection per thread (DECISION-083).
+# Under ASGI every request runs in a thread of its own, and a connection kept open by its thread
+# outlived the request: under load they used up PostgreSQL's max_connections and every request
+# after that failed. Django's own pool (psycopg_pool) bounds them, and needs CONN_MAX_AGE 0.
 DATABASES = {
     "default": dj_database_url.config(
         default="postgresql://directory:directory@localhost:5432/directory",
-        conn_max_age=60,
-        conn_health_checks=True,
+        conn_max_age=0,
         engine="django.contrib.gis.db.backends.postgis",
     )
+}
+DATABASES["default"].setdefault("OPTIONS", {})["pool"] = {
+    "min_size": int(env("DB_POOL_MIN_SIZE", "1")),
+    "max_size": int(env("DB_POOL_MAX_SIZE", "8")),
+    # How long a request waits for a free connection before failing, rather than queueing
+    # forever behind a burst.
+    "timeout": float(env("DB_POOL_TIMEOUT", "10")),
 }
 
 LANGUAGE_CODE = "ar"
@@ -114,7 +131,15 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "accounts.authentication.BearerAccessTokenAuthentication",
     ],
+    # Applies to every view that does not name its own throttles (see core/throttles.py).
+    "DEFAULT_THROTTLE_CLASSES": [
+        "core.throttles.AnonDefaultThrottle",
+        "core.throttles.UserDefaultThrottle",
+        "core.throttles.WebServerThrottle",
+    ],
     "DEFAULT_THROTTLE_RATES": {
+        "anon_default": env("THROTTLE_ANON_DEFAULT", "600/minute"),
+        "user_default": env("THROTTLE_USER_DEFAULT", "1200/minute"),
         "otp_start": "5/hour",
         "otp_verify": "10/hour",
         "login": "10/minute",
@@ -129,13 +154,16 @@ REST_FRAMEWORK = {
         "analytics_ingest": env("THROTTLE_ANALYTICS_INGEST", "600/hour"),
         "search": env("THROTTLE_SEARCH", "120/minute"),
         "owner_submit": env("THROTTLE_OWNER_SUBMIT", "10/hour"),
+        "owner_invite": env("THROTTLE_OWNER_INVITE", "30/hour"),
+        # Six-digit codes: ten tries an hour per account makes guessing one hopeless.
+        "mfa": env("THROTTLE_MFA", "10/hour"),
         "evidence_upload": env("THROTTLE_EVIDENCE_UPLOAD", "30/hour"),
         "facility_report": env("THROTTLE_FACILITY_REPORT", "5/hour"),
         "contact": env("THROTTLE_CONTACT", "3/hour"),
         # Anonymous public reads from the website server (see WEB_SERVER_API_KEY).
         "web_server": env("THROTTLE_WEB_SERVER", "3000/minute"),
     },
-    # How many reverse proxies sit in front of the app. Unset (the default), `ContactThrottle`
+    # How many reverse proxies sit in front of the app. Unset (the default), every throttle
     # identifies an anonymous caller by REMOTE_ADDR alone and ignores X-Forwarded-For, which a
     # client could otherwise forge to escape the limit. Set it to the real proxy count (for
     # example 1 behind one load balancer) to take the client address from X-Forwarded-For.
@@ -170,8 +198,11 @@ SPECTACULAR_SETTINGS = {
         "AdvertisementActionTypeEnum": "core.enums.ADVERTISEMENT_ACTION_TYPE",
         "AdvertisementTargetScopeEnum": "core.enums.ADVERTISEMENT_TARGET_SCOPE",
         "AvailabilityStateEnum": "core.enums.AVAILABILITY_STATE",
-        "DependencyConfiguredEnum": "core.enums.DEPENDENCY_CONFIGURED",
-        "DatabaseHealthEnum": "core.enums.DATABASE_HEALTH",
+        # Named here so a later `key` field elsewhere cannot rename this one (it did once).
+        "KeyEnum": "core.enums.LEGAL_DOCUMENT_KEY",
+        "AdminHealthCheckKeyEnum": "core.enums.HEALTH_CHECK_KEY",
+        "AdminHealthStatusEnum": "core.enums.HEALTH_STATUS",
+        "AdminHealthOverallEnum": "core.enums.HEALTH_OVERALL",
         "OwnerRequiredActionEnum": "core.enums.OWNER_REQUIRED_ACTION",
         "PushPlatformEnum": "notifications.models.DevicePushToken.Platform",
         "FacilityReportReasonEnum": "facilities.models.FacilityReport.Reason",
@@ -223,6 +254,11 @@ CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 # Periodic maintenance, run by `celery -A directory_backend beat`. Times are Damascus
 # local (CELERY_TIMEZONE) and sit in the quiet night hours.
 CELERY_BEAT_SCHEDULE = {
+    # Proves beat and a worker are both alive; the console's system page reads it (DECISION-073).
+    "health-heartbeat": {
+        "task": "health.tasks.heartbeat",
+        "schedule": timedelta(minutes=5),
+    },
     "analytics-retention-purge": {
         "task": "analytics.tasks.purge_analytics_retention",
         "schedule": crontab(hour=3, minute=17),
@@ -260,6 +296,12 @@ S3_PUBLIC_MEDIA_BASE_URL = env(
 )
 PUSH_PROVIDER = env("PUSH_PROVIDER", "development")
 PUSH_TOKEN_ENCRYPTION_KEY = env("PUSH_TOKEN_ENCRYPTION_KEY", "development-push-token-key")
+# Encrypts operators' authenticator secrets (accounts/mfa.py). Its own key, so rotating the push
+# key does not lock every operator out of the console.
+MFA_ENCRYPTION_KEY = env("MFA_ENCRYPTION_KEY", "development-mfa-key-not-for-production")
+# Whether an operator must set up an authenticator before the console answers. Off for local
+# work and tests; production turns it on.
+STAFF_MFA_REQUIRED = env_bool("STAFF_MFA_REQUIRED", False)
 FCM_PROJECT_ID = env("FCM_PROJECT_ID", "")
 # The Firebase service account key (its JSON, or that JSON in base64) the FCM transport signs
 # in with; see notifications/providers/fcm_http.py. A secret: set it, never commit it.
@@ -300,13 +342,31 @@ LOGGING = {
         # nearby search. At INFO that writes where somebody stood, to several decimal places,
         # into a log that is kept and shipped. Errors still reach the console.
         #
-        # `django.server` is the development runserver; `django.channels.server` is Daphne,
-        # which is what actually serves production — it was the one still writing them.
+        # `django.server` is the development runserver, `django.channels.server` is Daphne
+        # behind it, and `uvicorn.access` is the server that runs everywhere else. Uvicorn is
+        # also started with --no-access-log, so neither alone has to hold.
         "django.server": {"level": "WARNING"},
         "django.channels.server": {"level": "WARNING"},
+        "uvicorn.access": {"level": "WARNING"},
         "celery": {"level": "INFO"},
     },
 }
+
+# What the console's system page reports about this deployment. ENVIRONMENT is the same name
+# the deploy sets for everything else; the schema hash is the contract this build serves, taken
+# from the deploy's environment or, in a checkout, from the committed openapi/schema.sha256.
+ENVIRONMENT_NAME = env("ENVIRONMENT", "development")
+
+
+def _committed_schema_hash() -> str:
+    path = BASE_DIR.parent.parent / "openapi" / "schema.sha256"
+    try:
+        return path.read_text(encoding="utf-8").split()[0]
+    except (OSError, IndexError):
+        return ""
+
+
+OPENAPI_SCHEMA_HASH = env("OPENAPI_SCHEMA_HASH", "") or _committed_schema_hash() or "unavailable"
 
 # Optional error reporting. Nothing is sent unless SENTRY_DSN is set; personal data is
 # never attached (send_default_pii=False).

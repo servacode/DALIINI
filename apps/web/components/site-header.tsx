@@ -8,6 +8,7 @@ import type { Province } from "../lib/api";
 import { publicConfig } from "../lib/config";
 import { ProvincePicker } from "./province-picker";
 import { SearchBox } from "./search-form";
+import { ThemeToggle } from "./theme-toggle";
 import { Icon } from "./ui";
 
 /**
@@ -41,13 +42,7 @@ function activeHref(pathname: string): string | null {
   return match?.href ?? null;
 }
 
-export function SiteHeader({
-  provinces,
-  province,
-}: {
-  provinces: Province[];
-  province: string;
-}) {
+export function SiteHeader({ provinces }: { provinces: Province[] }) {
   const pathname = usePathname() || "/";
   const [open, setOpen] = useState(false);
   const active = activeHref(pathname);
@@ -80,7 +75,7 @@ export function SiteHeader({
           {/* The picker reads the address, and reading the address is what stops a page being
               prerendered. Behind a boundary the rest of the bar still is. */}
           <Suspense fallback={null}>
-            <ProvincePicker provinces={provinces} current={province} />
+            <ProvincePicker provinces={provinces} />
           </Suspense>
           <SearchBox id="header-q" variant="header" />
           {/* The app is the better way to use the directory, so the offer stands at the top of
@@ -99,6 +94,7 @@ export function SiteHeader({
             <Icon name="plus" size={16} />
             أضف منشأتك
           </Link>
+          <ThemeToggle className="menu-button theme-toggle" />
           <button
             type="button"
             className="menu-button"

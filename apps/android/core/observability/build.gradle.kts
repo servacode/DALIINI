@@ -1,3 +1,4 @@
+// Shared with the iPhone app (DECISION-085).
 plugins {
-    id("serva.android.library")
+    id("serva.kmp.library")
 }

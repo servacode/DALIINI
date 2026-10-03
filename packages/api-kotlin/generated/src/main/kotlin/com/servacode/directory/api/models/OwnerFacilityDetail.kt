@@ -22,6 +22,7 @@ import com.servacode.directory.api.models.NamedRef
 import com.servacode.directory.api.models.OwnerApplication
 import com.servacode.directory.api.models.OwnerEvidenceRef
 import com.servacode.directory.api.models.OwnerHoursEntry
+import com.servacode.directory.api.models.OwnerPendingChange
 import com.servacode.directory.api.models.OwnerRequiredActionEnum
 
 import kotlinx.serialization.Serializable
@@ -55,6 +56,7 @@ import kotlinx.serialization.Contextual
  * @param hours 
  * @param hoursConfirmedAt When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old.
  * @param application 
+ * @param pendingChange Set while an edit to the live facility waits for review. The listed fields show the owner's proposed values; the public still sees the published ones.
  */
 @Serializable
 
@@ -134,7 +136,11 @@ data class OwnerFacilityDetail (
     val hoursConfirmedAt: java.time.OffsetDateTime?,
 
     @SerialName(value = "application")
-    val application: OwnerApplication?
+    val application: OwnerApplication?,
+
+    /* Set while an edit to the live facility waits for review. The listed fields show the owner's proposed values; the public still sees the published ones. */
+    @SerialName(value = "pendingChange")
+    val pendingChange: OwnerPendingChange?
 
 ) {
 

@@ -1,5 +1,5 @@
 // GENERATED — DO NOT EDIT (source: vocabulary.json)
-export type Tone = "neutral" | "positive" | "warning" | "danger" | "info" | "brand";
+export type Tone = "neutral" | "positive" | "warning" | "danger" | "info" | "brand" | "accent";
 export type Term = Readonly<{ ar: string; tone: Tone }>;
 export const vocabulary = {
   "availability": {
@@ -13,7 +13,7 @@ export const vocabulary = {
     },
     "DUTY": {
       "ar": "مناوب الآن",
-      "tone": "warning"
+      "tone": "accent"
     },
     "TEMP_CLOSED": {
       "ar": "مغلق مؤقتاً",
@@ -72,6 +72,14 @@ export const vocabulary = {
     "REVERIFICATION": {
       "ar": "إعادة تحقق",
       "tone": "warning"
+    },
+    "CHANGE": {
+      "ar": "تعديل بيانات",
+      "tone": "info"
+    },
+    "CLAIM": {
+      "ar": "مطالبة بملكية",
+      "tone": "brand"
     }
   },
   "reportReason": {

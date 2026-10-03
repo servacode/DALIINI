@@ -1,7 +1,7 @@
 # Backend image (API, Celery worker and Celery beat all run from it).
 # Build context is apps/backend. Dependencies come from uv.lock (--frozen fails on drift)
 # and the process runs as the unprivileged `app` user.
-# UV_NO_SYNC keeps `uv run` (CMD, Render dockerCommand/preDeployCommand) from re-syncing
+# UV_NO_SYNC keeps `uv run` (CMD, and the production stack's commands) from re-syncing
 # the environment - including dev dependencies - at container start.
 FROM python:3.13-slim
 
@@ -27,8 +27,14 @@ RUN uv sync --frozen --no-dev && chown -R app:app /app
 
 USER app
 EXPOSE 8000
-# Liveness only (no DB/Redis dependency). Render uses healthCheckPath instead; compose
-# disables this for the worker, which serves no HTTP.
+# Liveness only (no DB/Redis dependency); readiness is /health/ready/. Compose disables this
+# for the worker and beat, which serve no HTTP.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD curl -fsS "http://127.0.0.1:${PORT:-8000}/health/live/" || exit 1
-CMD ["uv", "run", "daphne", "-b", "0.0.0.0", "-p", "8000", "directory_backend.asgi:application"]
+# Uvicorn serves HTTP and WebSockets, one process per worker; the Redis channel layer carries
+# events between them. Flags that matter:
+#   --no-access-log     the request line carries coordinates (see LOGGING in settings/base.py)
+#   --no-proxy-headers  the client address and scheme are Django's to work out, from
+#                       DRF_NUM_PROXIES and SECURE_PROXY_SSL_HEADER, in one place only
+#   --lifespan off      Django has no startup or shutdown hooks to run
+CMD ["sh", "-c", "exec uv run uvicorn directory_backend.asgi:application --host 0.0.0.0 --port ${PORT:-8000} --workers ${WEB_CONCURRENCY:-2} --lifespan off --no-access-log --no-server-header --no-proxy-headers"]

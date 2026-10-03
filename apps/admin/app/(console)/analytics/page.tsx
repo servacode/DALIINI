@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { useIdentity } from "../../../components/admin-shell";
+import { LineChart } from "../../../components/charts";
 import { ExportButton } from "../../../components/export-button";
 import { type Period, PeriodPicker, lastDays, periodLabel } from "../../../components/period-picker";
 import {
@@ -36,6 +37,17 @@ type Analytics = PeriodKpis &
     ratingAverage: number | null;
     events: readonly { name: string; count: number }[];
   }>;
+
+type Day = Readonly<{
+  date: string;
+  searches: number;
+  zeroResultSearches: number;
+  facilityViews: number;
+  directionsRequests: number;
+  newUsers: number;
+  approvals: number;
+  reports: number;
+}>;
 
 const NUMBER = new Intl.NumberFormat("ar-SY");
 const DECIMAL = new Intl.NumberFormat("ar-SY", { maximumFractionDigits: 1 });
@@ -81,12 +93,28 @@ export default function AnalyticsPage() {
   const [today] = useState(() => damascusDay(new Date()));
   const [period, setPeriod] = useState<Period>(() => lastDays(30, damascusDay(new Date())));
   const analytics = useResource<Analytics>("analyticsPeriod", period);
+  const series = useResource<{ days: Day[] }>("analyticsSeries", period);
+  const days = series.data?.days ?? [];
+  const line = (key: Exclude<keyof Day, "date">) => days.map((day) => day[key]);
   const { permissions } = useIdentity();
   const data = analytics.data;
 
   const columns: readonly Column<{ name: string; count: number }>[] = [
-    { key: "name", header: "الحدث", ltr: true, render: (row) => <code>{row.name}</code> },
-    { key: "count", header: "العدد", ltr: true, render: (row) => NUMBER.format(row.count) },
+    {
+      key: "name",
+      header: "الحدث",
+      ltr: true,
+      sortValue: (row) => row.name,
+      render: (row) => <code>{row.name}</code>,
+    },
+    {
+      key: "count",
+      header: "العدد",
+      ltr: true,
+      sortValue: (row) => row.count,
+      sortFirst: "desc",
+      render: (row) => NUMBER.format(row.count),
+    },
   ];
 
   const hours = (value: number | null) => (value === null ? "—" : `${DECIMAL.format(value)} س`);
@@ -166,6 +194,34 @@ export default function AnalyticsPage() {
               />
             </div>
           </Panel>
+
+          {days.length > 0 ? (
+            <div className="grid-2">
+              <Panel title="الاستخدام يوماً بيوم" description="ما فعله الزوار في كل يوم من الفترة.">
+                <LineChart
+                  caption="الاستخدام اليومي"
+                  days={days.map((day) => day.date)}
+                  series={[
+                    { key: "searches", label: "بحث", color: "var(--ad-brand)", values: line("searches") },
+                    { key: "views", label: "مشاهدات", color: "var(--ad-info)", values: line("facilityViews") },
+                    { key: "directions", label: "اتجاهات", color: "var(--ad-accent)", values: line("directionsRequests") },
+                    { key: "empty", label: "بلا نتائج", color: "var(--ad-danger)", values: line("zeroResultSearches") },
+                  ]}
+                />
+              </Panel>
+              <Panel title="الحركة يوماً بيوم" description="حسابات جديدة، وطلبات قُبلت، وبلاغات وصلت.">
+                <LineChart
+                  caption="الحركة اليومية"
+                  days={days.map((day) => day.date)}
+                  series={[
+                    { key: "users", label: "حسابات جديدة", color: "var(--ad-brand)", values: line("newUsers") },
+                    { key: "approvals", label: "قبول", color: "var(--ad-success)", values: line("approvals") },
+                    { key: "reports", label: "بلاغات", color: "var(--ad-warning)", values: line("reports") },
+                  ]}
+                />
+              </Panel>
+            </div>
+          ) : null}
 
           <Panel title="الآن" description="أرقام حالية لا ترتبط بالفترة.">
             <div className="kpi-grid">

@@ -1,6 +1,8 @@
+from typing import Any
 from uuid import UUID
 
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
@@ -8,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.authentication import AuthenticatedRequest
+from audit.services import record_audit
 from core.exceptions import ConflictError, DomainError
 from core.openapi import CONFLICT_409, DOMAIN_400, NOT_FOUND_404, VALIDATION_400, protected
 from facilities.models import Facility
@@ -22,6 +25,15 @@ from .serializers import (
     serialize_hours,
 )
 from .services_write import replace_business_hours
+
+
+def closure_snapshot(closure: TemporaryClosure) -> dict[str, Any]:
+    return {
+        "facilityId": str(closure.facility_id),
+        "startsAt": closure.starts_at.isoformat(),
+        "endsAt": closure.ends_at.isoformat(),
+        "reason": closure.reason,
+    }
 
 
 class FacilityHoursView(APIView):
@@ -48,7 +60,7 @@ class FacilityHoursView(APIView):
     def put(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
-        if not facility.category.capabilities.supports_hours:
+        if not facility.category.supports("supports_hours"):
             raise ConflictError(
                 "HOURS_NOT_SUPPORTED",
                 message="هذا التصنيف لا يدعم أوقات الدوام.",
@@ -106,10 +118,11 @@ class TemporaryClosureListCreateView(APIView):
             409: CONFLICT_409,
         },
     )
+    @transaction.atomic
     def post(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = get_object_or_404(Facility, pk=facility_id)
         require_facility_manager(request.user, facility)
-        if not facility.category.capabilities.supports_temporary_closure:
+        if not facility.category.supports("supports_temporary_closure"):
             raise ConflictError(
                 "TEMPORARY_CLOSURE_NOT_SUPPORTED",
                 message="هذا التصنيف لا يدعم الإغلاق المؤقت.",
@@ -117,6 +130,14 @@ class TemporaryClosureListCreateView(APIView):
         serializer = TemporaryClosureInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         obj = serializer.save(facility=facility)
+        record_audit(
+            actor=request.user,
+            action="facility.closure.created",
+            target=obj,
+            after_snapshot=closure_snapshot(obj),
+            metadata={"facilityId": str(facility.pk)},
+            request_id=getattr(request, "request_id", ""),
+        )
         return Response(TemporaryClosureSerializer(obj).data, status=201)
 
 
@@ -129,6 +150,7 @@ class TemporaryClosureDeleteView(APIView):
         summary="Cancel a temporary closure",
         responses={204: None, **protected(), 404: NOT_FOUND_404},
     )
+    @transaction.atomic
     def delete(
         self, request: AuthenticatedRequest, facility_id: UUID, closure_id: UUID
     ) -> Response:
@@ -138,6 +160,14 @@ class TemporaryClosureDeleteView(APIView):
             TemporaryClosure,
             pk=closure_id,
             facility=facility,
+        )
+        record_audit(
+            actor=request.user,
+            action="facility.closure.cancelled",
+            target=closure,
+            before_snapshot=closure_snapshot(closure),
+            metadata={"facilityId": str(facility.pk)},
+            request_id=getattr(request, "request_id", ""),
         )
         closure.delete()
         return Response(status=204)

@@ -8,5 +8,9 @@
 
     * `REVERIFICATION` (value: `"REVERIFICATION"`)
 
+    * `CHANGE` (value: `"CHANGE"`)
+
+    * `CLAIM` (value: `"CLAIM"`)
+
 
 

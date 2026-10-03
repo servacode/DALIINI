@@ -11,9 +11,36 @@ import com.servacode.directory.api.models.AdminDutyRoster
 import com.servacode.directory.api.models.AdminDutyShift
 import com.servacode.directory.api.models.AdminDutyShiftCreateRequest
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.DutyImportResult
+import com.servacode.directory.api.models.DutyRotation
+import com.servacode.directory.api.models.DutyRotationGenerate
+import com.servacode.directory.api.models.DutyRotationList
+import com.servacode.directory.api.models.DutyRotationRequest
 import com.servacode.directory.api.models.PatchedAdminDutyShiftUpdateRequest
+import com.servacode.directory.api.models.PatchedDutyRotationRequest
+
+import okhttp3.MultipartBody
 
 interface AdminDutyApi {
+    /**
+     * POST api/v1/admin/duty/import/
+     * Read a duty roster from a spreadsheet; preview it, or apply it
+     * Columns in Arabic or English: the pharmacy (&#x60;facilityId&#x60;, &#x60;pharmacy&#x60;/&#x60;الصيدلية&#x60; by name, or &#x60;phone&#x60;/&#x60;الهاتف&#x60;) and either &#x60;date&#x60;/&#x60;التاريخ&#x60; with &#x60;from&#x60;/&#x60;من&#x60; and &#x60;to&#x60;/&#x60;إلى&#x60; in Damascus time (an end at or before the start is the next morning), or &#x60;startsAt&#x60; and &#x60;endsAt&#x60;. Every row is checked against the province&#39;s pharmacies and the stored shifts. &#x60;apply&#x60; writes all rows or none, and only when no row has an error; re-applying the same file changes nothing. At most 2000 rows.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param file CSV (UTF-8) or XLSX, first sheet, header row first.
+     * @param provinceId 
+     * @param apply False previews; true writes, refused if any row has an error. (optional, default to false)
+     * @return [DutyImportResult]
+     */
+    @Multipart
+    @POST("api/v1/admin/duty/import/")
+    suspend fun adminDutyImport(@Part file: MultipartBody.Part, @Part("provinceId") provinceId: java.util.UUID, @Part("apply") apply: kotlin.Boolean? = false): Response<DutyImportResult>
+
     /**
      * GET api/v1/admin/duty/
      * The duty roster of a province (or city), day by day
@@ -33,6 +60,88 @@ interface AdminDutyApi {
      */
     @GET("api/v1/admin/duty/")
     suspend fun adminDutyRosterRetrieve(@Query("provinceId") provinceId: kotlin.String, @Query("cityId") cityId: kotlin.String? = null, @Query("from") from: kotlin.String? = null, @Query("to") to: kotlin.String? = null): Response<AdminDutyRoster>
+
+    /**
+     * POST api/v1/admin/duty/rotations/
+     * Save a duty rotation
+     * 
+     * Responses:
+     *  - 201: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param dutyRotationRequest 
+     * @return [DutyRotation]
+     */
+    @POST("api/v1/admin/duty/rotations/")
+    suspend fun adminDutyRotationCreate(@Body dutyRotationRequest: DutyRotationRequest): Response<DutyRotation>
+
+    /**
+     * DELETE api/v1/admin/duty/rotations/{rotation_id}/
+     * Delete a saved duty rotation
+     * The shifts it generated stay; only the template goes.
+     * Responses:
+     *  - 204: No response body
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param rotationId 
+     * @return [Unit]
+     */
+    @DELETE("api/v1/admin/duty/rotations/{rotation_id}/")
+    suspend fun adminDutyRotationDelete(@Path("rotation_id") rotationId: java.util.UUID): Response<Unit>
+
+    /**
+     * POST api/v1/admin/duty/rotations/{rotation_id}/generate/
+     * Generate a period&#39;s shifts from a rotation; preview them, or apply them
+     * Up to three months at a time. The same checks and all-or-nothing writing as an import; applying a period twice changes nothing.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param rotationId 
+     * @param dutyRotationGenerate 
+     * @return [DutyImportResult]
+     */
+    @POST("api/v1/admin/duty/rotations/{rotation_id}/generate/")
+    suspend fun adminDutyRotationGenerate(@Path("rotation_id") rotationId: java.util.UUID, @Body dutyRotationGenerate: DutyRotationGenerate): Response<DutyImportResult>
+
+    /**
+     * PATCH api/v1/admin/duty/rotations/{rotation_id}/
+     * Change a saved duty rotation
+     * 
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param rotationId 
+     * @param patchedDutyRotationRequest  (optional)
+     * @return [DutyRotation]
+     */
+    @PATCH("api/v1/admin/duty/rotations/{rotation_id}/")
+    suspend fun adminDutyRotationUpdate(@Path("rotation_id") rotationId: java.util.UUID, @Body patchedDutyRotationRequest: PatchedDutyRotationRequest? = null): Response<DutyRotation>
+
+    /**
+     * GET api/v1/admin/duty/rotations/
+     * Saved duty rotations
+     * 
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @return [DutyRotationList]
+     */
+    @GET("api/v1/admin/duty/rotations/")
+    suspend fun adminDutyRotationsList(): Response<DutyRotationList>
 
     /**
      * POST api/v1/admin/duty/

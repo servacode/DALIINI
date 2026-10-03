@@ -1,24 +1,27 @@
+// Shared with the iPhone app (DECISIONS 089 and 095): the duty feature's repositories, use
+// cases, screens, view models and words in common code; Hilt's view models in androidMain.
 plugins {
-    id("serva.android.library")
-    id("serva.android.compose")
-    id("serva.android.hilt")
+    id("serva.kmp.feature")
 }
 
-dependencies {
-    implementation(project(":core:model"))
-    implementation(project(":core:network"))
-    implementation(project(":core:designsystem"))
-    // The reader's province, for the public roster.
-    implementation(project(":core:datastore"))
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.material3)
-    testImplementation(libs.junit)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(project(":core:testing"))
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(project(":core:model"))
+            implementation(project(":core:network"))
+            // The reader's province, for the public roster.
+            implementation(project(":core:datastore"))
+            implementation(project(":core:inject"))
+            implementation(libs.kotlinx.coroutines.core)
+        }
+        androidMain.dependencies {
+            implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
+            implementation(libs.androidx.navigation.compose)
+        }
+        getByName("androidHostTest").dependencies {
+            implementation(libs.junit)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(project(":core:testing"))
+        }
+    }
 }

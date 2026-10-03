@@ -21,6 +21,8 @@ const apps = {
       ADMIN_API_ORIGIN: API,
       ADMIN_PUBLIC_ORIGIN: "http://localhost:3000",
       ADMIN_PUBLIC_MEDIA_ORIGIN: MEDIA,
+      // No map by default, as on the site; with scripts/local-map.sh done,
+      // ADMIN_MAP_STYLE_URL=$MEDIA/directory-public/map/style.json.
     },
   },
   web: {
@@ -31,6 +33,8 @@ const apps = {
       NEXT_PUBLIC_API_ORIGIN: API,
       NEXT_PUBLIC_MEDIA_ORIGIN: MEDIA,
       NEXT_PUBLIC_ROOT_DOMAIN: "localhost",
+      // No map by default: the local style exists only once scripts/local-map.sh has put it in
+      // the media store. After that, NEXT_PUBLIC_MAP_STYLE_URL=$MEDIA/directory-public/map/style.json.
     },
   },
 };
@@ -43,9 +47,11 @@ if (!app) {
 }
 
 const env = { ...app.env, ...process.env };
+// The app's own `dev` script, not `next dev` directly: it first copies the map's worker and
+// Arabic shaping into public/vendor, which the maps on both apps load (DECISION-071, 075).
 const child = spawn(
   "pnpm",
-  ["--filter", app.filter, "exec", "next", "dev", "-p", String(app.port)],
+  ["--filter", app.filter, "run", "dev", "-p", String(app.port)],
   { env, stdio: "inherit", shell: process.platform === "win32" },
 );
 child.on("exit", (code) => process.exit(code ?? 1));

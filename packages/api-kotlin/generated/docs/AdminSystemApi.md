@@ -8,7 +8,7 @@ All URIs are relative to *http://localhost*
 | [**adminDashboardRetrieve**](AdminSystemApi.md#adminDashboardRetrieve) | **GET** api/v1/admin/dashboard/ | Operational counters for the review desk |
 | [**adminMeRetrieve**](AdminSystemApi.md#adminMeRetrieve) | **GET** api/v1/admin/me/ | The current operator and the permissions they hold |
 | [**adminSearchRetrieve**](AdminSystemApi.md#adminSearchRetrieve) | **GET** api/v1/admin/search/ | Search facilities, users and applications at once |
-| [**adminSystemStatusRetrieve**](AdminSystemApi.md#adminSystemStatusRetrieve) | **GET** api/v1/admin/system/status/ | Runtime and configuration status |
+| [**adminSystemStatusRetrieve**](AdminSystemApi.md#adminSystemStatusRetrieve) | **GET** api/v1/admin/system/status/ | Every dependency, asked directly |
 | [**adminTasksRetrieve**](AdminSystemApi.md#adminTasksRetrieve) | **GET** api/v1/admin/tasks/ | The operator&#39;s queue: what is waiting, oldest first |
 
 
@@ -170,9 +170,9 @@ Configure bearerAccessToken:
  - **Accept**: application/json
 
 
-Runtime and configuration status
+Every dependency, asked directly
 
-Reports only whether each dependency is configured. No secret, connection string or credential is returned.
+The database, Redis and the workers, the scheduler&#39;s heartbeat, storage, the verification-code channel, push, backups, error reporting and maintenance mode, each with a status and a sentence (DECISION-073). Probes time out after two seconds. No host, URL, credential or exception text is returned.
 
 ### Example
 ```kotlin

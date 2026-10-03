@@ -70,17 +70,19 @@ interface AdminReportsApi {
     /**
      * GET api/v1/admin/reports/
      * List facility problem reports
-     * Newest first, capped at 250 rows.
+     * Newest first, in cursor pages.
      * Responses:
      *  - 200: 
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *
+     * @param cursor Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
      * @param facility Facility id. (optional)
+     * @param limit Page size, maximum 200, default 50. (optional)
      * @param status OPEN, RESOLVED or DISMISSED. (optional)
      * @return [AdminFacilityReportList]
      */
     @GET("api/v1/admin/reports/")
-    suspend fun adminReportsList(@Query("facility") facility: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminFacilityReportList>
+    suspend fun adminReportsList(@Query("cursor") cursor: kotlin.String? = null, @Query("facility") facility: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null, @Query("status") status: kotlin.String? = null): Response<AdminFacilityReportList>
 
 }

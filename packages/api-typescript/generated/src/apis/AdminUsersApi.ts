@@ -15,14 +15,24 @@
 
 import * as runtime from '../runtime';
 import type {
+  AdminPermissionList,
+  AdminRole,
+  AdminRoleCreateRequest,
   AdminRoleList,
   AdminUser,
   AdminUserDetail,
   AdminUserList,
   AdminUserRolesRequest,
   ApiError,
+  PatchedAdminRoleUpdateRequest,
 } from '../models/index';
 import {
+    AdminPermissionListFromJSON,
+    AdminPermissionListToJSON,
+    AdminRoleFromJSON,
+    AdminRoleToJSON,
+    AdminRoleCreateRequestFromJSON,
+    AdminRoleCreateRequestToJSON,
     AdminRoleListFromJSON,
     AdminRoleListToJSON,
     AdminUserFromJSON,
@@ -35,9 +45,28 @@ import {
     AdminUserRolesRequestToJSON,
     ApiErrorFromJSON,
     ApiErrorToJSON,
+    PatchedAdminRoleUpdateRequestFromJSON,
+    PatchedAdminRoleUpdateRequestToJSON,
 } from '../models/index';
 
+export interface AdminRoleCreateOperationRequest {
+    adminRoleCreateRequest: AdminRoleCreateRequest;
+}
+
+export interface AdminRoleDeleteRequest {
+    roleId: number;
+}
+
+export interface AdminRoleUpdateRequest {
+    roleId: number;
+    patchedAdminRoleUpdateRequest?: PatchedAdminRoleUpdateRequest;
+}
+
 export interface AdminUserBlockRequest {
+    userId: string;
+}
+
+export interface AdminUserMfaResetRequest {
     userId: string;
 }
 
@@ -55,6 +84,9 @@ export interface AdminUserUnblockRequest {
 }
 
 export interface AdminUsersListRequest {
+    cursor?: string;
+    limit?: number;
+    ordering?: string;
     q?: string;
     role?: string;
     status?: string;
@@ -66,7 +98,191 @@ export interface AdminUsersListRequest {
 export class AdminUsersApi extends runtime.BaseAPI {
 
     /**
-     * List admin roles and their permission codes
+     * The full catalogue, ordered by code. Labels for display belong to the client.
+     * Every permission a role can carry
+     */
+    async adminPermissionsListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminPermissionList>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/permissions/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminPermissionListFromJSON(jsonValue));
+    }
+
+    /**
+     * The full catalogue, ordered by code. Labels for display belong to the client.
+     * Every permission a role can carry
+     */
+    async adminPermissionsList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminPermissionList> {
+        const response = await this.adminPermissionsListRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Requires `admin.roles.manage`, which is re-checked inside the handler.
+     * Create a role with the permissions it carries
+     */
+    async adminRoleCreateRaw(requestParameters: AdminRoleCreateOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminRole>> {
+        if (requestParameters['adminRoleCreateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'adminRoleCreateRequest',
+                'Required parameter "adminRoleCreateRequest" was null or undefined when calling adminRoleCreate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/roles/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminRoleCreateRequestToJSON(requestParameters['adminRoleCreateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminRoleFromJSON(jsonValue));
+    }
+
+    /**
+     * Requires `admin.roles.manage`, which is re-checked inside the handler.
+     * Create a role with the permissions it carries
+     */
+    async adminRoleCreate(requestParameters: AdminRoleCreateOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminRole> {
+        const response = await this.adminRoleCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Refused (409) while any account holds the role, blocked accounts included, so a role is never taken from somebody as a side effect; and for the owner role.
+     * Delete a role nobody holds
+     */
+    async adminRoleDeleteRaw(requestParameters: AdminRoleDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['roleId'] == null) {
+            throw new runtime.RequiredError(
+                'roleId',
+                'Required parameter "roleId" was null or undefined when calling adminRoleDelete().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/roles/{role_id}/`;
+        urlPath = urlPath.replace(`{${"role_id"}}`, encodeURIComponent(String(requestParameters['roleId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Refused (409) while any account holds the role, blocked accounts included, so a role is never taken from somebody as a side effect; and for the owner role.
+     * Delete a role nobody holds
+     */
+    async adminRoleDelete(requestParameters: AdminRoleDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.adminRoleDeleteRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Omitted fields keep their value. Takes effect for every holder on their next request. Refused (409) for the owner role, and when it would leave nobody able to grant roles.
+     * Rename a role or change the permissions it carries
+     */
+    async adminRoleUpdateRaw(requestParameters: AdminRoleUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminRole>> {
+        if (requestParameters['roleId'] == null) {
+            throw new runtime.RequiredError(
+                'roleId',
+                'Required parameter "roleId" was null or undefined when calling adminRoleUpdate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/roles/{role_id}/`;
+        urlPath = urlPath.replace(`{${"role_id"}}`, encodeURIComponent(String(requestParameters['roleId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PatchedAdminRoleUpdateRequestToJSON(requestParameters['patchedAdminRoleUpdateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminRoleFromJSON(jsonValue));
+    }
+
+    /**
+     * Omitted fields keep their value. Takes effect for every holder on their next request. Refused (409) for the owner role, and when it would leave nobody able to grant roles.
+     * Rename a role or change the permissions it carries
+     */
+    async adminRoleUpdate(requestParameters: AdminRoleUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminRole> {
+        const response = await this.adminRoleUpdateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * List admin roles, their permission codes and how many hold each
      */
     async adminRolesListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminRoleList>> {
         const queryParameters: any = {};
@@ -95,7 +311,7 @@ export class AdminUsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * List admin roles and their permission codes
+     * List admin roles, their permission codes and how many hold each
      */
     async adminRolesList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminRoleList> {
         const response = await this.adminRolesListRaw(initOverrides);
@@ -147,6 +363,52 @@ export class AdminUsersApi extends runtime.BaseAPI {
     async adminUserBlock(requestParameters: AdminUserBlockRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminUser> {
         const response = await this.adminUserBlockRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     * They set up a new one at their next console sign-in. Their recovery codes are cleared too. Audited.
+     * Clear an operator\'s authenticator after they lost it
+     */
+    async adminUserMfaResetRaw(requestParameters: AdminUserMfaResetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['userId'] == null) {
+            throw new runtime.RequiredError(
+                'userId',
+                'Required parameter "userId" was null or undefined when calling adminUserMfaReset().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/users/{user_id}/mfa/reset/`;
+        urlPath = urlPath.replace(`{${"user_id"}}`, encodeURIComponent(String(requestParameters['userId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * They set up a new one at their next console sign-in. Their recovery codes are cleared too. Audited.
+     * Clear an operator\'s authenticator after they lost it
+     */
+    async adminUserMfaReset(requestParameters: AdminUserMfaResetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.adminUserMfaResetRaw(requestParameters, initOverrides);
     }
 
     /**
@@ -298,11 +560,23 @@ export class AdminUsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Password hashes and session secret material are never returned. Capped at 250 rows. Both filters are optional.
+     * Password hashes and session secret material are never returned. Newest first unless `ordering` says otherwise, in cursor pages. Every filter is optional.
      * Search user accounts
      */
     async adminUsersListRaw(requestParameters: AdminUsersListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminUserList>> {
         const queryParameters: any = {};
+
+        if (requestParameters['cursor'] != null) {
+            queryParameters['cursor'] = requestParameters['cursor'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
+        }
+
+        if (requestParameters['ordering'] != null) {
+            queryParameters['ordering'] = requestParameters['ordering'];
+        }
 
         if (requestParameters['q'] != null) {
             queryParameters['q'] = requestParameters['q'];
@@ -340,7 +614,7 @@ export class AdminUsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Password hashes and session secret material are never returned. Capped at 250 rows. Both filters are optional.
+     * Password hashes and session secret material are never returned. Newest first unless `ordering` says otherwise, in cursor pages. Every filter is optional.
      * Search user accounts
      */
     async adminUsersList(requestParameters: AdminUsersListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminUserList> {

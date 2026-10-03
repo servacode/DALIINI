@@ -13,7 +13,169 @@ import AnyCodable
 open class AdminUsersAPI {
 
     /**
-     List admin roles and their permission codes
+     Every permission a role can carry
+     
+     - returns: AdminPermissionList
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminPermissionsList() async throws -> AdminPermissionList {
+        return try await adminPermissionsListWithRequestBuilder().execute().body
+    }
+
+    /**
+     Every permission a role can carry
+     - GET /api/v1/admin/permissions/
+     - The full catalogue, ordered by code. Labels for display belong to the client.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<AdminPermissionList> 
+     */
+    open class func adminPermissionsListWithRequestBuilder() -> RequestBuilder<AdminPermissionList> {
+        let localVariablePath = "/api/v1/admin/permissions/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminPermissionList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Create a role with the permissions it carries
+     
+     - parameter adminRoleCreateRequest: (body)  
+     - returns: AdminRole
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminRoleCreate(adminRoleCreateRequest: AdminRoleCreateRequest) async throws -> AdminRole {
+        return try await adminRoleCreateWithRequestBuilder(adminRoleCreateRequest: adminRoleCreateRequest).execute().body
+    }
+
+    /**
+     Create a role with the permissions it carries
+     - POST /api/v1/admin/roles/
+     - Requires `admin.roles.manage`, which is re-checked inside the handler.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter adminRoleCreateRequest: (body)  
+     - returns: RequestBuilder<AdminRole> 
+     */
+    open class func adminRoleCreateWithRequestBuilder(adminRoleCreateRequest: AdminRoleCreateRequest) -> RequestBuilder<AdminRole> {
+        let localVariablePath = "/api/v1/admin/roles/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminRoleCreateRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminRole>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Delete a role nobody holds
+     
+     - parameter roleId: (path)  
+     - returns: Void
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminRoleDelete(roleId: Int) async throws {
+        return try await adminRoleDeleteWithRequestBuilder(roleId: roleId).execute().body
+    }
+
+    /**
+     Delete a role nobody holds
+     - DELETE /api/v1/admin/roles/{role_id}/
+     - Refused (409) while any account holds the role, blocked accounts included, so a role is never taken from somebody as a side effect; and for the owner role.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter roleId: (path)  
+     - returns: RequestBuilder<Void> 
+     */
+    open class func adminRoleDeleteWithRequestBuilder(roleId: Int) -> RequestBuilder<Void> {
+        var localVariablePath = "/api/v1/admin/roles/{role_id}/"
+        let roleIdPreEscape = "\(APIHelper.mapValueToPathItem(roleId))"
+        let roleIdPostEscape = roleIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{role_id}", with: roleIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return localVariableRequestBuilder.init(method: "DELETE", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Rename a role or change the permissions it carries
+     
+     - parameter roleId: (path)  
+     - parameter patchedAdminRoleUpdateRequest: (body)  (optional)
+     - returns: AdminRole
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminRoleUpdate(roleId: Int, patchedAdminRoleUpdateRequest: PatchedAdminRoleUpdateRequest? = nil) async throws -> AdminRole {
+        return try await adminRoleUpdateWithRequestBuilder(roleId: roleId, patchedAdminRoleUpdateRequest: patchedAdminRoleUpdateRequest).execute().body
+    }
+
+    /**
+     Rename a role or change the permissions it carries
+     - PATCH /api/v1/admin/roles/{role_id}/
+     - Omitted fields keep their value. Takes effect for every holder on their next request. Refused (409) for the owner role, and when it would leave nobody able to grant roles.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter roleId: (path)  
+     - parameter patchedAdminRoleUpdateRequest: (body)  (optional)
+     - returns: RequestBuilder<AdminRole> 
+     */
+    open class func adminRoleUpdateWithRequestBuilder(roleId: Int, patchedAdminRoleUpdateRequest: PatchedAdminRoleUpdateRequest? = nil) -> RequestBuilder<AdminRole> {
+        var localVariablePath = "/api/v1/admin/roles/{role_id}/"
+        let roleIdPreEscape = "\(APIHelper.mapValueToPathItem(roleId))"
+        let roleIdPostEscape = roleIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{role_id}", with: roleIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: patchedAdminRoleUpdateRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminRole>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "PATCH", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     List admin roles, their permission codes and how many hold each
      
      - returns: AdminRoleList
      */
@@ -23,7 +185,7 @@ open class AdminUsersAPI {
     }
 
     /**
-     List admin roles and their permission codes
+     List admin roles, their permission codes and how many hold each
      - GET /api/v1/admin/roles/
      - Bearer Token:
        - type: http
@@ -86,6 +248,48 @@ open class AdminUsersAPI {
         let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
 
         let localVariableRequestBuilder: RequestBuilder<AdminUser>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Clear an operator's authenticator after they lost it
+     
+     - parameter userId: (path)  
+     - returns: Void
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminUserMfaReset(userId: UUID) async throws {
+        return try await adminUserMfaResetWithRequestBuilder(userId: userId).execute().body
+    }
+
+    /**
+     Clear an operator's authenticator after they lost it
+     - POST /api/v1/admin/users/{user_id}/mfa/reset/
+     - They set up a new one at their next console sign-in. Their recovery codes are cleared too. Audited.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter userId: (path)  
+     - returns: RequestBuilder<Void> 
+     */
+    open class func adminUserMfaResetWithRequestBuilder(userId: UUID) -> RequestBuilder<Void> {
+        var localVariablePath = "/api/v1/admin/users/{user_id}/mfa/reset/"
+        let userIdPreEscape = "\(APIHelper.mapValueToPathItem(userId))"
+        let userIdPostEscape = userIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{user_id}", with: userIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
 
         return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
     }
@@ -220,35 +424,44 @@ open class AdminUsersAPI {
     /**
      Search user accounts
      
+     - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     - parameter limit: (query) Page size, maximum 200, default 50. (optional)
+     - parameter ordering: (query) createdAt, -createdAt (the default), name or -name. (optional)
      - parameter q: (query) Free text matched against the account name and phone number. (optional)
      - parameter role: (query) Admin role id or code; keeps accounts holding that role actively. The value &#x60;any&#x60; keeps every operator, &#x60;none&#x60; every non-operator. (optional)
      - parameter status: (query) &#x60;active&#x60; keeps active accounts; any other value keeps blocked accounts. (optional)
      - returns: AdminUserList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminUsersList(q: String? = nil, role: String? = nil, status: String? = nil) async throws -> AdminUserList {
-        return try await adminUsersListWithRequestBuilder(q: q, role: role, status: status).execute().body
+    open class func adminUsersList(cursor: String? = nil, limit: Int? = nil, ordering: String? = nil, q: String? = nil, role: String? = nil, status: String? = nil) async throws -> AdminUserList {
+        return try await adminUsersListWithRequestBuilder(cursor: cursor, limit: limit, ordering: ordering, q: q, role: role, status: status).execute().body
     }
 
     /**
      Search user accounts
      - GET /api/v1/admin/users/
-     - Password hashes and session secret material are never returned. Capped at 250 rows. Both filters are optional.
+     - Password hashes and session secret material are never returned. Newest first unless `ordering` says otherwise, in cursor pages. Every filter is optional.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken
+     - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     - parameter limit: (query) Page size, maximum 200, default 50. (optional)
+     - parameter ordering: (query) createdAt, -createdAt (the default), name or -name. (optional)
      - parameter q: (query) Free text matched against the account name and phone number. (optional)
      - parameter role: (query) Admin role id or code; keeps accounts holding that role actively. The value &#x60;any&#x60; keeps every operator, &#x60;none&#x60; every non-operator. (optional)
      - parameter status: (query) &#x60;active&#x60; keeps active accounts; any other value keeps blocked accounts. (optional)
      - returns: RequestBuilder<AdminUserList> 
      */
-    open class func adminUsersListWithRequestBuilder(q: String? = nil, role: String? = nil, status: String? = nil) -> RequestBuilder<AdminUserList> {
+    open class func adminUsersListWithRequestBuilder(cursor: String? = nil, limit: Int? = nil, ordering: String? = nil, q: String? = nil, role: String? = nil, status: String? = nil) -> RequestBuilder<AdminUserList> {
         let localVariablePath = "/api/v1/admin/users/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
 
         var localVariableUrlComponents = URLComponents(string: localVariableURLString)
         localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "cursor": (wrappedValue: cursor?.encodeToJSON(), isExplode: true),
+            "limit": (wrappedValue: limit?.encodeToJSON(), isExplode: true),
+            "ordering": (wrappedValue: ordering?.encodeToJSON(), isExplode: true),
             "q": (wrappedValue: q?.encodeToJSON(), isExplode: true),
             "role": (wrappedValue: role?.encodeToJSON(), isExplode: true),
             "status": (wrappedValue: status?.encodeToJSON(), isExplode: true),

@@ -63,7 +63,7 @@ def main() -> int:
     if not origin:
         raise RuntimeError("STAGING_API_ORIGIN is required")
     host = urllib.parse.urlparse(origin).hostname or ""
-    if not origin.startswith("https://") or ("staging" not in host and "onrender.com" not in host):
+    if not origin.startswith("https://") or "staging" not in host:
         raise RuntimeError("golden path refuses non-HTTPS/non-staging origin")
     client = Client(origin)
     live = client.request("GET", "/health/live/", token=False)

@@ -15,8 +15,11 @@ from typing import Any
 
 from rest_framework import serializers
 
+from accounts.views_mfa import MfaStatusSerializer
 from content_services.models import Advertisement
+from core.enums import HEALTH_CHECK_KEY, HEALTH_OVERALL, HEALTH_STATUS
 from core.openapi import CoordinatesSerializer
+from core.pagination import CursorEnvelope
 from directory.models import Category
 from directory.services import SPECIALTY_SCOPES
 from facilities.models import Facility, FacilityApplication, FacilityReport
@@ -41,7 +44,7 @@ class AdminUserDetailSerializer(AdminUserSerializer):
     roleIds = serializers.ListField(child=serializers.IntegerField())
 
 
-class AdminUserListSerializer(serializers.Serializer[Any]):
+class AdminUserListSerializer(CursorEnvelope):
     items = AdminUserSerializer(many=True)
 
 
@@ -78,7 +81,27 @@ class AdminFacilityQualitySerializer(AdminFacilitySerializer):
     )
 
 
-class AdminFacilityListSerializer(serializers.Serializer[Any]):
+class AdminFacilityDetailSerializer(AdminFacilityQualitySerializer):
+    """One facility as the console reads and edits it."""
+
+    neighborhoodId = serializers.UUIDField(allow_null=True)
+    descriptionAr = serializers.CharField(allow_null=True)
+    descriptionEn = serializers.CharField(allow_null=True)
+    phone = serializers.CharField(allow_null=True)
+    whatsapp = serializers.CharField(allow_null=True)
+    addressAr = serializers.CharField(allow_null=True)
+    addressEn = serializers.CharField(allow_null=True)
+    specialtyIds = serializers.ListField(child=serializers.IntegerField())
+    serviceTagIds = serializers.ListField(child=serializers.IntegerField())
+    ownerCount = serializers.IntegerField(
+        min_value=0, help_text="0 for a facility the directory listed itself and nobody claimed."
+    )
+    activatedAt = serializers.DateTimeField(allow_null=True)
+    lastVerifiedAt = serializers.DateTimeField(allow_null=True)
+    createdAt = serializers.DateTimeField()
+
+
+class AdminFacilityListSerializer(CursorEnvelope):
     items = AdminFacilityQualitySerializer(many=True)
 
 
@@ -104,9 +127,13 @@ class AdminApplicationSerializer(serializers.Serializer[Any]):
     provinceNameAr = serializers.CharField()
     ownerName = serializers.CharField(allow_null=True)
     ownerPhone = serializers.CharField(allow_null=True)
+    applicantName = serializers.CharField(
+        allow_null=True, help_text="CLAIM only: who asks to own the facility."
+    )
+    applicantPhone = serializers.CharField(allow_null=True, help_text="CLAIM only.")
 
 
-class AdminApplicationListSerializer(serializers.Serializer[Any]):
+class AdminApplicationListSerializer(CursorEnvelope):
     items = AdminApplicationSerializer(many=True)
 
 
@@ -145,8 +172,16 @@ class AdminApplicationDetailSerializer(AdminApplicationSerializer):
         allow_null=True,
         help_text=(
             "Snapshot of the last approved application of this facility (plus `approvedAt`), "
-            "for diffing a REVERIFICATION. Null when the facility was never approved."
+            "for diffing a REVERIFICATION; for a CHANGE, the facility as it is published now. "
+            "Null when the facility was never approved."
         ),
+    )
+    proposedFields = serializers.ListField(
+        child=serializers.CharField(),
+        help_text="CHANGE only: the fields the owner proposes to change; empty otherwise.",
+    )
+    revision = serializers.IntegerField(
+        help_text="CHANGE only: send it back with the approval. 0 for other kinds."
     )
     location = CoordinatesSerializer(allow_null=True)
     duplicates = AdminDuplicateCandidateSerializer(
@@ -165,6 +200,17 @@ class AdminDecisionRequestSerializer(serializers.Serializer[Any]):
         required=False,
         allow_blank=True,
         help_text="Required in practice for a rejection; recorded in the audit trail.",
+    )
+
+
+class AdminReviewDecisionRequestSerializer(AdminDecisionRequestSerializer):
+    revision = serializers.IntegerField(
+        required=False,
+        min_value=1,
+        help_text=(
+            "CHANGE only: the `revision` the reviewer saw. If the owner revised the proposal "
+            "since, approval is refused with 409 APPLICATION_CHANGED."
+        ),
     )
 
 
@@ -199,10 +245,43 @@ class AdminRoleSerializer(serializers.Serializer[Any]):
     code = serializers.CharField()
     name = serializers.CharField()
     permissions = serializers.ListField(child=serializers.CharField())
+    holderCount = serializers.IntegerField(
+        help_text="Active accounts holding this role now. Blocked accounts are not counted."
+    )
+    locked = serializers.BooleanField(
+        help_text="The platform's own role (`owner`): it holds every permission and the "
+        "console can neither edit nor delete it."
+    )
 
 
 class AdminRoleListSerializer(serializers.Serializer[Any]):
     items = AdminRoleSerializer(many=True)
+
+
+class AdminRoleCreateRequestSerializer(serializers.Serializer[Any]):
+    name = serializers.CharField(max_length=120)
+    code = serializers.RegexField(
+        r"^[a-z][a-z0-9-]{1,79}$",
+        required=False,
+        help_text="Lower-case Latin letters, digits and hyphens. Generated when omitted.",
+    )
+    permissions = serializers.ListField(child=serializers.CharField(), allow_empty=True)
+
+
+class AdminRoleUpdateRequestSerializer(serializers.Serializer[Any]):
+    name = serializers.CharField(max_length=120, required=False)
+    permissions = serializers.ListField(
+        child=serializers.CharField(), allow_empty=True, required=False
+    )
+
+
+class AdminPermissionSerializer(serializers.Serializer[Any]):
+    code = serializers.CharField()
+    description = serializers.CharField(allow_blank=True)
+
+
+class AdminPermissionListSerializer(serializers.Serializer[Any]):
+    items = AdminPermissionSerializer(many=True)
 
 
 class AdminUserRolesRequestSerializer(serializers.Serializer[Any]):
@@ -297,6 +376,9 @@ class AdminMeSerializer(serializers.Serializer[Any]):
 
     userId = serializers.UUIDField()
     displayName = serializers.CharField()
+    mfa = MfaStatusSerializer(
+        help_text="The second sign-in step for this operator and session (accountMfaRetrieve)."
+    )
     permissions = serializers.ListField(
         child=serializers.CharField(),
         help_text=(
@@ -521,7 +603,7 @@ class AdminAuditEntrySerializer(serializers.Serializer[Any]):
     createdAt = serializers.DateTimeField(source="created_at")
 
 
-class AdminAuditListSerializer(serializers.Serializer[Any]):
+class AdminAuditListSerializer(CursorEnvelope):
     items = AdminAuditEntrySerializer(many=True)
 
 
@@ -573,6 +655,48 @@ class AdminAnalyticsSerializer(serializers.Serializer[Any]):
         }
 
 
+class AdminFacilityPointSerializer(serializers.Serializer[Any]):
+    id = serializers.UUIDField()
+    nameAr = serializers.CharField()
+    status = serializers.ChoiceField(choices=Facility.Status.choices)
+    categoryId = serializers.UUIDField()
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
+
+
+class AdminFacilityMapSerializer(serializers.Serializer[Any]):
+    items = AdminFacilityPointSerializer(many=True)
+    truncated = serializers.BooleanField(
+        help_text="True when more facilities matched than the map draws (5,000)."
+    )
+    withoutLocation = serializers.IntegerField(
+        help_text="Facilities the filters select that have no location yet."
+    )
+
+
+class AdminAnalyticsDaySerializer(serializers.Serializer[Any]):
+    date = serializers.DateField(help_text="A Damascus calendar day.")
+    searches = serializers.IntegerField()
+    zeroResultSearches = serializers.IntegerField()
+    facilityViews = serializers.IntegerField()
+    directionsRequests = serializers.IntegerField()
+    newUsers = serializers.IntegerField()
+    approvals = serializers.IntegerField()
+    reports = serializers.IntegerField()
+
+
+class AdminAnalyticsSeriesSerializer(serializers.Serializer[Any]):
+    days = AdminAnalyticsDaySerializer(many=True, help_text="Every day of the period, in order.")
+
+    def get_fields(self) -> Any:
+        fields = super().get_fields()
+        return {
+            "from": serializers.DateTimeField(help_text="Period start, inclusive."),
+            "to": serializers.DateTimeField(help_text="Period end, exclusive."),
+            **fields,
+        }
+
+
 class AdminSettingSerializer(serializers.Serializer[Any]):
     key = serializers.CharField()
     valueType = serializers.CharField(source="value_type")
@@ -596,15 +720,34 @@ class AdminSettingWrittenSerializer(serializers.Serializer[Any]):
     value = serializers.JSONField(allow_null=True)
 
 
+class AdminHealthMetricSerializer(serializers.Serializer[Any]):
+    key = serializers.CharField()
+    value = serializers.IntegerField()
+
+
+class AdminHealthCheckSerializer(serializers.Serializer[Any]):
+    """One dependency, asked directly. No host, URL, credential or exception text."""
+
+    key = serializers.ChoiceField(choices=HEALTH_CHECK_KEY)
+    status = serializers.ChoiceField(
+        choices=HEALTH_STATUS,
+        help_text="`warning`: working, but someone should look. `off`: not used by this "
+        "deployment (a development stack).",
+    )
+    summary = serializers.CharField(help_text="One sentence for the operator, in Arabic.")
+    latencyMs = serializers.IntegerField(allow_null=True)
+    lastOkAt = serializers.DateTimeField(allow_null=True)
+    lastFailureAt = serializers.DateTimeField(allow_null=True)
+    metrics = AdminHealthMetricSerializer(many=True)
+
+
 class AdminSystemStatusSerializer(serializers.Serializer[Any]):
-    """Configuration presence only. No credential or connection string is exposed."""
+    """Each dependency asked directly, with a short timeout. No credential is exposed."""
 
     apiVersion = serializers.CharField()
     environment = serializers.CharField()
-    database = serializers.ChoiceField(choices=["ok", "unavailable"])
-    redis = serializers.ChoiceField(choices=["configured", "unconfigured"])
-    celery = serializers.ChoiceField(choices=["configured", "unconfigured"])
-    storage = serializers.ChoiceField(choices=["configured", "unconfigured"])
+    overall = serializers.ChoiceField(choices=HEALTH_OVERALL)
+    checks = AdminHealthCheckSerializer(many=True)
     schemaHash = serializers.CharField()
     checkedAt = serializers.DateTimeField()
 
@@ -622,7 +765,7 @@ class AdminFacilityReportSerializer(serializers.Serializer[Any]):
     resolvedAt = serializers.DateTimeField(allow_null=True)
 
 
-class AdminFacilityReportListSerializer(serializers.Serializer[Any]):
+class AdminFacilityReportListSerializer(CursorEnvelope):
     items = AdminFacilityReportSerializer(many=True)
 
 

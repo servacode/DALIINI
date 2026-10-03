@@ -40,6 +40,8 @@ import kotlinx.serialization.Contextual
  * @param provinceNameAr 
  * @param ownerName 
  * @param ownerPhone 
+ * @param applicantName CLAIM only: who asks to own the facility.
+ * @param applicantPhone CLAIM only.
  */
 @Serializable
 
@@ -89,7 +91,15 @@ data class AdminApplication (
     val ownerName: kotlin.String?,
 
     @SerialName(value = "ownerPhone")
-    val ownerPhone: kotlin.String?
+    val ownerPhone: kotlin.String?,
+
+    /* CLAIM only: who asks to own the facility. */
+    @SerialName(value = "applicantName")
+    val applicantName: kotlin.String?,
+
+    /* CLAIM only. */
+    @SerialName(value = "applicantPhone")
+    val applicantPhone: kotlin.String?
 
 ) {
 

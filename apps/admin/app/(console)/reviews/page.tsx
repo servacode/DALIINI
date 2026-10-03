@@ -13,9 +13,11 @@ import {
   formatDateTime,
   termsFor,
   labelsFor,
+  Pagination,
+  pageSummary,
 } from "../../../components/ui";
 import { useLookups } from "../../../lib/client/use-lookups";
-import { useResource } from "../../../lib/client/use-resource";
+import { useCursorPage } from "../../../lib/client/use-cursor-page";
 import { useUrlFilters } from "../../../lib/client/use-url-filters";
 
 type Application = Readonly<{
@@ -55,7 +57,7 @@ export default function ReviewsPage() {
     evidence: "",
   });
   const lookups = useLookups();
-  const queue = useResource<{ items: Application[] }>("reviews", filters, {
+  const queue = useCursorPage<Application>("reviews", filters, {
     refreshMs: 60_000,
   });
 
@@ -145,12 +147,15 @@ export default function ReviewsPage() {
       {queue.error ? <ErrorState error={queue.error} onRetry={queue.reload} /> : null}
       {queue.data ? (
         <DataTable
+          id="reviews"
           caption="طلبات المراجعة"
           columns={columns}
           rows={queue.data.items}
           rowKey={(row) => row.id}
+          summary={pageSummary(queue.data.items.length, queue.data.hasMore)}
         />
       ) : null}
+      {queue.pagination ? <Pagination {...queue.pagination} /> : null}
     </div>
   );
 }

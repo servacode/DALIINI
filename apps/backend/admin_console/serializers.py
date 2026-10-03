@@ -41,7 +41,9 @@ def with_facility_names(queryset: QuerySet[Facility]) -> QuerySet[Facility]:
 def with_application_names(
     queryset: QuerySet[FacilityApplication],
 ) -> QuerySet[FacilityApplication]:
-    return queryset.select_related("facility__category", "facility__province").prefetch_related(
+    return queryset.select_related(
+        "facility__category", "facility__province", "applicant"
+    ).prefetch_related(
         _owner_prefetch("facility__")
     )
 
@@ -88,6 +90,31 @@ def facility_payload(facility: Any) -> Any:
     }
 
 
+def facility_detail_payload(facility: Any) -> Any:
+    """One facility as the console reads and edits it: the row, its quality, every detail."""
+    from .quality import quality_payload
+
+    return {
+        **facility_payload(facility),
+        **quality_payload(facility),
+        "neighborhoodId": str(facility.neighborhood_id) if facility.neighborhood_id else None,
+        "descriptionAr": facility.description_ar or None,
+        "descriptionEn": facility.description_en or None,
+        "phone": facility.phone or None,
+        "whatsapp": facility.whatsapp or None,
+        "addressAr": facility.address_ar or None,
+        "addressEn": facility.address_en or None,
+        "specialtyIds": sorted(facility.specialty_links.values_list("specialty_id", flat=True)),
+        "serviceTagIds": sorted(
+            facility.service_links.values_list("service_tag_id", flat=True)
+        ),
+        "ownerCount": facility.memberships.filter(role=FacilityMembership.Role.OWNER).count(),
+        "activatedAt": _iso(facility.activated_at),
+        "lastVerifiedAt": _iso(facility.last_verified_at),
+        "createdAt": _iso(facility.created_at),
+    }
+
+
 def application_payload(application: Any) -> Any:
     facility = application.facility
     return {
@@ -103,4 +130,7 @@ def application_payload(application: Any) -> Any:
         "rejectionReason": application.rejection_reason or None,
         "evidenceComplete": evidence_complete(application),
         **_names(facility),
+        # A claim comes from somebody who is not a member yet; nobody else's does.
+        "applicantName": application.applicant.name if application.applicant_id else None,
+        "applicantPhone": application.applicant.phone if application.applicant_id else None,
     }

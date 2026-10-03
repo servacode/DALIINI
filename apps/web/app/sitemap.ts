@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getCategories, getContentPage, getFacilities, getProvinces } from "../lib/api";
 import { absoluteUrl } from "../lib/config";
+import { categoryPath, facilityPath } from "../lib/paths";
 
 /*
  * Sitemap for static pages plus every province, province×category listing and
@@ -32,7 +33,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     })),
     { url: absoluteUrl("/emergency"), changeFrequency: "weekly", priority: 0.7 },
-    { url: absoluteUrl("/search"), changeFrequency: "monthly", priority: 0.5 },
     ...["/owners", "/how-we-verify", "/faq", "/contact"].map((path) => ({
       url: absoluteUrl(path),
       changeFrequency: "monthly" as const,
@@ -55,7 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const province of provinces) {
     entries.push({ url: absoluteUrl(`/${province.code}`), changeFrequency: "weekly", priority: 0.8 });
     for (const category of (await getCategories(province.id)) ?? []) {
-      entries.push({ url: absoluteUrl(`/${province.code}/${category.id}`), changeFrequency: "daily", priority: 0.7 });
+      entries.push({ url: absoluteUrl(categoryPath(province.code, category)), changeFrequency: "daily", priority: 0.7 });
       let cursor: string | undefined;
       do {
         if (seen.size >= MAX_FACILITIES) break;
@@ -64,7 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         for (const f of page.items) {
           if (seen.has(f.id)) continue;
           seen.add(f.id);
-          entries.push({ url: absoluteUrl(`/f/${f.id}`), changeFrequency: "weekly", priority: 0.6 });
+          entries.push({ url: absoluteUrl(facilityPath(f)), changeFrequency: "weekly", priority: 0.6 });
         }
         cursor = page.hasMore && page.nextCursor ? page.nextCursor : undefined;
       } while (cursor);

@@ -1,0 +1,11 @@
+# The second Sunday of each month, a week after the restore drill, at a quiet hour for Syria.
+[Unit]
+Description=Daliini: rebuild the map monthly
+
+[Timer]
+OnCalendar=Sun *-*-08..14 02:40:00 UTC
+Persistent=true
+RandomizedDelaySec=10m
+
+[Install]
+WantedBy=timers.target

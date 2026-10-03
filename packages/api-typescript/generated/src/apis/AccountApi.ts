@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  Accepted,
   AccountDeletionRequested,
   AccountRatingList,
   ApiError,
@@ -24,16 +25,25 @@ import type {
   FavoriteList,
   FavoriteState,
   FavoriteWrite,
+  MfaCode,
+  MfaRecoveryCodes,
+  MfaSetup,
+  MfaStatus,
   NotificationPage,
+  NotificationPreferences,
   PasswordChange,
+  PatchedNotificationPreferences,
   PatchedProfilePatch,
   PhoneChangeStart,
   Profile,
   PushToken,
   PushTokenRegister,
+  ReceivedInvitationList,
   UnreadCount,
 } from '../models/index';
 import {
+    AcceptedFromJSON,
+    AcceptedToJSON,
     AccountDeletionRequestedFromJSON,
     AccountDeletionRequestedToJSON,
     AccountRatingListFromJSON,
@@ -52,10 +62,22 @@ import {
     FavoriteStateToJSON,
     FavoriteWriteFromJSON,
     FavoriteWriteToJSON,
+    MfaCodeFromJSON,
+    MfaCodeToJSON,
+    MfaRecoveryCodesFromJSON,
+    MfaRecoveryCodesToJSON,
+    MfaSetupFromJSON,
+    MfaSetupToJSON,
+    MfaStatusFromJSON,
+    MfaStatusToJSON,
     NotificationPageFromJSON,
     NotificationPageToJSON,
+    NotificationPreferencesFromJSON,
+    NotificationPreferencesToJSON,
     PasswordChangeFromJSON,
     PasswordChangeToJSON,
+    PatchedNotificationPreferencesFromJSON,
+    PatchedNotificationPreferencesToJSON,
     PatchedProfilePatchFromJSON,
     PatchedProfilePatchToJSON,
     PhoneChangeStartFromJSON,
@@ -66,6 +88,8 @@ import {
     PushTokenToJSON,
     PushTokenRegisterFromJSON,
     PushTokenRegisterToJSON,
+    ReceivedInvitationListFromJSON,
+    ReceivedInvitationListToJSON,
     UnreadCountFromJSON,
     UnreadCountToJSON,
 } from '../models/index';
@@ -87,8 +111,32 @@ export interface AccountFavoritesListRequest {
     limit?: number;
 }
 
+export interface AccountInvitationAcceptRequest {
+    invitationId: string;
+}
+
+export interface AccountInvitationDeclineRequest {
+    invitationId: string;
+}
+
+export interface AccountMfaConfirmRequest {
+    mfaCode: MfaCode;
+}
+
+export interface AccountMfaDisableRequest {
+    mfaCode: MfaCode;
+}
+
+export interface AccountMfaVerifyRequest {
+    mfaCode: MfaCode;
+}
+
 export interface AccountNotificationMarkReadRequest {
     notificationId: string;
+}
+
+export interface AccountNotificationPreferencesUpdateRequest {
+    patchedNotificationPreferences?: PatchedNotificationPreferences;
 }
 
 export interface AccountNotificationsListRequest {
@@ -322,6 +370,357 @@ export class AccountApi extends runtime.BaseAPI {
     }
 
     /**
+     * Only the account whose phone number was invited can accept; any other caller gets 404. An invitation to own raises a manager to owner and never lowers anyone. 409 INVITATION_EXPIRED or INVITATION_CLOSED when it can no longer be accepted.
+     * Join the facility an invitation is for
+     */
+    async accountInvitationAcceptRaw(requestParameters: AccountInvitationAcceptRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Accepted>> {
+        if (requestParameters['invitationId'] == null) {
+            throw new runtime.RequiredError(
+                'invitationId',
+                'Required parameter "invitationId" was null or undefined when calling accountInvitationAccept().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/invitations/{invitation_id}/accept/`;
+        urlPath = urlPath.replace(`{${"invitation_id"}}`, encodeURIComponent(String(requestParameters['invitationId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AcceptedFromJSON(jsonValue));
+    }
+
+    /**
+     * Only the account whose phone number was invited can accept; any other caller gets 404. An invitation to own raises a manager to owner and never lowers anyone. 409 INVITATION_EXPIRED or INVITATION_CLOSED when it can no longer be accepted.
+     * Join the facility an invitation is for
+     */
+    async accountInvitationAccept(requestParameters: AccountInvitationAcceptRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Accepted> {
+        const response = await this.accountInvitationAcceptRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Decline an invitation
+     */
+    async accountInvitationDeclineRaw(requestParameters: AccountInvitationDeclineRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['invitationId'] == null) {
+            throw new runtime.RequiredError(
+                'invitationId',
+                'Required parameter "invitationId" was null or undefined when calling accountInvitationDecline().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/invitations/{invitation_id}/decline/`;
+        urlPath = urlPath.replace(`{${"invitation_id"}}`, encodeURIComponent(String(requestParameters['invitationId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Decline an invitation
+     */
+    async accountInvitationDecline(requestParameters: AccountInvitationDeclineRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.accountInvitationDeclineRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Invitations waiting for this account\'s phone number
+     */
+    async accountInvitationsListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ReceivedInvitationList>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/invitations/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ReceivedInvitationListFromJSON(jsonValue));
+    }
+
+    /**
+     * Invitations waiting for this account\'s phone number
+     */
+    async accountInvitationsList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ReceivedInvitationList> {
+        const response = await this.accountInvitationsListRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Enables it, marks this session as having passed the second step, and returns ten recovery codes, shown this once.
+     * Confirm the authenticator with its first code
+     */
+    async accountMfaConfirmRaw(requestParameters: AccountMfaConfirmRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MfaRecoveryCodes>> {
+        if (requestParameters['mfaCode'] == null) {
+            throw new runtime.RequiredError(
+                'mfaCode',
+                'Required parameter "mfaCode" was null or undefined when calling accountMfaConfirm().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/mfa/confirm/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: MfaCodeToJSON(requestParameters['mfaCode']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MfaRecoveryCodesFromJSON(jsonValue));
+    }
+
+    /**
+     * Enables it, marks this session as having passed the second step, and returns ten recovery codes, shown this once.
+     * Confirm the authenticator with its first code
+     */
+    async accountMfaConfirm(requestParameters: AccountMfaConfirmRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MfaRecoveryCodes> {
+        const response = await this.accountMfaConfirmRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Needs a current code from the app. Refused with 409 MFA_REQUIRED_BY_POLICY where every operator must have one.
+     * Switch the authenticator off
+     */
+    async accountMfaDisableRaw(requestParameters: AccountMfaDisableRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MfaStatus>> {
+        if (requestParameters['mfaCode'] == null) {
+            throw new runtime.RequiredError(
+                'mfaCode',
+                'Required parameter "mfaCode" was null or undefined when calling accountMfaDisable().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/mfa/disable/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: MfaCodeToJSON(requestParameters['mfaCode']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MfaStatusFromJSON(jsonValue));
+    }
+
+    /**
+     * Needs a current code from the app. Refused with 409 MFA_REQUIRED_BY_POLICY where every operator must have one.
+     * Switch the authenticator off
+     */
+    async accountMfaDisable(requestParameters: AccountMfaDisableRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MfaStatus> {
+        const response = await this.accountMfaDisableRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * The second sign-in step, for this account and session
+     */
+    async accountMfaRetrieveRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MfaStatus>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/mfa/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MfaStatusFromJSON(jsonValue));
+    }
+
+    /**
+     * The second sign-in step, for this account and session
+     */
+    async accountMfaRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MfaStatus> {
+        const response = await this.accountMfaRetrieveRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Operators only. Returns a new secret and its QR code; nothing is enabled until a code from the app confirms it. Starting again replaces an unconfirmed secret.
+     * Start setting up an authenticator app
+     */
+    async accountMfaSetupRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MfaSetup>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/mfa/setup/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MfaSetupFromJSON(jsonValue));
+    }
+
+    /**
+     * Operators only. Returns a new secret and its QR code; nothing is enabled until a code from the app confirms it. Starting again replaces an unconfirmed secret.
+     * Start setting up an authenticator app
+     */
+    async accountMfaSetup(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MfaSetup> {
+        const response = await this.accountMfaSetupRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * A code from the app, or one of the recovery codes (each works once).
+     * Pass the second step for this session
+     */
+    async accountMfaVerifyRaw(requestParameters: AccountMfaVerifyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MfaStatus>> {
+        if (requestParameters['mfaCode'] == null) {
+            throw new runtime.RequiredError(
+                'mfaCode',
+                'Required parameter "mfaCode" was null or undefined when calling accountMfaVerify().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/mfa/verify/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: MfaCodeToJSON(requestParameters['mfaCode']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MfaStatusFromJSON(jsonValue));
+    }
+
+    /**
+     * A code from the app, or one of the recovery codes (each works once).
+     * Pass the second step for this session
+     */
+    async accountMfaVerify(requestParameters: AccountMfaVerifyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MfaStatus> {
+        const response = await this.accountMfaVerifyRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Idempotent: a message that was already read keeps the time it was read.
      * Mark one notification as read
      */
@@ -365,6 +764,87 @@ export class AccountApi extends runtime.BaseAPI {
      */
     async accountNotificationMarkRead(requestParameters: AccountNotificationMarkReadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UnreadCount> {
         const response = await this.accountNotificationMarkReadRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * All are on until the account turns one off. Only the push is governed: every message still reaches the inbox. A staff change to an owner\'s own duty shift, and any kind outside these three, is always pushed.
+     * Which kinds of notice are pushed to this account\'s devices
+     */
+    async accountNotificationPreferencesRetrieveRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationPreferences>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/notification-preferences/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationPreferencesFromJSON(jsonValue));
+    }
+
+    /**
+     * All are on until the account turns one off. Only the push is governed: every message still reaches the inbox. A staff change to an owner\'s own duty shift, and any kind outside these three, is always pushed.
+     * Which kinds of notice are pushed to this account\'s devices
+     */
+    async accountNotificationPreferencesRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationPreferences> {
+        const response = await this.accountNotificationPreferencesRetrieveRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Only the fields sent change.
+     * Change which kinds of notice are pushed
+     */
+    async accountNotificationPreferencesUpdateRaw(requestParameters: AccountNotificationPreferencesUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NotificationPreferences>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/notification-preferences/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PatchedNotificationPreferencesToJSON(requestParameters['patchedNotificationPreferences']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => NotificationPreferencesFromJSON(jsonValue));
+    }
+
+    /**
+     * Only the fields sent change.
+     * Change which kinds of notice are pushed
+     */
+    async accountNotificationPreferencesUpdate(requestParameters: AccountNotificationPreferencesUpdateRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationPreferences> {
+        const response = await this.accountNotificationPreferencesUpdateRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

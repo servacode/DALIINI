@@ -117,5 +117,17 @@ class AdminApplicationTest : ShouldSpec() {
             //modelInstance.ownerPhone shouldBe ("TODO")
         }
 
+        // to test the property `applicantName` - CLAIM only: who asks to own the facility.
+        should("test applicantName") {
+            // uncomment below to test the property
+            //modelInstance.applicantName shouldBe ("TODO")
+        }
+
+        // to test the property `applicantPhone` - CLAIM only.
+        should("test applicantPhone") {
+            // uncomment below to test the property
+            //modelInstance.applicantPhone shouldBe ("TODO")
+        }
+
     }
 }

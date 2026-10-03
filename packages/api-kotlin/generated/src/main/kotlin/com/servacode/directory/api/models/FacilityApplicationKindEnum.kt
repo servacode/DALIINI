@@ -21,9 +21,9 @@ import kotlinx.serialization.Serializable
 
 
 /**
- * * `INITIAL` - Initial * `REVERIFICATION` - Reverification
+ * * `INITIAL` - Initial * `REVERIFICATION` - Reverification * `CHANGE` - Change * `CLAIM` - Claim
  *
- * Values: INITIAL,REVERIFICATION
+ * Values: INITIAL,REVERIFICATION,CHANGE,CLAIM
  */
 @Serializable
 enum class FacilityApplicationKindEnum(val value: kotlin.String) {
@@ -32,7 +32,13 @@ enum class FacilityApplicationKindEnum(val value: kotlin.String) {
     INITIAL("INITIAL"),
 
     @SerialName(value = "REVERIFICATION")
-    REVERIFICATION("REVERIFICATION");
+    REVERIFICATION("REVERIFICATION"),
+
+    @SerialName(value = "CHANGE")
+    CHANGE("CHANGE"),
+
+    @SerialName(value = "CLAIM")
+    CLAIM("CLAIM");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

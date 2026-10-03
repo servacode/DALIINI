@@ -1,0 +1,10 @@
+# The app's own code, compiled ahead of time when the app is installed (DECISION-079).
+#
+# Without it, the first launches run the app's code interpreted until the device has watched
+# enough of it to compile, which is exactly when a person decides whether the app is slow. The
+# libraries ship their own profiles and profileinstaller applies them; this adds the app's.
+#
+# Hand-written and broad on purpose: every method of the app's own packages, which are small next
+# to the libraries. A generated profile (a Macrobenchmark run on a device) would narrow it to what
+# startup and scrolling actually touch; that waits for the device check at the end of phase 5.
+HSPLcom/servacode/directory/**->**(**)**

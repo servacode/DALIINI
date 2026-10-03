@@ -26,6 +26,8 @@ import kotlinx.serialization.Contextual
  *
  * @param initial 
  * @param reverification 
+ * @param change Edits to live facilities, which stay published while these wait.
+ * @param claim Requests to own a facility that nobody owns.
  */
 @Serializable
 
@@ -35,7 +37,15 @@ data class AdminTaskApplications (
     val initial: AdminTaskApplicationBucket,
 
     @SerialName(value = "reverification")
-    val reverification: AdminTaskApplicationBucket
+    val reverification: AdminTaskApplicationBucket,
+
+    /* Edits to live facilities, which stay published while these wait. */
+    @SerialName(value = "change")
+    val change: AdminTaskApplicationBucket,
+
+    /* Requests to own a facility that nobody owns. */
+    @SerialName(value = "claim")
+    val claim: AdminTaskApplicationBucket
 
 ) {
 

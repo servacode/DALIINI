@@ -16,6 +16,7 @@
 import * as runtime from '../runtime';
 import type {
   ApiError,
+  ClaimEvidence,
   OwnerEvidenceCreated,
   OwnerFacilityImage,
   OwnerFacilityImageList,
@@ -23,6 +24,8 @@ import type {
 import {
     ApiErrorFromJSON,
     ApiErrorToJSON,
+    ClaimEvidenceFromJSON,
+    ClaimEvidenceToJSON,
     OwnerEvidenceCreatedFromJSON,
     OwnerEvidenceCreatedToJSON,
     OwnerFacilityImageFromJSON,
@@ -30,6 +33,17 @@ import {
     OwnerFacilityImageListFromJSON,
     OwnerFacilityImageListToJSON,
 } from '../models/index';
+
+export interface OwnerClaimEvidenceCreateRequest {
+    claimId: string;
+    requirementId: number;
+    file: Blob;
+}
+
+export interface OwnerClaimEvidenceDeleteRequest {
+    claimId: string;
+    evidenceId: string;
+}
 
 export interface OwnerFacilityEvidenceCreateRequest {
     facilityId: string;
@@ -60,6 +74,144 @@ export interface OwnerFacilityImagesListRequest {
  * 
  */
 export class MediaApi extends runtime.BaseAPI {
+
+    /**
+     * Private, like a facility\'s own documents. It belongs to the claim until the claim is approved, and is deleted if the claim is withdrawn or rejected.
+     * Upload a verification document for a claim
+     */
+    async ownerClaimEvidenceCreateRaw(requestParameters: OwnerClaimEvidenceCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ClaimEvidence>> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling ownerClaimEvidenceCreate().'
+            );
+        }
+
+        if (requestParameters['requirementId'] == null) {
+            throw new runtime.RequiredError(
+                'requirementId',
+                'Required parameter "requirementId" was null or undefined when calling ownerClaimEvidenceCreate().'
+            );
+        }
+
+        if (requestParameters['file'] == null) {
+            throw new runtime.RequiredError(
+                'file',
+                'Required parameter "file" was null or undefined when calling ownerClaimEvidenceCreate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters['requirementId'] != null) {
+            formParams.append('requirementId', requestParameters['requirementId'] as any);
+        }
+
+        if (requestParameters['file'] != null) {
+            formParams.append('file', requestParameters['file'] as any);
+        }
+
+
+        let urlPath = `/api/v1/owner/claims/{claim_id}/evidence/`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ClaimEvidenceFromJSON(jsonValue));
+    }
+
+    /**
+     * Private, like a facility\'s own documents. It belongs to the claim until the claim is approved, and is deleted if the claim is withdrawn or rejected.
+     * Upload a verification document for a claim
+     */
+    async ownerClaimEvidenceCreate(requestParameters: OwnerClaimEvidenceCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ClaimEvidence> {
+        const response = await this.ownerClaimEvidenceCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Remove a document from a claim not yet sent
+     */
+    async ownerClaimEvidenceDeleteRaw(requestParameters: OwnerClaimEvidenceDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling ownerClaimEvidenceDelete().'
+            );
+        }
+
+        if (requestParameters['evidenceId'] == null) {
+            throw new runtime.RequiredError(
+                'evidenceId',
+                'Required parameter "evidenceId" was null or undefined when calling ownerClaimEvidenceDelete().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/owner/claims/{claim_id}/evidence/{evidence_id}/`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+        urlPath = urlPath.replace(`{${"evidence_id"}}`, encodeURIComponent(String(requestParameters['evidenceId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Remove a document from a claim not yet sent
+     */
+    async ownerClaimEvidenceDelete(requestParameters: OwnerClaimEvidenceDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.ownerClaimEvidenceDeleteRaw(requestParameters, initOverrides);
+    }
 
     /**
      * Sent as multipart/form-data and stored in the private namespace. The response carries identifiers only: evidence is never served through a public URL and its storage key is never returned.

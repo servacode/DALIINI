@@ -1,0 +1,69 @@
+name: Deploy
+
+# Puts one commit on one environment's server (DECISION-081): over SSH, the server checks out the
+# commit and runs infrastructure/production/deploy.sh, which pulls the images Release images
+# published for it, brings the stack up and waits until the API answers ready through its public
+# name. Nothing deploys by itself: this runs when someone starts it, and the environment can
+# require a reviewer's approval (Settings → Environments → <environment> → Required reviewers).
+#
+# The environment's secrets: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY (a key that may log in as
+# that user), DEPLOY_KNOWN_HOSTS (`ssh-keyscan -t ed25519 <host>`, checked once by hand).
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Which environment to deploy
+        type: choice
+        options: [staging, production]
+        required: true
+      commit:
+        description: The commit to deploy; its images must have been released for this environment
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: The commit is a full SHA of this repository
+        env:
+          COMMIT: ${{ inputs.commit }}
+        run: |
+          if ! [[ "$COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::commit must be a full 40-character SHA"
+            exit 1
+          fi
+      - name: SSH
+        env:
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Deploy
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER_NAME: ${{ secrets.DEPLOY_USER }}
+          COMMIT: ${{ inputs.commit }}
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          ssh -i ~/.ssh/deploy -o StrictHostKeyChecking=yes "$USER_NAME@$HOST" \
+            "set -e; cd /srv/daliini/repo; git fetch --quiet origin; git checkout --quiet --detach '$COMMIT';
+             infrastructure/production/deploy.sh /srv/daliini/$ENVIRONMENT.env '$COMMIT' '$ENVIRONMENT-$COMMIT'"
+      - name: Record
+        if: success()
+        run: |
+          echo "### Deployed" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`${{ inputs.commit }}\` on **${{ inputs.environment }}**." >> "$GITHUB_STEP_SUMMARY"

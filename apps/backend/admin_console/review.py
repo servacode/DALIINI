@@ -98,7 +98,9 @@ def missing_evidence() -> Exists:
     """
     uploaded = (
         VerificationEvidence.objects.filter(
-            facility_id=OuterRef(OuterRef("facility_id")), requirement_id=OuterRef("pk")
+            Q(application__isnull=True) | Q(application_id=OuterRef(OuterRef("pk"))),
+            facility_id=OuterRef(OuterRef("facility_id")),
+            requirement_id=OuterRef("pk"),
         )
         .order_by()
         .values("requirement_id")

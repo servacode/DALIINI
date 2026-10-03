@@ -1,0 +1,17 @@
+# Claim
+
+## Properties
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**id** | **UUID** |  | 
+**status** | [**FacilityApplicationStatusEnum**](FacilityApplicationStatusEnum.md) |  | 
+**rejectionReason** | **String** |  | 
+**submittedAt** | **Date** |  | 
+**reviewedAt** | **Date** |  | 
+**facility** | [**ClaimFacility**](ClaimFacility.md) |  | 
+**requirements** | [ClaimRequirement] |  | 
+**evidence** | [ClaimEvidence] |  | 
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
+

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { type ReactNode, useEffect, useEffectEvent, useId, useRef, useState } from "react";
 
 import { type IconName, type IllustrationName, Icons, Illustration } from "../icons";
+import { PAGE_SIZES } from "../../lib/client/use-cursor-page";
 
 import {
   type ApiErrorBody,
@@ -253,60 +254,7 @@ export function FieldError({ id, message }: { id: string; message?: string }) {
 // Data
 // --------------------------------------------------------------------------------------
 
-export type Column<T> = Readonly<{
-  key: string;
-  /** Usually a word. A node when the header is a control, such as a select-all checkbox. */
-  header: ReactNode;
-  render: (row: T) => ReactNode;
-  /** Identifiers and timestamps read left-to-right even in an RTL table. */
-  ltr?: boolean;
-  width?: string;
-}>;
-
-export function DataTable<T>({
-  columns,
-  rows,
-  rowKey,
-  caption,
-  empty,
-}: {
-  columns: readonly Column<T>[];
-  rows: readonly T[];
-  rowKey: (row: T) => string;
-  caption: string;
-  empty?: ReactNode;
-}) {
-  if (rows.length === 0) {
-    return <>{empty ?? <EmptyState title="لا توجد نتائج" />}</>;
-  }
-  return (
-    <div className="table-wrap">
-      <table className="data-table" data-testid="data-table">
-        <caption className="sr-only">{caption}</caption>
-        <thead>
-          <tr>
-            {columns.map((column) => (
-              <th key={column.key} scope="col" style={column.width ? { width: column.width } : undefined}>
-                {column.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={rowKey(row)}>
-              {columns.map((column) => (
-                <td key={column.key} className={column.ltr ? "cell-ltr" : undefined}>
-                  {column.render(row)}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+export { type Column, DataTable, compareValues, pageSummary } from "./data-table";
 
 export type FilterField = Readonly<{
   name: string;
@@ -332,11 +280,17 @@ export function FilterBar({
   values: Record<string, string>;
   onApply: (next: Record<string, string>) => void;
 }) {
-  // Seeded once. Every later change to `values` comes from this component's own `onApply`,
-  // which sets the draft alongside it, so mirroring the prop in an effect would only add a
-  // cascading render.
+  // The draft follows `values` when they change from outside (a link to the same list with
+  // other filters, the back button), adjusted during render rather than in an effect, so the
+  // boxes never show one set of filters while the list shows another.
   const [draft, setDraft] = useState(values);
-  const active = Object.values(values).some((value) => value);
+  const [seen, setSeen] = useState(values);
+  if (JSON.stringify(seen) !== JSON.stringify(values)) {
+    setSeen(values);
+    setDraft(values);
+  }
+  // Only this bar's own fields: an ordering chosen from a table header is not a filter to clear.
+  const active = fields.some((field) => values[field.name]);
 
   return (
     <form
@@ -427,16 +381,37 @@ export function Pagination({
   onFirst,
   atFirst,
   loading,
+  limit,
+  onLimit,
 }: {
   hasMore: boolean;
   onNext: () => void;
   onFirst: () => void;
   atFirst: boolean;
   loading?: boolean;
+  limit?: number;
+  onLimit?: (limit: number) => void;
 }) {
-  if (atFirst && !hasMore) return null;
+  const sizes = onLimit && limit !== undefined;
+  if (atFirst && !hasMore && !sizes) return null;
   return (
     <nav className="pagination" aria-label="تنقل الصفحات" data-testid="pagination">
+      {sizes ? (
+        <label className="page-size">
+          <span>في الصفحة</span>
+          <select
+            value={limit}
+            data-testid="page-size"
+            onChange={(event) => onLimit(Number(event.target.value))}
+          >
+            {PAGE_SIZES.map((size) => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
       <button
         type="button"
         className="button-ghost"
@@ -463,7 +438,7 @@ export function Pagination({
 // Status and permissions
 // --------------------------------------------------------------------------------------
 
-export type Tone = "neutral" | "positive" | "warning" | "danger" | "info" | "brand";
+export type Tone = "neutral" | "positive" | "warning" | "danger" | "info" | "brand" | "accent";
 
 export function StatusBadge({ tone = "neutral", children }: { tone?: Tone; children: ReactNode }) {
   return (
@@ -668,9 +643,13 @@ export function DiffViewer({
         <div key={key} className="diff-row">
           <dt>{key}</dt>
           <dd>
-            <span className="diff-before">{format(before?.[key])}</span>
+            <span className="diff-before" dir={isPoint(before?.[key]) ? "ltr" : undefined}>
+              {format(before?.[key])}
+            </span>
             <span aria-hidden="true">←</span>
-            <span className="diff-after">{format(after?.[key])}</span>
+            <span className="diff-after" dir={isPoint(after?.[key]) ? "ltr" : undefined}>
+              {format(after?.[key])}
+            </span>
           </dd>
         </div>
       ))}
@@ -681,8 +660,19 @@ export function DiffViewer({
 function format(value: unknown): string {
   if (value === null || value === undefined) return "—";
   if (typeof value === "boolean") return value ? "نعم" : "لا";
+  if (isPoint(value)) return `${value.latitude.toFixed(5)}, ${value.longitude.toFixed(5)}`;
   if (typeof value === "object") return JSON.stringify(value);
   return String(value);
+}
+
+/** A map point reads as coordinates, not as the JSON it travels in. */
+function isPoint(value: unknown): value is { latitude: number; longitude: number } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as { latitude?: unknown }).latitude === "number" &&
+    typeof (value as { longitude?: unknown }).longitude === "number"
+  );
 }
 
 export type AuditEntry = Readonly<{

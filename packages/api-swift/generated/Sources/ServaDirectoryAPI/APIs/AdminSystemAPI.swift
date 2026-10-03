@@ -165,7 +165,7 @@ open class AdminSystemAPI {
     }
 
     /**
-     Runtime and configuration status
+     Every dependency, asked directly
      
      - returns: AdminSystemStatus
      */
@@ -175,9 +175,9 @@ open class AdminSystemAPI {
     }
 
     /**
-     Runtime and configuration status
+     Every dependency, asked directly
      - GET /api/v1/admin/system/status/
-     - Reports only whether each dependency is configured. No secret, connection string or credential is returned.
+     - The database, Redis and the workers, the scheduler's heartbeat, storage, the verification-code channel, push, backups, error reporting and maintenance mode, each with a status and a sentence (DECISION-073). Probes time out after two seconds. No host, URL, credential or exception text is returned.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken

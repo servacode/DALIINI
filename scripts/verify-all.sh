@@ -20,18 +20,17 @@
 # the point: a suite that only passes because a previous suite left something behind is a suite
 # that will not pass on a fresh machine.
 #
-# Ports are deliberately not the defaults, so a development stack on this machine keeps
-# running untouched.
+# The stacks are the suites' own compose project (scripts/lib/stack.sh, compose.e2e.yml), on
+# ports that are not the defaults, so a development stack on this machine keeps running
+# untouched.
 set -uo pipefail
-export MSYS_NO_PATHCONV=1
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+. "$ROOT/scripts/lib/stack.sh"
 cd "$ROOT"
 
-API_PORT="${VERIFY_API_PORT:-8021}"
-ADMIN_PORT="${VERIFY_ADMIN_PORT:-3021}"
-MINIO_PORT="${VERIFY_MINIO_PORT:-9021}"
-WEB_PORT="${VERIFY_WEB_PORT:-3022}"
+API_PORT="$E2E_API_PORT"
+WEB_PORT="$E2E_WEB_PORT"
 
 stages=()
 failures=0
@@ -57,7 +56,7 @@ fi
 # ------------------------------------------------------------------ 2. console
 echo
 echo "########## 2 / 4  the console, in a browser ##########"
-if E2E_API_PORT="$API_PORT" E2E_ADMIN_PORT="$ADMIN_PORT" bash scripts/e2e-admin.sh; then
+if bash scripts/e2e-admin.sh; then
   record "console e2e" "PASS" "every page opened, every golden path driven"
 else
   record "console e2e" "FAIL" "see the output above"
@@ -66,8 +65,7 @@ fi
 # ------------------------------------------------------------------ 3. the cycle
 echo
 echo "########## 3 / 4  the whole cycle ##########"
-if E2E_API_PORT="$API_PORT" E2E_ADMIN_PORT="$ADMIN_PORT" E2E_MINIO_PORT="$MINIO_PORT" \
-   E2E_KEEP_STACK=1 bash scripts/e2e-android.sh; then
+if E2E_KEEP_STACK=1 bash scripts/e2e-android.sh; then
   record "full cycle" "PASS" "register, submit with evidence, approve, publish, stay private"
 else
   record "full cycle" "FAIL" "see the output above"
@@ -120,7 +118,8 @@ record "public site" "$site_status" "$site_detail"
 # The stack was kept for stage 4; nothing is left running.
 [ -f "$ROOT/.verify-web.pid" ] && kill "$(cat "$ROOT/.verify-web.pid")" 2>/dev/null
 rm -f "$ROOT/.verify-web.pid"
-docker rm -f e2e-api e2e-minio >/dev/null 2>&1
+stop_port "$E2E_ADMIN_PORT"
+e2e_down
 
 # ------------------------------------------------------------------ summary
 elapsed=$(( $(date +%s) - started ))

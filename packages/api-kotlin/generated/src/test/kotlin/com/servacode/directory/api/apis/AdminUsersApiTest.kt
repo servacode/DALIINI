@@ -19,17 +19,52 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.AdminUsersApi
+import com.servacode.directory.api.models.AdminPermissionList
+import com.servacode.directory.api.models.AdminRole
+import com.servacode.directory.api.models.AdminRoleCreateRequest
 import com.servacode.directory.api.models.AdminRoleList
 import com.servacode.directory.api.models.AdminUser
 import com.servacode.directory.api.models.AdminUserDetail
 import com.servacode.directory.api.models.AdminUserList
 import com.servacode.directory.api.models.AdminUserRolesRequest
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.PatchedAdminRoleUpdateRequest
 
 class AdminUsersApiTest : ShouldSpec() {
     init {
         // uncomment below to create an instance of AdminUsersApi
         //val apiInstance = AdminUsersApi()
+
+        // to test adminPermissionsList
+        should("test adminPermissionsList") {
+            // uncomment below to test adminPermissionsList
+            //val result : AdminPermissionList = apiInstance.adminPermissionsList()
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminRoleCreate
+        should("test adminRoleCreate") {
+            // uncomment below to test adminRoleCreate
+            //val adminRoleCreateRequest : AdminRoleCreateRequest =  // AdminRoleCreateRequest | 
+            //val result : AdminRole = apiInstance.adminRoleCreate(adminRoleCreateRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminRoleDelete
+        should("test adminRoleDelete") {
+            // uncomment below to test adminRoleDelete
+            //val roleId : kotlin.Int = 56 // kotlin.Int | 
+            //apiInstance.adminRoleDelete(roleId)
+        }
+
+        // to test adminRoleUpdate
+        should("test adminRoleUpdate") {
+            // uncomment below to test adminRoleUpdate
+            //val roleId : kotlin.Int = 56 // kotlin.Int | 
+            //val patchedAdminRoleUpdateRequest : PatchedAdminRoleUpdateRequest =  // PatchedAdminRoleUpdateRequest | 
+            //val result : AdminRole = apiInstance.adminRoleUpdate(roleId, patchedAdminRoleUpdateRequest)
+            //result shouldBe ("TODO")
+        }
 
         // to test adminRolesList
         should("test adminRolesList") {
@@ -44,6 +79,13 @@ class AdminUsersApiTest : ShouldSpec() {
             //val userId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //val result : AdminUser = apiInstance.adminUserBlock(userId)
             //result shouldBe ("TODO")
+        }
+
+        // to test adminUserMfaReset
+        should("test adminUserMfaReset") {
+            // uncomment below to test adminUserMfaReset
+            //val userId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //apiInstance.adminUserMfaReset(userId)
         }
 
         // to test adminUserRetrieve
@@ -73,10 +115,13 @@ class AdminUsersApiTest : ShouldSpec() {
         // to test adminUsersList
         should("test adminUsersList") {
             // uncomment below to test adminUsersList
+            //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
+            //val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 200, default 50.
+            //val ordering : kotlin.String = ordering_example // kotlin.String | createdAt, -createdAt (the default), name or -name.
             //val q : kotlin.String = q_example // kotlin.String | Free text matched against the account name and phone number.
             //val role : kotlin.String = role_example // kotlin.String | Admin role id or code; keeps accounts holding that role actively. The value `any` keeps every operator, `none` every non-operator.
             //val status : kotlin.String = status_example // kotlin.String | `active` keeps active accounts; any other value keeps blocked accounts.
-            //val result : AdminUserList = apiInstance.adminUsersList(q, role, status)
+            //val result : AdminUserList = apiInstance.adminUsersList(cursor, limit, ordering, q, role, status)
             //result shouldBe ("TODO")
         }
 

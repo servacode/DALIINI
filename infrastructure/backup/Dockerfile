@@ -1,4 +1,5 @@
-# Backup runner for the Render cron job (render.yaml: directory-v3-staging-db-backup).
+# Backup runner: the production stack's `backup` service, run nightly by the server's timer
+# (infrastructure/production/README.md).
 # Build context is the monorepo root. postgres:17 ships a pg_dump that matches the
 # database's major version (postgresMajorVersion: "17"); awscli handles the upload.
 FROM postgres:17-bookworm

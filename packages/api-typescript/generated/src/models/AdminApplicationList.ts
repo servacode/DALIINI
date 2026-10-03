@@ -22,11 +22,23 @@ import {
 } from './AdminApplication';
 
 /**
- * 
+ * The two fields every cursor page adds beside its `items`.
  * @export
  * @interface AdminApplicationList
  */
 export interface AdminApplicationList {
+    /**
+     * Opaque token for the next page, or null on the last page. Send it back unchanged as the `cursor` query parameter; never parse it.
+     * @type {string}
+     * @memberof AdminApplicationList
+     */
+    nextCursor: string | null;
+    /**
+     * True when `nextCursor` is set.
+     * @type {boolean}
+     * @memberof AdminApplicationList
+     */
+    hasMore: boolean;
     /**
      * 
      * @type {Array<AdminApplication>}
@@ -39,6 +51,8 @@ export interface AdminApplicationList {
  * Check if a given object implements the AdminApplicationList interface.
  */
 export function instanceOfAdminApplicationList(value: object): value is AdminApplicationList {
+    if (!('nextCursor' in value) || value['nextCursor'] === undefined) return false;
+    if (!('hasMore' in value) || value['hasMore'] === undefined) return false;
     if (!('items' in value) || value['items'] === undefined) return false;
     return true;
 }
@@ -53,6 +67,8 @@ export function AdminApplicationListFromJSONTyped(json: any, ignoreDiscriminator
     }
     return {
         
+        'nextCursor': json['nextCursor'],
+        'hasMore': json['hasMore'],
         'items': ((json['items'] as Array<any>).map(AdminApplicationFromJSON)),
     };
 }
@@ -68,6 +84,8 @@ export function AdminApplicationListToJSONTyped(value?: AdminApplicationList | n
 
     return {
         
+        'nextCursor': value['nextCursor'],
+        'hasMore': value['hasMore'],
         'items': ((value['items'] as Array<any>).map(AdminApplicationToJSON)),
     };
 }

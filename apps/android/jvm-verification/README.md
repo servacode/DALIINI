@@ -33,9 +33,11 @@ tests that drive the generated client, the adapters and the app's own `NetworkMo
 ./scripts/e2e-android.sh      # from the repository root
 ```
 
-Resets a PostGIS database, starts MinIO with a public-media bucket anyone may read and a
-private-evidence bucket nobody may, starts Django with its WebSocket endpoint, seeds
-`seed_e2e_fixtures` and `seed_e2e_mobile_fixtures`, and runs `connectedCheck` here against it:
+Starts the end-to-end compose stack (`scripts/lib/stack.sh`, beside any development stack and
+never touching it) from empty volumes: PostGIS, Redis, object storage with a public-media bucket
+anyone may read and a private-evidence bucket nobody may, and the API with its WebSocket
+endpoint. It seeds `seed_e2e_fixtures` and `seed_e2e_mobile_fixtures`, and runs `connectedCheck`
+here against it:
 sign-in, refresh rotation, replay and revocation, push tokens ending with their session,
 registration and recovery, discovery with cursor paging, ratings, the owner onboarding path
 with real uploads against a configured test requirement, and realtime events.
@@ -48,6 +50,6 @@ evidence from the private bucket, audited, and approves. `HandoffConnectedTest` 
 photo. Last, the runner reads a public object and a private one without credentials: 200 and
 403. Outside the runner the phase is unset and both halves are skipped.
 
-It expects the `p10pg` PostGIS and `p10redis` containers on the `p10net` network, as the Admin
-suite does, and uses the backend's test-only `e2e_set_otp` command to learn a registration
+It needs only Docker and a JDK: the runner starts and removes its own stack, as the console suite
+does, and uses the backend's test-only `e2e_set_otp` command to learn a registration
 code, because the development OTP provider deliberately delivers none.

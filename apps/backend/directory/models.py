@@ -38,6 +38,14 @@ class Category(models.Model):
     sort_order=models.PositiveIntegerField(default=0)
     def __str__(self) -> str:
         return self.code
+    def supports(self, capability: str) -> bool:
+        """Whether this category has `capability` switched on; False when it has no row at all.
+
+        A category saved without its capabilities row used to raise RelatedObjectDoesNotExist
+        from every view that asked, which reached the caller as a server error.
+        """
+        capabilities = getattr(self, 'capabilities', None)
+        return bool(capabilities is not None and getattr(capabilities, capability))
     def clean(self) -> None:
         if (
             self.pk

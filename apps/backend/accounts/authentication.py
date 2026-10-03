@@ -64,4 +64,7 @@ class BearerAccessTokenAuthentication(BaseAuthentication):
             raise AuthenticationFailed("Invalid or expired access token.") from exc
         if session is None:
             raise AuthenticationFailed("Session is no longer active.")
+        # Kept for the console's second-step check (accounts/mfa.py), which needs to know
+        # whether this particular session passed it.
+        request.user_session = session  # type: ignore[attr-defined]
         return session.user, claims

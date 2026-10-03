@@ -1,0 +1,108 @@
+name: Release images
+
+# Builds the platform's images for one environment and publishes them to GHCR, tagged
+# <environment>-<commit> (DECISION-081). The server then pulls them (deploy.yml), so a deploy
+# needs no build on the server and a rollback is a tag it already has.
+#
+# The site's image is per environment: its public addresses are read when it is built. They come
+# from the GitHub environment's variables (Settings → Environments → <environment> → Variables):
+# ROOT_DOMAIN, MEDIA_ORIGIN, SUPPORT_EMAIL, PRIVACY_CONTACT_EMAIL, and optionally MAP_STYLE_URL,
+# MAP_ORIGINS, PLAY_STORE_URL, APP_STORE_URL, APP_DOWNLOAD_URL.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Which environment the images are for
+        type: choice
+        options: [staging, production]
+        required: true
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: release-images-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: ${{ inputs.environment }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - name: backend
+            context: apps/backend
+            file: apps/backend/Dockerfile
+          - name: web
+            context: .
+            file: apps/web/Dockerfile
+          - name: admin
+            context: .
+            file: apps/admin/Dockerfile
+          - name: whatsapp-bot
+            context: services/whatsapp-bot
+            file: services/whatsapp-bot/Dockerfile
+          - name: backup
+            context: .
+            file: infrastructure/backup/Dockerfile
+    name: image (${{ matrix.name }})
+    steps:
+      - uses: actions/checkout@v4
+      - name: The environment names its domain
+        if: matrix.name == 'web'
+        env:
+          ROOT_DOMAIN: ${{ vars.ROOT_DOMAIN }}
+          MEDIA_ORIGIN: ${{ vars.MEDIA_ORIGIN }}
+          SUPPORT_EMAIL: ${{ vars.SUPPORT_EMAIL }}
+          PRIVACY_CONTACT_EMAIL: ${{ vars.PRIVACY_CONTACT_EMAIL }}
+          TARGET: ${{ inputs.environment }}
+        run: |
+          missing=""
+          for name in ROOT_DOMAIN MEDIA_ORIGIN SUPPORT_EMAIL PRIVACY_CONTACT_EMAIL; do
+            [ -n "${!name}" ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Set$missing in the $TARGET environment's variables"
+            exit 1
+          fi
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/daliini-${{ matrix.name }}:${{ inputs.environment }}-${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          # Read only by the site's image; the others ignore build arguments they do not declare.
+          build-args: |
+            NEXT_PUBLIC_ROOT_DOMAIN=${{ vars.ROOT_DOMAIN }}
+            NEXT_PUBLIC_API_ORIGIN=https://api.${{ vars.ROOT_DOMAIN }}
+            PUBLIC_API_ORIGIN=https://api.${{ vars.ROOT_DOMAIN }}
+            NEXT_PUBLIC_MEDIA_ORIGIN=${{ vars.MEDIA_ORIGIN }}
+            NEXT_PUBLIC_MAP_STYLE_URL=${{ vars.MAP_STYLE_URL }}
+            NEXT_PUBLIC_MAP_ORIGINS=${{ vars.MAP_ORIGINS }}
+            NEXT_PUBLIC_PLAY_STORE_URL=${{ vars.PLAY_STORE_URL }}
+            NEXT_PUBLIC_APP_STORE_URL=${{ vars.APP_STORE_URL }}
+            NEXT_PUBLIC_APP_DOWNLOAD_URL=${{ vars.APP_DOWNLOAD_URL }}
+            NEXT_PUBLIC_ANDROID_PACKAGE=com.servacode.directory
+            SUPPORT_EMAIL=${{ vars.SUPPORT_EMAIL }}
+            PRIVACY_CONTACT_EMAIL=${{ vars.PRIVACY_CONTACT_EMAIL }}
+          cache-from: type=gha,scope=release-${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=release-${{ matrix.name }}
+      - name: The tag to deploy
+        if: matrix.name == 'backend'
+        run: |
+          echo "### Released" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deploy with **Deploy**: environment \`${{ inputs.environment }}\`, commit \`${{ github.sha }}\`." >> "$GITHUB_STEP_SUMMARY"

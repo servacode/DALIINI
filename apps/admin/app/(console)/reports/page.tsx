@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { useCan } from "../../../components/admin-shell";
+import { ExportButton } from "../../../components/export-button";
 import {
   type Column,
   ConfirmDialog,
@@ -18,9 +19,11 @@ import {
   formatDateTime,
   termsFor,
   labelsFor,
+  Pagination,
+  pageSummary,
 } from "../../../components/ui";
 import { useMutation } from "../../../lib/client/use-mutation";
-import { useResource } from "../../../lib/client/use-resource";
+import { useCursorPage } from "../../../lib/client/use-cursor-page";
 import { useUrlFilters } from "../../../lib/client/use-url-filters";
 
 type Report = Readonly<{
@@ -51,7 +54,7 @@ const STATUS = termsFor("reportStatus");
  */
 export default function ReportsPage() {
   const [filters, setFilters] = useUrlFilters({ status: "OPEN", facility: "" });
-  const reports = useResource<{ items: Report[] }>("reports", filters);
+  const reports = useCursorPage<Report>("reports", filters);
   const mutation = useMutation();
   const canManage = useCan("admin.reports.manage");
 
@@ -209,6 +212,7 @@ export default function ReportsPage() {
       <PageHeader
         title="البلاغات"
         description="ما أبلغ عنه المستخدمون من أخطاء في بيانات المنشآت."
+        actions={<ExportButton name="reports" params={filters} />}
       />
       <FilterBar
         fields={[
@@ -264,10 +268,12 @@ export default function ReportsPage() {
       {reports.error ? <ErrorState error={reports.error} onRetry={reports.reload} /> : null}
       {reports.data ? (
         <DataTable
+          id="reports"
           caption="البلاغات"
           columns={columns}
           rows={reports.data.items}
           rowKey={(row) => row.id}
+          summary={pageSummary(reports.data.items.length, reports.data.hasMore)}
           empty={
             <EmptyState
               title="لا بلاغات"
@@ -276,6 +282,7 @@ export default function ReportsPage() {
           }
         />
       ) : null}
+      {reports.pagination ? <Pagination {...reports.pagination} /> : null}
 
       <ConfirmDialog
         open={acting !== null}

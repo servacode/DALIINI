@@ -19,7 +19,11 @@ EXPECTED_MODULES = {
     ":core:maps",
     ":core:analytics",
     ":core:observability",
+    ":core:inject",
+    ":core:api",
+    ":core:transport",
     ":core:testing",
+    ":ios-framework",
     ":feature:bootstrap",
     ":feature:home",
     ":feature:province",
@@ -78,7 +82,7 @@ def check_security() -> None:
     require("ACCESS_BACKGROUND_LOCATION" not in manifest, "background location is forbidden in Core V3")
     require('android:usesCleartextTraffic="false"' in manifest, "cleartext traffic must be disabled")
     vault = text(
-        "core/auth/src/main/kotlin/com/servacode/directory/core/auth/AndroidKeyStoreRefreshTokenVault.kt"
+        "core/auth/src/androidMain/kotlin/com/servacode/directory/core/auth/AndroidKeyStoreRefreshTokenVault.kt"
     )
     require('KEYSTORE = "AndroidKeyStore"' in vault, "Android Keystore is required")
     require('TRANSFORMATION = "AES/GCM/NoPadding"' in vault, "AES/GCM is required")
@@ -87,18 +91,33 @@ def check_security() -> None:
         ".putstring(\"refresh_token\"" not in lowered,
         "raw refresh token preference storage is forbidden",
     )
-    coordinator = text("core/auth/src/main/kotlin/com/servacode/directory/core/auth/SessionCoordinator.kt")
+    # The iPhone keeps the same rules (DECISION-093): its refresh secret never leaves the device,
+    # it never asks for the position in the background, and it allows no cleartext but localhost.
+    keychain = text("core/auth/src/iosMain/kotlin/com/servacode/directory/core/auth/KeychainRefreshTokenVault.kt")
+    require(
+        "kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly" in keychain,
+        "the iPhone's refresh secret must be this-device-only",
+    )
+    ios_project = (ROOT.parent / "ios" / "project.yml").read_text()
+    require("NSLocationAlways" not in ios_project, "background location is forbidden on the iPhone too")
+    require("NSAllowsArbitraryLoads" not in ios_project, "arbitrary cleartext loads are forbidden on the iPhone")
+    coordinator = text("core/auth/src/commonMain/kotlin/com/servacode/directory/core/auth/SessionCoordinator.kt")
     require("Mutex()" in coordinator and "withLock" in coordinator, "refresh mutex missing")
-    access = text("core/auth/src/main/kotlin/com/servacode/directory/core/auth/AccessTokenStore.kt")
-    require("AtomicReference" in access, "access token must be memory-backed")
+    access = text("core/auth/src/commonMain/kotlin/com/servacode/directory/core/auth/AccessTokenStore.kt")
+    # A field in memory and nothing that persists (DECISION-087 replaced the JVM-only
+    # AtomicReference with a volatile field).
+    require(
+        "@Volatile private var token" in access and "Preferences" not in access and "DataStore" not in access,
+        "access token must be memory-backed",
+    )
 
 
 def check_architecture() -> None:
     boundary = text(
-        "core/network/src/main/kotlin/com/servacode/directory/core/network/GeneratedApiClientBoundary.kt"
+        "core/network/src/commonMain/kotlin/com/servacode/directory/core/network/GeneratedApiClientBoundary.kt"
     )
     require("Transport DTOs must not be duplicated" in boundary, "generated client boundary missing")
-    routes = text("core/model/src/main/kotlin/com/servacode/directory/core/model/DirectoryRoute.kt")
+    routes = text("core/model/src/commonMain/kotlin/com/servacode/directory/core/model/DirectoryRoute.kt")
     for route in (
         "Welcome",
         "LocationPermission",
@@ -122,7 +141,7 @@ def check_architecture() -> None:
     ):
         require(route in routes, f"missing route: {route}")
     theme = text(
-        "core/designsystem/src/main/kotlin/"
+        "core/designsystem/src/commonMain/kotlin/"
         "com/servacode/directory/core/designsystem/DirectoryTheme.kt"
     )
     require("LayoutDirection.Rtl" in theme, "RTL must be first-class")
@@ -133,28 +152,28 @@ def check_architecture() -> None:
     )
     require(
         "Composable" in text(
-            "feature/bootstrap/src/main/kotlin/"
+            "feature/bootstrap/src/androidMain/kotlin/"
             "com/servacode/directory/feature/bootstrap/BootstrapScreen.kt"
         ),
         "bootstrap composable missing",
     )
     require(
         "ViewModel" in text(
-            "feature/bootstrap/src/main/kotlin/"
+            "feature/bootstrap/src/androidMain/kotlin/"
             "com/servacode/directory/feature/bootstrap/BootstrapViewModel.kt"
         ),
         "bootstrap ViewModel missing",
     )
     require(
         "UseCase" in text(
-            "feature/bootstrap/src/main/kotlin/"
+            "feature/bootstrap/src/commonMain/kotlin/"
             "com/servacode/directory/feature/bootstrap/BootstrapUseCase.kt"
         ),
         "bootstrap use case missing",
     )
     require(
         "Repository" in text(
-            "feature/bootstrap/src/main/kotlin/"
+            "feature/bootstrap/src/commonMain/kotlin/"
             "com/servacode/directory/feature/bootstrap/BootstrapRepository.kt"
         ),
         "bootstrap repository missing",
@@ -163,7 +182,9 @@ def check_architecture() -> None:
     # call there would make the app's start wait on the network.
     bootstrap_sources = "\n".join(
         path.read_text(encoding="utf-8")
-        for path in (ROOT / "feature/bootstrap/src/main").rglob("*.kt")
+        for path in (ROOT / "feature/bootstrap/src").rglob("*.kt")
+        # Its own code in every source set, not its tests (DECISION-089).
+        if not re.search(r"/src/(test|androidHostTest|commonTest)/", path.as_posix())
     )
     require(
         ":core:network" not in text("feature/bootstrap/build.gradle.kts")

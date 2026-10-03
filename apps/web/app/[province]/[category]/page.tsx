@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Breadcrumbs, Empty, FacilityList, Unavailable } from "../../../components/ui";
 import {
   type Category,
@@ -12,12 +12,15 @@ import {
   isUuid,
   tagId,
 } from "../../../lib/api";
+import { categoryPath, decodedSegment } from "../../../lib/paths";
 import { UNAVAILABLE_METADATA, pageMetadata } from "../../../lib/seo";
 
 /*
  * /[province]/[category] — facilities of one category in one province.
- * Categories have no slug in the public API, so the stable category UUID is
- * the path segment. Pagination follows the API's opaque cursor via a plain
+ * The category is addressed by its slug (`/raqqa/pharmacy`), fixed in the reference data. A
+ * link written before slugs existed carries the category's UUID; it still finds the category
+ * and is redirected, permanently and with its query, to the readable address.
+ * Pagination follows the API's opaque cursor via a plain
  * "load more" link (?cursor=…), so it works without client JavaScript.
  * Cursor pages are marked noindex; the canonical is always the first page.
  *
@@ -41,12 +44,28 @@ type Props = {
 
 type Filters = { specialty?: number; service?: number };
 
-async function resolve(code: string, categoryId: string) {
+async function resolve(code: string, segment: string) {
   const province = await getProvinceByCode(code);
   if (!province) return { province };
-  if (!isUuid(categoryId)) return { province, category: undefined };
   const categories = await getCategories(province.id);
-  return { province, category: categories === null ? null : categories.find((c) => c.id === categoryId) };
+  if (categories === null) return { province, category: null };
+  const wanted = decodedSegment(segment);
+  const category = isUuid(wanted)
+    ? categories.find((c) => c.id === wanted)
+    : categories.find((c) => c.slug === wanted);
+  return { province, category, byId: isUuid(wanted) };
+}
+
+/* The query as it arrived, for a redirect that must not drop the reader's filters or page. */
+function queryOf(query: Query): string {
+  const out = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    for (const item of Array.isArray(value) ? value : value === undefined ? [] : [value]) {
+      out.append(key, item);
+    }
+  }
+  const text = out.toString();
+  return text ? `?${text}` : "";
 }
 
 /* The filters the address asks for, kept only where the category offers them. */
@@ -108,7 +127,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   return pageMetadata({
     title: `${category.nameAr} في ${province.nameAr}`,
     description: `قائمة ${category.nameAr} في ${province.nameAr} مع حالة الدوام الآن والتقييمات وأرقام التواصل.`,
-    path: `/${province.code}/${category.id}`,
+    path: categoryPath(province.code, category),
     noindex: Boolean(cursor || specialty || service),
   });
 }
@@ -117,9 +136,10 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const { province: code, category: categoryId } = await params;
   const query = await searchParams;
   const cursor = typeof query.cursor === "string" ? query.cursor : undefined;
-  const { province, category } = await resolve(code, categoryId);
+  const { province, category, byId } = await resolve(code, categoryId);
   if (province === undefined || category === undefined) notFound();
   if (province === null || category === null) return <div className="shell page"><Unavailable /></div>;
+  if (byId && category.slug) permanentRedirect(categoryPath(province.code, category) + queryOf(query));
 
   const { specialtyFilter, serviceFilter } = category.capabilities;
   const filters = filtersFor(category, query);
@@ -133,7 +153,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     }),
     specialtyFilter || serviceFilter ? getCategoryTags(category.id) : undefined,
   ]);
-  const base = `/${province.code}/${category.id}`;
+  const base = categoryPath(province.code, category);
   const specialties = specialtyFilter ? (tags?.specialties ?? []) : [];
   const services = serviceFilter ? (tags?.services ?? []) : [];
   const narrowed = Boolean(filters.specialty || filters.service);

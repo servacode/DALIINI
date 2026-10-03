@@ -1,14 +1,16 @@
 import { loadTokens, resolveRefs, contrastRatio } from './lib.mjs';
 
 const tokens = await loadTokens();
-const requiredColors = ['primary','primaryStrong','primaryDeep','primarySoft','background','surface','textPrimary','textSecondary','border','success','warning','danger','info'];
+const requiredColors = ['primary','primaryStrong','primaryDeep','primarySoft','accent','accentSoft','accentText','onAccent','background','surface','textPrimary','textSecondary','border','success','warning','danger','info'];
 for (const key of requiredColors) {
   if (!/^#[0-9A-F]{6}$/.test(tokens.colors[key] ?? '')) throw new Error(`Missing/invalid color: ${key}`);
 }
 const requiredTypography = ['display','headlineLarge','headlineMedium','titleLarge','titleMedium','bodyLarge','bodyMedium','bodySmall','labelLarge','labelMedium'];
 for (const role of requiredTypography) {
   const value = tokens.typography.roles[role];
-  if (!value || value.size <= 0 || value.lineHeight < value.size || ![400,500,600,700].includes(value.weight)) throw new Error(`Invalid typography role: ${role}`);
+  if (!value || value.size <= 0 || value.lineHeight < value.size || ![400,500,600,700,800].includes(value.weight)) throw new Error(`Invalid typography role: ${role}`);
+  // Every role names which of the two faces it is set in, and that face must exist.
+  if (!['primary','display'].includes(value.family) || !tokens.typography.fontFamily[value.family]) throw new Error(`Typography role without a face: ${role}`);
 }
 const spacing = Object.values(tokens.spacing);
 if (![2,4,8,12,16,20,24,32,40,48,64].every((v) => spacing.includes(v))) throw new Error('Spacing scale does not match baseline');
@@ -29,7 +31,7 @@ const checks = [
 // The dark set is checked on the same terms. Its primary button carries dark text on a light
 // green, which is what keeps it legible; the selected tab in dark mode uses primary text on the
 // soft brand surface rather than the bar colour.
-const requiredDark = ['primary','primarySoft','onPrimary','background','surface','textPrimary','textSecondary','border','success','warning','danger','info'];
+const requiredDark = ['primary','primarySoft','onPrimary','accent','accentSoft','accentText','onAccent','background','surface','textPrimary','textSecondary','border','success','warning','danger','info'];
 for (const key of requiredDark) {
   if (!/^#[0-9A-F]{6}$/.test(tokens.colorsDark[key] ?? '')) throw new Error(`Missing/invalid dark color: ${key}`);
 }
@@ -50,6 +52,17 @@ checks.push(
   ['light: warning text on warning-soft', resolved['semantic.content.warning'], resolved['semantic.feedback.warningSoft'], 4.5],
   ['light: success on success-soft', resolved['semantic.feedback.success'], resolved['semantic.feedback.successSoft'], 3],
   ['light: danger on danger-soft', resolved['semantic.feedback.danger'], resolved['semantic.feedback.dangerSoft'], 4.5],
+  // Gold marks the one thing people come for: on duty now. Its words must read on its own
+  // soft fill, on a plain surface, and when it is a solid button.
+  ['light: on-accent on accent', resolved['semantic.accent.onAccent'], resolved['semantic.accent.default'], 4.5],
+  ['light: accent text on accent-soft', resolved['semantic.accent.content'], resolved['semantic.accent.soft'], 4.5],
+  ['light: accent text on surface', resolved['semantic.accent.content'], resolved['semantic.surface.default'], 4.5],
+  ['light: success on surface', resolved['semantic.feedback.success'], resolved['semantic.surface.default'], 4.5],
+  ['light: text muted on canvas', resolved['semantic.content.muted'], resolved['semantic.surface.canvas'], 4.5],
+  ['dark: on-accent on accent', d('accent.onAccent'), d('accent.default'), 4.5],
+  ['dark: accent text on accent-soft', d('accent.content'), d('accent.soft'), 4.5],
+  ['dark: accent text on surface', d('accent.content'), d('surface.default'), 4.5],
+  ['dark: success on surface', d('feedback.success'), d('surface.default'), 4.5],
 );
 for (const [name, fg, bg, min] of checks) {
   const ratio = contrastRatio(fg, bg);

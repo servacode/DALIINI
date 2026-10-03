@@ -1,0 +1,15 @@
+/* The shell's own words (DECISIONS 093 and 094). The keys are Android's where Android says the
+   same thing, with the same sentence, so moving the screens to shared resources keeps every word.
+   What the design system says itself — a retry, an error, the offline notice — is its own, and so
+   is what a shared screen says (DECISION-095). */
+
+"app_name" = "دليني";
+"home_province_choose" = "اختيار المحافظة";
+"home_error" = "تعذر تحميل الصفحة";
+"home_chip_nearest" = "الأقرب إليك";
+"widget_duty_title" = "المناوب الآن";
+
+/* The shell's own, until the real screens bring theirs. */
+"shell_home_stale" = "يعرض آخر نسخة محفوظة؛ تعذّر التحديث الآن.";
+"shell_open_now" = "مفتوح الآن";
+"shell_categories" = "التصنيفات";
