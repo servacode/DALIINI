@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="دليني">
+  <!-- The Daliini mark, on dark grounds: the bars, the dark theme. The D, the road that winds through it, and the pin it leads to.
+       Every raster the platform ships is cut from mark.svg by apps/android/scripts/build-brand-assets.py. -->
+  <path d="M28 22h36c24.3 0 43 18.4 43 42s-18.7 42-43 42H28z" fill="none" stroke="#3FC48D" stroke-width="15" stroke-linejoin="round"/>
+  <path d="M43 104c2.5-13 13-18.5 24.5-20.5 10.5-1.8 15.5-6.5 14-12.5-1-4-4.5-5.5-8.5-6.8" fill="none" stroke="#E8F1EC" stroke-width="11" stroke-linecap="round"/>
+  <path d="M43 104c2.5-13 13-18.5 24.5-20.5 10.5-1.8 15.5-6.5 14-12.5-1-4-4.5-5.5-8.5-6.8" fill="none" stroke="#052A20" stroke-width="1.8" stroke-dasharray="4.5 5" stroke-linecap="round"/>
+  <path d="M71 33c-7.2 0-13 5.6-13 12.5 0 8.9 13 19.5 13 19.5s13-10.6 13-19.5C84 38.6 78.2 33 71 33z" fill="#C9922E"/>
+  <circle cx="71" cy="45.4" r="4.7" fill="#052A20"/>
+</svg>
