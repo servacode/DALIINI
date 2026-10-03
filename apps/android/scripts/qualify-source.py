@@ -21,6 +21,7 @@ EXPECTED_MODULES = {
     ":core:observability",
     ":core:inject",
     ":core:api",
+    ":core:transport",
     ":core:testing",
     ":feature:bootstrap",
     ":feature:home",

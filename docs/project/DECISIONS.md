@@ -2180,6 +2180,63 @@ generated from the same schema, for every platform.
 mapping to the app's models as `core:network`'s Android adapters, the bearer token, the one
 refresh at a time, the request id and the maintenance envelope.
 
+## DECISION-091 — The iPhone's transport: the shared boundaries on Ktor, as Android's adapters do them
+
+**Date:** 2026-10-03 · **Phase 8.7 of the roadmap.**
+
+**Why:** the iPhone app reaches the backend through the same boundaries as Android
+(DECISION-088). It needs an implementation of them that runs on iOS, built on the
+multiplatform client (DECISION-090), and behaving as Android's adapters behave. Two
+implementations that disagree would mean two apps that disagree.
+
+**Decision:**
+
+* **`:core:transport`** implements every shared boundary over Ktor and `:core:api`, in common
+  code:
+  * the public API, the owner API and the auth API, with its refresh gateway;
+  * push registration, the maintenance probe and the analytics sender.
+
+  Each is a port, call for call, of the Android adapter it mirrors. The tests are ports of
+  Android's, and they drive a Ktor mock engine.
+* **`TransportClients`** gives the transport two Ktor clients that keep Android's rules:
+  * **every request:** an `X-Request-ID`;
+  * **a 503:** a maintenance envelope puts the app into maintenance, and the next normal answer
+    takes it out;
+  * **the signed-in client:** carries the in-memory access token. A 401 asks the session
+    coordinator for one refresh and sends the request once more. Requests that fail together on
+    one expired token spend the secret once; a test sends eight at the same moment.
+* **`TransportErrors`** turns failures into the app's errors exactly as `ApiErrorMapper` does:
+  * the backend envelope, or the status and the header id when there is none;
+  * an IOException, on the JVM or Darwin, is offline;
+  * a body that breaks the contract is unexpected.
+* **What Android's adapters got from the JVM, reproduced in common code:**
+  * a UUID's lenient parsing and lower-case text;
+  * `java.net.URI`'s answer to "is this a safe https address";
+  * coordinate rounding to four decimals with a point;
+  * OkHttp's quoting of an upload's file name.
+
+  Each was checked against the JDK and OkHttp themselves, over a million cases or more, before
+  those temporary checks were removed.
+* **`ClientPlatform`.** The platform a session, a push token and the release check are
+  recorded under is a parameter, `ANDROID` or `IOS`. The backend accepts both, and a test pins
+  that the iPhone sends `IOS`.
+* **Where it differs from Android, because the multiplatform client or Ktor works otherwise:**
+  * Opening hours are times in this client, not strings. Text that is not a time fails before
+    any request, where Android let the backend refuse it.
+  * Multipart part names go unquoted, and the id part carries no `text/plain`. The values are
+    the same.
+  * Every request says `Accept: application/json`.
+  * Moments go out with their seconds (`00:00:00Z`, not `00:00Z`). It is the same instant.
+  * Ids and image addresses in answers are kept as the backend sent them, not re-parsed.
+* **Android does not use it yet.** The Android app keeps Retrofit until this transport has run
+  in the iPhone app. Moving Android onto it, and removing the JVM client, is a later step.
+
+**Next:** the iPhone app's shell.
+* It wires this transport with Ktor's Darwin engine.
+* It provides the platform implementations the shared contracts need: the Keychain for the
+  session, preferences, location and the cache.
+* It shows its first screens.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.
