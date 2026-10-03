@@ -41,7 +41,9 @@ def with_facility_names(queryset: QuerySet[Facility]) -> QuerySet[Facility]:
 def with_application_names(
     queryset: QuerySet[FacilityApplication],
 ) -> QuerySet[FacilityApplication]:
-    return queryset.select_related("facility__category", "facility__province").prefetch_related(
+    return queryset.select_related(
+        "facility__category", "facility__province", "applicant"
+    ).prefetch_related(
         _owner_prefetch("facility__")
     )
 
@@ -128,4 +130,7 @@ def application_payload(application: Any) -> Any:
         "rejectionReason": application.rejection_reason or None,
         "evidenceComplete": evidence_complete(application),
         **_names(facility),
+        # A claim comes from somebody who is not a member yet; nobody else's does.
+        "applicantName": application.applicant.name if application.applicant_id else None,
+        "applicantPhone": application.applicant.phone if application.applicant_id else None,
     }

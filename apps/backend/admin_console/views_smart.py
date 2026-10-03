@@ -77,6 +77,7 @@ APPLICATION_KIND_AR = {
     "INITIAL": "طلب أول",
     "REVERIFICATION": "إعادة تحقق",
     "CHANGE": "تعديل بيانات",
+    "CLAIM": "مطالبة بملكية",
 }
 APPLICATION_STATUS_AR = {
     "DRAFT": "مسودة",
@@ -297,6 +298,12 @@ AUDIT_TITLES_AR = {
     "facility.closure.cancelled": "أُلغي إغلاق مؤقت",
     "facility.owner_change.submitted": "أرسل المالك تعديلاً للمراجعة",
     "facility.owner_change.withdrawn": "تراجع المالك عن تعديله",
+    "facility.claim.started": "بدأ مستخدم مطالبة بملكية المنشأة",
+    "facility.claim.submitted": "أُرسلت مطالبة بملكية المنشأة",
+    "facility.claim.withdrawn": "سُحبت مطالبة بملكية المنشأة",
+    "facility.invitation.sent": "دُعي عضو جديد",
+    "facility.invitation.accepted": "قُبلت دعوة",
+    "facility.invitation.revoked": "سُحبت دعوة",
     "facility.admin.created": "أضافت إدارة الدليل المنشأة",
     "facility.admin.updated": "عدّلت إدارة الدليل بيانات المنشأة",
 }

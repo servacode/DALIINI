@@ -202,6 +202,8 @@ def tasks_center(now: datetime | None = None) -> dict[str, Any]:
             ),
             # Edits to live facilities: the facility stays published while these wait.
             "change": _application_bucket(FacilityApplication.Kind.CHANGE, now, sla),
+            # Somebody asking to own a facility nobody owns.
+            "claim": _application_bucket(FacilityApplication.Kind.CLAIM, now, sla),
         },
         "reports": _report_bucket(now, sla),
         "reverificationRequired": _reverification_bucket(now, sla),

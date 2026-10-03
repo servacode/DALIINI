@@ -178,6 +178,125 @@ open class AccountAPI {
     }
 
     /**
+     Join the facility an invitation is for
+     
+     - parameter invitationId: (path)  
+     - returns: Accepted
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountInvitationAccept(invitationId: UUID) async throws -> Accepted {
+        return try await accountInvitationAcceptWithRequestBuilder(invitationId: invitationId).execute().body
+    }
+
+    /**
+     Join the facility an invitation is for
+     - POST /api/v1/account/invitations/{invitation_id}/accept/
+     - Only the account whose phone number was invited can accept; any other caller gets 404. An invitation to own raises a manager to owner and never lowers anyone. 409 INVITATION_EXPIRED or INVITATION_CLOSED when it can no longer be accepted.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter invitationId: (path)  
+     - returns: RequestBuilder<Accepted> 
+     */
+    open class func accountInvitationAcceptWithRequestBuilder(invitationId: UUID) -> RequestBuilder<Accepted> {
+        var localVariablePath = "/api/v1/account/invitations/{invitation_id}/accept/"
+        let invitationIdPreEscape = "\(APIHelper.mapValueToPathItem(invitationId))"
+        let invitationIdPostEscape = invitationIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{invitation_id}", with: invitationIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Accepted>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Decline an invitation
+     
+     - parameter invitationId: (path)  
+     - returns: Void
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountInvitationDecline(invitationId: UUID) async throws {
+        return try await accountInvitationDeclineWithRequestBuilder(invitationId: invitationId).execute().body
+    }
+
+    /**
+     Decline an invitation
+     - POST /api/v1/account/invitations/{invitation_id}/decline/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter invitationId: (path)  
+     - returns: RequestBuilder<Void> 
+     */
+    open class func accountInvitationDeclineWithRequestBuilder(invitationId: UUID) -> RequestBuilder<Void> {
+        var localVariablePath = "/api/v1/account/invitations/{invitation_id}/decline/"
+        let invitationIdPreEscape = "\(APIHelper.mapValueToPathItem(invitationId))"
+        let invitationIdPostEscape = invitationIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{invitation_id}", with: invitationIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Invitations waiting for this account's phone number
+     
+     - returns: ReceivedInvitationList
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountInvitationsList() async throws -> ReceivedInvitationList {
+        return try await accountInvitationsListWithRequestBuilder().execute().body
+    }
+
+    /**
+     Invitations waiting for this account's phone number
+     - GET /api/v1/account/invitations/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<ReceivedInvitationList> 
+     */
+    open class func accountInvitationsListWithRequestBuilder() -> RequestBuilder<ReceivedInvitationList> {
+        let localVariablePath = "/api/v1/account/invitations/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<ReceivedInvitationList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Mark one notification as read
      
      - parameter notificationId: (path)  

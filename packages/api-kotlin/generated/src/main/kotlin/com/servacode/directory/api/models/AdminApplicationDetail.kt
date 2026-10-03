@@ -46,6 +46,8 @@ import kotlinx.serialization.Contextual
  * @param provinceNameAr 
  * @param ownerName 
  * @param ownerPhone 
+ * @param applicantName CLAIM only: who asks to own the facility.
+ * @param applicantPhone CLAIM only.
  * @param facility 
  * @param snapshot Redacted submission snapshot.
  * @param previous Snapshot of the last approved application of this facility (plus `approvedAt`), for diffing a REVERIFICATION; for a CHANGE, the facility as it is published now. Null when the facility was never approved.
@@ -107,6 +109,14 @@ data class AdminApplicationDetail (
 
     @SerialName(value = "ownerPhone")
     val ownerPhone: kotlin.String?,
+
+    /* CLAIM only: who asks to own the facility. */
+    @SerialName(value = "applicantName")
+    val applicantName: kotlin.String?,
+
+    /* CLAIM only. */
+    @SerialName(value = "applicantPhone")
+    val applicantPhone: kotlin.String?,
 
     @SerialName(value = "facility")
     val facility: AdminFacility,

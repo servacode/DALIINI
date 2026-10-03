@@ -309,7 +309,9 @@ def _required_evidence_complete(facility: Facility) -> bool:
         facility.category.verification_requirements.filter(active=True, required=True)
     )
     counts = Counter(
-        VerificationEvidence.objects.filter(facility=facility).values_list(
+        VerificationEvidence.objects.filter(
+            facility=facility, application__isnull=True
+        ).values_list(
             "requirement_id", flat=True
         )
     )

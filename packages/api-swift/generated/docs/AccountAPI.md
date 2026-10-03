@@ -8,6 +8,9 @@ Method | HTTP request | Description
 [**accountFavoriteAdd**](AccountAPI.md#accountfavoriteadd) | **POST** /api/v1/account/favorites/ | Save a facility
 [**accountFavoriteRemove**](AccountAPI.md#accountfavoriteremove) | **DELETE** /api/v1/account/favorites/{facility_id}/ | Remove a facility the caller had saved
 [**accountFavoritesList**](AccountAPI.md#accountfavoriteslist) | **GET** /api/v1/account/favorites/ | List the facilities the caller has saved
+[**accountInvitationAccept**](AccountAPI.md#accountinvitationaccept) | **POST** /api/v1/account/invitations/{invitation_id}/accept/ | Join the facility an invitation is for
+[**accountInvitationDecline**](AccountAPI.md#accountinvitationdecline) | **POST** /api/v1/account/invitations/{invitation_id}/decline/ | Decline an invitation
+[**accountInvitationsList**](AccountAPI.md#accountinvitationslist) | **GET** /api/v1/account/invitations/ | Invitations waiting for this account&#39;s phone number
 [**accountNotificationMarkRead**](AccountAPI.md#accountnotificationmarkread) | **POST** /api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read
 [**accountNotificationsList**](AccountAPI.md#accountnotificationslist) | **GET** /api/v1/account/notifications/ | List the caller&#39;s notifications, newest first
 [**accountNotificationsMarkAllRead**](AccountAPI.md#accountnotificationsmarkallread) | **POST** /api/v1/account/notifications/read-all/ | Mark every unread notification as read
@@ -214,6 +217,148 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**FavoriteList**](FavoriteList.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **accountInvitationAccept**
+```swift
+    open class func accountInvitationAccept(invitationId: UUID, completion: @escaping (_ data: Accepted?, _ error: Error?) -> Void)
+```
+
+Join the facility an invitation is for
+
+Only the account whose phone number was invited can accept; any other caller gets 404. An invitation to own raises a manager to owner and never lowers anyone. 409 INVITATION_EXPIRED or INVITATION_CLOSED when it can no longer be accepted.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let invitationId = 987 // UUID | 
+
+// Join the facility an invitation is for
+AccountAPI.accountInvitationAccept(invitationId: invitationId) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **invitationId** | **UUID** |  | 
+
+### Return type
+
+[**Accepted**](Accepted.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **accountInvitationDecline**
+```swift
+    open class func accountInvitationDecline(invitationId: UUID, completion: @escaping (_ data: Void?, _ error: Error?) -> Void)
+```
+
+Decline an invitation
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let invitationId = 987 // UUID | 
+
+// Decline an invitation
+AccountAPI.accountInvitationDecline(invitationId: invitationId) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **invitationId** | **UUID** |  | 
+
+### Return type
+
+Void (empty response body)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **accountInvitationsList**
+```swift
+    open class func accountInvitationsList(completion: @escaping (_ data: ReceivedInvitationList?, _ error: Error?) -> Void)
+```
+
+Invitations waiting for this account's phone number
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+
+// Invitations waiting for this account's phone number
+AccountAPI.accountInvitationsList() { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**ReceivedInvitationList**](ReceivedInvitationList.md)
 
 ### Authorization
 

@@ -54,7 +54,9 @@ def _required_evidence_is_complete(facility: Facility) -> bool:
         facility.category.verification_requirements.filter(active=True, required=True)
     )
     counts = Counter(
-        VerificationEvidence.objects.filter(facility=facility).values_list(
+        VerificationEvidence.objects.filter(
+            facility=facility, application__isnull=True
+        ).values_list(
             "requirement_id", flat=True
         )
     )
@@ -83,6 +85,10 @@ def decide_application(
     before = _facility_snapshot(facility)
     if application.kind == FacilityApplication.Kind.CHANGE:
         _decide_change(facility, application, approve=approve, reason=reason, revision=revision)
+    elif application.kind == FacilityApplication.Kind.CLAIM:
+        from facilities.claims import decide as decide_claim
+
+        decide_claim(facility, application, approve=approve, reason=reason)
     elif approve:
         if not _required_evidence_is_complete(facility):
             raise ValidationError("Current verification evidence is incomplete.")
@@ -132,13 +138,34 @@ def decide_application(
         },
         request_id=_request_id(request),
     )
-    _tell_the_owners(
-        facility,
-        approve=approve,
-        reason=reason.strip(),
-        change=application.kind == FacilityApplication.Kind.CHANGE,
-    )
+    if application.kind == FacilityApplication.Kind.CLAIM:
+        _tell_the_claimant(application, approve=approve, reason=reason.strip())
+    else:
+        _tell_the_owners(
+            facility,
+            approve=approve,
+            reason=reason.strip(),
+            change=application.kind == FacilityApplication.Kind.CHANGE,
+        )
     return application
+
+
+def _tell_the_claimant(application: FacilityApplication, *, approve: bool, reason: str) -> None:
+    if application.applicant is None:
+        return
+    name = application.facility.name_ar
+    notify(
+        user=application.applicant,
+        type="facility.claim.approved" if approve else "facility.claim.rejected",
+        title_ar="صرت مالك المنشأة" if approve else "لم تُقبل مطالبتك",
+        body_ar=(
+            f"اعتُمدت مطالبتك بـ{name}، وصارت في قائمة منشآتك."
+            if approve
+            else f"لم تُقبل مطالبتك بـ{name}. السبب: {reason}"
+        )[:400],
+        destination=Notification.Destination.OWNER_FACILITIES,
+        payload={"facilityId": str(application.facility_id)},
+    )
 
 
 def _decide_change(

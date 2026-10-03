@@ -87,6 +87,8 @@ def _published_detail(facility: Facility) -> dict[str, Any]:
                 "createdAt": item.created_at.isoformat(),
             }
             for item in facility.evidence.all()
+            # A claimant's documents are theirs until the claim is approved.
+            if item.application_id is None
         ],
         "hours": serialize_hours(facility.business_hours.order_by("weekday", "sort_order")),
         "hoursConfirmedAt": (

@@ -115,6 +115,9 @@ class FacilityApplication(models.Model):
         # A live facility's owner changed how it is named or where it is. The facility stays
         # published as it was; `proposed_changes` is applied only when an operator approves.
         CHANGE = "CHANGE", "Change"
+        # Somebody asks to be recognised as the owner of a facility nobody owns: one the
+        # directory listed itself, or imported. They prove it with their own documents.
+        CLAIM = "CLAIM", "Claim"
 
     class Status(models.TextChoices):
         DRAFT = "DRAFT", "Draft"
@@ -135,6 +138,14 @@ class FacilityApplication(models.Model):
     # were revised while waiting. An approval names the revision it saw (DECISION-063).
     proposed_changes = models.JSONField(default=dict, blank=True)
     revision = models.PositiveIntegerField(default=0)
+    # CLAIM only: who asks to own the facility. Everyone else's application comes from members.
+    applicant = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="facility_claims",
+    )
     submitted_at = models.DateTimeField(null=True, blank=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     reviewed_by = models.ForeignKey(
@@ -159,6 +170,46 @@ class FacilityApplication(models.Model):
                 name="uniq_submitted_application_per_facility_kind",
             )
         ]
+
+
+class FacilityInvitation(models.Model):
+    """An owner asks someone, by phone number, to help run a facility.
+
+    The number may or may not have an account. The owner is told the same either way, so an
+    invitation cannot be used to find out who is registered. A person with an account hears
+    about it at once; anyone else finds it waiting when they sign up with that number.
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        ACCEPTED = "ACCEPTED", "Accepted"
+        DECLINED = "DECLINED", "Declined"
+        REVOKED = "REVOKED", "Revoked"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    facility = models.ForeignKey(Facility, on_delete=models.CASCADE, related_name="invitations")
+    phone = models.CharField(max_length=16, help_text="E.164 Syrian mobile.")
+    role = models.CharField(max_length=20, choices=FacilityMembership.Role.choices)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    invited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    accepted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    expires_at = models.DateTimeField()
+    responded_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("facility", "phone"),
+                condition=models.Q(status="PENDING"),
+                name="uniq_pending_invitation_per_phone",
+            )
+        ]
+        indexes = [models.Index(fields=["phone", "status"], name="invitation_phone_idx")]
 
 
 class FacilityImage(models.Model):
@@ -188,6 +239,15 @@ class VerificationEvidence(models.Model):
         related_name="+",
     )
     storage_key = models.CharField(max_length=500, unique=True)
+    # Set while the document belongs to a CLAIM rather than to the facility: a claimant's papers
+    # are theirs until the claim is approved, and are deleted if it is not.
+    application = models.ForeignKey(
+        "FacilityApplication",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="claim_evidence",
+    )
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,

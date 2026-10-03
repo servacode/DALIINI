@@ -125,6 +125,10 @@ class AdminApplicationSerializer(serializers.Serializer[Any]):
     provinceNameAr = serializers.CharField()
     ownerName = serializers.CharField(allow_null=True)
     ownerPhone = serializers.CharField(allow_null=True)
+    applicantName = serializers.CharField(
+        allow_null=True, help_text="CLAIM only: who asks to own the facility."
+    )
+    applicantPhone = serializers.CharField(allow_null=True, help_text="CLAIM only.")
 
 
 class AdminApplicationListSerializer(CursorEnvelope):

@@ -536,7 +536,7 @@ class OwnerFacilityEvidenceView(APIView):
             pk=serializer.validated_data["requirementId"],
         )
         current = VerificationEvidence.objects.filter(
-            facility=facility, requirement=requirement
+            facility=facility, requirement=requirement, application__isnull=True
         ).count()
         if current >= requirement.max_files:
             raise ConflictError(
@@ -598,7 +598,7 @@ class OwnerFacilityEvidenceDeleteView(APIView):
                 message="لا يمكن تعديل الإثباتات أثناء مراجعة الطلب.",
             )
         evidence = get_object_or_404(
-            VerificationEvidence, pk=evidence_id, facility=facility
+            VerificationEvidence, pk=evidence_id, facility=facility, application__isnull=True
         )
         key = evidence.storage_key
         record_audit(
@@ -644,7 +644,12 @@ class OwnerFacilityMembersView(APIView):
         operation_id="ownerFacilityMemberUpsert",
         tags=["Owner"],
         summary="Add a member or change a member role",
-        description="Only an owner may call this, and the last owner cannot be demoted.",
+        description=(
+            "Only an owner may call this, and the last owner cannot be demoted. Adding a new "
+            "member by account id is deprecated: invite them by phone number with "
+            "ownerFacilityInvitationCreate, which they accept themselves. Changing the role of "
+            "an existing member stays here."
+        ),
         request=FacilityMemberSerializer,
         responses={
             201: OwnerMemberUpsertedSerializer,

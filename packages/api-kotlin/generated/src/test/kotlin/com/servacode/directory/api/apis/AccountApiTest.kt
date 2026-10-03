@@ -19,6 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.AccountApi
+import com.servacode.directory.api.models.Accepted
 import com.servacode.directory.api.models.AccountDeletionRequested
 import com.servacode.directory.api.models.AccountRatingList
 import com.servacode.directory.api.models.ApiError
@@ -35,6 +36,7 @@ import com.servacode.directory.api.models.PhoneChangeStart
 import com.servacode.directory.api.models.Profile
 import com.servacode.directory.api.models.PushToken
 import com.servacode.directory.api.models.PushTokenRegister
+import com.servacode.directory.api.models.ReceivedInvitationList
 import com.servacode.directory.api.models.UnreadCount
 
 class AccountApiTest : ShouldSpec() {
@@ -72,6 +74,28 @@ class AccountApiTest : ShouldSpec() {
             //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
             //val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 100, default 30.
             //val result : FavoriteList = apiInstance.accountFavoritesList(cursor, limit)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountInvitationAccept
+        should("test accountInvitationAccept") {
+            // uncomment below to test accountInvitationAccept
+            //val invitationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : Accepted = apiInstance.accountInvitationAccept(invitationId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountInvitationDecline
+        should("test accountInvitationDecline") {
+            // uncomment below to test accountInvitationDecline
+            //val invitationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //apiInstance.accountInvitationDecline(invitationId)
+        }
+
+        // to test accountInvitationsList
+        should("test accountInvitationsList") {
+            // uncomment below to test accountInvitationsList
+            //val result : ReceivedInvitationList = apiInstance.accountInvitationsList()
             //result shouldBe ("TODO")
         }
 

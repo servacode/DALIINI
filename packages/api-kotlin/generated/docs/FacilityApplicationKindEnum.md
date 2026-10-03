@@ -10,5 +10,7 @@
 
     * `CHANGE` (value: `"CHANGE"`)
 
+    * `CLAIM` (value: `"CLAIM"`)
+
 
 

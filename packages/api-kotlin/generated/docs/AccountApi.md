@@ -8,6 +8,9 @@ All URIs are relative to *http://localhost*
 | [**accountFavoriteAdd**](AccountApi.md#accountFavoriteAdd) | **POST** api/v1/account/favorites/ | Save a facility |
 | [**accountFavoriteRemove**](AccountApi.md#accountFavoriteRemove) | **DELETE** api/v1/account/favorites/{facility_id}/ | Remove a facility the caller had saved |
 | [**accountFavoritesList**](AccountApi.md#accountFavoritesList) | **GET** api/v1/account/favorites/ | List the facilities the caller has saved |
+| [**accountInvitationAccept**](AccountApi.md#accountInvitationAccept) | **POST** api/v1/account/invitations/{invitation_id}/accept/ | Join the facility an invitation is for |
+| [**accountInvitationDecline**](AccountApi.md#accountInvitationDecline) | **POST** api/v1/account/invitations/{invitation_id}/decline/ | Decline an invitation |
+| [**accountInvitationsList**](AccountApi.md#accountInvitationsList) | **GET** api/v1/account/invitations/ | Invitations waiting for this account&#39;s phone number |
 | [**accountNotificationMarkRead**](AccountApi.md#accountNotificationMarkRead) | **POST** api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read |
 | [**accountNotificationsList**](AccountApi.md#accountNotificationsList) | **GET** api/v1/account/notifications/ | List the caller&#39;s notifications, newest first |
 | [**accountNotificationsMarkAllRead**](AccountApi.md#accountNotificationsMarkAllRead) | **POST** api/v1/account/notifications/read-all/ | Mark every unread notification as read |
@@ -182,6 +185,125 @@ launch(Dispatchers.IO) {
 ### Return type
 
 [**FavoriteList**](FavoriteList.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Join the facility an invitation is for
+
+Only the account whose phone number was invited can accept; any other caller gets 404. An invitation to own raises a manager to owner and never lowers anyone. 409 INVITATION_EXPIRED or INVITATION_CLOSED when it can no longer be accepted.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+val invitationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+
+launch(Dispatchers.IO) {
+    val result : Accepted = webService.accountInvitationAccept(invitationId)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **invitationId** | **java.util.UUID**|  | |
+
+### Return type
+
+[**Accepted**](Accepted.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Decline an invitation
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+val invitationId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+
+launch(Dispatchers.IO) {
+    webService.accountInvitationDecline(invitationId)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **invitationId** | **java.util.UUID**|  | |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Invitations waiting for this account&#39;s phone number
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+
+launch(Dispatchers.IO) {
+    val result : ReceivedInvitationList = webService.accountInvitationsList()
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**ReceivedInvitationList**](ReceivedInvitationList.md)
 
 ### Authorization
 

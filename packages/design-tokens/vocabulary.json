@@ -23,7 +23,8 @@
   "applicationKind": {
     "INITIAL": {"ar": "تسجيل جديد", "tone": "info"},
     "REVERIFICATION": {"ar": "إعادة تحقق", "tone": "warning"},
-    "CHANGE": {"ar": "تعديل بيانات", "tone": "info"}
+    "CHANGE": {"ar": "تعديل بيانات", "tone": "info"},
+    "CLAIM": {"ar": "مطالبة بملكية", "tone": "brand"}
   },
   "reportReason": {
     "WRONG_INFO": {"ar": "معلومات خاطئة", "tone": "warning"},

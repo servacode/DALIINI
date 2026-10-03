@@ -139,6 +139,7 @@ REST_FRAMEWORK = {
         "analytics_ingest": env("THROTTLE_ANALYTICS_INGEST", "600/hour"),
         "search": env("THROTTLE_SEARCH", "120/minute"),
         "owner_submit": env("THROTTLE_OWNER_SUBMIT", "10/hour"),
+        "owner_invite": env("THROTTLE_OWNER_INVITE", "30/hour"),
         "evidence_upload": env("THROTTLE_EVIDENCE_UPLOAD", "30/hour"),
         "facility_report": env("THROTTLE_FACILITY_REPORT", "5/hour"),
         "contact": env("THROTTLE_CONTACT", "3/hour"),

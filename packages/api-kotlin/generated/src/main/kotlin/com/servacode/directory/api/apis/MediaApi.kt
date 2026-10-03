@@ -8,6 +8,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.ClaimEvidence
 import com.servacode.directory.api.models.OwnerEvidenceCreated
 import com.servacode.directory.api.models.OwnerFacilityImage
 import com.servacode.directory.api.models.OwnerFacilityImageList
@@ -15,6 +16,45 @@ import com.servacode.directory.api.models.OwnerFacilityImageList
 import okhttp3.MultipartBody
 
 interface MediaApi {
+    /**
+     * POST api/v1/owner/claims/{claim_id}/evidence/
+     * Upload a verification document for a claim
+     * Private, like a facility&#39;s own documents. It belongs to the claim until the claim is approved, and is deleted if the claim is withdrawn or rejected.
+     * Responses:
+     *  - 201: 
+     *  - 400: A domain rule rejected the request; `code` names the rule.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param claimId 
+     * @param requirementId 
+     * @param file 
+     * @return [ClaimEvidence]
+     */
+    @Multipart
+    @POST("api/v1/owner/claims/{claim_id}/evidence/")
+    suspend fun ownerClaimEvidenceCreate(@Path("claim_id") claimId: java.util.UUID, @Part("requirementId") requirementId: kotlin.Int, @Part file: MultipartBody.Part): Response<ClaimEvidence>
+
+    /**
+     * DELETE api/v1/owner/claims/{claim_id}/evidence/{evidence_id}/
+     * Remove a document from a claim not yet sent
+     * 
+     * Responses:
+     *  - 204: No response body
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param claimId 
+     * @param evidenceId 
+     * @return [Unit]
+     */
+    @DELETE("api/v1/owner/claims/{claim_id}/evidence/{evidence_id}/")
+    suspend fun ownerClaimEvidenceDelete(@Path("claim_id") claimId: java.util.UUID, @Path("evidence_id") evidenceId: java.util.UUID): Response<Unit>
+
     /**
      * POST api/v1/owner/facilities/{facility_id}/evidence/
      * Upload private verification evidence
