@@ -46,6 +46,8 @@ def public_facilities() -> QuerySet[Facility]:
             "images",
             queryset=FacilityImage.objects.order_by("sort_order", "created_at"),
         ),
+        # The weekly hours, for the next opening time a closed row shows.
+        "business_hours",
     ).distinct()
 
 

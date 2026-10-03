@@ -49,12 +49,19 @@ def _window_for(
     return start, end
 
 
+def _hours(facility: Facility) -> list[BusinessHour]:
+    """The facility's weekly hours, from the prefetch cache when a list loaded them.
+
+    A list page prefetches `business_hours` once for every row; a single facility reads its own
+    handful of rows. Either way the engine below works on the rows in memory, so serialising a
+    page of thirty facilities does not cost thirty more queries per question it asks.
+    """
+    return sorted(facility.business_hours.all(), key=lambda row: (row.weekday, row.opens_at))
+
+
 def _is_scheduled_open(facility: Facility, now_local: datetime) -> bool:
-    weekdays = [now_local.weekday(), (now_local.weekday() - 1) % 7]
-    candidates = BusinessHour.objects.filter(
-        facility=facility,
-        weekday__in=weekdays,
-    )
+    weekdays = {now_local.weekday(), (now_local.weekday() - 1) % 7}
+    candidates = [row for row in _hours(facility) if row.weekday in weekdays]
     for row in candidates:
         offset = 0 if row.weekday == now_local.weekday() else -1
         start, end = _window_for(
@@ -127,12 +134,7 @@ def is_open_now(facility: Facility, now: datetime | None = None) -> bool:
 
 def get_next_open(facility: Facility, now: datetime | None = None) -> datetime | None:
     now_local = _damascus(now)
-    rows = list(
-        BusinessHour.objects.filter(facility=facility).order_by(
-            "weekday",
-            "opens_at",
-        )
-    )
+    rows = _hours(facility)
     best = None
     for delta in range(0, 8):
         weekday = (now_local.weekday() + delta) % 7
@@ -150,6 +152,23 @@ def get_next_open(facility: Facility, now: datetime | None = None) -> datetime |
             if best is None or start < best:
                 best = start
     return best.astimezone(UTC) if best else None
+
+
+def availability_from_flags(facility: Facility, now: datetime | None = None) -> AvailabilityResult:
+    """The same answer as `get_facility_availability`, from flags a list query already computed.
+
+    `with_availability_flags` annotates every row with whether it is temporarily closed, on duty
+    and scheduled open at this moment, in the one query that fetched the page. Only the next
+    opening time is left to work out, and that reads the prefetched hours.
+    """
+    now_local = _damascus(now)
+    if getattr(facility, "_availability_closed", False):
+        return AvailabilityResult(AvailabilityState.TEMP_CLOSED, get_next_open(facility, now_local))
+    if getattr(facility, "_availability_duty", False):
+        return AvailabilityResult(AvailabilityState.DUTY, get_next_open(facility, now_local))
+    if getattr(facility, "_availability_scheduled", False):
+        return AvailabilityResult(AvailabilityState.OPEN, None)
+    return AvailabilityResult(AvailabilityState.CLOSED, get_next_open(facility, now_local))
 
 
 def get_facility_availability(

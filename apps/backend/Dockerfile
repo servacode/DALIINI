@@ -31,4 +31,10 @@ EXPOSE 8000
 # disables this for the worker, which serves no HTTP.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD curl -fsS "http://127.0.0.1:${PORT:-8000}/health/live/" || exit 1
-CMD ["uv", "run", "daphne", "-b", "0.0.0.0", "-p", "8000", "directory_backend.asgi:application"]
+# Uvicorn serves HTTP and WebSockets, one process per worker; the Redis channel layer carries
+# events between them. Flags that matter:
+#   --no-access-log     the request line carries coordinates (see LOGGING in settings/base.py)
+#   --no-proxy-headers  the client address and scheme are Django's to work out, from
+#                       DRF_NUM_PROXIES and SECURE_PROXY_SSL_HEADER, in one place only
+#   --lifespan off      Django has no startup or shutdown hooks to run
+CMD ["sh", "-c", "exec uv run uvicorn directory_backend.asgi:application --host 0.0.0.0 --port ${PORT:-8000} --workers ${WEB_CONCURRENCY:-2} --lifespan off --no-access-log --no-server-header --no-proxy-headers"]

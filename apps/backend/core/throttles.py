@@ -2,6 +2,10 @@
 
 A signed-in caller is limited per account, an anonymous one per client IP. Write throttles
 leave reads alone, so a view can list and write under one class.
+
+Every route has a limit. A view that names its own `throttle_classes` keeps exactly those;
+every other view gets the defaults in settings: `AnonDefaultThrottle`, `UserDefaultThrottle`
+and `WebServerThrottle`.
 """
 
 from __future__ import annotations
@@ -36,6 +40,20 @@ def is_trusted_web_server(request: Request) -> bool:
 class UserOrIpThrottle(SimpleRateThrottle):
     only_writes = False
 
+    def get_ident(self, request: Request) -> str:
+        """The caller's address, which a client cannot choose.
+
+        DRF trusts X-Forwarded-For whenever NUM_PROXIES is unset, so a client could send a
+        new forged address with every request and never be limited. Here the header is
+        honoured only when NUM_PROXIES says how many proxies to trust; otherwise the
+        connection's own address is the identity.
+        """
+        from rest_framework.settings import api_settings
+
+        if api_settings.NUM_PROXIES is None:
+            return str(request.META.get("REMOTE_ADDR") or "")
+        return str(super().get_ident(request))
+
     def get_cache_key(self, request: Request, view: Any) -> str | None:
         if self.only_writes and request.method in SAFE_METHODS:
             return None
@@ -67,6 +85,35 @@ class WebServerThrottle(SimpleRateThrottle):
         if user is not None and getattr(user, "is_authenticated", False):
             return None
         return self.cache_format % {"scope": self.scope, "ident": "site"}
+
+
+class AnonDefaultThrottle(UserOrIpThrottle):
+    """The backstop for anonymous callers on a route with no limit of its own.
+
+    Generous on purpose: Syrian mobile carriers put many subscribers behind one address,
+    and this is there to stop a flood, not to ration a person. The website server's reads
+    are counted by `WebServerThrottle` instead.
+    """
+
+    scope = "anon_default"
+
+    def get_cache_key(self, request: Request, view: Any) -> str | None:
+        user = getattr(request, "user", None)
+        if user is not None and getattr(user, "is_authenticated", False):
+            return None
+        return super().get_cache_key(request, view)
+
+
+class UserDefaultThrottle(UserOrIpThrottle):
+    """The backstop for a signed-in account on a route with no limit of its own."""
+
+    scope = "user_default"
+
+    def get_cache_key(self, request: Request, view: Any) -> str | None:
+        user = getattr(request, "user", None)
+        if user is None or not getattr(user, "is_authenticated", False):
+            return None
+        return super().get_cache_key(request, view)
 
 
 class RatingsWriteThrottle(UserOrIpThrottle):
@@ -108,19 +155,8 @@ class FacilityReportThrottle(UserOrIpThrottle):
 
 
 class ContactThrottle(UserOrIpThrottle):
-    """The public contact form: strict, and not escapable by forging X-Forwarded-For.
-
-    DRF trusts X-Forwarded-For whenever NUM_PROXIES is unset, so a client could send a new
-    forged address with every request. Here the header is honoured only when NUM_PROXIES says
-    how many proxies to trust; otherwise the connection's own address is the identity.
-    """
+    """The public contact form: strict, and like every throttle here not escapable by
+    forging X-Forwarded-For (see `UserOrIpThrottle.get_ident`)."""
 
     scope = "contact"
     only_writes = True
-
-    def get_ident(self, request: Request) -> str:
-        from rest_framework.settings import api_settings
-
-        if api_settings.NUM_PROXIES is None:
-            return str(request.META.get("REMOTE_ADDR") or "")
-        return str(super().get_ident(request))

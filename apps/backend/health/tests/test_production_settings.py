@@ -43,6 +43,7 @@ PRODUCTION_ENV = {
     "PUSH_TOKEN_ENCRYPTION_KEY": "k" * 40,
     "ANALYTICS_HASH_SALT": "s" * 40,
     "FCM_PROJECT_ID": "daliini",
+    "DRF_NUM_PROXIES": "1",
     "DJANGO_SETTINGS_MODULE": "directory_backend.settings.production",
 }
 
@@ -109,3 +110,14 @@ def test_the_bot_route_needs_the_address_and_the_shared_secret() -> None:
     assert refused.returncode != 0
     assert "WHATSAPP_BOT_URL" in refused.stderr
     assert accepted.returncode == 0, accepted.stderr
+
+
+def test_the_number_of_proxies_must_be_stated() -> None:
+    # Unstated, every throttle would count the proxy's address for everyone behind it.
+    fcm = {"FCM_SERVICE_ACCOUNT_JSON": '{"client_email": "x"}'}
+    refused = _setup({**fcm, "DRF_NUM_PROXIES": ""})
+    direct = _setup({**fcm, "DRF_NUM_PROXIES": "0"})
+
+    assert refused.returncode != 0
+    assert "DRF_NUM_PROXIES" in refused.stderr
+    assert direct.returncode == 0, direct.stderr

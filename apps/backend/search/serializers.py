@@ -3,6 +3,7 @@ from typing import Any
 
 from business_hours.serializers import serialize_hours
 from business_hours.services import (
+    availability_from_flags,
     get_facility_availability,
     is_on_duty_today,
     is_open_now,
@@ -28,8 +29,13 @@ def _iso(value: Any) -> str | None:
     return value.isoformat() if value else None
 
 
+_FLAGS = ("_availability_closed", "_availability_duty", "_availability_scheduled")
+
+
 def _availability_payload(facility: Any) -> dict[str, Any]:
-    result = get_facility_availability(facility)
+    # A list row carries the three flags from its own query; a lone facility asks the engine.
+    flagged = all(getattr(facility, name, _UNSET) is not _UNSET for name in _FLAGS)
+    result = availability_from_flags(facility) if flagged else get_facility_availability(facility)
     return {
         "state": result.state.value,
         "nextOpenAt": result.next_open_at.isoformat() if result.next_open_at else None,

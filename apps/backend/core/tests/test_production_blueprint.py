@@ -120,7 +120,7 @@ def test_no_access_log_writes_a_request_line() -> None:
         ROOT / "apps" / "backend" / "directory_backend" / "settings" / "base.py"
     ).read_text(encoding="utf-8")
 
-    for logger in ("django.server", "django.channels.server"):
+    for logger in ("django.server", "django.channels.server", "uvicorn.access"):
         assert f'"{logger}": {{"level": "WARNING"}}' in settings_base, (
             f"{logger} would write a request line, and some carry coordinates"
         )
@@ -141,3 +141,22 @@ def test_the_site_is_told_where_its_photographs_live() -> None:
     assert "NEXT_PUBLIC_MEDIA_ORIGIN" in keys, (
         "the site would block every facility photograph"
     )
+
+
+def test_every_server_command_keeps_the_access_log_off() -> None:
+    """Uvicorn writes its request line unless told not to, whatever LOGGING says first."""
+    commands = [
+        service["dockerCommand"]
+        for blueprint in ("render.yaml", "render.production.yaml")
+        for service in yaml.safe_load((ROOT / blueprint).read_text(encoding="utf-8"))["services"]
+        if service.get("type") == "web" and "dockerCommand" in service
+    ]
+    commands.append((ROOT / "apps" / "backend" / "Dockerfile").read_text(encoding="utf-8"))
+    compose = ROOT / "infrastructure" / "docker" / "compose.yml"
+    commands.append(compose.read_text(encoding="utf-8"))
+
+    assert len(commands) >= 4
+    for command in commands:
+        if "uvicorn" in command:
+            assert "--no-access-log" in command, command[:120]
+        assert "daphne -b" not in command, "production is served by Uvicorn"
