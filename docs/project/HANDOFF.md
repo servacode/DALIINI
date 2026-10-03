@@ -41,15 +41,16 @@ The roadmap was approved on 2026-10-03. Phases 0 to 3 are done, merged through p
 | 5.1 | Android: invitations by phone both ways, «هذه منشأتي», the edit-under-review banner | 076 |
 | 5.2 | Android: notice switches kept by the account, a newer build offered once | 077 |
 | 5.3 | Android: a trip keeps its readings and voice with the screen locked | 078 |
+| 5.4 | Android: build numbers from CI, a baseline profile, map motion that follows the system | 079 |
 
 **Now: phase 5, Android v2.** Phase 4 (the console v2) is done. An owner portal on the web was
 offered at the start of phase 3 and set aside: owners use the Android app. Then the VPS (6),
 content and the Play launch (7), and the iPhone app from the Android code with Kotlin
 Multiplatform (8).
 
-Android has caught up with every server feature, and a trip now survives a locked screen.
-Phase 5 continues with performance and release plumbing (5.4), then a full check on a real
-phone, a road test with the screen locked included.
+Android has caught up with every server feature, a trip survives a locked screen, and builds
+number themselves. What remains of phase 5 needs a real phone: a full check on the device, a road
+test with the screen locked, and a generated baseline profile.
 
 ## The repository
 

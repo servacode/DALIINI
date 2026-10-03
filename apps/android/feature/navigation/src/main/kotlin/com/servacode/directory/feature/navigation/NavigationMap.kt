@@ -21,6 +21,7 @@ import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.maps.FOLLOW_MILLIS
 import com.servacode.directory.core.maps.GeoMath
+import com.servacode.directory.core.maps.systemAnimationsOff
 import com.servacode.directory.core.maps.MapCamera
 import com.servacode.directory.core.maps.MapLibreController
 import com.servacode.directory.core.maps.LabelledLine
@@ -115,7 +116,7 @@ private fun RouteMap(
         factory = {
             mapView.apply {
                 getMapAsync { map ->
-                    val mapController = MapLibreController(map)
+                    val mapController = MapLibreController(map, reducedMotion = { systemAnimationsOff(context) })
                     map.setStyle(styleUrl) { controller = mapController }
                 }
             }

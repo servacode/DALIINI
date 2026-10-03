@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -108,7 +109,8 @@ fun DirectoryMenuRow(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = Sizes.touchTarget + Space.md)
-            .clickable(onClick = onClick)
+            // A button to a screen reader, as it is to the eye: "…, button", not just the words.
+            .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = Space.base, vertical = Space.md),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Space.md),

@@ -1608,6 +1608,51 @@ the voice fell silent on the road, where it is needed most.
   * Play Console needs the foreground-service declaration ("Navigation"); see
     `apps/android/play/app-content-checklist.md`.
 
+## DECISION-079 — Builds number themselves, the app's code is compiled ahead, motion follows the system
+
+**Date:** 2026-10-03 · **Phase 5.4 of the roadmap.**
+
+**Why:** every build was version 1, "0.1.0", so two APKs could not be told apart and Play
+would refuse the second upload. The app's own code ran interpreted on its first launches. The map
+glided even for someone who had turned animations off. The example environment files named the
+realtime URL with a setting the build does not read and paths the backend does not serve.
+
+**Decision:**
+
+* **Version numbers come from the build.**
+  * `versionCode` is `DIRECTORY_VERSION_CODE`. The Android workflow sets it to its run number,
+    so no two CI builds share one.
+  * `validatePlayRelease` refuses a Play build without a number above 1.
+  * `versionName` is `DIRECTORY_VERSION_NAME`, kept in `gradle.properties` and bumped by hand
+    for a release, in review like any change.
+  * A machine that sets neither builds 1 and the checked-in name.
+* **Baseline profile.**
+  * `app/src/main/baseline-prof.txt` covers every method of the app's own packages, so it is
+    compiled when the app is installed rather than after the first launches.
+  * `profileinstaller`, which Compose already brought, is named in the catalog so it cannot
+    drop out. It applies this profile and the libraries' own on devices that do not get Play's
+    cloud profiles.
+  * The profile is hand-written and broad. A generated one (Macrobenchmark on a device) would
+    narrow it to what startup and scrolling touch; that waits for the device check at the end
+    of phase 5.
+* **Motion.**
+  * Screen changes stay without animation, as decided with device evidence (the "screenshot"
+    cross-fade; see the comment on the `NavHost`).
+  * Compose's own animations already follow the system's animation scale. MapLibre's camera
+    did not: with animations off, the camera now jumps instead of gliding, both for its moves
+    and for framing a route (`systemAnimationsOff`).
+* **Realtime URL setting.** `.env.example` and `play/release.env.example` now name
+  `DIRECTORY_REALTIME_WS_URL` with the backend's path `ws/v1/directory/`, as the build and the
+  backend do.
+* **Dependency locking is not adopted.** Every dependency is pinned to one version in the
+  catalog and nothing floats, so the same commit already resolves the same libraries. Instead,
+  the Play qualifier fails on any floating version (`+`, `latest.*`, a range) in the catalog or
+  a build script.
+* **Accessibility.**
+  * An audit of undescribed icons found each to be decorative beside the text that says the
+    same thing; the meaningful ones (verified, unread) already speak.
+  * The menu rows of the account and settings pages now announce themselves as buttons.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

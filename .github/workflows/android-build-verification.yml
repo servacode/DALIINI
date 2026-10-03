@@ -31,6 +31,9 @@ jobs:
     env:
       DIRECTORY_LOCAL_API_BASE_URL: http://localhost:8000/
       DIRECTORY_LOCAL_REALTIME_WS_URL: ws://localhost:8000/ws/v1/directory/
+      # Every build CI makes has its own number, so two APKs never claim to be the same build
+      # (DECISION-079). The name stays the one in gradle.properties.
+      DIRECTORY_VERSION_CODE: ${{ github.run_number }}
       # The certificate every debug APK must carry (INT-091, DECISION-041). Public: it is the
       # key's fingerprint, not the key. The key itself comes from the repository's secrets.
       EXPECTED_DEBUG_CERT_SHA256: f875d994ddb187754c54b74968d6997c7d45dbca91c17a43d5501999ed248838

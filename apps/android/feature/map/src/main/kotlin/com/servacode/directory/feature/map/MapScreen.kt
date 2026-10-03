@@ -59,6 +59,7 @@ import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.location.FOREGROUND_LOCATION_PERMISSIONS
 import com.servacode.directory.core.maps.FacilityMapPin
 import com.servacode.directory.core.maps.MapCamera
+import com.servacode.directory.core.maps.systemAnimationsOff
 import com.servacode.directory.core.maps.MapLibreController
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.maps.MapStyle
@@ -372,7 +373,7 @@ private fun FacilityMap(
         factory = {
             mapView.apply {
                 getMapAsync { map ->
-                    val mapController = MapLibreController(map, context)
+                    val mapController = MapLibreController(map, context) { systemAnimationsOff(context) }
                     // The ViewModel's camera: the start, or where the user left this map.
                     viewModel.state.value.camera?.let { mapController.moveCamera(it, animated = false) }
                     map.addOnCameraIdleListener {

@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.provider.Settings
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import org.maplibre.android.annotations.Icon
@@ -20,6 +21,13 @@ import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.maps.MapLibreMap
 
+/**
+ * Whether the system's animations are off: "Remove animations" in Accessibility, or an animator
+ * duration scale of zero. Read each time, so a change takes effect on the next camera move.
+ */
+fun systemAnimationsOff(context: Context): Boolean =
+    Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
+
 /** One per map: it remembers which marker is which facility. */
 class MapLibreController(
     private val map: MapLibreMap,
@@ -28,6 +36,12 @@ class MapLibreController(
      * a map of one kind of thing wants anyway.
      */
     private val context: Context? = null,
+    /**
+     * True while the reader has turned the system's animations off. The camera then jumps where
+     * it is going instead of gliding there (DECISION-079); Compose's own motion already follows
+     * the same setting, and this map is drawn by MapLibre, which does not.
+     */
+    private val reducedMotion: () -> Boolean = { false },
 ) : MapController {
     private var navigationMarker: Marker? = null
     private var routePolyline: Polyline? = null
@@ -110,7 +124,7 @@ class MapLibreController(
             .tilt(camera.tilt)
             .build()
         val update = CameraUpdateFactory.newCameraPosition(position)
-        if (animated) map.animateCamera(update, durationMillis) else map.moveCamera(update)
+        if (animated && !reducedMotion()) map.animateCamera(update, durationMillis) else map.moveCamera(update)
     }
 
     /**
@@ -204,15 +218,14 @@ class MapLibreController(
         // The map has to be measured before bounds can be turned into a camera. If it is not
         // yet, the midpoint keeps both ends roughly in view until the next frame asks again.
         runCatching {
-            map.animateCamera(
-                CameraUpdateFactory.newLatLngBounds(
-                    bounds,
-                    sidePaddingPx,
-                    sidePaddingPx,
-                    sidePaddingPx,
-                    bottomPaddingPx,
-                ),
+            val update = CameraUpdateFactory.newLatLngBounds(
+                bounds,
+                sidePaddingPx,
+                sidePaddingPx,
+                sidePaddingPx,
+                bottomPaddingPx,
             )
+            if (reducedMotion()) map.moveCamera(update) else map.animateCamera(update)
         }.onFailure {
             moveCamera(
                 MapCamera(MapPoint(bounds.center.latitude, bounds.center.longitude), zoom = 13.0),
