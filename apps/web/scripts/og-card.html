@@ -1,0 +1,53 @@
+<!doctype html>
+<!--
+  The site's social card, 1200 x 630. Rendered by scripts/render-og.mjs into app/opengraph-image.png.
+  Drawn by a real browser rather than by next/og: the latter measures joined Arabic words with
+  their isolated widths and leaves gaps of different sizes between them. Every colour is a token,
+  read from the generated stylesheet; the faces and the mark come from the design package.
+-->
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../../packages/design-tokens/fonts/fonts.css">
+<link rel="stylesheet" href="../../../packages/design-tokens/generated/tokens.css">
+<style>
+  html, body { margin: 0; }
+  body {
+    width: 1200px; height: 630px; overflow: hidden; position: relative;
+    background: var(--sd-semantic-surface-bar);
+    color: var(--sd-semantic-content-on-bar);
+    font-family: var(--sd-typography-font-family-primary), var(--sd-typography-font-family-fallback);
+  }
+  /* The road from the mark, crossing the card behind everything. */
+  .road { position: absolute; inset: 0; }
+  .card { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 64px; padding-inline: 88px; }
+  .mark { width: 300px; height: 300px; }
+  h1 {
+    margin: 0;
+    font-family: var(--sd-typography-font-family-display), var(--sd-typography-font-family-fallback);
+    font-weight: 800; font-size: 112px; line-height: 1.15;
+  }
+  p { margin: 34px 0 0; font-size: 36px; font-weight: 500; white-space: nowrap; color: var(--sd-semantic-content-on-bar-muted); }
+  .chip {
+    margin-top: 40px; display: inline-flex; align-items: center; gap: 14px;
+    padding: 14px 30px; border-radius: 999px; font-size: 32px; font-weight: 700;
+    background: var(--sd-semantic-accent-default); color: var(--sd-semantic-accent-on-accent);
+  }
+  .chip::before { content: ""; width: 14px; height: 14px; border-radius: 50%; background: currentColor; }
+</style>
+</head>
+<body>
+  <svg class="road" viewBox="0 0 1200 630" aria-hidden="true">
+    <path d="M-40 560C220 520 300 380 520 400S860 560 1240 470" fill="none" stroke="rgb(255 255 255 / .05)" stroke-width="64" stroke-linecap="round"/>
+    <path d="M-40 560C220 520 300 380 520 400S860 560 1240 470" fill="none" stroke="rgb(255 255 255 / .12)" stroke-width="3" stroke-dasharray="18 22" stroke-linecap="round"/>
+  </svg>
+  <main class="card">
+    <div>
+      <h1>دليني</h1>
+      <p>الصيدليات والعيادات والخدمات القريبة منك</p>
+      <span class="chip">صيدليات مناوبة الآن</span>
+    </div>
+    <img class="mark" src="../../../packages/design-tokens/brand/mark-on-dark.svg" alt="">
+  </main>
+</body>
+</html>
