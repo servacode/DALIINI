@@ -25,12 +25,21 @@ def on_duty(rotation: DutyRotation, day: date) -> list[str]:
     return [ids[(offset + k) % len(ids)] for k in range(min(rotation.per_day, len(ids)))]
 
 
-def rows_for(rotation: DutyRotation, first: date, last: date) -> list[RowResult]:
-    """One checked row per shift the rotation generates between `first` and `last`."""
+def period_problem(first: date, last: date) -> str | None:
+    """Why a period cannot be generated, worded for the operator; None when it can."""
     if last < first:
-        raise ValueError("نهاية الفترة قبل بدايتها.")
+        return "نهاية الفترة قبل بدايتها."
     if last - first > LONGEST_PERIOD:
-        raise ValueError("الفترة أطول من ثلاثة أشهر؛ ولّد الجدول على مراحل.")
+        return "الفترة أطول من ثلاثة أشهر؛ ولّد الجدول على مراحل."
+    return None
+
+
+def rows_for(rotation: DutyRotation, first: date, last: date) -> list[RowResult]:
+    """One checked row per shift the rotation generates between `first` and `last`.
+
+    The caller has checked the period with `period_problem`."""
+    if period_problem(first, last):
+        raise ValueError("Period not checked with period_problem().")
     names: dict[str, str] = {
         str(pk): name
         for pk, name in Facility.objects.filter(

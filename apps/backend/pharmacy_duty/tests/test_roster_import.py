@@ -136,6 +136,53 @@ def test_a_file_that_is_not_a_roster_is_refused(operator: Any, facility: Facilit
 
 
 @pytest.mark.django_db
+def test_a_corrupt_workbook_is_refused_without_the_parser_s_own_words(
+    operator: Any, facility: Facility
+) -> None:
+    # Not a zip at all: openpyxl raises with its own text, which must not reach the client.
+    upload = SimpleUploadedFile(
+        "roster.xlsx",
+        b"definitely not a workbook",
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+    response = _post(operator, facility, upload, apply=False)
+
+    assert response.status_code == 400
+    assert response.json()["details"]["file"] == ["تعذرت قراءة الملف. احفظه بصيغة CSV أو XLSX."]
+
+
+@pytest.mark.django_db
+def test_a_rotation_period_is_checked_before_anything_is_generated(
+    operator: Any, facility: Facility
+) -> None:
+    created = operator.post(
+        ROTATIONS,
+        {
+            "name": "مناوبة",
+            "provinceId": str(facility.province_id),
+            "facilityIds": [str(facility.pk)],
+            "startsAt": "21:00",
+            "endsAt": "08:00",
+            "perDay": 1,
+            "anchorDate": "2026-12-01",
+        },
+        format="json",
+    )
+    url = f"{ROTATIONS}{created.json()['id']}/generate/"
+
+    backwards = operator.post(
+        url, {"fromDate": "2026-12-06", "toDate": "2026-12-01"}, format="json"
+    )
+    too_long = operator.post(url, {"fromDate": "2026-01-01", "toDate": "2026-12-31"}, format="json")
+
+    assert backwards.status_code == 400
+    assert backwards.json()["details"]["toDate"] == ["نهاية الفترة قبل بدايتها."]
+    assert too_long.status_code == 400
+    assert "ثلاثة أشهر" in too_long.json()["details"]["toDate"][0]
+
+
+@pytest.mark.django_db
 def test_a_rotation_cycles_through_its_pharmacies_and_tells_each_owner_once(
     operator: Any, facility: Facility, user: User
 ) -> None:

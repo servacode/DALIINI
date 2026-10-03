@@ -92,6 +92,11 @@ class DutyRotationGenerateSerializer(serializers.Serializer[Any]):
     toDate = serializers.DateField()
     apply = serializers.BooleanField(default=False)
 
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        if problem := rotation.period_problem(attrs["fromDate"], attrs["toDate"]):
+            raise ValidationError({"toDate": [problem]})
+        return attrs
+
 
 def _rotation_payload(item: DutyRotation) -> dict[str, Any]:
     return {
@@ -141,8 +146,7 @@ def _tell_owners(result: dict[str, Any]) -> None:
             type="duty.shift.admin_changed",
             title_ar="ورديات مناوبة جديدة",
             body_ar=(
-                f"أضافت إدارة الدليل {count} وردية مناوبة لـ{facility.name_ar} "
-                "من جدول المناوبات."
+                f"أضافت إدارة الدليل {count} وردية مناوبة لـ{facility.name_ar} من جدول المناوبات."
             ),
             destination=Notification.Destination.OWNER_FACILITIES,
             payload={"facilityId": str(facility.pk)},
@@ -174,14 +178,15 @@ class DutyImportView(AdminView):
         province = get_object_or_404(Province, pk=payload.validated_data["provinceId"])
         upload = payload.validated_data["file"]
         try:
-            table = importer.read_table(upload, upload.name or "")
-        except (ValueError, UnicodeDecodeError) as exc:
-            message = str(exc) if isinstance(exc, ValueError) else "الملف ليس بترميز UTF-8."
-            raise ValidationError({"file": [message]}) from exc
+            table, problem = importer.read_table(upload, upload.name or "")
+        except UnicodeDecodeError as exc:
+            raise ValidationError({"file": ["الملف ليس بترميز UTF-8."]}) from exc
         except Exception as exc:  # a corrupt workbook raises whatever its parser raises
             raise ValidationError(
                 {"file": ["تعذرت قراءة الملف. احفظه بصيغة CSV أو XLSX."]}
             ) from exc
+        if problem:
+            raise ValidationError({"file": [problem]})
         rows = importer.check(table, province.pk)
         result = _run(rows, apply=payload.validated_data["apply"])
         if result["applied"]:
@@ -343,12 +348,9 @@ class DutyRotationGenerateView(AdminView):
         item = get_object_or_404(DutyRotation, pk=rotation_id)
         payload = DutyRotationGenerateSerializer(data=request.data)
         payload.is_valid(raise_exception=True)
-        try:
-            rows = rotation.rows_for(
-                item, payload.validated_data["fromDate"], payload.validated_data["toDate"]
-            )
-        except ValueError as exc:
-            raise ValidationError({"toDate": [str(exc)]}) from exc
+        rows = rotation.rows_for(
+            item, payload.validated_data["fromDate"], payload.validated_data["toDate"]
+        )
         result = _run(rows, apply=payload.validated_data["apply"])
         if result["applied"]:
             record_audit(

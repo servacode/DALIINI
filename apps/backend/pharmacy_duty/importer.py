@@ -78,8 +78,13 @@ def _header(value: Any) -> str | None:
     return _FOLDED.get(normalize_arabic(text))
 
 
-def read_table(upload: IO[bytes], filename: str) -> list[dict[str, Any]]:
-    """The data rows of a CSV or XLSX file, keyed by canonical column."""
+def read_table(upload: IO[bytes], filename: str) -> tuple[list[dict[str, Any]], str | None]:
+    """The data rows of a CSV or XLSX file, keyed by canonical column, or why there are none.
+
+    A problem with the file's shape is returned, worded for the operator, rather than raised:
+    whatever the CSV or workbook parser raises is left to the caller, which answers it with a
+    fixed message and never with the parser's own text.
+    """
     if filename.lower().endswith((".xlsx", ".xlsm")):
         rows = _xlsx_rows(upload)
     else:
@@ -87,10 +92,10 @@ def read_table(upload: IO[bytes], filename: str) -> list[dict[str, Any]]:
     iterator = iter(rows)
     header = next(iterator, None)
     if header is None:
-        raise ValueError("الملف فارغ.")
+        return [], "الملف فارغ."
     keys = [_header(cell) for cell in header]
     if not any(keys):
-        raise ValueError(
+        return [], (
             "لم أتعرّف على أعمدة الملف. استعمل: الصيدلية، التاريخ، من، إلى (أو facilityId, "
             "date, from, to)."
         )
@@ -100,8 +105,8 @@ def read_table(upload: IO[bytes], filename: str) -> list[dict[str, Any]]:
             continue
         table.append({key: value for key, value in zip(keys, values, strict=False) if key})
         if len(table) > MAX_ROWS:
-            raise ValueError(f"الملف أكبر من {MAX_ROWS} صف. قسّمه إلى ملفات أصغر.")
-    return table
+            return [], f"الملف أكبر من {MAX_ROWS} صف. قسّمه إلى ملفات أصغر."
+    return table, None
 
 
 def _csv_rows(upload: IO[bytes]) -> Iterator[list[Any]]:
