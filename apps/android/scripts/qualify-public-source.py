@@ -76,7 +76,7 @@ def check_location_and_map() -> None:
 
 def check_generated_client_boundary() -> None:
     boundary = read(
-        "core/network/src/main/kotlin/com/servacode/directory/core/network/PublicApiBoundary.kt"
+        "core/network/src/commonMain/kotlin/com/servacode/directory/core/network/PublicApiBoundary.kt"
     )
     require(
         "generated P10 Kotlin" in boundary,
@@ -86,7 +86,7 @@ def check_generated_client_boundary() -> None:
     # existed. One exists now, so what must hold is that the boundary is a domain interface and
     # the generated adapter is what implements it.
     adapter = read(
-        "core/network/src/main/kotlin/com/servacode/directory/core/network/api/GeneratedPublicApi.kt"
+        "core/network/src/androidMain/kotlin/com/servacode/directory/core/network/api/GeneratedPublicApi.kt"
     )
     require("interface PublicApiBoundary" in boundary, "public boundary interface missing")
     require(

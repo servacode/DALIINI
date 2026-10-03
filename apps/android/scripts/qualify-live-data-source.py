@@ -17,8 +17,10 @@ def read(relative: str) -> str:
 
 
 def check_realtime_contract() -> None:
-    models = read("core/network/src/main/kotlin/com/servacode/directory/core/network/RealtimeModels.kt")
-    stream = read("core/network/src/main/kotlin/com/servacode/directory/core/network/RealtimeStream.kt")
+    models = read("core/network/src/commonMain/kotlin/com/servacode/directory/core/network/RealtimeModels.kt")
+    stream = read("core/network/src/commonMain/kotlin/com/servacode/directory/core/network/RealtimeStream.kt") + read(
+        "core/network/src/androidMain/kotlin/com/servacode/directory/core/network/OkHttpRealtimeStream.kt"
+    )
     for event in (
         "public.province.configuration_changed",
         "public.facility.changed",
@@ -38,9 +40,9 @@ def check_realtime_contract() -> None:
 
 
 def check_reconnect_and_lifecycle() -> None:
-    policy = read("core/network/src/main/kotlin/com/servacode/directory/core/network/ReconnectPolicy.kt")
+    policy = read("core/network/src/commonMain/kotlin/com/servacode/directory/core/network/ReconnectPolicy.kt")
     coordinator = read("app/src/main/kotlin/com/servacode/directory/RealtimeCoordinator.kt")
-    monitor = read("core/network/src/main/kotlin/com/servacode/directory/core/network/NetworkMonitor.kt")
+    monitor = read("core/network/src/androidMain/kotlin/com/servacode/directory/core/network/AndroidNetworkMonitor.kt")
     application = read("app/src/main/kotlin/com/servacode/directory/DirectoryApplication.kt")
     require("baseMillis: Long = 1_000L" in policy, "1s reconnect base missing")
     require("maxMillis: Long = 30_000L" in policy, "30s reconnect cap missing")
@@ -66,7 +68,7 @@ def check_rest_truth_and_offline() -> None:
     # ViewModel that needs it.
     require("refreshesOwnerState" in owner, "owner user-scope invalidation missing")
     predicate = read(
-        "core/network/src/main/kotlin/com/servacode/directory/core/network/RealtimeInvalidation.kt"
+        "core/network/src/commonMain/kotlin/com/servacode/directory/core/network/RealtimeInvalidation.kt"
     )
     require(
         'ScopeType.USER' in predicate or '"user"' in predicate,
@@ -101,10 +103,10 @@ def check_rest_truth_and_offline() -> None:
 def check_push_boundary() -> None:
     manifest = read("app/src/main/AndroidManifest.xml")
     push = read(
-        "core/network/src/main/kotlin/com/servacode/directory/core/network/PushRegistrationCoordinator.kt"
+        "core/network/src/commonMain/kotlin/com/servacode/directory/core/network/PushRegistrationCoordinator.kt"
     )
     boundary = read(
-        "core/network/src/main/kotlin/com/servacode/directory/core/network/PushRegistrationBoundary.kt"
+        "core/network/src/commonMain/kotlin/com/servacode/directory/core/network/PushRegistrationBoundary.kt"
     )
     require("POST_NOTIFICATIONS" in manifest, "notification permission declaration missing")
     require("registerAndroidToken" in push and "deactivateAndroidToken" in push, "push token lifecycle missing")
@@ -117,7 +119,7 @@ def check_push_boundary() -> None:
     # P10 shipped: the boundary is implemented over the generated client, and a failure travels
     # as the app's own error rather than as a placeholder for a client that does not exist.
     adapter = read(
-        "core/network/src/main/kotlin/com/servacode/directory/core/network/api/"
+        "core/network/src/androidMain/kotlin/com/servacode/directory/core/network/api/"
         "GeneratedPushRegistration.kt"
     )
     require("interface PushRegistrationBoundary" in boundary, "push boundary interface missing")
@@ -130,10 +132,10 @@ def check_push_boundary() -> None:
 
 def check_tests_and_hygiene() -> None:
     for relative in (
-        "core/network/src/test/kotlin/com/servacode/directory/core/network/ReconnectPolicyTest.kt",
-        "core/network/src/test/kotlin/com/servacode/directory/core/network/RealtimeConfigTest.kt",
-        "core/network/src/test/kotlin/com/servacode/directory/core/network/RealtimeEventDeduplicatorTest.kt",
-        "core/network/src/test/kotlin/com/servacode/directory/core/network/PushMessageDataTest.kt",
+        "core/network/src/commonTest/kotlin/com/servacode/directory/core/network/ReconnectPolicyTest.kt",
+        "core/network/src/commonTest/kotlin/com/servacode/directory/core/network/RealtimeConfigTest.kt",
+        "core/network/src/commonTest/kotlin/com/servacode/directory/core/network/RealtimeEventDeduplicatorTest.kt",
+        "core/network/src/commonTest/kotlin/com/servacode/directory/core/network/PushMessageDataTest.kt",
     ):
         require((ROOT / relative).exists(), f"P18 test missing: {relative}")
     combined = "\n".join(path.read_text(encoding="utf-8") for path in ROOT.rglob("*.kt") if "build" not in path.parts)
