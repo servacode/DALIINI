@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { directionsLink, telLink, waLink } from "../../../../lib/links";
+import { directionsLink, localPhone, telLink, whatsAppFor } from "../../../../lib/links";
 import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 import Link from "next/link";
@@ -8,7 +8,7 @@ import { AndroidOnly } from "../../../../components/android-only";
 import { Breadcrumbs, Icon, JsonLd, Rating, StatusBadge, Unavailable } from "../../../../components/ui";
 import { getCategories, getFacility, getProvinces, type FacilityDetail, type HoursEntry } from "../../../../lib/api";
 import { absoluteUrl, appOpenUrl } from "../../../../lib/config";
-import { WEEKDAYS_AR, WEEKDAY_DISPLAY_ORDER, spokenDate } from "../../../../lib/dates";
+import { WEEKDAYS_AR, WEEKDAY_DISPLAY_ORDER, damascusWeekday, spokenDate } from "../../../../lib/dates";
 import { categoryPath, decodedSegment, facilityPath } from "../../../../lib/paths";
 import { UNAVAILABLE_METADATA, pageMetadata } from "../../../../lib/seo";
 
@@ -84,18 +84,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return pageMetadata({ title: `${f.nameAr} — ${f.category.nameAr}`, description: describe(f), path: facilityPath(f) });
 }
 
-function HoursTable({ hours }: { hours: HoursEntry[] }) {
+function HoursTable({ hours, today }: { hours: HoursEntry[]; today: number }) {
   const byDay = new Map<number, HoursEntry[]>();
   for (const h of [...hours].sort((a, b) => a.sequence - b.sequence)) {
     byDay.set(h.weekday, [...(byDay.get(h.weekday) ?? []), h]);
   }
   return (
-    <table>
+    <table className="hours-table">
       <tbody>
         {WEEKDAY_DISPLAY_ORDER.map((day) => (
-          <tr key={day}>
-            <th scope="row">{WEEKDAYS_AR[day]}</th>
-            <td className="ltr">
+          <tr key={day} aria-current={day === today ? "date" : undefined}>
+            <th scope="row">
+              {WEEKDAYS_AR[day]}
+              {day === today ? <span className="today-mark">اليوم</span> : null}
+            </th>
+            <td className={byDay.has(day) ? "ltr" : "muted"}>
               {byDay.get(day)?.map((h) => `${hhmm(h.opensAt)}–${hhmm(h.closesAt)}`).join("، ") ?? "مغلق"}
             </td>
           </tr>
@@ -169,86 +172,170 @@ export default async function FacilityPage({ params }: Props) {
   if ((slug ?? []).map(decodedSegment).join("/") !== (f.slug ?? "")) permanentRedirect(facilityPath(f));
 
   const tel = telLink(f.phone);
-  const wa = waLink(f.whatsapp);
+  const wa = whatsAppFor(f.whatsapp, f.phone);
   const directions = directionsLink(f.location);
+  const shown = localPhone(f.phone);
   const loc = f.location ? `${f.location.latitude},${f.location.longitude}` : null;
   const openInApp = appOpenUrl(f.id);
   const url = absoluteUrl(facilityPath(f));
+  const address = [f.addressAr, f.neighborhood?.nameAr, f.city?.nameAr].filter(Boolean).join("، ");
+  const images = f.images ?? [];
 
   return (
-    <article className="shell page">
+    <article className="shell page facility-page">
       <JsonLd data={structuredData(f)} />
       <Breadcrumbs items={await crumbs(f)} />
-      <div className="row title-row">
-        <h1>{f.nameAr}</h1>
-        <StatusBadge state={f.availability.state} />
-      </div>
-      <div className="meta">
-        <span>{f.category.nameAr}</span>
-        {f.city ? <span>· {f.city.nameAr}</span> : null}
-        <Rating average={f.ratingAverage} count={f.ratingCount} />
-      </div>
-      <TrustLine f={f} />
-      {f.availability.state === "DUTY" ? <p><strong>هذه الصيدلية مناوبة الآن.</strong></p> : null}
-      {f.descriptionAr ? <p>{f.descriptionAr}</p> : null}
 
-      <div className="actions more">
-        {tel ? <a className="button" href={tel}><Icon name="phone" />اتصال</a> : null}
-        {wa ? <a className="button button-alt" href={wa} rel="noopener"><Icon name="whatsapp" />واتساب</a> : null}
-        {directions ? (
-          <a className="button button-alt" href={directions} rel="noopener">
-            <Icon name="directions" />
-            الاتجاهات
-          </a>
-        ) : null}
+      {/* The shopfront first, when there is one: it is how a passer-by recognises the door. */}
+      {images.length > 0 ? (
+        <div className="facility-gallery" data-count={Math.min(images.length, 3)}>
+          {images.slice(0, 6).map((image, index) => (
+            /* eslint-disable-next-line @next/next/no-img-element -- remote media, no loader */
+            <img
+              key={image.id}
+              src={image.url}
+              alt={index === 0 ? `واجهة ${f.nameAr}` : `صورة ${index + 1} من ${f.nameAr}`}
+              loading={index === 0 ? "eager" : "lazy"}
+            />
+          ))}
+        </div>
+      ) : null}
+
+      <header className="facility-header">
+        <h1>{f.nameAr}</h1>
+        <div className="facility-sub">
+          <StatusBadge state={f.availability.state} />
+          <span>{f.category.nameAr}</span>
+          {f.neighborhood || f.city ? <span>{(f.neighborhood ?? f.city)?.nameAr}</span> : null}
+          <Rating average={f.ratingAverage} count={f.ratingCount} />
+        </div>
+        <TrustLine f={f} />
+        {/* On a phone the panel with this button is replaced by the dock; the offer stays here. */}
         {openInApp ? (
           <AndroidOnly>
-            <a className="button button-alt" href={openInApp}>
-              <Icon name="externalLink" />
+            <a className="button button-alt button-sm facility-open-app" href={openInApp}>
+              <Icon name="externalLink" size={16} />
               افتح في التطبيق
             </a>
           </AndroidOnly>
         ) : null}
+      </header>
+
+      <div className="facility-layout">
+        <div className="facility-content">
+          {f.availability.state === "DUTY" ? (
+            <p className="notice notice-duty">
+              <Icon name="shield" size={20} />
+              <strong>هذه الصيدلية مناوبة الآن.</strong>
+            </p>
+          ) : null}
+          {f.descriptionAr ? <p className="facility-description">{f.descriptionAr}</p> : null}
+
+          <section aria-labelledby="facts-title">
+            <h2 id="facts-title">المعلومات</h2>
+            <dl className="card facts">
+              {address ? <div><dt>العنوان</dt><dd>{address}</dd></div> : null}
+              {tel && shown ? (
+                <div><dt>الهاتف</dt><dd className="ltr"><a href={tel}>{shown}</a></dd></div>
+              ) : null}
+              {loc ? (
+                <div>
+                  <dt>الموقع</dt>
+                  <dd>
+                    <a href={`geo:${loc}`}>افتح في تطبيق الخرائط</a>
+                    {directions ? <> · <a href={directions} target="_blank" rel="noopener noreferrer">الطريق إليها</a></> : null}
+                  </dd>
+                </div>
+              ) : null}
+              {f.specialties.length > 0 ? (
+                <div><dt>التخصصات</dt><dd>{f.specialties.map((s) => s.nameAr).join("، ")}</dd></div>
+              ) : null}
+              {f.services.length > 0 ? (
+                <div><dt>الخدمات</dt><dd>{f.services.map((s) => s.nameAr).join("، ")}</dd></div>
+              ) : null}
+            </dl>
+          </section>
+
+          {f.hours.length > 0 ? (
+            <section aria-labelledby="hours-title">
+              <h2 id="hours-title">أوقات الدوام</h2>
+              <div className="card"><HoursTable hours={f.hours} today={damascusWeekday()} /></div>
+            </section>
+          ) : null}
+
+          <section aria-labelledby="report-title">
+            <h2 id="report-title" className="with-icon"><Icon name="flag" size={20} />وجدت معلومة خاطئة؟</h2>
+            <div className="card note">
+              <p>أرسل لنا التصحيح وسيراجعه فريقنا، أو افتح هذه المنشأة في تطبيق دليني واضغط «الإبلاغ عن مشكلة».</p>
+              <Link className="button button-alt button-sm" href={`/contact?kind=correction&facility=${f.id}`}>
+                <Icon name="edit" size={16} />
+                تصحيح معلومة
+              </Link>
+            </div>
+          </section>
+        </div>
+
+        {/*
+          * The ways to reach it, beside the page on a desk and pinned to the bottom of the screen
+          * on a phone, so the call is one tap from anywhere on a long page.
+          */}
+        <aside className="facility-aside" aria-label="التواصل">
+          <div className="card facility-contact">
+            {tel ? (
+              <a className="button facility-call" href={tel}>
+                <Icon name="phone" />
+                <span className="ltr">{shown}</span>
+              </a>
+            ) : null}
+            <div className="facility-contact-row">
+              {wa ? (
+                <a className="button button-alt" href={wa} target="_blank" rel="noopener noreferrer">
+                  <Icon name="whatsapp" />
+                  واتساب
+                </a>
+              ) : null}
+              {directions ? (
+                <a className="button button-alt" href={directions} target="_blank" rel="noopener noreferrer">
+                  <Icon name="directions" />
+                  الطريق
+                </a>
+              ) : null}
+            </div>
+            {openInApp ? (
+              <AndroidOnly>
+                <a className="button button-alt" href={openInApp}>
+                  <Icon name="externalLink" />
+                  افتح في التطبيق
+                </a>
+              </AndroidOnly>
+            ) : null}
+          </div>
+          <ShareLinks title={f.nameAr} url={url} />
+        </aside>
       </div>
 
-      <h2>المعلومات</h2>
-      <dl className="card facts">
-        {f.addressAr || f.neighborhood ? (
-          <div><dt>العنوان</dt><dd>{[f.addressAr, f.neighborhood?.nameAr, f.city?.nameAr].filter(Boolean).join("، ")}</dd></div>
-        ) : null}
-        {tel && f.phone ? <div><dt>الهاتف</dt><dd className="ltr"><a href={tel}>{f.phone}</a></dd></div> : null}
-        {loc ? <div><dt>الموقع</dt><dd><a href={`geo:${loc}`}>افتح في تطبيق الخرائط</a></dd></div> : null}
-        {f.specialties.length > 0 ? (
-          <div><dt>التخصصات</dt><dd>{f.specialties.map((s) => s.nameAr).join("، ")}</dd></div>
-        ) : null}
-        {f.services.length > 0 ? (
-          <div><dt>الخدمات</dt><dd>{f.services.map((s) => s.nameAr).join("، ")}</dd></div>
-        ) : null}
-      </dl>
-
-      {f.hours.length > 0 ? (
-        <>
-          <h2>أوقات الدوام</h2>
-          <div className="card"><HoursTable hours={f.hours} /></div>
-        </>
+      {tel || wa || directions ? (
+        <nav className="facility-dock" aria-label="تواصل سريع">
+          {tel ? (
+            <a className="button" href={tel}>
+              <Icon name="phone" />
+              اتصال
+            </a>
+          ) : null}
+          {wa ? (
+            <a className="button button-whatsapp" href={wa} target="_blank" rel="noopener noreferrer">
+              <Icon name="whatsapp" />
+              واتساب
+            </a>
+          ) : null}
+          {directions ? (
+            <a className="button button-alt" href={directions} target="_blank" rel="noopener noreferrer">
+              <Icon name="directions" />
+              الطريق
+            </a>
+          ) : null}
+        </nav>
       ) : null}
-
-      <ShareLinks title={f.nameAr} url={url} />
-
-      <section aria-labelledby="report-title">
-        <h2 id="report-title" className="with-icon"><Icon name="flag" size={20} />وجدت معلومة خاطئة؟</h2>
-        <div className="card note">
-          <p>
-            أرسل لنا التصحيح وسيراجعه فريقنا، أو افتح هذه المنشأة في تطبيق دليني واضغط «الإبلاغ عن مشكلة».
-          </p>
-        </div>
-        <div className="actions more">
-          <Link className="button button-alt" href={`/contact?kind=correction&facility=${f.id}`}>
-            <Icon name="edit" />
-            تصحيح معلومة
-          </Link>
-        </div>
-      </section>
     </article>
   );
 }

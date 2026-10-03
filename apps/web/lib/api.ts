@@ -62,6 +62,8 @@ export interface TagRef { id: number; nameAr: string }
 
 export interface FacilityDetail extends CompactFacility {
   descriptionAr: string | null;
+  /* Every photograph, in the order its owner arranged them; `imageUrl` is the first. */
+  images: { id: string; url: string }[];
   hours: HoursEntry[];
   /* Active ones only, in the team's order. */
   specialties: TagRef[];
