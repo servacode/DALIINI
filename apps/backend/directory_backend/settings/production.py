@@ -1,7 +1,7 @@
 from django.core.exceptions import ImproperlyConfigured
 
 from .base import *  # noqa: F403
-from .base import CHANNEL_LAYERS
+from .base import CHANNEL_LAYERS, REST_FRAMEWORK
 from .env import env, env_bool, env_csv
 
 DEBUG = env_bool("DEBUG", False)
@@ -67,6 +67,11 @@ if PUSH_PROVIDER.lower() == "fcm" and not FCM_PROJECT_ID:
     raise ImproperlyConfigured("FCM_PROJECT_ID is required when PUSH_PROVIDER=fcm")
 if PUSH_PROVIDER.lower() == "fcm" and not FCM_SERVICE_ACCOUNT_JSON.strip():
     raise ImproperlyConfigured("FCM_SERVICE_ACCOUNT_JSON is required when PUSH_PROVIDER=fcm")
+
+# Every throttle tells anonymous callers apart by address. Behind a proxy that address is the
+# proxy's own unless this says how many proxies to trust, and every visitor in the country would
+# share one limit. So it must be said, even when the answer is "0" (nothing in front).
+REST_FRAMEWORK["NUM_PROXIES"] = int(env("DRF_NUM_PROXIES", required=True))
 
 CHANNEL_LAYERS["default"]["CONFIG"]["hosts"] = [REDIS_URL]
 CELERY_BROKER_URL = REDIS_URL

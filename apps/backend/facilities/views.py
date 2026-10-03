@@ -421,7 +421,7 @@ class OwnerFacilityImagesView(APIView):
     def post(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = self._facility(request, facility_id)
         ensure_editable_by_owner(facility)
-        if not facility.category.capabilities.supports_photos:
+        if not facility.category.supports("supports_photos"):
             raise ConflictError(
                 "PHOTOS_NOT_SUPPORTED",
                 message="هذا التصنيف لا يدعم الصور.",

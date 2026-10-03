@@ -10,7 +10,7 @@ from accounts.models import User, UserAdminRole
 from audit.services import record_audit
 from facilities.models import Facility, FacilityApplication, FacilityReport, VerificationEvidence
 from notifications.models import Notification
-from notifications.services import notify
+from notifications.services import deactivate_push_tokens_for_user, notify
 from sessions.models import UserSession
 
 
@@ -188,6 +188,9 @@ def set_user_blocked(*, request: Any, user: User, blocked: bool) -> User:
         UserSession.objects.filter(user=user, revoked_at__isnull=True).update(
             revoked_at=timezone.now()
         )
+        # Ending the sessions alone left the devices registered: a blocked account kept
+        # receiving announcements on its phones.
+        deactivate_push_tokens_for_user(user)
     record_audit(
         actor=request.user,
         action="user.blocked" if blocked else "user.unblocked",

@@ -1,16 +1,16 @@
 from django.conf import settings
 from django.db import connections
 from django.http import JsonResponse
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_safe
 from redis import Redis
 
 
-@require_GET
+@require_safe
 def liveness(request):  # type: ignore[no-untyped-def]
     return JsonResponse({"status": "ok"})
 
 
-@require_GET
+@require_safe
 def readiness(request):  # type: ignore[no-untyped-def]
     checks: dict[str, str] = {}
     try:

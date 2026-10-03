@@ -122,14 +122,15 @@ def test_only_members_of_that_pharmacy_may_manage_duty(
     stranger = User.objects.create_user(phone="+963900000003", password="x" * 12, name="S")
     start = timezone.now() + timedelta(hours=1)
     body = _body(start, start + timedelta(hours=1))
-    assert _client(stranger).post(_url(facility), body, format="json").status_code == 403
-    assert _client(stranger).get(_url(facility)).status_code == 403
+    # Not found, not forbidden: the answer must not confirm the facility exists.
+    assert _client(stranger).post(_url(facility), body, format="json").status_code == 404
+    assert _client(stranger).get(_url(facility)).status_code == 404
     assert APIClient().post(_url(facility), body, format="json").status_code == 401
 
     shift = DutyShift.objects.create(
         facility=facility, starts_at=start, ends_at=start + timedelta(hours=1)
     )
-    assert _client(stranger).delete(_url(facility, shift)).status_code == 403
+    assert _client(stranger).delete(_url(facility, shift)).status_code == 404
     assert DutyShift.objects.filter(pk=shift.pk).exists()
 
 

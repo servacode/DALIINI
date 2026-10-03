@@ -40,6 +40,8 @@ x-backend: &backend
   volumes:
     # The source is mounted so a change is picked up without a rebuild. The image's own
     # virtual environment is kept by the anonymous volume, which the mount would otherwise hide.
+    # `pnpm stack:up` renews that volume, so a dependency added to the image is not hidden
+    # behind the previous build's copy.
     - ../../apps/backend:/app
     - /app/.venv
   depends_on:
@@ -114,7 +116,11 @@ services:
     command:
       - sh
       - -c
-      - uv run python manage.py migrate --noinput && uv run python manage.py runserver 0.0.0.0:8000
+      # The same server as production, reloading when the mounted source changes.
+      - >-
+        uv run python manage.py migrate --noinput &&
+        exec uv run uvicorn directory_backend.asgi:application --host 0.0.0.0 --port 8000
+        --reload --lifespan off --no-access-log --no-proxy-headers
     ports:
       - "8000:8000"
 

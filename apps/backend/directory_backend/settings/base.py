@@ -65,6 +65,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # First: probes from inside the machine must not depend on the Host header or HTTPS.
+    "health.middleware.HealthProbeMiddleware",
     "core.middleware.RequestIdMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "platform_settings.middleware.MaintenanceModeMiddleware",
@@ -114,7 +116,15 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "accounts.authentication.BearerAccessTokenAuthentication",
     ],
+    # Applies to every view that does not name its own throttles (see core/throttles.py).
+    "DEFAULT_THROTTLE_CLASSES": [
+        "core.throttles.AnonDefaultThrottle",
+        "core.throttles.UserDefaultThrottle",
+        "core.throttles.WebServerThrottle",
+    ],
     "DEFAULT_THROTTLE_RATES": {
+        "anon_default": env("THROTTLE_ANON_DEFAULT", "600/minute"),
+        "user_default": env("THROTTLE_USER_DEFAULT", "1200/minute"),
         "otp_start": "5/hour",
         "otp_verify": "10/hour",
         "login": "10/minute",
@@ -135,7 +145,7 @@ REST_FRAMEWORK = {
         # Anonymous public reads from the website server (see WEB_SERVER_API_KEY).
         "web_server": env("THROTTLE_WEB_SERVER", "3000/minute"),
     },
-    # How many reverse proxies sit in front of the app. Unset (the default), `ContactThrottle`
+    # How many reverse proxies sit in front of the app. Unset (the default), every throttle
     # identifies an anonymous caller by REMOTE_ADDR alone and ignores X-Forwarded-For, which a
     # client could otherwise forge to escape the limit. Set it to the real proxy count (for
     # example 1 behind one load balancer) to take the client address from X-Forwarded-For.
@@ -300,13 +310,31 @@ LOGGING = {
         # nearby search. At INFO that writes where somebody stood, to several decimal places,
         # into a log that is kept and shipped. Errors still reach the console.
         #
-        # `django.server` is the development runserver; `django.channels.server` is Daphne,
-        # which is what actually serves production — it was the one still writing them.
+        # `django.server` is the development runserver, `django.channels.server` is Daphne
+        # behind it, and `uvicorn.access` is the server that runs everywhere else. Uvicorn is
+        # also started with --no-access-log, so neither alone has to hold.
         "django.server": {"level": "WARNING"},
         "django.channels.server": {"level": "WARNING"},
+        "uvicorn.access": {"level": "WARNING"},
         "celery": {"level": "INFO"},
     },
 }
+
+# What the console's system page reports about this deployment. ENVIRONMENT is the same name
+# the deploy sets for everything else; the schema hash is the contract this build serves, taken
+# from the deploy's environment or, in a checkout, from the committed openapi/schema.sha256.
+ENVIRONMENT_NAME = env("ENVIRONMENT", "development")
+
+
+def _committed_schema_hash() -> str:
+    path = BASE_DIR.parent.parent / "openapi" / "schema.sha256"
+    try:
+        return path.read_text(encoding="utf-8").split()[0]
+    except (OSError, IndexError):
+        return ""
+
+
+OPENAPI_SCHEMA_HASH = env("OPENAPI_SCHEMA_HASH", "") or _committed_schema_hash() or "unavailable"
 
 # Optional error reporting. Nothing is sent unless SENTRY_DSN is set; personal data is
 # never attached (send_default_pii=False).

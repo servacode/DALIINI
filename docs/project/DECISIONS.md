@@ -994,6 +994,30 @@ https://claude.ai/artifact/RLeGePFPSRRtDGws6tizje
 **Not in this decision:** the layouts. The site, the console and the app keep their current
 screens in the new identity until phases 3, 4 and 5 redesign them.
 
+## DECISION-061 — Uvicorn serves the API, and every route has a limit
+
+**Date:** 2026-10-03 · **Phase 2.1 of the roadmap.**
+
+**Decision:**
+
+* **Server.** Uvicorn replaces Daphne in the image, both blueprints and the compose stack:
+  several worker processes (`WEB_CONCURRENCY`, 2 by default) where Daphne ran one, with the
+  Redis channel layer carrying events between them. It is started with `--no-access-log`, because
+  its request line would carry a person's coordinates, and with `--no-proxy-headers`, so the
+  client address and scheme are worked out in one place only (`DRF_NUM_PROXIES`,
+  `SECURE_PROXY_SSL_HEADER`). Daphne stays installed for `manage.py runserver`.
+* **Limits.** `DEFAULT_THROTTLE_CLASSES` gives every view without its own throttles a generous
+  backstop: 600 a minute per anonymous address, 1,200 per account, the website server's keyed
+  reads under its own `web_server` limit. Anonymous callers are told apart by the connection's
+  address unless `DRF_NUM_PROXIES` says how many proxies to trust, in every throttle and not only
+  the contact form's, so a forged `X-Forwarded-For` buys nothing. Production refuses to start
+  without `DRF_NUM_PROXIES`, because unstated it would put every visitor behind one limit.
+* **Strangers get 404.** An owner route asked about a facility by someone who does not manage it
+  answers 404, not 403, so the answer does not confirm that the facility exists.
+* **Probes answer first.** `/health/live/` and `/health/ready/` are answered before host and
+  HTTPS checks. Docker's own probe asks `127.0.0.1` over plain HTTP, which production refused
+  with 400, so a healthy container would have been reported dead.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

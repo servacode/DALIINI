@@ -20,6 +20,7 @@ dependencies = [
   "dj-database-url>=3,<4",
   "cryptography>=50,<51",
   "sentry-sdk>=2,<3",
+  "uvicorn[standard]>=0.37,<1",
 ]
 
 [dependency-groups]
