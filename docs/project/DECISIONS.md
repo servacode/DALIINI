@@ -2237,6 +2237,78 @@ implementations that disagree would mean two apps that disagree.
   session, preferences, location and the cache.
 * It shows its first screens.
 
+## DECISION-092 — The iPhone's platform parts: Android's storage shared whole, and the rest on Apple's frameworks
+
+**Date:** 2026-10-03 · **Phase 8.8 of the roadmap.**
+
+**Why:** the shared repositories stand on four platform contracts: the preferences, the cache
+and the device's own stores, the position, and the network's state. On Android each has an
+implementation in androidMain (DECISION-087). The iPhone needs the same four, and the transport
+(DECISION-091) needs an HTTP engine. For storage there were two ways to get them: write iPhone
+versions beside Android's, or make Android's own code run on both. Two versions of a database's
+queries, or of the preferences' keys, would be two places to keep in step for the life of the app.
+
+**Decision:**
+
+* **The preferences are one implementation.**
+  * `PreferencesRepository` and `StoredAnonymousId` move from androidMain to common code, on
+    DataStore's multiplatform core. They keep the same class names and the same keys, and
+    a test pins the keys Android has always written.
+  * They share one `DirectoryDataStore`, because DataStore allows one instance per file.
+    * Android makes it from its Context: the same file as before, `directory_preferences`.
+    * The iPhone makes it under Application Support.
+  * The anonymous id is still a random version-4 UUID in lower case, now from `kotlin.uuid`.
+* **The database is one implementation.**
+  * Room's entities, both DAOs, the database and the three stores built on them
+    (`PublicCacheDataSource`, `RoomRecentlyViewedStore`, `RoomEmergencyNumbersCache`) move to
+    common code.
+  * Room generates them for Android and for both iPhone targets.
+  * The schema is unchanged; `schemas/…/2.json` is byte for byte the same.
+  * Each platform only opens the database:
+    * Android, in androidMain, with its framework SQLite and the 1→2 migration (only Android
+      ever had a version 1).
+    * The iPhone, in iosMain, with the system's SQLite (`NativeSQLiteDriver`, linked with
+      `-lsqlite3`). Its driver is androidx.sqlite 2.7 on the iPhone alone: the 2.6 that Room
+      brings refers to `sqlite3_load_extension`, which Apple's SQLite is built without, and
+      nothing links (b/434324365).
+* **Nothing the app stores on the iPhone goes into its backups.** The folders that hold the
+  database and the preferences are excluded from iCloud backup. This matches Android's
+  `allowBackup="false"` and Apple's rule for anything an app can download again.
+* **On Apple's frameworks, with Android's rules:**
+  * **`IosLocationProvider` (Core Location):**
+    * It never asks for the permission; without it, every call answers PermissionDenied.
+    * It waits for a fresh fix up to the timeout, then falls back to the last known position.
+    * `precise` means the reader allowed the precise position.
+    * A stream sends at most one position per interval, never faster than twice a second.
+    * Only a denial ends a stream.
+  * **`IosNetworkMonitor` (the Network framework's path monitor):** "unmetered" means neither
+    expensive (mobile data, a hotspot) nor constrained (Low Data Mode).
+  * **`darwinEngine()`:** Ktor on NSURLSession. A refused connection reaches the app as offline,
+    as OkHttp's does on Android.
+* **Tested on the iPhone simulator,** by the macOS job that already runs every shared module's
+  tests there:
+  * the cache, the recently viewed list and the emergency numbers on the system's SQLite;
+  * the preferences written to a real file by one instance and read by the next;
+  * the folders' backup exclusion;
+  * the location and network rules;
+  * a refused connection through the real engine.
+
+  The preferences' common tests also run on Android. The job selects Xcode 26, because Kotlin
+  2.3's iOS libraries are built against its SDK and CoreLocation does not link with an older one.
+* **The JVM harness** compiles from Maven Central alone, so it leaves out the files that need
+  Room or DataStore, which come from Google Maven. It compiles exactly what it compiled while
+  those files sat in androidMain.
+
+**Not here:** the session's refresh secret in the Keychain. The simulator lets only a process
+inside an app reach the Keychain, and the shared modules' tests run as plain processes. The
+vault arrives with the app, tested inside it.
+
+**Next:** the iPhone app's shell.
+* An Xcode project that CI builds and tests on the simulator.
+* The Keychain vault, tested inside the app.
+* The shared layers wired by hand.
+* The first screens.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

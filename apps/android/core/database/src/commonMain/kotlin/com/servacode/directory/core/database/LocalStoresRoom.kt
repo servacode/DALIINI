@@ -7,15 +7,14 @@ import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
+import com.servacode.directory.core.inject.Inject
+import com.servacode.directory.core.inject.Singleton
 import com.servacode.directory.core.model.EmergencyNumber
 import com.servacode.directory.core.model.EmergencyScope
 import com.servacode.directory.core.model.RecentFacility
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
-import javax.inject.Singleton
+import kotlin.time.Clock
 
 @Entity(tableName = "recently_viewed")
 data class RecentlyViewedEntity(
@@ -109,7 +108,7 @@ class RoomEmergencyNumbersCache @Inject constructor(
         }
 
     override suspend fun write(provinceId: String?, values: List<EmergencyNumber>) {
-        val now = System.currentTimeMillis()
+        val now = Clock.System.now().toEpochMilliseconds()
         val rows = values.groupBy { if (it.scope == EmergencyScope.NATIONAL) NATIONAL else provinceId ?: NATIONAL }
             .flatMap { (key, group) ->
                 group.mapIndexed { index, value ->
@@ -123,24 +122,5 @@ class RoomEmergencyNumbersCache @Inject constructor(
 
     private companion object {
         const val NATIONAL = "national"
-    }
-}
-
-/**
- * Version 1 to 2: two tables for what the reader keeps on the device, added without touching
- * the cache already there. The SQL is Room's own for these entities (schemas/…/2.json).
- */
-val MIGRATION_1_2 = object : Migration(1, 2) {
-    override fun migrate(db: SupportSQLiteDatabase) {
-        db.execSQL(
-            "CREATE TABLE IF NOT EXISTS `recently_viewed` (`facilityId` TEXT NOT NULL, `nameAr` TEXT NOT NULL, " +
-                "`categoryNameAr` TEXT, `viewedAtEpochMillis` INTEGER NOT NULL, PRIMARY KEY(`facilityId`))",
-        )
-        db.execSQL(
-            "CREATE TABLE IF NOT EXISTS `emergency_number_cache` (`cacheKey` TEXT NOT NULL, " +
-                "`position` INTEGER NOT NULL, `nameAr` TEXT NOT NULL, `number` TEXT NOT NULL, " +
-                "`scope` TEXT NOT NULL, `provinceId` TEXT, `updatedAtEpochMillis` INTEGER NOT NULL, " +
-                "PRIMARY KEY(`cacheKey`, `position`))",
-        )
     }
 }

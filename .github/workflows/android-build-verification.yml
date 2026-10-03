@@ -250,6 +250,19 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # Kotlin 2.3's iOS platform libraries are built against the Xcode 26 SDK: linking with an
+      # older one fails on what it lacks (CoreLocation's `_LocationEssentials`). The image's
+      # default is older, so the newest Xcode 26 it carries is chosen.
+      - name: Use Xcode 26
+        run: |
+          xcode=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$xcode" ]; then
+            ls -d /Applications/Xcode*.app
+            echo "::error::This runner has no Xcode 26."
+            exit 1
+          fi
+          sudo xcode-select -s "$xcode/Contents/Developer"
+
       - name: Record the toolchain
         run: |
           java -version

@@ -1,29 +1,25 @@
 package com.servacode.directory.core.datastore
 
-import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
+import com.servacode.directory.core.inject.Inject
+import com.servacode.directory.core.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
-import javax.inject.Singleton
 
-/* Internal rather than private: the anonymous id lives in the same store, in its own file. */
-internal val Context.directoryDataStore by preferencesDataStore(name = "directory_preferences")
-
+/**
+ * The device preferences, kept in the preferences DataStore. The same class and the same keys
+ * on Android and on the iPhone (DECISION-092); only where the file lives differs.
+ */
 @Singleton
 class PreferencesRepository @Inject constructor(
-    @ApplicationContext private val context: Context,
+    file: DirectoryDataStore,
 ) : DirectoryPreferencesStore {
-    override val values: Flow<DirectoryPreferences> = context.directoryDataStore.data.map { prefs ->
+    private val store = file.store
+
+    override val values: Flow<DirectoryPreferences> = store.data.map { prefs ->
         DirectoryPreferences(
             selectedProvinceId = prefs[SELECTED_PROVINCE],
             locationPreference = prefs[LOCATION_PREFERENCE]
@@ -49,34 +45,34 @@ class PreferencesRepository @Inject constructor(
     }
 
     override suspend fun selectProvince(id: String) {
-        context.directoryDataStore.edit { it[SELECTED_PROVINCE] = id }
+        store.edit { it[SELECTED_PROVINCE] = id }
     }
 
     override suspend fun setLocationPreference(value: LocationPreference) {
-        context.directoryDataStore.edit { it[LOCATION_PREFERENCE] = value.name }
+        store.edit { it[LOCATION_PREFERENCE] = value.name }
     }
 
     override suspend fun setWelcomeCompleted() {
-        context.directoryDataStore.edit { it[WELCOME_COMPLETED] = true }
+        store.edit { it[WELCOME_COMPLETED] = true }
     }
 
     override suspend fun rememberPlace(label: String, provinceId: String?) {
-        context.directoryDataStore.edit { prefs ->
+        store.edit { prefs ->
             prefs[PLACE_LABEL] = label
             if (provinceId == null) prefs.remove(PLACE_PROVINCE) else prefs[PLACE_PROVINCE] = provinceId
         }
     }
 
     override suspend fun setOfflineMapDeclined(value: Boolean) {
-        context.directoryDataStore.edit { it[OFFLINE_MAP_DECLINED] = value }
+        store.edit { it[OFFLINE_MAP_DECLINED] = value }
     }
 
     override suspend fun setThemePreference(value: ThemePreference) {
-        context.directoryDataStore.edit { it[THEME_PREFERENCE] = value.name }
+        store.edit { it[THEME_PREFERENCE] = value.name }
     }
 
     override suspend fun setNotificationPreferences(value: NotificationPreferences) {
-        context.directoryDataStore.edit {
+        store.edit {
             it[NOTIFY_DUTY] = value.dutyReminders
             it[NOTIFY_NEWS] = value.provinceNews
             it[NOTIFY_APPLICATIONS] = value.applicationStatus
@@ -84,15 +80,15 @@ class PreferencesRepository @Inject constructor(
     }
 
     override suspend fun setDataSaver(enabled: Boolean) {
-        context.directoryDataStore.edit { it[DATA_SAVER] = enabled }
+        store.edit { it[DATA_SAVER] = enabled }
     }
 
     override suspend fun setDataSaverSuggested() {
-        context.directoryDataStore.edit { it[DATA_SAVER_SUGGESTED] = true }
+        store.edit { it[DATA_SAVER_SUGGESTED] = true }
     }
 
     override suspend fun setUpdateOffered(versionCode: Int) {
-        context.directoryDataStore.edit { it[UPDATE_OFFERED] = versionCode }
+        store.edit { it[UPDATE_OFFERED] = versionCode }
     }
 
     private companion object {
@@ -111,12 +107,4 @@ class PreferencesRepository @Inject constructor(
         val DATA_SAVER_SUGGESTED = booleanPreferencesKey("data_saver_suggested")
         val UPDATE_OFFERED = intPreferencesKey("update_offered_version_code")
     }
-}
-
-@Module
-@InstallIn(SingletonComponent::class)
-abstract class PreferencesBindings {
-    @Binds
-    @Singleton
-    abstract fun bindPreferencesStore(impl: PreferencesRepository): DirectoryPreferencesStore
 }

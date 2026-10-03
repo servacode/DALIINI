@@ -1,5 +1,7 @@
 package com.servacode.directory.core.database
 
+import com.servacode.directory.core.inject.Inject
+import com.servacode.directory.core.inject.Singleton
 import com.servacode.directory.core.model.CategoryTags
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.FacilitySummary
@@ -8,8 +10,7 @@ import com.servacode.directory.core.model.Province
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import javax.inject.Inject
-import javax.inject.Singleton
+import kotlin.time.Clock
 
 @Singleton
 class PublicCacheDataSource @Inject constructor(
@@ -17,12 +18,14 @@ class PublicCacheDataSource @Inject constructor(
 ) : PublicCache {
     private val json = Json { ignoreUnknownKeys = true }
 
+    private fun now(): Long = Clock.System.now().toEpochMilliseconds()
+
     override suspend fun provinces(): List<Province> = dao.provinces().mapNotNull {
         runCatching { json.decodeFromString<Province>(it.payloadJson) }.getOrNull()
     }
 
     override suspend fun putProvinces(values: List<Province>) {
-        val now = System.currentTimeMillis()
+        val now = now()
         // Replace, not merge: a province the backend stopped serving must not linger offline.
         dao.clearProvinces()
         dao.putProvinces(
@@ -41,7 +44,7 @@ class PublicCacheDataSource @Inject constructor(
             HomeSnapshotEntity(
                 provinceId = value.province.id,
                 payloadJson = json.encodeToString(value),
-                updatedAtEpochMillis = System.currentTimeMillis(),
+                updatedAtEpochMillis = now(),
             ),
         )
         // The widget redraws from this snapshot; it never asks the backend on its own for it.
@@ -68,7 +71,7 @@ class PublicCacheDataSource @Inject constructor(
                     sortRank = existing?.sortRank ?: Int.MAX_VALUE,
                     detailPayloadJson = json.encodeToString(value),
                     summaryPayloadJson = json.encodeToString(value.summary),
-                    updatedAtEpochMillis = System.currentTimeMillis(),
+                    updatedAtEpochMillis = now(),
                 ),
             ),
         )
@@ -84,7 +87,7 @@ class PublicCacheDataSource @Inject constructor(
                 id = categoryId,
                 provinceId = provinceId,
                 payloadJson = json.encodeToString(value),
-                updatedAtEpochMillis = System.currentTimeMillis(),
+                updatedAtEpochMillis = now(),
             ),
         )
     }
@@ -98,7 +101,7 @@ class PublicCacheDataSource @Inject constructor(
         // Details were fetched separately and stay valid; carry them across the rewrite.
         val details = dao.facilities(provinceId, categoryId).associate { it.id to it.detailPayloadJson }
         if (offset == 0) dao.clearDirectory(provinceId, categoryId)
-        val now = System.currentTimeMillis()
+        val now = now()
         dao.putFacilities(
             values.mapIndexed { index, value ->
                 FacilityCacheEntity(

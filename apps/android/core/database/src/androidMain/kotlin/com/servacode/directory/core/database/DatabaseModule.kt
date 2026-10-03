@@ -14,7 +14,7 @@ import javax.inject.Singleton
 object DatabaseModule {
     @Provides @Singleton
     fun provideDatabase(@ApplicationContext context: Context): DirectoryDatabase =
-        Room.databaseBuilder(context, DirectoryDatabase::class.java, "directory-cache.db")
+        Room.databaseBuilder(context, DirectoryDatabase::class.java, DirectoryDatabase.FILE_NAME)
             .addMigrations(MIGRATION_1_2)
             .build()
 
