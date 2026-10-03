@@ -5,8 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.FacilityReportReason
 import com.servacode.directory.core.model.toAppError
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -49,10 +47,9 @@ data class FacilityReportUiState(
  *
  * It works signed out: a report is about the facility, not about the reader. The facility is
  * passed in with [submit] rather than read from the route, so the sheet has no navigation of its
- * own to know about.
+ * own to know about. Android's navigation asks Hilt for the subclass in androidMain.
  */
-@HiltViewModel
-class FacilityReportViewModel @Inject constructor(
+open class FacilityReportViewModel(
     private val report: ReportFacilityUseCase,
 ) : ViewModel() {
     private val _state = MutableStateFlow(FacilityReportUiState())

@@ -2,3 +2,6 @@
 // to a server: a release is pointed at the real API by the build that makes it, never by this file.
 API_BASE_URL = <API_BASE_URL>
 ALLOW_CLEARTEXT = NO
+// The site a shared facility link points at. A reserved name that never resolves (RFC 2606):
+// the build that makes a release gives the real host, never this file.
+APP_LINK_HOST = root-domain.invalid

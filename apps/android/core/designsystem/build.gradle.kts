@@ -24,6 +24,8 @@ kotlin {
         androidMain {
             dependencies {
                 implementation(libs.androidx.core)
+                // The system's back, for DirectoryBackHandler.
+                implementation(libs.androidx.activity.compose)
                 implementation(libs.coil.compose)
                 implementation(libs.coil.network.okhttp)
             }

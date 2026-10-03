@@ -2568,6 +2568,60 @@ drew for itself. Two things in it were Android's alone:
 
 **Next:** the facility page (screen 08) and its report, which the home and search open.
 
+## DECISION-097 — The facility page is shared; the iPhone's actions go to its own apps
+
+**Date:** 2026-10-03 · **Phase 8.13 of the roadmap.**
+
+**Why:** the facility page (screen 08), with its report sheet and its photos (screen 10), is
+what the home and search open. Four things in it were Android's alone:
+* the system back that closes the photos;
+* the facility read from the navigation route;
+* a clock read from `System`;
+* the words, with Arabic plurals.
+
+**Decision:**
+
+* **The page, its report sheet's view model and its words move to common code** on the
+  DECISION-095 pattern. `HiltFacilityViewModel` reads the facility from
+  `DirectoryRoute.FacilityDetailRoute` and hands the id to the shared view model; the iPhone
+  passes the id it navigated with.
+* **The design system has `DirectoryBackHandler`.**
+  * **Android:** the system back button and gesture, as before.
+  * **iPhone:** nothing, since it has no system back. The page's own back control closes the
+    photos there.
+* **Compose resources fill only numbered placeholders.** The plurals' `%d` are now `%1$d`, and a
+  qualifier fails on any unnumbered one, or any wrapped word, in shared resources.
+  * Android filled a number in a sentence by the phone's locale, which for Arabic can give
+    Arabic-Indic digits.
+  * Compose writes Western digits, as the app's dates and distances already do.
+  * A simulator test reads «تم التحقق قبل 3 أيام» back, which proves the Arabic plural on the
+    iPhone.
+* **The iPhone shell has a back stack.** The places are the province, the home, search and a
+  facility.
+  * Each place keeps its view models in a store of its own, cleared when the place is left, as
+    Android's navigation clears a destination's. Search keeps its results under a facility opened
+    from it, and choosing another province starts again from a new home.
+* **On the iPhone a facility's actions go to the phone's own apps:**
+  * the dialer for a call;
+  * the WhatsApp link;
+  * the share sheet, with the facility's name and the site's link to it.
+    * The site's host is a build setting, `APP_LINK_HOST`, beside the API's.
+    * It defaults to the reserved `.invalid` names Android's local build uses.
+    * It is read into `ShellConfiguration.appLinkHost`.
+  * Apple Maps for the way there. Android shows its own route first; the iPhone's comes with the
+    map.
+
+  Signing in to rate or save opens nothing on the iPhone until the account screens move.
+* **Tests:**
+  * The facility view model in common tests: the page, the saved page offline, the error.
+  * The report sheet's tests, ported to common.
+  * The shell's back stack and its stores, and the shared text, on the simulator.
+  * A simulator test draws the page with its Arabic age and hands over its number.
+
+**Next:** the account screens (sign in and register, the account, favourites, notices), so the
+iPhone can sign in; then the owner's screens, onboarding and settings; the map and navigation
+last.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

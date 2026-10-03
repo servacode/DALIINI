@@ -10,6 +10,7 @@ final class ShellTests: XCTestCase {
         // Config/Debug.xcconfig: a development backend on this machine.
         XCTAssertEqual(configuration.apiBaseUrl, "http://localhost:8000/")
         XCTAssertTrue(configuration.allowCleartext)
+        XCTAssertEqual(configuration.appLinkHost, "staging.root-domain.invalid")
     }
 
     func testTheSharedScreensLoadInTheirViewController() {

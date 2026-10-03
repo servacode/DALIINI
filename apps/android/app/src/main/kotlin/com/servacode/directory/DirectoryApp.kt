@@ -48,7 +48,7 @@ import com.servacode.directory.feature.bootstrap.StartDestination
 import com.servacode.directory.feature.bootstrap.WelcomeScreen
 import com.servacode.directory.feature.duty.DutyRoute
 import com.servacode.directory.feature.duty.DutyRosterRoute
-import com.servacode.directory.feature.facility.FacilityScreen
+import com.servacode.directory.feature.facility.FacilityRoute
 import com.servacode.directory.feature.home.HomeRoute
 import com.servacode.directory.feature.map.MapScreen
 import com.servacode.directory.feature.navigation.BuiltInNavigationScreen
@@ -228,7 +228,7 @@ fun DirectoryApp(
         }
         composable<DirectoryRoute.FacilityDetailRoute> { backStackEntry ->
             val facilityId = backStackEntry.toRoute<DirectoryRoute.FacilityDetailRoute>().id
-            FacilityScreen(
+            FacilityRoute(
                 onDirections = { latitude, longitude ->
                     // The way there is shown before it is followed; starting is the user's own
                     // decision, on the next screen.

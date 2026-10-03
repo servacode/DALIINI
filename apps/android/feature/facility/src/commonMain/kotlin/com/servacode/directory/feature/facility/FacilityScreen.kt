@@ -12,7 +12,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
@@ -20,7 +19,6 @@ import com.servacode.directory.core.designsystem.DirectoryPrimaryButton
 import com.servacode.directory.core.designsystem.DirectoryTextField
 import com.servacode.directory.core.model.FacilityReportReason
 import androidx.compose.ui.semantics.Role
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -45,20 +43,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.ActionCircle
 import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.AvailabilityPill
+import com.servacode.directory.core.designsystem.DirectoryBackHandler
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcon
@@ -82,6 +78,9 @@ import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.designsystem.StarPicker
 import com.servacode.directory.core.model.BusinessHour
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Clock
 
 /**
  * Screen 08. What the facility is, then what can be done about it, then the rest.
@@ -91,6 +90,8 @@ import com.servacode.directory.core.model.BusinessHour
  */
 @Composable
 fun FacilityScreen(
+    viewModel: FacilityViewModel,
+    reportViewModel: FacilityReportViewModel,
     onDirections: (Double, Double) -> Unit,
     onSignIn: () -> Unit,
     onCall: (String) -> Unit,
@@ -98,8 +99,6 @@ fun FacilityScreen(
     /** Hands the facility's name and its public link to whatever the phone shares with. */
     onShare: (String) -> Unit,
     onBack: () -> Unit,
-    viewModel: FacilityViewModel = hiltViewModel(),
-    reportViewModel: FacilityReportViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val report by reportViewModel.state.collectAsStateWithLifecycle()
@@ -117,7 +116,7 @@ fun FacilityScreen(
     // facility already loaded, and nothing is fetched to show them larger.
     var photosOpen by remember { mutableStateOf(false) }
     val photos = (state as? FacilityUiState.Content)?.value?.imageUrls.orEmpty()
-    BackHandler(enabled = photosOpen) { photosOpen = false }
+    DirectoryBackHandler(enabled = photosOpen) { photosOpen = false }
 
     if (photosOpen && photos.isNotEmpty()) {
         val content = state as? FacilityUiState.Content
@@ -394,7 +393,7 @@ private fun FacilityBody(
 @Composable
 private fun TrustLine(facts: TrustFacts) {
     if (facts.isEmpty) return
-    val now = System.currentTimeMillis()
+    val now = Clock.System.now().toEpochMilliseconds()
     val verifiedAt = facts.verifiedAt
     val parts = listOfNotNull(
         verifiedAt?.let { FacilityCopy.verified(FacilityAge.of(it, now)) },
@@ -548,79 +547,78 @@ private fun HourRow(hour: BusinessHour) {
 
 /** The words of a facility's page, provisional until product copy is approved. */
 object FacilityCopy {
-    val BACK: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_back)
-    val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_error)
-    val CALL: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_call)
-    val DIRECTIONS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_directions)
-    val WHATSAPP: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_whatsapp)
-    val RATINGS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_ratings)
-    val SAVE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_save)
-    val SAVED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_saved)
-    val ADDRESS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_address)
-    val HOURS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_hours)
-    val ABOUT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_about)
-    val SPECIALTIES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_specialties)
-    val SERVICES: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_services)
-    val YOUR_RATING: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_your_rating)
-    val RATING_CHANGE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_rating_change)
-    val RATING_REMOVE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_rating_remove)
+    val BACK: String @Composable get() = stringResource(Res.string.facility_back)
+    val ERROR: String @Composable get() = stringResource(Res.string.facility_error)
+    val CALL: String @Composable get() = stringResource(Res.string.facility_call)
+    val DIRECTIONS: String @Composable get() = stringResource(Res.string.facility_directions)
+    val WHATSAPP: String @Composable get() = stringResource(Res.string.facility_whatsapp)
+    val RATINGS: String @Composable get() = stringResource(Res.string.facility_ratings)
+    val SAVE: String @Composable get() = stringResource(Res.string.facility_save)
+    val SAVED: String @Composable get() = stringResource(Res.string.facility_saved)
+    val ADDRESS: String @Composable get() = stringResource(Res.string.facility_address)
+    val HOURS: String @Composable get() = stringResource(Res.string.facility_hours)
+    val ABOUT: String @Composable get() = stringResource(Res.string.facility_about)
+    val SPECIALTIES: String @Composable get() = stringResource(Res.string.facility_specialties)
+    val SERVICES: String @Composable get() = stringResource(Res.string.facility_services)
+    val YOUR_RATING: String @Composable get() = stringResource(Res.string.facility_your_rating)
+    val RATING_CHANGE: String @Composable get() = stringResource(Res.string.facility_rating_change)
+    val RATING_REMOVE: String @Composable get() = stringResource(Res.string.facility_rating_remove)
     val SIGN_IN_TO_RATE: String
-        @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_sign_in_to_rate)
-    val SHARE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_share)
-    val PHOTOS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_photos)
-    val PHOTO_OPEN: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_photo_open)
+        @Composable get() = stringResource(Res.string.facility_sign_in_to_rate)
+    val SHARE: String @Composable get() = stringResource(Res.string.facility_share)
+    val PHOTOS: String @Composable get() = stringResource(Res.string.facility_photos)
+    val PHOTO_OPEN: String @Composable get() = stringResource(Res.string.facility_photo_open)
 
     /** One photo of the gallery, named by the facility and its place among the others. */
-    @Composable @ReadOnlyComposable
+    @Composable
     fun photo(name: String, position: Int, count: Int): String =
-        stringResource(R.string.facility_photo, name, position, count)
-    val CLOSE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_close)
-    val REPORT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_report)
-    val REPORT_NOTE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_report_note)
-    val REPORT_SEND: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_report_send)
-    val REPORT_THANKS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.facility_report_thanks)
+        stringResource(Res.string.facility_photo, name, position, count)
+    val CLOSE: String @Composable get() = stringResource(Res.string.facility_close)
+    val REPORT: String @Composable get() = stringResource(Res.string.facility_report)
+    val REPORT_NOTE: String @Composable get() = stringResource(Res.string.facility_report_note)
+    val REPORT_SEND: String @Composable get() = stringResource(Res.string.facility_report_send)
+    val REPORT_THANKS: String @Composable get() = stringResource(Res.string.facility_report_thanks)
 
-    @Composable @ReadOnlyComposable
-    fun whatsAppNumber(number: String): String = stringResource(R.string.facility_whatsapp_number, number)
+    @Composable
+    fun whatsAppNumber(number: String): String = stringResource(Res.string.facility_whatsapp_number, number)
 
-    @Composable @ReadOnlyComposable
-    fun noteCount(length: Int, max: Int): String = stringResource(R.string.facility_report_note_count, length, max)
+    @Composable
+    fun noteCount(length: Int, max: Int): String = stringResource(Res.string.facility_report_note_count, length, max)
 
     @Composable
     fun reason(reason: FacilityReportReason): String = DirectoryVocabulary.reportReason(reason)
 
-    @Composable @ReadOnlyComposable
+    @Composable
     fun reportFailure(failure: ReportFailure): String = stringResource(
         when (failure) {
-            ReportFailure.THROTTLED -> R.string.facility_report_throttled
-            ReportFailure.OFFLINE -> R.string.facility_report_offline
-            ReportFailure.OTHER -> R.string.facility_report_failed
+            ReportFailure.THROTTLED -> Res.string.facility_report_throttled
+            ReportFailure.OFFLINE -> Res.string.facility_report_offline
+            ReportFailure.OTHER -> Res.string.facility_report_failed
         },
     )
 
     /** "تم التحقق اليوم" / "تم التحقق قبل ٣ أيام". */
     @Composable
-    fun verified(age: FacilityAge): String = stringResource(R.string.facility_verified, age(age))
+    fun verified(age: FacilityAge): String = stringResource(Res.string.facility_verified, age(age))
 
     /** "آخر تحديث قبل شهر". */
     @Composable
-    fun updated(age: FacilityAge): String = stringResource(R.string.facility_updated, age(age))
+    fun updated(age: FacilityAge): String = stringResource(Res.string.facility_updated, age(age))
 
     /** "آخر تأكيد للمعلومات اليوم": the owner's confirmation, or the operator's check. */
     @Composable
-    fun confirmed(age: FacilityAge): String = stringResource(R.string.facility_confirmed, age(age))
+    fun confirmed(age: FacilityAge): String = stringResource(Res.string.facility_confirmed, age(age))
 
     @Composable
     private fun age(age: FacilityAge): String = when (age) {
-        FacilityAge.Today -> stringResource(R.string.facility_age_today)
-        is FacilityAge.Days -> pluralStringResource(R.plurals.facility_age_days, age.count, age.count)
-        is FacilityAge.Months -> pluralStringResource(R.plurals.facility_age_months, age.count, age.count)
-        is FacilityAge.Years -> pluralStringResource(R.plurals.facility_age_years, age.count, age.count)
+        FacilityAge.Today -> stringResource(Res.string.facility_age_today)
+        is FacilityAge.Days -> pluralStringResource(Res.plurals.facility_age_days, age.count, age.count)
+        is FacilityAge.Months -> pluralStringResource(Res.plurals.facility_age_months, age.count, age.count)
+        is FacilityAge.Years -> pluralStringResource(Res.plurals.facility_age_years, age.count, age.count)
     }
 
     @Composable
-    @ReadOnlyComposable
-    fun rateLabel(stars: Int): String = stringResource(R.string.facility_rate_label, stars)
+    fun rateLabel(stars: Int): String = stringResource(Res.string.facility_rate_label, stars)
 }
 
 /**
@@ -632,7 +630,7 @@ object FacilityCopy {
 @Composable
 private fun PhotosPage(urls: List<String>, name: String?, onBack: () -> Unit) {
     var opened by remember { mutableStateOf<Int?>(null) }
-    BackHandler(enabled = opened != null) { opened = null }
+    DirectoryBackHandler(enabled = opened != null) { opened = null }
 
     val openedIndex = opened
     if (openedIndex != null) {

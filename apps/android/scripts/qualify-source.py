@@ -262,6 +262,25 @@ def check_words() -> None:
     require(not offenders, f"words in Kotlin rather than in resources: {offenders}")
 
 
+def check_shared_words() -> None:
+    """The shared words say what Android's did (DECISIONS 094, 095 and 097).
+
+    Compose resources keep a word exactly as written and fill only numbered placeholders, where
+    Android's folded whitespace and also filled `%s` and `%d` in order. So a shared word is on
+    one line, and every placeholder in it is numbered: an unnumbered one would be shown as is.
+    """
+    offenders: list[str] = []
+    for path in source_paths("*.xml"):
+        if "composeResources" not in path.parts:
+            continue
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            if re.search(r"%(?![0-9]+\$)[a-z]", line) or "%%" in line:
+                offenders.append(f"{path.relative_to(ROOT)}:{number}")
+            if re.search(r"<(string|item)\b[^>]*>[^<]*$", line):
+                offenders.append(f"{path.relative_to(ROOT)}:{number} (wrapped)")
+    require(not offenders, f"shared words Compose would show differently: {offenders}")
+
+
 def check_hygiene() -> None:
     source_files = [*source_paths("*.kt"), *source_paths("*.kts"), *source_paths("*.xml")]
     combined = "\n".join(path.read_text(encoding="utf-8") for path in source_files)
@@ -301,6 +320,7 @@ def main() -> int:
         check_architecture,
         check_design_system,
         check_words,
+        check_shared_words,
         check_hygiene,
     ]
     for check in checks:

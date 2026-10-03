@@ -1,13 +1,19 @@
 package com.servacode.directory.ios
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.uikit.LocalUIViewController
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.servacode.directory.core.designsystem.DirectoryTheme
+import com.servacode.directory.feature.facility.FacilityReportViewModel
+import com.servacode.directory.feature.facility.FacilityScreen
+import com.servacode.directory.feature.facility.FacilityViewModel
 import com.servacode.directory.feature.home.HomeExtrasViewModel
 import com.servacode.directory.feature.home.HomeScreen
 import com.servacode.directory.feature.home.HomeViewModel
@@ -16,69 +22,88 @@ import com.servacode.directory.feature.province.ProvinceViewModel
 import com.servacode.directory.feature.search.SearchScreen
 import com.servacode.directory.feature.search.SearchViewModel
 
-/** Where the shell is: the places that are shared screens so far (DECISION-095). */
-internal enum class ShellPlace { HOME, PROVINCE, SEARCH }
-
 /**
  * The iPhone app's screens: Android's own, shared, on the shared design system (DECISIONS 094
- * and 095), with a navigation of the shell's until the app's places are shared too. What the
- * home opens that has not moved yet (a facility, the notices, the emergency numbers) opens
+ * to 097), with the shell's navigation until the app's places are shared too. What a shared
+ * screen opens that has not moved yet (the notices, the emergency numbers, signing in) opens
  * nothing for now (ROADMAP ٨).
  */
 @Composable
 internal fun ShellApp(graph: ShellGraph) {
     DirectoryTheme {
         val preferences by graph.preferences.values.collectAsState(initial = null)
-        val provinceId = (preferences ?: return@DirectoryTheme).selectedProvinceId
-        var place by remember { mutableStateOf(ShellPlace.HOME) }
-        when {
-            provinceId == null -> ShellProvince(graph, onChosen = { place = ShellPlace.HOME })
-            place == ShellPlace.PROVINCE -> ShellProvince(
-                graph,
-                onChosen = { place = ShellPlace.HOME },
-                onBack = { place = ShellPlace.HOME },
-            )
-            place == ShellPlace.SEARCH -> ShellSearch(graph, onBack = { place = ShellPlace.HOME })
-            else -> ShellHome(
-                graph,
-                provinceId,
-                onProvince = { place = ShellPlace.PROVINCE },
-                onSearch = { place = ShellPlace.SEARCH },
-            )
+        val navigation = remember { ShellNavigation() }
+        if ((preferences ?: return@DirectoryTheme).selectedProvinceId == null) {
+            ShellProvince(graph, onChosen = navigation::restart)
+            return@DirectoryTheme
+        }
+        val place = navigation.current
+        // Each place's view models live in its own store, let go when the place is left.
+        val owner = remember(place) {
+            object : ViewModelStoreOwner {
+                override val viewModelStore: ViewModelStore = navigation.store(place)
+            }
+        }
+        CompositionLocalProvider(LocalViewModelStoreOwner provides owner) {
+            when (place) {
+                ShellPlace.Home -> ShellHome(graph, navigation)
+                ShellPlace.Province -> ShellProvince(graph, onChosen = navigation::restart, onBack = navigation::back)
+                ShellPlace.Search -> ShellSearch(graph, navigation)
+                is ShellPlace.Facility -> ShellFacility(graph, place.id, onBack = navigation::back)
+            }
         }
     }
 }
 
-/** The shared province picker, its view model kept for as long as the app runs. */
 @Composable
 private fun ShellProvince(graph: ShellGraph, onChosen: () -> Unit, onBack: (() -> Unit)? = null) {
     val model = viewModel { ProvinceViewModel(graph.provinces) }
     ProvinceScreen(model, onSelected = onChosen, onBack = onBack)
 }
 
-/**
- * The shared home. Its view model reads the province when it loads, so each province has its
- * own, as Android's navigation makes a new one when the province changes.
- */
 @Composable
-private fun ShellHome(graph: ShellGraph, provinceId: String, onProvince: () -> Unit, onSearch: () -> Unit) {
-    val model = viewModel(key = "home:$provinceId") {
-        HomeViewModel(graph.home, graph.homeAds, graph.invalidations, graph.analytics)
-    }
+private fun ShellHome(graph: ShellGraph, navigation: ShellNavigation) {
+    val model = viewModel { HomeViewModel(graph.home, graph.homeAds, graph.invalidations, graph.analytics) }
     val extras = viewModel { HomeExtrasViewModel(graph.recentlyViewed, graph.preferences, graph.network) }
     HomeScreen(
         model,
         extras,
-        onProvince = onProvince,
-        onSearch = onSearch,
-        onFacility = {},
+        onProvince = { navigation.open(ShellPlace.Province) },
+        onSearch = { navigation.open(ShellPlace.Search) },
+        onFacility = { navigation.open(ShellPlace.Facility(it)) },
         onNotifications = {},
     )
 }
 
-/** The shared search. Until the app's places are shared it is one for the run, last query kept. */
 @Composable
-private fun ShellSearch(graph: ShellGraph, onBack: () -> Unit) {
+private fun ShellSearch(graph: ShellGraph, navigation: ShellNavigation) {
     val model = viewModel { SearchViewModel(graph.search, graph.analytics) }
-    SearchScreen(model, onFacility = {}, onBack = onBack)
+    SearchScreen(model, onFacility = { navigation.open(ShellPlace.Facility(it)) }, onBack = navigation::back)
 }
+
+/** Screen 08. Its actions go to the phone's own apps (IosActions). */
+@Composable
+private fun ShellFacility(graph: ShellGraph, id: String, onBack: () -> Unit) {
+    val model = viewModel {
+        FacilityViewModel(id, graph.facility, graph.invalidations, graph.session, graph.recordVisit, graph.analytics)
+    }
+    val report = viewModel { FacilityReportViewModel(graph.reportFacility) }
+    val screen = LocalUIViewController.current
+    FacilityScreen(
+        model,
+        report,
+        onDirections = IosActions::directions,
+        onSignIn = {},
+        onCall = IosActions::call,
+        onWhatsApp = IosActions::open,
+        onShare = { name -> IosActions.share(screen, shareText(name, id, graph.appLinkHost)) },
+        onBack = onBack,
+    )
+}
+
+/**
+ * What is shared for a facility, as Android shares it: its name, and the site's own address for
+ * it, which opens the app where it is installed. A build without the site's host shares the name.
+ */
+internal fun shareText(name: String, id: String, appLinkHost: String): String =
+    if (appLinkHost.isBlank()) name else "$name\nhttps://$appLinkHost/f/$id"

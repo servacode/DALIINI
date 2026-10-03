@@ -128,8 +128,9 @@ def check_location_policy() -> None:
 
 def check_product_integration() -> None:
     app = read("app/src/main/kotlin/com/servacode/directory/DirectoryApp.kt")
+    # Shared with the iPhone since DECISION-097.
     facility = read(
-        "feature/facility/src/androidMain/kotlin/com/servacode/directory/feature/facility/FacilityScreen.kt"
+        "feature/facility/src/commonMain/kotlin/com/servacode/directory/feature/facility/FacilityScreen.kt"
     )
     require("BuiltInNavigationScreen" in app, "built-in navigation destination not wired")
     require("DirectoryRoute.BuiltInNavigation" in app, "navigation route not wired")

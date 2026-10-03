@@ -27,6 +27,10 @@ import com.servacode.directory.core.transport.KtorPublicApi
 import com.servacode.directory.core.transport.KtorRefreshGateway
 import com.servacode.directory.core.transport.TransportClients
 import com.servacode.directory.core.transport.darwinEngine
+import com.servacode.directory.feature.facility.FacilityRepository
+import com.servacode.directory.feature.facility.FacilityUseCase
+import com.servacode.directory.feature.facility.RecordVisitUseCase
+import com.servacode.directory.feature.facility.ReportFacilityUseCase
 import com.servacode.directory.feature.home.HomeAdsRepository
 import com.servacode.directory.feature.home.HomeAdsUseCase
 import com.servacode.directory.feature.home.HomeRepository
@@ -50,6 +54,8 @@ internal class ShellGraph(
     database: DirectoryDatabase,
     val location: LocationProvider,
     val network: NetworkMonitor,
+    /** The site's host, for a facility's shared link; blank in a build that was not given one. */
+    val appLinkHost: String = "",
 ) {
     val maintenance = MaintenanceState()
     val accessTokens: AccessTokenStore = MemoryAccessTokenStore()
@@ -86,6 +92,10 @@ internal class ShellGraph(
     )
     val homeAds = HomeAdsUseCase(HomeAdsRepository(cache, publicApi))
     val search = SearchUseCase(SearchRepository(publicApi, preferences, location))
+    private val facilities = FacilityRepository(cache, publicApi, preferences)
+    val facility = FacilityUseCase(facilities)
+    val reportFacility = ReportFacilityUseCase(facilities)
+    val recordVisit = RecordVisitUseCase(recentlyViewed)
 
     companion object {
         /** The app's graph on the phone's own Keychain, files, position and network. */
@@ -97,6 +107,7 @@ internal class ShellGraph(
             database = iosDirectoryDatabase,
             location = IosLocationProvider(),
             network = IosNetworkMonitor(),
+            appLinkHost = configuration.appLinkHost,
         )
     }
 }

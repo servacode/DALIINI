@@ -10,12 +10,15 @@ import platform.Foundation.NSBundle
 data class ShellConfiguration(
     val apiBaseUrl: String,
     val allowCleartext: Boolean,
+    /** The site's host, as Android's `APP_LINK_HOST`: a facility's shared link is on it. */
+    val appLinkHost: String = "",
 ) {
     companion object {
         fun fromBundle(bundle: NSBundle = NSBundle.mainBundle): ShellConfiguration = ShellConfiguration(
             apiBaseUrl = bundle.objectForInfoDictionaryKey("DaliiniApiBaseUrl") as? String ?: "",
             allowCleartext = (bundle.objectForInfoDictionaryKey("DaliiniAllowCleartext") as? String)
                 ?.trim()?.equals("YES", ignoreCase = true) == true,
+            appLinkHost = (bundle.objectForInfoDictionaryKey("DaliiniAppLinkHost") as? String)?.trim().orEmpty(),
         )
     }
 }

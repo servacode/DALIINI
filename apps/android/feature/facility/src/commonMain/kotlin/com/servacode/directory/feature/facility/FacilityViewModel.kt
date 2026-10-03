@@ -1,22 +1,17 @@
 package com.servacode.directory.feature.facility
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.servacode.directory.core.auth.SessionCoordinator
 import com.servacode.directory.core.auth.SessionState
 import com.servacode.directory.core.database.Loaded
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.analytics.AnalyticsEvent
 import com.servacode.directory.core.analytics.AnalyticsTracker
-import com.servacode.directory.core.model.DirectoryRoute
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.network.RealtimeInvalidation
 import com.servacode.directory.core.network.RealtimeInvalidationBus
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,16 +30,19 @@ sealed interface FacilityUiState {
     data class Error(val error: AppError) : FacilityUiState
 }
 
-@HiltViewModel
-class FacilityViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+/**
+ * One facility's page, on both platforms: [id] is the facility the page was opened for. Android's
+ * navigation asks Hilt for the subclass in androidMain, which reads it from the route
+ * (DECISION-095).
+ */
+open class FacilityViewModel(
+    private val id: String,
     private val facility: FacilityUseCase,
     private val invalidations: RealtimeInvalidationBus,
     private val session: SessionCoordinator,
     private val recordVisit: RecordVisitUseCase,
     private val analytics: AnalyticsTracker,
 ) : ViewModel() {
-    private val id = savedStateHandle.toRoute<DirectoryRoute.FacilityDetailRoute>().id
     private val _state = MutableStateFlow<FacilityUiState>(FacilityUiState.Loading)
     val state: StateFlow<FacilityUiState> = _state.asStateFlow()
     private var loading: Job? = null

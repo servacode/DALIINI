@@ -30,6 +30,7 @@ kotlin {
                 implementation(project(":feature:home"))
                 implementation(project(":feature:province"))
                 implementation(project(":feature:search"))
+                implementation(project(":feature:facility"))
                 implementation(project(":core:analytics"))
                 implementation(libs.ktor.client.core)
                 implementation(libs.kotlinx.coroutines.core)

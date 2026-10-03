@@ -24,6 +24,8 @@ Xcode builds the Kotlin framework itself, before it compiles the app. It runs
 the simulator reaches through the Mac's own loopback. `Config/Release.xcconfig` holds a
 placeholder. The app refuses the placeholder and says it is not connected to a server, so a
 release is pointed at the real API by the build that makes it, never by this repository.
+`APP_LINK_HOST` is the site a shared facility's link points at; both files hold the reserved
+`.invalid` names Android's local build uses until the site is given.
 
 ## What is checked
 
@@ -40,8 +42,7 @@ The shared modules' own tests run on the simulator in the `ios-shared` job.
 
 ## Not yet
 
-* The rest of the real screens. The province picker, the home and search are already the
-  shared screens (DECISIONS 095 and 096); the facility page moves next, and with it what the
-  home and search open.
+* The rest of the real screens. The province picker, the home, search and the facility page
+  are already the shared screens (DECISIONS 095 to 097); signing in and the account move next.
 * The map, notices, and signing for the App Store. Signing needs the owner's Apple developer
   account.

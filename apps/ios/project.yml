@@ -44,6 +44,7 @@ targets:
         # Read by the app at start; set per configuration in Config/*.xcconfig.
         DaliiniApiBaseUrl: $(API_BASE_URL)
         DaliiniAllowCleartext: $(ALLOW_CLEARTEXT)
+        DaliiniAppLinkHost: $(APP_LINK_HOST)
         NSLocationWhenInUseUsageDescription: يستعمل دليني موقعك ليرتّب لك المنشآت بالأقرب ويعرض المسافة إليها، ولا يقرؤه في الخلفية.
         NSAppTransportSecurity:
           # Plain http only to this machine, for a development backend on localhost.

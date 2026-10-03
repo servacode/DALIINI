@@ -5,26 +5,22 @@ import com.servacode.directory.core.model.AppException
 import com.servacode.directory.core.model.FacilityReportReason
 import com.servacode.directory.core.testing.FakePreferences
 import com.servacode.directory.core.testing.FakePublicCache
-import com.servacode.directory.core.testing.MainDispatcherRule
+import com.servacode.directory.core.testing.runMainTest
 import com.servacode.directory.core.testing.ScriptedPublicApi
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Rule
-import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+import kotlin.test.Test
 
 class FacilityReportViewModelTest {
-    @get:Rule val main = MainDispatcherRule()
-
     private val api = ScriptedPublicApi()
     private fun viewModel() = FacilityReportViewModel(
         ReportFacilityUseCase(FacilityRepository(FakePublicCache(), api, FakePreferences("raqqa"))),
     )
 
-    @Test fun `nothing is sent until a reason is chosen`() = runTest(main.dispatcher) {
+    @Test fun `nothing is sent until a reason is chosen`() = runMainTest {
         val model = viewModel()
         assertFalse(model.state.value.canSend)
 
@@ -34,7 +30,7 @@ class FacilityReportViewModelTest {
         assertTrue(api.calls.isEmpty())
     }
 
-    @Test fun `a sent report says so once, and the next sheet starts empty`() = runTest(main.dispatcher) {
+    @Test fun `a sent report says so once and the next sheet starts empty`() = runMainTest {
         api.reportAnswer = { _, _, _ -> }
         val model = viewModel()
         model.choose(FacilityReportReason.CLOSED_PERMANENTLY)
@@ -50,7 +46,7 @@ class FacilityReportViewModelTest {
         assertEquals(FacilityReportUiState(), model.state.value)
     }
 
-    @Test fun `too many reports is its own message, and the choice is kept`() = runTest(main.dispatcher) {
+    @Test fun `too many reports is its own message and the choice is kept`() = runMainTest {
         api.reportAnswer = { _, _, _ -> throw AppException(AppError(AppError.Kind.RATE_LIMITED, status = 429)) }
         val model = viewModel()
         model.choose(FacilityReportReason.WRONG_INFO)
@@ -65,7 +61,7 @@ class FacilityReportViewModelTest {
         assertFalse(state.sent)
     }
 
-    @Test fun `no connection is its own message`() = runTest(main.dispatcher) {
+    @Test fun `no connection is its own message`() = runMainTest {
         // The scripted API fails as offline when no answer is set.
         val model = viewModel()
         model.choose(FacilityReportReason.OTHER)
@@ -76,7 +72,7 @@ class FacilityReportViewModelTest {
         assertEquals(ReportFailure.OFFLINE, model.state.value.failure)
     }
 
-    @Test fun `any other refusal can be tried again`() = runTest(main.dispatcher) {
+    @Test fun `any other refusal can be tried again`() = runMainTest {
         api.reportAnswer = { _, _, _ -> throw AppException(AppError(AppError.Kind.SERVER, status = 500)) }
         val model = viewModel()
         model.choose(FacilityReportReason.OTHER)

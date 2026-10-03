@@ -2,3 +2,6 @@
 // reaches through the Mac's own loopback. `$()` keeps xcconfig from reading `//` as a comment.
 API_BASE_URL = http:/$()/localhost:8000/
 ALLOW_CLEARTEXT = YES
+// The site a shared facility link points at, as Android's local build: a reserved name that
+// never resolves (RFC 2606) until a staging site is given.
+APP_LINK_HOST = staging.root-domain.invalid

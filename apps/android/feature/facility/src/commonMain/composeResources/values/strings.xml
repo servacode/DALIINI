@@ -38,25 +38,25 @@
         <item quantity="zero">اليوم</item>
         <item quantity="one">قبل يوم</item>
         <item quantity="two">قبل يومين</item>
-        <item quantity="few">قبل %d أيام</item>
-        <item quantity="many">قبل %d يومًا</item>
-        <item quantity="other">قبل %d يوم</item>
+        <item quantity="few">قبل %1$d أيام</item>
+        <item quantity="many">قبل %1$d يومًا</item>
+        <item quantity="other">قبل %1$d يوم</item>
     </plurals>
     <plurals name="facility_age_months">
         <item quantity="zero">هذا الشهر</item>
         <item quantity="one">قبل شهر</item>
         <item quantity="two">قبل شهرين</item>
-        <item quantity="few">قبل %d أشهر</item>
-        <item quantity="many">قبل %d شهرًا</item>
-        <item quantity="other">قبل %d شهر</item>
+        <item quantity="few">قبل %1$d أشهر</item>
+        <item quantity="many">قبل %1$d شهرًا</item>
+        <item quantity="other">قبل %1$d شهر</item>
     </plurals>
     <plurals name="facility_age_years">
         <item quantity="zero">هذا العام</item>
         <item quantity="one">قبل سنة</item>
         <item quantity="two">قبل سنتين</item>
-        <item quantity="few">قبل %d سنوات</item>
-        <item quantity="many">قبل %d سنة</item>
-        <item quantity="other">قبل %d سنة</item>
+        <item quantity="few">قبل %1$d سنوات</item>
+        <item quantity="many">قبل %1$d سنة</item>
+        <item quantity="other">قبل %1$d سنة</item>
     </plurals>
 
     <!-- Reporting a problem with the facility's details. -->
