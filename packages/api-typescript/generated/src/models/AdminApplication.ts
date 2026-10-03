@@ -124,6 +124,18 @@ export interface AdminApplication {
      * @memberof AdminApplication
      */
     ownerPhone: string | null;
+    /**
+     * CLAIM only: who asks to own the facility.
+     * @type {string}
+     * @memberof AdminApplication
+     */
+    applicantName: string | null;
+    /**
+     * CLAIM only.
+     * @type {string}
+     * @memberof AdminApplication
+     */
+    applicantPhone: string | null;
 }
 
 
@@ -147,6 +159,8 @@ export function instanceOfAdminApplication(value: object): value is AdminApplica
     if (!('provinceNameAr' in value) || value['provinceNameAr'] === undefined) return false;
     if (!('ownerName' in value) || value['ownerName'] === undefined) return false;
     if (!('ownerPhone' in value) || value['ownerPhone'] === undefined) return false;
+    if (!('applicantName' in value) || value['applicantName'] === undefined) return false;
+    if (!('applicantPhone' in value) || value['applicantPhone'] === undefined) return false;
     return true;
 }
 
@@ -175,6 +189,8 @@ export function AdminApplicationFromJSONTyped(json: any, ignoreDiscriminator: bo
         'provinceNameAr': json['provinceNameAr'],
         'ownerName': json['ownerName'],
         'ownerPhone': json['ownerPhone'],
+        'applicantName': json['applicantName'],
+        'applicantPhone': json['applicantPhone'],
     };
 }
 
@@ -204,6 +220,8 @@ export function AdminApplicationToJSONTyped(value?: AdminApplication | null, ign
         'provinceNameAr': value['provinceNameAr'],
         'ownerName': value['ownerName'],
         'ownerPhone': value['ownerPhone'],
+        'applicantName': value['applicantName'],
+        'applicantPhone': value['applicantPhone'],
     };
 }
 

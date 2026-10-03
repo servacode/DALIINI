@@ -40,6 +40,9 @@ class AdminTaskApplicationsSerializer(serializers.Serializer[Any]):
     change = AdminTaskApplicationBucketSerializer(
         help_text="Edits to live facilities, which stay published while these wait."
     )
+    claim = AdminTaskApplicationBucketSerializer(
+        help_text="Requests to own a facility that nobody owns."
+    )
 
 
 class AdminTaskReportGroupSerializer(serializers.Serializer[Any]):

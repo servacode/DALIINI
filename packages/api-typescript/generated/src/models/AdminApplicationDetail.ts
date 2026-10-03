@@ -167,6 +167,18 @@ export interface AdminApplicationDetail {
      */
     ownerPhone: string | null;
     /**
+     * CLAIM only: who asks to own the facility.
+     * @type {string}
+     * @memberof AdminApplicationDetail
+     */
+    applicantName: string | null;
+    /**
+     * CLAIM only.
+     * @type {string}
+     * @memberof AdminApplicationDetail
+     */
+    applicantPhone: string | null;
+    /**
      * 
      * @type {AdminFacility}
      * @memberof AdminApplicationDetail
@@ -255,6 +267,8 @@ export function instanceOfAdminApplicationDetail(value: object): value is AdminA
     if (!('provinceNameAr' in value) || value['provinceNameAr'] === undefined) return false;
     if (!('ownerName' in value) || value['ownerName'] === undefined) return false;
     if (!('ownerPhone' in value) || value['ownerPhone'] === undefined) return false;
+    if (!('applicantName' in value) || value['applicantName'] === undefined) return false;
+    if (!('applicantPhone' in value) || value['applicantPhone'] === undefined) return false;
     if (!('facility' in value) || value['facility'] === undefined) return false;
     if (!('snapshot' in value) || value['snapshot'] === undefined) return false;
     if (!('previous' in value) || value['previous'] === undefined) return false;
@@ -294,6 +308,8 @@ export function AdminApplicationDetailFromJSONTyped(json: any, ignoreDiscriminat
         'provinceNameAr': json['provinceNameAr'],
         'ownerName': json['ownerName'],
         'ownerPhone': json['ownerPhone'],
+        'applicantName': json['applicantName'],
+        'applicantPhone': json['applicantPhone'],
         'facility': AdminFacilityFromJSON(json['facility']),
         'snapshot': json['snapshot'],
         'previous': json['previous'],
@@ -334,6 +350,8 @@ export function AdminApplicationDetailToJSONTyped(value?: AdminApplicationDetail
         'provinceNameAr': value['provinceNameAr'],
         'ownerName': value['ownerName'],
         'ownerPhone': value['ownerPhone'],
+        'applicantName': value['applicantName'],
+        'applicantPhone': value['applicantPhone'],
         'facility': AdminFacilityToJSON(value['facility']),
         'snapshot': value['snapshot'],
         'previous': value['previous'],

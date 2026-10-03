@@ -16,17 +16,21 @@ public struct AdminTaskApplications: Codable, JSONEncodable, Hashable {
     public var reverification: AdminTaskApplicationBucket
     /** Edits to live facilities, which stay published while these wait. */
     public var change: AdminTaskApplicationBucket
+    /** Requests to own a facility that nobody owns. */
+    public var claim: AdminTaskApplicationBucket
 
-    public init(initial: AdminTaskApplicationBucket, reverification: AdminTaskApplicationBucket, change: AdminTaskApplicationBucket) {
+    public init(initial: AdminTaskApplicationBucket, reverification: AdminTaskApplicationBucket, change: AdminTaskApplicationBucket, claim: AdminTaskApplicationBucket) {
         self.initial = initial
         self.reverification = reverification
         self.change = change
+        self.claim = claim
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case initial
         case reverification
         case change
+        case claim
     }
 
     // Encodable protocol methods
@@ -36,6 +40,7 @@ public struct AdminTaskApplications: Codable, JSONEncodable, Hashable {
         try container.encode(initial, forKey: .initial)
         try container.encode(reverification, forKey: .reverification)
         try container.encode(change, forKey: .change)
+        try container.encode(claim, forKey: .claim)
     }
 }
 

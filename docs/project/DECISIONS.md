@@ -1072,6 +1072,31 @@ owners who keep their listing accurate.
   the proposal shows as a difference, whatever changed live meanwhile. Documents are not asked
   for again. The task board counts these on their own.
 
+## DECISION-064 — Claiming an ownerless facility, and inviting members by phone
+
+**Date:** 2026-10-03 · **Phase 2.4 of the roadmap.**
+
+**Claims («هذه منشأتي»).** Facilities the directory lists itself (DECISION-062), and those the
+syndicate import will bring, have no owner. A signed-in person finds one among the published,
+ownerless facilities where owner registration is open, and asks to own it with a `CLAIM`
+application. The documents are the category's verification requirements, uploaded to the claim
+itself: they belong to the claim (`VerificationEvidence.application`) and to nobody else until it
+is approved, when they become the facility's. Approval makes the claimant the owner and refreshes
+`last_verified_at`; it is refused with 409 `FACILITY_ALREADY_OWNED` if an owner appeared
+meanwhile. Rejection and withdrawal delete the claimant's documents. The facility stays published
+and unchanged throughout. One claim per facility is under review at a time (409 `CLAIM_PENDING`
+for the next), and an account holds at most five open claims, so a squatter can delay a facility by
+one review at most and cannot flood the queue.
+
+**Invitations.** Members were added by account id, which no owner can know. An owner now invites a
+Syrian mobile number as a manager or owner. The answer is the same whether or not the number has
+an account, so the feature does not reveal who is registered; a person with an account is told at
+once, and a person without one is told when they sign up with that number. Only the account with
+that number can accept or decline (anyone else gets 404). An invitation lasts seven days, inviting
+the same number renews it, an owner may revoke it, and accepting can raise a manager to owner but
+never lowers anyone. Adding a member by account id stays for now, marked deprecated, until the
+Android owner screens move to invitations in phase 5.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

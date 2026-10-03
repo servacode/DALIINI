@@ -39,6 +39,9 @@ type Detail = Readonly<{
   provinceNameAr: string;
   ownerName: string | null;
   ownerPhone: string | null;
+  /** CLAIM only: the account asking to own the facility. */
+  applicantName?: string | null;
+  applicantPhone?: string | null;
   snapshot: Record<string, unknown>;
   previous: Record<string, unknown> | null;
   /** CHANGE only: what the owner proposes, and the version of it this page shows. */
@@ -79,6 +82,7 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
   const [toast, setToast] = useState<string | null>(null);
 
   const isChange = detail.data?.kind === "CHANGE";
+  const isClaim = detail.data?.kind === "CLAIM";
   const waiting = detail.data?.status === "SUBMITTED";
   // Where a waiting change would move the facility, beside where the public sees it now.
   const proposedPoint =
@@ -193,8 +197,19 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
                       ]),
                   { label: "التصنيف", value: detail.data.categoryNameAr },
                   { label: "المحافظة", value: detail.data.provinceNameAr },
-                  { label: "مقدّم الطلب", value: detail.data.ownerName ?? "—" },
-                  { label: "هاتف المالك", value: detail.data.ownerPhone ?? "—", ltr: true },
+                  ...(isClaim
+                    ? [
+                        { label: "المطالِب", value: detail.data.applicantName ?? "—" },
+                        {
+                          label: "هاتف المطالِب",
+                          value: detail.data.applicantPhone ?? "—",
+                          ltr: true,
+                        },
+                      ]
+                    : [
+                        { label: "مقدّم الطلب", value: detail.data.ownerName ?? "—" },
+                        { label: "هاتف المالك", value: detail.data.ownerPhone ?? "—", ltr: true },
+                      ]),
                   { label: "أُرسل", value: formatDateTime(detail.data.submittedAt), ltr: true },
                   ...(detail.data.reviewedAt
                     ? [{ label: "روجع", value: formatDateTime(detail.data.reviewedAt), ltr: true }]
@@ -251,6 +266,13 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
               )}
             </Panel>
           </div>
+
+          {isClaim && waiting ? (
+            <p className="notice" data-testid="claim-callout">
+              يطلب صاحب هذا الحساب أن يصبح مالك هذه المنشأة، وأرفق وثائقه أدناه. القبول يجعله
+              مالكها ويضم وثائقه إليها دون أن تتغير بياناتها، والرفض يحذف وثائقه.
+            </p>
+          ) : null}
 
           {isChange && waiting ? (
             <p className="notice" data-testid="change-callout">
@@ -343,11 +365,13 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
 
       <ConfirmDialog
         open={dialog === "approve"}
-        title={isChange ? "اعتماد التعديل" : "قبول الطلب"}
+        title={isChange ? "اعتماد التعديل" : isClaim ? "قبول المطالبة" : "قبول الطلب"}
         body={
           isChange
             ? "ستظهر الحقول المعدّلة للعامة فوراً بدل الحالية."
-            : "ستصبح المنشأة فعّالة وتظهر للعامة. لا يمكن التراجع عن هذا الإجراء من هنا."
+            : isClaim
+              ? "سيصبح المطالِب مالك المنشأة ويديرها من حسابه."
+              : "ستصبح المنشأة فعّالة وتظهر للعامة. لا يمكن التراجع عن هذا الإجراء من هنا."
         }
         confirmLabel="تأكيد القبول"
         pending={decision.pending}
@@ -358,11 +382,13 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
 
       <ConfirmDialog
         open={dialog === "reject"}
-        title={isChange ? "رفض التعديل" : "رفض الطلب"}
+        title={isChange ? "رفض التعديل" : isClaim ? "رفض المطالبة" : "رفض الطلب"}
         body={
           isChange
             ? "تبقى المنشأة ظاهرة كما هي، ويصل السبب الذي تكتبه إلى المالك."
-            : "يعود الطلب إلى المالك مع السبب الذي تكتبه."
+            : isClaim
+              ? "تُحذف وثائق المطالِب، ويصله السبب الذي تكتبه."
+              : "يعود الطلب إلى المالك مع السبب الذي تكتبه."
         }
         confirmLabel="تأكيد الرفض"
         destructive

@@ -13,6 +13,104 @@ import AnyCodable
 open class MediaAPI {
 
     /**
+     Upload a verification document for a claim
+     
+     - parameter claimId: (path)  
+     - parameter requirementId: (form)  
+     - parameter file: (form)  
+     - returns: ClaimEvidence
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func ownerClaimEvidenceCreate(claimId: UUID, requirementId: Int, file: URL) async throws -> ClaimEvidence {
+        return try await ownerClaimEvidenceCreateWithRequestBuilder(claimId: claimId, requirementId: requirementId, file: file).execute().body
+    }
+
+    /**
+     Upload a verification document for a claim
+     - POST /api/v1/owner/claims/{claim_id}/evidence/
+     - Private, like a facility's own documents. It belongs to the claim until the claim is approved, and is deleted if the claim is withdrawn or rejected.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter claimId: (path)  
+     - parameter requirementId: (form)  
+     - parameter file: (form)  
+     - returns: RequestBuilder<ClaimEvidence> 
+     */
+    open class func ownerClaimEvidenceCreateWithRequestBuilder(claimId: UUID, requirementId: Int, file: URL) -> RequestBuilder<ClaimEvidence> {
+        var localVariablePath = "/api/v1/owner/claims/{claim_id}/evidence/"
+        let claimIdPreEscape = "\(APIHelper.mapValueToPathItem(claimId))"
+        let claimIdPostEscape = claimIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{claim_id}", with: claimIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableFormParams: [String: Any?] = [
+            "requirementId": requirementId.encodeToJSON(),
+            "file": file.encodeToJSON(),
+        ]
+
+        let localVariableNonNullParameters = APIHelper.rejectNil(localVariableFormParams)
+        let localVariableParameters = APIHelper.convertBoolToString(localVariableNonNullParameters)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "multipart/form-data",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<ClaimEvidence>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Remove a document from a claim not yet sent
+     
+     - parameter claimId: (path)  
+     - parameter evidenceId: (path)  
+     - returns: Void
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func ownerClaimEvidenceDelete(claimId: UUID, evidenceId: UUID) async throws {
+        return try await ownerClaimEvidenceDeleteWithRequestBuilder(claimId: claimId, evidenceId: evidenceId).execute().body
+    }
+
+    /**
+     Remove a document from a claim not yet sent
+     - DELETE /api/v1/owner/claims/{claim_id}/evidence/{evidence_id}/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter claimId: (path)  
+     - parameter evidenceId: (path)  
+     - returns: RequestBuilder<Void> 
+     */
+    open class func ownerClaimEvidenceDeleteWithRequestBuilder(claimId: UUID, evidenceId: UUID) -> RequestBuilder<Void> {
+        var localVariablePath = "/api/v1/owner/claims/{claim_id}/evidence/{evidence_id}/"
+        let claimIdPreEscape = "\(APIHelper.mapValueToPathItem(claimId))"
+        let claimIdPostEscape = claimIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{claim_id}", with: claimIdPostEscape, options: .literal, range: nil)
+        let evidenceIdPreEscape = "\(APIHelper.mapValueToPathItem(evidenceId))"
+        let evidenceIdPostEscape = evidenceIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{evidence_id}", with: evidenceIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return localVariableRequestBuilder.init(method: "DELETE", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Upload private verification evidence
      
      - parameter facilityId: (path)  

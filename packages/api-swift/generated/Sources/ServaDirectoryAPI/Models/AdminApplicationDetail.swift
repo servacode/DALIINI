@@ -28,6 +28,10 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
     public var provinceNameAr: String
     public var ownerName: String?
     public var ownerPhone: String?
+    /** CLAIM only: who asks to own the facility. */
+    public var applicantName: String?
+    /** CLAIM only. */
+    public var applicantPhone: String?
     public var facility: AdminFacility
     /** Redacted submission snapshot. */
     public var snapshot: [String: AnyCodable]
@@ -45,7 +49,7 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
     public var evidence: [AdminEvidenceRef]
     public var audit: [AdminAuditTrailEntry]
 
-    public init(id: UUID, facilityId: UUID, facilityNameAr: String, kind: FacilityApplicationKindEnum, status: FacilityApplicationStatusEnum, provinceId: UUID, categoryId: UUID, submittedAt: Date?, reviewedAt: Date?, rejectionReason: String?, evidenceComplete: Bool, categoryNameAr: String, provinceNameAr: String, ownerName: String?, ownerPhone: String?, facility: AdminFacility, snapshot: [String: AnyCodable], previous: [String: AnyCodable]?, proposedFields: [String], revision: Int, location: Coordinates?, duplicates: [AdminDuplicateCandidate], publicImageIds: [UUID], publicImages: [AdminPublicImage], evidence: [AdminEvidenceRef], audit: [AdminAuditTrailEntry]) {
+    public init(id: UUID, facilityId: UUID, facilityNameAr: String, kind: FacilityApplicationKindEnum, status: FacilityApplicationStatusEnum, provinceId: UUID, categoryId: UUID, submittedAt: Date?, reviewedAt: Date?, rejectionReason: String?, evidenceComplete: Bool, categoryNameAr: String, provinceNameAr: String, ownerName: String?, ownerPhone: String?, applicantName: String?, applicantPhone: String?, facility: AdminFacility, snapshot: [String: AnyCodable], previous: [String: AnyCodable]?, proposedFields: [String], revision: Int, location: Coordinates?, duplicates: [AdminDuplicateCandidate], publicImageIds: [UUID], publicImages: [AdminPublicImage], evidence: [AdminEvidenceRef], audit: [AdminAuditTrailEntry]) {
         self.id = id
         self.facilityId = facilityId
         self.facilityNameAr = facilityNameAr
@@ -61,6 +65,8 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
         self.provinceNameAr = provinceNameAr
         self.ownerName = ownerName
         self.ownerPhone = ownerPhone
+        self.applicantName = applicantName
+        self.applicantPhone = applicantPhone
         self.facility = facility
         self.snapshot = snapshot
         self.previous = previous
@@ -90,6 +96,8 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
         case provinceNameAr
         case ownerName
         case ownerPhone
+        case applicantName
+        case applicantPhone
         case facility
         case snapshot
         case previous
@@ -122,6 +130,8 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
         try container.encode(provinceNameAr, forKey: .provinceNameAr)
         try container.encode(ownerName, forKey: .ownerName)
         try container.encode(ownerPhone, forKey: .ownerPhone)
+        try container.encode(applicantName, forKey: .applicantName)
+        try container.encode(applicantPhone, forKey: .applicantPhone)
         try container.encode(facility, forKey: .facility)
         try container.encode(snapshot, forKey: .snapshot)
         try container.encode(previous, forKey: .previous)

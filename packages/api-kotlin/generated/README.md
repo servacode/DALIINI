@@ -49,6 +49,9 @@ All URIs are relative to *http://localhost*
 | *AccountApi* | [**accountFavoriteAdd**](docs/AccountApi.md#accountfavoriteadd) | **POST** api/v1/account/favorites/ | Save a facility |
 | *AccountApi* | [**accountFavoriteRemove**](docs/AccountApi.md#accountfavoriteremove) | **DELETE** api/v1/account/favorites/{facility_id}/ | Remove a facility the caller had saved |
 | *AccountApi* | [**accountFavoritesList**](docs/AccountApi.md#accountfavoriteslist) | **GET** api/v1/account/favorites/ | List the facilities the caller has saved |
+| *AccountApi* | [**accountInvitationAccept**](docs/AccountApi.md#accountinvitationaccept) | **POST** api/v1/account/invitations/{invitation_id}/accept/ | Join the facility an invitation is for |
+| *AccountApi* | [**accountInvitationDecline**](docs/AccountApi.md#accountinvitationdecline) | **POST** api/v1/account/invitations/{invitation_id}/decline/ | Decline an invitation |
+| *AccountApi* | [**accountInvitationsList**](docs/AccountApi.md#accountinvitationslist) | **GET** api/v1/account/invitations/ | Invitations waiting for this account's phone number |
 | *AccountApi* | [**accountNotificationMarkRead**](docs/AccountApi.md#accountnotificationmarkread) | **POST** api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read |
 | *AccountApi* | [**accountNotificationsList**](docs/AccountApi.md#accountnotificationslist) | **GET** api/v1/account/notifications/ | List the caller's notifications, newest first |
 | *AccountApi* | [**accountNotificationsMarkAllRead**](docs/AccountApi.md#accountnotificationsmarkallread) | **POST** api/v1/account/notifications/read-all/ | Mark every unread notification as read |
@@ -185,16 +188,27 @@ All URIs are relative to *http://localhost*
 | *DutyApi* | [**ownerFacilityDutyDelete**](docs/DutyApi.md#ownerfacilitydutydelete) | **DELETE** api/v1/owner/facilities/{facility_id}/duty/{shift_id}/ | Remove a duty shift |
 | *DutyApi* | [**ownerFacilityDutyList**](docs/DutyApi.md#ownerfacilitydutylist) | **GET** api/v1/owner/facilities/{facility_id}/duty/ | List duty shifts of a facility |
 | *DutyApi* | [**ownerFacilityDutyUpdate**](docs/DutyApi.md#ownerfacilitydutyupdate) | **PATCH** api/v1/owner/facilities/{facility_id}/duty/{shift_id}/ | Adjust a duty shift |
+| *MediaApi* | [**ownerClaimEvidenceCreate**](docs/MediaApi.md#ownerclaimevidencecreate) | **POST** api/v1/owner/claims/{claim_id}/evidence/ | Upload a verification document for a claim |
+| *MediaApi* | [**ownerClaimEvidenceDelete**](docs/MediaApi.md#ownerclaimevidencedelete) | **DELETE** api/v1/owner/claims/{claim_id}/evidence/{evidence_id}/ | Remove a document from a claim not yet sent |
 | *MediaApi* | [**ownerFacilityEvidenceCreate**](docs/MediaApi.md#ownerfacilityevidencecreate) | **POST** api/v1/owner/facilities/{facility_id}/evidence/ | Upload private verification evidence |
 | *MediaApi* | [**ownerFacilityEvidenceDelete**](docs/MediaApi.md#ownerfacilityevidencedelete) | **DELETE** api/v1/owner/facilities/{facility_id}/evidence/{evidence_id}/ | Delete a piece of verification evidence |
 | *MediaApi* | [**ownerFacilityImageCreate**](docs/MediaApi.md#ownerfacilityimagecreate) | **POST** api/v1/owner/facilities/{facility_id}/images/ | Upload a public facility image |
 | *MediaApi* | [**ownerFacilityImageDelete**](docs/MediaApi.md#ownerfacilityimagedelete) | **DELETE** api/v1/owner/facilities/{facility_id}/images/{image_id}/ | Delete a public facility image |
 | *MediaApi* | [**ownerFacilityImagesList**](docs/MediaApi.md#ownerfacilityimageslist) | **GET** api/v1/owner/facilities/{facility_id}/images/ | List the public images of a facility |
+| *OwnerApi* | [**ownerClaimRetrieve**](docs/OwnerApi.md#ownerclaimretrieve) | **GET** api/v1/owner/claims/{claim_id}/ | One of this account's claims |
+| *OwnerApi* | [**ownerClaimStart**](docs/OwnerApi.md#ownerclaimstart) | **POST** api/v1/owner/claims/ | Start claiming a facility |
+| *OwnerApi* | [**ownerClaimSubmit**](docs/OwnerApi.md#ownerclaimsubmit) | **POST** api/v1/owner/claims/{claim_id}/submit/ | Send a claim for review |
+| *OwnerApi* | [**ownerClaimWithdraw**](docs/OwnerApi.md#ownerclaimwithdraw) | **DELETE** api/v1/owner/claims/{claim_id}/ | Withdraw a claim and delete its documents |
+| *OwnerApi* | [**ownerClaimableFacilitiesList**](docs/OwnerApi.md#ownerclaimablefacilitieslist) | **GET** api/v1/owner/claimable-facilities/ | Find a published facility nobody owns yet |
+| *OwnerApi* | [**ownerClaimsList**](docs/OwnerApi.md#ownerclaimslist) | **GET** api/v1/owner/claims/ | This account's claims, newest first |
 | *OwnerApi* | [**ownerConfigRetrieve**](docs/OwnerApi.md#ownerconfigretrieve) | **GET** api/v1/owner/config/ | List categories open for owner onboarding in a province |
 | *OwnerApi* | [**ownerFacilitiesList**](docs/OwnerApi.md#ownerfacilitieslist) | **GET** api/v1/owner/facilities/ | List the facilities the caller belongs to |
 | *OwnerApi* | [**ownerFacilityCreate**](docs/OwnerApi.md#ownerfacilitycreate) | **POST** api/v1/owner/facilities/ | Create a facility draft |
 | *OwnerApi* | [**ownerFacilityHoursConfirm**](docs/OwnerApi.md#ownerfacilityhoursconfirm) | **POST** api/v1/owner/facilities/{facility_id}/confirm-hours/ | Confirm that the facility's opening hours are still right |
 | *OwnerApi* | [**ownerFacilityInsightsRetrieve**](docs/OwnerApi.md#ownerfacilityinsightsretrieve) | **GET** api/v1/owner/facilities/{facility_id}/insights/ | Engagement with a facility over the last 30 days |
+| *OwnerApi* | [**ownerFacilityInvitationCreate**](docs/OwnerApi.md#ownerfacilityinvitationcreate) | **POST** api/v1/owner/facilities/{facility_id}/invitations/ | Invite someone to help run a facility, by phone number |
+| *OwnerApi* | [**ownerFacilityInvitationRevoke**](docs/OwnerApi.md#ownerfacilityinvitationrevoke) | **DELETE** api/v1/owner/facilities/{facility_id}/invitations/{invitation_id}/ | Withdraw an invitation that has not been answered |
+| *OwnerApi* | [**ownerFacilityInvitationsList**](docs/OwnerApi.md#ownerfacilityinvitationslist) | **GET** api/v1/owner/facilities/{facility_id}/invitations/ | Invitations sent for a facility |
 | *OwnerApi* | [**ownerFacilityLocationReplace**](docs/OwnerApi.md#ownerfacilitylocationreplace) | **PUT** api/v1/owner/facilities/{facility_id}/location/ | Set the map point of a facility |
 | *OwnerApi* | [**ownerFacilityMemberDelete**](docs/OwnerApi.md#ownerfacilitymemberdelete) | **DELETE** api/v1/owner/facilities/{facility_id}/members/{user_id}/ | Remove a member from a facility |
 | *OwnerApi* | [**ownerFacilityMemberUpsert**](docs/OwnerApi.md#ownerfacilitymemberupsert) | **POST** api/v1/owner/facilities/{facility_id}/members/ | Add a member or change a member role |
@@ -222,6 +236,7 @@ All URIs are relative to *http://localhost*
 <a id="documentation-for-models"></a>
 ## Documentation for Models
 
+ - [com.servacode.directory.api.models.Accepted](docs/Accepted.md)
  - [com.servacode.directory.api.models.AccountDeletionRequested](docs/AccountDeletionRequested.md)
  - [com.servacode.directory.api.models.AccountDeletionStatusEnum](docs/AccountDeletionStatusEnum.md)
  - [com.servacode.directory.api.models.AccountRating](docs/AccountRating.md)
@@ -373,6 +388,14 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.ChallengeAccepted](docs/ChallengeAccepted.md)
  - [com.servacode.directory.api.models.ChallengeVerified](docs/ChallengeVerified.md)
  - [com.servacode.directory.api.models.ChallengeVerify](docs/ChallengeVerify.md)
+ - [com.servacode.directory.api.models.Claim](docs/Claim.md)
+ - [com.servacode.directory.api.models.ClaimEvidence](docs/ClaimEvidence.md)
+ - [com.servacode.directory.api.models.ClaimFacility](docs/ClaimFacility.md)
+ - [com.servacode.directory.api.models.ClaimList](docs/ClaimList.md)
+ - [com.servacode.directory.api.models.ClaimRequirement](docs/ClaimRequirement.md)
+ - [com.servacode.directory.api.models.ClaimStart](docs/ClaimStart.md)
+ - [com.servacode.directory.api.models.ClaimableFacility](docs/ClaimableFacility.md)
+ - [com.servacode.directory.api.models.ClaimableFacilityList](docs/ClaimableFacilityList.md)
  - [com.servacode.directory.api.models.CompactFacility](docs/CompactFacility.md)
  - [com.servacode.directory.api.models.ContactMessageCreated](docs/ContactMessageCreated.md)
  - [com.servacode.directory.api.models.ContactMessageKindEnum](docs/ContactMessageKindEnum.md)
@@ -417,6 +440,10 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.FavoriteWrite](docs/FavoriteWrite.md)
  - [com.servacode.directory.api.models.HomeCategory](docs/HomeCategory.md)
  - [com.servacode.directory.api.models.HomeCategoryCapabilities](docs/HomeCategoryCapabilities.md)
+ - [com.servacode.directory.api.models.Invitation](docs/Invitation.md)
+ - [com.servacode.directory.api.models.InvitationList](docs/InvitationList.md)
+ - [com.servacode.directory.api.models.InvitationRequest](docs/InvitationRequest.md)
+ - [com.servacode.directory.api.models.InvitationStatusEnum](docs/InvitationStatusEnum.md)
  - [com.servacode.directory.api.models.KeyEnum](docs/KeyEnum.md)
  - [com.servacode.directory.api.models.LegalDocument](docs/LegalDocument.md)
  - [com.servacode.directory.api.models.LegalDocumentList](docs/LegalDocumentList.md)
@@ -482,6 +509,9 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.PushToken](docs/PushToken.md)
  - [com.servacode.directory.api.models.PushTokenRegister](docs/PushTokenRegister.md)
  - [com.servacode.directory.api.models.RatingWrite](docs/RatingWrite.md)
+ - [com.servacode.directory.api.models.ReceivedFacility](docs/ReceivedFacility.md)
+ - [com.servacode.directory.api.models.ReceivedInvitation](docs/ReceivedInvitation.md)
+ - [com.servacode.directory.api.models.ReceivedInvitationList](docs/ReceivedInvitationList.md)
  - [com.servacode.directory.api.models.RecoveryReset](docs/RecoveryReset.md)
  - [com.servacode.directory.api.models.RecoveryStart](docs/RecoveryStart.md)
  - [com.servacode.directory.api.models.Refresh](docs/Refresh.md)

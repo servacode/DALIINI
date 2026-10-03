@@ -44,5 +44,11 @@ class AdminTaskApplicationsTest : ShouldSpec() {
             //modelInstance.change shouldBe ("TODO")
         }
 
+        // to test the property `claim` - Requests to own a facility that nobody owns.
+        should("test claim") {
+            // uncomment below to test the property
+            //modelInstance.claim shouldBe ("TODO")
+        }
+
     }
 }

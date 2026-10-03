@@ -19,6 +19,8 @@
 | **provinceNameAr** | **kotlin.String** |  |  |
 | **ownerName** | **kotlin.String** |  |  |
 | **ownerPhone** | **kotlin.String** |  |  |
+| **applicantName** | **kotlin.String** | CLAIM only: who asks to own the facility. |  |
+| **applicantPhone** | **kotlin.String** | CLAIM only. |  |
 | **facility** | [**AdminFacility**](AdminFacility.md) |  |  |
 | **snapshot** | [**kotlin.collections.Map&lt;kotlin.String, kotlinx.serialization.json.JsonElement&gt;**](kotlinx.serialization.json.JsonElement.md) | Redacted submission snapshot. |  |
 | **previous** | [**kotlin.collections.Map&lt;kotlin.String, kotlinx.serialization.json.JsonElement&gt;**](kotlinx.serialization.json.JsonElement.md) | Snapshot of the last approved application of this facility (plus &#x60;approvedAt&#x60;), for diffing a REVERIFICATION; for a CHANGE, the facility as it is published now. Null when the facility was never approved. |  |

@@ -30,6 +30,9 @@ Class | Method | HTTP request | Description
 *AccountAPI* | [**accountFavoriteAdd**](docs/AccountAPI.md#accountfavoriteadd) | **POST** /api/v1/account/favorites/ | Save a facility
 *AccountAPI* | [**accountFavoriteRemove**](docs/AccountAPI.md#accountfavoriteremove) | **DELETE** /api/v1/account/favorites/{facility_id}/ | Remove a facility the caller had saved
 *AccountAPI* | [**accountFavoritesList**](docs/AccountAPI.md#accountfavoriteslist) | **GET** /api/v1/account/favorites/ | List the facilities the caller has saved
+*AccountAPI* | [**accountInvitationAccept**](docs/AccountAPI.md#accountinvitationaccept) | **POST** /api/v1/account/invitations/{invitation_id}/accept/ | Join the facility an invitation is for
+*AccountAPI* | [**accountInvitationDecline**](docs/AccountAPI.md#accountinvitationdecline) | **POST** /api/v1/account/invitations/{invitation_id}/decline/ | Decline an invitation
+*AccountAPI* | [**accountInvitationsList**](docs/AccountAPI.md#accountinvitationslist) | **GET** /api/v1/account/invitations/ | Invitations waiting for this account&#39;s phone number
 *AccountAPI* | [**accountNotificationMarkRead**](docs/AccountAPI.md#accountnotificationmarkread) | **POST** /api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read
 *AccountAPI* | [**accountNotificationsList**](docs/AccountAPI.md#accountnotificationslist) | **GET** /api/v1/account/notifications/ | List the caller&#39;s notifications, newest first
 *AccountAPI* | [**accountNotificationsMarkAllRead**](docs/AccountAPI.md#accountnotificationsmarkallread) | **POST** /api/v1/account/notifications/read-all/ | Mark every unread notification as read
@@ -166,16 +169,27 @@ Class | Method | HTTP request | Description
 *DutyAPI* | [**ownerFacilityDutyDelete**](docs/DutyAPI.md#ownerfacilitydutydelete) | **DELETE** /api/v1/owner/facilities/{facility_id}/duty/{shift_id}/ | Remove a duty shift
 *DutyAPI* | [**ownerFacilityDutyList**](docs/DutyAPI.md#ownerfacilitydutylist) | **GET** /api/v1/owner/facilities/{facility_id}/duty/ | List duty shifts of a facility
 *DutyAPI* | [**ownerFacilityDutyUpdate**](docs/DutyAPI.md#ownerfacilitydutyupdate) | **PATCH** /api/v1/owner/facilities/{facility_id}/duty/{shift_id}/ | Adjust a duty shift
+*MediaAPI* | [**ownerClaimEvidenceCreate**](docs/MediaAPI.md#ownerclaimevidencecreate) | **POST** /api/v1/owner/claims/{claim_id}/evidence/ | Upload a verification document for a claim
+*MediaAPI* | [**ownerClaimEvidenceDelete**](docs/MediaAPI.md#ownerclaimevidencedelete) | **DELETE** /api/v1/owner/claims/{claim_id}/evidence/{evidence_id}/ | Remove a document from a claim not yet sent
 *MediaAPI* | [**ownerFacilityEvidenceCreate**](docs/MediaAPI.md#ownerfacilityevidencecreate) | **POST** /api/v1/owner/facilities/{facility_id}/evidence/ | Upload private verification evidence
 *MediaAPI* | [**ownerFacilityEvidenceDelete**](docs/MediaAPI.md#ownerfacilityevidencedelete) | **DELETE** /api/v1/owner/facilities/{facility_id}/evidence/{evidence_id}/ | Delete a piece of verification evidence
 *MediaAPI* | [**ownerFacilityImageCreate**](docs/MediaAPI.md#ownerfacilityimagecreate) | **POST** /api/v1/owner/facilities/{facility_id}/images/ | Upload a public facility image
 *MediaAPI* | [**ownerFacilityImageDelete**](docs/MediaAPI.md#ownerfacilityimagedelete) | **DELETE** /api/v1/owner/facilities/{facility_id}/images/{image_id}/ | Delete a public facility image
 *MediaAPI* | [**ownerFacilityImagesList**](docs/MediaAPI.md#ownerfacilityimageslist) | **GET** /api/v1/owner/facilities/{facility_id}/images/ | List the public images of a facility
+*OwnerAPI* | [**ownerClaimRetrieve**](docs/OwnerAPI.md#ownerclaimretrieve) | **GET** /api/v1/owner/claims/{claim_id}/ | One of this account&#39;s claims
+*OwnerAPI* | [**ownerClaimStart**](docs/OwnerAPI.md#ownerclaimstart) | **POST** /api/v1/owner/claims/ | Start claiming a facility
+*OwnerAPI* | [**ownerClaimSubmit**](docs/OwnerAPI.md#ownerclaimsubmit) | **POST** /api/v1/owner/claims/{claim_id}/submit/ | Send a claim for review
+*OwnerAPI* | [**ownerClaimWithdraw**](docs/OwnerAPI.md#ownerclaimwithdraw) | **DELETE** /api/v1/owner/claims/{claim_id}/ | Withdraw a claim and delete its documents
+*OwnerAPI* | [**ownerClaimableFacilitiesList**](docs/OwnerAPI.md#ownerclaimablefacilitieslist) | **GET** /api/v1/owner/claimable-facilities/ | Find a published facility nobody owns yet
+*OwnerAPI* | [**ownerClaimsList**](docs/OwnerAPI.md#ownerclaimslist) | **GET** /api/v1/owner/claims/ | This account&#39;s claims, newest first
 *OwnerAPI* | [**ownerConfigRetrieve**](docs/OwnerAPI.md#ownerconfigretrieve) | **GET** /api/v1/owner/config/ | List categories open for owner onboarding in a province
 *OwnerAPI* | [**ownerFacilitiesList**](docs/OwnerAPI.md#ownerfacilitieslist) | **GET** /api/v1/owner/facilities/ | List the facilities the caller belongs to
 *OwnerAPI* | [**ownerFacilityCreate**](docs/OwnerAPI.md#ownerfacilitycreate) | **POST** /api/v1/owner/facilities/ | Create a facility draft
 *OwnerAPI* | [**ownerFacilityHoursConfirm**](docs/OwnerAPI.md#ownerfacilityhoursconfirm) | **POST** /api/v1/owner/facilities/{facility_id}/confirm-hours/ | Confirm that the facility&#39;s opening hours are still right
 *OwnerAPI* | [**ownerFacilityInsightsRetrieve**](docs/OwnerAPI.md#ownerfacilityinsightsretrieve) | **GET** /api/v1/owner/facilities/{facility_id}/insights/ | Engagement with a facility over the last 30 days
+*OwnerAPI* | [**ownerFacilityInvitationCreate**](docs/OwnerAPI.md#ownerfacilityinvitationcreate) | **POST** /api/v1/owner/facilities/{facility_id}/invitations/ | Invite someone to help run a facility, by phone number
+*OwnerAPI* | [**ownerFacilityInvitationRevoke**](docs/OwnerAPI.md#ownerfacilityinvitationrevoke) | **DELETE** /api/v1/owner/facilities/{facility_id}/invitations/{invitation_id}/ | Withdraw an invitation that has not been answered
+*OwnerAPI* | [**ownerFacilityInvitationsList**](docs/OwnerAPI.md#ownerfacilityinvitationslist) | **GET** /api/v1/owner/facilities/{facility_id}/invitations/ | Invitations sent for a facility
 *OwnerAPI* | [**ownerFacilityLocationReplace**](docs/OwnerAPI.md#ownerfacilitylocationreplace) | **PUT** /api/v1/owner/facilities/{facility_id}/location/ | Set the map point of a facility
 *OwnerAPI* | [**ownerFacilityMemberDelete**](docs/OwnerAPI.md#ownerfacilitymemberdelete) | **DELETE** /api/v1/owner/facilities/{facility_id}/members/{user_id}/ | Remove a member from a facility
 *OwnerAPI* | [**ownerFacilityMemberUpsert**](docs/OwnerAPI.md#ownerfacilitymemberupsert) | **POST** /api/v1/owner/facilities/{facility_id}/members/ | Add a member or change a member role
@@ -202,6 +216,7 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
+ - [Accepted](docs/Accepted.md)
  - [AccountDeletionRequested](docs/AccountDeletionRequested.md)
  - [AccountDeletionStatusEnum](docs/AccountDeletionStatusEnum.md)
  - [AccountRating](docs/AccountRating.md)
@@ -353,6 +368,14 @@ Class | Method | HTTP request | Description
  - [ChallengeAccepted](docs/ChallengeAccepted.md)
  - [ChallengeVerified](docs/ChallengeVerified.md)
  - [ChallengeVerify](docs/ChallengeVerify.md)
+ - [Claim](docs/Claim.md)
+ - [ClaimEvidence](docs/ClaimEvidence.md)
+ - [ClaimFacility](docs/ClaimFacility.md)
+ - [ClaimList](docs/ClaimList.md)
+ - [ClaimRequirement](docs/ClaimRequirement.md)
+ - [ClaimStart](docs/ClaimStart.md)
+ - [ClaimableFacility](docs/ClaimableFacility.md)
+ - [ClaimableFacilityList](docs/ClaimableFacilityList.md)
  - [CompactFacility](docs/CompactFacility.md)
  - [ContactMessageCreated](docs/ContactMessageCreated.md)
  - [ContactMessageKindEnum](docs/ContactMessageKindEnum.md)
@@ -397,6 +420,10 @@ Class | Method | HTTP request | Description
  - [FavoriteWrite](docs/FavoriteWrite.md)
  - [HomeCategory](docs/HomeCategory.md)
  - [HomeCategoryCapabilities](docs/HomeCategoryCapabilities.md)
+ - [Invitation](docs/Invitation.md)
+ - [InvitationList](docs/InvitationList.md)
+ - [InvitationRequest](docs/InvitationRequest.md)
+ - [InvitationStatusEnum](docs/InvitationStatusEnum.md)
  - [KeyEnum](docs/KeyEnum.md)
  - [LegalDocument](docs/LegalDocument.md)
  - [LegalDocumentList](docs/LegalDocumentList.md)
@@ -462,6 +489,9 @@ Class | Method | HTTP request | Description
  - [PushToken](docs/PushToken.md)
  - [PushTokenRegister](docs/PushTokenRegister.md)
  - [RatingWrite](docs/RatingWrite.md)
+ - [ReceivedFacility](docs/ReceivedFacility.md)
+ - [ReceivedInvitation](docs/ReceivedInvitation.md)
+ - [ReceivedInvitationList](docs/ReceivedInvitationList.md)
  - [RecoveryReset](docs/RecoveryReset.md)
  - [RecoveryStart](docs/RecoveryStart.md)
  - [Refresh](docs/Refresh.md)

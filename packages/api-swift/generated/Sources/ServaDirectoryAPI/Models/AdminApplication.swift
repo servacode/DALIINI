@@ -28,8 +28,12 @@ public struct AdminApplication: Codable, JSONEncodable, Hashable {
     public var provinceNameAr: String
     public var ownerName: String?
     public var ownerPhone: String?
+    /** CLAIM only: who asks to own the facility. */
+    public var applicantName: String?
+    /** CLAIM only. */
+    public var applicantPhone: String?
 
-    public init(id: UUID, facilityId: UUID, facilityNameAr: String, kind: FacilityApplicationKindEnum, status: FacilityApplicationStatusEnum, provinceId: UUID, categoryId: UUID, submittedAt: Date?, reviewedAt: Date?, rejectionReason: String?, evidenceComplete: Bool, categoryNameAr: String, provinceNameAr: String, ownerName: String?, ownerPhone: String?) {
+    public init(id: UUID, facilityId: UUID, facilityNameAr: String, kind: FacilityApplicationKindEnum, status: FacilityApplicationStatusEnum, provinceId: UUID, categoryId: UUID, submittedAt: Date?, reviewedAt: Date?, rejectionReason: String?, evidenceComplete: Bool, categoryNameAr: String, provinceNameAr: String, ownerName: String?, ownerPhone: String?, applicantName: String?, applicantPhone: String?) {
         self.id = id
         self.facilityId = facilityId
         self.facilityNameAr = facilityNameAr
@@ -45,6 +49,8 @@ public struct AdminApplication: Codable, JSONEncodable, Hashable {
         self.provinceNameAr = provinceNameAr
         self.ownerName = ownerName
         self.ownerPhone = ownerPhone
+        self.applicantName = applicantName
+        self.applicantPhone = applicantPhone
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
@@ -63,6 +69,8 @@ public struct AdminApplication: Codable, JSONEncodable, Hashable {
         case provinceNameAr
         case ownerName
         case ownerPhone
+        case applicantName
+        case applicantPhone
     }
 
     // Encodable protocol methods
@@ -84,6 +92,8 @@ public struct AdminApplication: Codable, JSONEncodable, Hashable {
         try container.encode(provinceNameAr, forKey: .provinceNameAr)
         try container.encode(ownerName, forKey: .ownerName)
         try container.encode(ownerPhone, forKey: .ownerPhone)
+        try container.encode(applicantName, forKey: .applicantName)
+        try container.encode(applicantPhone, forKey: .applicantPhone)
     }
 }
 

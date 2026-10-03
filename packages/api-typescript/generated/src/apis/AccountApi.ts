@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  Accepted,
   AccountDeletionRequested,
   AccountRatingList,
   ApiError,
@@ -31,9 +32,12 @@ import type {
   Profile,
   PushToken,
   PushTokenRegister,
+  ReceivedInvitationList,
   UnreadCount,
 } from '../models/index';
 import {
+    AcceptedFromJSON,
+    AcceptedToJSON,
     AccountDeletionRequestedFromJSON,
     AccountDeletionRequestedToJSON,
     AccountRatingListFromJSON,
@@ -66,6 +70,8 @@ import {
     PushTokenToJSON,
     PushTokenRegisterFromJSON,
     PushTokenRegisterToJSON,
+    ReceivedInvitationListFromJSON,
+    ReceivedInvitationListToJSON,
     UnreadCountFromJSON,
     UnreadCountToJSON,
 } from '../models/index';
@@ -85,6 +91,14 @@ export interface AccountFavoriteRemoveRequest {
 export interface AccountFavoritesListRequest {
     cursor?: string;
     limit?: number;
+}
+
+export interface AccountInvitationAcceptRequest {
+    invitationId: string;
+}
+
+export interface AccountInvitationDeclineRequest {
+    invitationId: string;
 }
 
 export interface AccountNotificationMarkReadRequest {
@@ -318,6 +332,134 @@ export class AccountApi extends runtime.BaseAPI {
      */
     async accountFavoritesList(requestParameters: AccountFavoritesListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FavoriteList> {
         const response = await this.accountFavoritesListRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Only the account whose phone number was invited can accept; any other caller gets 404. An invitation to own raises a manager to owner and never lowers anyone. 409 INVITATION_EXPIRED or INVITATION_CLOSED when it can no longer be accepted.
+     * Join the facility an invitation is for
+     */
+    async accountInvitationAcceptRaw(requestParameters: AccountInvitationAcceptRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Accepted>> {
+        if (requestParameters['invitationId'] == null) {
+            throw new runtime.RequiredError(
+                'invitationId',
+                'Required parameter "invitationId" was null or undefined when calling accountInvitationAccept().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/invitations/{invitation_id}/accept/`;
+        urlPath = urlPath.replace(`{${"invitation_id"}}`, encodeURIComponent(String(requestParameters['invitationId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AcceptedFromJSON(jsonValue));
+    }
+
+    /**
+     * Only the account whose phone number was invited can accept; any other caller gets 404. An invitation to own raises a manager to owner and never lowers anyone. 409 INVITATION_EXPIRED or INVITATION_CLOSED when it can no longer be accepted.
+     * Join the facility an invitation is for
+     */
+    async accountInvitationAccept(requestParameters: AccountInvitationAcceptRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Accepted> {
+        const response = await this.accountInvitationAcceptRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Decline an invitation
+     */
+    async accountInvitationDeclineRaw(requestParameters: AccountInvitationDeclineRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['invitationId'] == null) {
+            throw new runtime.RequiredError(
+                'invitationId',
+                'Required parameter "invitationId" was null or undefined when calling accountInvitationDecline().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/invitations/{invitation_id}/decline/`;
+        urlPath = urlPath.replace(`{${"invitation_id"}}`, encodeURIComponent(String(requestParameters['invitationId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Decline an invitation
+     */
+    async accountInvitationDecline(requestParameters: AccountInvitationDeclineRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.accountInvitationDeclineRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Invitations waiting for this account\'s phone number
+     */
+    async accountInvitationsListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ReceivedInvitationList>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/invitations/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ReceivedInvitationListFromJSON(jsonValue));
+    }
+
+    /**
+     * Invitations waiting for this account\'s phone number
+     */
+    async accountInvitationsList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ReceivedInvitationList> {
+        const response = await this.accountInvitationsListRaw(initOverrides);
         return await response.value();
     }
 

@@ -7,6 +7,7 @@ import okhttp3.RequestBody
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+import com.servacode.directory.api.models.Accepted
 import com.servacode.directory.api.models.AccountDeletionRequested
 import com.servacode.directory.api.models.AccountRatingList
 import com.servacode.directory.api.models.ApiError
@@ -23,6 +24,7 @@ import com.servacode.directory.api.models.PhoneChangeStart
 import com.servacode.directory.api.models.Profile
 import com.servacode.directory.api.models.PushToken
 import com.servacode.directory.api.models.PushTokenRegister
+import com.servacode.directory.api.models.ReceivedInvitationList
 import com.servacode.directory.api.models.UnreadCount
 
 import okhttp3.MultipartBody
@@ -91,6 +93,54 @@ interface AccountApi {
      */
     @GET("api/v1/account/favorites/")
     suspend fun accountFavoritesList(@Query("cursor") cursor: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null): Response<FavoriteList>
+
+    /**
+     * POST api/v1/account/invitations/{invitation_id}/accept/
+     * Join the facility an invitation is for
+     * Only the account whose phone number was invited can accept; any other caller gets 404. An invitation to own raises a manager to owner and never lowers anyone. 409 INVITATION_EXPIRED or INVITATION_CLOSED when it can no longer be accepted.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param invitationId 
+     * @return [Accepted]
+     */
+    @POST("api/v1/account/invitations/{invitation_id}/accept/")
+    suspend fun accountInvitationAccept(@Path("invitation_id") invitationId: java.util.UUID): Response<Accepted>
+
+    /**
+     * POST api/v1/account/invitations/{invitation_id}/decline/
+     * Decline an invitation
+     * 
+     * Responses:
+     *  - 204: No response body
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param invitationId 
+     * @return [Unit]
+     */
+    @POST("api/v1/account/invitations/{invitation_id}/decline/")
+    suspend fun accountInvitationDecline(@Path("invitation_id") invitationId: java.util.UUID): Response<Unit>
+
+    /**
+     * GET api/v1/account/invitations/
+     * Invitations waiting for this account&#39;s phone number
+     * 
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @return [ReceivedInvitationList]
+     */
+    @GET("api/v1/account/invitations/")
+    suspend fun accountInvitationsList(): Response<ReceivedInvitationList>
 
     /**
      * POST api/v1/account/notifications/{notification_id}/read/

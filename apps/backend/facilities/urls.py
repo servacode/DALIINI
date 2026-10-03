@@ -16,8 +16,49 @@ from .views import (
     OwnerFacilityMembersView,
     OwnerFacilitySubmitView,
 )
+from .views_claims import (
+    ClaimableFacilitiesView,
+    ClaimDetailView,
+    ClaimEvidenceDeleteView,
+    ClaimEvidenceView,
+    ClaimListCreateView,
+    ClaimSubmitView,
+)
+from .views_invitations import (
+    AccountInvitationAcceptView,
+    AccountInvitationDeclineView,
+    AccountInvitationsView,
+    OwnerFacilityInvitationRevokeView,
+    OwnerFacilityInvitationsView,
+)
 
 urlpatterns = [
+    path("owner/claimable-facilities/", ClaimableFacilitiesView.as_view()),
+    path("owner/claims/", ClaimListCreateView.as_view()),
+    path("owner/claims/<uuid:claim_id>/", ClaimDetailView.as_view()),
+    path("owner/claims/<uuid:claim_id>/submit/", ClaimSubmitView.as_view()),
+    path("owner/claims/<uuid:claim_id>/evidence/", ClaimEvidenceView.as_view()),
+    path(
+        "owner/claims/<uuid:claim_id>/evidence/<uuid:evidence_id>/",
+        ClaimEvidenceDeleteView.as_view(),
+    ),
+    path("account/invitations/", AccountInvitationsView.as_view()),
+    path(
+        "account/invitations/<uuid:invitation_id>/accept/",
+        AccountInvitationAcceptView.as_view(),
+    ),
+    path(
+        "account/invitations/<uuid:invitation_id>/decline/",
+        AccountInvitationDeclineView.as_view(),
+    ),
+    path(
+        "owner/facilities/<uuid:facility_id>/invitations/",
+        OwnerFacilityInvitationsView.as_view(),
+    ),
+    path(
+        "owner/facilities/<uuid:facility_id>/invitations/<uuid:invitation_id>/",
+        OwnerFacilityInvitationRevokeView.as_view(),
+    ),
     path("facilities/<uuid:facility_id>/reports/", PublicFacilityReportView.as_view()),
     path("owner/config/", OwnerConfigView.as_view()),
     path(

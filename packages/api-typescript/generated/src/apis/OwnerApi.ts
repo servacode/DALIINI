@@ -16,9 +16,16 @@
 import * as runtime from '../runtime';
 import type {
   ApiError,
+  Claim,
+  ClaimList,
+  ClaimStart,
+  ClaimableFacilityList,
   FacilityCreate,
   FacilityLocation,
   FacilityMember,
+  Invitation,
+  InvitationList,
+  InvitationRequest,
   OwnerConfig,
   OwnerFacilityDetail,
   OwnerFacilityInsights,
@@ -32,12 +39,26 @@ import type {
 import {
     ApiErrorFromJSON,
     ApiErrorToJSON,
+    ClaimFromJSON,
+    ClaimToJSON,
+    ClaimListFromJSON,
+    ClaimListToJSON,
+    ClaimStartFromJSON,
+    ClaimStartToJSON,
+    ClaimableFacilityListFromJSON,
+    ClaimableFacilityListToJSON,
     FacilityCreateFromJSON,
     FacilityCreateToJSON,
     FacilityLocationFromJSON,
     FacilityLocationToJSON,
     FacilityMemberFromJSON,
     FacilityMemberToJSON,
+    InvitationFromJSON,
+    InvitationToJSON,
+    InvitationListFromJSON,
+    InvitationListToJSON,
+    InvitationRequestFromJSON,
+    InvitationRequestToJSON,
     OwnerConfigFromJSON,
     OwnerConfigToJSON,
     OwnerFacilityDetailFromJSON,
@@ -58,6 +79,28 @@ import {
     PatchedFacilityPatchToJSON,
 } from '../models/index';
 
+export interface OwnerClaimRetrieveRequest {
+    claimId: string;
+}
+
+export interface OwnerClaimStartRequest {
+    claimStart: ClaimStart;
+}
+
+export interface OwnerClaimSubmitRequest {
+    claimId: string;
+}
+
+export interface OwnerClaimWithdrawRequest {
+    claimId: string;
+}
+
+export interface OwnerClaimableFacilitiesListRequest {
+    q: string;
+    categoryId?: string;
+    provinceId?: string;
+}
+
 export interface OwnerConfigRetrieveRequest {
     provinceId: string;
 }
@@ -71,6 +114,20 @@ export interface OwnerFacilityHoursConfirmRequest {
 }
 
 export interface OwnerFacilityInsightsRetrieveRequest {
+    facilityId: string;
+}
+
+export interface OwnerFacilityInvitationCreateRequest {
+    facilityId: string;
+    invitationRequest: InvitationRequest;
+}
+
+export interface OwnerFacilityInvitationRevokeRequest {
+    facilityId: string;
+    invitationId: string;
+}
+
+export interface OwnerFacilityInvitationsListRequest {
     facilityId: string;
 }
 
@@ -110,6 +167,286 @@ export interface OwnerFacilityUpdateRequest {
  * 
  */
 export class OwnerApi extends runtime.BaseAPI {
+
+    /**
+     * One of this account\'s claims
+     */
+    async ownerClaimRetrieveRaw(requestParameters: OwnerClaimRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Claim>> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling ownerClaimRetrieve().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/owner/claims/{claim_id}/`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ClaimFromJSON(jsonValue));
+    }
+
+    /**
+     * One of this account\'s claims
+     */
+    async ownerClaimRetrieve(requestParameters: OwnerClaimRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Claim> {
+        const response = await this.ownerClaimRetrieveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Returns the open claim this account already has for the facility, if any. 404 when the facility is not claimable; 409 FACILITY_ALREADY_OWNED when it has an owner, TOO_MANY_CLAIMS past five open claims.
+     * Start claiming a facility
+     */
+    async ownerClaimStartRaw(requestParameters: OwnerClaimStartRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Claim>> {
+        if (requestParameters['claimStart'] == null) {
+            throw new runtime.RequiredError(
+                'claimStart',
+                'Required parameter "claimStart" was null or undefined when calling ownerClaimStart().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/owner/claims/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ClaimStartToJSON(requestParameters['claimStart']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ClaimFromJSON(jsonValue));
+    }
+
+    /**
+     * Returns the open claim this account already has for the facility, if any. 404 when the facility is not claimable; 409 FACILITY_ALREADY_OWNED when it has an owner, TOO_MANY_CLAIMS past five open claims.
+     * Start claiming a facility
+     */
+    async ownerClaimStart(requestParameters: OwnerClaimStartRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Claim> {
+        const response = await this.ownerClaimStartRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Every required document must be uploaded to the claim. 409 CLAIM_PENDING while another claim on the same facility is being reviewed; FACILITY_ALREADY_OWNED if it gained an owner meanwhile.
+     * Send a claim for review
+     */
+    async ownerClaimSubmitRaw(requestParameters: OwnerClaimSubmitRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Claim>> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling ownerClaimSubmit().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/owner/claims/{claim_id}/submit/`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ClaimFromJSON(jsonValue));
+    }
+
+    /**
+     * Every required document must be uploaded to the claim. 409 CLAIM_PENDING while another claim on the same facility is being reviewed; FACILITY_ALREADY_OWNED if it gained an owner meanwhile.
+     * Send a claim for review
+     */
+    async ownerClaimSubmit(requestParameters: OwnerClaimSubmitRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Claim> {
+        const response = await this.ownerClaimSubmitRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Withdraw a claim and delete its documents
+     */
+    async ownerClaimWithdrawRaw(requestParameters: OwnerClaimWithdrawRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling ownerClaimWithdraw().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/owner/claims/{claim_id}/`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Withdraw a claim and delete its documents
+     */
+    async ownerClaimWithdraw(requestParameters: OwnerClaimWithdrawRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.ownerClaimWithdrawRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * For «هذه منشأتي». Matches the Arabic or English name, Arabic spelling folded as in search. At most 20 results; `q` needs two characters.
+     * Find a published facility nobody owns yet
+     */
+    async ownerClaimableFacilitiesListRaw(requestParameters: OwnerClaimableFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ClaimableFacilityList>> {
+        if (requestParameters['q'] == null) {
+            throw new runtime.RequiredError(
+                'q',
+                'Required parameter "q" was null or undefined when calling ownerClaimableFacilitiesList().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['categoryId'] != null) {
+            queryParameters['categoryId'] = requestParameters['categoryId'];
+        }
+
+        if (requestParameters['provinceId'] != null) {
+            queryParameters['provinceId'] = requestParameters['provinceId'];
+        }
+
+        if (requestParameters['q'] != null) {
+            queryParameters['q'] = requestParameters['q'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/owner/claimable-facilities/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ClaimableFacilityListFromJSON(jsonValue));
+    }
+
+    /**
+     * For «هذه منشأتي». Matches the Arabic or English name, Arabic spelling folded as in search. At most 20 results; `q` needs two characters.
+     * Find a published facility nobody owns yet
+     */
+    async ownerClaimableFacilitiesList(requestParameters: OwnerClaimableFacilitiesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ClaimableFacilityList> {
+        const response = await this.ownerClaimableFacilitiesListRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * This account\'s claims, newest first
+     */
+    async ownerClaimsListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ClaimList>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/owner/claims/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ClaimListFromJSON(jsonValue));
+    }
+
+    /**
+     * This account\'s claims, newest first
+     */
+    async ownerClaimsList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ClaimList> {
+        const response = await this.ownerClaimsListRaw(initOverrides);
+        return await response.value();
+    }
 
     /**
      * Returns only categories whose per-province owner switch is on and whose capability set allows onboarding, together with the safe descriptors of the verification requirements the owner will have to satisfy, and the specialties and services the owner may pick for a facility of each.
@@ -342,6 +679,162 @@ export class OwnerApi extends runtime.BaseAPI {
     }
 
     /**
+     * Owners only. The answer is the same whether or not the number has an account, so this cannot be used to find out who is registered. A person with an account is notified at once; anyone else finds the invitation when they sign up with that number. It lasts seven days; inviting the same number again renews it. 409 ALREADY_MEMBER when the number belongs to a member already.
+     * Invite someone to help run a facility, by phone number
+     */
+    async ownerFacilityInvitationCreateRaw(requestParameters: OwnerFacilityInvitationCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Invitation>> {
+        if (requestParameters['facilityId'] == null) {
+            throw new runtime.RequiredError(
+                'facilityId',
+                'Required parameter "facilityId" was null or undefined when calling ownerFacilityInvitationCreate().'
+            );
+        }
+
+        if (requestParameters['invitationRequest'] == null) {
+            throw new runtime.RequiredError(
+                'invitationRequest',
+                'Required parameter "invitationRequest" was null or undefined when calling ownerFacilityInvitationCreate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/owner/facilities/{facility_id}/invitations/`;
+        urlPath = urlPath.replace(`{${"facility_id"}}`, encodeURIComponent(String(requestParameters['facilityId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: InvitationRequestToJSON(requestParameters['invitationRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InvitationFromJSON(jsonValue));
+    }
+
+    /**
+     * Owners only. The answer is the same whether or not the number has an account, so this cannot be used to find out who is registered. A person with an account is notified at once; anyone else finds the invitation when they sign up with that number. It lasts seven days; inviting the same number again renews it. 409 ALREADY_MEMBER when the number belongs to a member already.
+     * Invite someone to help run a facility, by phone number
+     */
+    async ownerFacilityInvitationCreate(requestParameters: OwnerFacilityInvitationCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Invitation> {
+        const response = await this.ownerFacilityInvitationCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Withdraw an invitation that has not been answered
+     */
+    async ownerFacilityInvitationRevokeRaw(requestParameters: OwnerFacilityInvitationRevokeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['facilityId'] == null) {
+            throw new runtime.RequiredError(
+                'facilityId',
+                'Required parameter "facilityId" was null or undefined when calling ownerFacilityInvitationRevoke().'
+            );
+        }
+
+        if (requestParameters['invitationId'] == null) {
+            throw new runtime.RequiredError(
+                'invitationId',
+                'Required parameter "invitationId" was null or undefined when calling ownerFacilityInvitationRevoke().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/owner/facilities/{facility_id}/invitations/{invitation_id}/`;
+        urlPath = urlPath.replace(`{${"facility_id"}}`, encodeURIComponent(String(requestParameters['facilityId'])));
+        urlPath = urlPath.replace(`{${"invitation_id"}}`, encodeURIComponent(String(requestParameters['invitationId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Withdraw an invitation that has not been answered
+     */
+    async ownerFacilityInvitationRevoke(requestParameters: OwnerFacilityInvitationRevokeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.ownerFacilityInvitationRevokeRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Owners only. Newest first.
+     * Invitations sent for a facility
+     */
+    async ownerFacilityInvitationsListRaw(requestParameters: OwnerFacilityInvitationsListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<InvitationList>> {
+        if (requestParameters['facilityId'] == null) {
+            throw new runtime.RequiredError(
+                'facilityId',
+                'Required parameter "facilityId" was null or undefined when calling ownerFacilityInvitationsList().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/owner/facilities/{facility_id}/invitations/`;
+        urlPath = urlPath.replace(`{${"facility_id"}}`, encodeURIComponent(String(requestParameters['facilityId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InvitationListFromJSON(jsonValue));
+    }
+
+    /**
+     * Owners only. Newest first.
+     * Invitations sent for a facility
+     */
+    async ownerFacilityInvitationsList(requestParameters: OwnerFacilityInvitationsListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<InvitationList> {
+        const response = await this.ownerFacilityInvitationsListRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * WGS84 decimal degrees. PostGIS remains the source of truth for geo. On an ACTIVE facility the new point waits for review and the published one stays.
      * Set the map point of a facility
      */
@@ -453,7 +946,7 @@ export class OwnerApi extends runtime.BaseAPI {
     }
 
     /**
-     * Only an owner may call this, and the last owner cannot be demoted.
+     * Only an owner may call this, and the last owner cannot be demoted. Adding a new member by account id is deprecated: invite them by phone number with ownerFacilityInvitationCreate, which they accept themselves. Changing the role of an existing member stays here.
      * Add a member or change a member role
      */
     async ownerFacilityMemberUpsertRaw(requestParameters: OwnerFacilityMemberUpsertRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OwnerMemberUpserted>> {
@@ -501,7 +994,7 @@ export class OwnerApi extends runtime.BaseAPI {
     }
 
     /**
-     * Only an owner may call this, and the last owner cannot be demoted.
+     * Only an owner may call this, and the last owner cannot be demoted. Adding a new member by account id is deprecated: invite them by phone number with ownerFacilityInvitationCreate, which they accept themselves. Changing the role of an existing member stays here.
      * Add a member or change a member role
      */
     async ownerFacilityMemberUpsert(requestParameters: OwnerFacilityMemberUpsertRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OwnerMemberUpserted> {

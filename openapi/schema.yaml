@@ -189,6 +189,132 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+  /api/v1/account/invitations/:
+    get:
+      operationId: accountInvitationsList
+      summary: Invitations waiting for this account's phone number
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceivedInvitationList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/account/invitations/{invitation_id}/accept/:
+    post:
+      operationId: accountInvitationAccept
+      description: Only the account whose phone number was invited can accept; any
+        other caller gets 404. An invitation to own raises a manager to owner and
+        never lowers anyone. 409 INVITATION_EXPIRED or INVITATION_CLOSED when it can
+        no longer be accepted.
+      summary: Join the facility an invitation is for
+      parameters:
+      - in: path
+        name: invitation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Accepted'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/account/invitations/{invitation_id}/decline/:
+    post:
+      operationId: accountInvitationDecline
+      summary: Decline an invitation
+      parameters:
+      - in: path
+        name: invitation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
   /api/v1/account/notifications/:
     get:
       operationId: accountNotificationsList
@@ -6261,6 +6387,408 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/owner/claimable-facilities/:
+    get:
+      operationId: ownerClaimableFacilitiesList
+      description: For «هذه منشأتي». Matches the Arabic or English name, Arabic spelling
+        folded as in search. At most 20 results; `q` needs two characters.
+      summary: Find a published facility nobody owns yet
+      parameters:
+      - in: query
+        name: categoryId
+        schema:
+          type: string
+        description: Keep facilities of this category.
+      - in: query
+        name: provinceId
+        schema:
+          type: string
+        description: Keep facilities in this province.
+      - in: query
+        name: q
+        schema:
+          type: string
+        required: true
+      tags:
+      - Owner
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimableFacilityList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/owner/claims/:
+    get:
+      operationId: ownerClaimsList
+      summary: This account's claims, newest first
+      tags:
+      - Owner
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+    post:
+      operationId: ownerClaimStart
+      description: Returns the open claim this account already has for the facility,
+        if any. 404 when the facility is not claimable; 409 FACILITY_ALREADY_OWNED
+        when it has an owner, TOO_MANY_CLAIMS past five open claims.
+      summary: Start claiming a facility
+      tags:
+      - Owner
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClaimStart'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClaimStart'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClaimStart'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Claim'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/owner/claims/{claim_id}/:
+    get:
+      operationId: ownerClaimRetrieve
+      summary: One of this account's claims
+      parameters:
+      - in: path
+        name: claim_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Owner
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Claim'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+    delete:
+      operationId: ownerClaimWithdraw
+      summary: Withdraw a claim and delete its documents
+      parameters:
+      - in: path
+        name: claim_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Owner
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/owner/claims/{claim_id}/evidence/:
+    post:
+      operationId: ownerClaimEvidenceCreate
+      description: Private, like a facility's own documents. It belongs to the claim
+        until the claim is approved, and is deleted if the claim is withdrawn or rejected.
+      summary: Upload a verification document for a claim
+      parameters:
+      - in: path
+        name: claim_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Media
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EvidenceUpload'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimEvidence'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/owner/claims/{claim_id}/evidence/{evidence_id}/:
+    delete:
+      operationId: ownerClaimEvidenceDelete
+      summary: Remove a document from a claim not yet sent
+      parameters:
+      - in: path
+        name: claim_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: evidence_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Media
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/owner/claims/{claim_id}/submit/:
+    post:
+      operationId: ownerClaimSubmit
+      description: Every required document must be uploaded to the claim. 409 CLAIM_PENDING
+        while another claim on the same facility is being reviewed; FACILITY_ALREADY_OWNED
+        if it gained an owner meanwhile.
+      summary: Send a claim for review
+      parameters:
+      - in: path
+        name: claim_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Owner
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Claim'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
   /api/v1/owner/config/:
     get:
       operationId: ownerConfigRetrieve
@@ -7174,6 +7702,172 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/owner/facilities/{facility_id}/invitations/:
+    get:
+      operationId: ownerFacilityInvitationsList
+      description: Owners only. Newest first.
+      summary: Invitations sent for a facility
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Owner
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+    post:
+      operationId: ownerFacilityInvitationCreate
+      description: Owners only. The answer is the same whether or not the number has
+        an account, so this cannot be used to find out who is registered. A person
+        with an account is notified at once; anyone else finds the invitation when
+        they sign up with that number. It lasts seven days; inviting the same number
+        again renews it. 409 ALREADY_MEMBER when the number belongs to a member already.
+      summary: Invite someone to help run a facility, by phone number
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Owner
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvitationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvitationRequest'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/owner/facilities/{facility_id}/invitations/{invitation_id}/:
+    delete:
+      operationId: ownerFacilityInvitationRevoke
+      summary: Withdraw an invitation that has not been answered
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: invitation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Owner
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
   /api/v1/owner/facilities/{facility_id}/location/:
     put:
       operationId: ownerFacilityLocationReplace
@@ -7289,7 +7983,10 @@ paths:
             the caller.
     post:
       operationId: ownerFacilityMemberUpsert
-      description: Only an owner may call this, and the last owner cannot be demoted.
+      description: 'Only an owner may call this, and the last owner cannot be demoted.
+        Adding a new member by account id is deprecated: invite them by phone number
+        with ownerFacilityInvitationCreate, which they accept themselves. Changing
+        the role of an existing member stays here.'
       summary: Add a member or change a member role
       parameters:
       - in: path
@@ -8379,6 +9076,17 @@ paths:
             is populated.
 components:
   schemas:
+    Accepted:
+      type: object
+      properties:
+        facilityId:
+          type: string
+          format: uuid
+        role:
+          $ref: '#/components/schemas/FacilityMemberRoleEnum'
+      required:
+      - facilityId
+      - role
     AccountDeletionRequested:
       type: object
       properties:
@@ -8875,7 +9583,17 @@ components:
         ownerPhone:
           type: string
           nullable: true
+        applicantName:
+          type: string
+          nullable: true
+          description: 'CLAIM only: who asks to own the facility.'
+        applicantPhone:
+          type: string
+          nullable: true
+          description: CLAIM only.
       required:
+      - applicantName
+      - applicantPhone
       - categoryId
       - categoryNameAr
       - evidenceComplete
@@ -8938,6 +9656,14 @@ components:
         ownerPhone:
           type: string
           nullable: true
+        applicantName:
+          type: string
+          nullable: true
+          description: 'CLAIM only: who asks to own the facility.'
+        applicantPhone:
+          type: string
+          nullable: true
+          description: CLAIM only.
         facility:
           $ref: '#/components/schemas/AdminFacility'
         snapshot:
@@ -8988,6 +9714,8 @@ components:
           items:
             $ref: '#/components/schemas/AdminAuditTrailEntry'
       required:
+      - applicantName
+      - applicantPhone
       - audit
       - categoryId
       - categoryNameAr
@@ -11118,8 +11846,13 @@ components:
           - $ref: '#/components/schemas/AdminTaskApplicationBucket'
           description: Edits to live facilities, which stay published while these
             wait.
+        claim:
+          allOf:
+          - $ref: '#/components/schemas/AdminTaskApplicationBucket'
+          description: Requests to own a facility that nobody owns.
       required:
       - change
+      - claim
       - initial
       - reverification
     AdminTaskReportGroup:
@@ -11837,6 +12570,150 @@ components:
       required:
       - challengeId
       - code
+    Claim:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/FacilityApplicationStatusEnum'
+        rejectionReason:
+          type: string
+          nullable: true
+        submittedAt:
+          type: string
+          format: date-time
+          nullable: true
+        reviewedAt:
+          type: string
+          format: date-time
+          nullable: true
+        facility:
+          $ref: '#/components/schemas/ClaimFacility'
+        requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClaimRequirement'
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClaimEvidence'
+      required:
+      - evidence
+      - facility
+      - id
+      - rejectionReason
+      - requirements
+      - reviewedAt
+      - status
+      - submittedAt
+    ClaimEvidence:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        requirementId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+      - createdAt
+      - id
+      - requirementId
+    ClaimFacility:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        categoryNameAr:
+          type: string
+        provinceNameAr:
+          type: string
+        addressAr:
+          type: string
+          nullable: true
+      required:
+      - addressAr
+      - categoryNameAr
+      - id
+      - nameAr
+      - provinceNameAr
+    ClaimList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Claim'
+      required:
+      - items
+    ClaimRequirement:
+      type: object
+      properties:
+        id:
+          type: integer
+        labelAr:
+          type: string
+        required:
+          type: boolean
+        minFiles:
+          type: integer
+        maxFiles:
+          type: integer
+      required:
+      - id
+      - labelAr
+      - maxFiles
+      - minFiles
+      - required
+    ClaimStart:
+      type: object
+      properties:
+        facilityId:
+          type: string
+          format: uuid
+      required:
+      - facilityId
+    ClaimableFacility:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        categoryNameAr:
+          type: string
+        provinceNameAr:
+          type: string
+        cityNameAr:
+          type: string
+          nullable: true
+        addressAr:
+          type: string
+          nullable: true
+      required:
+      - addressAr
+      - categoryNameAr
+      - cityNameAr
+      - id
+      - nameAr
+      - provinceNameAr
+    ClaimableFacilityList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClaimableFacility'
+      required:
+      - items
     CompactFacility:
       type: object
       properties:
@@ -12222,11 +13099,13 @@ components:
       - INITIAL
       - REVERIFICATION
       - CHANGE
+      - CLAIM
       type: string
       description: |-
         * `INITIAL` - Initial
         * `REVERIFICATION` - Reverification
         * `CHANGE` - Change
+        * `CLAIM` - Claim
     FacilityApplicationStatusEnum:
       enum:
       - DRAFT
@@ -12635,6 +13514,81 @@ components:
       - ratings
       - serviceFilter
       - specialtyFilter
+    Invitation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        phone:
+          type: string
+        role:
+          $ref: '#/components/schemas/FacilityMemberRoleEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/InvitationStatusEnum'
+          description: |-
+            EXPIRED is a PENDING invitation past `expiresAt`.
+
+            * `PENDING` - PENDING
+            * `ACCEPTED` - ACCEPTED
+            * `DECLINED` - DECLINED
+            * `REVOKED` - REVOKED
+            * `EXPIRED` - EXPIRED
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        respondedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - createdAt
+      - expiresAt
+      - id
+      - phone
+      - respondedAt
+      - role
+      - status
+    InvitationList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Invitation'
+      required:
+      - items
+    InvitationRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+          description: Syrian mobile, 09XXXXXXXX or +9639XXXXXXXX.
+          maxLength: 20
+        role:
+          allOf:
+          - $ref: '#/components/schemas/FacilityMemberRoleEnum'
+          default: MANAGER
+      required:
+      - phone
+    InvitationStatusEnum:
+      enum:
+      - PENDING
+      - ACCEPTED
+      - DECLINED
+      - REVOKED
+      - EXPIRED
+      type: string
+      description: |-
+        * `PENDING` - PENDING
+        * `ACCEPTED` - ACCEPTED
+        * `DECLINED` - DECLINED
+        * `REVOKED` - REVOKED
+        * `EXPIRED` - EXPIRED
     KeyEnum:
       enum:
       - ABOUT
@@ -14103,6 +15057,58 @@ components:
           minimum: 1
       required:
       - stars
+    ReceivedFacility:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        categoryNameAr:
+          type: string
+        provinceNameAr:
+          type: string
+      required:
+      - categoryNameAr
+      - id
+      - nameAr
+      - provinceNameAr
+    ReceivedInvitation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        role:
+          $ref: '#/components/schemas/FacilityMemberRoleEnum'
+        facility:
+          $ref: '#/components/schemas/ReceivedFacility'
+        invitedByName:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+      - createdAt
+      - expiresAt
+      - facility
+      - id
+      - invitedByName
+      - role
+    ReceivedInvitationList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReceivedInvitation'
+      required:
+      - items
     RecoveryReset:
       type: object
       properties:

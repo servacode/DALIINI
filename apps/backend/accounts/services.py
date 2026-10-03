@@ -178,6 +178,10 @@ def complete_registration(
     )
     challenge.consumed_at = timezone.now()
     challenge.save(update_fields=["consumed_at"])
+    # Invitations sent to this number before it had an account are announced now.
+    from facilities.invitations import announce_waiting
+
+    announce_waiting(user)
     return create_session(user=user, platform=platform, device_name=device_name)
 
 

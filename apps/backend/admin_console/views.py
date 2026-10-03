@@ -539,7 +539,13 @@ class ApplicationDetailView(AdminView):
             snapshot, previous = review_snapshots(item)
         else:
             snapshot, previous = item.snapshot, previous_snapshot(item)
-        evidence = facility.evidence.select_related("requirement").all()
+        # A claim is decided on the claimant's own documents; any other application on the
+        # facility's, which never include a pending claimant's.
+        evidence = (
+            item.claim_evidence.select_related("requirement")
+            if item.kind == FacilityApplication.Kind.CLAIM
+            else facility.evidence.filter(application__isnull=True).select_related("requirement")
+        )
         images = list(facility.images.order_by("sort_order", "created_at"))
         return Response(
             {

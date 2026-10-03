@@ -18,6 +18,7 @@
     <string name="vocab_application_kind_initial">تسجيل جديد</string>
     <string name="vocab_application_kind_reverification">إعادة تحقق</string>
     <string name="vocab_application_kind_change">تعديل بيانات</string>
+    <string name="vocab_application_kind_claim">مطالبة بملكية</string>
     <string name="vocab_report_reason_wrong_info">معلومات خاطئة</string>
     <string name="vocab_report_reason_closed_permanently">مغلقة نهائياً</string>
     <string name="vocab_report_reason_wrong_location">الموقع خاطئ</string>

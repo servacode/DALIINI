@@ -76,6 +76,10 @@ export const vocabulary = {
     "CHANGE": {
       "ar": "تعديل بيانات",
       "tone": "info"
+    },
+    "CLAIM": {
+      "ar": "مطالبة بملكية",
+      "tone": "brand"
     }
   },
   "reportReason": {
