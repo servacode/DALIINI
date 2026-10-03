@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { buildContentSecurityPolicy } from "../../proxy";
 
@@ -41,5 +41,25 @@ describe("buildContentSecurityPolicy", () => {
     expect(buildContentSecurityPolicy("n", false, false)).not.toContain(
       "upgrade-insecure-requests",
     );
+  });
+
+  describe("the facility map", () => {
+    afterEach(() => vi.unstubAllEnvs());
+
+    it("adds nothing when no map is configured", () => {
+      vi.stubEnv("ADMIN_MAP_STYLE_URL", "");
+      vi.stubEnv("ADMIN_MAP_ORIGINS", "");
+      const policy = buildContentSecurityPolicy("n", false, false);
+      expect(policy).toContain("connect-src 'self';");
+    });
+
+    it("lets the map reach its style and tile hosts, by origin only", () => {
+      vi.stubEnv("ADMIN_MAP_STYLE_URL", "https://maps.example.org/styles/daliini.json");
+      vi.stubEnv("ADMIN_MAP_ORIGINS", "https://tiles.example.org/v1, not a url ,https://maps.example.org");
+      const policy = buildContentSecurityPolicy("n", false, false);
+      const connect = policy.split("; ").find((part) => part.startsWith("connect-src"))!;
+      expect(connect).toBe("connect-src 'self' https://maps.example.org https://tiles.example.org");
+      expect(policy).toContain("worker-src 'self' blob:");
+    });
   });
 });

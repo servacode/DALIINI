@@ -1451,6 +1451,49 @@ the last backup was taken.
 * **Exports follow the filters** on the facility and report lists, as they already did on the
   audit log.
 
+## DECISION-075 — The console draws its own charts and shows facilities on the platform's map
+
+**Date:** 2026-10-03 · **Phase 4.4 of the roadmap.**
+
+**Why:** analytics gave totals and arrows; a total cannot show a bad Tuesday or a slow start.
+The console had no map at all, so "where are our pharmacies, and which are suspended" had no
+answer, and a facility without a location was invisible.
+
+**Decision:**
+
+* **Daily series:** `GET admin/analytics/series/` returns the analytics period one Damascus day
+  at a time.
+  * It covers the four event counts plus new accounts, approvals and reports.
+  * Every day is present: a quiet day is zeros, not a gap.
+* **Charts drawn by hand in SVG** (`components/charts.tsx`, no library):
+  * a line over days and a set of bars, in the page's tokens, so both themes follow;
+  * time runs right to left like the page;
+  * the width is measured, so text keeps its size on a phone;
+  * a hover card shows each day;
+  * the same numbers are always present as a table for screen readers, and the legend carries
+    each series' total.
+* **Where the charts appear:**
+  * the analytics page draws usage (searches, views, directions, empty searches) and activity
+    (new accounts, approvals, reports) for the chosen period;
+  * the dashboard draws the last two weeks for whoever may read analytics;
+  * the dashboard's facility statuses are bars, each a link to that list.
+* **The facility map** (`/facilities/map`, a tab beside the list):
+  * `GET admin/facilities/map/` takes the list's own filters and returns points (name, state,
+    coordinates), at most 5,000, and says when there were more.
+  * It counts the selected facilities that have no location; the page links to them so they can
+    be fixed.
+  * Dots are coloured by status. Pressing one opens a card built from text nodes, never markup,
+    because the name comes from the owner, with a link to the record.
+* **The same map as the site and the app:**
+  * The style is `ADMIN_MAP_STYLE_URL`, read on the server per request, so it is set without a
+    rebuild. Without it the page says so and still gives the counts.
+  * MapLibre loads only on that page. Its worker and Arabic shaping are vendored into
+    `public/vendor` by `scripts/vendor-map.mjs`, as on the site.
+  * The CSP gains the style's origin and `ADMIN_MAP_ORIGINS` only when a map is configured,
+    plus `worker-src 'self' blob:`.
+* **Local development:** `scripts/dev-app.mjs` now runs each app's own `dev` script, so the
+  vendoring step runs before `next dev` on both apps. Before, it ran only on a build.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

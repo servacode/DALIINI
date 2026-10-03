@@ -5,6 +5,7 @@ All URIs are relative to *http://localhost*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**adminAnalyticsRetrieve**](AdminAnalyticsAPI.md#adminanalyticsretrieve) | **GET** /api/v1/admin/analytics/ | Operational KPIs
+[**adminAnalyticsSeriesRetrieve**](AdminAnalyticsAPI.md#adminanalyticsseriesretrieve) | **GET** /api/v1/admin/analytics/series/ | The period&#39;s numbers, one Damascus day at a time
 [**adminAnalyticsStaffRetrieve**](AdminAnalyticsAPI.md#adminanalyticsstaffretrieve) | **GET** /api/v1/admin/analytics/staff/ | Reviewer performance in a period
 
 
@@ -48,6 +49,58 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**AdminAnalytics**](AdminAnalytics.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminAnalyticsSeriesRetrieve**
+```swift
+    open class func adminAnalyticsSeriesRetrieve(from: String? = nil, to: String? = nil, completion: @escaping (_ data: AdminAnalyticsSeries?, _ error: Error?) -> Void)
+```
+
+The period's numbers, one Damascus day at a time
+
+Every day from `from` to `to` is present, a quiet day as zeros. The event series are the same four the period totals count; `newUsers` are accounts created, `approvals` applications approved and `reports` problem reports received.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let from = "from_example" // String | ISO date or datetime; default 30 days before `to`. (optional)
+let to = "to_example" // String | ISO date or datetime; a bare date includes that whole day. (optional)
+
+// The period's numbers, one Damascus day at a time
+AdminAnalyticsAPI.adminAnalyticsSeriesRetrieve(from: from, to: to) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **from** | **String** | ISO date or datetime; default 30 days before &#x60;to&#x60;. | [optional] 
+ **to** | **String** | ISO date or datetime; a bare date includes that whole day. | [optional] 
+
+### Return type
+
+[**AdminAnalyticsSeries**](AdminAnalyticsSeries.md)
 
 ### Authorization
 

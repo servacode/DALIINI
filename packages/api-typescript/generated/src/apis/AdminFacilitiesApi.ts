@@ -20,6 +20,7 @@ import type {
   AdminFacilityCreate,
   AdminFacilityDetail,
   AdminFacilityList,
+  AdminFacilityMap,
   AdminTimeline,
   ApiError,
   PatchedAdminFacilityWrite,
@@ -35,6 +36,8 @@ import {
     AdminFacilityDetailToJSON,
     AdminFacilityListFromJSON,
     AdminFacilityListToJSON,
+    AdminFacilityMapFromJSON,
+    AdminFacilityMapToJSON,
     AdminTimelineFromJSON,
     AdminTimelineToJSON,
     ApiErrorFromJSON,
@@ -50,6 +53,15 @@ export interface AdminFacilitiesListRequest {
     issue?: AdminFacilitiesListIssueEnum;
     limit?: number;
     ordering?: AdminFacilitiesListOrderingEnum;
+    province?: string;
+    q?: string;
+    status?: string;
+}
+
+export interface AdminFacilitiesMapRequest {
+    category?: string;
+    city?: string;
+    issue?: string;
     province?: string;
     q?: string;
     status?: string;
@@ -164,6 +176,69 @@ export class AdminFacilitiesApi extends runtime.BaseAPI {
      */
     async adminFacilitiesList(requestParameters: AdminFacilitiesListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacilityList> {
         const response = await this.adminFacilitiesListRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Every located facility the filters select, as points (DECISION-075).  The same filters as the list, so \"the map of what I am looking at\" is one click. Only what a pin needs travels: the name, the state and the coordinates. A facility without a location is counted rather than dropped silently, so the operator can go and fix it.
+     * Located facilities as map points, with the same filters as the list
+     */
+    async adminFacilitiesMapRaw(requestParameters: AdminFacilitiesMapRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminFacilityMap>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['category'] != null) {
+            queryParameters['category'] = requestParameters['category'];
+        }
+
+        if (requestParameters['city'] != null) {
+            queryParameters['city'] = requestParameters['city'];
+        }
+
+        if (requestParameters['issue'] != null) {
+            queryParameters['issue'] = requestParameters['issue'];
+        }
+
+        if (requestParameters['province'] != null) {
+            queryParameters['province'] = requestParameters['province'];
+        }
+
+        if (requestParameters['q'] != null) {
+            queryParameters['q'] = requestParameters['q'];
+        }
+
+        if (requestParameters['status'] != null) {
+            queryParameters['status'] = requestParameters['status'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/facilities/map/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminFacilityMapFromJSON(jsonValue));
+    }
+
+    /**
+     * Every located facility the filters select, as points (DECISION-075).  The same filters as the list, so \"the map of what I am looking at\" is one click. Only what a pin needs travels: the name, the state and the coordinates. A facility without a location is counted rather than dropped silently, so the operator can go and fix it.
+     * Located facilities as map points, with the same filters as the list
+     */
+    async adminFacilitiesMap(requestParameters: AdminFacilitiesMapRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacilityMap> {
+        const response = await this.adminFacilitiesMapRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

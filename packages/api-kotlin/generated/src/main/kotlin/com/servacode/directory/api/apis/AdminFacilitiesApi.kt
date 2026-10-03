@@ -12,6 +12,7 @@ import com.servacode.directory.api.models.AdminFacility
 import com.servacode.directory.api.models.AdminFacilityCreate
 import com.servacode.directory.api.models.AdminFacilityDetail
 import com.servacode.directory.api.models.AdminFacilityList
+import com.servacode.directory.api.models.AdminFacilityMap
 import com.servacode.directory.api.models.AdminTimeline
 import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.PatchedAdminFacilityWrite
@@ -65,6 +66,27 @@ interface AdminFacilitiesApi {
      */
     @GET("api/v1/admin/facilities/")
     suspend fun adminFacilitiesList(@Query("category") category: kotlin.String? = null, @Query("city") city: kotlin.String? = null, @Query("cursor") cursor: kotlin.String? = null, @Query("issue") issue: IssueAdminFacilitiesList? = null, @Query("limit") limit: kotlin.Int? = null, @Query("ordering") ordering: OrderingAdminFacilitiesList? = null, @Query("province") province: kotlin.String? = null, @Query("q") q: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminFacilityList>
+
+    /**
+     * GET api/v1/admin/facilities/map/
+     * Located facilities as map points, with the same filters as the list
+     * Every located facility the filters select, as points (DECISION-075).  The same filters as the list, so \&quot;the map of what I am looking at\&quot; is one click. Only what a pin needs travels: the name, the state and the coordinates. A facility without a location is counted rather than dropped silently, so the operator can go and fix it.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param category Category id. (optional)
+     * @param city City id. (optional)
+     * @param issue One of NO_PHOTOS, NO_HOURS, NO_LOCATION, NO_PHONE, STALE, OPEN_REPORTS, NOT_VERIFIED_RECENTLY. (optional)
+     * @param province Province id. (optional)
+     * @param q Free text matched against the facility names. (optional)
+     * @param status Facility status. (optional)
+     * @return [AdminFacilityMap]
+     */
+    @GET("api/v1/admin/facilities/map/")
+    suspend fun adminFacilitiesMap(@Query("category") category: kotlin.String? = null, @Query("city") city: kotlin.String? = null, @Query("issue") issue: kotlin.String? = null, @Query("province") province: kotlin.String? = null, @Query("q") q: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminFacilityMap>
 
     /**
      * POST api/v1/admin/facilities/{facility_id}/close/

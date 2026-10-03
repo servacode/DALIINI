@@ -28,7 +28,11 @@ from .facility_editor import (
     update_facility,
 )
 from .quality import QUALITY_ISSUES, quality_payload, with_quality
-from .schemas import AdminFacilityDetailSerializer, AdminFacilityListSerializer
+from .schemas import (
+    AdminFacilityDetailSerializer,
+    AdminFacilityListSerializer,
+    AdminFacilityMapSerializer,
+)
 from .serializers import facility_detail_payload, facility_payload, with_facility_names
 from .views import (
     FACILITY_ORDERINGS,
@@ -170,3 +174,57 @@ class FacilityDetailView(AdminView):
         except DjangoValidationError as exc:
             raise _validation_error(exc) from exc
         return _detail(facility_id)
+
+
+# Enough for every facility of a launch province many times over; past it the map says so
+# rather than drawing a sample that looks complete.
+MAP_LIMIT = 5000
+
+
+class FacilityMapView(AdminView):
+    """Every located facility the filters select, as points (DECISION-075).
+
+    The same filters as the list, so "the map of what I am looking at" is one click. Only what
+    a pin needs travels: the name, the state and the coordinates. A facility without a location
+    is counted rather than dropped silently, so the operator can go and fix it.
+    """
+
+    required_permission = "admin.facilities.read"
+
+    @extend_schema(
+        operation_id="adminFacilitiesMap",
+        tags=["Admin Facilities"],
+        summary="Located facilities as map points, with the same filters as the list",
+        parameters=[
+            _filter("status", "Facility status."),
+            _filter("province", "Province id."),
+            _filter("city", "City id."),
+            _filter("category", "Category id."),
+            _filter("q", "Free text matched against the facility names."),
+            _filter("issue", f"One of {', '.join(QUALITY_ISSUES)}."),
+        ],
+        responses={200: AdminFacilityMapSerializer, 400: VALIDATION_400, **protected()},
+    )
+    def get(self, request: AuthenticatedRequest) -> Response:
+        qs = filtered_facilities(request.query_params)
+        located = qs.exclude(location__isnull=True)
+        points = [
+            {
+                "id": str(pk),
+                "nameAr": name,
+                "status": status,
+                "categoryId": str(category_id),
+                "latitude": round(point.y, 6),
+                "longitude": round(point.x, 6),
+            }
+            for pk, name, status, category_id, point in located.values_list(
+                "id", "name_ar", "status", "category_id", "location"
+            )[: MAP_LIMIT + 1]
+        ]
+        return Response(
+            {
+                "items": points[:MAP_LIMIT],
+                "truncated": len(points) > MAP_LIMIT,
+                "withoutLocation": qs.filter(location__isnull=True).count(),
+            }
+        )

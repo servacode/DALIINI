@@ -24,6 +24,7 @@ import com.servacode.directory.api.models.AdminFacility
 import com.servacode.directory.api.models.AdminFacilityCreate
 import com.servacode.directory.api.models.AdminFacilityDetail
 import com.servacode.directory.api.models.AdminFacilityList
+import com.servacode.directory.api.models.AdminFacilityMap
 import com.servacode.directory.api.models.AdminTimeline
 import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.PatchedAdminFacilityWrite
@@ -46,6 +47,19 @@ class AdminFacilitiesApiTest : ShouldSpec() {
             //val q : kotlin.String = q_example // kotlin.String | Free text matched against the Arabic and English facility names.
             //val status : kotlin.String = status_example // kotlin.String | Facility status, for example ACTIVE or SUSPENDED.
             //val result : AdminFacilityList = apiInstance.adminFacilitiesList(category, city, cursor, issue, limit, ordering, province, q, status)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminFacilitiesMap
+        should("test adminFacilitiesMap") {
+            // uncomment below to test adminFacilitiesMap
+            //val category : kotlin.String = category_example // kotlin.String | Category id.
+            //val city : kotlin.String = city_example // kotlin.String | City id.
+            //val issue : kotlin.String = issue_example // kotlin.String | One of NO_PHOTOS, NO_HOURS, NO_LOCATION, NO_PHONE, STALE, OPEN_REPORTS, NOT_VERIFIED_RECENTLY.
+            //val province : kotlin.String = province_example // kotlin.String | Province id.
+            //val q : kotlin.String = q_example // kotlin.String | Free text matched against the facility names.
+            //val status : kotlin.String = status_example // kotlin.String | Facility status.
+            //val result : AdminFacilityMap = apiInstance.adminFacilitiesMap(category, city, issue, province, q, status)
             //result shouldBe ("TODO")
         }
 

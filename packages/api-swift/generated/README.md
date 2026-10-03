@@ -61,6 +61,7 @@ Class | Method | HTTP request | Description
 *AdminAdsAPI* | [**adminAdUpdate**](docs/AdminAdsAPI.md#adminadupdate) | **PUT** /api/v1/admin/ads/{advertisement_id}/ | Edit an advertisement, its schedule or its activation
 *AdminAdsAPI* | [**adminAdsList**](docs/AdminAdsAPI.md#adminadslist) | **GET** /api/v1/admin/ads/ | List advertisements
 *AdminAnalyticsAPI* | [**adminAnalyticsRetrieve**](docs/AdminAnalyticsAPI.md#adminanalyticsretrieve) | **GET** /api/v1/admin/analytics/ | Operational KPIs
+*AdminAnalyticsAPI* | [**adminAnalyticsSeriesRetrieve**](docs/AdminAnalyticsAPI.md#adminanalyticsseriesretrieve) | **GET** /api/v1/admin/analytics/series/ | The period&#39;s numbers, one Damascus day at a time
 *AdminAnalyticsAPI* | [**adminAnalyticsStaffRetrieve**](docs/AdminAnalyticsAPI.md#adminanalyticsstaffretrieve) | **GET** /api/v1/admin/analytics/staff/ | Reviewer performance in a period
 *AdminAuditAPI* | [**adminAuditList**](docs/AdminAuditAPI.md#adminauditlist) | **GET** /api/v1/admin/audit/ | Search the audit trail
 *AdminContentAPI* | [**adminContactMessageHandle**](docs/AdminContentAPI.md#admincontactmessagehandle) | **POST** /api/v1/admin/contact-messages/{message_id}/handle/ | Mark a contact message handled
@@ -92,6 +93,7 @@ Class | Method | HTTP request | Description
 *AdminExportsAPI* | [**adminExportFacilitiesCsv**](docs/AdminExportsAPI.md#adminexportfacilitiescsv) | **GET** /api/v1/admin/exports/facilities.csv | Export the facility list as CSV
 *AdminExportsAPI* | [**adminExportReportsCsv**](docs/AdminExportsAPI.md#adminexportreportscsv) | **GET** /api/v1/admin/exports/reports.csv | Export problem reports as CSV
 *AdminFacilitiesAPI* | [**adminFacilitiesList**](docs/AdminFacilitiesAPI.md#adminfacilitieslist) | **GET** /api/v1/admin/facilities/ | List facilities for operations
+*AdminFacilitiesAPI* | [**adminFacilitiesMap**](docs/AdminFacilitiesAPI.md#adminfacilitiesmap) | **GET** /api/v1/admin/facilities/map/ | Located facilities as map points, with the same filters as the list
 *AdminFacilitiesAPI* | [**adminFacilityClose**](docs/AdminFacilitiesAPI.md#adminfacilityclose) | **POST** /api/v1/admin/facilities/{facility_id}/close/ | Close a facility
 *AdminFacilitiesAPI* | [**adminFacilityCreate**](docs/AdminFacilitiesAPI.md#adminfacilitycreate) | **POST** /api/v1/admin/facilities/ | Add a facility to the directory
 *AdminFacilitiesAPI* | [**adminFacilityReactivate**](docs/AdminFacilitiesAPI.md#adminfacilityreactivate) | **POST** /api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility
@@ -253,7 +255,9 @@ Class | Method | HTTP request | Description
  - [AdminAlertList](docs/AdminAlertList.md)
  - [AdminAlertSeverityEnum](docs/AdminAlertSeverityEnum.md)
  - [AdminAnalytics](docs/AdminAnalytics.md)
+ - [AdminAnalyticsDay](docs/AdminAnalyticsDay.md)
  - [AdminAnalyticsPeriodKpis](docs/AdminAnalyticsPeriodKpis.md)
+ - [AdminAnalyticsSeries](docs/AdminAnalyticsSeries.md)
  - [AdminAppRelease](docs/AdminAppRelease.md)
  - [AdminAppReleaseRequest](docs/AdminAppReleaseRequest.md)
  - [AdminApplication](docs/AdminApplication.md)
@@ -302,6 +306,8 @@ Class | Method | HTTP request | Description
  - [AdminFacilityCreateStatusEnum](docs/AdminFacilityCreateStatusEnum.md)
  - [AdminFacilityDetail](docs/AdminFacilityDetail.md)
  - [AdminFacilityList](docs/AdminFacilityList.md)
+ - [AdminFacilityMap](docs/AdminFacilityMap.md)
+ - [AdminFacilityPoint](docs/AdminFacilityPoint.md)
  - [AdminFacilityQuality](docs/AdminFacilityQuality.md)
  - [AdminFacilityReport](docs/AdminFacilityReport.md)
  - [AdminFacilityReportList](docs/AdminFacilityReportList.md)

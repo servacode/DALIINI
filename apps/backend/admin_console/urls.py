@@ -7,6 +7,7 @@ from . import (
     views,
     views_ad_stats,
     views_ads,
+    views_analytics,
     views_content,
     views_duty,
     views_duty_import,
@@ -90,6 +91,7 @@ urlpatterns = [
     ),
     path("admin/evidence/<uuid:evidence_id>/content/", views_reviews.EvidenceContentView.as_view()),
     path("admin/facilities/", views_facilities.FacilityListView.as_view()),
+    path("admin/facilities/map/", views_facilities.FacilityMapView.as_view()),
     path("admin/facilities/<uuid:facility_id>/", views_facilities.FacilityDetailView.as_view()),
     path(
         "admin/facilities/<uuid:facility_id>/suspend/",
@@ -165,6 +167,7 @@ urlpatterns = [
     path("admin/ads/<uuid:advertisement_id>/", views_ads.AdvertisementDetailView.as_view()),
     path("admin/audit/", views.AuditListView.as_view()),
     path("admin/analytics/", views.AnalyticsView.as_view()),
+    path("admin/analytics/series/", views_analytics.AnalyticsSeriesView.as_view()),
     path("admin/settings/", views.SettingsView.as_view()),
     path("admin/system/status/", views.SystemStatusView.as_view()),
 ]

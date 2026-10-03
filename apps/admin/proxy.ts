@@ -44,14 +44,37 @@ function mediaOrigin(): string {
   }
 }
 
+/**
+ * The facility map's hosts (DECISION-075): the style's own, and any other its tiles, glyphs and
+ * sprites come from (`ADMIN_MAP_ORIGINS`, comma-separated). Nothing is added when no map is
+ * configured, so a console without a map keeps the strict `connect-src 'self'`.
+ */
+export function mapOrigins(): string[] {
+  const origins = [process.env.ADMIN_MAP_STYLE_URL ?? "", ...(process.env.ADMIN_MAP_ORIGINS ?? "").split(",")]
+    .map((value) => {
+      try {
+        return value.trim() ? new URL(value.trim()).origin : "";
+      } catch {
+        return "";
+      }
+    })
+    .filter(Boolean);
+  return [...new Set(origins)];
+}
+
 export function buildContentSecurityPolicy(nonce: string, secure: boolean, dev: boolean): string {
+  const map = mapOrigins();
+  const extra = map.length > 0 ? ` ${map.join(" ")}` : "";
   return [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
-    `img-src 'self' data: blob:${mediaOrigin()}`,
+    `img-src 'self' data: blob:${mediaOrigin()}${extra}`,
     "font-src 'self'",
-    "connect-src 'self'",
+    `connect-src 'self'${extra}`,
+    // The map's worker is a module served from this origin (public/vendor); MapLibre may also
+    // start one from a blob when the browser cannot load a module worker.
+    "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
