@@ -1285,6 +1285,45 @@ had carried a dark theme since identity v2, but the site only followed the devic
 * The page claims nothing the product has not decided. Whether listing a facility is free is
   the owner's decision, so the page does not say it is.
 
+## DECISION-071 — The site's map is the app's style, drawn by MapLibre, and optional
+
+**Date:** 2026-10-03 · **Phase 3.4 of the roadmap.**
+
+**Why:** a directory of places with no map makes the reader translate addresses in their head. The
+app already draws the province with MapLibre and its own style, so the website should show the
+same map, not a second, different one.
+
+**Decision:**
+
+* **When it appears.** The map shows only when a style is configured
+  (`NEXT_PUBLIC_MAP_STYLE_URL`, the style the app uses). Unset, there is no map anywhere and
+  nothing else changes. The style is hosted with the map in phase 6, and `scripts/local-map.sh`
+  puts a local one in the media store.
+* **What it shows.** On the home page, the pins of the category list being shown. On a facility
+  page, its own pin. A pin's colour is the facility's state (gold for on duty, as in the identity),
+  and each pin is a link to the facility's page. Every pin is also in the list or the page beside
+  it, so the map is never the only way to a place.
+* **Gestures.** Cooperative: one finger scrolls the page and two move the map, so a map halfway
+  down a page never traps a thumb.
+* **MapLibre GL JS 6.11** (≥ 6.4.1, which fixes advisory GHSA-jrc7-96c5-q579).
+  * It is loaded only when a map is shown.
+  * Its worker module and the Arabic text-shaping plugin (`@mapbox/mapbox-gl-rtl-text`) are copied
+    from `node_modules` into `public/vendor/maplibre-<version>/` on every `dev` and `build`
+    (`apps/web/scripts/vendor-map.mjs`). The site serves them itself: no third-party CDN at run
+    time, and a new version gets a new path.
+* **CSP:**
+  * The style's origin, plus `NEXT_PUBLIC_MAP_ORIGINS` for the hosts of its tiles, glyphs and
+    sprites, go into `connect-src` and `img-src`.
+  * `worker-src 'self' blob:` allows the worker.
+
+**Verified** with a local style:
+* The map draws on the home page (10 pins) and on a facility page (1 pin).
+* Every pin leads to its readable address.
+* The only browser messages are the headless browser's software-GL notices.
+
+Arabic labels on real tiles are to be checked in phase 6, once the style and tiles are hosted;
+the plugin is in place for them.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

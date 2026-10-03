@@ -86,4 +86,6 @@ DALINI-SOURCE.zip
 
 # Playwright writes failure traces and screenshots here; they are evidence of one run.
 apps/web/test-results/
+# Copied from node_modules by apps/web/scripts/vendor-map.mjs on every dev and build.
+apps/web/public/vendor/
 apps/admin/test-results/

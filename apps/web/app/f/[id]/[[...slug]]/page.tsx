@@ -3,12 +3,14 @@ import { directionsLink, localPhone, telLink, whatsAppFor } from "../../../../li
 import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 import Link from "next/link";
+import { FacilityMap } from "../../../../components/facility-map";
 import { ShareLinks } from "../../../../components/share";
 import { AndroidOnly } from "../../../../components/android-only";
 import { Breadcrumbs, Icon, JsonLd, Rating, StatusBadge, Unavailable } from "../../../../components/ui";
 import { getCategories, getFacility, getProvinces, type FacilityDetail, type HoursEntry } from "../../../../lib/api";
-import { absoluteUrl, appOpenUrl } from "../../../../lib/config";
+import { absoluteUrl, appOpenUrl, publicConfig } from "../../../../lib/config";
 import { WEEKDAYS_AR, WEEKDAY_DISPLAY_ORDER, damascusWeekday, spokenDate } from "../../../../lib/dates";
+import { pointsOf } from "../../../../lib/map-points";
 import { categoryPath, decodedSegment, facilityPath } from "../../../../lib/paths";
 import { UNAVAILABLE_METADATA, pageMetadata } from "../../../../lib/seo";
 
@@ -255,6 +257,13 @@ export default async function FacilityPage({ params }: Props) {
               ) : null}
             </dl>
           </section>
+
+          {f.location && publicConfig.mapStyleUrl ? (
+            <section aria-labelledby="map-title">
+              <h2 id="map-title">على الخريطة</h2>
+              <FacilityMap points={pointsOf([f])} zoom={16} label={`موقع ${f.nameAr} على الخريطة`} />
+            </section>
+          ) : null}
 
           {f.hours.length > 0 ? (
             <section aria-labelledby="hours-title">

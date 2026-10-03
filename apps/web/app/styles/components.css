@@ -1634,3 +1634,55 @@ tr:last-child td { border-bottom: 0; }
 }
 
 .facility-aside .share .button { padding-inline: var(--sd-spacing-md); }
+
+/* ---- The map (DECISION-071) --------------------------------------------------------------- */
+
+.facility-map {
+  width: 100%;
+  height: clamp(260px, 42vh, 420px);
+  overflow: hidden;
+  border: 1px solid var(--sd-semantic-stroke-subtle);
+  border-radius: var(--sd-radius-large);
+  background: var(--sd-semantic-surface-subtle);
+}
+
+/*
+ * A pin: a drop in the facility's state colour, with a white ring so it reads on any map. Gold for
+ * on duty is the identity's own; the rest follow the status badges. The drop is drawn by
+ * ::before, because MapLibre positions the marker element through its own `transform`, which
+ * would undo a rotation set on the element itself.
+ */
+.map-pin {
+  --pin: var(--sd-semantic-content-muted);
+  display: block;
+  width: 30px;
+  height: 36px;
+  cursor: pointer;
+}
+
+.map-pin::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 2px;
+  top: 0;
+  width: 26px;
+  height: 26px;
+  border: 3px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  background: var(--pin);
+  box-shadow: var(--shadow-medium);
+  transform: rotate(-45deg);
+}
+
+.map-pin:focus-visible { outline: 3px solid var(--sd-semantic-accent-default); outline-offset: 2px; border-radius: 50%; }
+.map-pin-open { --pin: var(--sd-semantic-feedback-success); }
+.map-pin-duty { --pin: var(--sd-semantic-accent-default); }
+.map-pin-closed { --pin: var(--sd-semantic-feedback-danger); }
+.map-pin-temp-closed { --pin: var(--sd-semantic-feedback-info); }
+
+/* The map's own controls take the page's type rather than the library's. */
+.facility-map .maplibregl-ctrl-attrib,
+.facility-map .maplibregl-cooperative-gesture-screen { font-family: inherit; }
+
+/* A map whose style could not be loaded steps aside; the list beside it is the same places. */
+.facility-map[data-failed] { display: none; }
