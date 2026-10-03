@@ -84,13 +84,23 @@ ROOT_URLCONF = "directory_backend.urls"
 WSGI_APPLICATION = "directory_backend.wsgi.application"
 ASGI_APPLICATION = "directory_backend.asgi.application"
 
+# A pool of connections per process, not a persistent connection per thread (DECISION-083).
+# Under ASGI every request runs in a thread of its own, and a connection kept open by its thread
+# outlived the request: under load they used up PostgreSQL's max_connections and every request
+# after that failed. Django's own pool (psycopg_pool) bounds them, and needs CONN_MAX_AGE 0.
 DATABASES = {
     "default": dj_database_url.config(
         default="postgresql://directory:directory@localhost:5432/directory",
-        conn_max_age=60,
-        conn_health_checks=True,
+        conn_max_age=0,
         engine="django.contrib.gis.db.backends.postgis",
     )
+}
+DATABASES["default"].setdefault("OPTIONS", {})["pool"] = {
+    "min_size": int(env("DB_POOL_MIN_SIZE", "1")),
+    "max_size": int(env("DB_POOL_MAX_SIZE", "8")),
+    # How long a request waits for a free connection before failing, rather than queueing
+    # forever behind a burst.
+    "timeout": float(env("DB_POOL_TIMEOUT", "10")),
 }
 
 LANGUAGE_CODE = "ar"

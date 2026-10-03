@@ -237,5 +237,9 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
-      - name: Boot the stack and ask it
+      # Then five thousand made-up facilities and forty visitors for a minute, through Caddy,
+      # held to each screen's p95 (infrastructure/load/public.js, DECISION-083).
+      - name: Boot the stack, ask it, and load it
+        env:
+          SMOKE_LOAD: '1'
         run: infrastructure/production/smoke.sh

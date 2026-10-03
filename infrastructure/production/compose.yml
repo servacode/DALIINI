@@ -46,6 +46,8 @@ x-backend-env: &backend-env
   WHATSAPP_TEMPLATE_NAME: ${WHATSAPP_TEMPLATE_NAME:-}
   WHATSAPP_TEMPLATE_LANGUAGE: ${WHATSAPP_TEMPLATE_LANGUAGE:-ar}
   WHATSAPP_BOT_URL: http://whatsapp-bot:8085
+  # Connections per process (DECISION-083): the API's two workers hold at most 16 between them.
+  DB_POOL_MAX_SIZE: ${DB_POOL_MAX_SIZE:-8}
   MAP_TILES_INTERNAL_URL: http://martin:3000
   ROUTING_INTERNAL_URL: http://valhalla:8002
   WHATSAPP_BOT_TOKEN: ${WHATSAPP_BOT_TOKEN:-}

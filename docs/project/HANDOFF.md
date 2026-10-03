@@ -141,3 +141,8 @@ POST only. `infrastructure/production/map/build-map.sh` rebuilds both from OpenS
 monthly. The style's one source is `maps/raqqa.style.json`; `bind-style.py` points it at a
 host. `map-labels` (CI) and the **Map build** workflow draw it in a browser and fail when
 Arabic names are not joined or not placed.
+
+The public API is load-tested in CI (`infrastructure/load/`, DECISION-083): 5,000 made-up
+facilities (`seed_load_directory`, which refuses real data) and 40 visitors through Caddy, each
+screen held to its own p95. Connections come from Django's pool, one per process
+(`DB_POOL_MAX_SIZE`); never set `CONN_MAX_AGE` back above 0 under ASGI.
