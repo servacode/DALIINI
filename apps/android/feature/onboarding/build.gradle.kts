@@ -1,26 +1,34 @@
+// Shared with the iPhone app (DECISION-089): the onboarding feature's repositories, use cases and
+// rules in common code; its screens, view models and strings in androidMain.
 plugins {
-    id("serva.android.library")
-    id("serva.android.compose")
-    id("serva.android.hilt")
+    id("serva.kmp.feature")
 }
 
-dependencies {
-    implementation(project(":core:model"))
-    implementation(project(":core:network"))
-    implementation(project(":core:datastore"))
-    implementation(project(":core:location"))
-    implementation(project(":core:maps"))
-    implementation(libs.androidx.activity.compose)
-    implementation(project(":core:designsystem"))
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.material3)
-    implementation(libs.maplibre.android)
-    testImplementation(libs.junit)
-    testImplementation(project(":core:testing"))
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(project(":core:model"))
+            implementation(project(":core:network"))
+            implementation(project(":core:datastore"))
+            implementation(project(":core:location"))
+            implementation(project(":core:maps"))
+            implementation(project(":core:inject"))
+            implementation(libs.kotlinx.coroutines.core)
+        }
+        androidMain.dependencies {
+            implementation(libs.androidx.activity.compose)
+            implementation(project(":core:designsystem"))
+            implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
+            implementation(libs.androidx.navigation.compose)
+            implementation(libs.androidx.lifecycle.viewmodel.compose)
+            implementation(libs.androidx.lifecycle.runtime.compose)
+            implementation(libs.androidx.compose.ui)
+            implementation(libs.androidx.material3)
+            implementation(libs.maplibre.android)
+        }
+        getByName("androidHostTest").dependencies {
+            implementation(libs.junit)
+            implementation(project(":core:testing"))
+        }
+    }
 }

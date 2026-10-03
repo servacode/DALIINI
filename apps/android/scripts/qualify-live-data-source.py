@@ -59,11 +59,11 @@ def check_rest_truth_and_offline() -> None:
         ("facility", "FacilityViewModel.kt"),
     ):
         source = read(
-            f"feature/{feature}/src/main/kotlin/com/servacode/directory/feature/{feature}/{filename}"
+            f"feature/{feature}/src/androidMain/kotlin/com/servacode/directory/feature/{feature}/{filename}"
         )
         require("RealtimeInvalidationBus" in source, f"realtime invalidation missing: {feature}")
         require("refresh" in source, f"REST refetch path missing: {feature}")
-    owner = read("feature/owner/src/main/kotlin/com/servacode/directory/feature/owner/OwnerViewModel.kt")
+    owner = read("feature/owner/src/androidMain/kotlin/com/servacode/directory/feature/owner/OwnerViewModel.kt")
     # The user-scope rule is stated once, in the shared predicate, rather than repeated in each
     # ViewModel that needs it.
     require("refreshesOwnerState" in owner, "owner user-scope invalidation missing")
@@ -77,8 +77,8 @@ def check_rest_truth_and_offline() -> None:
     screens = "\n".join(
         read(path)
         for path in (
-            "feature/home/src/main/kotlin/com/servacode/directory/feature/home/HomeScreen.kt",
-            "feature/facility/src/main/kotlin/com/servacode/directory/feature/facility/FacilityScreen.kt",
+            "feature/home/src/androidMain/kotlin/com/servacode/directory/feature/home/HomeScreen.kt",
+            "feature/facility/src/androidMain/kotlin/com/servacode/directory/feature/facility/FacilityScreen.kt",
         )
     )
     # Every screen shows the same offline notice from the design system rather than writing its

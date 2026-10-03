@@ -139,28 +139,28 @@ def check_architecture() -> None:
     )
     require(
         "Composable" in text(
-            "feature/bootstrap/src/main/kotlin/"
+            "feature/bootstrap/src/androidMain/kotlin/"
             "com/servacode/directory/feature/bootstrap/BootstrapScreen.kt"
         ),
         "bootstrap composable missing",
     )
     require(
         "ViewModel" in text(
-            "feature/bootstrap/src/main/kotlin/"
+            "feature/bootstrap/src/androidMain/kotlin/"
             "com/servacode/directory/feature/bootstrap/BootstrapViewModel.kt"
         ),
         "bootstrap ViewModel missing",
     )
     require(
         "UseCase" in text(
-            "feature/bootstrap/src/main/kotlin/"
+            "feature/bootstrap/src/commonMain/kotlin/"
             "com/servacode/directory/feature/bootstrap/BootstrapUseCase.kt"
         ),
         "bootstrap use case missing",
     )
     require(
         "Repository" in text(
-            "feature/bootstrap/src/main/kotlin/"
+            "feature/bootstrap/src/commonMain/kotlin/"
             "com/servacode/directory/feature/bootstrap/BootstrapRepository.kt"
         ),
         "bootstrap repository missing",
@@ -169,7 +169,9 @@ def check_architecture() -> None:
     # call there would make the app's start wait on the network.
     bootstrap_sources = "\n".join(
         path.read_text(encoding="utf-8")
-        for path in (ROOT / "feature/bootstrap/src/main").rglob("*.kt")
+        for path in (ROOT / "feature/bootstrap/src").rglob("*.kt")
+        # Its own code in every source set, not its tests (DECISION-089).
+        if not re.search(r"/src/(test|androidHostTest|commonTest)/", path.as_posix())
     )
     require(
         ":core:network" not in text("feature/bootstrap/build.gradle.kts")
