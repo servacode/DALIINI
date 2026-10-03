@@ -12,6 +12,12 @@
     "test": "pnpm --filter ./apps/admin --filter ./apps/web run --if-present test",
     "build": "pnpm --filter ./apps/admin --filter ./apps/web build",
     "db:backup": "bash scripts/db-backup.sh",
-    "db:restore": "bash scripts/db-restore.sh"
+    "db:restore": "bash scripts/db-restore.sh",
+    "stack:up": "docker compose -f infrastructure/docker/compose.yml up -d --build",
+    "stack:seed": "docker compose -f infrastructure/docker/compose.yml exec api sh -c \"uv run python manage.py seed_e2e_fixtures && uv run python manage.py seed_e2e_mobile_fixtures && uv run python manage.py seed_local_directory\"",
+    "stack:logs": "docker compose -f infrastructure/docker/compose.yml logs -f api worker beat",
+    "stack:down": "docker compose -f infrastructure/docker/compose.yml down",
+    "dev:admin": "node scripts/dev-app.mjs admin",
+    "dev:web": "node scripts/dev-app.mjs web"
   }
 }
