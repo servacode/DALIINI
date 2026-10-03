@@ -41,6 +41,15 @@ import com.servacode.directory.feature.facility.FacilityUseCase
 import com.servacode.directory.feature.facility.RecordVisitUseCase
 import com.servacode.directory.feature.facility.ReportFacilityUseCase
 import com.servacode.directory.feature.home.HomeAdsRepository
+import com.servacode.directory.feature.owner.ClaimFacilityUseCase
+import com.servacode.directory.feature.owner.ConfirmHoursUseCase
+import com.servacode.directory.feature.owner.LoadManageFacilityUseCase
+import com.servacode.directory.feature.owner.LoadOwnerFacilitiesUseCase
+import com.servacode.directory.feature.owner.LoadOwnerInsightsUseCase
+import com.servacode.directory.feature.owner.LoadTagChoicesUseCase
+import com.servacode.directory.feature.owner.ManageFacilityUseCase
+import com.servacode.directory.feature.owner.OwnerRepository
+import com.servacode.directory.feature.owner.ReceivedInvitationsUseCase
 import com.servacode.directory.feature.home.HomeAdsUseCase
 import com.servacode.directory.feature.home.HomeRepository
 import com.servacode.directory.feature.home.HomeUseCase
@@ -120,6 +129,16 @@ internal class ShellGraph(
     val saved = SavedRepository(publicApi)
     val ratings = RatingsUseCase(RatingsRepository(publicApi))
     val duty = DutyRepository(ownerApi)
+
+    private val owner = OwnerRepository(ownerApi)
+    val ownerFacilities = LoadOwnerFacilitiesUseCase(owner)
+    val loadManaged = LoadManageFacilityUseCase(owner)
+    val manageFacility = ManageFacilityUseCase(owner)
+    val insights = LoadOwnerInsightsUseCase(owner)
+    val tagChoices = LoadTagChoicesUseCase(owner)
+    val confirmHours = ConfirmHoursUseCase(owner)
+    val claims = ClaimFacilityUseCase(owner)
+    val receivedInvitations = ReceivedInvitationsUseCase(owner)
 
     companion object {
         /** The app's graph on the phone's own Keychain, files, position and network. */

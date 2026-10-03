@@ -35,6 +35,7 @@ kotlin {
                 implementation(project(":feature:account"))
                 implementation(project(":feature:ratings"))
                 implementation(project(":feature:duty"))
+                implementation(project(":feature:owner"))
                 implementation(project(":core:analytics"))
                 implementation(libs.ktor.client.core)
                 implementation(libs.kotlinx.coroutines.core)

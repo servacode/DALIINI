@@ -2674,6 +2674,49 @@ sit behind the account. These screens were Android's, and so were two things in 
 **Next:** the owner's screens (claims, onboarding a facility, managing it, invitations), with the
 photo picker made shared; then settings and help; then the map and navigation.
 
+## DECISION-099 — The owner's screens are shared; one photo picker for every upload
+
+**Date:** 2026-10-03 · **Phase 8.15 of the roadmap.**
+
+**Why:** an owner manages their facility from the app. The owner's screens were Android's, and two
+things in them needed more than the DECISION-095 pattern:
+* a claim's documents were picked with Android's photo picker and read from a `Uri` inside the
+  view model;
+* two view models read their id from the navigation's saved state.
+
+**Decision:**
+
+* **The owner's screens, their view models and their words move to common code:**
+  * my facilities, and the claims among them;
+  * managing a facility, with its statistics, its weekly confirmation of hours and its
+    specialties and services;
+  * the invitations received;
+  * claiming a facility and its documents.
+* **A view model takes the id it is for.** `ManageFacilityViewModel` and `ClaimViewModel` take
+  their id. Android's Hilt subclasses read it from the route, as before, with `routeId()`, which
+  moved to androidMain beside them. The clock of the hours' confirmation defaults to the common
+  one.
+* **One photo picker, in the design system: `rememberImagePicker`.** It moved from the account
+  (DECISION-098) and hands back a `PickedImage`, which the account's picture and a claim's
+  documents send as their upload. A picture that cannot be read, or is larger than the 10 MB
+  limit, arrives as null, so a claim still says the file could not be read.
+  * The claim's view model no longer reads files. It takes the document as picked, or null for
+    one that was not readable.
+  * Onboarding still uses `UploadReader` until it moves with the map.
+* **The iPhone shell has the owner's places and the owner's tab.** The tab is shown only for an
+  account with a facility to manage, as on Android.
+  * The account, the notices and the tab open the owner's places.
+  * Joining an invitation opens the facility joined, and starting a claim opens the claim, each in
+    place of the screen that led there.
+  * Adding a facility and editing its details are onboarding, which moves with the map, and open
+    nothing on the iPhone for now.
+* **The owner's view-model tests and the rules they use are common:** claims, tags, hours,
+  invitations, management, insights and the claim search. They run on the JVM and on the
+  simulator.
+
+**Next:** settings and help, and the first run (the welcome, the location question and the splash);
+then the map, onboarding and navigation, with MapLibre on the iPhone.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

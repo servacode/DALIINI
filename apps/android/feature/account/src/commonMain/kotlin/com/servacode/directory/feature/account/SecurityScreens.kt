@@ -33,6 +33,8 @@ import com.servacode.directory.core.designsystem.DirectoryTextField
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
+import com.servacode.directory.core.designsystem.rememberImagePicker
+import com.servacode.directory.core.network.OwnerUploadPayload
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -57,7 +59,10 @@ fun ProfileEditScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val account by accountViewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(state.saved) { if (state.saved) onDone() }
-    val pickImage = rememberImagePicker(viewModel::chooseImage)
+    // A picture that cannot be read is left unpicked, as before.
+    val pickImage = rememberImagePicker { picked ->
+        picked?.let { viewModel.chooseImage(OwnerUploadPayload(it.fileName, it.mediaType, it.bytes)) }
+    }
 
     DirectoryPage(
         topBar = { DirectoryTopBar(title = SecurityCopy.EDIT_PROFILE, onBack = onBack) },

@@ -42,7 +42,8 @@ The shared modules' own tests run on the simulator in the `ios-shared` job.
 
 ## Not yet
 
-* The rest of the real screens. The directory's screens, signing in and the account are already
-  the shared screens (DECISIONS 095 to 098); the owner's screens move next.
+* The rest of the real screens. The directory's screens, signing in, the account and the
+  owner's screens are already the shared screens (DECISIONS 095 to 099); settings, help and the
+  first run move next.
 * The map, notices, and signing for the App Store. Signing needs the owner's Apple developer
   account.

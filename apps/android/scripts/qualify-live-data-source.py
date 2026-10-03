@@ -70,7 +70,7 @@ def check_rest_truth_and_offline() -> None:
         source = feature_file(feature, filename)
         require("RealtimeInvalidationBus" in source, f"realtime invalidation missing: {feature}")
         require("refresh" in source, f"REST refetch path missing: {feature}")
-    owner = read("feature/owner/src/androidMain/kotlin/com/servacode/directory/feature/owner/OwnerViewModel.kt")
+    owner = feature_file("owner", "OwnerViewModel.kt")
     # The user-scope rule is stated once, in the shared predicate, rather than repeated in each
     # ViewModel that needs it.
     require("refreshesOwnerState" in owner, "owner user-scope invalidation missing")

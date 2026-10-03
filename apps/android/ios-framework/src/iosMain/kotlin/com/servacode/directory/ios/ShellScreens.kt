@@ -13,6 +13,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.servacode.directory.core.auth.SessionState
 import com.servacode.directory.core.designsystem.DirectoryBottomBar
 import com.servacode.directory.core.designsystem.DirectoryDestination
+import com.servacode.directory.core.designsystem.DirectoryGlyph
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryTheme
 import com.servacode.directory.core.designsystem.DirectoryWords
@@ -44,6 +45,20 @@ import com.servacode.directory.feature.facility.FacilityViewModel
 import com.servacode.directory.feature.home.HomeExtrasViewModel
 import com.servacode.directory.feature.home.HomeScreen
 import com.servacode.directory.feature.home.HomeViewModel
+import com.servacode.directory.feature.owner.ClaimScreen
+import com.servacode.directory.feature.owner.ClaimSearchScreen
+import com.servacode.directory.feature.owner.ClaimSearchViewModel
+import com.servacode.directory.feature.owner.ClaimViewModel
+import com.servacode.directory.feature.owner.FacilityTagsViewModel
+import com.servacode.directory.feature.owner.HoursConfirmationViewModel
+import com.servacode.directory.feature.owner.InvitationsScreen
+import com.servacode.directory.feature.owner.InvitationsViewModel
+import com.servacode.directory.feature.owner.ManageFacilityScreen
+import com.servacode.directory.feature.owner.ManageFacilityViewModel
+import com.servacode.directory.feature.owner.MyFacilitiesScreen
+import com.servacode.directory.feature.owner.MyFacilitiesViewModel
+import com.servacode.directory.feature.owner.OwnerInsightsViewModel
+import com.servacode.directory.feature.owner.OwnerPresenceViewModel
 import com.servacode.directory.feature.province.ProvinceScreen
 import com.servacode.directory.feature.province.ProvinceViewModel
 import com.servacode.directory.feature.ratings.RatingsScreen
@@ -102,7 +117,7 @@ private fun ShellHome(graph: ShellGraph, navigation: ShellNavigation) {
         onSearch = { navigation.open(ShellPlace.Search) },
         onFacility = { navigation.open(ShellPlace.Facility(it)) },
         onNotifications = { navigation.open(ShellPlace.Notifications) },
-        bottomBar = { ShellTabs(ShellPlace.Home, navigation) },
+        bottomBar = { ShellTabs(graph, ShellPlace.Home, navigation) },
     )
 }
 
@@ -132,17 +147,25 @@ private fun ShellFacility(graph: ShellGraph, id: String, navigation: ShellNaviga
     )
 }
 
-/** The bar along the bottom: the home and the account, the tabs whose screens are shared. */
+/**
+ * The bar along the bottom: the tabs whose screens are shared, the owner's only for an account
+ * with a facility to manage, as on Android.
+ */
 @Composable
-private fun ShellTabs(current: ShellPlace, navigation: ShellNavigation) {
+private fun ShellTabs(graph: ShellGraph, current: ShellPlace, navigation: ShellNavigation) {
+    val presence = viewModel { OwnerPresenceViewModel(graph.ownerFacilities, graph.session) }
+    val ownsFacility by presence.ownsFacility.collectAsState()
+    fun tab(place: ShellPlace, label: String, icon: DirectoryGlyph) =
+        DirectoryDestination(label, icon, current == place) { if (current != place) navigation.tab(place) }
     DirectoryBottomBar(
-        listOf(
-            DirectoryDestination(DirectoryWords.TAB_HOME, DirectoryIcons.home, current == ShellPlace.Home) {
-                if (current != ShellPlace.Home) navigation.tab(ShellPlace.Home)
+        listOfNotNull(
+            tab(ShellPlace.Home, DirectoryWords.TAB_HOME, DirectoryIcons.home),
+            if (ownsFacility) {
+                tab(ShellPlace.MyFacilities, DirectoryWords.TAB_FACILITIES, DirectoryIcons.hospital)
+            } else {
+                null
             },
-            DirectoryDestination(DirectoryWords.TAB_ACCOUNT, DirectoryIcons.person, current == ShellPlace.Account) {
-                if (current != ShellPlace.Account) navigation.tab(ShellPlace.Account)
-            },
+            tab(ShellPlace.Account, DirectoryWords.TAB_ACCOUNT, DirectoryIcons.person),
         ),
     )
 }
@@ -163,12 +186,12 @@ private fun ShellAccountPlace(graph: ShellGraph, place: ShellPlace, navigation: 
                 onSignedIn = {},
                 onRegister = { navigation.open(ShellPlace.Register) },
                 onRecovery = { navigation.open(ShellPlace.Recovery) },
-                bottomBar = { ShellTabs(ShellPlace.Account, navigation) },
+                bottomBar = { ShellTabs(graph, ShellPlace.Account, navigation) },
             )
         } else {
             AccountScreen(
                 viewModel { AccountViewModel(graph.account, graph.deleteAccount) },
-                onFacilities = {},
+                onFacilities = { navigation.open(ShellPlace.MyFacilities) },
                 onJoinAsOwner = {},
                 onAccountDeleted = navigation::restart,
                 onEditProfile = { navigation.open(ShellPlace.EditProfile) },
@@ -176,9 +199,11 @@ private fun ShellAccountPlace(graph: ShellGraph, place: ShellPlace, navigation: 
                 onNotifications = { navigation.open(ShellPlace.Notifications) },
                 onSettings = {},
                 onHelp = {},
-                bottomBar = { ShellTabs(ShellPlace.Account, navigation) },
+                bottomBar = { ShellTabs(graph, ShellPlace.Account, navigation) },
                 onRecentlyViewed = { navigation.open(ShellPlace.RecentlyViewed) },
                 onMyRatings = { navigation.open(ShellPlace.Ratings) },
+                onInvitations = { navigation.open(ShellPlace.Invitations) },
+                onClaim = { navigation.open(ShellPlace.ClaimSearch) },
             )
         }
         ShellPlace.Login -> LoginScreen(
@@ -206,10 +231,10 @@ private fun ShellAccountPlace(graph: ShellGraph, place: ShellPlace, navigation: 
         ShellPlace.Notifications -> NotificationsScreen(
             viewModel { InboxViewModel(graph.saved) },
             onFacility = openFacility,
-            onOwnerFacilities = {},
+            onOwnerFacilities = { navigation.open(ShellPlace.MyFacilities) },
             onDuty = { id, date -> navigation.open(ShellPlace.Duty(id, date)) },
-            onManageFacility = {},
-            onInvitations = {},
+            onManageFacility = { navigation.open(ShellPlace.ManageFacility(it)) },
+            onInvitations = { navigation.open(ShellPlace.Invitations) },
             onBack = navigation::back,
         )
         ShellPlace.EditProfile -> ProfileEditScreen(
@@ -235,6 +260,56 @@ private fun ShellAccountPlace(graph: ShellGraph, place: ShellPlace, navigation: 
             viewModel {
                 DutyViewModel(place.facilityId, place.date, LoadDutyUseCase(graph.duty), ManageDutyUseCase(graph.duty))
             },
+            onBack = navigation::back,
+        )
+        else -> ShellOwnerPlace(graph, place, navigation)
+    }
+}
+
+/**
+ * The owner's places (DECISION-099). Adding a facility and editing its details are onboarding,
+ * which moves with the map, and open nothing on the iPhone for now.
+ */
+@Composable
+private fun ShellOwnerPlace(graph: ShellGraph, place: ShellPlace, navigation: ShellNavigation) {
+    when (place) {
+        ShellPlace.MyFacilities -> MyFacilitiesScreen(
+            viewModel { MyFacilitiesViewModel(graph.ownerFacilities, graph.claims, graph.invalidations) },
+            onAdd = {},
+            onManage = { navigation.open(ShellPlace.ManageFacility(it)) },
+            onDuty = { navigation.open(ShellPlace.Duty(it, null)) },
+            onBack = if (navigation.places.size > 1) navigation::back else null,
+            bottomBar = { ShellTabs(graph, ShellPlace.MyFacilities, navigation) },
+            onClaim = { navigation.open(ShellPlace.ClaimSearch) },
+            onOpenClaim = { navigation.open(ShellPlace.Claim(it)) },
+        )
+        is ShellPlace.ManageFacility -> ManageFacilityScreen(
+            viewModel {
+                ManageFacilityViewModel(place.id, graph.loadManaged, graph.manageFacility, graph.invalidations)
+            },
+            viewModel { OwnerInsightsViewModel(graph.insights) },
+            viewModel { HoursConfirmationViewModel(graph.confirmHours) },
+            viewModel { FacilityTagsViewModel(graph.tagChoices, graph.manageFacility, graph.network) },
+            onEdit = {},
+            onDuty = { navigation.open(ShellPlace.Duty(it, null)) },
+            onBack = navigation::back,
+        )
+        // Joined, the facility is the account's to manage; the invitations are behind it.
+        ShellPlace.Invitations -> InvitationsScreen(
+            viewModel { InvitationsViewModel(graph.receivedInvitations) },
+            onJoined = { navigation.replace(ShellPlace.ManageFacility(it)) },
+            onBack = navigation::back,
+        )
+        ShellPlace.ClaimSearch -> ClaimSearchScreen(
+            viewModel { ClaimSearchViewModel(graph.claims) },
+            onClaim = { navigation.replace(ShellPlace.Claim(it)) },
+            onAdd = {},
+            onBack = navigation::back,
+        )
+        is ShellPlace.Claim -> ClaimScreen(
+            viewModel { ClaimViewModel(place.id, graph.claims) },
+            onWithdrawn = navigation::back,
+            onReopened = { navigation.replace(ShellPlace.Claim(it)) },
             onBack = navigation::back,
         )
         else -> Unit

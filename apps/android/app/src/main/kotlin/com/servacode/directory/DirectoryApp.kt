@@ -53,12 +53,12 @@ import com.servacode.directory.feature.home.HomeRoute
 import com.servacode.directory.feature.map.MapScreen
 import com.servacode.directory.feature.navigation.BuiltInNavigationScreen
 import com.servacode.directory.feature.onboarding.OnboardingScreen
-import com.servacode.directory.feature.owner.ClaimScreen
-import com.servacode.directory.feature.owner.ClaimSearchScreen
-import com.servacode.directory.feature.owner.InvitationsScreen
-import com.servacode.directory.feature.owner.ManageFacilityScreen
-import com.servacode.directory.feature.owner.MyFacilitiesScreen
-import com.servacode.directory.feature.owner.OwnerPresenceViewModel
+import com.servacode.directory.feature.owner.ClaimRoute
+import com.servacode.directory.feature.owner.ClaimSearchRoute
+import com.servacode.directory.feature.owner.HiltOwnerPresenceViewModel
+import com.servacode.directory.feature.owner.InvitationsRoute
+import com.servacode.directory.feature.owner.ManageFacilityRoute
+import com.servacode.directory.feature.owner.MyFacilitiesRoute
 import com.servacode.directory.feature.province.ProvinceRoute
 import com.servacode.directory.feature.ratings.RatingsRoute
 import com.servacode.directory.feature.search.SearchRoute
@@ -471,7 +471,7 @@ fun DirectoryApp(
         }
 
         composable<DirectoryRoute.MyFacilities> {
-            MyFacilitiesScreen(
+            MyFacilitiesRoute(
                 onAdd = { navController.navigate(DirectoryRoute.Onboarding()) },
                 onManage = { navController.navigate(DirectoryRoute.ManageFacility(it)) },
                 onDuty = { navController.navigate(DirectoryRoute.Duty(it)) },
@@ -483,7 +483,7 @@ fun DirectoryApp(
             )
         }
         composable<DirectoryRoute.ClaimFacility> {
-            ClaimSearchScreen(
+            ClaimSearchRoute(
                 // The search is behind the claim it started: back from the claim is the list.
                 onClaim = {
                     navController.navigate(DirectoryRoute.Claim(it)) {
@@ -499,7 +499,7 @@ fun DirectoryApp(
             )
         }
         composable<DirectoryRoute.Claim> {
-            ClaimScreen(
+            ClaimRoute(
                 onWithdrawn = { navController.popBackStack() },
                 onReopened = {
                     navController.navigate(DirectoryRoute.Claim(it)) {
@@ -522,14 +522,14 @@ fun DirectoryApp(
             )
         }
         composable<DirectoryRoute.ManageFacility> {
-            ManageFacilityScreen(
+            ManageFacilityRoute(
                 onEdit = { navController.navigate(DirectoryRoute.Onboarding(it)) },
                 onDuty = { navController.navigate(DirectoryRoute.Duty(it)) },
                 onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Invitations> {
-            InvitationsScreen(
+            InvitationsRoute(
                 // Joined, the facility is the account's to manage; the invitations are behind it.
                 onJoined = {
                     navController.navigate(DirectoryRoute.ManageFacility(it)) {
@@ -572,7 +572,7 @@ private enum class DirectoryTab { HOME, MAP, FACILITIES, ACCOUNT }
 private fun DirectoryTabs(
     current: DirectoryTab,
     navController: NavHostController,
-    presence: OwnerPresenceViewModel = hiltViewModel(),
+    presence: HiltOwnerPresenceViewModel = hiltViewModel(),
 ) {
     val ownsFacility by presence.ownsFacility.collectAsStateWithLifecycle()
     DirectoryBottomBar(

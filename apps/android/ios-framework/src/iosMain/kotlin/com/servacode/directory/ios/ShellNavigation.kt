@@ -3,7 +3,7 @@ package com.servacode.directory.ios
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModelStore
 
-/** A place in the iPhone app: the screens shared so far (DECISIONS 095 to 098). */
+/** A place in the iPhone app: the screens shared so far (DECISIONS 095 to 099). */
 internal sealed interface ShellPlace {
     data object Home : ShellPlace
     data object Province : ShellPlace
@@ -21,6 +21,12 @@ internal sealed interface ShellPlace {
     data object RecentlyViewed : ShellPlace
     data object Ratings : ShellPlace
     data class Duty(val facilityId: String, val date: String?) : ShellPlace
+    /** The owner's tab, for an account that has a facility to manage. */
+    data object MyFacilities : ShellPlace
+    data class ManageFacility(val id: String) : ShellPlace
+    data object Invitations : ShellPlace
+    data object ClaimSearch : ShellPlace
+    data class Claim(val id: String) : ShellPlace
 }
 
 /**
@@ -54,6 +60,12 @@ internal class ShellNavigation {
         stores.clear()
         stack.clear()
         stack += root
+    }
+
+    /** Leaves the current place for [place], as Android pops a screen to open the next. */
+    fun replace(place: ShellPlace) {
+        back()
+        open(place)
     }
 
     fun store(place: ShellPlace): ViewModelStore = stores.getOrPut(place) { ViewModelStore() }

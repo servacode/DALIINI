@@ -17,7 +17,6 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
-            implementation(libs.androidx.activity.compose)
         }
         getByName("androidHostTest").dependencies {
             implementation(libs.junit)

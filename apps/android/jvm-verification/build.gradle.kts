@@ -42,10 +42,8 @@ val androidOnly = listOf(
     // Where Hilt meets a shared screen (DECISION-095), in a feature's androidMain.
     "**/feature/*/*Route.kt",
     "**/feature/*/*Routes.kt",
-    // The home's location question and the account's photo picker: Compose, and a platform's
-    // own dialog on each side.
+    // The home's location question: Compose, and a platform's own dialog on each side.
     "**/feature/home/LocationAccess*.kt",
-    "**/feature/account/ImagePicker*.kt",
     "**/feature/bootstrap/BootstrapModule.kt",
     // Reads the built-in emergency lines' names from the settings module's strings.xml.
     "**/feature/settings/EmergencyLabelsModule.kt",
