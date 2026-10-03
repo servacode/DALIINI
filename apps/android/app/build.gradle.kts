@@ -227,6 +227,7 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.core)
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.profileinstaller)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.process)
@@ -286,7 +287,14 @@ val validatePlayRelease = tasks.register("validatePlayRelease") {
     )
     val linkHost = appLinkHost
     val keystorePath = uploadKeystorePath
+    // The number Play orders builds by: given by the build, never the default (DECISION-079).
+    val versionCode = providers.gradleProperty("DIRECTORY_VERSION_CODE")
+        .orElse(providers.environmentVariable("DIRECTORY_VERSION_CODE"))
     doLast {
+        val code = versionCode.orNull?.toIntOrNull()
+        require(code != null && code > 1) {
+            "DIRECTORY_VERSION_CODE must be set to this build's number, above every build already uploaded"
+        }
         endpoints.forEach { (name, provider) ->
             val value = provider.get()
             require(!value.contains("<") && !value.contains(">")) {

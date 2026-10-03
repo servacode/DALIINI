@@ -2,6 +2,15 @@ plugins {
     id("com.android.application")
 }
 
+// Whoever builds it numbers it (DECISION-079). CI passes DIRECTORY_VERSION_CODE for every build
+// it makes, so two builds never share a number, and a Play release refuses to start without one
+// (validatePlayRelease). The name is chosen by people, in gradle.properties, and reviewed like
+// any change. A machine that sets neither builds 1 and the checked-in name.
+val versionCodeSetting = providers.gradleProperty("DIRECTORY_VERSION_CODE")
+    .orElse(providers.environmentVariable("DIRECTORY_VERSION_CODE"))
+val versionNameSetting = providers.gradleProperty("DIRECTORY_VERSION_NAME")
+    .orElse(providers.environmentVariable("DIRECTORY_VERSION_NAME"))
+
 extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
     namespace = "com.servacode.directory"
     // 37: the pinned AndroidX, Compose and Coil releases require it (DECISION-040).
@@ -12,8 +21,8 @@ extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
         applicationId = "com.servacode.directory"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = versionCodeSetting.orNull?.toIntOrNull() ?: 1
+        versionName = versionNameSetting.orNull ?: "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

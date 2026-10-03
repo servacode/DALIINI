@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.servacode.directory.core.maps.MapCamera
 import com.servacode.directory.core.maps.MapLibreController
+import com.servacode.directory.core.maps.systemAnimationsOff
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.maps.MapStyle
 import com.servacode.directory.core.maps.rememberMapViewWithLifecycle
@@ -71,7 +72,7 @@ private fun PickerMap(
                     false
                 }
                 getMapAsync { map ->
-                    val mapController = MapLibreController(map)
+                    val mapController = MapLibreController(map, reducedMotion = { systemAnimationsOff(context) })
                     currentCamera?.let { mapController.moveCamera(it, animated = false) }
                     mapController.setOnPointSelected { tap(it) }
                     map.setStyle(styleUrl) { controller = mapController }
