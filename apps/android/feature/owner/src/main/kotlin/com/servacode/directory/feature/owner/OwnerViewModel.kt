@@ -24,6 +24,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+/**
+ * The `id` of the route a screen was opened with: [com.servacode.directory.core.model.DirectoryRoute.ManageFacility]
+ * or [com.servacode.directory.core.model.DirectoryRoute.Claim].
+ *
+ * Type-safe navigation keeps each route argument in the saved state under its property's name,
+ * which is what `toRoute` reads too. Reading the one string directly does the same without
+ * going through a Bundle, so the view models that need it also run in plain JVM tests. It lives
+ * here, with the view models, because the platform-free harness compiles none of them.
+ */
+internal fun SavedStateHandle.routeId(): String =
+    checkNotNull(get<String>("id")) { "The route carries no id." }
+
 sealed interface MyFacilitiesUiState {
     data object Loading : MyFacilitiesUiState
     data class Content(
