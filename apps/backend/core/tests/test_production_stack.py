@@ -235,3 +235,87 @@ def test_a_released_site_is_built_with_the_arguments_the_stack_builds_it_with() 
         assert re.sub(r"\$\{\w+:?[?-]?\}", "X", value) == re.sub(
             r"\$\{\{ vars\.\w+ \}\}", "X", released[key]
         ), key
+
+
+def _map_module(name: str) -> Any:
+    import importlib.util
+
+    path = ROOT / STACK / "map" / f"{name}.py"
+    spec = importlib.util.spec_from_file_location(f"map_{name.replace('-', '_')}", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_the_bound_style_reads_everything_from_the_map_host(tmp_path: pathlib.Path) -> None:
+    """DECISION-082: tiles, glyphs and icons from maps.<ROOT>, in the brand's font; the layers
+    the app inserts its route and markers between are the reference's own."""
+    archive = tmp_path / "syria.pmtiles"
+    archive.write_bytes(_map_module("fixture").archive())
+    style = _map_module("bind-style").bind("https://maps.example.org", archive)
+    reference = __import__("json").loads((ROOT / "maps" / "raqqa.style.json").read_text("utf-8"))
+
+    source = style["sources"]["base"]
+    assert source["tiles"] == ["https://maps.example.org/syria/{z}/{x}/{y}"]
+    assert (source["minzoom"], source["maxzoom"]) == (12, 12)
+    assert style["glyphs"] == "https://maps.example.org/font/{fontstack}/{range}"
+    assert style["sprite"] == "https://maps.example.org/sprite/daliini"
+    assert [layer["id"] for layer in style["layers"]] == [
+        layer["id"] for layer in reference["layers"]
+    ]
+    assert not [key for key in style if key.startswith("_")]
+    fonts = {
+        font for layer in style["layers"] for font in layer.get("layout", {}).get("text-font", [])
+    }
+    assert fonts == {"IBM Plex Sans Arabic Regular", "IBM Plex Sans Arabic Bold"}
+    assert "rahalgo.com" not in __import__("json").dumps(style)
+
+
+def test_every_icon_the_style_names_is_drawn() -> None:
+    def strings(expression: Any) -> list[str]:
+        if isinstance(expression, str):
+            return [expression]
+        if isinstance(expression, list):
+            return [text for item in expression for text in strings(item)]
+        return []
+
+    reference = __import__("json").loads((ROOT / "maps" / "raqqa.style.json").read_text("utf-8"))
+    named = {
+        text
+        for layer in reference["layers"]
+        for text in strings(layer.get("layout", {}).get("icon-image"))
+        if text.startswith("poi-")
+    }
+    drawn = {path.stem for path in (ROOT / "maps" / "sprite" / "daliini").glob("*.svg")}
+    assert named == {"poi-fuel", "poi-pharmacy", "poi-hospital", "poi-landmark"}
+    assert named <= drawn, named - drawn
+
+
+def test_the_map_host_runs_as_ci_and_local_checks_run_it() -> None:
+    martin = SERVICES["martin"]
+    assert martin["command"] == [
+        "/map/syria.pmtiles",
+        "--font",
+        "/fonts",
+        "--sprite",
+        "/sprites/daliini",
+        "--style",
+        "/map/styles",
+    ]
+    serve = (ROOT / STACK / "map" / "serve.sh").read_text("utf-8")
+    assert "/map/syria.pmtiles --font /fonts --sprite /sprites/daliini --style /map/styles" in serve
+    for name in ("martin", "valhalla"):
+        image = SERVICES[name]["image"]
+        assert ":" in image and not image.endswith(":latest"), image
+        assert image in serve, f"serve.sh runs another {name}: {image}"
+    assert "ports" not in martin and "ports" not in SERVICES["valhalla"]
+
+
+def test_routing_takes_a_route_by_post_and_nothing_else() -> None:
+    """A route's positions travel in the body; a GET would put them in Valhalla's log."""
+    site = CADDYFILE[CADDYFILE.index("maps.{$ROOT_DOMAIN}") :]
+    routing = site[site.index("handle_path /routing/*") : site.index("handle /style/*")]
+    assert "method POST\n\t\t\tpath /route" in routing
+    assert "method GET\n\t\t\tpath /status" in routing
+    assert "respond 404" in routing

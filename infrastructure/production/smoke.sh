@@ -27,7 +27,17 @@ while IFS= read -r line; do
   esac
 done < "$work/smoke.env"
 sed -i -e "s|<[A-Z_]*>|placeholder|g" \
-  -e "s|^FCM_SERVICE_ACCOUNT_JSON=.*|FCM_SERVICE_ACCOUNT_JSON=e30=|" "$work/smoke.env"
+  -e "s|^FCM_SERVICE_ACCOUNT_JSON=.*|FCM_SERVICE_ACCOUNT_JSON=e30=|" \
+  -e "s|^MAP_DIR=.*|MAP_DIR=$work/map|" "$work/smoke.env"
+
+# The map host with one tile of Raqqa instead of Syria (map/fixture.py), the style bound to this
+# domain, and Valhalla's configuration without a graph: enough to prove each path through Caddy.
+current="$work/map/current"
+mkdir -p "$current/valhalla"
+python3 "$here/map/fixture.py" "$current"
+python3 "$here/map/bind-style.py" "https://maps.$domain" "$current/syria.pmtiles" "$current/styles/daliini.json"
+docker run --rm ghcr.io/valhalla/valhalla:3.9.0 valhalla_build_config \
+  --mjolnir-tile-extract /data/tiles.tar --logging-color false > "$current/valhalla/valhalla.json"
 # Smoke only: the site and the console call the API through Caddy by its public name, and
 # Caddy's local authority is not one Node trusts. On a real server the certificate is public.
 cat > "$work/smoke.override.yml" <<'EOF'
@@ -60,7 +70,7 @@ trap finish EXIT
 compose up -d --build
 
 resolve=()
-for name in "$domain" "www.$domain" "api.$domain" "admin.$domain"; do
+for name in "$domain" "www.$domain" "api.$domain" "admin.$domain" "maps.$domain"; do
   resolve+=(--resolve "$name:443:127.0.0.1" --resolve "$name:80:127.0.0.1")
 done
 ask() { curl -sk --noproxy '*' "${resolve[@]}" "$@"; }
@@ -68,6 +78,7 @@ ask() { curl -sk --noproxy '*' "${resolve[@]}" "$@"; }
 # Up to ten minutes for migrations, the API and the two Next servers.
 for _ in $(seq 1 120); do
   if [ "$(ask -o /dev/null -w '%{http_code}' "https://api.$domain/health/ready/")" = 200 ] &&
+     [ "$(ask -o /dev/null -w '%{http_code}' "https://maps.$domain/health")" = 200 ] &&
      [ "$(ask -o /dev/null -w '%{http_code}' "https://$domain/")" = 200 ] &&
      [ "$(ask -o /dev/null -w '%{http_code}' "https://admin.$domain/login")" = 200 ]; then
     break
@@ -93,6 +104,32 @@ expect "https://$domain/" 200
 expect "https://admin.$domain/login" 200
 expect "https://www.$domain/duty" 301
 expect "http://api.$domain/health/live/" 308
+
+# The map host (DECISION-082): the style, a tile, Arabic glyphs in their joined forms, the icons,
+# and the routing engine, which takes a route by POST and nothing by GET.
+expect "https://maps.$domain/style/daliini" 200
+expect "https://maps.$domain/syria/12/2491/1609" 200
+expect "https://maps.$domain/font/IBM%20Plex%20Sans%20Arabic%20Regular/65024-65279" 200
+expect "https://maps.$domain/sprite/daliini.json" 200
+expect "https://maps.$domain/routing/status" 200
+expect "https://maps.$domain/routing/route?json=%7B%7D" 404
+expect "https://maps.$domain/routing/isochrone" 404
+route="$(ask -o /dev/null -w '%{http_code}' -X POST --data '{"locations":[]}' "https://maps.$domain/routing/route")"
+if [ "$route" = 400 ]; then
+  echo "ok    400 POST https://maps.$domain/routing/route (reached Valhalla, which has no graph here)"
+else
+  echo "FAIL  $route POST https://maps.$domain/routing/route (expected Valhalla's 400)"; failures=$((failures + 1))
+fi
+if ask "https://maps.$domain/style/daliini" | grep -q "https://maps.$domain/syria/{z}/{x}/{y}"; then
+  echo "ok    the style points at this host's tiles"
+else
+  echo "FAIL  the style does not point at this host's tiles"; failures=$((failures + 1))
+fi
+if ask -D - -o /dev/null "https://$domain/" | grep -i '^content-security-policy:' | grep -q "https://maps.$domain"; then
+  echo "ok    the site's CSP lets the map host in"
+else
+  echo "FAIL  the site's CSP does not name https://maps.$domain"; failures=$((failures + 1))
+fi
 
 headers="$(ask -D - -o /dev/null "https://api.$domain/health/ready/")"
 if grep -qi '^strict-transport-security: max-age=31536000' <<<"$headers"; then

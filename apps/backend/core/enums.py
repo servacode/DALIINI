@@ -34,6 +34,7 @@ HEALTH_CHECK_KEY = [
     "scheduler",
     "storage",
     "disk",
+    "map",
     "otp",
     "push",
     "backup",

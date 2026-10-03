@@ -196,6 +196,42 @@ jobs:
 
   # The production stack as the server runs it (DECISION-080): every image built, the whole stack
   # started with throwaway values, and each name asked through Caddy, TLS included.
+  # The base map's Arabic labels, drawn by the site's own MapLibre and RTL plugin in a real
+  # browser (DECISION-082): one tile of Raqqa served by Martin with the brand's glyphs and the
+  # map's icons. The labels must come out joined and right to left, and the style must load at
+  # all: an expression MapLibre on the web refuses fails the whole map, not one layer.
+  map-labels:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @servacode/public-web exec playwright install --with-deps chromium
+      - name: Serve one tile of Raqqa
+        run: |
+          map="$RUNNER_TEMP/map"
+          python3 infrastructure/production/map/fixture.py "$map"
+          python3 infrastructure/production/map/bind-style.py http://127.0.0.1:3000 "$map/syria.pmtiles" "$map/styles/daliini.json"
+          infrastructure/production/map/serve.sh "$map"
+      - name: Draw it and read the labels back
+        working-directory: apps/web
+        run: >-
+          node scripts/map-render-check.mjs --style http://127.0.0.1:3000/style/daliini
+          --out "$RUNNER_TEMP/labels" --min-arabic 2
+          --view "city:38.995,35.942,12.6:الرقة|المنصورة"
+          --view "street:39.0089,35.9506,13.6:الرقة|شارع تل أبيض"
+          --view "pharmacy:39.0115,35.9515,15.6:صيدلية الشفاء"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-labels
+          path: ${{ runner.temp }}/labels
+
   production-stack:
     runs-on: ubuntu-latest
     timeout-minutes: 40

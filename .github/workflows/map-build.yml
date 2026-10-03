@@ -1,0 +1,90 @@
+name: Map build
+
+# The real map of Syria, built as the server builds it (infrastructure/production/map/build-map.sh),
+# then served and checked (DECISION-082):
+# * the Arabic labels on real tiles, drawn by the site's own MapLibre in a browser, over Raqqa,
+#   Damascus and Aleppo;
+# * a route in Raqqa and in Damascus for each way the app guides (car, motorcycle, on foot).
+# It runs when the map's sources change, monthly so that a change upstream (OpenStreetMap,
+# Planetiler, Valhalla) shows here before the server's own monthly build meets it, and by hand.
+# The screenshots and the build's sizes are kept as the run's artifact.
+
+on:
+  pull_request:
+    paths:
+      - maps/**
+      - infrastructure/production/map/**
+      - apps/web/scripts/map-render-check.mjs
+      - .github/workflows/map-build.yml
+  schedule:
+    - cron: '23 4 3 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: map-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  syria:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - name: This month
+        id: month
+        run: echo "value=$(date -u +%Y-%m)" >> "$GITHUB_OUTPUT"
+      # Planetiler's other sources (coastlines, lakes, Natural Earth) change rarely and weigh
+      # about 1.3 GB; one download a month is enough.
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/sources
+          key: planetiler-sources-${{ steps.month.outputs.value }}
+          restore-keys: planetiler-sources-
+      - name: Build the map and the routing graph
+        env:
+          MAP_SOURCES_DIR: ${{ runner.temp }}/sources
+          MAP_BUILD_HEAP: 8g
+        run: infrastructure/production/map/build-map.sh --build-only "$RUNNER_TEMP/map" http://127.0.0.1:3000
+      - name: Serve them
+        run: infrastructure/production/map/serve.sh "$RUNNER_TEMP/map"
+      - name: A route in Raqqa and in Damascus, for each way the app guides
+        run: |
+          route() { # name from-lat from-lon to-lat to-lon costing
+            body="{\"locations\":[{\"lat\":$2,\"lon\":$3},{\"lat\":$4,\"lon\":$5}],\"costing\":\"$6\"}"
+            length="$(curl -fsS --max-time 20 http://127.0.0.1:8002/route --data "$body" | jq '.trip.summary.length')"
+            echo "$1 $6: $length km"
+            awk -v l="$length" 'BEGIN { exit !(l > 0) }'
+          }
+          for costing in auto motorcycle pedestrian; do
+            route raqqa 35.9506 39.0089 35.9530 39.0160 "$costing"
+            route damascus 33.5138 36.2765 33.5020 36.2910 "$costing"
+          done
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @servacode/public-web exec playwright install --with-deps chromium
+      - name: Draw the cities and read the labels back
+        working-directory: apps/web
+        run: >-
+          node scripts/map-render-check.mjs --style http://127.0.0.1:3000/style/daliini
+          --out "$RUNNER_TEMP/labels" --min-arabic 5
+          --view "raqqa:39.0089,35.9506,12.5:الرقة"
+          --view "raqqa-streets:39.0089,35.9506,15.5"
+          --view "damascus:36.2913,33.5132,11.5:دمشق"
+          --view "aleppo:37.1612,36.2021,11.5:حلب"
+      - name: What was built
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/labels"
+          du -sh "$RUNNER_TEMP/map"/* | tee "$RUNNER_TEMP/labels/sizes.txt" || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-build
+          path: ${{ runner.temp }}/labels

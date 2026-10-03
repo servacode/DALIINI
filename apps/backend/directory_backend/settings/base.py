@@ -27,6 +27,10 @@ WHATSAPP_TEMPLATE_LANGUAGE = env("WHATSAPP_TEMPLATE_LANGUAGE", "ar")
 # WhatsApp session and listens on a private network; the token is what stops anything else on
 # that network using it to send messages.
 WHATSAPP_BOT_URL = env("WHATSAPP_BOT_URL", "")
+# The map host's services on the stack's network, for the system page (DECISION-082). Empty: the
+# map is not served by this deployment, and the page says so.
+MAP_TILES_INTERNAL_URL = env("MAP_TILES_INTERNAL_URL", "")
+ROUTING_INTERNAL_URL = env("ROUTING_INTERNAL_URL", "")
 WHATSAPP_BOT_TOKEN = env("WHATSAPP_BOT_TOKEN", "")
 DEBUG = False
 ALLOWED_HOSTS = env_csv("ALLOWED_HOSTS", ["localhost", "127.0.0.1"])

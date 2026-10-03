@@ -12267,6 +12267,7 @@ components:
       - scheduler
       - storage
       - disk
+      - map
       - otp
       - push
       - backup
@@ -12280,6 +12281,7 @@ components:
         * `scheduler` - scheduler
         * `storage` - storage
         * `disk` - disk
+        * `map` - map
         * `otp` - otp
         * `push` - push
         * `backup` - backup

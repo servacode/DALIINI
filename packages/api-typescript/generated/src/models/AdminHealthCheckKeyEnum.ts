@@ -20,6 +20,7 @@
  * * `scheduler` - scheduler
  * * `storage` - storage
  * * `disk` - disk
+ * * `map` - map
  * * `otp` - otp
  * * `push` - push
  * * `backup` - backup
@@ -34,6 +35,7 @@ export const AdminHealthCheckKeyEnum = {
     Scheduler: 'scheduler',
     Storage: 'storage',
     Disk: 'disk',
+    Map: 'map',
     Otp: 'otp',
     Push: 'push',
     Backup: 'backup',

@@ -23,6 +23,7 @@ from admin_console.system_health import (
     check_push,
     check_scheduler,
     probe_bot,
+    probe_map,
 )
 from health.beacons import BACKUP, OTP, PUSH, SCHEDULER, record_failure, record_ok
 from health.models import ServiceSignal
@@ -231,6 +232,7 @@ def test_the_endpoint_reports_every_check_and_the_worst_status_without_secrets(
         "scheduler",
         "storage",
         "disk",
+        "map",
         "otp",
         "push",
         "backup",
@@ -283,3 +285,38 @@ def test_an_unreadable_disk_is_said_so(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(shutil, "disk_usage", unreadable)
     assert check_disk().status == "failed"
+
+
+@override_settings(
+    MAP_TILES_INTERNAL_URL="http://martin:3000", ROUTING_INTERNAL_URL="http://valhalla:8002"
+)
+def test_the_map_is_drawn_routed_and_rebuilt_monthly(monkeypatch: pytest.MonkeyPatch) -> None:
+    def serve(catalog: dict[str, Any] | None, status: dict[str, Any] | None) -> Any:
+        def open_(url: str, timeout: float) -> Any:
+            body = catalog if url.endswith("/catalog") else status
+            if body is None:
+                raise OSError("connection refused")
+            return _Response(json.dumps(body).encode())
+
+        return open_
+
+    syria: dict[str, Any] = {"tiles": {"syria": {}}}
+    fresh = {"tileset_last_modified": int((NOW - timedelta(days=3)).timestamp())}
+    stale = {"tileset_last_modified": int((NOW - timedelta(days=60)).timestamp())}
+
+    monkeypatch.setattr("urllib.request.urlopen", serve(syria, fresh))
+    check = probe_map()
+    assert (check.status, check.metrics) == ("ok", {"mapAgeDays": 3}), check
+    monkeypatch.setattr("urllib.request.urlopen", serve(syria, stale))
+    assert probe_map().status == "warning"
+    assert "الشهري" in probe_map().summary
+    monkeypatch.setattr("urllib.request.urlopen", serve(syria, {"tileset_last_modified": 0}))
+    assert probe_map().status == "warning"
+    monkeypatch.setattr("urllib.request.urlopen", serve(syria, None))
+    assert "التوجيه متوقف" in probe_map().summary
+    monkeypatch.setattr("urllib.request.urlopen", serve({"tiles": {}}, fresh))
+    assert probe_map().status == "failed"
+    monkeypatch.setattr("urllib.request.urlopen", serve(None, fresh))
+    assert probe_map().status == "failed"
+    with override_settings(MAP_TILES_INTERNAL_URL="", ROUTING_INTERNAL_URL=""):
+        assert probe_map().status == "off"
