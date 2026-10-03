@@ -10,7 +10,7 @@ from accounts.models import User, UserAdminRole
 from audit.services import record_audit
 from facilities.models import Facility, FacilityApplication, FacilityReport, VerificationEvidence
 from notifications.models import Notification
-from notifications.services import create_notification
+from notifications.services import notify
 from sessions.models import UserSession
 
 
@@ -123,8 +123,9 @@ def decide_application(
 def _tell_the_owners(facility: Facility, *, approve: bool, reason: str) -> None:
     """A review decision reaches the people responsible for the facility.
 
-    The message goes to the account's own inbox, which is the record; whether a push also
-    reaches a device depends on a permission the owner may never have granted. The rejection
+    The message goes to the account's own inbox, which is the record, and is announced on the
+    owner's devices: a decision the owner is waiting on is the notice most worth a push. Whether
+    it is shown still depends on the device's own permission and the owner's choices. The rejection
     reason is the reviewer's own words and is shown to the owner, who is the one asked to act
     on it.
     """
@@ -135,7 +136,7 @@ def _tell_the_owners(facility: Facility, *, approve: bool, reason: str) -> None:
         else f"سبب الرفض: {reason}" if reason else f"راجِع طلب {facility.name_ar} وأعد إرساله."
     )
     for membership in facility.memberships.select_related("user"):
-        create_notification(
+        notify(
             user=membership.user,
             type=(
                 "facility.application.approved" if approve else "facility.application.rejected"

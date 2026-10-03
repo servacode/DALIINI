@@ -63,6 +63,7 @@ from .serializers import (
 )
 from .services import (
     create_facility_draft,
+    ensure_editable_by_owner,
     submit_facility,
     update_facility_core,
     update_facility_location,
@@ -272,6 +273,7 @@ class OwnerFacilityDetailView(APIView):
             400: DOMAIN_400,
             **protected(),
             404: NOT_FOUND_404,
+            409: CONFLICT_409,
         },
     )
     def patch(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
@@ -346,6 +348,7 @@ class OwnerFacilityLocationView(APIView):
             400: VALIDATION_400,
             **protected(),
             404: NOT_FOUND_404,
+            409: CONFLICT_409,
         },
     )
     def put(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
@@ -417,6 +420,7 @@ class OwnerFacilityImagesView(APIView):
     )
     def post(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
         facility = self._facility(request, facility_id)
+        ensure_editable_by_owner(facility)
         if not facility.category.capabilities.supports_photos:
             raise ConflictError(
                 "PHOTOS_NOT_SUPPORTED",
@@ -468,11 +472,12 @@ class OwnerFacilityImageDeleteView(APIView):
         operation_id="ownerFacilityImageDelete",
         tags=["Media"],
         summary="Delete a public facility image",
-        responses={204: None, **protected(), 404: NOT_FOUND_404},
+        responses={204: None, **protected(), 404: NOT_FOUND_404, 409: CONFLICT_409},
     )
     def delete(self, request: AuthenticatedRequest, facility_id: UUID, image_id: UUID) -> Response:
         facility = get_object_or_404(_owned_facilities(request.user), pk=facility_id)
         require_facility_member(request.user, facility)
+        ensure_editable_by_owner(facility)
         image = get_object_or_404(FacilityImage, pk=image_id, facility=facility)
         key = image.storage_key
         record_audit(
