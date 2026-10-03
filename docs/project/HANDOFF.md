@@ -15,8 +15,8 @@ scope is places only: nothing about medicines (DECISION-054).
 
 ## Where things stand
 
-The roadmap was approved on 2026-10-03. Phases 0 to 2 are done, merged through pull requests
-#27 to #37:
+The roadmap was approved on 2026-10-03. Phases 0 to 3 are done, merged through pull requests
+#27 to #40:
 
 | Phase | What it delivered | Decisions |
 |---|---|---|
@@ -31,10 +31,15 @@ The roadmap was approved on 2026-10-03. Phases 0 to 2 are done, merged through p
 | 2.7 | readable facility slugs, advertisement numbers, notification preferences | 067 |
 | 2.8 | end-to-end suites and the phone stack on compose, anywhere | 068 |
 | 2.9 | `admin_console/views.py` split by domain; this handoff and the blocker register rewritten | — |
+| 3.1 | the site's readable addresses, theme switch, search engines | 069 |
+| 3.2–3.3 | a home page that answers, compact cards, a facility page with its photos | 070 |
+| 3.4 | the site's map, the app's own style drawn by MapLibre | 071 |
+| 4.1 | the role editor, the owner role, `grant_operator` for the first operator | 072 |
 
-**Next: phase 3, the public website.** At its start the owner is to be offered the choice of an
-owner portal on the web. Then the console v2 (4), Android v2 (5), the VPS (6), content and the
-Play launch (7), and the iPhone app from the Android code with Kotlin Multiplatform (8).
+**Now: phase 4, the console v2** (4.2 system health, 4.3 tables, 4.4 map and charts). An owner
+portal on the web was offered at the start of phase 3 and set aside: owners use the Android app.
+Then Android v2 (5), the VPS (6), content and the Play launch (7), and the iPhone app from the
+Android code with Kotlin Multiplatform (8).
 
 Server work that Android has not caught up with yet, all planned for phase 5:
 - the «تعديلاتك بانتظار المراجعة» banner (`pendingChange`);
@@ -102,6 +107,11 @@ Android, or the contract Android consumes, is not done until that workflow is gr
 - **Every decision** that shapes behaviour gets a `DECISION-NNN` entry and a line in the roadmap.
 
 ## Hosting
+
+**The first operator** of a new deployment: register the number in the app, then on the server
+run `manage.py grant_operator 09XXXXXXXX`. It gives that account the owner role («مدير المنصة»,
+every permission); everyone after is appointed from the console. `--create --name "…"` makes the
+account instead, asking for the password at a prompt (DECISION-072).
 
 Render is not used (owner's decision). `render.yaml` and `render.production.yaml` remain only
 until phase 6 replaces them with the VPS setup: Docker Compose, Caddy and Cloudflare. A test

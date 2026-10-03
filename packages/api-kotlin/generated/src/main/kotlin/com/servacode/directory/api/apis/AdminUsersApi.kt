@@ -7,17 +7,87 @@ import okhttp3.RequestBody
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+import com.servacode.directory.api.models.AdminPermissionList
+import com.servacode.directory.api.models.AdminRole
+import com.servacode.directory.api.models.AdminRoleCreateRequest
 import com.servacode.directory.api.models.AdminRoleList
 import com.servacode.directory.api.models.AdminUser
 import com.servacode.directory.api.models.AdminUserDetail
 import com.servacode.directory.api.models.AdminUserList
 import com.servacode.directory.api.models.AdminUserRolesRequest
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.PatchedAdminRoleUpdateRequest
 
 interface AdminUsersApi {
     /**
+     * GET api/v1/admin/permissions/
+     * Every permission a role can carry
+     * The full catalogue, ordered by code. Labels for display belong to the client.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @return [AdminPermissionList]
+     */
+    @GET("api/v1/admin/permissions/")
+    suspend fun adminPermissionsList(): Response<AdminPermissionList>
+
+    /**
+     * POST api/v1/admin/roles/
+     * Create a role with the permissions it carries
+     * Requires &#x60;admin.roles.manage&#x60;, which is re-checked inside the handler.
+     * Responses:
+     *  - 201: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param adminRoleCreateRequest 
+     * @return [AdminRole]
+     */
+    @POST("api/v1/admin/roles/")
+    suspend fun adminRoleCreate(@Body adminRoleCreateRequest: AdminRoleCreateRequest): Response<AdminRole>
+
+    /**
+     * DELETE api/v1/admin/roles/{role_id}/
+     * Delete a role nobody holds
+     * Refused (409) while any account holds the role, blocked accounts included, so a role is never taken from somebody as a side effect; and for the owner role.
+     * Responses:
+     *  - 204: No response body
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param roleId 
+     * @return [Unit]
+     */
+    @DELETE("api/v1/admin/roles/{role_id}/")
+    suspend fun adminRoleDelete(@Path("role_id") roleId: kotlin.Int): Response<Unit>
+
+    /**
+     * PATCH api/v1/admin/roles/{role_id}/
+     * Rename a role or change the permissions it carries
+     * Omitted fields keep their value. Takes effect for every holder on their next request. Refused (409) for the owner role, and when it would leave nobody able to grant roles.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param roleId 
+     * @param patchedAdminRoleUpdateRequest  (optional)
+     * @return [AdminRole]
+     */
+    @PATCH("api/v1/admin/roles/{role_id}/")
+    suspend fun adminRoleUpdate(@Path("role_id") roleId: kotlin.Int, @Body patchedAdminRoleUpdateRequest: PatchedAdminRoleUpdateRequest? = null): Response<AdminRole>
+
+    /**
      * GET api/v1/admin/roles/
-     * List admin roles and their permission codes
+     * List admin roles, their permission codes and how many hold each
      * 
      * Responses:
      *  - 200: 

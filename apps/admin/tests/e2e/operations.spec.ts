@@ -156,6 +156,48 @@ test.describe("user lifecycle", () => {
   });
 });
 
+test.describe("roles", () => {
+  test("a role is created with its permissions, then deleted", async ({ page }) => {
+    const name = `e2e-دور ${Date.now()}`;
+    await openConsole(page);
+    await page.goto("/users/roles");
+
+    await page.getByTestId("new-role").click();
+    await page.getByTestId("role-name").fill(name);
+    await page.getByTestId("area-reviews").getByRole("button", { name: "اختيار الكل" }).click();
+    await page.getByTestId("save-role").click();
+    const row = page.getByTestId("data-table").getByRole("row").filter({ hasText: name });
+    await expect(row).toContainText("٥ من");
+
+    const roles = await readOperation<{ items: { code: string; name: string; permissions: string[] }[] }>(
+      page,
+      "roles",
+    );
+    const created = roles.items.find((role) => role.name === name)!;
+    expect(created.permissions).toContain("admin.reviews.decide");
+
+    await page.getByTestId(`delete-role-${created.code}`).click();
+    await page.getByTestId("confirm-accept").click();
+    await expect(row).toHaveCount(0);
+
+    const audit = await readOperation<{ items: { action: string }[] }>(page, "audit", {
+      resource: "AdminRole",
+    });
+    const actions = audit.items.map((item) => item.action);
+    expect(actions).toContain("admin_role.created");
+    expect(actions).toContain("admin_role.deleted");
+  });
+
+  test("the last way to grant roles cannot be taken away", async ({ page }) => {
+    await openConsole(page);
+    await page.goto("/users/roles");
+    await page.getByTestId("edit-role-e2e-full").click();
+    await page.getByTestId("perm-admin.roles.manage").uncheck();
+    await page.getByTestId("save-role").click();
+    await expect(page.getByTestId("role-sheet")).toContainText("لن يبقى أحد يستطيع منح الأدوار");
+  });
+});
+
 test.describe("Cycle J", () => {
   test("a province switch changes what the public API serves", async ({ page }) => {
     await openConsole(page);

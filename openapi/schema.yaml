@@ -4780,6 +4780,36 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+  /api/v1/admin/permissions/:
+    get:
+      operationId: adminPermissionsList
+      description: The full catalogue, ordered by code. Labels for display belong
+        to the client.
+      summary: Every permission a role can carry
+      tags:
+      - Admin Users
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminPermissionList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/admin/provinces/:
     get:
       operationId: adminProvincesList
@@ -5425,7 +5455,7 @@ paths:
   /api/v1/admin/roles/:
     get:
       operationId: adminRolesList
-      summary: List admin roles and their permission codes
+      summary: List admin roles, their permission codes and how many hold each
       tags:
       - Admin Users
       security:
@@ -5450,6 +5480,168 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+    post:
+      operationId: adminRoleCreate
+      description: Requires `admin.roles.manage`, which is re-checked inside the handler.
+      summary: Create a role with the permissions it carries
+      tags:
+      - Admin Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminRoleCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminRoleCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminRoleCreateRequest'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminRole'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/admin/roles/{role_id}/:
+    patch:
+      operationId: adminRoleUpdate
+      description: Omitted fields keep their value. Takes effect for every holder
+        on their next request. Refused (409) for the owner role, and when it would
+        leave nobody able to grant roles.
+      summary: Rename a role or change the permissions it carries
+      parameters:
+      - in: path
+        name: role_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Admin Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminRoleUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminRoleUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminRoleUpdateRequest'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminRole'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+    delete:
+      operationId: adminRoleDelete
+      description: Refused (409) while any account holds the role, blocked accounts
+        included, so a role is never taken from somebody as a side effect; and for
+        the owner role.
+      summary: Delete a role nobody holds
+      parameters:
+      - in: path
+        name: role_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Admin Users
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
   /api/v1/admin/search/:
     get:
       operationId: adminSearchRetrieve
@@ -11860,6 +12052,25 @@ components:
       - mfa
       - permissions
       - userId
+    AdminPermission:
+      type: object
+      properties:
+        code:
+          type: string
+        description:
+          type: string
+      required:
+      - code
+      - description
+    AdminPermissionList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminPermission'
+      required:
+      - items
     AdminProvince:
       type: object
       properties:
@@ -12143,9 +12354,37 @@ components:
           type: array
           items:
             type: string
+        holderCount:
+          type: integer
+          description: Active accounts holding this role now. Blocked accounts are
+            not counted.
+        locked:
+          type: boolean
+          description: 'The platform''s own role (`owner`): it holds every permission
+            and the console can neither edit nor delete it.'
       required:
       - code
+      - holderCount
       - id
+      - locked
+      - name
+      - permissions
+    AdminRoleCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        code:
+          type: string
+          description: Lower-case Latin letters, digits and hyphens. Generated when
+            omitted.
+          pattern: ^[a-z][a-z0-9-]{1,79}$
+        permissions:
+          type: array
+          items:
+            type: string
+      required:
       - name
       - permissions
     AdminRoleList:
@@ -15405,6 +15644,16 @@ components:
             type: integer
             minimum: 1
           description: Replaces the facility's services; an empty list clears them.
+    PatchedAdminRoleUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        permissions:
+          type: array
+          items:
+            type: string
     PatchedDutyRotationRequest:
       type: object
       properties:

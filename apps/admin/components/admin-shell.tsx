@@ -96,6 +96,7 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
         icon: "users",
         pages: [
           { href: "/users", label: "المستخدمون", permission: "admin.users.read" },
+          { href: "/users/roles", label: "الأدوار والصلاحيات", permission: "admin.roles.read" },
           { href: "/users/broadcast", label: "إرسال إشعار", permission: "admin.notifications.send" },
         ],
       },

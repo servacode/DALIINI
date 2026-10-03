@@ -1123,3 +1123,18 @@ a.alert-item:hover { background: var(--ad-surface-hover); }
 .rotation-order li { display: flex; align-items: center; justify-content: space-between; gap: var(--ad-space-3); padding: var(--ad-space-1) var(--ad-space-2); border-radius: var(--ad-radius-sm); background: var(--ad-surface-subtle); }
 .rotation-order .button-ghost { min-height: var(--ad-control-h-sm); padding: 0 var(--ad-space-2); }
 .field-inline { display: flex; align-items: center; gap: var(--ad-space-2); }
+
+/* The role editor: permissions grouped by the job they belong to (DECISION-072) */
+.permission-area { display: grid; gap: 0; margin: 0; padding: var(--ad-space-3) var(--ad-space-4); border: 1px solid var(--ad-stroke); border-radius: var(--ad-radius-md); background: var(--ad-surface); }
+.permission-area legend { display: flex; align-items: center; justify-content: space-between; gap: var(--ad-space-3); inline-size: 100%; padding: 0 var(--ad-space-1); font-weight: 600; }
+/* A permission and its switch stay on one line, even where other rows stack on a phone. */
+.permission-area .switch-row { flex-direction: row; flex-wrap: nowrap; align-items: center; }
+.permission-area .switch-row > span { display: grid; justify-items: start; gap: 2px; min-width: 0; }
+.permission-code { font-size: var(--ad-text-xs); color: var(--ad-text-muted); direction: ltr; text-align: start; overflow-wrap: anywhere; }
+.stack-tight { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--ad-space-2); }
+.button-link {
+  min-height: 0; padding: 0; border: 0; background: none; box-shadow: none;
+  color: var(--ad-brand); font: inherit; font-size: var(--ad-text-sm); font-weight: 600; cursor: pointer;
+}
+.button-link:hover { text-decoration: underline; }
+.button-link:focus-visible { outline: none; box-shadow: var(--ad-focus-ring); border-radius: var(--ad-radius-sm); }

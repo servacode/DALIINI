@@ -7,6 +7,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from accounts.models import User, UserAdminRole
+from accounts.roles import require_role_manager
 from audit.services import record_audit
 from facilities.models import Facility, FacilityApplication, FacilityReport, VerificationEvidence
 from notifications.models import Notification
@@ -274,6 +275,8 @@ def set_user_blocked(*, request: Any, user: User, blocked: bool) -> User:
     user.is_active = not blocked
     user.save(update_fields=["is_active", "updated_at"])
     if blocked:
+        # Blocking the last person who can grant roles would leave nobody to appoint the next.
+        require_role_manager()
         UserSession.objects.filter(user=user, revoked_at__isnull=True).update(
             revoked_at=timezone.now()
         )
@@ -302,6 +305,7 @@ def replace_user_roles(*, request: Any, user: User, role_ids: list[Any]) -> None
         if not link.active:
             link.active = True
             link.save(update_fields=["active"])
+    require_role_manager()
     after = list(
         UserAdminRole.objects.filter(user=user, active=True).values_list("role_id", flat=True)
     )
