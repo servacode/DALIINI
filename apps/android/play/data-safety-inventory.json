@@ -59,6 +59,6 @@
   "security": {
     "encryptedInTransit": true,
     "accountDeletionAvailable": true,
-    "externalDeletionUrl": "https://www.<ROOT_DOMAIN>/delete-account"
+    "externalDeletionUrl": "https://<ROOT_DOMAIN>/delete-account"
   }
 }
