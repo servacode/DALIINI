@@ -88,7 +88,9 @@ interface AuthApi {
      * Responses:
      *  - 202: 
      *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 422: The code cannot be delivered to this number at all; `code` is OTP_RECIPIENT_INVALID. Asking again for the same number will not help.
      *  - 429: Rate limit exceeded for this endpoint; see the `Retry-After` header.
+     *  - 503: The code could not be sent just now; `code` is OTP_DELIVERY_UNAVAILABLE. The same request may succeed in a little while.
      *
      * @param recoveryStart 
      * @return [ChallengeAccepted]
@@ -147,7 +149,9 @@ interface AuthApi {
      * Responses:
      *  - 202: 
      *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 422: The code cannot be delivered to this number at all; `code` is OTP_RECIPIENT_INVALID. Asking again for the same number will not help.
      *  - 429: Rate limit exceeded for this endpoint; see the `Retry-After` header.
+     *  - 503: The code could not be sent just now; `code` is OTP_DELIVERY_UNAVAILABLE. The same request may succeed in a little while.
      *
      * @param registerStart 
      * @return [ChallengeAccepted]

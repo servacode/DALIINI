@@ -192,7 +192,9 @@ interface AccountApi {
      * Responses:
      *  - 202: 
      *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 422: The code cannot be delivered to this number at all; `code` is OTP_RECIPIENT_INVALID. Asking again for the same number will not help.
      *  - 429: Rate limit exceeded for this endpoint; see the `Retry-After` header.
+     *  - 503: The code could not be sent just now; `code` is OTP_DELIVERY_UNAVAILABLE. The same request may succeed in a little while.
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *
