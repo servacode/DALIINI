@@ -31,7 +31,18 @@ const withApi = (sources: string) => [sources, ...apiOrigins].join(" ");
 
 /* Where the photographs are served from, when a deployment serves them elsewhere. */
 const mediaOrigin = originOf(process.env.NEXT_PUBLIC_MEDIA_ORIGIN);
-const imageOrigins = [...apiOrigins, mediaOrigin].filter(Boolean);
+
+/*
+ * The base map (DECISION-071): the style's own host, and any other host its tiles, glyphs and
+ * sprites come from (NEXT_PUBLIC_MAP_ORIGINS, comma-separated). The map fetches all of them, so
+ * they are connect-src; the sprite sheet is also drawn as an image.
+ */
+const mapOrigins = [
+  ...new Set(
+    [originOf(process.env.NEXT_PUBLIC_MAP_STYLE_URL), ...(process.env.NEXT_PUBLIC_MAP_ORIGINS ?? "").split(",").map(originOf)].filter(Boolean),
+  ),
+];
+const imageOrigins = [...new Set([...apiOrigins, mediaOrigin, ...mapOrigins].filter(Boolean))];
 const withImages = (sources: string) => [sources, ...imageOrigins].join(" ");
 
 const contentSecurityPolicy = [
@@ -43,11 +54,15 @@ const contentSecurityPolicy = [
   // (ISR) and a cached page has no request to mint a nonce for, so they are allowed
   // inline. The risk that normally carries is script injection through rendered data;
   // React escapes everything it renders here, and dangerouslySetInnerHTML is used only for
-  // JSON-LD built from JSON.stringify and for the fixed theme script (THEME_SCRIPT), which
-  // interpolates nothing a visitor or the API supplies.
+  // JSON-LD built from JSON.stringify. The one inline script of the site's own is the fixed
+  // theme script (THEME_SCRIPT, through next/script), which interpolates nothing a visitor or
+  // the API supplies.
   // `next dev` alone needs eval for React's debugging call stacks, as the console allows.
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
-  `connect-src ${withApi("'self'")}`,
+  `connect-src ${[withApi("'self'"), ...mapOrigins].join(" ")}`,
+  // The map's worker is a module served from this origin (public/vendor); MapLibre may also
+  // start one from a blob when the browser cannot load a module worker.
+  "worker-src 'self' blob:",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

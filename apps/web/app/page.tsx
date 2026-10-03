@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { FacilityFilters } from "../components/facility-filters";
+import { FacilityMap } from "../components/facility-map";
 import { SearchBox } from "../components/search-form";
 import { Slider } from "../components/slider";
 import { CategoryIcon, FacilityList, Icon, JsonLd, Unavailable } from "../components/ui";
@@ -13,6 +14,7 @@ import {
   getSlides,
 } from "../lib/api";
 import { SITE_NAME, absoluteUrl, publicConfig } from "../lib/config";
+import { pointsOf } from "../lib/map-points";
 import { categoryPath } from "../lib/paths";
 
 /*
@@ -213,7 +215,13 @@ export default async function HomePage({
                       : "لا توجد منشآت في هذا التصنيف بعد."}
                   </p>
                 ) : (
-                  <FacilityList items={page.items} />
+                  <>
+                    <FacilityMap
+                      points={pointsOf(page.items)}
+                      label={`${category.nameAr} في ${chosen.nameAr} على الخريطة`}
+                    />
+                    <FacilityList items={page.items} />
+                  </>
                 )}
               </section>
             ) : null}

@@ -33,3 +33,23 @@ describe("decodedSegment", () => {
     expect(decodedSegment("100%")).toBe("100%");
   });
 });
+
+describe("pointsOf", () => {
+  it("pins only the facilities with a place, each to its readable page", async () => {
+    const { pointsOf } = await import("../../lib/map-points");
+    const pins = pointsOf([
+      { id: ID, slug: "صيدلية", nameAr: "صيدلية", location: { latitude: 35.95, longitude: 39.01 }, availability: { state: "DUTY" } },
+      { id: "x", slug: "y", nameAr: "بلا موقع", location: null, availability: { state: "OPEN" } },
+    ]);
+    expect(pins).toEqual([
+      {
+        id: ID,
+        name: "صيدلية",
+        href: `/f/${ID}/${encodeURIComponent("صيدلية")}`,
+        latitude: 35.95,
+        longitude: 39.01,
+        state: "DUTY",
+      },
+    ]);
+  });
+});

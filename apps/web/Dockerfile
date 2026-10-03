@@ -33,6 +33,10 @@ ARG NEXT_PUBLIC_ANDROID_PACKAGE
 # facility photograph and ad slide is blocked by the site's own policy.
 ARG NEXT_PUBLIC_MEDIA_ORIGIN
 ARG NEXT_PUBLIC_APP_DOWNLOAD_URL
+# The base map's style, and the hosts its tiles, glyphs and sprites come from (DECISION-071):
+# inlined for the page and added to the CSP. Unset, the site shows no map.
+ARG NEXT_PUBLIC_MAP_STYLE_URL
+ARG NEXT_PUBLIC_MAP_ORIGINS
 ARG PUBLIC_API_ORIGIN
 ARG SUPPORT_EMAIL
 ARG PRIVACY_CONTACT_EMAIL

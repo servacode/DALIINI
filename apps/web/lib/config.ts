@@ -36,6 +36,12 @@ export const publicConfig = {
    * app-link statement at /.well-known/assetlinks.json. Unset hides both.
    */
   androidPackage: process.env.NEXT_PUBLIC_ANDROID_PACKAGE?.trim() || null,
+  /*
+   * The base map's MapLibre style (DECISION-071), the same one the app draws. Unset, the site
+   * shows no map anywhere and everything else works as it did; a map is never the only way to a
+   * place, since every pin's facility is also in the list beside it.
+   */
+  mapStyleUrl: originOf(process.env.NEXT_PUBLIC_MAP_STYLE_URL) ? process.env.NEXT_PUBLIC_MAP_STYLE_URL!.trim() : null,
 } as const;
 
 export const SITE_NAME = "دليني";
