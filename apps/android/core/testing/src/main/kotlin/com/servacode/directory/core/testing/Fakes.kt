@@ -1,6 +1,7 @@
 package com.servacode.directory.core.testing
 
 import com.servacode.directory.core.model.AppRelease
+import com.servacode.directory.core.model.NotificationSwitches
 import com.servacode.directory.core.model.EmergencyNumber
 import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.core.model.FacilityReportReason
@@ -140,6 +141,10 @@ class FakePreferences(
 
     override suspend fun setDataSaverSuggested() {
         state.value = state.value.copy(dataSaverSuggested = true)
+    }
+
+    override suspend fun setUpdateOffered(versionCode: Int) {
+        state.value = state.value.copy(updateOfferedVersionCode = versionCode)
     }
 }
 
@@ -335,6 +340,24 @@ class ScriptedPublicApi : PublicApiBoundary {
     override suspend fun markAllMessagesRead() {
         calls += "read-all"
         unreadCount = 0
+    }
+
+    var switchesAnswer: () -> NotificationSwitches = { throw offline }
+    var updateSwitchesAnswer: (Boolean?, Boolean?, Boolean?) -> NotificationSwitches = { _, _, _ -> throw offline }
+
+    override suspend fun notificationSwitches(): NotificationSwitches = switchesAnswer().also { calls += "switches" }
+
+    override suspend fun updateNotificationSwitches(
+        dutyReminders: Boolean?,
+        provinceNews: Boolean?,
+        applicationStatus: Boolean?,
+    ): NotificationSwitches {
+        calls += "update-switches:${listOfNotNull(
+            dutyReminders?.let { "duty=$it" },
+            provinceNews?.let { "news=$it" },
+            applicationStatus?.let { "applications=$it" },
+        ).joinToString(",")}"
+        return updateSwitchesAnswer(dutyReminders, provinceNews, applicationStatus)
     }
 
     override suspend fun legalPages(): List<LegalPage> = legalPagesAnswer().also { calls += "legal" }

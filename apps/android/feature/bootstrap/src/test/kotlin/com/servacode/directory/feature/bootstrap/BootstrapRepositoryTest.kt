@@ -53,6 +53,7 @@ class BootstrapRepositoryTest {
             override suspend fun setNotificationPreferences(value: NotificationPreferences) = Unit
             override suspend fun setDataSaver(enabled: Boolean) = Unit
             override suspend fun setDataSaverSuggested() = Unit
+            override suspend fun setUpdateOffered(versionCode: Int) = Unit
         }
 
         assertEquals(BootstrapResult.Failed("BOOTSTRAP_STORAGE_UNAVAILABLE"),

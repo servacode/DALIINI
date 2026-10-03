@@ -33,11 +33,17 @@ data class DirectoryPreferences(
     val dataSaver: Boolean = false,
     /** Whether the app has already offered data saver on a metered connection; it asks once. */
     val dataSaverSuggested: Boolean = false,
+    /**
+     * The newest build the reader was told about and set aside («لاحقاً»). A newer build than
+     * this one is offered again; the same one is not.
+     */
+    val updateOfferedVersionCode: Int = 0,
 )
 
 /**
- * The notices a reader can turn off. Local to the device: the backend has no preferences
- * endpoint yet, so they are honoured when a push arrives rather than when it is sent.
+ * The notices a reader can turn off. Signed in, this is the device's copy of the account's
+ * choices, which the backend keeps and honours when it sends (DECISION-077); signed out, it is
+ * the device's own. Either way a push is checked against it when it arrives.
  */
 data class NotificationPreferences(
     val dutyReminders: Boolean = true,
@@ -87,4 +93,7 @@ interface DirectoryPreferencesStore {
 
     /** The data-saver suggestion has been shown, whatever the answer. */
     suspend fun setDataSaverSuggested()
+
+    /** The offer of build [versionCode] has been answered, whichever way. */
+    suspend fun setUpdateOffered(versionCode: Int)
 }

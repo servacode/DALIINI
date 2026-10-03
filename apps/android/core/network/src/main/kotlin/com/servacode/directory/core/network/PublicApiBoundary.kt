@@ -1,6 +1,7 @@
 package com.servacode.directory.core.network
 
 import com.servacode.directory.core.model.AppRelease
+import com.servacode.directory.core.model.NotificationSwitches
 import com.servacode.directory.core.model.EmergencyNumber
 import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.core.model.FacilityReportReason
@@ -168,6 +169,16 @@ interface PublicApiBoundary {
     suspend fun unreadMessageCount(): Int
     suspend fun markMessageRead(messageId: String): Int
     suspend fun markAllMessagesRead()
+
+    /** Which kinds of notice the backend pushes to this account's devices. */
+    suspend fun notificationSwitches(): NotificationSwitches
+
+    /** Changes only the kinds given; returns what the backend now holds. */
+    suspend fun updateNotificationSwitches(
+        dutyReminders: Boolean? = null,
+        provinceNews: Boolean? = null,
+        applicationStatus: Boolean? = null,
+    ): NotificationSwitches
 
     /** The published pages, titles and versions only. */
     suspend fun legalPages(): List<LegalPage>

@@ -14,6 +14,10 @@
     <!-- What a notification is filed under in the phone's settings, and what it says when the
          message carried no words of its own. -->
     <string name="app_notification_channel">التحديثات</string>
+    <string name="app_update_available_title">يتوفر إصدار أحدث من دليني</string>
+    <string name="app_update_available_body">هذه النسخة ما زالت تعمل، والأحدث فيها تحسينات وإصلاحات.</string>
+    <string name="app_update_available_action">تحديث</string>
+    <string name="app_update_available_later">لاحقاً</string>
     <string name="app_notification_body">لديك تحديث جديد</string>
 
     <!-- The home-screen widget: its name in the launcher's list, what the list says about it,

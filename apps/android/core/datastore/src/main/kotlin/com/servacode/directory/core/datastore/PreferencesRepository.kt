@@ -3,6 +3,7 @@ package com.servacode.directory.core.datastore
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.Binds
@@ -43,6 +44,7 @@ class PreferencesRepository @Inject constructor(
             ),
             dataSaver = prefs[DATA_SAVER] ?: false,
             dataSaverSuggested = prefs[DATA_SAVER_SUGGESTED] ?: false,
+            updateOfferedVersionCode = prefs[UPDATE_OFFERED] ?: 0,
         )
     }
 
@@ -89,6 +91,10 @@ class PreferencesRepository @Inject constructor(
         context.directoryDataStore.edit { it[DATA_SAVER_SUGGESTED] = true }
     }
 
+    override suspend fun setUpdateOffered(versionCode: Int) {
+        context.directoryDataStore.edit { it[UPDATE_OFFERED] = versionCode }
+    }
+
     private companion object {
         val SELECTED_PROVINCE = stringPreferencesKey("selected_province_id")
         val LOCATION_PREFERENCE = stringPreferencesKey("location_preference")
@@ -103,6 +109,7 @@ class PreferencesRepository @Inject constructor(
         val NOTIFY_APPLICATIONS = booleanPreferencesKey("notify_application_status")
         val DATA_SAVER = booleanPreferencesKey("data_saver")
         val DATA_SAVER_SUGGESTED = booleanPreferencesKey("data_saver_suggested")
+        val UPDATE_OFFERED = intPreferencesKey("update_offered_version_code")
     }
 }
 

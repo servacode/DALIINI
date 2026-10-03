@@ -9,6 +9,9 @@
     <string name="settings_notify_applications">حالة طلباتي</string>
     <string name="settings_notify_applications_body">لأصحاب المنشآت: قبول الطلب أو الحاجة إلى تعديله</string>
     <!-- The choices are not sent anywhere: the platform has no endpoint for them yet. -->
+    <string name="settings_notify_account">تُحفظ هذه الاختيارات في حسابك فتسري على كل أجهزتك،
+        وتبقى الرسائل كلها في صندوق الإشعارات.</string>
+    <string name="settings_notify_failed">تعذّر حفظ الاختيار في حسابك، فأُعيد كما كان.</string>
     <string name="settings_notify_local">تُحفظ هذه الاختيارات على هذا الجهاز فقط،
         وتبقى الرسائل كلها في صندوق الإشعارات.</string>
     <string name="settings_data">البيانات</string>

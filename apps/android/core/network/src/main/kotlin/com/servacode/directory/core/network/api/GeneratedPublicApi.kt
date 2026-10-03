@@ -1,7 +1,9 @@
 package com.servacode.directory.core.network.api
 
 import com.servacode.directory.core.network.asCoordinate
+import com.servacode.directory.api.models.PatchedNotificationPreferences
 import com.servacode.directory.core.model.AppRelease
+import com.servacode.directory.core.model.NotificationSwitches
 import com.servacode.directory.core.model.EmergencyNumber
 import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.api.apis.PublicFacilitiesApi
@@ -242,6 +244,23 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
     override suspend fun markAllMessagesRead() {
         call { account.accountNotificationsMarkAllRead() }
     }
+
+    override suspend fun notificationSwitches(): NotificationSwitches =
+        call { account.accountNotificationPreferencesRetrieve() }.toDomain()
+
+    override suspend fun updateNotificationSwitches(
+        dutyReminders: Boolean?,
+        provinceNews: Boolean?,
+        applicationStatus: Boolean?,
+    ): NotificationSwitches = call {
+        account.accountNotificationPreferencesUpdate(
+            PatchedNotificationPreferences(
+                dutyReminders = dutyReminders,
+                provinceNews = provinceNews,
+                applicationStatus = applicationStatus,
+            ),
+        )
+    }.toDomain()
 
     override suspend fun legalPages(): List<LegalPage> =
         call { content.publicLegalDocumentsList() }.items.map { it.toDomain() }

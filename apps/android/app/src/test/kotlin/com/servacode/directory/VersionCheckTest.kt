@@ -63,6 +63,30 @@ class VersionCheckTest {
         assertNull(verdict.storeUrl)
     }
 
+    @Test fun `a working build with a newer one after it is offered the newer one`() = runTest {
+        val subject = check { AppRelease(12, 19, "https://play.example.test/app", "") }
+
+        subject.refresh(versionCode = 15)
+
+        assertEquals(
+            VersionCheck.Verdict.Newer(19, notice = null, storeUrl = "https://play.example.test/app"),
+            subject.verdict.value,
+        )
+    }
+
+    @Test fun `no store, no offer`() = runTest {
+        // An offer the reader cannot act on is noise; the build simply runs.
+        val subject = check { AppRelease(12, 19, "", "تحديث متاح") }
+        subject.refresh(versionCode = 15)
+        assertEquals(VersionCheck.Verdict.Allowed, subject.verdict.value)
+    }
+
+    @Test fun `the newest build is offered nothing`() = runTest {
+        val subject = check { AppRelease(12, 19, "https://play.example.test/app", "") }
+        subject.refresh(versionCode = 19)
+        assertEquals(VersionCheck.Verdict.Allowed, subject.verdict.value)
+    }
+
     @Test fun `the release itself knows what it blocks and what it supersedes`() {
         val release = AppRelease(minimumVersionCode = 10, latestVersionCode = 20, storeUrl = "", noticeAr = "")
 

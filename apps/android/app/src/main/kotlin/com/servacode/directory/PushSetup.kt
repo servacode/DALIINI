@@ -8,6 +8,7 @@ import com.servacode.directory.core.auth.SessionCoordinator
 import com.servacode.directory.core.auth.SessionState
 import com.servacode.directory.core.network.PushAvailability
 import com.servacode.directory.core.network.PushRegistrationCoordinator
+import com.servacode.directory.feature.settings.NotificationPreferencesSync
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,6 +25,7 @@ import javax.inject.Singleton
 class PushSetup @Inject constructor(
     private val coordinator: PushRegistrationCoordinator,
     private val session: SessionCoordinator,
+    private val notificationChoices: NotificationPreferencesSync,
 ) : PushAvailability {
     override val enabled: Boolean
         get() = configured
@@ -54,7 +56,12 @@ class PushSetup @Inject constructor(
         }
         scope.launch {
             session.state.collect { state ->
-                if (state == SessionState.SIGNED_IN) runCatching { coordinator.onSignedIn() }
+                if (state == SessionState.SIGNED_IN) {
+                    runCatching { coordinator.onSignedIn() }
+                    // The account's switches, so a push is checked against them, not against
+                    // whatever this device was set to before signing in.
+                    notificationChoices.pull()
+                }
             }
         }
     }

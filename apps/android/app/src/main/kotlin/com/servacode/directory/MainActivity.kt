@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
                     MaintenanceGate(maintenance.status, maintenanceRetry) {
                         // Inside the maintenance gate: a backend in maintenance has nothing to
                         // say about versions yet, and one notice at a time is enough.
-                        UpdateGate(versions.verdict, BuildConfig.VERSION_CODE, versions) {
+                        UpdateGate(versions.verdict, BuildConfig.VERSION_CODE, versions, preferences) {
                             DirectoryApp(session.state, entries)
                         }
                     }

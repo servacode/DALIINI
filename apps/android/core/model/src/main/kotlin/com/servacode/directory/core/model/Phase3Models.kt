@@ -94,6 +94,17 @@ enum class NotificationCategory {
     }
 }
 
+/**
+ * The kinds of notice an account wants pushed, as the backend keeps them
+ * (`account/notification-preferences/`). Every one is on until turned off; the inbox receives
+ * every message whatever these say.
+ */
+data class NotificationSwitches(
+    val dutyReminders: Boolean = true,
+    val provinceNews: Boolean = true,
+    val applicationStatus: Boolean = true,
+)
+
 /** The notification types the backend sends and the app treats specially. */
 object NotificationTypes {
     const val DUTY_GAP_NUDGE = "duty.gap_nudge"
