@@ -857,6 +857,95 @@ map; anything derived from these boundaries carries the same licence.
 
 Mandatory before staging or production closure. None of these blocks P2 or P10.
 
+## DECISION-051 — The iPhone app is built from the Android code, with Kotlin Multiplatform
+
+**Date:** 2026-10-03 · **Approved by:** the owner
+
+**Subject:** How the iOS app is built. `docs/spec/12-IOS-SWIFTUI.md` names SwiftUI.
+
+**Decision:** The iOS app is not written a second time in Swift. After the Android release, the
+platform-free layers (models, network, database, session, domain and view models) move into
+Kotlin Multiplatform modules, and the screens move to Compose Multiplatform; iOS then reuses most
+of the Android code, with native pieces only where a platform demands them (maps, push, sign-in
+storage). Until then new Android code keeps Android types out of the domain and data layers so
+the move stays mechanical.
+
+**Reason:** Two native code bases double every feature, fix and test for a team of one, and the
+iOS app would trail Android for its whole life. The spec is immutable, so the change of course is
+recorded here rather than by editing it.
+
+## DECISION-052 — Registration codes keep the current channel
+
+**Date:** 2026-10-03 · **Approved by:** the owner
+
+**Decision:** The code is delivered as it is today: through the paired WhatsApp account
+(`services/whatsapp-bot`) or the official Cloud API, one setting apart. The recommendation to
+make the Cloud API the primary channel was declined. What changes is protection, not the channel:
+a delivery failure is answered with `OTP_RECIPIENT_INVALID` (422) or `OTP_DELIVERY_UNAVAILABLE`
+(503) instead of an internal error, and each number has a budget across all caller addresses
+(`otp_phone_hour` 5/hour, `otp_phone_day` 10/day), so many addresses taking turns cannot keep the
+sending account busy on one number.
+
+## DECISION-053 — The site carries no state emblem
+
+**Date:** 2026-10-03 · **Approved by:** the owner
+
+**Decision:** The national crest is removed from the site's bar, and the asset from the
+repository. The platform shows only its own brand.
+
+**Reason:** A state emblem on a private service reads as government endorsement. That misleads
+visitors and is the kind of affiliation Google Play's impersonation policy refuses.
+
+## DECISION-054 — A directory of places, and nothing else
+
+**Date:** 2026-10-03 · **Approved by:** the owner
+
+**Decision:** The platform finds places and says whether they are open and on duty. A medicine
+inquiry ("is this drug in stock") is out of scope, with the rest of `01-MASTER-SPECIFICATION.md`
+§9.
+
+## DECISION-055 — Facility data comes from its owners first
+
+**Date:** 2026-10-03 · **Approved by:** the owner
+
+**Decision:** Pharmacists and facility owners add their own facilities through onboarding. A bulk
+import (for example the pharmacists' syndicate list) comes later, and when it does an imported
+facility must be claimable by its owner rather than duplicated.
+
+## DECISION-056 — Local object storage is SeaweedFS
+
+**Date:** 2026-10-03
+
+**Decision:** `infrastructure/docker/compose.yml` runs SeaweedFS (pinned) as the S3 service,
+with an anonymous identity that may read `directory-public` and nothing else.
+
+**Reason:** MinIO's community images are no longer pulled from Docker Hub (both tags this
+repository pinned fail with "pull access denied"), so a fresh machine could not start the stack.
+SeaweedFS keeps the isolation the tests assert: a public object answers 200, a private one 403,
+and listing the public bucket 403.
+
+## DECISION-057 — Search folds Arabic spelling on both sides
+
+**Date:** 2026-10-03
+
+**Decision:** Text search compares folded text: alef forms to bare alef, ta marbuta to ha, alef
+maqsura to ya, hamza seats to their carriers, Persian ya and kaf to Arabic, vowel marks and
+tatweel removed, case and spaces normalised. The term is folded in Python
+(`search.arabic.normalize_arabic`) and the column in PostgreSQL by `directory_normalize_ar`
+(migration `search/0001`), used through the `ar_contains` lookup. A test holds the two folds to
+the same answers.
+
+## DECISION-058 — A facility under review is frozen for its owner
+
+**Date:** 2026-10-03
+
+**Decision:** While a facility is `SUBMITTED`, its owner cannot change its core fields, location
+or photographs (`FACILITY_LOCKED_DURING_REVIEW`, 409). The operator decides on the snapshot taken
+at submission; edits after it would be published by the approval without anyone having seen them.
+A rejection hands the facility straight back for editing.
+
+The review decision is now also pushed to the owner's devices, not only written to the inbox.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.
