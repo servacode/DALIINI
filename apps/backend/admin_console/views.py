@@ -9,6 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import connection, transaction
 from django.db.models import Avg, Count, Q
+from django.db.models.functions import Coalesce
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -41,6 +42,7 @@ from content_services.services import (
     update_advertisement,
 )
 from core.openapi import NOT_FOUND_404, VALIDATION_400, protected
+from core.pagination import QueryOrderedCursorPage, page_parameters
 from directory.models import (
     Category,
     CategoryCapabilities,
@@ -66,7 +68,7 @@ from storage.backends import PrivateS3Storage
 from storage.public_media import public_media_url
 
 from .permissions import HasAdminPermission, IsAdminOperator
-from .quality import QUALITY_ISSUES, filter_issue, quality_payload, with_quality
+from .quality import QUALITY_ISSUES, filter_issue, with_quality
 from .review import find_duplicates, missing_evidence, previous_snapshot, with_evidence_state
 from .schemas import (
     AdminAdvertisementListSerializer,
@@ -92,8 +94,6 @@ from .schemas import (
     AdminCityUpdateRequestSerializer,
     AdminDashboardSerializer,
     AdminDecisionRequestSerializer,
-    AdminFacilityListSerializer,
-    AdminFacilityQualitySerializer,
     AdminFacilityReportListSerializer,
     AdminFacilityReportSerializer,
     AdminFacilitySerializer,
@@ -190,6 +190,8 @@ def filtered_facilities(params: Any) -> Any:
         qs = qs.filter(status=value)
     if value := params.get("province"):
         qs = qs.filter(province_id=value)
+    if value := params.get("city"):
+        qs = qs.filter(city_id=value)
     if value := params.get("category"):
         qs = qs.filter(category_id=value)
     if value := params.get("q"):
@@ -203,7 +205,7 @@ def filtered_facilities(params: Any) -> Any:
 
 def filtered_audit(params: Any) -> Any:
     """The audit search query, shared by the list endpoint and the CSV export."""
-    qs = AuditEvent.objects.order_by("-created_at")
+    qs = AuditEvent.objects.order_by("-created_at", "-id")
     if value := params.get("actor"):
         qs = qs.filter(actor_id=value)
     if value := params.get("action"):
@@ -226,12 +228,19 @@ def filtered_audit(params: Any) -> Any:
 
 def filtered_reports(params: Any) -> Any:
     """The report list query, shared by the list endpoint and the CSV export."""
-    qs = FacilityReport.objects.select_related("facility").order_by("-created_at")
+    qs = FacilityReport.objects.select_related("facility").order_by("-created_at", "-id")
     if value := params.get("status"):
         qs = qs.filter(status=value.upper())
     if value := params.get("facility"):
         qs = qs.filter(facility_id=value)
     return qs
+
+
+def _page(request: Any, queryset: Any, payload: Any) -> Response:
+    """One cursor page of an ordered console list, each row shaped by `payload`."""
+    paginator = QueryOrderedCursorPage()
+    page = paginator.paginate_queryset(queryset, request)
+    return paginator.get_paginated_response([payload(item) for item in page or []])
 
 
 def _is_date(value: str) -> bool:
@@ -447,8 +456,12 @@ class ApplicationListView(AdminView):
         operation_id="adminReviewsList",
         tags=["Admin Reviews"],
         summary="List facility applications awaiting or past review",
-        description="Capped at 200 rows. Every filter is optional and combines with the rest.",
+        description=(
+            "Newest submission first, in cursor pages. Every filter is optional and combines "
+            "with the rest. A draft that was never submitted sorts by when it was started."
+        ),
         parameters=[
+            *page_parameters(QueryOrderedCursorPage),
             _filter("kind", "Application kind, for example REGISTRATION or REVERIFICATION."),
             _filter("status", "Application status, for example SUBMITTED or APPROVED."),
             _filter("province", "Province id of the facility the application belongs to."),
@@ -469,9 +482,12 @@ class ApplicationListView(AdminView):
         responses={200: AppList, 400: VALIDATION_400, **protected()},
     )
     def get(self, request: AuthenticatedRequest) -> Response:
-        qs = with_evidence_state(
-            with_application_names(FacilityApplication.objects.all())
-        ).order_by("-submitted_at")
+        qs = (
+            with_evidence_state(with_application_names(FacilityApplication.objects.all()))
+            # A cursor needs a value on every row, and a draft has no submission time yet.
+            .annotate(sort_at=Coalesce("submitted_at", "created_at"))
+            .order_by("-sort_at", "-id")
+        )
         for field, param in (("kind", "kind"), ("status", "status")):
             if value := request.query_params.get(param):
                 qs = qs.filter(**{field: value})
@@ -490,7 +506,7 @@ class ApplicationListView(AdminView):
             qs = qs.filter(missing_evidence())
         elif evidence:
             raise ValidationError({"evidence": "Expected `complete` or `incomplete`."})
-        return Response({"items": [application_payload(item) for item in qs[:200]]})
+        return _page(request, qs, application_payload)
 
 
 class ApplicationDetailView(AdminView):
@@ -659,65 +675,6 @@ class EvidenceContentView(AdminView):
         return response
 
 
-class FacilityListView(AdminView):
-    required_permission = "admin.facilities.read"
-
-    @extend_schema(
-        operation_id="adminFacilitiesList",
-        tags=["Admin Facilities"],
-        summary="List facilities for operations",
-        description=(
-            "Capped at 250 rows. Every filter is optional and combines with the rest. Each "
-            "row carries `qualityScore` (0-100) and `qualityIssues`, computed in the same "
-            "query."
-        ),
-        parameters=[
-            _filter("status", "Facility status, for example ACTIVE or SUSPENDED."),
-            _filter("province", "Province id."),
-            _filter("category", "Category id."),
-            _filter("q", "Free text matched against the Arabic and English facility names."),
-            OpenApiParameter(
-                "issue",
-                str,
-                OpenApiParameter.QUERY,
-                required=False,
-                enum=QUALITY_ISSUES,
-                description="Keep facilities that have this quality issue.",
-            ),
-            OpenApiParameter(
-                "ordering",
-                str,
-                OpenApiParameter.QUERY,
-                required=False,
-                enum=list(FACILITY_ORDERINGS),
-                description="Sort order; the default is `-updatedAt` (most recently changed).",
-            ),
-        ],
-        responses={200: AdminFacilityListSerializer, 400: VALIDATION_400, **protected()},
-    )
-    def get(self, request: AuthenticatedRequest) -> Response:
-        qs = filtered_facilities(request.query_params)
-        return Response(
-            {"items": [{**facility_payload(item), **quality_payload(item)} for item in qs[:250]]}
-        )
-
-
-class FacilityDetailView(AdminView):
-    required_permission = "admin.facilities.read"
-
-    @extend_schema(
-        operation_id="adminFacilityRetrieve",
-        tags=["Admin Facilities"],
-        summary="Retrieve one facility",
-        responses={200: AdminFacilityQualitySerializer, **protected(), 404: NOT_FOUND_404},
-    )
-    def get(self, request: AuthenticatedRequest, facility_id: UUID) -> Response:
-        facility = get_object_or_404(
-            with_quality(with_facility_names(Facility.objects.all())), pk=facility_id
-        )
-        return Response({**facility_payload(facility), **quality_payload(facility)})
-
-
 class FacilityTransitionView(AdminView):
     required_permission = "admin.facilities.manage"
     target_status = ""
@@ -814,10 +771,11 @@ class UserListView(AdminView):
         tags=["Admin Users"],
         summary="Search user accounts",
         description=(
-            "Password hashes and session secret material are never returned. Capped at 250 "
-            "rows. Both filters are optional."
+            "Password hashes and session secret material are never returned. Newest first, in "
+            "cursor pages. Every filter is optional."
         ),
         parameters=[
+            *page_parameters(QueryOrderedCursorPage),
             _filter("q", "Free text matched against the account name and phone number."),
             _filter(
                 "status",
@@ -832,7 +790,7 @@ class UserListView(AdminView):
         responses={200: AdminUserListSerializer, **protected()},
     )
     def get(self, request: AuthenticatedRequest) -> Response:
-        qs = User.objects.order_by("-created_at")
+        qs = User.objects.order_by("-created_at", "-id")
         if value := request.query_params.get("q"):
             qs = qs.filter(Q(name__icontains=value) | Q(phone__icontains=value))
         if value := request.query_params.get("status"):
@@ -848,7 +806,7 @@ class UserListView(AdminView):
                         by |= Q(role_id=int(value))
                     operators = operators.filter(by)
                 qs = qs.filter(pk__in=operators.values("user_id"))
-        return Response({"items": [user_payload(item) for item in qs[:250]]})
+        return _page(request, qs, user_payload)
 
 
 class UserDetailView(AdminView):
@@ -1466,10 +1424,11 @@ class AuditListView(AdminView):
         tags=["Admin Audit"],
         summary="Search the audit trail",
         description=(
-            "Capped at 250 rows. Snapshots and metadata are stored redacted. Every filter "
-            "is optional and combines with the rest."
+            "Newest first, in cursor pages. Snapshots and metadata are stored redacted. Every "
+            "filter is optional and combines with the rest."
         ),
         parameters=[
+            *page_parameters(QueryOrderedCursorPage),
             _filter("actor", "Actor user id."),
             _filter("action", "Substring matched against the action code, case-insensitive."),
             _filter(
@@ -1483,24 +1442,19 @@ class AuditListView(AdminView):
         responses={200: AdminAuditListSerializer, 400: VALIDATION_400, **protected()},
     )
     def get(self, request: AuthenticatedRequest) -> Response:
-        qs = filtered_audit(request.query_params)
-        return Response(
-            {
-                "items": AdminAuditEntrySerializer(
-                    qs.values(
-                        "id",
-                        "actor_id",
-                        "action",
-                        "target_type",
-                        "target_id",
-                        "request_id",
-                        "metadata",
-                        "created_at",
-                    )[:250],
-                    many=True,
-                ).data
-            }
+        rows = filtered_audit(request.query_params).values(
+            "id",
+            "actor_id",
+            "action",
+            "target_type",
+            "target_id",
+            "request_id",
+            "metadata",
+            "created_at",
         )
+        paginator = QueryOrderedCursorPage()
+        page = paginator.paginate_queryset(rows, request, view=self)
+        return paginator.get_paginated_response(AdminAuditEntrySerializer(page, many=True).data)
 
 
 class AnalyticsView(AdminView):
@@ -1677,16 +1631,16 @@ class ReportListView(AdminView):
         operation_id="adminReportsList",
         tags=["Admin Reports"],
         summary="List facility problem reports",
-        description="Newest first, capped at 250 rows.",
+        description="Newest first, in cursor pages.",
         parameters=[
+            *page_parameters(QueryOrderedCursorPage),
             _filter("status", "OPEN, RESOLVED or DISMISSED."),
             _filter("facility", "Facility id."),
         ],
         responses={200: AdminFacilityReportListSerializer, **protected()},
     )
     def get(self, request: Any) -> Response:
-        qs = filtered_reports(request.query_params)
-        return Response({"items": [_report_payload(item) for item in qs[:250]]})
+        return _page(request, filtered_reports(request.query_params), _report_payload)
 
 
 class ReportDecisionView(AdminView):

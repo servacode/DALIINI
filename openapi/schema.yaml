@@ -1231,8 +1231,9 @@ paths:
   /api/v1/admin/applications/:
     get:
       operationId: adminReviewsList
-      description: Capped at 200 rows. Every filter is optional and combines with
-        the rest.
+      description: Newest submission first, in cursor pages. Every filter is optional
+        and combines with the rest. A draft that was never submitted sorts by when
+        it was started.
       summary: List facility applications awaiting or past review
       parameters:
       - in: query
@@ -1240,6 +1241,11 @@ paths:
         schema:
           type: string
         description: Category id of the facility the application belongs to.
+      - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque token returned as `nextCursor` by the previous page.
       - in: query
         name: evidence
         schema:
@@ -1257,6 +1263,11 @@ paths:
         schema:
           type: string
         description: Application kind, for example REGISTRATION or REVERIFICATION.
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Page size, maximum 200, default 50.
       - in: query
         name: province
         schema:
@@ -1475,8 +1486,8 @@ paths:
   /api/v1/admin/audit/:
     get:
       operationId: adminAuditList
-      description: Capped at 250 rows. Snapshots and metadata are stored redacted.
-        Every filter is optional and combines with the rest.
+      description: Newest first, in cursor pages. Snapshots and metadata are stored
+        redacted. Every filter is optional and combines with the rest.
       summary: Search the audit trail
       parameters:
       - in: query
@@ -1490,10 +1501,20 @@ paths:
           type: string
         description: Actor user id.
       - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque token returned as `nextCursor` by the previous page.
+      - in: query
         name: from
         schema:
           type: string
         description: ISO date or datetime; keeps entries created at or after it.
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Page size, maximum 200, default 50.
       - in: query
         name: requestId
         schema:
@@ -3383,8 +3404,8 @@ paths:
   /api/v1/admin/facilities/:
     get:
       operationId: adminFacilitiesList
-      description: Capped at 250 rows. Every filter is optional and combines with
-        the rest. Each row carries `qualityScore` (0-100) and `qualityIssues`, computed
+      description: In cursor pages. Every filter is optional and combines with the
+        rest. Each row carries `qualityScore` (0-100) and `qualityIssues`, computed
         in the same query.
       summary: List facilities for operations
       parameters:
@@ -3393,6 +3414,16 @@ paths:
         schema:
           type: string
         description: Category id.
+      - in: query
+        name: city
+        schema:
+          type: string
+        description: City id.
+      - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque token returned as `nextCursor` by the previous page.
       - in: query
         name: issue
         schema:
@@ -3406,6 +3437,11 @@ paths:
           - OPEN_REPORTS
           - STALE
         description: Keep facilities that have this quality issue.
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Page size, maximum 200, default 50.
       - in: query
         name: ordering
         schema:
@@ -3462,9 +3498,60 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+    post:
+      operationId: adminFacilityCreate
+      description: Listed by the directory itself, with no owner; an owner can claim
+        it later. ACTIVE (the default) publishes it at once and counts as verified.
+        The same validation as an owner's edit applies. Requires `admin.facilities.edit`;
+        audited.
+      summary: Add a facility to the directory
+      tags:
+      - Admin Facilities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminFacilityCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminFacilityCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminFacilityCreate'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminFacilityDetail'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/admin/facilities/{facility_id}/:
     get:
       operationId: adminFacilityRetrieve
+      description: Everything the console shows and edits, with the quality score.
       summary: Retrieve one facility
       parameters:
       - in: path
@@ -3482,8 +3569,72 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AdminFacilityQuality'
+                $ref: '#/components/schemas/AdminFacilityDetail'
           description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+    patch:
+      operationId: adminFacilityUpdate
+      description: 'Only the fields sent change. The status is left as it is: an operator''s
+        correction does not send a live facility back for re-verification. Moving
+        it to another province clears its city unless one is sent; another category
+        clears its specialties and services unless they are sent. Requires `admin.facilities.edit`;
+        audited with both snapshots, and the owners are notified.'
+      summary: Correct a facility's details
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Facilities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminFacilityWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminFacilityWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminFacilityWrite'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminFacilityDetail'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
         '401':
           content:
             application/json:
@@ -4287,14 +4438,24 @@ paths:
   /api/v1/admin/reports/:
     get:
       operationId: adminReportsList
-      description: Newest first, capped at 250 rows.
+      description: Newest first, in cursor pages.
       summary: List facility problem reports
       parameters:
+      - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque token returned as `nextCursor` by the previous page.
       - in: query
         name: facility
         schema:
           type: string
         description: Facility id.
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Page size, maximum 200, default 50.
       - in: query
         name: status
         schema:
@@ -4929,9 +5090,19 @@ paths:
     get:
       operationId: adminUsersList
       description: Password hashes and session secret material are never returned.
-        Capped at 250 rows. Both filters are optional.
+        Newest first, in cursor pages. Every filter is optional.
       summary: Search user accounts
       parameters:
+      - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque token returned as `nextCursor` by the previous page.
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Page size, maximum 200, default 50.
       - in: query
         name: q
         schema:
@@ -8828,13 +8999,24 @@ components:
       - submittedAt
     AdminApplicationList:
       type: object
+      description: The two fields every cursor page adds beside its `items`.
       properties:
+        nextCursor:
+          type: string
+          nullable: true
+          description: Opaque token for the next page, or null on the last page. Send
+            it back unchanged as the `cursor` query parameter; never parse it.
+        hasMore:
+          type: boolean
+          description: True when `nextCursor` is set.
         items:
           type: array
           items:
             $ref: '#/components/schemas/AdminApplication'
       required:
+      - hasMore
       - items
+      - nextCursor
     AdminAuditEntry:
       type: object
       description: Snapshots in `metadata` are redacted before they are recorded.
@@ -8871,13 +9053,24 @@ components:
       - targetType
     AdminAuditList:
       type: object
+      description: The two fields every cursor page adds beside its `items`.
       properties:
+        nextCursor:
+          type: string
+          nullable: true
+          description: Opaque token for the next page, or null on the last page. Send
+            it back unchanged as the `cursor` query parameter; never parse it.
+        hasMore:
+          type: boolean
+          description: True when `nextCursor` is set.
         items:
           type: array
           items:
             $ref: '#/components/schemas/AdminAuditEntry'
       required:
+      - hasMore
       - items
+      - nextCursor
     AdminAuditTrailEntry:
       type: object
       properties:
@@ -9710,15 +9903,238 @@ components:
       - provinceNameAr
       - status
       - updatedAt
+    AdminFacilityCreate:
+      type: object
+      description: |-
+        Every detail an operator may set. On create, `categoryId`, `provinceId` and `nameAr`
+        are required; on update every field is optional and only the ones sent change.
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+        provinceId:
+          type: string
+          format: uuid
+        cityId:
+          type: string
+          format: uuid
+          nullable: true
+        neighborhoodId:
+          type: string
+          format: uuid
+          nullable: true
+        nameAr:
+          type: string
+          maxLength: 160
+        nameEn:
+          type: string
+          maxLength: 160
+        descriptionAr:
+          type: string
+        descriptionEn:
+          type: string
+        phone:
+          type: string
+          maxLength: 16
+        whatsapp:
+          type: string
+          description: Optional Syrian mobile (09XXXXXXXX or +9639XXXXXXXX); blank
+            clears it.
+          maxLength: 20
+        addressAr:
+          type: string
+          maxLength: 255
+        addressEn:
+          type: string
+          maxLength: 255
+        location:
+          allOf:
+          - $ref: '#/components/schemas/Coordinates'
+          nullable: true
+          description: Null removes the pin.
+        specialtyIds:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+          description: Replaces the facility's specialties; an empty list clears them.
+        serviceTagIds:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+          description: Replaces the facility's services; an empty list clears them.
+        status:
+          allOf:
+          - $ref: '#/components/schemas/AdminFacilityCreateStatusEnum'
+          description: |-
+            ACTIVE (the default) publishes it at once; DRAFT keeps it hidden.
+
+            * `ACTIVE` - ACTIVE
+            * `DRAFT` - DRAFT
+      required:
+      - categoryId
+      - nameAr
+      - provinceId
+    AdminFacilityCreateStatusEnum:
+      enum:
+      - ACTIVE
+      - DRAFT
+      type: string
+      description: |-
+        * `ACTIVE` - ACTIVE
+        * `DRAFT` - DRAFT
+    AdminFacilityDetail:
+      type: object
+      description: One facility as the console reads and edits it.
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+          nullable: true
+        categoryId:
+          type: string
+          format: uuid
+        provinceId:
+          type: string
+          format: uuid
+        cityId:
+          type: string
+          format: uuid
+          nullable: true
+        status:
+          $ref: '#/components/schemas/FacilityStatusEnum'
+        location:
+          allOf:
+          - $ref: '#/components/schemas/Coordinates'
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        categoryNameAr:
+          type: string
+        provinceNameAr:
+          type: string
+        ownerName:
+          type: string
+          nullable: true
+          description: First owner membership.
+        ownerPhone:
+          type: string
+          nullable: true
+          description: First owner membership.
+        qualityScore:
+          type: integer
+          maximum: 100
+          minimum: 0
+          description: 100 minus a fixed penalty per issue.
+        qualityIssues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacilityQualityIssueEnum'
+          description: NO_PHOTOS 10, NO_HOURS 15, NO_LOCATION 20, NO_PHONE 20, STALE
+            10 (nothing changed or confirmed for 90 days), OPEN_REPORTS 15, NOT_VERIFIED_RECENTLY
+            10 (never approved, or not in 180 days). Photos and hours count only where
+            the category supports them.
+        neighborhoodId:
+          type: string
+          format: uuid
+          nullable: true
+        descriptionAr:
+          type: string
+          nullable: true
+        descriptionEn:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        whatsapp:
+          type: string
+          nullable: true
+        addressAr:
+          type: string
+          nullable: true
+        addressEn:
+          type: string
+          nullable: true
+        specialtyIds:
+          type: array
+          items:
+            type: integer
+        serviceTagIds:
+          type: array
+          items:
+            type: integer
+        ownerCount:
+          type: integer
+          minimum: 0
+          description: 0 for a facility the directory listed itself and nobody claimed.
+        activatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastVerifiedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+      - activatedAt
+      - addressAr
+      - addressEn
+      - categoryId
+      - categoryNameAr
+      - cityId
+      - createdAt
+      - descriptionAr
+      - descriptionEn
+      - id
+      - lastVerifiedAt
+      - location
+      - nameAr
+      - nameEn
+      - neighborhoodId
+      - ownerCount
+      - ownerName
+      - ownerPhone
+      - phone
+      - provinceId
+      - provinceNameAr
+      - qualityIssues
+      - qualityScore
+      - serviceTagIds
+      - specialtyIds
+      - status
+      - updatedAt
+      - whatsapp
     AdminFacilityList:
       type: object
+      description: The two fields every cursor page adds beside its `items`.
       properties:
+        nextCursor:
+          type: string
+          nullable: true
+          description: Opaque token for the next page, or null on the last page. Send
+            it back unchanged as the `cursor` query parameter; never parse it.
+        hasMore:
+          type: boolean
+          description: True when `nextCursor` is set.
         items:
           type: array
           items:
             $ref: '#/components/schemas/AdminFacilityQuality'
       required:
+      - hasMore
       - items
+      - nextCursor
     AdminFacilityQuality:
       type: object
       description: An Admin facility row with its data-quality score (see `admin_console.quality`).
@@ -9837,13 +10253,24 @@ components:
       - status
     AdminFacilityReportList:
       type: object
+      description: The two fields every cursor page adds beside its `items`.
       properties:
+        nextCursor:
+          type: string
+          nullable: true
+          description: Opaque token for the next page, or null on the last page. Send
+            it back unchanged as the `cursor` query parameter; never parse it.
+        hasMore:
+          type: boolean
+          description: True when `nextCursor` is set.
         items:
           type: array
           items:
             $ref: '#/components/schemas/AdminFacilityReport'
       required:
+      - hasMore
       - items
+      - nextCursor
     AdminFacilityStatusCount:
       type: object
       properties:
@@ -10912,13 +11339,24 @@ components:
       - updatedAt
     AdminUserList:
       type: object
+      description: The two fields every cursor page adds beside its `items`.
       properties:
+        nextCursor:
+          type: string
+          nullable: true
+          description: Opaque token for the next page, or null on the last page. Send
+            it back unchanged as the `cursor` query parameter; never parse it.
+        hasMore:
+          type: boolean
+          description: True when `nextCursor` is set.
         items:
           type: array
           items:
             $ref: '#/components/schemas/AdminUser'
       required:
+      - hasMore
       - items
+      - nextCursor
     AdminUserRolesRequest:
       type: object
       properties:
@@ -12881,6 +13319,67 @@ components:
         endsAt:
           type: string
           format: date-time
+    PatchedAdminFacilityWrite:
+      type: object
+      description: |-
+        Every detail an operator may set. On create, `categoryId`, `provinceId` and `nameAr`
+        are required; on update every field is optional and only the ones sent change.
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+        provinceId:
+          type: string
+          format: uuid
+        cityId:
+          type: string
+          format: uuid
+          nullable: true
+        neighborhoodId:
+          type: string
+          format: uuid
+          nullable: true
+        nameAr:
+          type: string
+          maxLength: 160
+        nameEn:
+          type: string
+          maxLength: 160
+        descriptionAr:
+          type: string
+        descriptionEn:
+          type: string
+        phone:
+          type: string
+          maxLength: 16
+        whatsapp:
+          type: string
+          description: Optional Syrian mobile (09XXXXXXXX or +9639XXXXXXXX); blank
+            clears it.
+          maxLength: 20
+        addressAr:
+          type: string
+          maxLength: 255
+        addressEn:
+          type: string
+          maxLength: 255
+        location:
+          allOf:
+          - $ref: '#/components/schemas/Coordinates'
+          nullable: true
+          description: Null removes the pin.
+        specialtyIds:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+          description: Replaces the facility's specialties; an empty list clears them.
+        serviceTagIds:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+          description: Replaces the facility's services; an empty list clears them.
     PatchedDutyShiftInput:
       type: object
       description: A duty shift as the client sends it. The server assigns the id.

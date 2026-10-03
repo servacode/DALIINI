@@ -9,12 +9,12 @@ Method | HTTP request | Description
 
 # **adminAuditList**
 ```swift
-    open class func adminAuditList(action: String? = nil, actor: String? = nil, from: String? = nil, requestId: String? = nil, resource: String? = nil, to: String? = nil, completion: @escaping (_ data: AdminAuditList?, _ error: Error?) -> Void)
+    open class func adminAuditList(action: String? = nil, actor: String? = nil, cursor: String? = nil, from: String? = nil, limit: Int? = nil, requestId: String? = nil, resource: String? = nil, to: String? = nil, completion: @escaping (_ data: AdminAuditList?, _ error: Error?) -> Void)
 ```
 
 Search the audit trail
 
-Capped at 250 rows. Snapshots and metadata are stored redacted. Every filter is optional and combines with the rest.
+Newest first, in cursor pages. Snapshots and metadata are stored redacted. Every filter is optional and combines with the rest.
 
 ### Example
 ```swift
@@ -23,13 +23,15 @@ import ServaDirectoryAPI
 
 let action = "action_example" // String | Substring matched against the action code, case-insensitive. (optional)
 let actor = "actor_example" // String | Actor user id. (optional)
+let cursor = "cursor_example" // String | Opaque token returned as `nextCursor` by the previous page. (optional)
 let from = "from_example" // String | ISO date or datetime; keeps entries created at or after it. (optional)
+let limit = 987 // Int | Page size, maximum 200, default 50. (optional)
 let requestId = "requestId_example" // String | Exact request correlation id, as returned in an error body. (optional)
 let resource = "resource_example" // String | Substring matched against the target type, or an exact target id. (optional)
 let to = "to_example" // String | ISO date or datetime; a bare date includes that whole day. (optional)
 
 // Search the audit trail
-AdminAuditAPI.adminAuditList(action: action, actor: actor, from: from, requestId: requestId, resource: resource, to: to) { (response, error) in
+AdminAuditAPI.adminAuditList(action: action, actor: actor, cursor: cursor, from: from, limit: limit, requestId: requestId, resource: resource, to: to) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -47,7 +49,9 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **action** | **String** | Substring matched against the action code, case-insensitive. | [optional] 
  **actor** | **String** | Actor user id. | [optional] 
+ **cursor** | **String** | Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] 
  **from** | **String** | ISO date or datetime; keeps entries created at or after it. | [optional] 
+ **limit** | **Int** | Page size, maximum 200, default 50. | [optional] 
  **requestId** | **String** | Exact request correlation id, as returned in an error body. | [optional] 
  **resource** | **String** | Substring matched against the target type, or an exact target id. | [optional] 
  **to** | **String** | ISO date or datetime; a bare date includes that whole day. | [optional] 

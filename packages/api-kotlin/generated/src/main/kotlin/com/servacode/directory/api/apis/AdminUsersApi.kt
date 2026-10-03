@@ -98,18 +98,20 @@ interface AdminUsersApi {
     /**
      * GET api/v1/admin/users/
      * Search user accounts
-     * Password hashes and session secret material are never returned. Capped at 250 rows. Both filters are optional.
+     * Password hashes and session secret material are never returned. Newest first, in cursor pages. Every filter is optional.
      * Responses:
      *  - 200: 
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *
+     * @param cursor Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     * @param limit Page size, maximum 200, default 50. (optional)
      * @param q Free text matched against the account name and phone number. (optional)
      * @param role Admin role id or code; keeps accounts holding that role actively. The value &#x60;any&#x60; keeps every operator, &#x60;none&#x60; every non-operator. (optional)
      * @param status &#x60;active&#x60; keeps active accounts; any other value keeps blocked accounts. (optional)
      * @return [AdminUserList]
      */
     @GET("api/v1/admin/users/")
-    suspend fun adminUsersList(@Query("q") q: kotlin.String? = null, @Query("role") role: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminUserList>
+    suspend fun adminUsersList(@Query("cursor") cursor: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null, @Query("q") q: kotlin.String? = null, @Query("role") role: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminUserList>
 
 }

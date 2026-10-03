@@ -13,9 +13,10 @@ import {
   formatDateTime,
   termsFor,
   labelsFor,
+  Pagination,
 } from "../../../components/ui";
 import { useLookups } from "../../../lib/client/use-lookups";
-import { useResource } from "../../../lib/client/use-resource";
+import { useCursorPage } from "../../../lib/client/use-cursor-page";
 import { useUrlFilters } from "../../../lib/client/use-url-filters";
 
 type Application = Readonly<{
@@ -55,7 +56,7 @@ export default function ReviewsPage() {
     evidence: "",
   });
   const lookups = useLookups();
-  const queue = useResource<{ items: Application[] }>("reviews", filters, {
+  const queue = useCursorPage<Application>("reviews", filters, {
     refreshMs: 60_000,
   });
 
@@ -151,6 +152,7 @@ export default function ReviewsPage() {
           rowKey={(row) => row.id}
         />
       ) : null}
+      {queue.pagination ? <Pagination {...queue.pagination} /> : null}
     </div>
   );
 }

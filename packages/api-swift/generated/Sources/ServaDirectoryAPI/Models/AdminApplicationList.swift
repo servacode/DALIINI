@@ -10,15 +10,24 @@ import Foundation
 import AnyCodable
 #endif
 
+/** The two fields every cursor page adds beside its &#x60;items&#x60;. */
 public struct AdminApplicationList: Codable, JSONEncodable, Hashable {
 
+    /** Opaque token for the next page, or null on the last page. Send it back unchanged as the `cursor` query parameter; never parse it. */
+    public var nextCursor: String?
+    /** True when `nextCursor` is set. */
+    public var hasMore: Bool
     public var items: [AdminApplication]
 
-    public init(items: [AdminApplication]) {
+    public init(nextCursor: String?, hasMore: Bool, items: [AdminApplication]) {
+        self.nextCursor = nextCursor
+        self.hasMore = hasMore
         self.items = items
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
+        case nextCursor
+        case hasMore
         case items
     }
 
@@ -26,6 +35,8 @@ public struct AdminApplicationList: Codable, JSONEncodable, Hashable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(nextCursor, forKey: .nextCursor)
+        try container.encode(hasMore, forKey: .hasMore)
         try container.encode(items, forKey: .items)
     }
 }

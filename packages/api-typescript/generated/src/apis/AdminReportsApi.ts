@@ -52,7 +52,9 @@ export interface AdminReportsBulkDecideRequest {
 }
 
 export interface AdminReportsListRequest {
+    cursor?: string;
     facility?: string;
+    limit?: number;
     status?: string;
 }
 
@@ -211,14 +213,22 @@ export class AdminReportsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Newest first, capped at 250 rows.
+     * Newest first, in cursor pages.
      * List facility problem reports
      */
     async adminReportsListRaw(requestParameters: AdminReportsListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminFacilityReportList>> {
         const queryParameters: any = {};
 
+        if (requestParameters['cursor'] != null) {
+            queryParameters['cursor'] = requestParameters['cursor'];
+        }
+
         if (requestParameters['facility'] != null) {
             queryParameters['facility'] = requestParameters['facility'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
         }
 
         if (requestParameters['status'] != null) {
@@ -249,7 +259,7 @@ export class AdminReportsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Newest first, capped at 250 rows.
+     * Newest first, in cursor pages.
      * List facility problem reports
      */
     async adminReportsList(requestParameters: AdminReportsListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacilityReportList> {

@@ -32,11 +32,13 @@ class AdminAuditApiTest : ShouldSpec() {
             // uncomment below to test adminAuditList
             //val action : kotlin.String = action_example // kotlin.String | Substring matched against the action code, case-insensitive.
             //val actor : kotlin.String = actor_example // kotlin.String | Actor user id.
+            //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
             //val from : kotlin.String = from_example // kotlin.String | ISO date or datetime; keeps entries created at or after it.
+            //val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 200, default 50.
             //val requestId : kotlin.String = requestId_example // kotlin.String | Exact request correlation id, as returned in an error body.
             //val resource : kotlin.String = resource_example // kotlin.String | Substring matched against the target type, or an exact target id.
             //val to : kotlin.String = to_example // kotlin.String | ISO date or datetime; a bare date includes that whole day.
-            //val result : AdminAuditList = apiInstance.adminAuditList(action, actor, from, requestId, resource, to)
+            //val result : AdminAuditList = apiInstance.adminAuditList(action, actor, cursor, from, limit, requestId, resource, to)
             //result shouldBe ("TODO")
         }
 

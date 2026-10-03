@@ -41,14 +41,23 @@ export const READS = {
   systemStatus: (apis: AdminApis) => apis.system.adminSystemStatusRetrieve(),
   reviews: (apis: AdminApis, p: Params) =>
     apis.reviews.adminReviewsList(
-      filled(p, ["kind", "status", "province", "category", "from", "to", "evidence"]),
+      filled(p, ["kind", "status", "province", "category", "from", "to", "evidence", "cursor"]),
     ),
   review: (apis: AdminApis, p: Params) =>
     apis.reviews.adminReviewRetrieve({ applicationId: p.id! }),
 
   facilities: (apis: AdminApis, p: Params) =>
     apis.facilities.adminFacilitiesList(
-      filled(p, ["status", "province", "category", "q", "issue", "ordering"]) as never,
+      filled(p, [
+        "status",
+        "province",
+        "city",
+        "category",
+        "q",
+        "issue",
+        "ordering",
+        "cursor",
+      ]) as never,
     ),
   facilityTimeline: (apis: AdminApis, p: Params) =>
     apis.facilities.adminFacilityTimelineRetrieve({ facilityId: p.id! }),
@@ -56,7 +65,7 @@ export const READS = {
     apis.facilities.adminFacilityRetrieve({ facilityId: p.id! }),
 
   users: (apis: AdminApis, p: Params) =>
-    apis.users.adminUsersList(filled(p, ["q", "status", "role"])),
+    apis.users.adminUsersList(filled(p, ["q", "status", "role", "cursor"])),
   user: (apis: AdminApis, p: Params) => apis.users.adminUserRetrieve({ userId: p.id! }),
   roles: (apis: AdminApis) => apis.users.adminRolesList(),
 
@@ -73,11 +82,11 @@ export const READS = {
 
   audit: (apis: AdminApis, p: Params) =>
     apis.audit.adminAuditList(
-      filled(p, ["actor", "action", "resource", "requestId", "from", "to"]),
+      filled(p, ["actor", "action", "resource", "requestId", "from", "to", "cursor"]),
     ),
 
   reports: (apis: AdminApis, p: Params) =>
-    apis.reports.adminReportsList(filled(p, ["status", "facility"])),
+    apis.reports.adminReportsList(filled(p, ["status", "facility", "cursor"])),
   provinceCities: (apis: AdminApis, p: Params) =>
     apis.provinces.adminProvinceCitiesList({ provinceId: p.id! }),
 
@@ -150,6 +159,18 @@ export const WRITES = {
       applicationId: String(b.id),
       adminDecisionRequest: { reason: String(b.reason ?? "") },
     }),
+
+  // The record an operator adds or corrects. `location` arrives as `{latitude, longitude}` or
+  // null, and the id of an update travels beside the fields rather than among them.
+  facilityCreate: (apis: AdminApis, b: Body) =>
+    apis.facilities.adminFacilityCreate({ adminFacilityCreate: b as never }),
+  facilityUpdate: (apis: AdminApis, b: Body) => {
+    const { id, ...fields } = b;
+    return apis.facilities.adminFacilityUpdate({
+      facilityId: String(id),
+      patchedAdminFacilityWrite: fields as never,
+    });
+  },
 
   facilitySuspend: (apis: AdminApis, b: Body) =>
     apis.facilities.adminFacilitySuspend({

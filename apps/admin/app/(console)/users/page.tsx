@@ -12,7 +12,9 @@ import {
   PageHeader,
   StatusBadge,
   formatDateTime,
+  Pagination,
 } from "../../../components/ui";
+import { useCursorPage } from "../../../lib/client/use-cursor-page";
 import { useResource } from "../../../lib/client/use-resource";
 
 type AdminUser = Readonly<{
@@ -25,7 +27,7 @@ type AdminUser = Readonly<{
 
 export default function UsersPage() {
   const [filters, setFilters] = useState<Record<string, string>>({ q: "", status: "" });
-  const users = useResource<{ items: AdminUser[] }>("users", filters);
+  const users = useCursorPage<AdminUser>("users", filters);
   // Roles sit behind their own permission; without it the filter still offers "any role"
   // and "no role", which the backend answers from the user table alone.
   const roles = useResource<{ items: { id: string; code: string; name: string }[] }>("roles");
@@ -93,6 +95,7 @@ export default function UsersPage() {
           rowKey={(row) => row.id}
         />
       ) : null}
+      {users.pagination ? <Pagination {...users.pagination} /> : null}
     </div>
   );
 }

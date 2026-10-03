@@ -14,7 +14,7 @@ interface AdminAuditApi {
     /**
      * GET api/v1/admin/audit/
      * Search the audit trail
-     * Capped at 250 rows. Snapshots and metadata are stored redacted. Every filter is optional and combines with the rest.
+     * Newest first, in cursor pages. Snapshots and metadata are stored redacted. Every filter is optional and combines with the rest.
      * Responses:
      *  - 200: 
      *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
@@ -23,13 +23,15 @@ interface AdminAuditApi {
      *
      * @param action Substring matched against the action code, case-insensitive. (optional)
      * @param actor Actor user id. (optional)
+     * @param cursor Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
      * @param from ISO date or datetime; keeps entries created at or after it. (optional)
+     * @param limit Page size, maximum 200, default 50. (optional)
      * @param requestId Exact request correlation id, as returned in an error body. (optional)
      * @param resource Substring matched against the target type, or an exact target id. (optional)
      * @param to ISO date or datetime; a bare date includes that whole day. (optional)
      * @return [AdminAuditList]
      */
     @GET("api/v1/admin/audit/")
-    suspend fun adminAuditList(@Query("action") action: kotlin.String? = null, @Query("actor") actor: kotlin.String? = null, @Query("from") from: kotlin.String? = null, @Query("requestId") requestId: kotlin.String? = null, @Query("resource") resource: kotlin.String? = null, @Query("to") to: kotlin.String? = null): Response<AdminAuditList>
+    suspend fun adminAuditList(@Query("action") action: kotlin.String? = null, @Query("actor") actor: kotlin.String? = null, @Query("cursor") cursor: kotlin.String? = null, @Query("from") from: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null, @Query("requestId") requestId: kotlin.String? = null, @Query("resource") resource: kotlin.String? = null, @Query("to") to: kotlin.String? = null): Response<AdminAuditList>
 
 }

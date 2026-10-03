@@ -143,7 +143,7 @@ Configure bearerAccessToken:
 
 List facility problem reports
 
-Newest first, capped at 250 rows.
+Newest first, in cursor pages.
 
 ### Example
 ```kotlin
@@ -155,16 +155,20 @@ Newest first, capped at 250 rows.
 val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AdminReportsApi::class.java)
+val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
 val facility : kotlin.String = facility_example // kotlin.String | Facility id.
+val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 200, default 50.
 val status : kotlin.String = status_example // kotlin.String | OPEN, RESOLVED or DISMISSED.
 
 launch(Dispatchers.IO) {
-    val result : AdminFacilityReportList = webService.adminReportsList(facility, status)
+    val result : AdminFacilityReportList = webService.adminReportsList(cursor, facility, limit, status)
 }
 ```
 
 ### Parameters
+| **cursor** | **kotlin.String**| Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] |
 | **facility** | **kotlin.String**| Facility id. | [optional] |
+| **limit** | **kotlin.Int**| Page size, maximum 200, default 50. | [optional] |
 | Name | Type | Description  | Notes |
 | ------------- | ------------- | ------------- | ------------- |
 | **status** | **kotlin.String**| OPEN, RESOLVED or DISMISSED. | [optional] |

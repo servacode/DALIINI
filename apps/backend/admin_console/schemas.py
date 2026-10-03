@@ -17,6 +17,7 @@ from rest_framework import serializers
 
 from content_services.models import Advertisement
 from core.openapi import CoordinatesSerializer
+from core.pagination import CursorEnvelope
 from directory.models import Category
 from directory.services import SPECIALTY_SCOPES
 from facilities.models import Facility, FacilityApplication, FacilityReport
@@ -41,7 +42,7 @@ class AdminUserDetailSerializer(AdminUserSerializer):
     roleIds = serializers.ListField(child=serializers.IntegerField())
 
 
-class AdminUserListSerializer(serializers.Serializer[Any]):
+class AdminUserListSerializer(CursorEnvelope):
     items = AdminUserSerializer(many=True)
 
 
@@ -78,7 +79,27 @@ class AdminFacilityQualitySerializer(AdminFacilitySerializer):
     )
 
 
-class AdminFacilityListSerializer(serializers.Serializer[Any]):
+class AdminFacilityDetailSerializer(AdminFacilityQualitySerializer):
+    """One facility as the console reads and edits it."""
+
+    neighborhoodId = serializers.UUIDField(allow_null=True)
+    descriptionAr = serializers.CharField(allow_null=True)
+    descriptionEn = serializers.CharField(allow_null=True)
+    phone = serializers.CharField(allow_null=True)
+    whatsapp = serializers.CharField(allow_null=True)
+    addressAr = serializers.CharField(allow_null=True)
+    addressEn = serializers.CharField(allow_null=True)
+    specialtyIds = serializers.ListField(child=serializers.IntegerField())
+    serviceTagIds = serializers.ListField(child=serializers.IntegerField())
+    ownerCount = serializers.IntegerField(
+        min_value=0, help_text="0 for a facility the directory listed itself and nobody claimed."
+    )
+    activatedAt = serializers.DateTimeField(allow_null=True)
+    lastVerifiedAt = serializers.DateTimeField(allow_null=True)
+    createdAt = serializers.DateTimeField()
+
+
+class AdminFacilityListSerializer(CursorEnvelope):
     items = AdminFacilityQualitySerializer(many=True)
 
 
@@ -106,7 +127,7 @@ class AdminApplicationSerializer(serializers.Serializer[Any]):
     ownerPhone = serializers.CharField(allow_null=True)
 
 
-class AdminApplicationListSerializer(serializers.Serializer[Any]):
+class AdminApplicationListSerializer(CursorEnvelope):
     items = AdminApplicationSerializer(many=True)
 
 
@@ -521,7 +542,7 @@ class AdminAuditEntrySerializer(serializers.Serializer[Any]):
     createdAt = serializers.DateTimeField(source="created_at")
 
 
-class AdminAuditListSerializer(serializers.Serializer[Any]):
+class AdminAuditListSerializer(CursorEnvelope):
     items = AdminAuditEntrySerializer(many=True)
 
 
@@ -622,7 +643,7 @@ class AdminFacilityReportSerializer(serializers.Serializer[Any]):
     resolvedAt = serializers.DateTimeField(allow_null=True)
 
 
-class AdminFacilityReportListSerializer(serializers.Serializer[Any]):
+class AdminFacilityReportListSerializer(CursorEnvelope):
     items = AdminFacilityReportSerializer(many=True)
 
 

@@ -80,9 +80,11 @@ export interface AdminReviewRetrieveRequest {
 
 export interface AdminReviewsListRequest {
     category?: string;
+    cursor?: string;
     evidence?: string;
     from?: string;
     kind?: string;
+    limit?: number;
     province?: string;
     status?: string;
     to?: string;
@@ -481,7 +483,7 @@ export class AdminReviewsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Capped at 200 rows. Every filter is optional and combines with the rest.
+     * Newest submission first, in cursor pages. Every filter is optional and combines with the rest. A draft that was never submitted sorts by when it was started.
      * List facility applications awaiting or past review
      */
     async adminReviewsListRaw(requestParameters: AdminReviewsListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminApplicationList>> {
@@ -489,6 +491,10 @@ export class AdminReviewsApi extends runtime.BaseAPI {
 
         if (requestParameters['category'] != null) {
             queryParameters['category'] = requestParameters['category'];
+        }
+
+        if (requestParameters['cursor'] != null) {
+            queryParameters['cursor'] = requestParameters['cursor'];
         }
 
         if (requestParameters['evidence'] != null) {
@@ -501,6 +507,10 @@ export class AdminReviewsApi extends runtime.BaseAPI {
 
         if (requestParameters['kind'] != null) {
             queryParameters['kind'] = requestParameters['kind'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
         }
 
         if (requestParameters['province'] != null) {
@@ -539,7 +549,7 @@ export class AdminReviewsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Capped at 200 rows. Every filter is optional and combines with the rest.
+     * Newest submission first, in cursor pages. Every filter is optional and combines with the rest. A draft that was never submitted sorts by when it was started.
      * List facility applications awaiting or past review
      */
     async adminReviewsList(requestParameters: AdminReviewsListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminApplicationList> {
