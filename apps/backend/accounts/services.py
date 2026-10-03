@@ -14,7 +14,7 @@ from django.utils import timezone
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 
 from audit.services import record_audit
-from core.exceptions import ConflictError
+from core.exceptions import ConflictError, DomainError
 from facilities.models import Facility, FacilityMembership
 from locations.models import Province
 from notifications.services import (
@@ -23,8 +23,10 @@ from notifications.services import (
 )
 from sessions.models import UserSession
 
+from .media import delete_profile_image
 from .models import AccountDeletionRequest, OTPChallenge, User
 from .otp import deliver_otp, generate_otp, otp_digest
+from .providers.base import InvalidRecipient, TransientOtpError
 from .tokens import issue_access_token
 
 OTP_TTL = timedelta(minutes=5)
@@ -80,7 +82,24 @@ def start_challenge(
     code = generate_otp()
     challenge.otp_digest = otp_digest(challenge_id=challenge.pk, code=code)
     challenge.save(update_fields=["otp_digest"])
-    deliver_otp(phone=phone, code=code)
+    try:
+        deliver_otp(phone=phone, code=code)
+    except InvalidRecipient as exc:
+        # A challenge nobody can ever answer is removed rather than left to expire, so the
+        # pending list stays a list of codes that are actually on their way.
+        challenge.delete()
+        raise DomainError(
+            "OTP_RECIPIENT_INVALID",
+            message="تعذّر إرسال رمز التحقق إلى هذا الرقم. تأكد أن الرقم صحيح ومفعّل على واتساب.",
+            status_code=422,
+        ) from exc
+    except TransientOtpError as exc:
+        challenge.delete()
+        raise DomainError(
+            "OTP_DELIVERY_UNAVAILABLE",
+            message="تعذّر إرسال رمز التحقق الآن. حاول مرة أخرى بعد قليل.",
+            status_code=503,
+        ) from exc
     return challenge
 
 
@@ -388,13 +407,25 @@ def request_account_deletion(*, user: User, request_id: str = "") -> AccountDele
     revoke_all_sessions(user=locked)
     FacilityMembership.objects.filter(user=locked).delete()
     locked.admin_role_links.all().delete()
+    # What was only ever the person's own goes with them: the places they saved and the
+    # messages addressed to them. Ratings stay, unattributed, because they are part of a
+    # facility's public score and no longer say who gave them.
+    locked.favorites.all().delete()
+    locked.notifications.all().delete()
+    avatar_key = locked.profile_image_key
     locked.phone = "d" + locked.pk.hex[:15]
     locked.name = "Deleted user"
+    locked.address = ""
     locked.province = None
     locked.profile_image_key = ""
     locked.is_active = False
     locked.set_unusable_password()
     locked.save()
+    if avatar_key:
+        # The picture sits in the public bucket under a permanent address. Blanking the key
+        # alone would leave it reachable by anyone who had seen it, so the object is removed
+        # once the anonymisation has committed.
+        transaction.on_commit(lambda: delete_profile_image(avatar_key))
     record_audit(
         actor=locked,
         action="account.deleted",

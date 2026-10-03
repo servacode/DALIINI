@@ -10,6 +10,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from audit.services import record_audit
+from core.exceptions import ConflictError
 from directory.models import CategoryProvince, ServiceTag, Specialty
 from locations.models import City, Neighborhood
 
@@ -181,11 +182,27 @@ def _replace_service_tags(facility: Facility, tag_ids: list[int] | None) -> None
     )
 
 
+def ensure_editable_by_owner(facility: Facility) -> None:
+    """Refuse an owner's change while an operator is reviewing the facility.
+
+    The operator decides on the snapshot taken at submission. A change made after it would be
+    published by the approval without anyone having looked at it, so the facility is frozen
+    until the decision; the owner edits again afterwards, and a rejection hands it straight
+    back.
+    """
+    if facility.status == Facility.Status.SUBMITTED:
+        raise ConflictError(
+            "FACILITY_LOCKED_DURING_REVIEW",
+            message="لا يمكن تعديل المنشأة أثناء مراجعة طلبها. انتظر قرار المراجعة ثم عدّل.",
+        )
+
+
 @transaction.atomic
 def update_facility_core(
     *, actor: User, facility: Facility, data: dict[str, Any], request_id: str = ""
 ) -> Facility:
     locked = Facility.objects.select_for_update().select_related("category").get(pk=facility.pk)
+    ensure_editable_by_owner(locked)
     before = _snapshot(locked)
     city_id = data.get("cityId", locked.city_id)
     city = _resolve_city(facility=locked, city_id=city_id)
@@ -242,6 +259,7 @@ def update_facility_location(
     request_id: str = "",
 ) -> Facility:
     locked = Facility.objects.select_for_update().get(pk=facility.pk)
+    ensure_editable_by_owner(locked)
     before = _snapshot(locked)
     locked.location = Point(float(longitude), float(latitude), srid=4326)
     if locked.status == Facility.Status.ACTIVE:

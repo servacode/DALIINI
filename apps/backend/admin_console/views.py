@@ -193,7 +193,7 @@ def filtered_facilities(params: Any) -> Any:
     if value := params.get("category"):
         qs = qs.filter(category_id=value)
     if value := params.get("q"):
-        qs = qs.filter(Q(name_ar__icontains=value) | Q(name_en__icontains=value))
+        qs = qs.filter(Q(name_ar__ar_contains=value) | Q(name_en__ar_contains=value))
     if value := params.get("issue"):
         if value not in QUALITY_ISSUES:
             raise ValidationError({"issue": f"Use one of {', '.join(QUALITY_ISSUES)}."})

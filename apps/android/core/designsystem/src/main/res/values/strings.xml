@@ -79,6 +79,9 @@
     <string name="ds_error_closure_not_supported">هذا القسم لا يدعم الإغلاق المؤقت.</string>
     <string name="ds_error_evidence_max_files">تجاوزت العدد المسموح من الملفات لهذا المتطلب.</string>
     <string name="ds_error_evidence_locked">لا يمكن تعديل المستندات أثناء المراجعة.</string>
+    <string name="ds_error_facility_locked">لا يمكن تعديل المنشأة أثناء مراجعتها. عدّلها بعد القرار.</string>
+    <string name="ds_error_otp_recipient_invalid">تعذّر إرسال الرمز. تأكد أن الرقم صحيح ومفعّل على واتساب.</string>
+    <string name="ds_error_otp_unavailable">تعذّر إرسال رمز التحقق الآن. حاول بعد قليل.</string>
     <string name="ds_error_last_owner">لا يمكن إزالة المالك الوحيد للمنشأة.</string>
     <string name="ds_error_maintenance">الخدمة قيد الصيانة حاليًا. حاول بعد قليل.</string>
     <string name="ds_error_offline">لا يوجد اتصال بالإنترنت.</string>

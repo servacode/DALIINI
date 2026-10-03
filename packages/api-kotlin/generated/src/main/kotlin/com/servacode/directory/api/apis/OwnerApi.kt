@@ -112,6 +112,7 @@ interface OwnerApi {
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *  - 409: The request conflicts with the current state or with a domain rule.
      *
      * @param facilityId 
      * @param facilityLocation 
@@ -216,6 +217,7 @@ interface OwnerApi {
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *  - 409: The request conflicts with the current state or with a domain rule.
      *
      * @param facilityId 
      * @param patchedFacilityPatch  (optional)

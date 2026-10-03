@@ -149,6 +149,20 @@ THROTTLED_429 = OpenApiResponse(
     response=ApiErrorSerializer,
     description="Rate limit exceeded for this endpoint; see the `Retry-After` header.",
 )
+OTP_UNDELIVERABLE_422 = OpenApiResponse(
+    response=ApiErrorSerializer,
+    description=(
+        "The code cannot be delivered to this number at all; `code` is OTP_RECIPIENT_INVALID. "
+        "Asking again for the same number will not help."
+    ),
+)
+OTP_UNAVAILABLE_503 = OpenApiResponse(
+    response=ApiErrorSerializer,
+    description=(
+        "The code could not be sent just now; `code` is OTP_DELIVERY_UNAVAILABLE. The same "
+        "request may succeed in a little while."
+    ),
+)
 SERVER_ERROR_500 = OpenApiResponse(
     response=ApiErrorSerializer,
     description=(
