@@ -13,6 +13,8 @@ import AnyCodable
 public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
 
     public var id: UUID
+    /** Readable words for the facility's link, from its Arabic name (`/f/{id}/{slug}`). Decoration only: the id is the address, so a rename never breaks a link. */
+    public var slug: String
     public var nameAr: String
     public var nameEn: String?
     public var category: BilingualRef
@@ -51,8 +53,9 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
     public var services: [NamedIntRef]
     public var hours: [PublicHoursEntry]
 
-    public init(id: UUID, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, addressAr: String?, neighborhood: NamedRef?, phone: String?, whatsapp: String?, location: Coordinates?, isFavorite: Bool, imageUrl: String?, lastVerifiedAt: Date?, infoConfirmedAt: Date?, updatedAt: Date, descriptionAr: String?, descriptionEn: String?, addressEn: String?, images: [FacilityImage], specialties: [NamedIntRef], services: [NamedIntRef], hours: [PublicHoursEntry]) {
+    public init(id: UUID, slug: String, nameAr: String, nameEn: String?, category: BilingualRef, city: NamedRef?, distanceMeters: Double?, ratingAverage: Double?, ratingCount: Int, availability: Availability, addressAr: String?, neighborhood: NamedRef?, phone: String?, whatsapp: String?, location: Coordinates?, isFavorite: Bool, imageUrl: String?, lastVerifiedAt: Date?, infoConfirmedAt: Date?, updatedAt: Date, descriptionAr: String?, descriptionEn: String?, addressEn: String?, images: [FacilityImage], specialties: [NamedIntRef], services: [NamedIntRef], hours: [PublicHoursEntry]) {
         self.id = id
+        self.slug = slug
         self.nameAr = nameAr
         self.nameEn = nameEn
         self.category = category
@@ -82,6 +85,7 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case id
+        case slug
         case nameAr
         case nameEn
         case category
@@ -114,6 +118,7 @@ public struct PublicFacilityDetail: Codable, JSONEncodable, Hashable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
+        try container.encode(slug, forKey: .slug)
         try container.encode(nameAr, forKey: .nameAr)
         try container.encode(nameEn, forKey: .nameEn)
         try container.encode(category, forKey: .category)

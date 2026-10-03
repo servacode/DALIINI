@@ -44,6 +44,12 @@ class AvailabilitySerializer(serializers.Serializer[Any]):
 
 class CompactFacilitySerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
+    slug = serializers.CharField(
+        help_text=(
+            "Readable words for the facility's link, from its Arabic name (`/f/{id}/{slug}`). "
+            "Decoration only: the id is the address, so a rename never breaks a link."
+        )
+    )
     nameAr = serializers.CharField()
     nameEn = serializers.CharField(allow_null=True)
     category = BilingualRefSerializer()

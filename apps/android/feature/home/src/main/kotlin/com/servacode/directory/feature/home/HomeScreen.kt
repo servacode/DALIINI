@@ -208,6 +208,8 @@ fun HomeScreen(
                 onRefresh = viewModel::refresh,
                 onSearch = onSearch,
                 onFacility = onFacility,
+                onAdShown = viewModel::adShown,
+                onAdOpened = viewModel::adOpened,
             )
         }
     }
@@ -364,6 +366,8 @@ private fun HomeContent(
     onRefresh: () -> Unit,
     onSearch: () -> Unit,
     onFacility: (String) -> Unit,
+    onAdShown: (HomeAd) -> Unit,
+    onAdOpened: (HomeAd) -> Unit,
 ) {
     val snapshot = value.snapshot
     // Pulling the page down is what people do when they want to know it is current, so it does
@@ -393,7 +397,9 @@ private fun HomeContent(
                     val context = LocalContext.current
                     AdSlider(
                         ads = ads,
+                        onShown = onAdShown,
                         onAd = { ad ->
+                            onAdOpened(ad)
                             when (val action = ad.action) {
                                 AdAction.None -> Unit
                                 is AdAction.OpenFacility -> onFacility(action.facilityId)

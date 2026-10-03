@@ -545,6 +545,83 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The request conflicts with the current state or with a domain
             rule.
+  /api/v1/account/notification-preferences/:
+    get:
+      operationId: accountNotificationPreferencesRetrieve
+      description: 'All are on until the account turns one off. Only the push is governed:
+        every message still reaches the inbox. A staff change to an owner''s own duty
+        shift, and any kind outside these three, is always pushed.'
+      summary: Which kinds of notice are pushed to this account's devices
+      tags:
+      - Account
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreferences'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+    patch:
+      operationId: accountNotificationPreferencesUpdate
+      description: Only the fields sent change.
+      summary: Change which kinds of notice are pushed
+      tags:
+      - Account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationPreferences'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationPreferences'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationPreferences'
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreferences'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/account/notifications/:
     get:
       operationId: accountNotificationsList
@@ -1326,6 +1403,53 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdminAdImage'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/admin/ads/stats/:
+    get:
+      operationId: adminAdStatsRetrieve
+      description: Counted from the apps' `ad_impression` and `ad_click` events, by
+        Damascus day. The default is the last 30 days; at most a year. Every advertisement
+        is listed, those never shown with zeros.
+      summary: Impressions and clicks of each advertisement over a period
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+      - in: query
+        name: to
+        schema:
+          type: string
+      tags:
+      - Admin Ads
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdStats'
           description: ''
         '400':
           content:
@@ -9691,6 +9815,48 @@ components:
             $ref: '#/components/schemas/AccountRating'
       required:
       - items
+    AdStat:
+      type: object
+      properties:
+        adId:
+          type: string
+          format: uuid
+        titleAr:
+          type: string
+        impressions:
+          type: integer
+          minimum: 0
+        clicks:
+          type: integer
+          minimum: 0
+        clickRate:
+          type: number
+          format: double
+          nullable: true
+          description: Clicks per impression, 0..1; null with no impressions.
+      required:
+      - adId
+      - clickRate
+      - clicks
+      - impressions
+      - titleAr
+    AdStats:
+      type: object
+      properties:
+        fromDate:
+          type: string
+          format: date
+        toDate:
+          type: string
+          format: date
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdStat'
+      required:
+      - fromDate
+      - items
+      - toDate
     AdminAdImage:
       type: object
       properties:
@@ -13279,6 +13445,11 @@ components:
         id:
           type: string
           format: uuid
+        slug:
+          type: string
+          description: 'Readable words for the facility''s link, from its Arabic name
+            (`/f/{id}/{slug}`). Decoration only: the id is the address, so a rename
+            never breaks a link.'
         nameAr:
           type: string
         nameEn:
@@ -13371,6 +13542,7 @@ components:
       - phone
       - ratingAverage
       - ratingCount
+      - slug
       - updatedAt
       - whatsapp
     ContactMessageCreated:
@@ -14088,6 +14260,11 @@ components:
         id:
           type: string
           format: uuid
+        slug:
+          type: string
+          description: 'Readable words for the facility''s link, from its Arabic name
+            (`/f/{id}/{slug}`). Decoration only: the id is the address, so a rename
+            never breaks a link.'
         nameAr:
           type: string
         nameEn:
@@ -14185,6 +14362,7 @@ components:
       - phone
       - ratingAverage
       - ratingCount
+      - slug
       - updatedAt
       - whatsapp
     FavoriteList:
@@ -14613,6 +14791,23 @@ components:
       - items
       - nextCursor
       - unreadCount
+    NotificationPreferences:
+      type: object
+      properties:
+        dutyReminders:
+          type: boolean
+          description: Days nobody covers on the province's duty roster.
+        provinceNews:
+          type: boolean
+          description: What the platform announces to the account's province.
+        applicationStatus:
+          type: boolean
+          description: 'An owner''s applications and facilities: decisions, hours
+            to confirm.'
+      required:
+      - applicationStatus
+      - dutyReminders
+      - provinceNews
     OwnerApplication:
       type: object
       properties:
@@ -15302,6 +15497,19 @@ components:
             minimum: 1
           description: Replaces the facility's services. Ids come from the category's
             `services` in ownerConfigRetrieve; an empty list clears them.
+    PatchedNotificationPreferences:
+      type: object
+      properties:
+        dutyReminders:
+          type: boolean
+          description: Days nobody covers on the province's duty roster.
+        provinceNews:
+          type: boolean
+          description: What the platform announces to the account's province.
+        applicationStatus:
+          type: boolean
+          description: 'An owner''s applications and facilities: decisions, hours
+            to confirm.'
     PatchedProfilePatch:
       type: object
       properties:
@@ -15581,6 +15789,11 @@ components:
         id:
           type: string
           format: uuid
+        slug:
+          type: string
+          description: 'Readable words for the facility''s link, from its Arabic name
+            (`/f/{id}/{slug}`). Decoration only: the id is the address, so a rename
+            never breaks a link.'
         nameAr:
           type: string
         nameEn:
@@ -15706,6 +15919,7 @@ components:
       - ratingAverage
       - ratingCount
       - services
+      - slug
       - specialties
       - updatedAt
       - whatsapp

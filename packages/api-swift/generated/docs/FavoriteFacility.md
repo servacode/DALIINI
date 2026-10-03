@@ -4,6 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **UUID** |  | 
+**slug** | **String** | Readable words for the facility&#39;s link, from its Arabic name (&#x60;/f/{id}/{slug}&#x60;). Decoration only: the id is the address, so a rename never breaks a link. | 
 **nameAr** | **String** |  | 
 **nameEn** | **String** |  | 
 **category** | [**BilingualRef**](BilingualRef.md) |  | 

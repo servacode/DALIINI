@@ -71,7 +71,7 @@ class GeneratedAdapterTest {
     private fun taken(): RecordedRequest = server.takeRequest()
 
     private fun compact(id: String, state: String) = """
-        {"id":"$id","nameAr":"صيدلية","nameEn":null,
+        {"id":"$id","nameAr":"صيدلية","nameEn":null,"slug":"صيدلية",
          "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":"Pharmacy"},
          "city":null,"distanceMeters":120.5,"ratingAverage":4.5,"ratingCount":2,
          "isFavorite":false,"imageUrl":"https://cdn.example.test/shop.jpg",
@@ -262,7 +262,7 @@ class GeneratedAdapterTest {
 
     @Test fun `detail hours are ordered by weekday then sequence, and availability is the backend's`() = runTest {
         respond(
-            """{"id":"$FACILITY","nameAr":"صيدلية","nameEn":null,
+            """{"id":"$FACILITY","nameAr":"صيدلية","nameEn":null,"slug":"صيدلية",
             "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":null},"city":{"id":"$PROVINCE","nameAr":"الرقة"},
             "distanceMeters":null,"ratingAverage":null,"ratingCount":0,"isFavorite":true,"imageUrl":null,
             "lastVerifiedAt":"2026-09-18T10:00:00Z","updatedAt":"2026-09-19T10:00:00Z","whatsapp":"+963933000000",
@@ -523,7 +523,7 @@ class GeneratedAdapterTest {
 
     @Test fun `a facility with no specialty and no service has empty lists, for the page to leave out`() = runTest {
         respond(
-            """{"id":"$FACILITY","nameAr":"صيدلية","nameEn":null,
+            """{"id":"$FACILITY","nameAr":"صيدلية","nameEn":null,"slug":"صيدلية",
             "category":{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":null},"city":null,
             "distanceMeters":null,"ratingAverage":null,"ratingCount":0,"isFavorite":false,"imageUrl":null,
             "lastVerifiedAt":null,"updatedAt":"2026-09-19T10:00:00Z","whatsapp":null,

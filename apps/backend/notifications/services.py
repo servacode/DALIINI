@@ -155,6 +155,12 @@ def push_notification(notification: Notification, *, title: str, body: str) -> N
     provider is logged and skipped (permanent). TransientPushError propagates after the
     remaining devices were attempted, so the caller can retry only what is left.
     """
+    from .preferences import push_wanted
+
+    if not push_wanted(notification.user, notification.type):
+        # The account turned this kind off. The message stays in its inbox.
+        logger.info("push.muted_by_preference", extra={"notification_id": str(notification.pk)})
+        return
     data = {"notificationId": str(notification.id), "type": notification.type}
     data.update(push_routing(notification.payload))
     delivered = NotificationPushDelivery.objects.filter(notification=notification).values(

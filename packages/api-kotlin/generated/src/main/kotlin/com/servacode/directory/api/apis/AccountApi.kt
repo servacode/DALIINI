@@ -22,7 +22,9 @@ import com.servacode.directory.api.models.MfaRecoveryCodes
 import com.servacode.directory.api.models.MfaSetup
 import com.servacode.directory.api.models.MfaStatus
 import com.servacode.directory.api.models.NotificationPage
+import com.servacode.directory.api.models.NotificationPreferences
 import com.servacode.directory.api.models.PasswordChange
+import com.servacode.directory.api.models.PatchedNotificationPreferences
 import com.servacode.directory.api.models.PatchedProfilePatch
 import com.servacode.directory.api.models.PhoneChangeStart
 import com.servacode.directory.api.models.Profile
@@ -241,6 +243,36 @@ interface AccountApi {
      */
     @POST("api/v1/account/notifications/{notification_id}/read/")
     suspend fun accountNotificationMarkRead(@Path("notification_id") notificationId: java.util.UUID): Response<UnreadCount>
+
+    /**
+     * GET api/v1/account/notification-preferences/
+     * Which kinds of notice are pushed to this account&#39;s devices
+     * All are on until the account turns one off. Only the push is governed: every message still reaches the inbox. A staff change to an owner&#39;s own duty shift, and any kind outside these three, is always pushed.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @return [NotificationPreferences]
+     */
+    @GET("api/v1/account/notification-preferences/")
+    suspend fun accountNotificationPreferencesRetrieve(): Response<NotificationPreferences>
+
+    /**
+     * PATCH api/v1/account/notification-preferences/
+     * Change which kinds of notice are pushed
+     * Only the fields sent change.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param patchedNotificationPreferences  (optional)
+     * @return [NotificationPreferences]
+     */
+    @PATCH("api/v1/account/notification-preferences/")
+    suspend fun accountNotificationPreferencesUpdate(@Body patchedNotificationPreferences: PatchedNotificationPreferences? = null): Response<NotificationPreferences>
 
     /**
      * GET api/v1/account/notifications/

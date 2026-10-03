@@ -529,6 +529,82 @@ open class AccountAPI {
     }
 
     /**
+     Which kinds of notice are pushed to this account's devices
+     
+     - returns: NotificationPreferences
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountNotificationPreferencesRetrieve() async throws -> NotificationPreferences {
+        return try await accountNotificationPreferencesRetrieveWithRequestBuilder().execute().body
+    }
+
+    /**
+     Which kinds of notice are pushed to this account's devices
+     - GET /api/v1/account/notification-preferences/
+     - All are on until the account turns one off. Only the push is governed: every message still reaches the inbox. A staff change to an owner's own duty shift, and any kind outside these three, is always pushed.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<NotificationPreferences> 
+     */
+    open class func accountNotificationPreferencesRetrieveWithRequestBuilder() -> RequestBuilder<NotificationPreferences> {
+        let localVariablePath = "/api/v1/account/notification-preferences/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<NotificationPreferences>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Change which kinds of notice are pushed
+     
+     - parameter patchedNotificationPreferences: (body)  (optional)
+     - returns: NotificationPreferences
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func accountNotificationPreferencesUpdate(patchedNotificationPreferences: PatchedNotificationPreferences? = nil) async throws -> NotificationPreferences {
+        return try await accountNotificationPreferencesUpdateWithRequestBuilder(patchedNotificationPreferences: patchedNotificationPreferences).execute().body
+    }
+
+    /**
+     Change which kinds of notice are pushed
+     - PATCH /api/v1/account/notification-preferences/
+     - Only the fields sent change.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter patchedNotificationPreferences: (body)  (optional)
+     - returns: RequestBuilder<NotificationPreferences> 
+     */
+    open class func accountNotificationPreferencesUpdateWithRequestBuilder(patchedNotificationPreferences: PatchedNotificationPreferences? = nil) -> RequestBuilder<NotificationPreferences> {
+        let localVariablePath = "/api/v1/account/notification-preferences/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: patchedNotificationPreferences)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<NotificationPreferences>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "PATCH", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      List the caller's notifications, newest first
      
      - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)

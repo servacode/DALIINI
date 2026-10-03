@@ -19,6 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.AdminAdsApi
+import com.servacode.directory.api.models.AdStats
 import com.servacode.directory.api.models.AdminAdImage
 import com.servacode.directory.api.models.AdminAdvertisementList
 import com.servacode.directory.api.models.AdminAdvertisementRequest
@@ -51,6 +52,15 @@ class AdminAdsApiTest : ShouldSpec() {
             // uncomment below to test adminAdImageUpload
             //val file : java.io.File = BINARY_DATA_HERE // java.io.File | JPEG, PNG or WebP, at most 2 MB, 100-4096 px a side.
             //val result : AdminAdImage = apiInstance.adminAdImageUpload(file)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminAdStatsRetrieve
+        should("test adminAdStatsRetrieve") {
+            // uncomment below to test adminAdStatsRetrieve
+            //val from : kotlin.String = from_example // kotlin.String | 
+            //val to : kotlin.String = to_example // kotlin.String | 
+            //val result : AdStats = apiInstance.adminAdStatsRetrieve(from, to)
             //result shouldBe ("TODO")
         }
 

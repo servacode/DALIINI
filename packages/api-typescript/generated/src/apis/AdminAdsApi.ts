@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  AdStats,
   AdminAdImage,
   AdminAdvertisementList,
   AdminAdvertisementRequest,
@@ -23,6 +24,8 @@ import type {
   ApiError,
 } from '../models/index';
 import {
+    AdStatsFromJSON,
+    AdStatsToJSON,
     AdminAdImageFromJSON,
     AdminAdImageToJSON,
     AdminAdvertisementListFromJSON,
@@ -47,6 +50,11 @@ export interface AdminAdDeleteRequest {
 
 export interface AdminAdImageUploadRequest {
     file: Blob;
+}
+
+export interface AdminAdStatsRetrieveRequest {
+    from?: string;
+    to?: string;
 }
 
 export interface AdminAdUpdateRequest {
@@ -216,6 +224,53 @@ export class AdminAdsApi extends runtime.BaseAPI {
      */
     async adminAdImageUpload(requestParameters: AdminAdImageUploadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminAdImage> {
         const response = await this.adminAdImageUploadRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Counted from the apps\' `ad_impression` and `ad_click` events, by Damascus day. The default is the last 30 days; at most a year. Every advertisement is listed, those never shown with zeros.
+     * Impressions and clicks of each advertisement over a period
+     */
+    async adminAdStatsRetrieveRaw(requestParameters: AdminAdStatsRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdStats>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['from'] != null) {
+            queryParameters['from'] = requestParameters['from'];
+        }
+
+        if (requestParameters['to'] != null) {
+            queryParameters['to'] = requestParameters['to'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/ads/stats/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdStatsFromJSON(jsonValue));
+    }
+
+    /**
+     * Counted from the apps\' `ad_impression` and `ad_click` events, by Damascus day. The default is the last 30 days; at most a year. Every advertisement is listed, those never shown with zeros.
+     * Impressions and clicks of each advertisement over a period
+     */
+    async adminAdStatsRetrieve(requestParameters: AdminAdStatsRetrieveRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdStats> {
+        const response = await this.adminAdStatsRetrieveRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

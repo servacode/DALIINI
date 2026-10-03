@@ -1144,6 +1144,39 @@ come from.
   one transaction with source IMPORT, and changes nothing when repeated.
 * **Who hears of it.** Each pharmacy that gains shifts has its owners told once, with the count.
   Imports, rotation changes and generated periods are audited.
+* **Errors in the operator's words only.** A problem with the file's shape (empty, unknown headers,
+  too many rows) or with a rotation's period is returned as a fixed message. Whatever a CSV or
+  workbook parser raises gets a constant answer, so no exception's own text reaches a response.
+
+## DECISION-067 — Readable facility links, advertisement numbers, notification preferences
+
+**Date:** 2026-10-03 · **Phase 2.7 of the roadmap.**
+
+**Why:** three small gaps that each block something visible. The website's facility links were
+bare ids. The advertisements had no numbers, so a paying advertiser could not be shown what they
+got. And the app's notification switches were a local filter: a muted kind still woke the phone.
+
+**Decision:**
+
+* **Slugs.** Every compact and detailed public facility carries `slug`, made from its Arabic name:
+  NFKC, tashkeel and tatweel removed, anything that is not a letter or digit of any script becomes
+  a single hyphen, at most 80 characters (`facilities/slugs.py`). It is computed, not stored. The
+  id stays the address (`/f/{id}/{slug}`), so a renamed facility breaks no shared link; a site
+  that receives an old or empty slug redirects to the current one.
+* **Advertisement numbers.** `GET /admin/ads/stats/?from=&to=` (`admin.ads.read`) counts the apps'
+  `ad_impression` and `ad_click` events per advertisement by Damascus day: last 30 days by default,
+  at most a year. The click rate is clicks per impression, and null with no impressions. Android
+  now sends both events. An impression is one per advertisement per province while the home page is
+  in front of someone, counted when a slide settles; a pull to refresh does not count it again. A
+  click carries the action type. The console's ads page shows views, clicks and rate beside each
+  advertisement, for a period picked as on the analytics page.
+* **Notification preferences on the server.** `GET`/`PATCH /account/notification-preferences/`
+  holds three switches: `dutyReminders`, `provinceNews`, `applicationStatus`. All are on until
+  changed. The categories are the app's own (`NotificationCategory.of`). They decide only whether
+  the phone is woken: the message is still written to the inbox. A broadcast is not queued for
+  accounts that turned province news off. A staff change to an owner's own shift
+  (`duty.shift.admin_changed`) and any kind outside the three categories are always pushed: a
+  switch hides news, never something addressed to the owner's own work.
 
 ## DEBT-001 — Ruff baseline
 

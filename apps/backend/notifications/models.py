@@ -136,3 +136,23 @@ class Broadcast(models.Model):
 
     def __str__(self) -> str:
         return self.title_ar
+
+
+class NotificationPreference(models.Model):
+    """Which kinds of notice an account wants announced on its devices (DECISION-067).
+
+    Only the push is governed. The inbox keeps every message, because a muted announcement is
+    still something the platform told the account. The kinds are the ones the app already lets
+    a reader switch off (`NotificationCategory`), so a choice made on one device holds on all.
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notification_preference"
+    )
+    duty_reminders = models.BooleanField(default=True)
+    province_news = models.BooleanField(default=True)
+    application_status = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"notification preferences of {self.user_id}"

@@ -58,6 +58,8 @@ def fan_out_broadcast_push(broadcast_id: str) -> int:
         Notification.objects.filter(
             payload__broadcastId=broadcast_id, user__push_tokens__active=True
         )
+        # Accounts that turned province news off are not queued at all; their inbox has it.
+        .exclude(user__notification_preference__province_news=False)
         .distinct()
         .values_list("pk", "title_ar", "body_ar")
     )
