@@ -62,8 +62,8 @@ def main() -> int:
     )
     results.append(
         run(
-            "staging-source",
-            [sys.executable, "infrastructure/scripts/qualify-staging-source.py"],
+            "production-stack",
+            [sys.executable, "infrastructure/scripts/qualify-production-stack.py"],
         )
     )
     results.append(run("git-whitespace", ["git", "diff", "--check"]))

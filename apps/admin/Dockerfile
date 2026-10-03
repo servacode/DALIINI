@@ -1,4 +1,4 @@
-# Admin console image. Build context is the monorepo root (render.yaml: dockerContext: .).
+# Admin console image. Build context is the monorepo root (infrastructure/production/compose.yml).
 # Runtime behaviour is unchanged (`next start` via pnpm); the hardening is a frozen
 # lockfile install, a non-root runtime user and a container HEALTHCHECK.
 FROM node:24-bookworm-slim AS build

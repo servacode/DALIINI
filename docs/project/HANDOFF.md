@@ -16,7 +16,8 @@ scope is places only: nothing about medicines (DECISION-054).
 ## Where things stand
 
 The roadmap was approved on 2026-10-03. Phases 0 to 3 are done, merged through pull requests
-#27 to #40, and phase 4 through #41 to #44. Phase 5 is under way:
+#27 to #40, phase 4 through #41 to #44, and phase 5's code through #45 to #48. Phase 6 is
+under way:
 
 | Phase | What it delivered | Decisions |
 |---|---|---|
@@ -42,11 +43,14 @@ The roadmap was approved on 2026-10-03. Phases 0 to 3 are done, merged through p
 | 5.2 | Android: notice switches kept by the account, a newer build offered once | 077 |
 | 5.3 | Android: a trip keeps its readings and voice with the screen locked | 078 |
 | 5.4 | Android: build numbers from CI, a baseline profile, map motion that follows the system | 079 |
+| 6.1 | the production stack on one server behind Caddy; Render retired | 080 |
 
-**Now: phase 5, Android v2.** Phase 4 (the console v2) is done. An owner portal on the web was
-offered at the start of phase 3 and set aside: owners use the Android app. Then the VPS (6),
-content and the Play launch (7), and the iPhone app from the Android code with Kotlin
-Multiplatform (8).
+**Now: phase 6, the production server.** The stack is ready and booted in CI on every pull
+request (`infrastructure/production/`); a real server waits on EXT-007. Next: deploys from
+GitHub, backups with a restore drill and monitoring (6.2), then self-hosted map tiles and routing
+(6.3). After that, content and the Play launch (7), and the iPhone app from the Android code with
+Kotlin Multiplatform (8). An owner portal on the web was offered at the start of phase 3 and set
+aside: owners use the Android app.
 
 Android has caught up with every server feature, a trip survives a locked screen, and builds
 number themselves. What remains of phase 5 needs a real phone: a full check on the device, a road
@@ -119,6 +123,7 @@ run `manage.py grant_operator 09XXXXXXXX`. It gives that account the owner role 
 every permission); everyone after is appointed from the console. `--create --name "…"` makes the
 account instead, asking for the password at a prompt (DECISION-072).
 
-Render is not used (owner's decision). `render.yaml` and `render.production.yaml` remain only
-until phase 6 replaces them with the VPS setup: Docker Compose, Caddy and Cloudflare. A test
-still covers their start-up command until then.
+Production is one VPS running `infrastructure/production/compose.yml` behind Caddy and
+Cloudflare (DECISION-080). Bringing a server up is `infrastructure/production/README.md`; each
+deploy after is `docs/runbooks/deploy.md`. CI boots the whole stack on every pull request
+(`production-stack`). Render is not used (owner's decision), and its files are gone.

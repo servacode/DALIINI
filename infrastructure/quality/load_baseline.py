@@ -40,7 +40,7 @@ def main() -> int:
     host = parsed.hostname or ""
     if parsed.scheme != "https":
         raise SystemExit("load baseline requires HTTPS")
-    if not args.allow_production and "staging" not in host and "onrender.com" not in host:
+    if not args.allow_production and "staging" not in host:
         raise SystemExit("refusing load run against non-staging host")
     if args.requests < 1 or args.requests > 5000 or args.concurrency < 1 or args.concurrency > 100:
         raise SystemExit("bounded limits exceeded")
