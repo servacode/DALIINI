@@ -10,7 +10,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import com.servacode.directory.core.datastore.ThemePreference
 import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.Sizes
@@ -82,6 +86,8 @@ fun SettingsScreen(
     preferencesViewModel: PreferencesViewModel = hiltViewModel(),
 ) {
     val preferences by preferencesViewModel.values.collectAsStateWithLifecycle()
+    val sync by preferencesViewModel.sync.collectAsStateWithLifecycle()
+    LaunchedEffect(signedIn) { preferencesViewModel.forAccount(signedIn) }
     val context = LocalContext.current
     var notificationsAllowed by remember { mutableStateOf(NotificationSetting.allowed(context)) }
     // Read again on the way back from the system's screen, where it may have just been changed.
@@ -126,8 +132,8 @@ fun SettingsScreen(
                     icon = DirectoryIcons.bell,
                     subtitle = if (notificationsAllowed) SettingsCopy.ALLOWED else SettingsCopy.NOT_ALLOWED,
                 )
-                // Which kinds, of the ones the system lets through. Kept on this device: the
-                // platform has no preference endpoint yet, so a notice is filtered as it arrives.
+                // Which kinds, of the ones the system lets through. Signed in they are the
+                // account's, kept by the backend; signed out, this device's.
                 val notices = preferences.notifications
                 DirectoryMenuDivider()
                 DirectorySwitchRow(
@@ -150,8 +156,18 @@ fun SettingsScreen(
                         },
                     )
                 }
+                sync.failure?.let {
+                    Text(
+                        text = SettingsCopy.NOTIFY_FAILED,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .padding(horizontal = Space.base, vertical = Space.xs)
+                            .semantics { liveRegion = LiveRegionMode.Polite },
+                    )
+                }
                 Text(
-                    text = SettingsCopy.NOTIFY_LOCAL,
+                    text = if (sync.account) SettingsCopy.NOTIFY_ACCOUNT else SettingsCopy.NOTIFY_LOCAL,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = Space.base, vertical = Space.sm),
@@ -381,6 +397,8 @@ object SettingsCopy {
     val NOTIFY_APPLICATIONS_BODY: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_notify_applications_body)
     val NOTIFY_LOCAL: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_notify_local)
+    val NOTIFY_ACCOUNT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_notify_account)
+    val NOTIFY_FAILED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_notify_failed)
     val DATA: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_data)
     val DATA_SAVER: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_data_saver)
     val DATA_SAVER_BODY: String

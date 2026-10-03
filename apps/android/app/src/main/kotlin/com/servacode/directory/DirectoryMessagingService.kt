@@ -36,9 +36,10 @@ import kotlinx.coroutines.SupervisorJob
  * a neutral notice and the user sees the substance only after the app fetches it over REST.
  * Neither the token nor the payload is logged.
  *
- * The reader's choices in Settings are honoured here, on the device: a push whose kind they
- * turned off is not shown. The backend has no endpoint for these choices yet, so it still sends
- * them; the message stays in the inbox either way.
+ * The reader's choices in Settings are honoured here too, on the device: a push whose kind they
+ * turned off is not shown. Signed in, the backend already stops sending those (DECISION-077);
+ * checking again catches a push sent just before the change. The message stays in the inbox
+ * either way.
  */
 @AndroidEntryPoint
 class DirectoryMessagingService : FirebaseMessagingService() {

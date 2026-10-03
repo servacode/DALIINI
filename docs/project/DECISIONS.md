@@ -1540,6 +1540,39 @@ the app showed the proposed values as if they were published.
   which is where type-safe navigation keeps it. `toRoute` needs Android's `Bundle` and cannot run
   in a plain JVM test.
 
+## DECISION-077 — The account keeps the notice switches; a newer build is offered once
+
+**Date:** 2026-10-03 · **Phase 5.2 of the roadmap.**
+
+**Why:** the notice switches in Settings lived only on the phone. The backend could not honour
+them when it sent (it has had `account/notification-preferences/` since phase 2.7), a second
+phone did not share them, and the app's comments still said no endpoint existed. The backend
+also reported a newer build (`latestVersionCode`), but the app only acted on the minimum, so
+nobody learned of an update until they were locked out.
+
+**Decision:**
+
+* **Signed in, the switches are the account's.** `NotificationPreferencesSync` keeps the device
+  in step with the account:
+  * It reads the account's choices when Settings opens, and when a session starts if push is
+    configured. They replace the device's copy.
+  * A change shows at once, then is sent: only the switches that moved. The backend's answer
+    becomes the device's copy.
+  * A refused change puts the switch back and says so under the switches. Changes go one at a
+    time, so two quick taps cannot overwrite each other.
+* **Where the device copy still matters:** a push is still checked against it when it arrives,
+  to catch one sent just before a change. Signed out, the device copy is all there is.
+* **Settings says where the choices live:** «في حسابك فتسري على كل أجهزتك» when signed in,
+  «على هذا الجهاز فقط» when not.
+* **A newer build is offered, never imposed.** `VersionCheck` reports `Newer` when this build is
+  above the minimum and below `latestVersionCode`, but only if a store address is configured,
+  since an offer nobody can act on is noise.
+  * The gate shows a dialog with «تحديث» and «لاحقاً», and the backend's notice when it sent one.
+  * Either answer is stored as the offered build (`updateOfferedVersionCode`). That build is not
+    offered again; a later one is.
+  * Nothing shows until the stored answer has been read, so a build already set aside never
+    flashes up.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

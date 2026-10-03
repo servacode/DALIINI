@@ -36,6 +36,13 @@ class VersionCheck @Inject constructor(
          * screen then shows no button rather than a button that does nothing.
          */
         data class TooOld(val notice: String?, val storeUrl: String?) : Verdict
+
+        /**
+         * Accepted, and a newer build exists ([latestVersionCode]) at [storeUrl]. Offered, never
+         * imposed: this build goes on working whatever the answer. Only reported when there is a
+         * store to send the reader to, since an offer they cannot act on is only noise.
+         */
+        data class Newer(val latestVersionCode: Int, val notice: String?, val storeUrl: String) : Verdict
     }
 
     private val state = MutableStateFlow<Verdict>(Verdict.Unknown)
@@ -43,13 +50,17 @@ class VersionCheck @Inject constructor(
 
     suspend fun refresh(versionCode: Int) {
         val release = runCatching { api.appRelease() }.getOrNull() ?: return
-        state.value = if (release.blocks(versionCode)) {
-            Verdict.TooOld(
+        state.value = when {
+            release.blocks(versionCode) -> Verdict.TooOld(
                 notice = release.noticeAr.ifBlank { null },
                 storeUrl = release.storeUrl.ifBlank { null },
             )
-        } else {
-            Verdict.Allowed
+            release.supersedes(versionCode) && release.storeUrl.isNotBlank() -> Verdict.Newer(
+                latestVersionCode = release.latestVersionCode,
+                notice = release.noticeAr.ifBlank { null },
+                storeUrl = release.storeUrl,
+            )
+            else -> Verdict.Allowed
         }
     }
 }

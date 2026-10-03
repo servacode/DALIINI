@@ -10,6 +10,7 @@ import com.servacode.directory.core.model.ClaimRequirement
 import com.servacode.directory.core.model.ClaimStatus
 import com.servacode.directory.core.model.ClaimableFacility
 import com.servacode.directory.core.model.FacilityClaim
+import com.servacode.directory.core.model.NotificationSwitches
 import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.core.model.DutyWindow
 import com.servacode.directory.core.model.EmergencyNumber
@@ -46,6 +47,7 @@ import com.servacode.directory.api.models.ClaimEvidence as WireClaimEvidence
 import com.servacode.directory.api.models.ClaimableFacility as WireClaimableFacility
 import com.servacode.directory.api.models.FacilityApplicationStatusEnum
 import com.servacode.directory.api.models.Invitation as WireInvitation
+import com.servacode.directory.api.models.NotificationPreferences as WireNotificationPreferences
 import com.servacode.directory.api.models.InvitationStatusEnum
 import com.servacode.directory.api.models.ReceivedInvitation as WireReceivedInvitation
 import com.servacode.directory.api.models.FacilityStatusEnum
@@ -629,6 +631,12 @@ internal fun WireReceivedInvitation.toDomain() = ReceivedInvitation(
     invitedByName = invitedByName?.takeIf { it.isNotBlank() },
     createdAtEpochMillis = createdAt.toEpochMillis(),
     expiresAtEpochMillis = expiresAt.toEpochMillis(),
+)
+
+internal fun WireNotificationPreferences.toDomain() = NotificationSwitches(
+    dutyReminders = dutyReminders,
+    provinceNews = provinceNews,
+    applicationStatus = applicationStatus,
 )
 
 internal fun WireClaimableFacility.toDomain() = ClaimableFacility(
