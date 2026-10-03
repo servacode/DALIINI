@@ -209,6 +209,49 @@ describe("smart console reads", () => {
 
     expect(calls[0]?.args[0]).toEqual({ issue: "STALE", ordering: "qualityScore" });
   });
+
+  it("hands the cursor back on every paged list, and nothing else that was not declared", async () => {
+    const { apis, calls } = spyApis();
+
+    for (const name of ["reviews", "facilities", "users", "audit", "reports"] as const) {
+      await READS[name](apis, { cursor: "cD0yMDI2", limit: "999" });
+    }
+
+    for (const call of calls) expect(call.args[0]).toEqual({ cursor: "cD0yMDI2" });
+  });
+
+  it("filters the facility list by city on the server", async () => {
+    const { apis, calls } = spyApis();
+
+    await READS.facilities(apis, { province: "p-1", city: "c-1", status: "ACTIVE" });
+
+    expect(calls[0]?.args[0]).toEqual({ province: "p-1", city: "c-1", status: "ACTIVE" });
+  });
+});
+
+describe("facility editing", () => {
+  it("creates with the whole body", async () => {
+    const { apis, calls } = spyApis();
+    const body = { categoryId: "c", provinceId: "p", nameAr: "صيدلية", location: null };
+
+    await WRITES.facilityCreate(apis, body);
+
+    expect(calls[0]).toEqual({
+      name: "facilities.adminFacilityCreate",
+      args: [{ adminFacilityCreate: body }],
+    });
+  });
+
+  it("updates with the id beside the fields, never among them", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.facilityUpdate(apis, { id: "f-1", phone: "0221234567" });
+
+    expect(calls[0]).toEqual({
+      name: "facilities.adminFacilityUpdate",
+      args: [{ facilityId: "f-1", patchedAdminFacilityWrite: { phone: "0221234567" } }],
+    });
+  });
 });
 
 // Operations screens

@@ -258,24 +258,26 @@ Name | Type | Description  | Notes
 
 # **adminUsersList**
 ```swift
-    open class func adminUsersList(q: String? = nil, role: String? = nil, status: String? = nil, completion: @escaping (_ data: AdminUserList?, _ error: Error?) -> Void)
+    open class func adminUsersList(cursor: String? = nil, limit: Int? = nil, q: String? = nil, role: String? = nil, status: String? = nil, completion: @escaping (_ data: AdminUserList?, _ error: Error?) -> Void)
 ```
 
 Search user accounts
 
-Password hashes and session secret material are never returned. Capped at 250 rows. Both filters are optional.
+Password hashes and session secret material are never returned. Newest first, in cursor pages. Every filter is optional.
 
 ### Example
 ```swift
 // The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
 import ServaDirectoryAPI
 
+let cursor = "cursor_example" // String | Opaque token returned as `nextCursor` by the previous page. (optional)
+let limit = 987 // Int | Page size, maximum 200, default 50. (optional)
 let q = "q_example" // String | Free text matched against the account name and phone number. (optional)
 let role = "role_example" // String | Admin role id or code; keeps accounts holding that role actively. The value `any` keeps every operator, `none` every non-operator. (optional)
 let status = "status_example" // String | `active` keeps active accounts; any other value keeps blocked accounts. (optional)
 
 // Search user accounts
-AdminUsersAPI.adminUsersList(q: q, role: role, status: status) { (response, error) in
+AdminUsersAPI.adminUsersList(cursor: cursor, limit: limit, q: q, role: role, status: status) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -291,6 +293,8 @@ AdminUsersAPI.adminUsersList(q: q, role: role, status: status) { (response, erro
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **cursor** | **String** | Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] 
+ **limit** | **Int** | Page size, maximum 200, default 50. | [optional] 
  **q** | **String** | Free text matched against the account name and phone number. | [optional] 
  **role** | **String** | Admin role id or code; keeps accounts holding that role actively. The value &#x60;any&#x60; keeps every operator, &#x60;none&#x60; every non-operator. | [optional] 
  **status** | **String** | &#x60;active&#x60; keeps active accounts; any other value keeps blocked accounts. | [optional] 

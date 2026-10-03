@@ -10,10 +10,11 @@ import {
   FilterBar,
   LoadingState,
   PageHeader,
+  Pagination,
   Panel,
   formatDateTime,
 } from "../../../components/ui";
-import { useResource } from "../../../lib/client/use-resource";
+import { useCursorPage } from "../../../lib/client/use-cursor-page";
 
 type AuditRow = Readonly<{
   id: string;
@@ -42,7 +43,7 @@ export default function AuditPage() {
     resource: "",
     requestId: "",
   });
-  const audit = useResource<{ items: AuditRow[] }>("audit", filters);
+  const audit = useCursorPage<AuditRow>("audit", filters);
   const [expanded, setExpanded] = useState<string | null>(null);
 
   return (
@@ -123,6 +124,7 @@ export default function AuditPage() {
           </div>
         )
       ) : null}
+      {audit.pagination ? <Pagination {...audit.pagination} /> : null}
 
       {expanded && audit.data ? (
         <Panel title="تفاصيل التغيير">

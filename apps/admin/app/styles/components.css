@@ -1113,3 +1113,7 @@ a.alert-item:hover { background: var(--ad-surface-hover); }
 .quality[data-tone="danger"] { color: var(--ad-danger); }
 .quality-cell { display: grid; gap: 2px; }
 .quality-issues { font-size: var(--ad-text-xs); max-inline-size: 220px; }
+
+/* A wrap of checkboxes that spans the form grid: specialties, services */
+.choice-group { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--ad-space-2) var(--ad-space-5); margin: 0; padding: 0; border: 0; }
+.choice-group legend { inline-size: 100%; margin-block-end: var(--ad-space-2); font-size: var(--ad-text-sm); font-weight: 600; color: var(--ad-text-secondary); }

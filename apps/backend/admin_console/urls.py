@@ -1,6 +1,14 @@
 from django.urls import path
 
-from . import exports, views, views_content, views_duty, views_smart, views_tags
+from . import (
+    exports,
+    views,
+    views_content,
+    views_duty,
+    views_facilities,
+    views_smart,
+    views_tags,
+)
 
 urlpatterns = [
     path("admin/me/", views.AdminMeView.as_view()),
@@ -54,8 +62,8 @@ urlpatterns = [
     ),
     path("admin/applications/<uuid:application_id>/reject/", views.ApplicationRejectView.as_view()),
     path("admin/evidence/<uuid:evidence_id>/content/", views.EvidenceContentView.as_view()),
-    path("admin/facilities/", views.FacilityListView.as_view()),
-    path("admin/facilities/<uuid:facility_id>/", views.FacilityDetailView.as_view()),
+    path("admin/facilities/", views_facilities.FacilityListView.as_view()),
+    path("admin/facilities/<uuid:facility_id>/", views_facilities.FacilityDetailView.as_view()),
     path("admin/facilities/<uuid:facility_id>/suspend/", views.FacilitySuspendView.as_view()),
     path("admin/facilities/<uuid:facility_id>/reactivate/", views.FacilityReactivateView.as_view()),
     path("admin/facilities/<uuid:facility_id>/close/", views.FacilityCloseView.as_view()),

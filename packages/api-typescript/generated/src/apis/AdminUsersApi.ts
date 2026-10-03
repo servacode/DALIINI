@@ -55,6 +55,8 @@ export interface AdminUserUnblockRequest {
 }
 
 export interface AdminUsersListRequest {
+    cursor?: string;
+    limit?: number;
     q?: string;
     role?: string;
     status?: string;
@@ -298,11 +300,19 @@ export class AdminUsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Password hashes and session secret material are never returned. Capped at 250 rows. Both filters are optional.
+     * Password hashes and session secret material are never returned. Newest first, in cursor pages. Every filter is optional.
      * Search user accounts
      */
     async adminUsersListRaw(requestParameters: AdminUsersListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminUserList>> {
         const queryParameters: any = {};
+
+        if (requestParameters['cursor'] != null) {
+            queryParameters['cursor'] = requestParameters['cursor'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
+        }
 
         if (requestParameters['q'] != null) {
             queryParameters['q'] = requestParameters['q'];
@@ -340,7 +350,7 @@ export class AdminUsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Password hashes and session secret material are never returned. Capped at 250 rows. Both filters are optional.
+     * Password hashes and session secret material are never returned. Newest first, in cursor pages. Every filter is optional.
      * Search user accounts
      */
     async adminUsersList(requestParameters: AdminUsersListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminUserList> {

@@ -1018,6 +1018,30 @@ screens in the new identity until phases 3, 4 and 5 redesign them.
   HTTPS checks. Docker's own probe asks `127.0.0.1` over plain HTTP, which production refused
   with 400, so a healthy container would have been reported dead.
 
+## DECISION-062 — Operators list and correct facilities; console lists are paged
+
+**Date:** 2026-10-03 · **Phase 2.2 of the roadmap.**
+
+**Decision:**
+
+* **Operators add facilities.** `POST /admin/facilities/` lists a facility with no owner, ACTIVE
+  (published and counted as verified) or DRAFT. Until now a pharmacy could only enter the
+  directory through its owner's application, so one whose owner had not registered could not
+  be listed at all. It can be claimed by its owner later (phase 2.4).
+* **Operators correct facilities.** `PATCH /admin/facilities/{id}/` takes the same fields and the
+  same validation as an owner's edit, plus the location, province and category. Unlike an
+  owner's change it leaves the status alone: a correction by the directory is a verification,
+  not something to re-verify. Moving province clears the city, moving category clears the
+  specialties and services, unless new ones are sent. Audited with both snapshots and the
+  changed field names; the owners are notified. Both need the new `admin.facilities.edit`,
+  granted to every role that already holds `admin.facilities.manage`.
+* **Console lists are paged.** Reviews, facilities, users, reports and the audit trail return
+  the contract's cursor envelope, 50 rows by default and up to 200, in the order the filters
+  chose. They used to stop at 200 or 250 rows with no way to reach the rest.
+* **Timeline titles are neutral.** Shift changes read «أُضيفت وردية مناوبة», not «أضافت
+  الإدارة»: since DECISION-061 an owner's shifts are audited too, and the actor is named beside
+  the title. Removed shifts and closures stay on the facility's timeline.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

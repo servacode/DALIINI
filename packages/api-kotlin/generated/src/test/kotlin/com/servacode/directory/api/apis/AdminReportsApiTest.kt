@@ -60,9 +60,11 @@ class AdminReportsApiTest : ShouldSpec() {
         // to test adminReportsList
         should("test adminReportsList") {
             // uncomment below to test adminReportsList
+            //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
             //val facility : kotlin.String = facility_example // kotlin.String | Facility id.
+            //val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 200, default 50.
             //val status : kotlin.String = status_example // kotlin.String | OPEN, RESOLVED or DISMISSED.
-            //val result : AdminFacilityReportList = apiInstance.adminReportsList(facility, status)
+            //val result : AdminFacilityReportList = apiInstance.adminReportsList(cursor, facility, limit, status)
             //result shouldBe ("TODO")
         }
 

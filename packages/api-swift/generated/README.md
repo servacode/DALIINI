@@ -76,10 +76,12 @@ Class | Method | HTTP request | Description
 *AdminExportsAPI* | [**adminExportReportsCsv**](docs/AdminExportsAPI.md#adminexportreportscsv) | **GET** /api/v1/admin/exports/reports.csv | Export problem reports as CSV
 *AdminFacilitiesAPI* | [**adminFacilitiesList**](docs/AdminFacilitiesAPI.md#adminfacilitieslist) | **GET** /api/v1/admin/facilities/ | List facilities for operations
 *AdminFacilitiesAPI* | [**adminFacilityClose**](docs/AdminFacilitiesAPI.md#adminfacilityclose) | **POST** /api/v1/admin/facilities/{facility_id}/close/ | Close a facility
+*AdminFacilitiesAPI* | [**adminFacilityCreate**](docs/AdminFacilitiesAPI.md#adminfacilitycreate) | **POST** /api/v1/admin/facilities/ | Add a facility to the directory
 *AdminFacilitiesAPI* | [**adminFacilityReactivate**](docs/AdminFacilitiesAPI.md#adminfacilityreactivate) | **POST** /api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility
 *AdminFacilitiesAPI* | [**adminFacilityRetrieve**](docs/AdminFacilitiesAPI.md#adminfacilityretrieve) | **GET** /api/v1/admin/facilities/{facility_id}/ | Retrieve one facility
 *AdminFacilitiesAPI* | [**adminFacilitySuspend**](docs/AdminFacilitiesAPI.md#adminfacilitysuspend) | **POST** /api/v1/admin/facilities/{facility_id}/suspend/ | Suspend a facility
 *AdminFacilitiesAPI* | [**adminFacilityTimelineRetrieve**](docs/AdminFacilitiesAPI.md#adminfacilitytimelineretrieve) | **GET** /api/v1/admin/facilities/{facility_id}/timeline/ | Everything that happened to a facility, newest first
+*AdminFacilitiesAPI* | [**adminFacilityUpdate**](docs/AdminFacilitiesAPI.md#adminfacilityupdate) | **PATCH** /api/v1/admin/facilities/{facility_id}/ | Correct a facility&#39;s details
 *AdminNotificationsAPI* | [**adminNotificationBroadcast**](docs/AdminNotificationsAPI.md#adminnotificationbroadcast) | **POST** /api/v1/admin/notifications/broadcast/ | Send a notification to many users
 *AdminNotificationsAPI* | [**adminNotificationBroadcastsList**](docs/AdminNotificationsAPI.md#adminnotificationbroadcastslist) | **GET** /api/v1/admin/notifications/broadcasts/ | Broadcast history, newest first
 *AdminProvincesAPI* | [**adminProvinceCitiesList**](docs/AdminProvincesAPI.md#adminprovincecitieslist) | **GET** /api/v1/admin/provinces/{province_id}/cities/ | List every city of a province, active or not
@@ -260,6 +262,9 @@ Class | Method | HTTP request | Description
  - [AdminEventCount](docs/AdminEventCount.md)
  - [AdminEvidenceRef](docs/AdminEvidenceRef.md)
  - [AdminFacility](docs/AdminFacility.md)
+ - [AdminFacilityCreate](docs/AdminFacilityCreate.md)
+ - [AdminFacilityCreateStatusEnum](docs/AdminFacilityCreateStatusEnum.md)
+ - [AdminFacilityDetail](docs/AdminFacilityDetail.md)
  - [AdminFacilityList](docs/AdminFacilityList.md)
  - [AdminFacilityQuality](docs/AdminFacilityQuality.md)
  - [AdminFacilityReport](docs/AdminFacilityReport.md)
@@ -426,6 +431,7 @@ Class | Method | HTTP request | Description
  - [OwnerVerificationRequirement](docs/OwnerVerificationRequirement.md)
  - [PasswordChange](docs/PasswordChange.md)
  - [PatchedAdminDutyShiftUpdateRequest](docs/PatchedAdminDutyShiftUpdateRequest.md)
+ - [PatchedAdminFacilityWrite](docs/PatchedAdminFacilityWrite.md)
  - [PatchedDutyShiftInput](docs/PatchedDutyShiftInput.md)
  - [PatchedFacilityPatch](docs/PatchedFacilityPatch.md)
  - [PatchedProfilePatch](docs/PatchedProfilePatch.md)

@@ -22,11 +22,23 @@ import {
 } from './AdminFacilityReport';
 
 /**
- * 
+ * The two fields every cursor page adds beside its `items`.
  * @export
  * @interface AdminFacilityReportList
  */
 export interface AdminFacilityReportList {
+    /**
+     * Opaque token for the next page, or null on the last page. Send it back unchanged as the `cursor` query parameter; never parse it.
+     * @type {string}
+     * @memberof AdminFacilityReportList
+     */
+    nextCursor: string | null;
+    /**
+     * True when `nextCursor` is set.
+     * @type {boolean}
+     * @memberof AdminFacilityReportList
+     */
+    hasMore: boolean;
     /**
      * 
      * @type {Array<AdminFacilityReport>}
@@ -39,6 +51,8 @@ export interface AdminFacilityReportList {
  * Check if a given object implements the AdminFacilityReportList interface.
  */
 export function instanceOfAdminFacilityReportList(value: object): value is AdminFacilityReportList {
+    if (!('nextCursor' in value) || value['nextCursor'] === undefined) return false;
+    if (!('hasMore' in value) || value['hasMore'] === undefined) return false;
     if (!('items' in value) || value['items'] === undefined) return false;
     return true;
 }
@@ -53,6 +67,8 @@ export function AdminFacilityReportListFromJSONTyped(json: any, ignoreDiscrimina
     }
     return {
         
+        'nextCursor': json['nextCursor'],
+        'hasMore': json['hasMore'],
         'items': ((json['items'] as Array<any>).map(AdminFacilityReportFromJSON)),
     };
 }
@@ -68,6 +84,8 @@ export function AdminFacilityReportListToJSONTyped(value?: AdminFacilityReportLi
 
     return {
         
+        'nextCursor': value['nextCursor'],
+        'hasMore': value['hasMore'],
         'items': ((value['items'] as Array<any>).map(AdminFacilityReportToJSON)),
     };
 }

@@ -122,7 +122,7 @@ def create_facility_draft(
     return facility
 
 
-def _resolve_city(*, facility: Facility, city_id: UUID | None) -> City | None:
+def resolve_city(*, facility: Facility, city_id: UUID | None) -> City | None:
     if city_id is None:
         return None
     try:
@@ -131,7 +131,7 @@ def _resolve_city(*, facility: Facility, city_id: UUID | None) -> City | None:
         raise ValidationError({"cityId": "City is not valid for the facility province."}) from exc
 
 
-def _resolve_neighborhood(
+def resolve_neighborhood(
     *, city: City | None, neighborhood_id: UUID | None
 ) -> Neighborhood | None:
     if neighborhood_id is None:
@@ -146,7 +146,7 @@ def _resolve_neighborhood(
         ) from exc
 
 
-def _replace_specialties(facility: Facility, specialty_ids: list[int] | None) -> None:
+def replace_specialties(facility: Facility, specialty_ids: list[int] | None) -> None:
     if specialty_ids is None:
         return
     specialties = list(Specialty.objects.filter(pk__in=set(specialty_ids), active=True))
@@ -166,7 +166,7 @@ def _replace_specialties(facility: Facility, specialty_ids: list[int] | None) ->
     )
 
 
-def _replace_service_tags(facility: Facility, tag_ids: list[int] | None) -> None:
+def replace_service_tags(facility: Facility, tag_ids: list[int] | None) -> None:
     if tag_ids is None:
         return
     tags = list(
@@ -205,11 +205,11 @@ def update_facility_core(
     ensure_editable_by_owner(locked)
     before = _snapshot(locked)
     city_id = data.get("cityId", locked.city_id)
-    city = _resolve_city(facility=locked, city_id=city_id)
+    city = resolve_city(facility=locked, city_id=city_id)
     neighborhood_id = data.get("neighborhoodId", locked.neighborhood_id)
     if "cityId" in data and city is None and "neighborhoodId" not in data:
         neighborhood_id = None
-    neighborhood = _resolve_neighborhood(
+    neighborhood = resolve_neighborhood(
         city=city,
         neighborhood_id=neighborhood_id,
     )
@@ -236,8 +236,8 @@ def update_facility_core(
         locked.status = Facility.Status.REVERIFICATION_REQUIRED
     locked.full_clean(exclude=["location"])
     locked.save()
-    _replace_specialties(locked, data.get("specialtyIds"))
-    _replace_service_tags(locked, data.get("serviceTagIds"))
+    replace_specialties(locked, data.get("specialtyIds"))
+    replace_service_tags(locked, data.get("serviceTagIds"))
     record_audit(
         actor=actor,
         action="facility.owner_core.updated",

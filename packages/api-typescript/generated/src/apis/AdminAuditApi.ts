@@ -28,7 +28,9 @@ import {
 export interface AdminAuditListRequest {
     action?: string;
     actor?: string;
+    cursor?: string;
     from?: string;
+    limit?: number;
     requestId?: string;
     resource?: string;
     to?: string;
@@ -40,7 +42,7 @@ export interface AdminAuditListRequest {
 export class AdminAuditApi extends runtime.BaseAPI {
 
     /**
-     * Capped at 250 rows. Snapshots and metadata are stored redacted. Every filter is optional and combines with the rest.
+     * Newest first, in cursor pages. Snapshots and metadata are stored redacted. Every filter is optional and combines with the rest.
      * Search the audit trail
      */
     async adminAuditListRaw(requestParameters: AdminAuditListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminAuditList>> {
@@ -54,8 +56,16 @@ export class AdminAuditApi extends runtime.BaseAPI {
             queryParameters['actor'] = requestParameters['actor'];
         }
 
+        if (requestParameters['cursor'] != null) {
+            queryParameters['cursor'] = requestParameters['cursor'];
+        }
+
         if (requestParameters['from'] != null) {
             queryParameters['from'] = requestParameters['from'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
         }
 
         if (requestParameters['requestId'] != null) {
@@ -94,7 +104,7 @@ export class AdminAuditApi extends runtime.BaseAPI {
     }
 
     /**
-     * Capped at 250 rows. Snapshots and metadata are stored redacted. Every filter is optional and combines with the rest.
+     * Newest first, in cursor pages. Snapshots and metadata are stored redacted. Every filter is optional and combines with the rest.
      * Search the audit trail
      */
     async adminAuditList(requestParameters: AdminAuditListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminAuditList> {

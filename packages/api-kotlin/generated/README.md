@@ -95,10 +95,12 @@ All URIs are relative to *http://localhost*
 | *AdminExportsApi* | [**adminExportReportsCsv**](docs/AdminExportsApi.md#adminexportreportscsv) | **GET** api/v1/admin/exports/reports.csv | Export problem reports as CSV |
 | *AdminFacilitiesApi* | [**adminFacilitiesList**](docs/AdminFacilitiesApi.md#adminfacilitieslist) | **GET** api/v1/admin/facilities/ | List facilities for operations |
 | *AdminFacilitiesApi* | [**adminFacilityClose**](docs/AdminFacilitiesApi.md#adminfacilityclose) | **POST** api/v1/admin/facilities/{facility_id}/close/ | Close a facility |
+| *AdminFacilitiesApi* | [**adminFacilityCreate**](docs/AdminFacilitiesApi.md#adminfacilitycreate) | **POST** api/v1/admin/facilities/ | Add a facility to the directory |
 | *AdminFacilitiesApi* | [**adminFacilityReactivate**](docs/AdminFacilitiesApi.md#adminfacilityreactivate) | **POST** api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility |
 | *AdminFacilitiesApi* | [**adminFacilityRetrieve**](docs/AdminFacilitiesApi.md#adminfacilityretrieve) | **GET** api/v1/admin/facilities/{facility_id}/ | Retrieve one facility |
 | *AdminFacilitiesApi* | [**adminFacilitySuspend**](docs/AdminFacilitiesApi.md#adminfacilitysuspend) | **POST** api/v1/admin/facilities/{facility_id}/suspend/ | Suspend a facility |
 | *AdminFacilitiesApi* | [**adminFacilityTimelineRetrieve**](docs/AdminFacilitiesApi.md#adminfacilitytimelineretrieve) | **GET** api/v1/admin/facilities/{facility_id}/timeline/ | Everything that happened to a facility, newest first |
+| *AdminFacilitiesApi* | [**adminFacilityUpdate**](docs/AdminFacilitiesApi.md#adminfacilityupdate) | **PATCH** api/v1/admin/facilities/{facility_id}/ | Correct a facility's details |
 | *AdminNotificationsApi* | [**adminNotificationBroadcast**](docs/AdminNotificationsApi.md#adminnotificationbroadcast) | **POST** api/v1/admin/notifications/broadcast/ | Send a notification to many users |
 | *AdminNotificationsApi* | [**adminNotificationBroadcastsList**](docs/AdminNotificationsApi.md#adminnotificationbroadcastslist) | **GET** api/v1/admin/notifications/broadcasts/ | Broadcast history, newest first |
 | *AdminProvincesApi* | [**adminProvinceCitiesList**](docs/AdminProvincesApi.md#adminprovincecitieslist) | **GET** api/v1/admin/provinces/{province_id}/cities/ | List every city of a province, active or not |
@@ -280,6 +282,9 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminEventCount](docs/AdminEventCount.md)
  - [com.servacode.directory.api.models.AdminEvidenceRef](docs/AdminEvidenceRef.md)
  - [com.servacode.directory.api.models.AdminFacility](docs/AdminFacility.md)
+ - [com.servacode.directory.api.models.AdminFacilityCreate](docs/AdminFacilityCreate.md)
+ - [com.servacode.directory.api.models.AdminFacilityCreateStatusEnum](docs/AdminFacilityCreateStatusEnum.md)
+ - [com.servacode.directory.api.models.AdminFacilityDetail](docs/AdminFacilityDetail.md)
  - [com.servacode.directory.api.models.AdminFacilityList](docs/AdminFacilityList.md)
  - [com.servacode.directory.api.models.AdminFacilityQuality](docs/AdminFacilityQuality.md)
  - [com.servacode.directory.api.models.AdminFacilityReport](docs/AdminFacilityReport.md)
@@ -446,6 +451,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.OwnerVerificationRequirement](docs/OwnerVerificationRequirement.md)
  - [com.servacode.directory.api.models.PasswordChange](docs/PasswordChange.md)
  - [com.servacode.directory.api.models.PatchedAdminDutyShiftUpdateRequest](docs/PatchedAdminDutyShiftUpdateRequest.md)
+ - [com.servacode.directory.api.models.PatchedAdminFacilityWrite](docs/PatchedAdminFacilityWrite.md)
  - [com.servacode.directory.api.models.PatchedDutyShiftInput](docs/PatchedDutyShiftInput.md)
  - [com.servacode.directory.api.models.PatchedFacilityPatch](docs/PatchedFacilityPatch.md)
  - [com.servacode.directory.api.models.PatchedProfilePatch](docs/PatchedProfilePatch.md)

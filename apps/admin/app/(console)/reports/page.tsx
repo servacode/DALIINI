@@ -18,9 +18,10 @@ import {
   formatDateTime,
   termsFor,
   labelsFor,
+  Pagination,
 } from "../../../components/ui";
 import { useMutation } from "../../../lib/client/use-mutation";
-import { useResource } from "../../../lib/client/use-resource";
+import { useCursorPage } from "../../../lib/client/use-cursor-page";
 import { useUrlFilters } from "../../../lib/client/use-url-filters";
 
 type Report = Readonly<{
@@ -51,7 +52,7 @@ const STATUS = termsFor("reportStatus");
  */
 export default function ReportsPage() {
   const [filters, setFilters] = useUrlFilters({ status: "OPEN", facility: "" });
-  const reports = useResource<{ items: Report[] }>("reports", filters);
+  const reports = useCursorPage<Report>("reports", filters);
   const mutation = useMutation();
   const canManage = useCan("admin.reports.manage");
 
@@ -276,6 +277,7 @@ export default function ReportsPage() {
           }
         />
       ) : null}
+      {reports.pagination ? <Pagination {...reports.pagination} /> : null}
 
       <ConfirmDialog
         open={acting !== null}

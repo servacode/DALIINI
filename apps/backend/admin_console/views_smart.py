@@ -284,9 +284,15 @@ AUDIT_TITLES_AR = {
     "facility.evidence.created": "رُفع إثبات تحقق",
     "facility.evidence.deleted": "حُذف إثبات تحقق",
     "verification_evidence.viewed": "اطّلع مشرف على إثبات تحقق",
-    "duty_shift.created": "أضافت الإدارة وردية مناوبة",
-    "duty_shift.updated": "عدّلت الإدارة وردية مناوبة",
-    "duty_shift.deleted": "ألغت الإدارة وردية مناوبة",
+    # Neutral on purpose: an owner's shift and an operator's are audited alike, and the
+    # timeline names who acted beside the title.
+    "duty_shift.created": "أُضيفت وردية مناوبة",
+    "duty_shift.updated": "عُدّلت وردية مناوبة",
+    "duty_shift.deleted": "أُلغيت وردية مناوبة",
+    "facility.closure.created": "أُعلن إغلاق مؤقت",
+    "facility.closure.cancelled": "أُلغي إغلاق مؤقت",
+    "facility.admin.created": "أضافت إدارة الدليل المنشأة",
+    "facility.admin.updated": "عدّلت إدارة الدليل بيانات المنشأة",
 }
 # Decisions the timeline already shows from the application and report rows themselves;
 # their audit rows only lend the request id.
@@ -328,7 +334,11 @@ def facility_timeline(facility: Facility) -> list[dict[str, Any]]:
     related_ids += [str(pk) for pk in facility.evidence.values_list("pk", flat=True)]
     related_ids += [str(pk) for pk in facility.duty_shifts.values_list("pk", flat=True)]
     audits = list(
-        AuditEvent.objects.filter(target_id__in=related_ids)
+        # A shift or closure that was since removed is no longer among the related rows; its
+        # audit entry still names the facility, and its removal belongs on this timeline.
+        AuditEvent.objects.filter(
+            Q(target_id__in=related_ids) | Q(metadata__facilityId=str(facility.pk))
+        )
         .select_related("actor")
         .order_by("-created_at")[:TIMELINE_LIMIT]
     )

@@ -22,13 +22,23 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * 
+ * The two fields every cursor page adds beside its `items`.
  *
+ * @param nextCursor Opaque token for the next page, or null on the last page. Send it back unchanged as the `cursor` query parameter; never parse it.
+ * @param hasMore True when `nextCursor` is set.
  * @param items 
  */
 @Serializable
 
 data class AdminApplicationList (
+
+    /* Opaque token for the next page, or null on the last page. Send it back unchanged as the `cursor` query parameter; never parse it. */
+    @SerialName(value = "nextCursor")
+    val nextCursor: kotlin.String?,
+
+    /* True when `nextCursor` is set. */
+    @SerialName(value = "hasMore")
+    val hasMore: kotlin.Boolean,
 
     @SerialName(value = "items")
     val items: kotlin.collections.List<AdminApplication>

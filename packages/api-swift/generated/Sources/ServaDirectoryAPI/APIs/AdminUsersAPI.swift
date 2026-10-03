@@ -220,35 +220,41 @@ open class AdminUsersAPI {
     /**
      Search user accounts
      
+     - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     - parameter limit: (query) Page size, maximum 200, default 50. (optional)
      - parameter q: (query) Free text matched against the account name and phone number. (optional)
      - parameter role: (query) Admin role id or code; keeps accounts holding that role actively. The value &#x60;any&#x60; keeps every operator, &#x60;none&#x60; every non-operator. (optional)
      - parameter status: (query) &#x60;active&#x60; keeps active accounts; any other value keeps blocked accounts. (optional)
      - returns: AdminUserList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminUsersList(q: String? = nil, role: String? = nil, status: String? = nil) async throws -> AdminUserList {
-        return try await adminUsersListWithRequestBuilder(q: q, role: role, status: status).execute().body
+    open class func adminUsersList(cursor: String? = nil, limit: Int? = nil, q: String? = nil, role: String? = nil, status: String? = nil) async throws -> AdminUserList {
+        return try await adminUsersListWithRequestBuilder(cursor: cursor, limit: limit, q: q, role: role, status: status).execute().body
     }
 
     /**
      Search user accounts
      - GET /api/v1/admin/users/
-     - Password hashes and session secret material are never returned. Capped at 250 rows. Both filters are optional.
+     - Password hashes and session secret material are never returned. Newest first, in cursor pages. Every filter is optional.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken
+     - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     - parameter limit: (query) Page size, maximum 200, default 50. (optional)
      - parameter q: (query) Free text matched against the account name and phone number. (optional)
      - parameter role: (query) Admin role id or code; keeps accounts holding that role actively. The value &#x60;any&#x60; keeps every operator, &#x60;none&#x60; every non-operator. (optional)
      - parameter status: (query) &#x60;active&#x60; keeps active accounts; any other value keeps blocked accounts. (optional)
      - returns: RequestBuilder<AdminUserList> 
      */
-    open class func adminUsersListWithRequestBuilder(q: String? = nil, role: String? = nil, status: String? = nil) -> RequestBuilder<AdminUserList> {
+    open class func adminUsersListWithRequestBuilder(cursor: String? = nil, limit: Int? = nil, q: String? = nil, role: String? = nil, status: String? = nil) -> RequestBuilder<AdminUserList> {
         let localVariablePath = "/api/v1/admin/users/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
 
         var localVariableUrlComponents = URLComponents(string: localVariableURLString)
         localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "cursor": (wrappedValue: cursor?.encodeToJSON(), isExplode: true),
+            "limit": (wrappedValue: limit?.encodeToJSON(), isExplode: true),
             "q": (wrappedValue: q?.encodeToJSON(), isExplode: true),
             "role": (wrappedValue: role?.encodeToJSON(), isExplode: true),
             "status": (wrappedValue: status?.encodeToJSON(), isExplode: true),

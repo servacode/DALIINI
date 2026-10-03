@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 
+import { useCan } from "../../../components/admin-shell";
+
 import {
   type Column,
   DataTable,
@@ -12,9 +14,10 @@ import {
   StatusBadge,
   formatDateTime,
   termsFor,
+  Pagination,
 } from "../../../components/ui";
 import { useLookups } from "../../../lib/client/use-lookups";
-import { useResource } from "../../../lib/client/use-resource";
+import { useCursorPage } from "../../../lib/client/use-cursor-page";
 import { useUrlFilters } from "../../../lib/client/use-url-filters";
 
 type Facility = Readonly<{
@@ -68,7 +71,8 @@ export default function FacilitiesPage() {
     ordering: "",
   });
   const lookups = useLookups();
-  const facilities = useResource<{ items: Facility[] }>("facilities", filters);
+  const facilities = useCursorPage<Facility>("facilities", filters);
+  const canEdit = useCan("admin.facilities.edit");
 
   const columns: readonly Column<Facility>[] = [
     {
@@ -137,7 +141,17 @@ export default function FacilitiesPage() {
 
   return (
     <div className="stack">
-      <PageHeader title="المنشآت" description="متابعة الحالة التشغيلية للمنشآت وإدارتها." />
+      <PageHeader
+        title="المنشآت"
+        description="متابعة الحالة التشغيلية للمنشآت وإدارتها."
+        actions={
+          canEdit ? (
+            <Link className="button-primary" href="/facilities/new" data-testid="facility-new">
+              إضافة منشأة
+            </Link>
+          ) : null
+        }
+      />
       <FilterBar
         fields={[
           { name: "q", label: "بحث", placeholder: "اسم المنشأة" },
@@ -185,6 +199,7 @@ export default function FacilitiesPage() {
           rowKey={(row) => row.id}
         />
       ) : null}
+      {facilities.pagination ? <Pagination {...facilities.pagination} /> : null}
     </div>
   );
 }
