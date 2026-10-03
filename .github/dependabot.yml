@@ -1,9 +1,14 @@
 # Weekly dependency updates. Minor and patch bumps are grouped into one PR per
 # ecosystem so review stays manageable; majors arrive as individual PRs.
+#
+# Every update targets main explicitly. Without it Dependabot targets the repository's
+# default branch, which was still an old working branch, so its PRs landed where nothing
+# would ever be released from.
 version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
+    target-branch: main
     schedule:
       interval: weekly
     groups:
@@ -13,6 +18,7 @@ updates:
   # Root pnpm workspace (apps/admin, apps/web, packages/*) — one pnpm-lock.yaml.
   - package-ecosystem: npm
     directory: /
+    target-branch: main
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
@@ -23,6 +29,7 @@ updates:
   # apps/backend is managed by uv (pyproject.toml + uv.lock).
   - package-ecosystem: uv
     directory: /apps/backend
+    target-branch: main
     schedule:
       interval: weekly
     groups:
@@ -31,6 +38,7 @@ updates:
 
   - package-ecosystem: gradle
     directory: /apps/android
+    target-branch: main
     schedule:
       interval: weekly
     groups:
@@ -42,6 +50,7 @@ updates:
       - /apps/backend
       - /apps/web
       - /apps/admin
+    target-branch: main
     schedule:
       interval: weekly
     groups:
