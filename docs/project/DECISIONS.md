@@ -1820,6 +1820,51 @@ at all, not merely that one layer.
   `https://maps.<ROOT>/routing/`. A test holds the adapter to `POST /routing/route`. No screen
   calls a geocoder: place names come from the API. The unused geocoding setting stays as it is.
 
+## DECISION-083 — The public API is load-tested at launch scale, and what it found is fixed
+
+**Date:** 2026-10-03 · **Phase 6.4 of the roadmap.**
+
+**Why:** every list had been measured over the thirty facilities a development database holds.
+A query that is fast over thirty can be slow over five thousand, and a server that answers one
+visitor can fail forty.
+
+**Decision:**
+
+* **Load data, never real.** `manage.py seed_load_directory --facilities N` writes made-up
+  facilities across the fourteen provinces, with opening hours and a duty roster.
+  * It refuses any database that holds a facility it did not make.
+  * In production it also needs `--disposable`.
+* **Visitors, per screen.** `infrastructure/load/public.js` (k6) walks Home, a list and its
+  next page, a facility, the map, a search and the duty roster, with pauses between them. Each
+  screen has its own p95 limit, so a slow map cannot hide behind fast lists:
+  * Home 800 ms, list 600, facility 500, map 1000, search 800, duty 600;
+  * across all screens, p99 under 2 s and fewer than 1% failed requests.
+* **In CI** the `production-stack` job runs it after the smoke: 5,000 facilities and 40
+  visitors for a minute, through Caddy and TLS. The per-address limits are raised for that
+  throwaway stack only, since every visitor comes from one address.
+* **What it found, and the fixes:**
+  * **The map asked the availability engine per marker:** two queries each, a thousand for a
+    full viewport, 1.1 s. Search did the same, four queries per row.
+    * Both now carry the open and duty flags in their one query, as the list already did.
+    * The map builds its markers from five columns and the flags (`state_from_flags`) instead
+      of whole facilities with their joins, hours and ratings: 172 ms became 32 ms, in one
+      query.
+    * Tests hold all three endpoints to a query count that does not grow with the page.
+  * **Connections ran out.** Under ASGI each request runs in its own thread, and
+    `CONN_MAX_AGE=60` kept each thread's connection open after its request. At 120 visitors
+    PostgreSQL refused new clients and half the requests failed.
+    * Django's own pool (psycopg_pool) now holds the connections per process, with
+      `CONN_MAX_AGE` 0.
+    * `DB_POOL_MAX_SIZE` (8) bounds each process, so the two API workers hold at most 16 of
+      PostgreSQL's 100.
+    * Celery 5.6 closes the pool in each forked child.
+    * Measured again at 120 visitors (34 requests a second): nothing failed and PostgreSQL held
+      16 connections. The two workers' CPU is now the limit, and `WEB_CONCURRENCY` raises it on
+      a larger server.
+* **Not changed.** Server-side parameter binding was measured and did not help. Steady-state
+  query planning was a few milliseconds; the 40 ms plans seen at first were a cold
+  connection's catalogue.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

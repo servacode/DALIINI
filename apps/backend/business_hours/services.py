@@ -154,6 +154,19 @@ def get_next_open(facility: Facility, now: datetime | None = None) -> datetime |
     return best.astimezone(UTC) if best else None
 
 
+def state_from_flags(closed: bool, duty: bool, scheduled: bool) -> AvailabilityState:
+    """The state alone, from the three flags `with_availability_flags` annotates, in the same
+    order of precedence as `get_facility_availability`. For callers that do not need the next
+    opening time, such as map markers, which then need no hours at all."""
+    if closed:
+        return AvailabilityState.TEMP_CLOSED
+    if duty:
+        return AvailabilityState.DUTY
+    if scheduled:
+        return AvailabilityState.OPEN
+    return AvailabilityState.CLOSED
+
+
 def availability_from_flags(facility: Facility, now: datetime | None = None) -> AvailabilityResult:
     """The same answer as `get_facility_availability`, from flags a list query already computed.
 

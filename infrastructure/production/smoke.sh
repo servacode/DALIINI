@@ -5,6 +5,7 @@
 #
 #   infrastructure/production/smoke.sh                 # build every image and boot
 #   SMOKE_OVERRIDE=extra.yml infrastructure/production/smoke.sh
+#   SMOKE_LOAD=1 infrastructure/production/smoke.sh     # then the load test (DECISION-083)
 #
 # The domain is daliini.localhost: Caddy gives *.localhost names certificates from its own local
 # authority, so the whole TLS path runs with no real domain and no ACME.
@@ -49,6 +50,16 @@ services:
     environment:
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
 EOF
+# The load test comes from one address, which the per-address limits would throttle within
+# seconds; in this throwaway stack, and only here, they are raised out of its way.
+if [ "${SMOKE_LOAD:-}" = 1 ]; then
+  cat >> "$work/smoke.override.yml" <<'EOF'
+  api:
+    environment:
+      THROTTLE_ANON_DEFAULT: 1000000/minute
+      THROTTLE_SEARCH: 1000000/minute
+EOF
+fi
 
 compose() {
   docker compose -p "$project" -f "$here/compose.yml" -f "$work/smoke.override.yml" \
@@ -156,3 +167,12 @@ if [ "$failures" -ne 0 ]; then
   exit 1
 fi
 echo "production stack smoke PASS"
+
+# The load test (DECISION-083): five thousand made-up facilities, then visitors through Caddy.
+if [ "${SMOKE_LOAD:-}" = 1 ]; then
+  compose exec -T api uv run python manage.py seed_load_directory --facilities 5000 --disposable
+  docker run --rm --network host -v "$here/../load:/load:ro" grafana/k6:1.3.0 run --quiet \
+    -e API="https://api.$domain" -e HOSTS="api.$domain=127.0.0.1" -e INSECURE=1 \
+    -e VUS="${LOAD_VUS:-40}" -e HOLD="${LOAD_HOLD:-60s}" /load/public.js
+  echo "load test PASS"
+fi

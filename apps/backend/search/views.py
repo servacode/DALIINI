@@ -1,7 +1,7 @@
 import re
 from collections.abc import Mapping
 from datetime import UTC
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 from uuid import UUID
 
 from django.db.models import QuerySet
@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from business_hours.query import filter_for_flags, with_availability_flags
-from business_hours.services import get_facility_availability
+from business_hours.services import state_from_flags
 from content_services.selectors import active_ads
 from content_services.serializers import public_ad
 from core.openapi import NOT_FOUND_404, VALIDATION_400
@@ -110,7 +110,10 @@ def _parse_float(value: str | None, name: str) -> float | None:
 
 
 def _base_from_params(
-    params: Mapping[str, str], user: "User | AnonymousUser | None" = None
+    params: Mapping[str, str],
+    user: "User | AnonymousUser | None" = None,
+    *,
+    ratings: bool = True,
 ) -> QuerySet[Facility]:
     province_id = params.get("provinceId")
     category_id = params.get("categoryId")
@@ -154,7 +157,7 @@ def _base_from_params(
     if longitude is not None and not (-180 <= longitude <= 180):
         raise ValidationError({"longitude": "Out of range."})
     queryset = with_distance(queryset, latitude, longitude)
-    return with_rating_summary(queryset)
+    return with_rating_summary(queryset) if ratings else queryset
 
 
 def _orders_by_distance(params: Mapping[str, str]) -> bool:
@@ -274,25 +277,42 @@ class PublicMapFacilitiesView(APIView):
     def get(self, request: Request) -> Response:
         if not request.query_params.get("bbox"):
             raise ValidationError({"bbox": "Required for map queries."})
-        base = _base_from_params(request.query_params, request.user)
+        base = _base_from_params(request.query_params, request.user, ratings=False)
         queryset = _with_flags(request.query_params, base)
-        markers = []
-        for facility in queryset[:500]:
-            if not facility.location:
-                continue
-            markers.append(
-                {
-                    "id": str(facility.id),
-                    "nameAr": facility.name_ar,
-                    "latitude": facility.location.y,
-                    "longitude": facility.location.x,
-                    "availability": get_facility_availability(facility).state.value,
-                    # The pin wears its section's mark: a map of identical pins asks
-                    # the reader to tap each one, and asks someone who does not read
-                    # to give up.
-                    "categoryIconKey": facility.category.icon_key or None,
-                }
-            )
+        # Five columns and three flags per marker rather than whole facilities: building five
+        # hundred rows with their joins, hours and ratings cost three times the query itself,
+        # and asking the engine per marker had cost a thousand queries (DECISION-083).
+        # Any: the flags are annotations, which the type checker does not see as fields.
+        flagged = cast("QuerySet[Any]", queryset.exclude(location__isnull=True))
+        rows = (
+            flagged.prefetch_related(None)
+            .values(
+                "id",
+                "name_ar",
+                "location",
+                "category__icon_key",
+                "_availability_closed",
+                "_availability_duty",
+                "_availability_scheduled",
+            )[:500]
+        )
+        markers = [
+            {
+                "id": str(row["id"]),
+                "nameAr": row["name_ar"],
+                "latitude": row["location"].y,
+                "longitude": row["location"].x,
+                "availability": state_from_flags(
+                    row["_availability_closed"],
+                    row["_availability_duty"],
+                    row["_availability_scheduled"],
+                ).value,
+                # The pin wears its section's mark: a map of identical pins asks the reader
+                # to tap each one, and asks someone who does not read to give up.
+                "categoryIconKey": row["category__icon_key"] or None,
+            }
+            for row in rows
+        ]
         return Response({"items": markers})
 
 
@@ -315,7 +335,9 @@ class PublicSearchView(APIView):
         if len(term) < 2:
             raise ValidationError({"q": "At least 2 characters are required."})
         queryset = _base_from_params(request.query_params, request.user)
-        queryset = apply_text_search(queryset, term)
+        # Annotated like the list, so a result row's open and duty flags come with it rather
+        # than from four queries of its own (DECISION-083).
+        queryset = with_availability_flags(apply_text_search(queryset, term))
         paginator = FacilityCursorPagination()
         # CursorPage always has a page size, so a page is never None.
         page = cast("list[Facility]", paginator.paginate_queryset(queryset, request))
