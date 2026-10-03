@@ -1,0 +1,4 @@
+// A release build. The placeholder is refused by the app, which then says it is not connected
+// to a server: a release is pointed at the real API by the build that makes it, never by this file.
+API_BASE_URL = <API_BASE_URL>
+ALLOW_CLEARTEXT = NO

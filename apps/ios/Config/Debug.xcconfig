@@ -1,0 +1,4 @@
+// A development build: the backend on this machine (`pnpm stack:up`), which the simulator
+// reaches through the Mac's own loopback. `$()` keeps xcconfig from reading `//` as a comment.
+API_BASE_URL = http:/$()/localhost:8000/
+ALLOW_CLEARTEXT = YES

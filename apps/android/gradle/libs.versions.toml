@@ -22,6 +22,8 @@ atomicfu = "0.26.1"
 # The shared transport (DECISION-090): the release that needs no newer coroutines or stdlib.
 ktor = "3.4.3"
 serialization = "1.9.0"
+# The iPhone app's screens (DECISION-093). Its Android side is the same Compose UI as composeUi.
+composeMultiplatform = "1.12.1"
 room = "2.8.5"
 # The iPhone's driver for its system SQLite (DECISION-092). 2.7 is the first that links against
 # iOS's own library, which Apple builds without extension loading; Android keeps Room's own.
@@ -83,6 +85,9 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+compose-multiplatform-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
+compose-multiplatform-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
+compose-multiplatform-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 retrofit-core = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-converter-kotlinx-serialization = { module = "com.squareup.retrofit2:converter-kotlinx-serialization", version.ref = "retrofit" }
 retrofit-converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "retrofit" }

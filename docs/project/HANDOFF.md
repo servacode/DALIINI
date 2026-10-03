@@ -56,11 +56,13 @@ through #49 to #52. Phase 7's code is done, and phase 8 has begun:
 | 8.6 | a second API client, generated for Kotlin Multiplatform (Ktor), compiled and tested for Android and iOS | 090 |
 | 8.7 | the shared boundaries on Ktor for the iPhone, call for call as Android's adapters, with their tests ported | 091 |
 | 8.8 | the preferences and the database shared whole; the iPhone's location, network monitor and HTTP engine, tested on the simulator | 092 |
+| 8.9 | the iPhone app's shell: an Xcode project from `project.yml`, one Kotlin framework, the Keychain, two Compose screens, tested in CI | 093 |
 
 **Now: phase 8, the iPhone app from the Android code** (DECISION-051). The shared layers move
 into Kotlin Multiplatform one module at a time, each step leaving the Android app green and
-unchanged; everything below the screens is shared, with the iPhone's transport, storage, location
-and network monitor, and the iPhone app's shell is next (ROADMAP ٨). Everything else that remains waits on the owner: the server and domain
+unchanged; everything below the screens is shared, and the iPhone app builds and is tested in CI
+with its first two screens. The screens moving to Compose Multiplatform for both apps is next
+(ROADMAP ٨). Everything else that remains waits on the owner: the server and domain
 (EXT-007, EXT-001), approving the launch texts and graphic, the Play account (EXT-003), and then
 the closed test and the public release, step by step in `docs/runbooks/launch.md`. An owner
 portal on the web was offered at the start of phase 3 and set aside: owners use the Android app.
@@ -77,7 +79,7 @@ test with the screen locked, and a generated baseline profile.
 | `apps/admin` | the operators' console: Next.js 16, a server-only BFF in front of the API |
 | `apps/web` | the public site: Next.js |
 | `apps/android` | Kotlin and Compose, on the generated Kotlin client |
-| `apps/ios` | empty: the iPhone app's shell comes later in phase 8; its shared code lives in the Android modules that are multiplatform |
+| `apps/ios` | the iPhone app: `project.yml` for XcodeGen, one SwiftUI file and the app's tests; its Kotlin is `apps/android/ios-framework` and the shared modules |
 | `services/whatsapp-bot` | delivers registration codes over WhatsApp (DECISION-052) |
 | `openapi/` | the contract, generated from the backend and committed with its hash |
 | `packages/api-*` | the TypeScript, Kotlin, Kotlin Multiplatform and Swift clients generated from it |
