@@ -1,7 +1,7 @@
 # Admin console image. Build context is the monorepo root (render.yaml: dockerContext: .).
 # Runtime behaviour is unchanged (`next start` via pnpm); the hardening is a frozen
 # lockfile install, a non-root runtime user and a container HEALTHCHECK.
-FROM node:24-bookworm-slim AS build
+FROM node:26-bookworm-slim AS build
 
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
@@ -20,7 +20,7 @@ COPY packages/api-typescript packages/api-typescript
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm --filter @servacode/admin build
 
-FROM node:24-bookworm-slim AS runtime
+FROM node:26-bookworm-slim AS runtime
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1
 # pnpm is activated for root at build time; COREPACK_HOME makes it readable by `node`.
