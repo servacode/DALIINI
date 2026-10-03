@@ -946,6 +946,30 @@ A rejection hands the facility straight back for editing.
 
 The review decision is now also pushed to the owner's devices, not only written to the inbox.
 
+## DECISION-059 — The Next.js lint plugin globs with tinyglobby, and the audit is clean
+
+**Date:** 2026-10-03 · **Requested by:** the owner ("fix it, leave nothing unfixed")
+
+**Problem:** `pnpm audit` failed on GHSA-vfj7-8cjw-p6xm, stack exhaustion in `braces` ≤ 3.0.3,
+which has no patched release. Its only route into the workspace was
+`eslint-config-next > @next/eslint-plugin-next > fast-glob 3.3.1 > micromatch > braces`, and the
+newest plugin still pins that `fast-glob`.
+
+**Decision:** the root `package.json` overrides that one edge,
+`@next/eslint-plugin-next>fast-glob`, with `tinyglobby` (fdir + picomatch, no `braces`). The plugin
+calls a single function, `globSync(pattern, { onlyDirectories: true })`, and only when
+`settings.next.rootDir` is set; tinyglobby exports the same function with the same option.
+Neither ESLint config sets `rootDir`, so in this repository the call is never made at all. One
+difference is recorded in case that changes: given a literal directory, tinyglobby also lists its
+subdirectories, where fast-glob returns the directory alone.
+
+The vitest advisory (GHSA-82fw-gwwq-j7x9, moderate) is fixed by upgrading the test toolchain in
+both apps: vitest 5.0.3, vite 8.3.2 (now a direct dev dependency, as vitest 5 requires),
+@vitejs/plugin-react 6.1.1 and jsdom 30.1.1. `pnpm audit` reports no known vulnerabilities.
+
+**Remove the override** when `@next/eslint-plugin-next` stops depending on `fast-glob` or a
+patched `braces` is published.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.
