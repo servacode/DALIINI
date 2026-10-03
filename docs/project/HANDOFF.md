@@ -16,7 +16,7 @@ scope is places only: nothing about medicines (DECISION-054).
 ## Where things stand
 
 The roadmap was approved on 2026-10-03. Phases 0 to 2 are done, merged through pull requests
-#27 to #37 (and the one that closes phase 2):
+#27 to #37:
 
 | Phase | What it delivered | Decisions |
 |---|---|---|
