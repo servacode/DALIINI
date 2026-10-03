@@ -10,7 +10,7 @@ const root = resolve(import.meta.dirname, '..');
 const vocab = JSON.parse(await readFile(resolve(root, 'vocabulary.json'), 'utf8'));
 delete vocab.$comment;
 
-const TONES = new Set(['neutral', 'positive', 'warning', 'danger', 'info', 'brand']);
+const TONES = new Set(['neutral', 'positive', 'warning', 'danger', 'info', 'brand', 'accent']);
 for (const [group, entries] of Object.entries(vocab)) {
   for (const [key, entry] of Object.entries(entries)) {
     if (!entry.ar || !TONES.has(entry.tone)) throw new Error(`Invalid vocabulary entry ${group}.${key}`);
@@ -36,7 +36,7 @@ const xmlEscape = (s) =>
     .replace(/'/g, "\\'");
 
 const ts = `// GENERATED — DO NOT EDIT (source: vocabulary.json)
-export type Tone = "neutral" | "positive" | "warning" | "danger" | "info" | "brand";
+export type Tone = "neutral" | "positive" | "warning" | "danger" | "info" | "brand" | "accent";
 export type Term = Readonly<{ ar: string; tone: Tone }>;
 export const vocabulary = ${JSON.stringify(vocab, null, 2)} as const satisfies Record<string, Record<string, Term>>;
 export type VocabularyGroup = keyof typeof vocabulary;

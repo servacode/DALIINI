@@ -5,7 +5,7 @@ enum DirectoryVocabulary {
     static let availability: [String: (ar: String, tone: String)] = [
         "OPEN": ("مفتوح الآن", "positive"),
         "CLOSED": ("مغلق الآن", "danger"),
-        "DUTY": ("مناوب الآن", "warning"),
+        "DUTY": ("مناوب الآن", "accent"),
         "TEMP_CLOSED": ("مغلق مؤقتاً", "info")
     ]
     static let facilityStatus: [String: (ar: String, tone: String)] = [

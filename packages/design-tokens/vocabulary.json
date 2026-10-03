@@ -3,7 +3,7 @@
   "availability": {
     "OPEN": {"ar": "مفتوح الآن", "tone": "positive"},
     "CLOSED": {"ar": "مغلق الآن", "tone": "danger"},
-    "DUTY": {"ar": "مناوب الآن", "tone": "warning"},
+    "DUTY": {"ar": "مناوب الآن", "tone": "accent"},
     "TEMP_CLOSED": {"ar": "مغلق مؤقتاً", "tone": "info"}
   },
   "facilityStatus": {

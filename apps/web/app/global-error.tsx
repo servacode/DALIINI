@@ -32,7 +32,7 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
           padding: "24px",
           background: tokens.colors.barDeep,
           color: tokens.colors.background,
-          fontFamily: "Tajawal, 'Segoe UI', Tahoma, Arial, sans-serif",
+          fontFamily: `${tokens.typography.fontFamily.primary}, ${tokens.typography.fontFamily.fallback}`,
           textAlign: "center",
         }}
       >

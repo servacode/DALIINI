@@ -98,11 +98,16 @@ services:
     depends_on:
       - s3
     entrypoint: ["sh", "-c"]
+    # Safe to run on every start: a bucket that already exists is left alone, and any other
+    # failure still stops the stack, because the API cannot store a photograph without them.
     command:
       - >-
-        for i in $$(seq 1 60); do wget -q -O /dev/null http://s3:9333/cluster/status && break; sleep 1; done;
-        printf 's3.bucket.create -name directory-public\ns3.bucket.create -name directory-private\n'
-        | weed shell -master=s3:9333 -filer=s3:8888
+        for i in $$(seq 1 60); do wget -q -O /dev/null http://s3:8888/ && break; sleep 1; done;
+        existing=$$(echo s3.bucket.list | weed shell -master=s3:9333 -filer=s3:8888) || exit 1;
+        for bucket in directory-public directory-private; do
+        echo "$$existing" | grep -qw "$$bucket" ||
+        echo "s3.bucket.create -name $$bucket" | weed shell -master=s3:9333 -filer=s3:8888 || exit 1;
+        done
 
   api:
     <<: *backend

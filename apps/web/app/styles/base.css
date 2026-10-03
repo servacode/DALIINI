@@ -54,7 +54,7 @@ body {
   margin: 0;
   background: var(--sd-semantic-surface-canvas);
   color: var(--sd-semantic-content-primary);
-  font-family: "Tajawal", "Segoe UI", Tahoma, Arial, sans-serif;
+  font-family: var(--sd-typography-font-family-primary), var(--sd-typography-font-family-fallback);
   font-size: var(--sd-typography-roles-body-large-size);
   line-height: var(--sd-typography-roles-body-large-line-height);
   /* The header is a band and the footer is a band; the middle grows to fill a short page. */
@@ -79,6 +79,11 @@ svg { max-width: 100%; }
 
 .site-header a:focus-visible,
 .site-footer a:focus-visible { outline-color: var(--sd-semantic-content-on-bar); }
+
+/* Titles are set in the display face; everything read stays in the body face. */
+h1,
+h2,
+h3 { font-family: var(--sd-typography-font-family-display), var(--sd-typography-font-family-fallback); }
 
 h1 {
   margin: 0;

@@ -37,5 +37,12 @@
     "warningSoft": "{colorsDark.warningSoft}",
     "dangerSoft": "{colorsDark.dangerSoft}",
     "infoSoft": "{colorsDark.infoSoft}"
+  },
+  "accent": {
+    "default": "{colorsDark.accent}",
+    "pressed": "{colorsDark.accentStrong}",
+    "soft": "{colorsDark.accentSoft}",
+    "content": "{colorsDark.accentText}",
+    "onAccent": "{colorsDark.onAccent}"
   }
 }

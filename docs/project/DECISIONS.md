@@ -970,6 +970,30 @@ both apps: vitest 5.0.3, vite 8.3.2 (now a direct dev dependency, as vitest 5 re
 **Remove the override** when `@next/eslint-plugin-next` stops depending on `fast-glob` or a
 patched `braces` is published.
 
+## DECISION-060 — Identity v2: emerald, gold for duty, sand, two faces, a flat mark
+
+**Date:** 2026-10-03 · **Approved by:** the owner, from the preview at
+https://claude.ai/artifact/RLeGePFPSRRtDGws6tizje
+
+**Decision:** one identity for the site, the console and the Android app, written once in
+`packages/design-tokens`:
+
+* **Colour.** The logo's emerald stays the colour of action. **Gold** (`semantic.accent.*`) is new
+  and belongs to one state only, on duty now, plus the operator's place in the console's shell;
+  the vocabulary gives `availability.DUTY` the new `accent` tone. Grounds are **sand** in light and
+  deep emerald in dark instead of cool grey. Every pair the validator checks clears 4.5:1 in both
+  themes, the gold ones included.
+* **Type.** **Alexandria** for titles and large numbers, **IBM Plex Sans Arabic** for everything
+  read. Each typography role names its face (`family: display | primary`), so no surface chooses.
+  Tajawal is retired; `docs/spec/10-DESIGN-SYSTEM-UX.md` still names it and is left unchanged.
+* **Mark.** The owner's artwork redrawn flat as vectors (`brand/mark.svg`, `mark-on-dark.svg`):
+  the same letter, road and pin, without the bevel and glow that turned to a smudge at icon size.
+  Every raster — launcher, round, store, splash, web symbols and icons — is cut from it by
+  `apps/android/scripts/build-brand-assets.py`.
+
+**Not in this decision:** the layouts. The site, the console and the app keep their current
+screens in the new identity until phases 3, 4 and 5 redesign them.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.
