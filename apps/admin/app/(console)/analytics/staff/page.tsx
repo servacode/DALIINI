@@ -69,25 +69,38 @@ export default function StaffPerformancePage() {
   );
 
   const columns: readonly Column<Member>[] = [
-    { key: "name", header: "المراجع", render: (row) => <strong>{row.name}</strong> },
+    {
+      key: "name",
+      header: "المراجع",
+      sortValue: (row) => row.name,
+      render: (row) => <strong>{row.name}</strong>,
+    },
     {
       key: "decisions",
       header: "قرارات الطلبات",
+      sortValue: (row) => row.decisions,
+      sortFirst: "desc",
       render: (row) => <span className="tabular">{NUMBER.format(row.decisions)}</span>,
     },
     {
       key: "approvals",
       header: "قبول",
+      sortValue: (row) => row.approvals,
+      sortFirst: "desc",
       render: (row) => <span className="tabular">{NUMBER.format(row.approvals)}</span>,
     },
     {
       key: "rejections",
       header: "رفض",
+      sortValue: (row) => row.rejections,
+      sortFirst: "desc",
       render: (row) => <span className="tabular">{NUMBER.format(row.rejections)}</span>,
     },
     {
       key: "rate",
       header: "نسبة القبول",
+      sortValue: (row) => (row.decisions > 0 ? row.approvals / row.decisions : null),
+      sortFirst: "desc",
       render: (row) =>
         row.decisions > 0 ? (
           <span className="tabular">{PERCENT.format(row.approvals / row.decisions)}</span>
@@ -98,11 +111,14 @@ export default function StaffPerformancePage() {
     {
       key: "median",
       header: "الوسيط حتى القرار",
+      sortValue: (row) => row.medianDecisionHours,
       render: (row) => <span className="tabular">{duration(row.medianDecisionHours)}</span>,
     },
     {
       key: "reports",
       header: "بلاغات أُغلقت",
+      sortValue: (row) => row.reportDecisions,
+      sortFirst: "desc",
       render: (row) => <span className="tabular">{NUMBER.format(row.reportDecisions)}</span>,
     },
   ];

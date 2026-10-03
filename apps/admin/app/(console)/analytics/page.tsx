@@ -85,8 +85,21 @@ export default function AnalyticsPage() {
   const data = analytics.data;
 
   const columns: readonly Column<{ name: string; count: number }>[] = [
-    { key: "name", header: "الحدث", ltr: true, render: (row) => <code>{row.name}</code> },
-    { key: "count", header: "العدد", ltr: true, render: (row) => NUMBER.format(row.count) },
+    {
+      key: "name",
+      header: "الحدث",
+      ltr: true,
+      sortValue: (row) => row.name,
+      render: (row) => <code>{row.name}</code>,
+    },
+    {
+      key: "count",
+      header: "العدد",
+      ltr: true,
+      sortValue: (row) => row.count,
+      sortFirst: "desc",
+      render: (row) => NUMBER.format(row.count),
+    },
   ];
 
   const hours = (value: number | null) => (value === null ? "—" : `${DECIMAL.format(value)} س`);

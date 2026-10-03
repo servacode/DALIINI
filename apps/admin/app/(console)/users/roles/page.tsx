@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { useCan } from "../../../../components/admin-shell";
@@ -101,6 +102,7 @@ export default function RolesPage() {
     {
       key: "name",
       header: "الدور",
+      sortValue: (row) => row.name,
       render: (row) => (
         <span className="stack-tight">
           <strong>{row.name}</strong>
@@ -111,6 +113,7 @@ export default function RolesPage() {
     {
       key: "permissions",
       header: "الصلاحيات",
+      sortValue: (row) => (row.locked ? Number.MAX_SAFE_INTEGER : row.permissions.length),
       render: (row) =>
         row.locked ? (
           <span className="muted">كل الصلاحيات</span>
@@ -124,7 +127,15 @@ export default function RolesPage() {
     {
       key: "holders",
       header: "الحاملون",
-      render: (row) => <span className="tabular">{NUMBER.format(row.holderCount)}</span>,
+      sortValue: (row) => row.holderCount,
+      render: (row) =>
+        row.holderCount > 0 ? (
+          <Link className="tabular" href={`/users?role=${encodeURIComponent(row.code)}`}>
+            {NUMBER.format(row.holderCount)}
+          </Link>
+        ) : (
+          <span className="tabular muted">{NUMBER.format(0)}</span>
+        ),
     },
     {
       key: "actions",

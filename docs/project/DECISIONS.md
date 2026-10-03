@@ -1414,6 +1414,43 @@ the last backup was taken.
   * the old "configured" fields are removed (only the console read them);
   * enum names are pinned, so a later field named `key` cannot rename `KeyEnum` again.
 
+## DECISION-074 — Console tables sort from their headers and remember the operator's view
+
+**Date:** 2026-10-03 · **Phase 4.3 of the roadmap.**
+
+**Why:**
+* A table could not be sorted; the facility list hid its order in a filter box.
+* Columns could not be chosen, a page was always 50 rows, and the header row scrolled away.
+* Only some lists kept their filters in the address. Following a link to the same list with other
+  filters showed the old ones.
+
+**Decision:**
+
+* **Sorting from the header** (`components/ui/data-table.tsx`):
+  * A paged list asks the backend: `sortKey`, written to the address as `ordering`. Sorting one
+    page in the browser would misstate the rest.
+  * A list sent whole sorts in place: `sortValue`. Numbers sort as numbers, text as Arabic text,
+    and empty values always last.
+  * A press cycles ascending, descending, then the list's own order. `aria-sort` says which.
+  * The facility list sorts by quality (weakest first) and by last update. The user list gained
+    `ordering` on the backend: name or creation date, each ending in the key so pages never
+    repeat a row.
+  * Provinces, groups, pages, roles, events and team performance sort in place.
+* **The operator's view, per table, in this browser:**
+  * which columns show (the name and the actions cannot be hidden; the facility owner starts
+    hidden);
+  * a compact density;
+  * the page size (25, 50 or 100; the backend allows up to 200).
+  * Without storage it all still works until the page is left.
+* **The header row stays in view.** The wrapper scrolls within a height bound.
+* **Counts:** a cursor list has no total, so the line above it says what the page holds and
+  whether more follow.
+* **The address is the only copy of the filters.** The facilities, users, audit, reviews and
+  reports lists read their filters from the URL on every render. A link to the same list with
+  other filters shows those filters, in the boxes too.
+* **Exports follow the filters** on the facility and report lists, as they already did on the
+  audit log.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

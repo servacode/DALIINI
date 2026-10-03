@@ -17,7 +17,24 @@ export type PaginationProps = Readonly<{
   loading: boolean;
   onFirst: () => void;
   onNext: () => void;
+  /** Rows per page, as the operator chose it for this list. */
+  limit?: number;
+  onLimit?: (limit: number) => void;
 }>;
+
+/** The page sizes on offer; the backend's own default is 50 and its ceiling 200. */
+export const PAGE_SIZES = [25, 50, 100] as const;
+const DEFAULT_LIMIT = 50;
+const LIMIT_PREFIX = "daliini.limit.";
+
+function savedLimit(operation: string): number {
+  try {
+    const value = Number(window.localStorage.getItem(LIMIT_PREFIX + operation));
+    return (PAGE_SIZES as readonly number[]).includes(value) ? value : DEFAULT_LIMIT;
+  } catch {
+    return DEFAULT_LIMIT;
+  }
+}
 
 /**
  * One page of a cursor list, and the controls to move through it.
@@ -34,14 +51,20 @@ export function useCursorPage<Row>(
   options: { enabled?: boolean; refreshMs?: number } = {},
 ): Resource<CursorPage<Row>> & Readonly<{ pagination: PaginationProps | null }> {
   const [cursor, setCursor] = useState<string | undefined>(undefined);
-  const filtersKey = JSON.stringify(filters);
+  // Kept per list in this browser. A new size starts from the first page, like new filters.
+  const [limit, setLimit] = useState<number>(() => savedLimit(operation));
+  const filtersKey = JSON.stringify({ ...filters, limit });
   const [pagedKey, setPagedKey] = useState(filtersKey);
   if (pagedKey !== filtersKey) {
     setPagedKey(filtersKey);
     setCursor(undefined);
   }
   const current = pagedKey === filtersKey ? cursor : undefined;
-  const resource = useResource<CursorPage<Row>>(operation, { ...filters, cursor: current }, options);
+  const resource = useResource<CursorPage<Row>>(
+    operation,
+    { ...filters, limit: String(limit), cursor: current },
+    options,
+  );
   const data = resource.data;
 
   return {
@@ -53,6 +76,15 @@ export function useCursorPage<Row>(
           loading: resource.loading,
           onFirst: () => setCursor(undefined),
           onNext: () => setCursor(data.nextCursor ?? undefined),
+          limit,
+          onLimit: (next: number) => {
+            setLimit(next);
+            try {
+              window.localStorage.setItem(LIMIT_PREFIX + operation, String(next));
+            } catch {
+              /* The size still applies until the page is left. */
+            }
+          },
         }
       : null,
   };

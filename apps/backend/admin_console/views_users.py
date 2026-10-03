@@ -35,6 +35,14 @@ from .views import (
     _page,
 )
 
+# Wire ordering -> columns, each ending in the primary key so ties stay stable across pages.
+USER_ORDERINGS: dict[str, tuple[str, ...]] = {
+    "createdAt": ("created_at", "id"),
+    "-createdAt": ("-created_at", "-id"),
+    "name": ("name", "id"),
+    "-name": ("-name", "-id"),
+}
+
 
 class UserListView(AdminView):
     required_permission = "admin.users.read"
@@ -44,8 +52,8 @@ class UserListView(AdminView):
         tags=["Admin Users"],
         summary="Search user accounts",
         description=(
-            "Password hashes and session secret material are never returned. Newest first, in "
-            "cursor pages. Every filter is optional."
+            "Password hashes and session secret material are never returned. Newest first "
+            "unless `ordering` says otherwise, in cursor pages. Every filter is optional."
         ),
         parameters=[
             *page_parameters(QueryOrderedCursorPage),
@@ -59,11 +67,15 @@ class UserListView(AdminView):
                 "Admin role id or code; keeps accounts holding that role actively. The value "
                 "`any` keeps every operator, `none` every non-operator.",
             ),
+            _filter("ordering", "createdAt, -createdAt (the default), name or -name."),
         ],
         responses={200: AdminUserListSerializer, **protected()},
     )
     def get(self, request: AuthenticatedRequest) -> Response:
-        qs = User.objects.order_by("-created_at", "-id")
+        ordering = request.query_params.get("ordering") or "-createdAt"
+        if ordering not in USER_ORDERINGS:
+            raise ValidationError({"ordering": f"Use one of {', '.join(USER_ORDERINGS)}."})
+        qs = User.objects.order_by(*USER_ORDERINGS[ordering])
         if value := request.query_params.get("q"):
             qs = qs.filter(Q(name__icontains=value) | Q(phone__icontains=value))
         if value := request.query_params.get("status"):

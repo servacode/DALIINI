@@ -11,11 +11,35 @@ import TaxonomyTagsPage from "../../../app/(console)/taxonomy/tags/page";
 
 let canManage = true;
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }),
-  usePathname: () => "/taxonomy/tags",
-  useSearchParams: () => new URLSearchParams(),
-}));
+// A small address bar: `replace` changes it and the page re-reads it, as in the app, where the
+// filters live only in the URL.
+const nav = vi.hoisted(() => {
+  let search = new URLSearchParams();
+  const listeners = new Set<() => void>();
+  return {
+    get: () => search,
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    replace: (url: string) => {
+      search = new URLSearchParams(url.split("?")[1] ?? "");
+      listeners.forEach((listener) => listener());
+    },
+    reset: () => {
+      search = new URLSearchParams();
+    },
+  };
+});
+
+vi.mock("next/navigation", async () => {
+  const { useSyncExternalStore } = await import("react");
+  return {
+    useRouter: () => ({ replace: nav.replace, refresh: vi.fn() }),
+    usePathname: () => "/taxonomy/tags",
+    useSearchParams: () => useSyncExternalStore(nav.subscribe, nav.get),
+  };
+});
 
 vi.mock("../../../components/admin-shell", () => ({
   useCan: () => canManage,
@@ -83,6 +107,7 @@ function lists(overrides: Partial<Record<string, { status?: number; body: unknow
 }
 
 beforeEach(() => {
+  nav.reset();
   canManage = true;
 });
 

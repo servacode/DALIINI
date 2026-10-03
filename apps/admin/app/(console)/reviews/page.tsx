@@ -14,6 +14,7 @@ import {
   termsFor,
   labelsFor,
   Pagination,
+  pageSummary,
 } from "../../../components/ui";
 import { useLookups } from "../../../lib/client/use-lookups";
 import { useCursorPage } from "../../../lib/client/use-cursor-page";
@@ -146,10 +147,12 @@ export default function ReviewsPage() {
       {queue.error ? <ErrorState error={queue.error} onRetry={queue.reload} /> : null}
       {queue.data ? (
         <DataTable
+          id="reviews"
           caption="طلبات المراجعة"
           columns={columns}
           rows={queue.data.items}
           rowKey={(row) => row.id}
+          summary={pageSummary(queue.data.items.length, queue.data.hasMore)}
         />
       ) : null}
       {queue.pagination ? <Pagination {...queue.pagination} /> : null}
