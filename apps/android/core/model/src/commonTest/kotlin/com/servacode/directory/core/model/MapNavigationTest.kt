@@ -1,9 +1,9 @@
 package com.servacode.directory.core.model
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import kotlin.test.Test
 
 class MapNavigationTest {
     @Test fun `a detail opens the map for its own facility`() {
@@ -14,7 +14,7 @@ class MapNavigationTest {
         assertTrue(MapNavigation.returnsToDetail(DirectoryRoute.FacilityDetailRoute("f1"), "f1"))
     }
 
-    @Test fun `another facility, or a map opened from home, opens a detail`() {
+    @Test fun `another facility or a map opened from home opens a detail`() {
         assertFalse(MapNavigation.returnsToDetail(DirectoryRoute.FacilityDetailRoute("f1"), "f2"))
         assertFalse(MapNavigation.returnsToDetail(DirectoryRoute.Home, "f1"))
         assertFalse(MapNavigation.returnsToDetail(null, "f1"))

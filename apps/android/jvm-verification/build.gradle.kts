@@ -61,13 +61,13 @@ val features = listOf(
 
 // Kotlin Multiplatform modules shared with the iPhone app (DECISION-085): their common code is
 // compiled here too, so the JVM harness keeps seeing the whole app.
-val sharedCores = listOf("observability", "analytics")
+val sharedCores = listOf("model", "observability", "analytics")
 
 sourceSets {
     main {
         kotlin.srcDir(generatedClient)
         val platformFreeCores = listOf(
-            "model", "auth", "network", "database", "datastore", "location", "maps",
+            "auth", "network", "database", "datastore", "location", "maps",
         )
         for (core in platformFreeCores) {
             kotlin.srcDir(android.resolve("core/$core/src/main/kotlin"))
@@ -85,7 +85,6 @@ sourceSets {
         kotlin.srcDir(android.resolve("core/auth/src/test/kotlin"))
         kotlin.srcDir(android.resolve("core/network/src/test/kotlin"))
         kotlin.srcDir(android.resolve("core/database/src/test/kotlin"))
-        kotlin.srcDir(android.resolve("core/model/src/test/kotlin"))
         kotlin.srcDir(android.resolve("core/maps/src/test/kotlin"))
         for (core in sharedCores) {
             kotlin.srcDir(android.resolve("core/$core/src/commonTest/kotlin"))
@@ -126,6 +125,7 @@ java {
 dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.datetime)
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.converter.kotlinx.serialization)
     implementation(libs.retrofit.converter.scalars)

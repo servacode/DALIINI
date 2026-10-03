@@ -1959,6 +1959,42 @@ it changes what the Android app does.
 4. The iPhone shell: MapLibre iOS, CoreLocation, the Keychain for the session, and APNs.
 5. The App Store. It needs the owner's Apple developer account.
 
+## DECISION-086 — The models are shared: dates on kotlinx-datetime, links read in common code
+
+**Date:** 2026-10-03 · **Phase 8.2 of the roadmap; the second step of DECISION-085.**
+
+**Why:** `core:model` is what every other layer speaks. Three things kept it on the JVM: Damascus
+clock conversions on `java.time`, the duty presets built on them, and deep links read with
+`java.net.URI`.
+
+**Decision:**
+
+* **`core:model` is a multiplatform module** (`serva.kmp.library`). Its sources moved to
+  `src/commonMain` and its tests to `src/commonTest`, on `kotlin.test`. Test names lost their
+  commas, which Kotlin/Native refuses.
+* **Dates are `kotlinx-datetime` 0.8.0**, exposed as `api` because the module's own functions
+  take and return them:
+  * `DamascusTime` and `DutyPresets` keep their behaviour exactly. The zone rules still decide,
+    not a fixed offset.
+    * A time skipped in spring still moves forward by the gap.
+    * A time repeated in autumn still means its first occurrence.
+    * The existing tests for 2021's summer time pass unchanged.
+  * `kotlinx-datetime` uses `java.time` on Android, with the app's core-library desugaring as
+    before. On iOS it reads the system's zone database.
+  * Instants are `kotlin.time.Instant`.
+* **The Android code that hands dates to the model** now passes `kotlinx.datetime` values: the
+  date and time field, the duty roster and its view model. The Android-only screens that format
+  a weekday keep `java.time`, which is theirs to use.
+* **Deep links** are read by a small `HttpsLink` in common code instead of `java.net.URI`. It
+  accepts and refuses what `URI` did for every link the app cares about:
+  * only absolute `https` with a host;
+  * escapes decoded as UTF-8, a broken `%` refused;
+  * a space, a quote or a control refused;
+  * a port, a query or a fragment ignored.
+
+  New tests pin those cases.
+* **The JVM harness** compiles the shared model and runs its tests.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

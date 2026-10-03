@@ -49,10 +49,11 @@ through #49 to #52. Phase 7's code is done, and phase 8 has begun:
 | 6.4 | a load test at launch scale in CI; the map and search made constant-query; a database pool | 083 |
 | 7.1 | the second draft of the legal and help pages, the Play listing and feature graphic, the launch runbook | 084 |
 | 8.1 | a Kotlin Multiplatform convention; observability and analytics shared and tested on the iPhone simulator | 085 |
+| 8.2 | the models shared: Damascus dates on kotlinx-datetime, the site's links read in common code | 086 |
 
 **Now: phase 8, the iPhone app from the Android code** (DECISION-051). The shared layers move
 into Kotlin Multiplatform one module at a time, each step leaving the Android app green and
-unchanged; `core:model` is next (ROADMAP ٨). Everything else that remains waits on the owner:
+unchanged; the models are shared, and the network layer and repositories are next (ROADMAP ٨). Everything else that remains waits on the owner:
 the server and domain (EXT-007, EXT-001), approving the launch texts and graphic, the Play
 account (EXT-003), and then the closed test and the public release, step by step in
 `docs/runbooks/launch.md`. An owner portal on the web was offered at the start of phase 3 and set

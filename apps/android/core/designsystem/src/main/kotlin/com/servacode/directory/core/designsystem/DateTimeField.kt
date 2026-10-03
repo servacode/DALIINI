@@ -18,7 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.servacode.directory.core.model.DamascusTime
-import java.time.LocalTime
+import kotlinx.datetime.LocalTime
 
 /**
  * A moment an owner picks: a day, then a time, on Damascus clocks. What comes out is the
@@ -50,7 +50,7 @@ fun DateTimeField(
     when (step) {
         PickerStep.DATE -> {
             val state = rememberDatePickerState(
-                initialSelectedDateMillis = DamascusTime.pickerMillis(initial.toLocalDate()),
+                initialSelectedDateMillis = DamascusTime.pickerMillis(initial.date),
             )
             DatePickerDialog(
                 onDismissRequest = { step = PickerStep.CLOSED },
@@ -87,7 +87,7 @@ fun DateTimeField(
                                 onValueChange(
                                     DamascusTime.toEpochMillis(
                                         DamascusTime.dateFromPicker(day),
-                                        LocalTime.of(state.hour, state.minute),
+                                        LocalTime(state.hour, state.minute),
                                     ),
                                 )
                             }
