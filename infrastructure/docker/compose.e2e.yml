@@ -1,0 +1,32 @@
+# The end-to-end suites' own stack, beside the development one and never touching it.
+#
+#   docker compose -p daliini-e2e -f compose.yml -f compose.e2e.yml up -d
+#
+# `scripts/lib/stack.sh` is what runs it. A project of its own means its own containers, network
+# and volumes, which the suites wipe before every run, so a pass never depends on what an earlier
+# run or a development session left behind. Only the API and the object store are published, on
+# ports the caller picks; the development stack keeps 8000, 9000, 5432 and 6379.
+
+x-e2e-env: &e2e-env
+  # Media links must work from the host, where the suites and the phone harness run.
+  S3_PUBLIC_MEDIA_BASE_URL: http://127.0.0.1:${E2E_S3_PORT:-9021}/directory-public
+  ALLOWED_HOSTS: localhost,127.0.0.1,api
+  CORS_ALLOWED_ORIGINS: http://localhost:${E2E_ADMIN_PORT:-3021},http://localhost:${E2E_WEB_PORT:-3022}
+  CSRF_TRUSTED_ORIGINS: http://localhost:${E2E_ADMIN_PORT:-3021},http://localhost:${E2E_WEB_PORT:-3022}
+
+services:
+  postgres:
+    ports: !reset []
+  redis:
+    ports: !reset []
+  s3:
+    ports: !override
+      - "${E2E_S3_PORT:-9021}:8333"
+  api:
+    ports: !override
+      - "${E2E_API_PORT:-8021}:8000"
+    environment: *e2e-env
+  worker:
+    environment: *e2e-env
+  beat:
+    environment: *e2e-env

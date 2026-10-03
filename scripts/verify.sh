@@ -33,7 +33,8 @@ for arg in "$@"; do
   esac
 done
 
-API_CONTAINER="${VERIFY_API_CONTAINER:-local-api}"
+# The development stack's API (`pnpm stack:up`), where GeoDjango has its GDAL.
+API_CONTAINER="${VERIFY_API_CONTAINER:-$(docker compose -f infrastructure/docker/compose.yml ps -q api 2>/dev/null)}"
 results=()
 failures=0
 skips=0
@@ -60,7 +61,7 @@ check() {
 
 in_api() { docker exec "$API_CONTAINER" sh -lc "cd /app && $1"; }
 
-has_container() { docker ps --format '{{.Names}}' 2>/dev/null | grep -qx "$API_CONTAINER"; }
+has_container() { [ -n "$API_CONTAINER" ] && [ "$(docker inspect -f '{{.State.Running}}' "$API_CONTAINER" 2>/dev/null)" = "true" ]; }
 
 # Docker takes a Windows path on this machine; on a Unix one there is nothing to translate.
 host_path() {
@@ -74,23 +75,22 @@ echo
 case " $SELECTED " in *" backend "*)
   echo "-- backend --"
   if ! has_container; then
-    record "backend tests" "SKIP" "no $API_CONTAINER container; GeoDjango needs GDAL"
+    record "backend tests" "SKIP" "no running API container (pnpm stack:up); GeoDjango needs GDAL"
     record "backend lint" "SKIP" "same"
     record "backend types" "SKIP" "same"
+  elif ! in_api "uv sync --frozen >/dev/null 2>&1 && .venv/bin/python -m pytest --version >/dev/null"; then
+    # The image carries production dependencies only. The checks need the dev group, synced into
+    # the container's own environment (which the next `pnpm stack:up` renews); without it, a check
+    # would report a tool that is not there as a pass.
+    record "backend tests" "FAIL" "could not install the dev dependencies in the API container"
+    record "backend lint" "FAIL" "same"
+    record "backend types" "FAIL" "same"
   else
-    # One test is deselected, and named as unverified rather than quietly tolerated. It
-    # compares the committed schema against the source, and walks up from its own file to find
-    # `openapi/`. Inside the container it finds the copy baked into the image at build time,
-    # which is older than the repository's — so it fails on a stale artefact that is not the
-    # code. The `schema is current` check below does the same comparison against the real file.
-    check "backend tests" "pytest" in_api \
-      ".venv/bin/python -m pytest -q --deselect core/tests/test_openapi_contract.py::test_committed_schema_matches_the_source"
-    record "backend schema test" "SKIP" "the image's /openapi is stale; see 'schema is current'"
-    check "backend lint" "ruff" in_api ".venv/bin/python -m ruff check ."
-    # sentry-sdk is a real dependency that this image predates, so mypy there cannot import it.
-    # Every error that is not one of those four is a failure.
-    check "backend types" "mypy" in_api \
-      ".venv/bin/python -m mypy . 2>&1 | grep -E '^[a-z].*error:' | grep -v 'core/observability.py' | grep -q . && exit 1 || exit 0"
+    # The source is mounted read-only to the container's user, so every cache goes to /tmp. The
+    # contract tests find the repository's `openapi/`, which compose mounts at /openapi.
+    check "backend tests" "pytest" in_api ".venv/bin/python -m pytest -q -p no:cacheprovider"
+    check "backend lint" "ruff" in_api ".venv/bin/python -m ruff check --no-cache ."
+    check "backend types" "mypy" in_api ".venv/bin/python -m mypy --cache-dir /tmp/mypy-cache ."
   fi
   echo
 ;; esac

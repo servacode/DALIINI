@@ -12,8 +12,9 @@
 # this machine is running perfectly. That is what this script is for.
 #
 # Three ports, because the app talks to three things:
-#   8000  Django, the API and the WebSocket          (scripts/local-stack.sh)
-#   9000  MinIO: facility photographs and map tiles  (scripts/local-map.sh)
+#   8000  Django, the API and the WebSocket                  (scripts/local-stack.sh)
+#   9000  object storage: facility photographs and map tiles (scripts/local-stack.sh,
+#         scripts/local-map.sh)
 #   8002  Valhalla, for routes                       (scripts/valhalla.sh)
 #
 # It installs nothing, launches nothing and reads nothing from the phone but the answers to
@@ -67,7 +68,7 @@ probe() {
   fi
 }
 probe 8000 /health/live/ "api"
-probe 9000 /minio/health/live "media"
+probe 9000 /healthz "media"
 probe 8002 /status "routing"
 
 if [ "$status" -ne 0 ]; then

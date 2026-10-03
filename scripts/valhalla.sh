@@ -7,9 +7,9 @@
 #   scripts/valhalla.sh down     stop it
 #
 # A phone reaches it through `adb reverse tcp:8002 tcp:8002`, the same way it reaches Django on
-# 8000 and MinIO on 9000. The Android build is pointed at it by DIRECTORY_ROUTING_BASE_URL.
+# 8000 and object storage on 9000. The Android build is pointed at it by DIRECTORY_ROUTING_BASE_URL.
 #
-# It is a service of its own on purpose: nothing in local-api, the Admin, the map style or the
+# It is a service of its own on purpose: nothing in the API, the Admin, the map style or the
 # search depends on it, so a routing engine that is down costs the app its routes and nothing
 # else. It is started and stopped separately from scripts/local-stack.sh for the same reason.
 #
@@ -23,7 +23,6 @@ export MSYS_NO_PATHCONV=1
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IMAGE="${VALHALLA_IMAGE:-ghcr.io/valhalla/valhalla:3.9.0}"
 NAME="${VALHALLA_CONTAINER:-local-valhalla}"
-NETWORK="${LOCAL_NETWORK:-p10net}"
 PORT="${VALHALLA_PORT:-8002}"
 DATA="$ROOT/.local-stack/valhalla"
 EXTRACT_URL="${VALHALLA_EXTRACT_URL:-https://download.geofabrik.de/asia/syria-latest.osm.pbf}"
@@ -93,7 +92,8 @@ build() {
 up() {
   [ -d "$DATA/tiles" ] || { echo "FAIL: no tiles; run scripts/valhalla.sh build first"; exit 1; }
   docker rm -f "$NAME" >/dev/null 2>&1
-  docker run -d --name "$NAME" --network "$NETWORK" -p "$PORT:8002" \
+  # The app asks it directly, on the published port; nothing on the stack's network does.
+  docker run -d --name "$NAME" -p "$PORT:8002" \
     -v "$DATA:/data" "$IMAGE" valhalla_service "$CONFIG" 1 >/dev/null \
     || { echo "FAIL: cannot start $NAME"; exit 1; }
   for _ in $(seq 1 60); do

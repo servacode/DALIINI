@@ -208,7 +208,7 @@
 
 ```bash
 # الخادم
-docker exec local-api sh -lc 'cd /app && uv run pytest -q'
+docker compose -f infrastructure/docker/compose.yml exec api uv run pytest -q
 
 # الموقع
 pnpm --filter @servacode/public-web typecheck

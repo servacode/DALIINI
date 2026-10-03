@@ -23,7 +23,7 @@ export MSYS_NO_PATHCONV=1
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 EXTRACT="${1:-$ROOT/.local-stack/valhalla/syria-latest.osm.pbf}"
-IMAGE="${LOCAL_BACKEND_IMAGE:-directory-v3-p2dev:local}"
+IMAGE="${LOCAL_BACKEND_IMAGE:-daliini-backend:local}"
 OUT_DIR="$ROOT/.local-stack/osm"
 OUT="$OUT_DIR/boundaries.geojsonl"
 
@@ -42,7 +42,7 @@ if [ ! -f "$EXTRACT" ]; then
 fi
 
 if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
-  echo "image '$IMAGE' is not built; run scripts/local-stack.sh up once"
+  echo "image '$IMAGE' is not built; run scripts/local-stack.sh up (or pnpm stack:up) once"
   exit 2
 fi
 
@@ -69,4 +69,5 @@ docker run --rm \
 echo
 echo "boundaries: $OUT ($(wc -l < "$OUT") features)"
 echo "scripts/local-stack.sh up imports them; to do it by hand:"
-echo "  docker exec local-api sh -lc 'cd /app && uv run python manage.py import_osm_boundaries /osm/boundaries.geojsonl'"
+echo "  docker compose -f infrastructure/docker/compose.yml cp \"$OUT\" api:/tmp/boundaries.geojsonl"
+echo "  docker compose -f infrastructure/docker/compose.yml exec api uv run python manage.py import_osm_boundaries /tmp/boundaries.geojsonl --prune --relink"

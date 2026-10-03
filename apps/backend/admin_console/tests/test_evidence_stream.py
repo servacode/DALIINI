@@ -28,7 +28,7 @@ class _Storage:
 
 @pytest.fixture
 def evidence(facility: Facility, monkeypatch: pytest.MonkeyPatch) -> VerificationEvidence:
-    monkeypatch.setattr("admin_console.views.PrivateS3Storage", _Storage)
+    monkeypatch.setattr("admin_console.views_reviews.PrivateS3Storage", _Storage)
     requirement = VerificationRequirement.objects.create(
         category=facility.category, label_ar="ترخيص", required=True
     )

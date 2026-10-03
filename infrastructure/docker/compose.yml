@@ -32,6 +32,9 @@ x-backend-env: &backend-env
   PUSH_PROVIDER: development
 
 x-backend: &backend
+  # One image for the API, the worker and beat, under a name the scripts can use too
+  # (`scripts/osm-boundaries.sh` borrows its GDAL).
+  image: daliini-backend:local
   build:
     context: ../../apps/backend
     dockerfile: Dockerfile
@@ -44,6 +47,8 @@ x-backend: &backend
     # behind the previous build's copy.
     - ../../apps/backend:/app
     - /app/.venv
+    # The committed contract, where the contract tests look for it (`/openapi`, beside `/app`).
+    - ../../openapi:/openapi:ro
   depends_on:
     postgres:
       condition: service_healthy
