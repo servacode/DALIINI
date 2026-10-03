@@ -19,5 +19,10 @@
     "stack:down": "docker compose -f infrastructure/docker/compose.yml down",
     "dev:admin": "node scripts/dev-app.mjs admin",
     "dev:web": "node scripts/dev-app.mjs web"
+  },
+  "pnpm": {
+    "overrides": {
+      "@next/eslint-plugin-next>fast-glob": "npm:tinyglobby@0.2.17"
+    }
   }
 }
