@@ -18,12 +18,12 @@ package com.servacode.directory.api.models
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
-import com.servacode.directory.api.models.DatabaseHealthEnum
+import com.servacode.directory.api.models.AdminHealthStatusEnum
 
-class DatabaseHealthEnumTest : ShouldSpec() {
+class AdminHealthStatusEnumTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of DatabaseHealthEnum
-        //val modelInstance = DatabaseHealthEnum()
+        // uncomment below to create an instance of AdminHealthStatusEnum
+        //val modelInstance = AdminHealthStatusEnum()
 
     }
 }

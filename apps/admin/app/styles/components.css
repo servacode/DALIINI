@@ -1138,3 +1138,36 @@ a.alert-item:hover { background: var(--ad-surface-hover); }
 }
 .button-link:hover { text-decoration: underline; }
 .button-link:focus-visible { outline: none; box-shadow: var(--ad-focus-ring); border-radius: var(--ad-radius-sm); }
+
+/* System health: one card per service, coloured by its state (DECISION-073) */
+.section-title { margin: 0; font-size: var(--ad-text-lg); }
+.health-overall {
+  display: flex; align-items: center; gap: var(--ad-space-3);
+  padding: var(--ad-space-3) var(--ad-space-4); border-radius: var(--ad-radius-md);
+  border: 1px solid var(--ad-success-border); background: var(--ad-success-bg); color: var(--ad-success);
+}
+.health-overall strong { color: var(--ad-text); }
+.health-overall svg { flex: none; }
+.health-overall[data-status="warning"] { border-color: var(--ad-warning-border); background: var(--ad-warning-bg); color: var(--ad-warning); }
+.health-overall[data-status="failed"] { border-color: var(--ad-danger-border); background: var(--ad-danger-bg); color: var(--ad-danger); }
+.health-grid { display: grid; gap: var(--ad-space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); margin: 0; padding: 0; list-style: none; }
+.health-card {
+  display: grid; gap: var(--ad-space-3); align-content: start; min-width: 0;
+  padding: var(--ad-space-4); border: 1px solid var(--ad-stroke); border-radius: var(--ad-radius-lg, 14px);
+  border-inline-start-width: 4px; background: var(--ad-surface); box-shadow: var(--ad-shadow-xs);
+}
+.health-card[data-status="ok"] { border-inline-start-color: var(--ad-success); }
+.health-card[data-status="warning"] { border-inline-start-color: var(--ad-warning); }
+.health-card[data-status="failed"] { border-inline-start-color: var(--ad-danger); }
+.health-card[data-status="off"] { border-inline-start-color: var(--ad-stroke-strong); }
+.health-card header { display: flex; align-items: flex-start; gap: var(--ad-space-3); }
+.health-icon { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: var(--ad-radius-md); background: var(--ad-surface-subtle); color: var(--ad-text-secondary); }
+.health-card[data-status="failed"] .health-icon { background: var(--ad-danger-bg); color: var(--ad-danger); }
+.health-card[data-status="warning"] .health-icon { background: var(--ad-warning-bg); color: var(--ad-warning); }
+.health-name { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.health-name .muted { font-size: var(--ad-text-sm); }
+.health-summary { margin: 0; line-height: var(--ad-leading); }
+.health-facts { display: grid; gap: var(--ad-space-1); margin: 0; padding-block-start: var(--ad-space-3); border-block-start: 1px solid var(--ad-stroke-subtle); font-size: var(--ad-text-sm); }
+.health-facts > div { display: flex; justify-content: space-between; gap: var(--ad-space-3); }
+.health-facts dt { color: var(--ad-text-secondary); }
+.health-facts dd { margin: 0; font-weight: 600; text-align: end; }

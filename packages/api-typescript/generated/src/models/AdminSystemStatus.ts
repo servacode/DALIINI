@@ -13,23 +13,23 @@
  */
 
 import { mapValues } from '../runtime';
-import type { DependencyConfiguredEnum } from './DependencyConfiguredEnum';
+import type { AdminHealthCheck } from './AdminHealthCheck';
 import {
-    DependencyConfiguredEnumFromJSON,
-    DependencyConfiguredEnumFromJSONTyped,
-    DependencyConfiguredEnumToJSON,
-    DependencyConfiguredEnumToJSONTyped,
-} from './DependencyConfiguredEnum';
-import type { DatabaseHealthEnum } from './DatabaseHealthEnum';
+    AdminHealthCheckFromJSON,
+    AdminHealthCheckFromJSONTyped,
+    AdminHealthCheckToJSON,
+    AdminHealthCheckToJSONTyped,
+} from './AdminHealthCheck';
+import type { AdminHealthOverallEnum } from './AdminHealthOverallEnum';
 import {
-    DatabaseHealthEnumFromJSON,
-    DatabaseHealthEnumFromJSONTyped,
-    DatabaseHealthEnumToJSON,
-    DatabaseHealthEnumToJSONTyped,
-} from './DatabaseHealthEnum';
+    AdminHealthOverallEnumFromJSON,
+    AdminHealthOverallEnumFromJSONTyped,
+    AdminHealthOverallEnumToJSON,
+    AdminHealthOverallEnumToJSONTyped,
+} from './AdminHealthOverallEnum';
 
 /**
- * Configuration presence only. No credential or connection string is exposed.
+ * Each dependency asked directly, with a short timeout. No credential is exposed.
  * @export
  * @interface AdminSystemStatus
  */
@@ -48,28 +48,16 @@ export interface AdminSystemStatus {
     environment: string;
     /**
      * 
-     * @type {DatabaseHealthEnum}
+     * @type {AdminHealthOverallEnum}
      * @memberof AdminSystemStatus
      */
-    database: DatabaseHealthEnum;
+    overall: AdminHealthOverallEnum;
     /**
      * 
-     * @type {DependencyConfiguredEnum}
+     * @type {Array<AdminHealthCheck>}
      * @memberof AdminSystemStatus
      */
-    redis: DependencyConfiguredEnum;
-    /**
-     * 
-     * @type {DependencyConfiguredEnum}
-     * @memberof AdminSystemStatus
-     */
-    celery: DependencyConfiguredEnum;
-    /**
-     * 
-     * @type {DependencyConfiguredEnum}
-     * @memberof AdminSystemStatus
-     */
-    storage: DependencyConfiguredEnum;
+    checks: Array<AdminHealthCheck>;
     /**
      * 
      * @type {string}
@@ -92,10 +80,8 @@ export interface AdminSystemStatus {
 export function instanceOfAdminSystemStatus(value: object): value is AdminSystemStatus {
     if (!('apiVersion' in value) || value['apiVersion'] === undefined) return false;
     if (!('environment' in value) || value['environment'] === undefined) return false;
-    if (!('database' in value) || value['database'] === undefined) return false;
-    if (!('redis' in value) || value['redis'] === undefined) return false;
-    if (!('celery' in value) || value['celery'] === undefined) return false;
-    if (!('storage' in value) || value['storage'] === undefined) return false;
+    if (!('overall' in value) || value['overall'] === undefined) return false;
+    if (!('checks' in value) || value['checks'] === undefined) return false;
     if (!('schemaHash' in value) || value['schemaHash'] === undefined) return false;
     if (!('checkedAt' in value) || value['checkedAt'] === undefined) return false;
     return true;
@@ -113,10 +99,8 @@ export function AdminSystemStatusFromJSONTyped(json: any, ignoreDiscriminator: b
         
         'apiVersion': json['apiVersion'],
         'environment': json['environment'],
-        'database': DatabaseHealthEnumFromJSON(json['database']),
-        'redis': DependencyConfiguredEnumFromJSON(json['redis']),
-        'celery': DependencyConfiguredEnumFromJSON(json['celery']),
-        'storage': DependencyConfiguredEnumFromJSON(json['storage']),
+        'overall': AdminHealthOverallEnumFromJSON(json['overall']),
+        'checks': ((json['checks'] as Array<any>).map(AdminHealthCheckFromJSON)),
         'schemaHash': json['schemaHash'],
         'checkedAt': (new Date(json['checkedAt'])),
     };
@@ -135,10 +119,8 @@ export function AdminSystemStatusToJSONTyped(value?: AdminSystemStatus | null, i
         
         'apiVersion': value['apiVersion'],
         'environment': value['environment'],
-        'database': DatabaseHealthEnumToJSON(value['database']),
-        'redis': DependencyConfiguredEnumToJSON(value['redis']),
-        'celery': DependencyConfiguredEnumToJSON(value['celery']),
-        'storage': DependencyConfiguredEnumToJSON(value['storage']),
+        'overall': AdminHealthOverallEnumToJSON(value['overall']),
+        'checks': ((value['checks'] as Array<any>).map(AdminHealthCheckToJSON)),
         'schemaHash': value['schemaHash'],
         'checkedAt': ((value['checkedAt']).toISOString()),
     };

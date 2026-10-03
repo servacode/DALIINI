@@ -457,6 +457,9 @@ test.describe("read-only screens", () => {
     await openConsole(page);
     await page.goto("/system");
     await expect(page.getByRole("heading", { name: "الاعتماديات" })).toBeVisible();
+    // Asked, not assumed: the database card reports a real answer and how long it took.
+    await expect(page.getByTestId("health-database")).toContainText("يعمل");
+    await expect(page.getByTestId("health-database")).toContainText("زمن الاستجابة");
 
     const body = (await page.locator("body").textContent()) ?? "";
     for (const leak of ["postgres://", "redis://", "password", "SECRET", "amazonaws"]) {

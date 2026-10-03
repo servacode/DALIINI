@@ -1,4 +1,4 @@
-# DependencyConfiguredEnum
+# AdminHealthStatusEnum
 
 ## Properties
 Name | Type | Description | Notes

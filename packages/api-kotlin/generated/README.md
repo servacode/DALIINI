@@ -146,7 +146,7 @@ All URIs are relative to *http://localhost*
 | *AdminSystemApi* | [**adminDashboardRetrieve**](docs/AdminSystemApi.md#admindashboardretrieve) | **GET** api/v1/admin/dashboard/ | Operational counters for the review desk |
 | *AdminSystemApi* | [**adminMeRetrieve**](docs/AdminSystemApi.md#adminmeretrieve) | **GET** api/v1/admin/me/ | The current operator and the permissions they hold |
 | *AdminSystemApi* | [**adminSearchRetrieve**](docs/AdminSystemApi.md#adminsearchretrieve) | **GET** api/v1/admin/search/ | Search facilities, users and applications at once |
-| *AdminSystemApi* | [**adminSystemStatusRetrieve**](docs/AdminSystemApi.md#adminsystemstatusretrieve) | **GET** api/v1/admin/system/status/ | Runtime and configuration status |
+| *AdminSystemApi* | [**adminSystemStatusRetrieve**](docs/AdminSystemApi.md#adminsystemstatusretrieve) | **GET** api/v1/admin/system/status/ | Every dependency, asked directly |
 | *AdminSystemApi* | [**adminTasksRetrieve**](docs/AdminSystemApi.md#admintasksretrieve) | **GET** api/v1/admin/tasks/ | The operator's queue: what is waiting, oldest first |
 | *AdminTaxonomyApi* | [**adminCategoriesList**](docs/AdminTaxonomyApi.md#admincategorieslist) | **GET** api/v1/admin/categories/ | List categories |
 | *AdminTaxonomyApi* | [**adminCategoryCapabilitiesReplace**](docs/AdminTaxonomyApi.md#admincategorycapabilitiesreplace) | **PUT** api/v1/admin/categories/{category_id}/capabilities/ | Set the capability flags of a category |
@@ -329,6 +329,11 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminFaqEntry](docs/AdminFaqEntry.md)
  - [com.servacode.directory.api.models.AdminFaqEntryList](docs/AdminFaqEntryList.md)
  - [com.servacode.directory.api.models.AdminFaqEntryRequest](docs/AdminFaqEntryRequest.md)
+ - [com.servacode.directory.api.models.AdminHealthCheck](docs/AdminHealthCheck.md)
+ - [com.servacode.directory.api.models.AdminHealthCheckKeyEnum](docs/AdminHealthCheckKeyEnum.md)
+ - [com.servacode.directory.api.models.AdminHealthMetric](docs/AdminHealthMetric.md)
+ - [com.servacode.directory.api.models.AdminHealthOverallEnum](docs/AdminHealthOverallEnum.md)
+ - [com.servacode.directory.api.models.AdminHealthStatusEnum](docs/AdminHealthStatusEnum.md)
  - [com.servacode.directory.api.models.AdminId](docs/AdminId.md)
  - [com.servacode.directory.api.models.AdminLinkEntityTypeEnum](docs/AdminLinkEntityTypeEnum.md)
  - [com.servacode.directory.api.models.AdminMe](docs/AdminMe.md)
@@ -427,9 +432,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.ContentPage](docs/ContentPage.md)
  - [com.servacode.directory.api.models.ContentPageKindEnum](docs/ContentPageKindEnum.md)
  - [com.servacode.directory.api.models.Coordinates](docs/Coordinates.md)
- - [com.servacode.directory.api.models.DatabaseHealthEnum](docs/DatabaseHealthEnum.md)
  - [com.servacode.directory.api.models.DeletionRequest](docs/DeletionRequest.md)
- - [com.servacode.directory.api.models.DependencyConfiguredEnum](docs/DependencyConfiguredEnum.md)
  - [com.servacode.directory.api.models.DestinationEnum](docs/DestinationEnum.md)
  - [com.servacode.directory.api.models.DuplicateReasonEnum](docs/DuplicateReasonEnum.md)
  - [com.servacode.directory.api.models.DutyImportResult](docs/DutyImportResult.md)

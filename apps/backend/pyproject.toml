@@ -55,6 +55,7 @@ exclude = ["migrations/"]
 # them is typed Any.
 [[tool.mypy.overrides]]
 module = [
+  "botocore.config",
   "celery",
   "celery.exceptions",
   "celery.schedules",

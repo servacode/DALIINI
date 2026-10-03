@@ -10,25 +10,21 @@ import Foundation
 import AnyCodable
 #endif
 
-/** Configuration presence only. No credential or connection string is exposed. */
+/** Each dependency asked directly, with a short timeout. No credential is exposed. */
 public struct AdminSystemStatus: Codable, JSONEncodable, Hashable {
 
     public var apiVersion: String
     public var environment: String
-    public var database: DatabaseHealthEnum
-    public var redis: DependencyConfiguredEnum
-    public var celery: DependencyConfiguredEnum
-    public var storage: DependencyConfiguredEnum
+    public var overall: AdminHealthOverallEnum
+    public var checks: [AdminHealthCheck]
     public var schemaHash: String
     public var checkedAt: Date
 
-    public init(apiVersion: String, environment: String, database: DatabaseHealthEnum, redis: DependencyConfiguredEnum, celery: DependencyConfiguredEnum, storage: DependencyConfiguredEnum, schemaHash: String, checkedAt: Date) {
+    public init(apiVersion: String, environment: String, overall: AdminHealthOverallEnum, checks: [AdminHealthCheck], schemaHash: String, checkedAt: Date) {
         self.apiVersion = apiVersion
         self.environment = environment
-        self.database = database
-        self.redis = redis
-        self.celery = celery
-        self.storage = storage
+        self.overall = overall
+        self.checks = checks
         self.schemaHash = schemaHash
         self.checkedAt = checkedAt
     }
@@ -36,10 +32,8 @@ public struct AdminSystemStatus: Codable, JSONEncodable, Hashable {
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case apiVersion
         case environment
-        case database
-        case redis
-        case celery
-        case storage
+        case overall
+        case checks
         case schemaHash
         case checkedAt
     }
@@ -50,10 +44,8 @@ public struct AdminSystemStatus: Codable, JSONEncodable, Hashable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(apiVersion, forKey: .apiVersion)
         try container.encode(environment, forKey: .environment)
-        try container.encode(database, forKey: .database)
-        try container.encode(redis, forKey: .redis)
-        try container.encode(celery, forKey: .celery)
-        try container.encode(storage, forKey: .storage)
+        try container.encode(overall, forKey: .overall)
+        try container.encode(checks, forKey: .checks)
         try container.encode(schemaHash, forKey: .schemaHash)
         try container.encode(checkedAt, forKey: .checkedAt)
     }

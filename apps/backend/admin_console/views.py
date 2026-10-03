@@ -242,8 +242,16 @@ def _open_reports_count() -> int:
 
 
 def system_warnings() -> list[str]:
-    """Cheap, configuration-level warnings for the dashboard. No network calls."""
+    """Cheap warnings for the dashboard: configuration, and what the services last recorded.
+
+    No network calls; the system page asks the services themselves (DECISION-073).
+    """
     from django.conf import settings
+
+    from health.beacons import BACKUP, OTP, SCHEDULER
+    from health.models import ServiceSignal
+
+    from .system_health import check_backup, check_scheduler
 
     warnings: list[str] = []
     if get_maintenance_state().enabled:
@@ -264,6 +272,17 @@ def system_warnings() -> list[str]:
         warnings.append("رموز الدخول في وضع التطوير: لن تصل رسائل التحقق إلى الهواتف.")
     if not getattr(settings, "SENTRY_DSN", ""):
         warnings.append("تتبع الأخطاء (Sentry) غير مفعّل.")
+    signals = {signal.name: signal for signal in ServiceSignal.objects.all()}
+    now = timezone.now()
+    for label, check in (
+        ("المهام المجدولة", check_scheduler(signals.get(SCHEDULER), now)),
+        ("النسخ الاحتياطي", check_backup(signals.get(BACKUP), now)),
+    ):
+        if check.status in {"warning", "failed"}:
+            warnings.append(f"{label}: {check.summary}")
+    otp = signals.get(OTP)
+    if otp and otp.failures and otp.failed_at and (otp.ok_at is None or otp.failed_at > otp.ok_at):
+        warnings.append(f"رموز التحقق: آخر {otp.failures} محاولة إرسال فشلت.")
     return warnings
 
 
@@ -528,39 +547,26 @@ class SystemStatusView(AdminView):
     @extend_schema(
         operation_id="adminSystemStatusRetrieve",
         tags=["Admin System"],
-        summary="Runtime and configuration status",
+        summary="Every dependency, asked directly",
         description=(
-            "Reports only whether each dependency is configured. No secret, connection "
-            "string or credential is returned."
+            "The database, Redis and the workers, the scheduler's heartbeat, storage, the "
+            "verification-code channel, push, backups, error reporting and maintenance mode, "
+            "each with a status and a sentence (DECISION-073). Probes time out after two "
+            "seconds. No host, URL, credential or exception text is returned."
         ),
         responses={200: AdminSystemStatusSerializer, **protected()},
     )
     def get(self, request: AuthenticatedRequest) -> Response:
-        database = "unavailable"
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT 1")
-                cursor.fetchone()
-            database = "ok"
-        except Exception:
-            database = "unavailable"
         from django.conf import settings
+
+        from .system_health import run_checks
 
         return Response(
             {
-                "apiVersion": "1.0.0",
+                "apiVersion": settings.SPECTACULAR_SETTINGS.get("VERSION", ""),
                 "environment": getattr(settings, "ENVIRONMENT_NAME", "unknown"),
-                "database": database,
-                "redis": "configured" if getattr(settings, "REDIS_URL", "") else "unconfigured",
-                "celery": (
-                    "configured" if getattr(settings, "CELERY_BROKER_URL", "") else "unconfigured"
-                ),
-                "storage": (
-                    "configured" if getattr(settings, "S3_ENDPOINT_URL", "") else "unconfigured"
-                ),
+                **run_checks(),
                 "schemaHash": getattr(settings, "OPENAPI_SCHEMA_HASH", "unavailable"),
                 "checkedAt": timezone.now().isoformat(),
             }
         )
-
-

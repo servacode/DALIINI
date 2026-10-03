@@ -15,22 +15,20 @@
 
 package com.servacode.directory.api.models
 
-import com.servacode.directory.api.models.DatabaseHealthEnum
-import com.servacode.directory.api.models.DependencyConfiguredEnum
+import com.servacode.directory.api.models.AdminHealthCheck
+import com.servacode.directory.api.models.AdminHealthOverallEnum
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * Configuration presence only. No credential or connection string is exposed.
+ * Each dependency asked directly, with a short timeout. No credential is exposed.
  *
  * @param apiVersion 
  * @param environment 
- * @param database 
- * @param redis 
- * @param celery 
- * @param storage 
+ * @param overall 
+ * @param checks 
  * @param schemaHash 
  * @param checkedAt 
  */
@@ -44,17 +42,11 @@ data class AdminSystemStatus (
     @SerialName(value = "environment")
     val environment: kotlin.String,
 
-    @Contextual @SerialName(value = "database")
-    val database: DatabaseHealthEnum,
+    @Contextual @SerialName(value = "overall")
+    val overall: AdminHealthOverallEnum,
 
-    @Contextual @SerialName(value = "redis")
-    val redis: DependencyConfiguredEnum,
-
-    @Contextual @SerialName(value = "celery")
-    val celery: DependencyConfiguredEnum,
-
-    @Contextual @SerialName(value = "storage")
-    val storage: DependencyConfiguredEnum,
+    @SerialName(value = "checks")
+    val checks: kotlin.collections.List<AdminHealthCheck>,
 
     @SerialName(value = "schemaHash")
     val schemaHash: kotlin.String,

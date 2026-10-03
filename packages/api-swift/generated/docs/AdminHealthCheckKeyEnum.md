@@ -1,4 +1,4 @@
-# DatabaseHealthEnum
+# AdminHealthCheckKeyEnum
 
 ## Properties
 Name | Type | Description | Notes

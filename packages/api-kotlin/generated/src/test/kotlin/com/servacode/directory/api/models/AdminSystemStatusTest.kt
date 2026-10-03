@@ -19,8 +19,8 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.models.AdminSystemStatus
-import com.servacode.directory.api.models.DatabaseHealthEnum
-import com.servacode.directory.api.models.DependencyConfiguredEnum
+import com.servacode.directory.api.models.AdminHealthCheck
+import com.servacode.directory.api.models.AdminHealthOverallEnum
 
 class AdminSystemStatusTest : ShouldSpec() {
     init {
@@ -39,28 +39,16 @@ class AdminSystemStatusTest : ShouldSpec() {
             //modelInstance.environment shouldBe ("TODO")
         }
 
-        // to test the property `database`
-        should("test database") {
+        // to test the property `overall`
+        should("test overall") {
             // uncomment below to test the property
-            //modelInstance.database shouldBe ("TODO")
+            //modelInstance.overall shouldBe ("TODO")
         }
 
-        // to test the property `redis`
-        should("test redis") {
+        // to test the property `checks`
+        should("test checks") {
             // uncomment below to test the property
-            //modelInstance.redis shouldBe ("TODO")
-        }
-
-        // to test the property `celery`
-        should("test celery") {
-            // uncomment below to test the property
-            //modelInstance.celery shouldBe ("TODO")
-        }
-
-        // to test the property `storage`
-        should("test storage") {
-            // uncomment below to test the property
-            //modelInstance.storage shouldBe ("TODO")
+            //modelInstance.checks shouldBe ("TODO")
         }
 
         // to test the property `schemaHash`

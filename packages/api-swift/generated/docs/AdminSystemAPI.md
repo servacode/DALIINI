@@ -8,7 +8,7 @@ Method | HTTP request | Description
 [**adminDashboardRetrieve**](AdminSystemAPI.md#admindashboardretrieve) | **GET** /api/v1/admin/dashboard/ | Operational counters for the review desk
 [**adminMeRetrieve**](AdminSystemAPI.md#adminmeretrieve) | **GET** /api/v1/admin/me/ | The current operator and the permissions they hold
 [**adminSearchRetrieve**](AdminSystemAPI.md#adminsearchretrieve) | **GET** /api/v1/admin/search/ | Search facilities, users and applications at once
-[**adminSystemStatusRetrieve**](AdminSystemAPI.md#adminsystemstatusretrieve) | **GET** /api/v1/admin/system/status/ | Runtime and configuration status
+[**adminSystemStatusRetrieve**](AdminSystemAPI.md#adminsystemstatusretrieve) | **GET** /api/v1/admin/system/status/ | Every dependency, asked directly
 [**adminTasksRetrieve**](AdminSystemAPI.md#admintasksretrieve) | **GET** /api/v1/admin/tasks/ | The operator&#39;s queue: what is waiting, oldest first
 
 
@@ -203,9 +203,9 @@ Name | Type | Description  | Notes
     open class func adminSystemStatusRetrieve(completion: @escaping (_ data: AdminSystemStatus?, _ error: Error?) -> Void)
 ```
 
-Runtime and configuration status
+Every dependency, asked directly
 
-Reports only whether each dependency is configured. No secret, connection string or credential is returned.
+The database, Redis and the workers, the scheduler's heartbeat, storage, the verification-code channel, push, backups, error reporting and maintenance mode, each with a status and a sentence (DECISION-073). Probes time out after two seconds. No host, URL, credential or exception text is returned.
 
 ### Example
 ```swift
@@ -213,7 +213,7 @@ Reports only whether each dependency is configured. No secret, connection string
 import ServaDirectoryAPI
 
 
-// Runtime and configuration status
+// Every dependency, asked directly
 AdminSystemAPI.adminSystemStatusRetrieve() { (response, error) in
     guard error == nil else {
         print(error)
