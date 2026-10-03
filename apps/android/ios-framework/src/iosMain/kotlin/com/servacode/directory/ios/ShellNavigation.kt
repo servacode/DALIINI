@@ -2,8 +2,9 @@ package com.servacode.directory.ios
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModelStore
+import com.servacode.directory.core.model.LegalPageKey
 
-/** A place in the iPhone app: the screens shared so far (DECISIONS 095 to 099). */
+/** A place in the iPhone app: the screens shared so far (DECISIONS 095 to 100). */
 internal sealed interface ShellPlace {
     data object Home : ShellPlace
     data object Province : ShellPlace
@@ -21,6 +22,11 @@ internal sealed interface ShellPlace {
     data object RecentlyViewed : ShellPlace
     data object Ratings : ShellPlace
     data class Duty(val facilityId: String, val date: String?) : ShellPlace
+    data object ChangePassword : ShellPlace
+    data object Settings : ShellPlace
+    data object EmergencyNumbers : ShellPlace
+    data object Help : ShellPlace
+    data class LegalPage(val key: LegalPageKey) : ShellPlace
     /** The owner's tab, for an account that has a facility to manage. */
     data object MyFacilities : ShellPlace
     data class ManageFacility(val id: String) : ShellPlace

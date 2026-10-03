@@ -11,12 +11,27 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import org.jetbrains.compose.resources.getString
 
 /**
  * The names of the few lines the app carries itself, read from this module's resources: words
  * the reader sees live in resources, never in code.
  */
 data class BuiltInEmergencyLabels(val ambulance: String, val police: String, val fire: String)
+
+/** Where the built-in lines' names come from: the module's words in the apps, fixed ones in tests. */
+fun interface EmergencyLabelSource {
+    suspend fun labels(): BuiltInEmergencyLabels
+}
+
+/** The built-in lines' names as this module's words give them, on either phone. */
+object ResourceEmergencyLabels : EmergencyLabelSource {
+    override suspend fun labels() = BuiltInEmergencyLabels(
+        ambulance = getString(Res.string.emergency_builtin_ambulance),
+        police = getString(Res.string.emergency_builtin_police),
+        fire = getString(Res.string.emergency_builtin_fire),
+    )
+}
 
 /** What the emergency screen has to show, in the order it can show it. */
 sealed interface EmergencyLoad {
@@ -46,7 +61,7 @@ class EmergencyNumbersRepository @Inject constructor(
     private val api: PublicApiBoundary,
     private val cache: EmergencyNumbersCache,
     private val preferences: DirectoryPreferencesStore,
-    private val labels: BuiltInEmergencyLabels,
+    private val labels: EmergencyLabelSource,
 ) {
     fun load(): Flow<EmergencyLoad> = flow {
         val provinceId = runCatching { preferences.values.first().selectedProvinceId }.getOrNull()
@@ -70,8 +85,8 @@ class EmergencyNumbersRepository @Inject constructor(
     }
 
     /** The device's copy when there is one; only a device that never had the list gets the built-ins. */
-    private fun fallback(cached: List<EmergencyNumber>): EmergencyLoad =
-        if (cached.isNotEmpty()) EmergencyLoad.Stale(group(cached)) else EmergencyLoad.BuiltIn(builtIn(labels))
+    private suspend fun fallback(cached: List<EmergencyNumber>): EmergencyLoad =
+        if (cached.isNotEmpty()) EmergencyLoad.Stale(group(cached)) else EmergencyLoad.BuiltIn(builtIn(labels.labels()))
 
     companion object {
         fun group(values: List<EmergencyNumber>) = EmergencyNumbers(

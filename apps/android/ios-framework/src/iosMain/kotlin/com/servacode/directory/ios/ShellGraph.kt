@@ -8,28 +8,29 @@ import com.servacode.directory.core.auth.MemoryAccessTokenStore
 import com.servacode.directory.core.auth.RefreshTokenVault
 import com.servacode.directory.core.auth.SessionCoordinator
 import com.servacode.directory.core.database.DirectoryDatabase
-import com.servacode.directory.core.database.PublicCacheDataSource
-import com.servacode.directory.core.database.RoomRecentlyViewedStore
 import com.servacode.directory.core.database.iosDirectoryDatabase
+import com.servacode.directory.core.database.PublicCacheDataSource
+import com.servacode.directory.core.database.RoomEmergencyNumbersCache
+import com.servacode.directory.core.database.RoomRecentlyViewedStore
 import com.servacode.directory.core.datastore.DirectoryDataStore
-import com.servacode.directory.core.datastore.PreferencesRepository
 import com.servacode.directory.core.datastore.iosDirectoryDataStore
+import com.servacode.directory.core.datastore.PreferencesRepository
 import com.servacode.directory.core.location.IosLocationProvider
 import com.servacode.directory.core.location.LocationProvider
+import com.servacode.directory.core.network.api.ApiEnvironment
 import com.servacode.directory.core.network.BackendLocationNameResolver
 import com.servacode.directory.core.network.IosNetworkMonitor
 import com.servacode.directory.core.network.MaintenanceState
 import com.servacode.directory.core.network.NetworkMonitor
 import com.servacode.directory.core.network.RealtimeInvalidationBus
 import com.servacode.directory.core.network.SignOut
-import com.servacode.directory.core.network.api.ApiEnvironment
 import com.servacode.directory.core.transport.ClientPlatform
+import com.servacode.directory.core.transport.darwinEngine
 import com.servacode.directory.core.transport.KtorAuthApi
 import com.servacode.directory.core.transport.KtorOwnerApi
 import com.servacode.directory.core.transport.KtorPublicApi
 import com.servacode.directory.core.transport.KtorRefreshGateway
 import com.servacode.directory.core.transport.TransportClients
-import com.servacode.directory.core.transport.darwinEngine
 import com.servacode.directory.feature.account.AccountRepository
 import com.servacode.directory.feature.account.AccountUseCase
 import com.servacode.directory.feature.account.DeleteAccountUseCase
@@ -41,6 +42,9 @@ import com.servacode.directory.feature.facility.FacilityUseCase
 import com.servacode.directory.feature.facility.RecordVisitUseCase
 import com.servacode.directory.feature.facility.ReportFacilityUseCase
 import com.servacode.directory.feature.home.HomeAdsRepository
+import com.servacode.directory.feature.home.HomeAdsUseCase
+import com.servacode.directory.feature.home.HomeRepository
+import com.servacode.directory.feature.home.HomeUseCase
 import com.servacode.directory.feature.owner.ClaimFacilityUseCase
 import com.servacode.directory.feature.owner.ConfirmHoursUseCase
 import com.servacode.directory.feature.owner.LoadManageFacilityUseCase
@@ -50,15 +54,16 @@ import com.servacode.directory.feature.owner.LoadTagChoicesUseCase
 import com.servacode.directory.feature.owner.ManageFacilityUseCase
 import com.servacode.directory.feature.owner.OwnerRepository
 import com.servacode.directory.feature.owner.ReceivedInvitationsUseCase
-import com.servacode.directory.feature.home.HomeAdsUseCase
-import com.servacode.directory.feature.home.HomeRepository
-import com.servacode.directory.feature.home.HomeUseCase
 import com.servacode.directory.feature.province.ProvinceRepository
 import com.servacode.directory.feature.province.ProvinceUseCase
 import com.servacode.directory.feature.ratings.RatingsRepository
 import com.servacode.directory.feature.ratings.RatingsUseCase
 import com.servacode.directory.feature.search.SearchRepository
 import com.servacode.directory.feature.search.SearchUseCase
+import com.servacode.directory.feature.settings.EmergencyNumbersRepository
+import com.servacode.directory.feature.settings.LegalRepository
+import com.servacode.directory.feature.settings.NotificationPreferencesSync
+import com.servacode.directory.feature.settings.ResourceEmergencyLabels
 import io.ktor.client.engine.HttpClientEngine
 import platform.UIKit.UIDevice
 
@@ -77,6 +82,8 @@ internal class ShellGraph(
     val network: NetworkMonitor,
     /** The site's host, for a facility's shared link; blank in a build that was not given one. */
     val appLinkHost: String = "",
+    /** The version Help shows; blank in a build that was not stamped. */
+    val appVersion: String = "",
     /** What the backend lists this phone as among the account's sessions. */
     deviceName: String = "iPhone",
 ) {
@@ -140,6 +147,15 @@ internal class ShellGraph(
     val claims = ClaimFacilityUseCase(owner)
     val receivedInvitations = ReceivedInvitationsUseCase(owner)
 
+    val notificationSync = NotificationPreferencesSync(publicApi, preferences)
+    val legal = LegalRepository(publicApi)
+    val emergency = EmergencyNumbersRepository(
+        publicApi,
+        RoomEmergencyNumbersCache(database.localStoresDao()),
+        preferences,
+        ResourceEmergencyLabels,
+    )
+
     companion object {
         /** The app's graph on the phone's own Keychain, files, position and network. */
         fun onDevice(configuration: ShellConfiguration): ShellGraph = ShellGraph(
@@ -151,6 +167,7 @@ internal class ShellGraph(
             location = IosLocationProvider(),
             network = IosNetworkMonitor(),
             appLinkHost = configuration.appLinkHost,
+            appVersion = configuration.appVersion,
             deviceName = UIDevice.currentDevice.model,
         )
     }

@@ -62,10 +62,10 @@ import com.servacode.directory.feature.owner.MyFacilitiesRoute
 import com.servacode.directory.feature.province.ProvinceRoute
 import com.servacode.directory.feature.ratings.RatingsRoute
 import com.servacode.directory.feature.search.SearchRoute
-import com.servacode.directory.feature.settings.HelpScreen
-import com.servacode.directory.feature.settings.EmergencyNumbersScreen
-import com.servacode.directory.feature.settings.LegalPageScreen
-import com.servacode.directory.feature.settings.SettingsScreen
+import com.servacode.directory.feature.settings.HelpRoute
+import com.servacode.directory.feature.settings.EmergencyNumbersRoute
+import com.servacode.directory.feature.settings.LegalPageRoute
+import com.servacode.directory.feature.settings.SettingsRoute
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -435,7 +435,7 @@ fun DirectoryApp(
             )
         }
         composable<DirectoryRoute.Settings> {
-            SettingsScreen(
+            SettingsRoute(
                 onChangePassword = { navController.navigate(DirectoryRoute.ChangePassword) },
                 onChangePhone = { navController.navigate(DirectoryRoute.ChangePhone) },
                 onBack = { navController.popBackStack() },
@@ -444,7 +444,7 @@ fun DirectoryApp(
             )
         }
         composable<DirectoryRoute.EmergencyNumbers> {
-            EmergencyNumbersScreen(onBack = { navController.popBackStack() })
+            EmergencyNumbersRoute(onBack = { navController.popBackStack() })
         }
         composable<DirectoryRoute.RecentlyViewed> {
             RecentlyViewedRoute(
@@ -453,7 +453,7 @@ fun DirectoryApp(
             )
         }
         composable<DirectoryRoute.Help> {
-            HelpScreen(
+            HelpRoute(
                 onPage = { key -> navController.navigate(DirectoryRoute.LegalPageRoute(key.name)) },
                 onBack = { navController.popBackStack() },
                 appVersion = BuildConfig.VERSION_NAME,
@@ -461,7 +461,7 @@ fun DirectoryApp(
         }
         composable<DirectoryRoute.LegalPageRoute> { backStackEntry ->
             val key = backStackEntry.toRoute<DirectoryRoute.LegalPageRoute>().key
-            LegalPageScreen(
+            LegalPageRoute(
                 key = runCatching { LegalPageKey.valueOf(key) }.getOrDefault(LegalPageKey.ABOUT),
                 onBack = { navController.popBackStack() },
             )
