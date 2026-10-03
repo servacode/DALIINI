@@ -215,8 +215,8 @@ export class AdminSystemApi extends runtime.BaseAPI {
     }
 
     /**
-     * Reports only whether each dependency is configured. No secret, connection string or credential is returned.
-     * Runtime and configuration status
+     * The database, Redis and the workers, the scheduler\'s heartbeat, storage, the verification-code channel, push, backups, error reporting and maintenance mode, each with a status and a sentence (DECISION-073). Probes time out after two seconds. No host, URL, credential or exception text is returned.
+     * Every dependency, asked directly
      */
     async adminSystemStatusRetrieveRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminSystemStatus>> {
         const queryParameters: any = {};
@@ -245,8 +245,8 @@ export class AdminSystemApi extends runtime.BaseAPI {
     }
 
     /**
-     * Reports only whether each dependency is configured. No secret, connection string or credential is returned.
-     * Runtime and configuration status
+     * The database, Redis and the workers, the scheduler\'s heartbeat, storage, the verification-code channel, push, backups, error reporting and maintenance mode, each with a status and a sentence (DECISION-073). Probes time out after two seconds. No host, URL, credential or exception text is returned.
+     * Every dependency, asked directly
      */
     async adminSystemStatusRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminSystemStatus> {
         const response = await this.adminSystemStatusRetrieveRaw(initOverrides);

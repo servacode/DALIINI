@@ -25,8 +25,22 @@ ADVERTISEMENT_TARGET_SCOPE = Advertisement.TargetScope.choices
 AVAILABILITY_STATE = [state.value for state in AvailabilityState]
 
 # Not model-backed: produced directly by the views.
-DEPENDENCY_CONFIGURED = ["configured", "unconfigured"]
-DATABASE_HEALTH = ["ok", "unavailable"]
+LEGAL_DOCUMENT_KEY = ["ABOUT", "PRIVACY", "TERMS", "INSTRUCTIONS", "FAQ", "CONTACT"]
+# The console's system page (DECISION-073).
+HEALTH_CHECK_KEY = [
+    "database",
+    "redis",
+    "worker",
+    "scheduler",
+    "storage",
+    "otp",
+    "push",
+    "backup",
+    "errors",
+    "maintenance",
+]
+HEALTH_STATUS = ["ok", "warning", "failed", "off"]
+HEALTH_OVERALL = ["ok", "warning", "failed"]
 OWNER_REQUIRED_ACTION = [
     "REVIEW_REJECTION",
     "COMPLETE_AND_SUBMIT",

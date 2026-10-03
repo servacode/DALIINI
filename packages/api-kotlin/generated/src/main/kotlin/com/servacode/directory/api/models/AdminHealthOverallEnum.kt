@@ -21,18 +21,21 @@ import kotlinx.serialization.Serializable
 
 
 /**
- * * `ok` - ok * `unavailable` - unavailable
+ * * `ok` - ok * `warning` - warning * `failed` - failed
  *
- * Values: ok,unavailable
+ * Values: ok,warning,failed
  */
 @Serializable
-enum class DatabaseHealthEnum(val value: kotlin.String) {
+enum class AdminHealthOverallEnum(val value: kotlin.String) {
 
     @SerialName(value = "ok")
     ok("ok"),
 
-    @SerialName(value = "unavailable")
-    unavailable("unavailable");
+    @SerialName(value = "warning")
+    warning("warning"),
+
+    @SerialName(value = "failed")
+    failed("failed");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -47,12 +50,12 @@ enum class DatabaseHealthEnum(val value: kotlin.String) {
         /**
          * Converts the provided [data] to a [String] on success, null otherwise.
          */
-        fun encode(data: kotlin.Any?): kotlin.String? = if (data is DatabaseHealthEnum) "$data" else null
+        fun encode(data: kotlin.Any?): kotlin.String? = if (data is AdminHealthOverallEnum) "$data" else null
 
         /**
-         * Returns a valid [DatabaseHealthEnum] for [data], null otherwise.
+         * Returns a valid [AdminHealthOverallEnum] for [data], null otherwise.
          */
-        fun decode(data: kotlin.Any?): DatabaseHealthEnum? = data?.let {
+        fun decode(data: kotlin.Any?): AdminHealthOverallEnum? = data?.let {
           val normalizedData = "$it".lowercase()
           values().firstOrNull { value ->
             it == value || normalizedData == "$value".lowercase()

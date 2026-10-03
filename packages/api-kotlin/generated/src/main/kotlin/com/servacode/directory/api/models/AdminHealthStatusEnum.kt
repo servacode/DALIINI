@@ -21,18 +21,24 @@ import kotlinx.serialization.Serializable
 
 
 /**
- * * `configured` - configured * `unconfigured` - unconfigured
+ * * `ok` - ok * `warning` - warning * `failed` - failed * `off` - off
  *
- * Values: configured,unconfigured
+ * Values: ok,warning,failed,off
  */
 @Serializable
-enum class DependencyConfiguredEnum(val value: kotlin.String) {
+enum class AdminHealthStatusEnum(val value: kotlin.String) {
 
-    @SerialName(value = "configured")
-    configured("configured"),
+    @SerialName(value = "ok")
+    ok("ok"),
 
-    @SerialName(value = "unconfigured")
-    unconfigured("unconfigured");
+    @SerialName(value = "warning")
+    warning("warning"),
+
+    @SerialName(value = "failed")
+    failed("failed"),
+
+    @SerialName(value = "off")
+    off("off");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -47,12 +53,12 @@ enum class DependencyConfiguredEnum(val value: kotlin.String) {
         /**
          * Converts the provided [data] to a [String] on success, null otherwise.
          */
-        fun encode(data: kotlin.Any?): kotlin.String? = if (data is DependencyConfiguredEnum) "$data" else null
+        fun encode(data: kotlin.Any?): kotlin.String? = if (data is AdminHealthStatusEnum) "$data" else null
 
         /**
-         * Returns a valid [DependencyConfiguredEnum] for [data], null otherwise.
+         * Returns a valid [AdminHealthStatusEnum] for [data], null otherwise.
          */
-        fun decode(data: kotlin.Any?): DependencyConfiguredEnum? = data?.let {
+        fun decode(data: kotlin.Any?): AdminHealthStatusEnum? = data?.let {
           val normalizedData = "$it".lowercase()
           values().firstOrNull { value ->
             it == value || normalizedData == "$value".lowercase()

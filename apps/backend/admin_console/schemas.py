@@ -17,6 +17,7 @@ from rest_framework import serializers
 
 from accounts.views_mfa import MfaStatusSerializer
 from content_services.models import Advertisement
+from core.enums import HEALTH_CHECK_KEY, HEALTH_OVERALL, HEALTH_STATUS
 from core.openapi import CoordinatesSerializer
 from core.pagination import CursorEnvelope
 from directory.models import Category
@@ -677,15 +678,34 @@ class AdminSettingWrittenSerializer(serializers.Serializer[Any]):
     value = serializers.JSONField(allow_null=True)
 
 
+class AdminHealthMetricSerializer(serializers.Serializer[Any]):
+    key = serializers.CharField()
+    value = serializers.IntegerField()
+
+
+class AdminHealthCheckSerializer(serializers.Serializer[Any]):
+    """One dependency, asked directly. No host, URL, credential or exception text."""
+
+    key = serializers.ChoiceField(choices=HEALTH_CHECK_KEY)
+    status = serializers.ChoiceField(
+        choices=HEALTH_STATUS,
+        help_text="`warning`: working, but someone should look. `off`: not used by this "
+        "deployment (a development stack).",
+    )
+    summary = serializers.CharField(help_text="One sentence for the operator, in Arabic.")
+    latencyMs = serializers.IntegerField(allow_null=True)
+    lastOkAt = serializers.DateTimeField(allow_null=True)
+    lastFailureAt = serializers.DateTimeField(allow_null=True)
+    metrics = AdminHealthMetricSerializer(many=True)
+
+
 class AdminSystemStatusSerializer(serializers.Serializer[Any]):
-    """Configuration presence only. No credential or connection string is exposed."""
+    """Each dependency asked directly, with a short timeout. No credential is exposed."""
 
     apiVersion = serializers.CharField()
     environment = serializers.CharField()
-    database = serializers.ChoiceField(choices=["ok", "unavailable"])
-    redis = serializers.ChoiceField(choices=["configured", "unconfigured"])
-    celery = serializers.ChoiceField(choices=["configured", "unconfigured"])
-    storage = serializers.ChoiceField(choices=["configured", "unconfigured"])
+    overall = serializers.ChoiceField(choices=HEALTH_OVERALL)
+    checks = AdminHealthCheckSerializer(many=True)
     schemaHash = serializers.CharField()
     checkedAt = serializers.DateTimeField()
 

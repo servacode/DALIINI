@@ -14,6 +14,11 @@ line of recovery; these logical dumps are the provider-independent copy.
   optional `AWS_ENDPOINT_URL` (R2/MinIO), `AWS_DEFAULT_REGION`, `BACKUP_S3_PREFIX`.
 - Use a bucket separate from the media buckets, with credentials scoped to it.
 - Verify: the cron's last run is green in Render and the newest object is < 26 h old.
+- Each run writes its outcome back to the database it dumped (`health_servicesignal`, row
+  `backup`). The console's «حالة النظام» page reads it: green within 26 h of the last
+  backup, amber up to 50 h, red after that or when the last attempt failed (DECISION-073).
+  The write is best-effort and never fails a backup; a pruning error after the upload does
+  not count as a failed backup.
 
 ## Restore
 

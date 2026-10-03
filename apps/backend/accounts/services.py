@@ -16,6 +16,7 @@ from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from audit.services import record_audit
 from core.exceptions import ConflictError, DomainError
 from facilities.models import Facility, FacilityMembership
+from health.beacons import OTP, record_failure, record_ok
 from locations.models import Province
 from notifications.services import (
     deactivate_push_tokens_for_sessions,
@@ -95,11 +96,14 @@ def start_challenge(
         ) from exc
     except TransientOtpError as exc:
         challenge.delete()
+        # The channel is down, not the person's number: this is what the system page counts.
+        record_failure(OTP, "unavailable")
         raise DomainError(
             "OTP_DELIVERY_UNAVAILABLE",
             message="تعذّر إرسال رمز التحقق الآن. حاول مرة أخرى بعد قليل.",
             status_code=503,
         ) from exc
+    record_ok(OTP)
     return challenge
 
 

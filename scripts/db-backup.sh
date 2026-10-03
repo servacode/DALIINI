@@ -14,6 +14,10 @@
 # The dump is pg_dump custom format (-Fc), which is already compressed internally, then
 # gzip'd for the transfer. A .sha256 sidecar is uploaded next to it so a restore can
 # verify integrity before touching the target database.
+#
+# The outcome is written back to the database it dumped (`health_servicesignal`, row
+# `backup`), which is how the console's system page knows the last backup and whether the
+# last attempt failed (DECISION-073). That write is best-effort: it never fails a backup.
 # Runbook: infrastructure/BACKUP-RESTORE.md
 set -euo pipefail
 
@@ -36,8 +40,27 @@ aws_s3() {
 
 log() { printf '%s [db-backup] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"; }
 
+# Tell the console how this run ended. The reason is a fixed word, never output or a path.
+report() {
+  local sql
+  if [[ "$1" == ok ]]; then
+    sql="INSERT INTO health_servicesignal (name, ok_at, failed_at, failure, failures)
+         VALUES ('backup', now(), NULL, '', 0)
+         ON CONFLICT (name) DO UPDATE SET ok_at = now(), failures = 0"
+  else
+    sql="INSERT INTO health_servicesignal (name, ok_at, failed_at, failure, failures)
+         VALUES ('backup', NULL, now(), 'backup_failed', 1)
+         ON CONFLICT (name) DO UPDATE SET failed_at = now(), failure = 'backup_failed',
+           failures = health_servicesignal.failures + 1"
+  fi
+  psql --no-psqlrc --quiet --dbname="$DATABASE_URL" -v ON_ERROR_STOP=1 -c "$sql" >/dev/null 2>&1 \
+    || log "could not record the outcome for the console (continuing)"
+}
+
 workdir="$(mktemp -d)"
-trap 'rm -rf "$workdir"' EXIT
+finished=0
+# On any exit before the end, the run failed: say so, then clean up.
+trap '[[ $finished == 1 ]] || report failed; rm -rf "$workdir"' EXIT
 
 stamp="$(date -u +%Y%m%dT%H%M%SZ)"
 name="db-${stamp}.dump.gz"
@@ -57,6 +80,9 @@ dest="s3://${BACKUP_S3_BUCKET}/${PREFIX}"
 log "uploading $name ($(du -h "$file" | cut -f1)) to $dest/"
 aws_s3 cp --only-show-errors "$file" "$dest/$name"
 aws_s3 cp --only-show-errors "$file.sha256" "$dest/$name.sha256"
+# The backup exists from here on; a pruning problem below is not a failed backup.
+finished=1
+report ok
 
 if [[ "$RETENTION_DAYS" =~ ^[0-9]+$ ]] && (( RETENTION_DAYS > 0 )); then
   cutoff="$(date -u -d "-${RETENTION_DAYS} days" +%Y%m%dT%H%M%SZ)"

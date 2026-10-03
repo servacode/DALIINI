@@ -1363,6 +1363,57 @@ the plugin is in place for them.
 * **A role somebody holds is not deleted** (`ROLE_IN_USE`, 409), so a role is never taken from
   anyone as a side effect.
 
+## DECISION-073 — The system page asks each service; background services record their last outcome
+
+**Date:** 2026-10-03 · **Phase 4.2 of the roadmap.**
+
+**Why:** the system page asked the database and nothing else. It called Redis, Celery and
+storage "configured" whenever a setting existed. Nothing showed whether a verification code had
+reached anyone, whether the WhatsApp bot was still paired, whether the scheduler ran, or when
+the last backup was taken.
+
+**Decision:**
+
+* **Ask directly, with short timeouts** (`admin_console/system_health.py`). Network probes run
+  in parallel and time out after two seconds; a probe that crashes reads as failed and never
+  breaks the page. Each service is checked as follows:
+  * **Database:** `SELECT 1`, plus any migration not yet applied.
+  * **Redis:** `PING`.
+  * **Workers:** a Celery ping through Redis, reporting how many answered.
+  * **Storage:** `HeadBucket` on both buckets.
+  * **WhatsApp bot:** its own `/health` endpoint, which tells "connected" from "logged out:
+    pair the number again", from "running but disconnected", and from "unreachable".
+* **Record what does not answer requests** (`health.ServiceSignal`, one row per service: last
+  success, last failure, a reason code, failures since the last success):
+  * **Scheduler:** `health.tasks.heartbeat`, scheduled by beat every five minutes and run by a
+    worker, so one fresh row proves both.
+  * **Codes:** a sent code is a success. A channel failure is a failure; a wrong number is not,
+    because it is the person's problem and not the channel's.
+  * **Push:** a failure is recorded on a transient error or a misconfiguration. Successes are
+    read from the delivery table, so a broadcast does not write a hot row per device.
+  * **Backup:** `scripts/db-backup.sh` writes its outcome with `psql`, best-effort.
+  * A recording error is logged and swallowed. It never fails the work.
+* **Four statuses:**
+  * `ok`;
+  * `warning`: working, but someone should look;
+  * `failed`;
+  * `off`: not used by this deployment. A development stack does not alarm about backups,
+    error reporting or the code channel.
+* **Thresholds:**
+  * the scheduler is down after 15 minutes without a heartbeat;
+  * a backup is due within 26 hours and late after 50;
+  * the code channel is `warning` after one failure since the last code that got through, and
+    `failed` after three.
+* **The dashboard's warnings** now include the scheduler, the backup and failing codes. These are
+  database reads only, with no network calls.
+* **Nothing leaves the backend** that is a host, a URL, a credential or exception text. A
+  failure is described by what it means, and the detail stays in the server log.
+* The contract's `AdminSystemStatus` changes:
+  * it is now `overall` plus a list of `checks`, each with a status, a sentence, latency,
+    last success and failure, and metrics;
+  * the old "configured" fields are removed (only the console read them);
+  * enum names are pinned, so a later field named `key` cannot rename `KeyEnum` again.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

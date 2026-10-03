@@ -2,11 +2,11 @@
 
 from rest_framework import serializers
 
+from core.enums import LEGAL_DOCUMENT_KEY
+
 
 class LegalDocumentSummarySerializer(serializers.Serializer):  # type: ignore[type-arg]
-    key = serializers.ChoiceField(
-        choices=["ABOUT", "PRIVACY", "TERMS", "INSTRUCTIONS", "FAQ", "CONTACT"]
-    )
+    key = serializers.ChoiceField(choices=LEGAL_DOCUMENT_KEY)
     titleAr = serializers.CharField()
     version = serializers.IntegerField()
     publishedAt = serializers.DateTimeField(allow_null=True)

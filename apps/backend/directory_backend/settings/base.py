@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
@@ -183,8 +184,11 @@ SPECTACULAR_SETTINGS = {
         "AdvertisementActionTypeEnum": "core.enums.ADVERTISEMENT_ACTION_TYPE",
         "AdvertisementTargetScopeEnum": "core.enums.ADVERTISEMENT_TARGET_SCOPE",
         "AvailabilityStateEnum": "core.enums.AVAILABILITY_STATE",
-        "DependencyConfiguredEnum": "core.enums.DEPENDENCY_CONFIGURED",
-        "DatabaseHealthEnum": "core.enums.DATABASE_HEALTH",
+        # Named here so a later `key` field elsewhere cannot rename this one (it did once).
+        "KeyEnum": "core.enums.LEGAL_DOCUMENT_KEY",
+        "AdminHealthCheckKeyEnum": "core.enums.HEALTH_CHECK_KEY",
+        "AdminHealthStatusEnum": "core.enums.HEALTH_STATUS",
+        "AdminHealthOverallEnum": "core.enums.HEALTH_OVERALL",
         "OwnerRequiredActionEnum": "core.enums.OWNER_REQUIRED_ACTION",
         "PushPlatformEnum": "notifications.models.DevicePushToken.Platform",
         "FacilityReportReasonEnum": "facilities.models.FacilityReport.Reason",
@@ -236,6 +240,11 @@ CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 # Periodic maintenance, run by `celery -A directory_backend beat`. Times are Damascus
 # local (CELERY_TIMEZONE) and sit in the quiet night hours.
 CELERY_BEAT_SCHEDULE = {
+    # Proves beat and a worker are both alive; the console's system page reads it (DECISION-073).
+    "health-heartbeat": {
+        "task": "health.tasks.heartbeat",
+        "schedule": timedelta(minutes=5),
+    },
     "analytics-retention-purge": {
         "task": "analytics.tasks.purge_analytics_retention",
         "schedule": crontab(hour=3, minute=17),

@@ -127,7 +127,7 @@ Class | Method | HTTP request | Description
 *AdminSystemAPI* | [**adminDashboardRetrieve**](docs/AdminSystemAPI.md#admindashboardretrieve) | **GET** /api/v1/admin/dashboard/ | Operational counters for the review desk
 *AdminSystemAPI* | [**adminMeRetrieve**](docs/AdminSystemAPI.md#adminmeretrieve) | **GET** /api/v1/admin/me/ | The current operator and the permissions they hold
 *AdminSystemAPI* | [**adminSearchRetrieve**](docs/AdminSystemAPI.md#adminsearchretrieve) | **GET** /api/v1/admin/search/ | Search facilities, users and applications at once
-*AdminSystemAPI* | [**adminSystemStatusRetrieve**](docs/AdminSystemAPI.md#adminsystemstatusretrieve) | **GET** /api/v1/admin/system/status/ | Runtime and configuration status
+*AdminSystemAPI* | [**adminSystemStatusRetrieve**](docs/AdminSystemAPI.md#adminsystemstatusretrieve) | **GET** /api/v1/admin/system/status/ | Every dependency, asked directly
 *AdminSystemAPI* | [**adminTasksRetrieve**](docs/AdminSystemAPI.md#admintasksretrieve) | **GET** /api/v1/admin/tasks/ | The operator&#39;s queue: what is waiting, oldest first
 *AdminTaxonomyAPI* | [**adminCategoriesList**](docs/AdminTaxonomyAPI.md#admincategorieslist) | **GET** /api/v1/admin/categories/ | List categories
 *AdminTaxonomyAPI* | [**adminCategoryCapabilitiesReplace**](docs/AdminTaxonomyAPI.md#admincategorycapabilitiesreplace) | **PUT** /api/v1/admin/categories/{category_id}/capabilities/ | Set the capability flags of a category
@@ -309,6 +309,11 @@ Class | Method | HTTP request | Description
  - [AdminFaqEntry](docs/AdminFaqEntry.md)
  - [AdminFaqEntryList](docs/AdminFaqEntryList.md)
  - [AdminFaqEntryRequest](docs/AdminFaqEntryRequest.md)
+ - [AdminHealthCheck](docs/AdminHealthCheck.md)
+ - [AdminHealthCheckKeyEnum](docs/AdminHealthCheckKeyEnum.md)
+ - [AdminHealthMetric](docs/AdminHealthMetric.md)
+ - [AdminHealthOverallEnum](docs/AdminHealthOverallEnum.md)
+ - [AdminHealthStatusEnum](docs/AdminHealthStatusEnum.md)
  - [AdminId](docs/AdminId.md)
  - [AdminLinkEntityTypeEnum](docs/AdminLinkEntityTypeEnum.md)
  - [AdminMe](docs/AdminMe.md)
@@ -407,9 +412,7 @@ Class | Method | HTTP request | Description
  - [ContentPage](docs/ContentPage.md)
  - [ContentPageKindEnum](docs/ContentPageKindEnum.md)
  - [Coordinates](docs/Coordinates.md)
- - [DatabaseHealthEnum](docs/DatabaseHealthEnum.md)
  - [DeletionRequest](docs/DeletionRequest.md)
- - [DependencyConfiguredEnum](docs/DependencyConfiguredEnum.md)
  - [DestinationEnum](docs/DestinationEnum.md)
  - [DuplicateReasonEnum](docs/DuplicateReasonEnum.md)
  - [DutyImportResult](docs/DutyImportResult.md)
