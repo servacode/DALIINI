@@ -24,7 +24,7 @@ def test_rejection_requires_reason() -> None:
 
 
 def test_private_evidence_is_no_store_and_audited() -> None:
-    views = source("admin_console/views.py")
+    views = source("admin_console/views_reviews.py")
     assert '"Cache-Control"] = "private, no-store"' in views
     assert 'action="verification_evidence.viewed"' in views
 
