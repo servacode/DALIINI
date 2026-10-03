@@ -73,6 +73,15 @@ export function ProvincePicker({ provinces }: { provinces: Province[] }) {
   useEffect(() => {
     if (named) remember(named);
   }, [named]);
+  /* The home page without `?p=` is rendered for the first province. A visitor who chose another
+     one before is taken back to it, once, rather than shown one province under another's name. */
+  const returning =
+    pathname === "/" && !params.get("p") && remembered && codes.includes(remembered) && remembered !== codes[0]
+      ? remembered
+      : null;
+  useEffect(() => {
+    if (returning) router.replace(`/?p=${returning}`, { scroll: false });
+  }, [returning, router]);
 
   const current = named ?? (remembered && codes.includes(remembered) ? remembered : codes[0] ?? "");
 
