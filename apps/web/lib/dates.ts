@@ -127,3 +127,11 @@ export const WEEKDAYS_AR: readonly string[] = WEEKDAY_KEYS.map(
 
 /** Saturday first, as the week is counted locally. */
 export const WEEKDAY_DISPLAY_ORDER = [5, 6, 0, 1, 2, 3, 4] as const;
+
+const SHORT_WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+/* Today's weekday in Damascus, in the backend's numbering (Monday 0 … Sunday 6). */
+export function damascusWeekday(now: Date = new Date()): number {
+  const name = new Intl.DateTimeFormat("en-US", { timeZone: SITE_TIME_ZONE, weekday: "short" }).format(now);
+  return SHORT_WEEKDAYS.indexOf(name);
+}

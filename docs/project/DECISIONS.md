@@ -1243,6 +1243,48 @@ had carried a dark theme since identity v2, but the site only followed the devic
 * `robots.txt` no longer disallows `/_next/`. That rule kept crawlers from fetching the site's own
   scripts and styles.
 
+## DECISION-070 — The home page answers questions, cards are rows, a facility page shows its photos
+
+**Date:** 2026-10-03 · **Phases 3.2 and 3.3 of the roadmap.**
+
+**Why:**
+* On a phone, twelve facility cards were a scroll of several metres. Each card led with a
+  photograph the width of the screen, and most of those photographs were the same empty frame.
+* The home page opened on an advertisement and had no search box of its own.
+* A facility page never showed the photographs its owner had uploaded, and it offered nothing to
+  tap once the reader had scrolled past the top.
+
+**Decision:**
+
+* **The home page** answers, in order, what someone opens a health directory to ask:
+  * **Search:** a search box, first, on the brand's band, with shortcuts to duty, to what is open
+    now and to emergency numbers.
+  * **On duty now** in the province: up to six pharmacies, and a link to the roster.
+  * **Advertisements:** shown only when there are any.
+  * **Categories:** tiles, each with its mark (from the category's `iconKey`) and linking to its
+    own page. On a phone they are rows.
+  * **One category's list:** with the open-now and on-duty filters.
+  * **Two invitations:** the app, when there is a download link, and for owners.
+* **A card is a compact row:**
+  * **Top:** a 64-pixel thumbnail (the owner's photograph, or the category's mark), then the name
+    as a link to the facility's page, then the status, category, area and rating on one line,
+    then the street.
+  * **Action row:** calling, which carries the number, then WhatsApp, the route, and a menu (⋯).
+    The menu opens a dialog with the hours, sharing, the facility's page and reporting.
+  * About 170 pixels tall instead of about 400. No horizontal overflow at 340, 360 and 390 pixels
+    wide, nor on a desk.
+* **The facility page:**
+  * **Photographs:** every one, in the owner's order. On a phone they are a strip that snaps; on
+    a desk, a mosaic.
+  * **Opening hours:** today's row is marked, by the weekday in Damascus.
+  * **The ways to reach it:** on a desk, a panel beside the page that stays in view; on a phone,
+    a dock fixed along the bottom of the screen.
+  * **One way of doing each thing:** the number is written as people write it locally, WhatsApp
+    falls back to the phone number as it does on the cards, and corrections go through the contact
+    form.
+* The page claims nothing the product has not decided. Whether listing a facility is free is
+  the owner's decision, so the page does not say it is.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

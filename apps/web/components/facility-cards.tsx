@@ -11,12 +11,13 @@ import { CardDialog } from "./card-dialog";
 import { Icon, Rating, StatusBadge } from "./ui";
 
 /**
- * The facilities of a category, as cards side by side.
+ * The facilities of a category, as compact cards: one column on a phone, a grid on a desk.
  *
- * A card leads with the photograph its owner uploaded, because a person choosing a pharmacy
- * recognises the shopfront before they read the name. Until one is uploaded the card shows the
- * category's own mark on a soft ground rather than a grey rectangle: an empty frame reads as
- * something that failed to load, and nothing failed.
+ * A card is a row a thumb can scan, not a poster. The shopfront its owner uploaded is a small
+ * square beside the name, or the category's mark on a soft ground until there is one; the name
+ * and whether it is open now come first, where it is second, and the ways to reach it last, in
+ * one row. A photograph the width of the screen made twelve pharmacies a scroll of several
+ * metres on a phone, most of it the same empty frame.
  *
  * What a visitor usually wants happens on the card: call, WhatsApp and the route are one tap,
  * the opening hours and the report open over the list rather than away from it, and the link is
@@ -69,23 +70,25 @@ const REPORT_REASONS = [
 
 type Hint = "copied" | "failed" | null;
 type Sending = "idle" | "sending" | "sent" | "throttled" | "failed";
+/* What is open over the card: its short menu, or one of the two things the menu leads to. */
+type Panel = "menu" | "hours" | "report" | null;
 
 function Card({ f }: { f: CompactFacility }) {
-  const [showHours, setShowHours] = useState(false);
+  const [panel, setPanel] = useState<Panel>(null);
   const [hours, setHours] = useState<HoursEntry[] | null>(null);
   const [hoursFailed, setHoursFailed] = useState(false);
   const [hint, setHint] = useState<Hint>(null);
-  const [reporting, setReporting] = useState(false);
   const [sending, setSending] = useState<Sending>("idle");
 
   const tel = telLink(f.phone);
   const wa = whatsAppFor(f.whatsapp, f.phone);
   const directions = directionsLink(f.location);
   const shown = localPhone(f.phone);
-  const where = [f.addressAr, f.neighborhood?.nameAr, f.city?.nameAr].filter(Boolean).join("، ");
+  const area = f.neighborhood?.nameAr ?? f.city?.nameAr ?? null;
+  const page = facilityPath(f);
 
   const openHours = useCallback(() => {
-    setShowHours(true);
+    setPanel("hours");
     if (hours || hoursFailed) return;
     fetch(`/api/facility/${f.id}`)
       .then((response) => (response.ok ? response.json() : Promise.reject(response.status)))
@@ -135,117 +138,117 @@ function Card({ f }: { f: CompactFacility }) {
 
   return (
     <article className="facility-card">
-      {/*
-        * A strip before the picture: whether it is open, and the two things you look at rather
-        * than act on. Keeping them here leaves the picture unobstructed and gives every card the
-        * same first line, whatever its photograph happens to be.
-        */}
-      <div className="facility-bar">
-        <StatusBadge state={f.availability.state} />
-        <div className="facility-bar-actions">
-          <button type="button" aria-haspopup="dialog" onClick={openHours}>
-            <Icon name="clock" size={15} />
-            الدوام
-          </button>
-          <button type="button" onClick={share}>
-            <Icon name="share" size={15} />
-            مشاركة
-          </button>
-        </div>
-      </div>
-
-      <div className="facility-photo">
+      {/* The shopfront when an owner has uploaded one, the category's mark until then. The name
+          beside it is the link a reader uses; this one is the same page for a pointer. */}
+      <Link href={page} className="facility-thumb" tabIndex={-1} aria-hidden="true">
         {f.imageUrl ? (
           /* eslint-disable-next-line @next/next/no-img-element -- remote media, no loader */
           <img src={f.imageUrl} alt="" loading="lazy" />
         ) : (
-          <Icon name="building" size={28} />
+          <Icon name="building" size={26} />
         )}
-      </div>
+      </Link>
 
-      <div className="facility-body">
-        {/* What it is. */}
+      <div className="facility-main">
         <h3>
-          <Link href={facilityPath(f)} className="title-link">{f.nameAr}</Link>
+          <Link href={page} className="title-link">{f.nameAr}</Link>
         </h3>
-        <div className="facility-where">
-          <span className="meta">
-            <span>{f.category.nameAr}</span>
-            {f.city ? <span>· {f.city.nameAr}</span> : null}
-          </span>
+        {/* Whether it is open leads the line under the name, where it never squeezes the name. */}
+        <p className="facility-sub">
+          <StatusBadge state={f.availability.state} />
+          <span>{f.category.nameAr}</span>
+          {area ? <span>{area}</span> : null}
           <Rating average={f.ratingAverage} count={f.ratingCount} />
-        </div>
-
+        </p>
         {/* Where it is, in words rather than on a map: a reader knows their own streets. */}
-        {where ? <p className="facility-address">{where}</p> : null}
-
-        {/*
-          * The number, and the two ways to use it. A browser on a desk cannot dial, so the digits
-          * are shown rather than hidden behind the word "call" — and they are shown the way they
-          * are written here, without the country code.
-          */}
-        {shown ? (
-          <div className="facility-phone">
-            {tel ? (
-              <a
-                className="way way-call"
-                href={tel}
-                aria-label={`اتصل بـ${f.nameAr}`}
-                title="اتصال"
-              >
-                <Icon name="phone" size={17} />
-              </a>
-            ) : null}
-            <span className="ltr">{shown}</span>
-            {wa ? (
-              <a
-                className="way way-whatsapp"
-                href={wa}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`راسل ${f.nameAr} على واتساب`}
-                title="واتساب"
-              >
-                <Icon name="whatsapp" size={17} />
-              </a>
-            ) : null}
-          </div>
-        ) : null}
-
-        {/* The floor of the card: the way there, and a way to say it is wrong. */}
-        <div className="facility-actions">
-          {directions ? (
-            <a
-              className="button button-sm"
-              href={directions}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`الطريق إلى ${f.nameAr}`}
-            >
-              <Icon name="directions" size={16} />
-              الطريق
-            </a>
-          ) : null}
-          <button
-            type="button"
-            className="button button-danger button-sm"
-            aria-haspopup="dialog"
-            onClick={() => setReporting(true)}
-          >
-            <Icon name="flag" size={16} />
-            إبلاغ
-          </button>
-        </div>
-
-        {hint ? (
-          <p className="facility-hint" role="status">
-            {hint === "copied" ? "نُسخ الرابط." : "تعذّر نسخ الرابط."}
-          </p>
-        ) : null}
+        {f.addressAr ? <p className="facility-address">{f.addressAr}</p> : null}
       </div>
 
-      {showHours ? (
-        <CardDialog title={`أوقات دوام ${f.nameAr}`} onClose={() => setShowHours(false)}>
+      {/*
+        * What people come for, on the card itself. The number is shown, not hidden behind the
+        * word "call": a browser on a desk cannot dial, and the digits are what it can use. The
+        * quieter three (hours, share, report) are icons at the end of the same row.
+        */}
+      <div className="facility-ways">
+        {tel ? (
+          <a className="way-button way-call" href={tel} aria-label={`اتصل بـ${f.nameAr}: ${shown}`}>
+            <Icon name="phone" size={17} />
+            <span className="ltr">{shown}</span>
+          </a>
+        ) : null}
+        {wa ? (
+          <a
+            className="way-button way-whatsapp"
+            href={wa}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`راسل ${f.nameAr} على واتساب`}
+            title="واتساب"
+          >
+            <Icon name="whatsapp" size={17} />
+          </a>
+        ) : null}
+        {directions ? (
+          <a
+            className="way-button"
+            href={directions}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`الطريق إلى ${f.nameAr}`}
+            title="الطريق"
+          >
+            <Icon name="directions" size={17} />
+          </a>
+        ) : null}
+        <button
+          type="button"
+          className="facility-more"
+          aria-haspopup="dialog"
+          onClick={() => setPanel("menu")}
+          aria-label={`المزيد عن ${f.nameAr}: الدوام، المشاركة، الإبلاغ`}
+          title="المزيد"
+        >
+          <Icon name="menu" size={18} />
+        </button>
+      </div>
+
+      {hint ? (
+        <p className="facility-hint" role="status">
+          {hint === "copied" ? "نُسخ الرابط." : "تعذّر نسخ الرابط."}
+        </p>
+      ) : null}
+
+      {panel === "menu" ? (
+        <CardDialog title={f.nameAr} onClose={() => setPanel(null)}>
+          <div className="card-menu">
+            <button type="button" onClick={openHours}>
+              <Icon name="clock" />
+              أوقات الدوام
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPanel(null);
+                void share();
+              }}
+            >
+              <Icon name="share" />
+              مشاركة الرابط
+            </button>
+            <Link href={page}>
+              <Icon name="externalLink" />
+              صفحة المنشأة
+            </Link>
+            <button type="button" className="danger" onClick={() => setPanel("report")}>
+              <Icon name="flag" />
+              الإبلاغ عن خطأ
+            </button>
+          </div>
+        </CardDialog>
+      ) : null}
+
+      {panel === "hours" ? (
+        <CardDialog title={`أوقات دوام ${f.nameAr}`} onClose={() => setPanel(null)}>
           {hours ? (
             hours.length > 0 ? (
               <Hours hours={hours} />
@@ -260,8 +263,8 @@ function Card({ f }: { f: CompactFacility }) {
         </CardDialog>
       ) : null}
 
-      {reporting ? (
-        <CardDialog title={`الإبلاغ عن ${f.nameAr}`} onClose={() => setReporting(false)}>
+      {panel === "report" ? (
+        <CardDialog title={`الإبلاغ عن ${f.nameAr}`} onClose={() => setPanel(null)}>
           {sending === "sent" ? (
             <p role="status">شكراً، سيراجع فريقنا البلاغ.</p>
           ) : sending === "throttled" ? (

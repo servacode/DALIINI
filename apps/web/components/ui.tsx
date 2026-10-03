@@ -77,6 +77,23 @@ export function Rating({ average, count }: { average: number | null; count: numb
 /* The card grid lives in its own client component: a card now opens over the list. */
 export { FacilityCards as FacilityList } from "./facility-cards";
 
+/*
+ * A category's mark, from the `iconKey` the reference data gives it. A key the icon set does not
+ * know (a category added later) gets the plain building rather than nothing.
+ */
+const CATEGORY_ICONS: Record<string, IconName> = {
+  pharmacy: "pharmacy",
+  laboratory: "lab",
+  clinic: "clinic",
+  nursing: "heart",
+  supplies: "layers",
+  hospital: "emergency",
+};
+
+export function CategoryIcon({ iconKey, size = 24 }: { iconKey: string | null; size?: number }) {
+  return <Icon name={(iconKey && CATEGORY_ICONS[iconKey]) || "building"} size={size} />;
+}
+
 export function Unavailable() {
   return (
     <div className="card state" role="status">
