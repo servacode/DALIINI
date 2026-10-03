@@ -1911,6 +1911,54 @@ Approving them is the owner's; drafting them so that every sentence matches the 
 the domain, the Play account (EXT-001, EXT-003), and screenshots from the release build on a
 real phone. Screenshots are never mocked.
 
+## DECISION-085 — The first shared layers: a multiplatform convention, observability and analytics
+
+**Date:** 2026-10-03 · **Phase 8.1 of the roadmap; carries out DECISION-051.**
+
+**Why:** DECISION-051 moves the Android app's platform-free layers into Kotlin Multiplatform so
+the iPhone app reuses them. The move needs a build convention first, and proof on each step that
+the Android app is unchanged and that the shared code really compiles and runs on iOS. It starts
+now, while the Android release waits on the owner's accounts (EXT-001, EXT-003), because none of
+it changes what the Android app does.
+
+**Decision:**
+
+* **`serva.kmp.library`** in `build-logic`: Kotlin Multiplatform with AGP's multiplatform
+  Android library plugin (`com.android.kotlin.multiplatform.library`), the form AGP 9 supports
+  for a multiplatform module. The Android side keeps the Android libraries' levels (compileSdk
+  37, minSdk 24, JVM 17). The iOS targets are `iosArm64` (phones) and `iosSimulatorArm64` (the
+  simulator on Apple-silicon Macs); no Intel simulator. Android lint comes from `com.android.lint`
+  (`lintAndroidMain`) and the JVM tests run as `testAndroidHostTest`.
+* **The first two modules are shared:** `core:observability` and `core:analytics`. They were
+  already platform-free, and every feature depends on them. Their sources moved to
+  `src/commonMain`, and the analytics tests to `src/commonTest`, on `kotlin.test` rather than
+  JUnit. Kotlin/Native refuses a comma in a function name, so a shared test's backticked name
+  has none; two were reworded.
+  * `QueuedAnalyticsTracker` loses `@Inject` and `@Singleton`, which do not exist on iOS. The
+    Android app already built it by hand in `AnalyticsModule`, so nothing about how it is made
+    changes.
+  * The module now needs `kotlinx-coroutines-core`, not the Android artifact; the app still
+    brings the Android dispatcher.
+* **Where it is proven:**
+  * The same analytics tests run on the JVM, as the module's host tests and in the JVM harness,
+    and on the iPhone simulator.
+  * The Android workflow adds `testAndroidHostTest` to its unit gate and `lintAndroidMain` to
+    its lint gate.
+  * A new `ios-shared` job on a macOS runner runs `iosSimulatorArm64Test` and compiles for
+    devices.
+  * The iOS klibs also compile on Linux, so daily work needs no Mac; only linking and running
+    iOS code do.
+* **The JVM harness** compiles the shared modules' `commonMain` and runs their `commonTest`. It
+  no longer lists a `directory` feature that has not existed for some time.
+
+**Next, in order, each step keeping the Android app green and unchanged:**
+
+1. `core:model`, whose dates move from `java.time` to `kotlinx-datetime`.
+2. The network layer and the repositories.
+3. The screens, on Compose Multiplatform.
+4. The iPhone shell: MapLibre iOS, CoreLocation, the Keychain for the session, and APNs.
+5. The App Store. It needs the owner's Apple developer account.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

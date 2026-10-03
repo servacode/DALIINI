@@ -161,7 +161,8 @@ jobs:
       - name: Gate 2 — Android unit tests
         id: unit
         if: steps.assemble.outcome == 'success'
-        run: ./gradlew testDebugUnitTest :app:testLocalDebugUnitTest --continue --stacktrace
+        # testAndroidHostTest: the multiplatform modules' tests on the JVM (DECISION-085).
+        run: ./gradlew testDebugUnitTest testAndroidHostTest :app:testLocalDebugUnitTest --continue --stacktrace
 
       - name: Gate 2b — platform-free JVM harness
         if: always() && steps.assemble.outcome == 'success'
@@ -200,7 +201,8 @@ jobs:
       - name: Gate 3 — Android lint
         id: lint
         if: always() && steps.assemble.outcome == 'success'
-        run: ./gradlew lintDebug :app:lintLocalDebug --continue --stacktrace
+        # lintAndroidMain: the multiplatform modules' Android lint (DECISION-085).
+        run: ./gradlew lintDebug lintAndroidMain :app:lintLocalDebug --continue --stacktrace
 
       # The two source qualifiers that describe the current source. The public, owner,
       # navigation and live-data qualifiers still assert the pre-binding stubs that INT-013
@@ -222,6 +224,49 @@ jobs:
           name: android-reports
           path: |
             apps/android/**/build/reports/
+            apps/android/**/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 30
+
+  # The layers the iPhone app shares with this one (DECISION-085), compiled for iOS and their
+  # common tests run on the iPhone simulator. Only a Mac links and runs iOS code; the klibs
+  # themselves also compile on Linux, which is how they are built day to day.
+  ios-shared:
+    runs-on: macos-15
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: apps/android
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate the Gradle wrapper against gradle.org's checksums
+        uses: gradle/actions/wrapper-validation@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Record the toolchain
+        run: |
+          java -version
+          xcodebuild -version
+          xcrun simctl list devices available | head -20
+          echo "ANDROID_HOME=$ANDROID_HOME"
+
+      - name: Shared modules on the iPhone simulator
+        run: ./gradlew iosSimulatorArm64Test compileKotlinIosArm64 --continue --stacktrace
+
+      - name: Upload the iOS test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-shared-reports
+          path: |
+            apps/android/**/build/reports/tests/
             apps/android/**/build/test-results/
           if-no-files-found: ignore
           retention-days: 30

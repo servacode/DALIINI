@@ -4,8 +4,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * The tracker the app actually uses.
@@ -23,9 +21,11 @@ import javax.inject.Singleton
  *
  * Both of those decisions live in [outcomeFor] and [enqueueBounded], which are pure functions
  * with their own tests — this class is only the plumbing around them.
+ *
+ * Shared with the iPhone app (DECISION-085), so it carries no injection annotations: each app
+ * builds the one instance itself (the Android app in `AnalyticsModule`).
  */
-@Singleton
-class QueuedAnalyticsTracker @Inject constructor(
+class QueuedAnalyticsTracker(
     private val transport: AnalyticsTransport,
     private val anonymousId: AnonymousId,
     scope: CoroutineScope,

@@ -1,14 +1,14 @@
+// Shared with the iPhone app (DECISION-085).
 plugins {
-    id("serva.android.library")
-    id("serva.android.hilt")
+    id("serva.kmp.library")
 }
 
-dependencies {
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-    // The sender is a coroutine collector; the rules it follows are pure and tested without one.
-    implementation(libs.kotlinx.coroutines.android)
-
-    testImplementation(libs.junit)
-    testImplementation(libs.kotlinx.coroutines.test)
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            // The sender is a coroutine collector; the rules it follows are pure and tested
+            // without one.
+            implementation(libs.kotlinx.coroutines.core)
+        }
+    }
 }

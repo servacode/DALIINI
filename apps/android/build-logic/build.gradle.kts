@@ -12,6 +12,8 @@ repositories {
 
 dependencies {
     implementation("com.android.tools.build:gradle:${libs.versions.agp.get()}")
+    // Kotlin Multiplatform, for the layers the iPhone app shares (DECISION-085).
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlin.get()}")
     implementation(
         "org.jetbrains.kotlin:compose-compiler-gradle-plugin:${libs.versions.kotlin.get()}"
     )

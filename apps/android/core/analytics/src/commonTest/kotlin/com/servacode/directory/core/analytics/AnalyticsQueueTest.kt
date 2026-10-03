@@ -1,13 +1,13 @@
 package com.servacode.directory.core.analytics
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /**
  * The rules that keep a measurement from harming what it measures. No Android, no network, no
- * clock: these run on the JVM in milliseconds, which is the point of having them separate from
- * the sender.
+ * clock: these run in milliseconds on the JVM and on the iPhone simulator alike, which is the
+ * point of having them separate from the sender.
  */
 class AnalyticsQueueTest {
 
@@ -27,7 +27,7 @@ class AnalyticsQueueTest {
     }
 
     @Test
-    fun `being told to slow down is a reason to wait, not to give up`() {
+    fun `being told to slow down is a reason to wait and not to give up`() {
         assertEquals(AnalyticsOutcome.RETRY, outcomeFor(429))
     }
 
@@ -46,7 +46,7 @@ class AnalyticsQueueTest {
     }
 
     @Test
-    fun `a full queue drops the oldest, not the newest`() {
+    fun `a full queue drops the oldest and keeps the newest`() {
         var pending = emptyList<Int>()
         repeat(60) { pending = enqueueBounded(pending, it, limit = 50) }
         // A product question is about what people are doing now, so the recent events are the
@@ -84,7 +84,7 @@ class AnalyticsQueueTest {
         )
         for (event in events) {
             for (key in event.properties.keys) {
-                assertTrue("${event.name} carries a forbidden key: $key", key !in forbidden)
+                assertTrue(key !in forbidden, "${event.name} carries a forbidden key: $key")
             }
         }
     }
@@ -132,7 +132,7 @@ class AnalyticsQueueTest {
             AnalyticsEvent.AdClick("a", "FACILITY"),
         )
         for (event in used) {
-            assertTrue("${event.name} is not in the backend registry", event.name in registered)
+            assertTrue(event.name in registered, "${event.name} is not in the backend registry")
         }
     }
 
