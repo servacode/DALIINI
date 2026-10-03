@@ -1,5 +1,6 @@
 import { tokens } from "@servacode/design-tokens/tokens";
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { SiteShell } from "../components/site-shell";
 import { THEME_SCRIPT } from "../components/theme-toggle";
@@ -32,13 +33,17 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   // The theme script sets `data-theme` on <html> before React hydrates it, so the one attribute
-  // the server could not know is expected to differ.
+  // the server could not know is expected to differ. `beforeInteractive` is Next's way to put a
+  // script in the document's head ahead of everything else; a bare <script> rendered by React
+  // also runs, but React warns about it whenever the layout renders on the client (a 404 does).
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
-      </head>
-      <body><SiteShell>{children}</SiteShell></body>
+      <body>
+        <Script id="theme" strategy="beforeInteractive">
+          {THEME_SCRIPT}
+        </Script>
+        <SiteShell>{children}</SiteShell>
+      </body>
     </html>
   );
 }

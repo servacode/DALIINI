@@ -54,8 +54,9 @@ const contentSecurityPolicy = [
   // (ISR) and a cached page has no request to mint a nonce for, so they are allowed
   // inline. The risk that normally carries is script injection through rendered data;
   // React escapes everything it renders here, and dangerouslySetInnerHTML is used only for
-  // JSON-LD built from JSON.stringify and for the fixed theme script (THEME_SCRIPT), which
-  // interpolates nothing a visitor or the API supplies.
+  // JSON-LD built from JSON.stringify. The one inline script of the site's own is the fixed
+  // theme script (THEME_SCRIPT, through next/script), which interpolates nothing a visitor or
+  // the API supplies.
   // `next dev` alone needs eval for React's debugging call stacks, as the console allows.
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
   `connect-src ${[withApi("'self'"), ...mapOrigins].join(" ")}`,
