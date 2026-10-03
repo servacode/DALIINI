@@ -1,7 +1,8 @@
 // Shared with the iPhone app (DECISION-088). commonMain holds what every repository speaks: the
 // boundaries and their inputs, realtime models, maintenance state, push registration, sign-out
 // and the place-name resolver. androidMain holds Android's transport, Retrofit and OkHttp on
-// the generated JVM client, with the map providers and the Hilt modules.
+// the generated JVM client, with the map providers and the Hilt modules. iosMain holds what the
+// iPhone reads from the platform itself: the network monitor (DECISION-092).
 plugins {
     id("serva.kmp.hilt")
     alias(libs.plugins.kotlin.serialization)

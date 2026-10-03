@@ -11,6 +11,17 @@ val generatedClient = rootDir.resolve("../../../packages/api-kotlin/generated/sr
 // Files that need the Android framework, an AAR, Room, DataStore or Compose. Everything else
 // in these directories is compiled here exactly as the app compiles it.
 val androidOnly = listOf(
+    // Room and DataStore come from Google Maven, which this harness does without. Their code is
+    // common since DECISION-092 and tested on Android and on the iPhone simulator instead; this
+    // list keeps the harness exactly where it was when that code sat in androidMain.
+    "**/core/database/DirectoryDatabase.kt",
+    "**/core/database/CacheDao.kt",
+    "**/core/database/CacheEntities.kt",
+    "**/core/database/LocalStoresRoom.kt",
+    "**/core/database/PublicCacheDataSource.kt",
+    "**/core/datastore/DirectoryDataStore.kt",
+    "**/core/datastore/PreferencesRepository.kt",
+    "**/core/datastore/StoredAnonymousId.kt",
     "**/core/network/AndroidNetworkMonitor.kt",
     "**/core/network/UploadReader.kt",
     "**/core/network/NetworkBindings.kt",
@@ -48,7 +59,7 @@ val features = listOf(
 
 // Kotlin Multiplatform modules shared with the iPhone app (DECISIONS 085 to 087): their common
 // code and its tests are compiled here too, so the JVM harness keeps seeing the whole app. Their
-// androidMain, where Room, DataStore, the Keystore and Hilt's modules live, is not.
+// androidMain, where the Keystore and Hilt's modules live, is not.
 val sharedCores = listOf(
     "model", "observability", "analytics", "auth", "database", "datastore", "location", "network",
     "maps",
@@ -93,6 +104,12 @@ sourceSets {
         // goes for anything that reaches into the design system: it is a Compose library and
         // this harness has no Android framework. Those tests run in the Android unit suite.
         kotlin.exclude("**/*ViewModelTest.kt", "**/OwnerStatusToneTest.kt")
+        // The preferences' tests drive DataStore itself (see `androidOnly`).
+        kotlin.exclude(
+            "**/core/datastore/MemoryDataStore.kt",
+            "**/core/datastore/PreferencesRepositoryTest.kt",
+            "**/core/datastore/StoredAnonymousIdTest.kt",
+        )
     }
 }
 
