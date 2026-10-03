@@ -1865,6 +1865,52 @@ visitor can fail forty.
   query planning was a few milliseconds; the 40 ms plans seen at first were a cold
   connection's catalogue.
 
+## DECISION-084 — Launch content: what the code can supply is drafted, the owner approves it
+
+**Date:** 2026-10-03 · **Phase 7.1 of the roadmap.**
+
+**Why:** the pages people are shown at launch were a first draft from before guidance, routing,
+claims, invitations and the platform's own map existed. The site's privacy fallback carried an
+engineering note. The store listing was placeholders, and the feature graphic did not exist.
+Approving them is the owner's; drafting them so that every sentence matches the code is not.
+
+**Decision:**
+
+* **Legal and help pages, second draft.** Migration `content_services/0007` publishes version 2
+  of privacy, terms, instructions and FAQ, re-read from the code. The privacy text now covers:
+  * a route's two ends going to the platform's own routing engine, unlogged;
+  * a trip reading the location with the screen locked, under a visible notice, until arrival;
+  * sign-in codes by WhatsApp;
+  * invitations by phone number;
+  * notification settings;
+  * usage statistics without coordinates, with a one-way device identifier, deleted after
+    180 days;
+  * crash reports carrying only the crash;
+  * no data shared with advertisers.
+
+  The terms add route guidance and road law, false claims, the platform's own ads, and the
+  OpenStreetMap attribution (ODbL). It replaces a page only while the active version is the
+  first draft exactly as seeded; a version an operator published stays, and the migration
+  reverses cleanly. It is still a draft for legal review.
+* **The site's fallback texts**, shown only while the API cannot answer, now say the same
+  things to a visitor, without the internal note.
+* **The Play listing in Arabic** (`apps/android/play/store-listing/ar.json`): name, short and
+  full description, each claim checked against the code. It is marked
+  `DRAFT_FOR_OWNER_APPROVAL`. Every URL is now the bare domain, the site's real address; www
+  only redirects.
+* **The feature graphic** (`docs/design/brand/play-feature-graphic.png`, 1024 × 500) is
+  rendered from `mark-on-dark.svg` and the colour tokens by a script. It carries no name or
+  words, by the brand's rule. The 512 store icon already existed.
+* **Data safety** names the map and routing as the platform's own servers, which receive the
+  route's two ends unlogged, not a third-party provider.
+* **`docs/runbooks/launch.md`** covers four stages, each step naming who does it: before
+  anyone outside sees the platform, Play's internal and closed tracks, the public release, and
+  the first week.
+
+**Left to the owner:** approving the texts and the graphic, the support and privacy addresses,
+the domain, the Play account (EXT-001, EXT-003), and screenshots from the release build on a
+real phone. Screenshots are never mocked.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

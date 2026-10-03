@@ -1,16 +1,18 @@
 {
   "locale": "ar",
-  "appName": "<FINAL_APP_NAME_AR>",
-  "shortDescription": "<FINAL_SHORT_DESCRIPTION_AR>",
-  "fullDescription": "<FINAL_FULL_DESCRIPTION_AR>",
+  "status": "DRAFT_FOR_OWNER_APPROVAL",
+  "appName": "دليني",
+  "shortDescription": "أقرب صيدلية مناوبة وعيادة ومخبر إليك، بساعات العمل والطريق إليها.",
+  "fullDescription": "دليني دليل الخدمات الصحية في محافظتك: الصيدليات والعيادات والمخابر ومراكز التمريض ومستودعات المستلزمات الطبية، في مكان واحد.\n\n• المناوب الليلة: اعرف الصيدلية المناوبة، المفتوحة الآن والتي تبدأ مناوبتها لاحقاً.\n• الأقرب إليك: إن سمحت بالموقع تُرتَّب المنشآت بالأقرب وتظهر المسافة، وبدونه يعمل التطبيق كاملاً ضمن محافظتك.\n• مفتوح أم مغلق: الحالة محسوبة من ساعات العمل التي يحدّثها صاحب المنشأة، ومعها موعد الفتح القادم.\n• الطريق إليها: توجيه صوتي بالعربية خطوة بخطوة، بالسيارة أو الدراجة النارية أو مشياً، حتى والشاشة مقفلة.\n• الخريطة: كل المنشآت في أماكنها على خريطة بالعربية.\n• البحث: بالاسم أو الاختصاص داخل محافظتك.\n• المفضلة والإشعارات: محفوظة في حسابك على أي جهاز تدخل منه.\n\nلأصحاب المنشآت:\n• أضف منشأتك، أو طالب بمنشأتك إن كانت مدرجة، وأدر بياناتها وساعاتها ومناوباتها بنفسك.\n• ادعُ شريكك ليديرها معك.\n• كل منشأة تمر بمراجعة قبل نشرها.\n\nخصوصيتك: لا يقرأ التطبيق موقعك في الخلفية خارج رحلة بدأتها أنت، ولا تُشارَك بياناتك مع معلنين. التفاصيل في سياسة الخصوصية.\n\nالتطبيق دليل معلوماتي ولا يقدّم استشارة طبية. في الطوارئ اتصل بأرقام الطوارئ.",
   "contactEmail": "<SUPPORT_EMAIL>",
-  "privacyUrl": "https://www.<ROOT_DOMAIN>/privacy",
-  "supportUrl": "https://www.<ROOT_DOMAIN>/support",
-  "accountDeletionUrl": "https://www.<ROOT_DOMAIN>/delete-account",
+  "privacyUrl": "https://<ROOT_DOMAIN>/privacy",
+  "supportUrl": "https://<ROOT_DOMAIN>/support",
+  "accountDeletionUrl": "https://<ROOT_DOMAIN>/delete-account",
   "assets": {
-    "icon": "assets/icon-512.png",
-    "featureGraphic": "assets/feature-1024x500.png",
+    "icon": "../../../docs/design/brand/play-store-icon.png",
+    "featureGraphic": "../../../docs/design/brand/play-feature-graphic.png",
     "phoneScreenshots": []
   },
-  "rule": "Screenshots must be captured from the actual RC app. Do not fabricate UI screenshots."
+  "rule": "Screenshots must be captured from the actual RC app. Do not fabricate UI screenshots.",
+  "notes": "Every claim above was checked against the code on 2026-10-03 (DECISION-084). The owner approves the wording before it is entered in the Play Console; Play's limits are 30 characters for the name, 80 for the short description and 4000 for the full one."
 }

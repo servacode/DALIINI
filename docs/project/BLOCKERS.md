@@ -20,7 +20,7 @@ up to 2026-09-29 (EXT-001 to EXT-006, INT-084) is `docs/archive/BLOCKERS-2026-09
 - **Make `main` the repository's default branch.** It is still `android-build-verification-20260919`, an old working branch: pull requests open against it by default, and the README a visitor sees is that branch's. GitHub → Settings → General → Default branch.
 - **The repository is public.** Nothing secret is committed, and CI checks that. If it should be private before launch, change it under Settings → General → Danger zone.
 - **Emergency numbers** (110, 113, 112) were seeded from commonly cited lists. The console shows them under a warning until each is confirmed against an official source («تأكيد صحة الرقم»).
-- **Legal texts and the support address**, which the owner approves in phase 7.
+- **Legal texts and the support address**, which the owner approves in phase 7. The second draft of privacy, terms, instructions and FAQ is published by migration (DECISION-084); read it in the console under المحتوى. The store listing text (`apps/android/play/store-listing/ar.json`) and feature graphic (`docs/design/brand/play-feature-graphic.png`) wait for the same approval. `docs/runbooks/launch.md` lists everything left before launch, and who does it.
 
 ## Closed since the last register
 

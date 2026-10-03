@@ -44,8 +44,9 @@ build() { # <dir> <origin> <sources-cache>
     --osm_path=/data/extract.osm.pbf --output=/data/syria.pmtiles --force \
     --download --download_dir=/data/sources --tmpdir=/data/tmp \
     --languages=ar,en --transliterate=false
-  # tmp/ is Planetiler's scratch space; sources/ is only the mount point Docker made for the cache.
-  rm -rf "$out/tmp"
+  # tmp/ and tile_weights.tsv.gz are Planetiler's working files; sources/ is only the mount point
+  # Docker made for the cache.
+  rm -rf "$out/tmp" "$out/tile_weights.tsv.gz"
   rmdir "$out/sources" 2>/dev/null || true
   log "tiles: $(du -h "$out/syria.pmtiles" | cut -f1)"
 
