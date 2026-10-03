@@ -33,6 +33,12 @@ class PublicCategoryTest : ShouldSpec() {
             //modelInstance.id shouldBe ("TODO")
         }
 
+        // to test the property `slug` - Stable, readable and never changed once set: the category's address on the site.
+        should("test slug") {
+            // uncomment below to test the property
+            //modelInstance.slug shouldBe ("TODO")
+        }
+
         // to test the property `nameAr`
         should("test nameAr") {
             // uncomment below to test the property

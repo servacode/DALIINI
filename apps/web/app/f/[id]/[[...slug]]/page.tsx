@@ -1,23 +1,26 @@
 import type { Metadata } from "next";
-import { directionsLink, telLink, waLink } from "../../../lib/links";
-import { notFound } from "next/navigation";
+import { directionsLink, telLink, waLink } from "../../../../lib/links";
+import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 import Link from "next/link";
-import { ShareLinks } from "../../../components/share";
-import { AndroidOnly } from "../../../components/android-only";
-import { Breadcrumbs, Icon, JsonLd, Rating, StatusBadge, Unavailable } from "../../../components/ui";
-import { getFacility, getProvinces, type FacilityDetail, type HoursEntry } from "../../../lib/api";
-import { absoluteUrl, appOpenUrl } from "../../../lib/config";
-import { WEEKDAYS_AR, WEEKDAY_DISPLAY_ORDER, spokenDate } from "../../../lib/dates";
-import { UNAVAILABLE_METADATA, pageMetadata } from "../../../lib/seo";
+import { ShareLinks } from "../../../../components/share";
+import { AndroidOnly } from "../../../../components/android-only";
+import { Breadcrumbs, Icon, JsonLd, Rating, StatusBadge, Unavailable } from "../../../../components/ui";
+import { getCategories, getFacility, getProvinces, type FacilityDetail, type HoursEntry } from "../../../../lib/api";
+import { absoluteUrl, appOpenUrl } from "../../../../lib/config";
+import { WEEKDAYS_AR, WEEKDAY_DISPLAY_ORDER, spokenDate } from "../../../../lib/dates";
+import { categoryPath, decodedSegment, facilityPath } from "../../../../lib/paths";
+import { UNAVAILABLE_METADATA, pageMetadata } from "../../../../lib/seo";
 
 /*
- * /f/[id] — the shareable facility page. The id is the facility UUID, which
- * never changes when a facility is renamed, so shared links stay valid.
+ * /f/[id]/[slug] — the shareable facility page. The id is the facility UUID, which never changes
+ * when a facility is renamed, so shared links stay valid; the slug after it is the name in words.
+ * Any other words, or none (every link shared before slugs existed), redirect permanently to the
+ * current address, so there is one canonical page per facility (DECISION-069).
  */
 export const revalidate = 300;
 
-type Props = { params: Promise<{ id: string }> };
+type Props = { params: Promise<{ id: string; slug?: string[] }> };
 
 /* Dedupe the detail fetch between generateMetadata and the page. */
 const load = cache((id: string) => getFacility(id));
@@ -46,8 +49,8 @@ function structuredData(f: FacilityDetail) {
   return {
     "@context": "https://schema.org",
     "@type": schemaType(f),
-    "@id": absoluteUrl(`/f/${f.id}`),
-    url: absoluteUrl(`/f/${f.id}`),
+    "@id": absoluteUrl(facilityPath(f)),
+    url: absoluteUrl(facilityPath(f)),
     name: f.nameAr,
     alternateName: f.nameEn ?? undefined,
     description: f.descriptionAr ?? undefined,
@@ -78,7 +81,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const f = await load(id);
   if (!f) return UNAVAILABLE_METADATA;
-  return pageMetadata({ title: `${f.nameAr} — ${f.category.nameAr}`, description: describe(f), path: `/f/${f.id}` });
+  return pageMetadata({ title: `${f.nameAr} — ${f.category.nameAr}`, description: describe(f), path: facilityPath(f) });
 }
 
 function HoursTable({ hours }: { hours: HoursEntry[] }) {
@@ -110,13 +113,13 @@ function HoursTable({ hours }: { hours: HoursEntry[] }) {
 async function crumbs(f: FacilityDetail) {
   const provinces = await getProvinces();
   const only = provinces?.length === 1 ? provinces[0] : null;
-  return only
-    ? [
-        { href: `/${only.code}`, label: only.nameAr },
-        { href: `/${only.code}/${f.category.id}`, label: f.category.nameAr },
-        { label: f.nameAr },
-      ]
-    : [{ label: f.category.nameAr }, { label: f.nameAr }];
+  if (!only) return [{ label: f.category.nameAr }, { label: f.nameAr }];
+  const category = (await getCategories(only.id))?.find((c) => c.id === f.category.id);
+  return [
+    { href: `/${only.code}`, label: only.nameAr },
+    { href: categoryPath(only.code, category ?? f.category), label: f.category.nameAr },
+    { label: f.nameAr },
+  ];
 }
 
 /*
@@ -159,17 +162,18 @@ function TrustLine({ f }: { f: FacilityDetail }) {
 }
 
 export default async function FacilityPage({ params }: Props) {
-  const { id } = await params;
+  const { id, slug } = await params;
   const f = await load(id);
   if (f === undefined) notFound();
   if (f === null) return <div className="shell page"><Unavailable /></div>;
+  if ((slug ?? []).map(decodedSegment).join("/") !== (f.slug ?? "")) permanentRedirect(facilityPath(f));
 
   const tel = telLink(f.phone);
   const wa = waLink(f.whatsapp);
   const directions = directionsLink(f.location);
   const loc = f.location ? `${f.location.latitude},${f.location.longitude}` : null;
   const openInApp = appOpenUrl(f.id);
-  const url = absoluteUrl(`/f/${f.id}`);
+  const url = absoluteUrl(facilityPath(f));
 
   return (
     <article className="shell page">

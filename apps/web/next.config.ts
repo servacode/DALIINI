@@ -42,8 +42,9 @@ const contentSecurityPolicy = [
   // admin console signs those with a per-request nonce, but these pages are cached
   // (ISR) and a cached page has no request to mint a nonce for, so they are allowed
   // inline. The risk that normally carries is script injection through rendered data;
-  // React escapes everything it renders here and no page uses dangerouslySetInnerHTML
-  // for anything but JSON-LD built from JSON.stringify.
+  // React escapes everything it renders here, and dangerouslySetInnerHTML is used only for
+  // JSON-LD built from JSON.stringify and for the fixed theme script (THEME_SCRIPT), which
+  // interpolates nothing a visitor or the API supplies.
   // `next dev` alone needs eval for React's debugging call stacks, as the console allows.
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
   `connect-src ${withApi("'self'")}`,

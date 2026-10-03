@@ -2,6 +2,7 @@ import { tokens } from "@servacode/design-tokens/tokens";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { SiteShell } from "../components/site-shell";
+import { THEME_SCRIPT } from "../components/theme-toggle";
 import { SITE_NAME, siteUrl } from "../lib/config";
 
 const description = "دليني: دليل محلي للبحث عن الصيدليات والعيادات والمنشآت والخدمات، مع أوقات الدوام والمناوبات وطرق التواصل.";
@@ -30,8 +31,13 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // The theme script sets `data-theme` on <html> before React hydrates it, so the one attribute
+  // the server could not know is expected to differ.
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body><SiteShell>{children}</SiteShell></body>
     </html>
   );

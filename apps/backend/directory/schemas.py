@@ -26,6 +26,9 @@ class CategoryCapabilitiesSerializer(serializers.Serializer[Any]):
 
 class PublicCategorySerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
+    slug = serializers.SlugField(
+        help_text="Stable, readable and never changed once set: the category's address on the site."
+    )
     nameAr = serializers.CharField()
     nameEn = serializers.CharField(allow_null=True)
     iconKey = serializers.CharField(allow_null=True)

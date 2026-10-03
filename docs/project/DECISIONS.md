@@ -1212,6 +1212,37 @@ assertions had gone stale unnoticed.
 * Shell scripts are kept LF by `.gitattributes`: one had been committed with CRLF, which bash on
   Linux cannot run.
 
+## DECISION-069 — The site's addresses read as words, and the reader picks light or dark
+
+**Date:** 2026-10-03 · **Phase 3.1 of the roadmap.**
+
+**Why:** categories were addressed by UUID (`/raqqa/8dbcc319-…`) and facilities by UUID alone,
+which neither a person nor a search engine can read. The cards did not link to a facility's page
+at all. The province picker always showed the first province on pages that name none. The tokens
+had carried a dark theme since identity v2, but the site only followed the device setting.
+
+**Decision:**
+
+* **Categories** are `/<province>/<slug>` (`/raqqa/pharmacy`). The slug is the reference data's
+  own, unique and immutable (`IMMUTABLE_CATEGORY_FIELDS`), and the public category now carries it.
+  A UUID address still resolves and redirects permanently (308) to the slug, keeping its query.
+* **Facilities** are `/f/<id>/<slug>`. The id stays the address, and the slug is the API's
+  (DECISION-067). Any other words, or none (every link shared so far), redirect permanently to the
+  current ones, so each facility has exactly one canonical page. The links are built in one place
+  (`apps/web/lib/paths.ts`) for pages, the sitemap, JSON-LD and the share button alike.
+* **Cards lead to the page:** a card's name links to its facility page; calling, WhatsApp and
+  directions stay on the card.
+* **The province** is read from the address (a province path, or `?p=` on the home page), then
+  from the visitor's last choice (browser storage), then the first province. Choosing one on the
+  home page keeps the home page; elsewhere it opens that province's page.
+* **The theme:**
+  * The choice is «تلقائي» (follow the device), «فاتح» or «داكن», set by a button in the bar.
+  * It is stored in the browser and applied by a fixed inline script before the first paint, so
+    there is no flash. The CSP already allows inline scripts, and this one interpolates nothing a
+    visitor supplies.
+* `robots.txt` no longer disallows `/_next/`. That rule kept crawlers from fetching the site's own
+  scripts and styles.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

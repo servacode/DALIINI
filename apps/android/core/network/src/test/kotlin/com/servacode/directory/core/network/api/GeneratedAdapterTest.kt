@@ -115,7 +115,7 @@ class GeneratedAdapterTest {
 
     @Test fun `category capabilities decide what the screens offer`() = runTest {
         respond(
-            """{"items":[{"id":"$PHARMACY","nameAr":"صيدلية","nameEn":"Pharmacy","iconKey":"pharmacy",
+            """{"items":[{"id":"$PHARMACY","slug":"pharmacy","nameAr":"صيدلية","nameEn":"Pharmacy","iconKey":"pharmacy",
             "group":{"id":"$PROVINCE","nameAr":"صحة"},
             "capabilities":{"hours":true,"photos":true,"ratings":true,"duty":true,"specialtyFilter":false,
             "serviceFilter":false,"temporaryClosure":true,"ownerOnboarding":true}}]}""",

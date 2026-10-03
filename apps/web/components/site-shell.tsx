@@ -51,18 +51,11 @@ function BrandLink({ label }: { label: string }) {
   );
 }
 
-export async function SiteShell({
-  children,
-  province,
-}: {
-  children: ReactNode;
-  province?: string;
-}) {
+export async function SiteShell({ children }: { children: ReactNode }) {
   const provinces = (await getProvinces()) ?? [];
-  const current = provinces.find((p) => p.code === province)?.code ?? provinces[0]?.code ?? "";
   return (
     <>
-      <SiteHeader provinces={provinces} province={current} />
+      <SiteHeader provinces={provinces} />
       <main>{children}</main>
       <footer className="site-footer">
         <div className="shell footer">

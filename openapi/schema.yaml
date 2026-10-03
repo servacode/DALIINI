@@ -15658,6 +15658,11 @@ components:
         id:
           type: string
           format: uuid
+        slug:
+          type: string
+          description: 'Stable, readable and never changed once set: the category''s
+            address on the site.'
+          pattern: ^[-a-zA-Z0-9_]+$
         nameAr:
           type: string
         nameEn:
@@ -15677,6 +15682,7 @@ components:
       - id
       - nameAr
       - nameEn
+      - slug
     PublicCategoryList:
       type: object
       properties:

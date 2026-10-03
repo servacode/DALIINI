@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 /*
- * The only client script on facility pages: copies the page link. Falls back to
+ * Copies the page link, from the share row of a facility page. Falls back to
  * a hidden textarea + execCommand where the Clipboard API is unavailable (plain
  * http, older WebViews), and finally to showing the link for manual copying.
  */
