@@ -62,7 +62,7 @@ jobs:
             route raqqa 35.9506 39.0089 35.9530 39.0160 "$costing"
             route damascus 33.5138 36.2765 33.5020 36.2910 "$costing"
           done
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
