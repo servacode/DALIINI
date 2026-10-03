@@ -34,6 +34,10 @@ jobs:
         run: python3 infrastructure/quality/source_security.py
       - name: No open P0/P1 release blocker
         run: python3 infrastructure/quality/release_blockers.py
+      - name: The production stack's shape and fail-closed rules
+        run: |
+          python3 -c 'import yaml' 2>/dev/null || sudo apt-get install -y python3-yaml
+          python3 infrastructure/scripts/qualify-production-stack.py
 
   backend-source:
     runs-on: ubuntu-latest
@@ -161,8 +165,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Contexts match render.yaml: the Next apps build from the monorepo root,
-          # the backend from its own directory.
+          # Contexts match infrastructure/production/compose.yml: the Next apps build from the
+          # monorepo root, the backend from its own directory.
           - name: backend
             context: apps/backend
             file: apps/backend/Dockerfile
@@ -189,3 +193,13 @@ jobs:
           push: false
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+  # The production stack as the server runs it (DECISION-080): every image built, the whole stack
+  # started with throwaway values, and each name asked through Caddy, TLS included.
+  production-stack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Boot the stack and ask it
+        run: infrastructure/production/smoke.sh

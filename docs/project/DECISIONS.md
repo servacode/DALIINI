@@ -1653,6 +1653,61 @@ realtime URL with a setting the build does not read and paths the backend does n
     same thing; the meaningful ones (verified, unread) already speak.
   * The menu rows of the account and settings pages now announce themselves as buttons.
 
+## DECISION-080 — Production is one server running the compose stack behind Caddy
+
+**Date:** 2026-10-03 · **Phase 6.1 of the roadmap.**
+
+**Why:** the owner decided against Render (EXT-005); production is a VPS (EXT-007). The
+repository still described Render: two blueprints, a test comparing the settings with them, and
+runbooks built around its dashboard. The admin blueprint also lacked `ADMIN_PUBLIC_ORIGIN`, so
+the console would not have started.
+
+**Decision:**
+
+* **`infrastructure/production/compose.yml` is the platform on one server.**
+  * Services: Caddy, PostgreSQL 17 with PostGIS, Redis, a one-shot `migrate`, the API (Uvicorn),
+    the worker, beat, the site, the console and the WhatsApp bot. A `backup` tool is run by a
+    systemd timer at 02:17 UTC.
+  * Only Caddy publishes ports. Everything restarts by itself and rotates its log (20 MB × 5).
+  * `migrate` runs `check --deploy` and the migrations, and the API starts only after it
+    succeeded. Redis refuses writes rather than evicting work.
+  * The settings module follows `ENVIRONMENT` (production or staging). Staging is the same file
+    under another project name, env file and domain.
+* **Not on the server, on purpose.** Photographs and verification documents are in an S3
+  service elsewhere. Backups go to a second bucket with its own key. A lost disk loses neither.
+* **Caddy is the front door (`Caddyfile`).**
+  * Names: `<ROOT>` (the site), `www.<ROOT>` redirected to `<ROOT>`, `api.<ROOT>` (API, realtime
+    socket, health) and `admin.<ROOT>`.
+  * Certificates are its own (Let's Encrypt, renewed by itself). Cloudflare is set to
+    Full (strict), with Always Use HTTPS off so renewals can answer over HTTP.
+  * Headers: HSTS is sent and the `Server` header removed. No access log is written, because
+    a request line can carry a position.
+  * **The visitor's address.** Caddy takes `CF-Connecting-IP` only from Cloudflare's published
+    ranges and hands the API exactly one address, so `DRF_NUM_PROXIES=1` names the visitor and
+    no one can choose their own.
+* **The site and the console call the API through Caddy.** `api.<ROOT>` is a network alias of
+  Caddy, so a server-side call keeps its Host, arrives as HTTPS under the real certificate and
+  never leaves the server. `http://api:8000` would be refused by `ALLOWED_HOSTS` and redirected
+  by `SECURE_SSL_REDIRECT`.
+* **Every setting** is in `production.env.example`, with placeholders only. The filled copy lives
+  on the server, mode 600.
+* **What holds it.**
+  * `test_production_stack.py` (18 tests) replaces the blueprint test. It checks that:
+    * every required production setting reaches the backend;
+    * the four backend services read the same settings, and no secret is written into the
+      stack;
+    * every insisted value is offered in the example;
+    * only Caddy publishes ports, and the visitor's address and the internal routing are as
+      described above;
+    * no access log is written.
+  * `qualify-production-stack.py` checks the stack's shape in the governance job.
+  * A new CI job, `production-stack`, builds every image, boots the whole stack with throwaway
+    values under `daliini.localhost`, and asks each name through Caddy, TLS included. Raqqa's
+    page must show its name, which proves the site read the API through Caddy.
+* **Retired:** `render.yaml`, `render.production.yaml`, the staging qualifier that read them,
+  and the Render steps in the runbooks. `staging-deploy.md` became `deploy.md`. The DNS plan
+  now names the bare domain as the site's address, as the site and App Links already do.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

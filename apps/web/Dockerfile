@@ -1,4 +1,4 @@
-# Public web image. Build context is the monorepo root (render.yaml: dockerContext: .).
+# Public web image. Build context is the monorepo root (infrastructure/production/compose.yml).
 #
 # deps    -> installs exactly what pnpm-lock.yaml pins (--frozen-lockfile fails on drift)
 # build   -> `next build` with output: "standalone" (apps/web/next.config.ts)
@@ -54,7 +54,7 @@ COPY --from=build --chown=node:node /workspace/apps/web/.next/static ./apps/web/
 COPY --from=build --chown=node:node /workspace/apps/web/public ./apps/web/public
 USER node
 EXPOSE 10000
-# Render probes its own healthCheckPath; this covers plain `docker run` / compose.
+# Read by compose and plain `docker run`.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||10000)+'/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 # The standalone server reads PORT and HOSTNAME from the environment.

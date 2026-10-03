@@ -1,0 +1,11 @@
+[Unit]
+Description=Daliini: nightly database backup at 02:17 UTC
+
+[Timer]
+OnCalendar=*-*-* 02:17:00 UTC
+# A server that was off at 02:17 takes the backup when it comes back.
+Persistent=true
+RandomizedDelaySec=5m
+
+[Install]
+WantedBy=timers.target
