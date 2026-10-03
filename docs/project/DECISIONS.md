@@ -1573,6 +1573,41 @@ nobody learned of an update until they were locked out.
   * Nothing shows until the stored answer has been read, so a build already set aside never
     flashes up.
 
+## DECISION-078 — A trip keeps running with the screen locked
+
+**Date:** 2026-10-03 · **Phase 5.3 of the roadmap.**
+
+**Why:** guidance read the location every second from its screen. Once the phone was locked or
+put in a pocket, Android stopped those readings within minutes and could end the process, so
+the voice fell silent on the road, where it is needed most.
+
+**Decision:**
+
+* **A foreground service of the `location` type runs while a trip is under way, and only then.**
+  * The navigation view model starts it the first time a trip is under way (navigating or
+    rerouting), and stops it on arrival, on failure, and when the screen is left.
+  * It is started from the trip's screen, which is the only time Android allows a location
+    service to start. If Android refuses (no permission, or started from the background), the
+    trip goes on as before, on screen only.
+* **The ongoing notice:**
+  * It says how much is left, rounded to fifty metres, and about how long in minutes (Arabic
+    plurals), or «يُعاد حساب الطريق…» while rerouting.
+  * It is silent (the voice is the sound) and is redrawn only when the rounded text changes.
+  * Tapping it brings the app's own task back, as the launcher would.
+* **Who owns what:**
+  * The feature defines the port, `NavigationKeepAlive`, and the notice's rounding
+    (`guidanceNotice`, tested on the JVM).
+  * The app holds the service (`NavigationForegroundService`), because the notice uses the app's
+    icon and colour.
+* **The screen stays lit while a trip is under way**, as navigation apps do. Locked anyway, the
+  trip continues in the background.
+* **Permissions:**
+  * The manifest gains `FOREGROUND_SERVICE` and `FOREGROUND_SERVICE_LOCATION`.
+  * There is still no background location permission. The location permission granted for use
+    while the app is open is what the service runs on.
+  * Play Console needs the foreground-service declaration ("Navigation"); see
+    `apps/android/play/app-content-checklist.md`.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

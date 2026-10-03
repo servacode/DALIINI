@@ -80,6 +80,7 @@ class NavigationViewModel @Inject constructor(
     private val routingProvider: RoutingProvider,
     private val locationProvider: LocationProvider,
     private val voice: NavigationVoice,
+    private val keepAlive: NavigationKeepAlive,
 ) : ViewModel() {
     private val route = savedStateHandle.toRoute<DirectoryRoute.BuiltInNavigation>()
     private val destination = MapPoint(route.latitude, route.longitude)
@@ -208,6 +209,7 @@ class NavigationViewModel @Inject constructor(
     }
 
     private fun fail(reason: String) {
+        keepAlive.stop()
         _state.update {
             it.copy(navigation = NavigationState.Error(reason), switching = false)
         }
@@ -255,6 +257,7 @@ class NavigationViewModel @Inject constructor(
                 }
                 .onFailure { cause ->
                     engine.fail((cause as? RoutingException)?.failure?.name ?: "ROUTING_UNAVAILABLE")
+                    keepAlive.stop()
                     _state.update {
                         it.copy(navigation = engine.currentState(), switching = false)
                     }
@@ -396,6 +399,9 @@ class NavigationViewModel @Inject constructor(
                 bearingDegrees = bearing ?: it.bearingDegrees,
             )
         }
+        // Under way, the trip keeps running with the screen off; arrived, failed or idle, it does
+        // not need to.
+        guidanceNotice(update.state)?.let(keepAlive::show) ?: keepAlive.stop()
         // What is due now, and nothing else. The planner decides whether this reading crossed a
         // threshold; speaking on every advance is what used to make guidance arrive after the
         // junction and never before it.
@@ -403,6 +409,8 @@ class NavigationViewModel @Inject constructor(
     }
 
     override fun onCleared() {
+        // Leaving the screen ends the trip, so nothing is left running in the shade.
+        keepAlive.stop()
         voice.stop()
         super.onCleared()
     }

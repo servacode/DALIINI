@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.ReadOnlyComposable
@@ -24,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -75,6 +77,14 @@ fun BuiltInNavigationScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // A trip under way keeps the screen lit, as any navigation does: the next turn is on it.
+    // Locked anyway, the trip goes on in the background with its notice (DECISION-078).
+    val underWay = state.progress != null
+    val view = LocalView.current
+    DisposableEffect(view, underWay) {
+        view.keepScreenOn = underWay
+        onDispose { view.keepScreenOn = false }
+    }
     // The map rides with the traveller until a hand moves it, and the button brings it back.
     var following by rememberSaveable { mutableStateOf(true) }
     var map by remember { mutableStateOf<MapLibreController?>(null) }
