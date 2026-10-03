@@ -53,6 +53,9 @@ import com.servacode.directory.feature.home.HomeScreen
 import com.servacode.directory.feature.map.MapScreen
 import com.servacode.directory.feature.navigation.BuiltInNavigationScreen
 import com.servacode.directory.feature.onboarding.OnboardingScreen
+import com.servacode.directory.feature.owner.ClaimScreen
+import com.servacode.directory.feature.owner.ClaimSearchScreen
+import com.servacode.directory.feature.owner.InvitationsScreen
 import com.servacode.directory.feature.owner.ManageFacilityScreen
 import com.servacode.directory.feature.owner.MyFacilitiesScreen
 import com.servacode.directory.feature.owner.OwnerPresenceViewModel
@@ -116,12 +119,14 @@ fun DirectoryApp(
                     is NotificationTarget.HoursConfirmation ->
                         target.facilityId?.let(DirectoryRoute::ManageFacility) ?: DirectoryRoute.MyFacilities
                     NotificationTarget.OwnerFacilities -> DirectoryRoute.MyFacilities
+                    NotificationTarget.Invitations -> DirectoryRoute.Invitations
                     // The notice's own words are in the inbox; a push carries none.
                     NotificationTarget.None -> DirectoryRoute.Notifications
                 }
                 // Each of these is the account's own; signed out, signing in comes first.
                 val needsAccount = route is DirectoryRoute.Duty || route is DirectoryRoute.ManageFacility ||
-                    route == DirectoryRoute.MyFacilities || route == DirectoryRoute.Notifications
+                    route == DirectoryRoute.MyFacilities || route == DirectoryRoute.Notifications ||
+                    route == DirectoryRoute.Invitations
                 val signedIn = session == SessionState.SIGNED_IN
                 navController.navigate(if (needsAccount && !signedIn) DirectoryRoute.Login else route)
             }
@@ -137,6 +142,9 @@ fun DirectoryApp(
             destination.hasRoute<DirectoryRoute.MyFacilities>() ||
             destination.hasRoute<DirectoryRoute.Onboarding>() ||
             destination.hasRoute<DirectoryRoute.ManageFacility>() ||
+            destination.hasRoute<DirectoryRoute.Invitations>() ||
+            destination.hasRoute<DirectoryRoute.ClaimFacility>() ||
+            destination.hasRoute<DirectoryRoute.Claim>() ||
             destination.hasRoute<DirectoryRoute.Duty>()
         if (private) {
             navController.navigate(DirectoryRoute.Login) {
@@ -350,6 +358,8 @@ fun DirectoryApp(
                 bottomBar = { DirectoryTabs(DirectoryTab.ACCOUNT, navController) },
                 onRecentlyViewed = { navController.navigate(DirectoryRoute.RecentlyViewed) },
                 onMyRatings = { navController.navigate(DirectoryRoute.MyRatings) },
+                onInvitations = { navController.navigate(DirectoryRoute.Invitations) },
+                onClaim = { navController.navigate(DirectoryRoute.ClaimFacility) },
             )
         }
         composable<DirectoryRoute.Login> {
@@ -390,6 +400,7 @@ fun DirectoryApp(
                 onOwnerFacilities = { navController.navigate(DirectoryRoute.MyFacilities) },
                 onDuty = { id, date -> navController.navigate(DirectoryRoute.Duty(id, date)) },
                 onManageFacility = { navController.navigate(DirectoryRoute.ManageFacility(it)) },
+                onInvitations = { navController.navigate(DirectoryRoute.Invitations) },
                 onBack = { navController.popBackStack() },
             )
         }
@@ -467,6 +478,35 @@ fun DirectoryApp(
                 // A place in the bar, so back leads nowhere the bar does not already go.
                 onBack = null,
                 bottomBar = { DirectoryTabs(DirectoryTab.FACILITIES, navController) },
+                onClaim = { navController.navigate(DirectoryRoute.ClaimFacility) },
+                onOpenClaim = { navController.navigate(DirectoryRoute.Claim(it)) },
+            )
+        }
+        composable<DirectoryRoute.ClaimFacility> {
+            ClaimSearchScreen(
+                // The search is behind the claim it started: back from the claim is the list.
+                onClaim = {
+                    navController.navigate(DirectoryRoute.Claim(it)) {
+                        popUpTo<DirectoryRoute.ClaimFacility> { inclusive = true }
+                    }
+                },
+                onAdd = {
+                    navController.navigate(DirectoryRoute.Onboarding()) {
+                        popUpTo<DirectoryRoute.ClaimFacility> { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable<DirectoryRoute.Claim> {
+            ClaimScreen(
+                onWithdrawn = { navController.popBackStack() },
+                onReopened = {
+                    navController.navigate(DirectoryRoute.Claim(it)) {
+                        popUpTo<DirectoryRoute.Claim> { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Onboarding> {
@@ -485,6 +525,17 @@ fun DirectoryApp(
             ManageFacilityScreen(
                 onEdit = { navController.navigate(DirectoryRoute.Onboarding(it)) },
                 onDuty = { navController.navigate(DirectoryRoute.Duty(it)) },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable<DirectoryRoute.Invitations> {
+            InvitationsScreen(
+                // Joined, the facility is the account's to manage; the invitations are behind it.
+                onJoined = {
+                    navController.navigate(DirectoryRoute.ManageFacility(it)) {
+                        popUpTo<DirectoryRoute.Invitations> { inclusive = true }
+                    }
+                },
                 onBack = { navController.popBackStack() },
             )
         }

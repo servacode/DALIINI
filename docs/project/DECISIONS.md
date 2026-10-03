@@ -1494,6 +1494,52 @@ answer, and a facility without a location was invisible.
 * **Local development:** `scripts/dev-app.mjs` now runs each app's own `dev` script, so the
   vendoring step runs before `next dev` on both apps. Before, it ran only on a build.
 
+## DECISION-076 — The Android app invites by phone, claims listed facilities and shows edits under review
+
+**Date:** 2026-10-03 · **Phase 5.1 of the roadmap.**
+
+**Why:** phase 2 gave the backend three owner features the Android app could not reach. An owner
+added a manager by typing a raw account id (INT-084). An owner whose facility was already listed
+had no way to say «هذه منشأتي». An edit to a live facility's name or address went to review, but
+the app showed the proposed values as if they were published.
+
+**Decision:**
+
+* **Edits under review:** the management screen's first card says which fields wait for review
+  (name, address, city, neighbourhood, map location), from `pendingChange.proposedFields`, and
+  that people still see the published values meanwhile. A field the app does not know is left out
+  of the sentence rather than shown as a code.
+* **Invitations, the owner's side:** the members card invites a Syrian mobile number as a manager.
+  * The backend validates and normalises the number; a refusal shows as the card's error.
+  * Sent invitations are listed, still-waiting first, with their date and state. A waiting one can
+    be revoked.
+  * Only the owner gets invitations back from the backend, so a failed read means "not the owner":
+    the invite form and the remove-manager buttons are hidden, and the page still loads.
+  * The manager-by-account-id form is removed from the app. The endpoint stays in the contract.
+* **Invitations, the invitee's side:** «دعوات الإدارة» lists the invitations waiting for this
+  account (`account/invitations/`).
+  * Accepting opens the joined facility's management page in place of the list.
+  * Declining removes the card.
+  * The account page links to it whether or not the person owns a facility, because an
+    invitation is addressed to the number.
+  * The push `facility.invitation.received` opens it, signing in first if needed. It belongs to
+    no muting category: it is addressed to this person, not news.
+* **Claims («هذه منشأتي»):**
+  * **Search:** the owner types a name, and the app asks `owner/claimable-facilities/` after a
+    350 ms pause, once there are two letters. Picking a result starts a claim, or reopens the open
+    one the account already has.
+  * **The claim:** it shows the documents the category requires, uploaded from the photo picker
+    and removable while it is a draft. Sending is enabled once the required ones are there, the
+    same rule the backend applies.
+  * **Withdrawing and refusal:** an open claim can be withdrawn after a confirmation. A refused
+    claim shows the reason and offers a new claim on the same facility.
+  * **Where claims appear:** in «منشآتي» under their own heading, approved ones excepted, since
+    they are facilities by then. The page's empty state offers both ways in: add a facility, or
+    claim a listed one. The account page offers the claim to someone who owns nothing yet.
+* **Testing:** the view models that need a route's `id` read it from the saved state by name,
+  which is where type-safe navigation keeps it. `toRoute` needs Android's `Bundle` and cannot run
+  in a plain JVM test.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

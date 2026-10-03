@@ -2,20 +2,27 @@ package com.servacode.directory.core.network.api
 
 import com.servacode.directory.core.model.HoursConfirmation
 import com.servacode.directory.core.model.OwnerFacilityInsights
+import com.servacode.directory.api.apis.AccountApi
 import com.servacode.directory.api.apis.AvailabilityApi
 import com.servacode.directory.api.apis.DutyApi
 import com.servacode.directory.api.apis.MediaApi
 import com.servacode.directory.api.apis.OwnerApi
 import com.servacode.directory.api.models.BusinessHourInput
+import com.servacode.directory.api.models.ClaimStart
 import com.servacode.directory.api.models.DutyShiftInput as WireDutyShiftInput
 import com.servacode.directory.api.models.FacilityCreate
 import com.servacode.directory.api.models.FacilityLocation
 import com.servacode.directory.api.models.FacilityMember as WireFacilityMember
+import com.servacode.directory.api.models.InvitationRequest
 import com.servacode.directory.api.models.PatchedDutyShiftInput
 import com.servacode.directory.api.models.PatchedFacilityPatch
 import com.servacode.directory.api.models.TemporaryClosureInput as WireTemporaryClosureInput
 import com.servacode.directory.core.model.BusinessHour
+import com.servacode.directory.core.model.ClaimEvidence
+import com.servacode.directory.core.model.ClaimableFacility
+import com.servacode.directory.core.model.FacilityClaim
 import com.servacode.directory.core.model.DutyShift
+import com.servacode.directory.core.model.FacilityInvitation
 import com.servacode.directory.core.model.FacilityMember
 import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.model.OwnerConfig
@@ -24,6 +31,7 @@ import com.servacode.directory.core.model.OwnerFacilityDetail
 import com.servacode.directory.core.model.OwnerFacilityImage
 import com.servacode.directory.core.model.OwnerFacilitySummary
 import com.servacode.directory.core.model.OwnerSubmission
+import com.servacode.directory.core.model.ReceivedInvitation
 import com.servacode.directory.core.model.TemporaryClosure
 import com.servacode.directory.core.network.DutyShiftInput
 import com.servacode.directory.core.network.OwnerApiBoundary
@@ -45,6 +53,8 @@ import java.util.UUID
  */
 class GeneratedOwnerApi(client: GeneratedClient) : OwnerApiBoundary {
     private val owner by lazy { client.create<OwnerApi>() }
+    // The invitee's side of an invitation lives under account/, on the same signed-in client.
+    private val account by lazy { client.create<AccountApi>() }
     private val availability by lazy { client.create<AvailabilityApi>() }
     private val duty by lazy { client.create<DutyApi>() }
     private val media by lazy { client.create<MediaApi>() }
@@ -197,6 +207,70 @@ class GeneratedOwnerApi(client: GeneratedClient) : OwnerApiBoundary {
         callForNoContent {
             owner.ownerFacilityMemberDelete(facilityId = UUID.fromString(id), userId = UUID.fromString(userId))
         }
+    }
+
+    override suspend fun invitations(id: String): List<FacilityInvitation> =
+        call { owner.ownerFacilityInvitationsList(UUID.fromString(id)) }.items.map { it.toDomain() }
+
+    override suspend fun invite(id: String, phone: String, role: FacilityMemberRole): FacilityInvitation =
+        call {
+            owner.ownerFacilityInvitationCreate(
+                facilityId = UUID.fromString(id),
+                invitationRequest = InvitationRequest(phone = phone.trim(), role = role.toWire()),
+            )
+        }.toDomain()
+
+    override suspend fun revokeInvitation(id: String, invitationId: String) {
+        callForNoContent {
+            owner.ownerFacilityInvitationRevoke(
+                facilityId = UUID.fromString(id),
+                invitationId = UUID.fromString(invitationId),
+            )
+        }
+    }
+
+    override suspend fun receivedInvitations(): List<ReceivedInvitation> =
+        call { account.accountInvitationsList() }.items.map { it.toDomain() }
+
+    override suspend fun acceptInvitation(invitationId: String): String =
+        call { account.accountInvitationAccept(UUID.fromString(invitationId)) }.facilityId.toString()
+
+    override suspend fun declineInvitation(invitationId: String) {
+        callForNoContent { account.accountInvitationDecline(UUID.fromString(invitationId)) }
+    }
+
+    override suspend fun claimableFacilities(query: String, provinceId: String?): List<ClaimableFacility> =
+        call { owner.ownerClaimableFacilitiesList(q = query, provinceId = provinceId) }.items.map { it.toDomain() }
+
+    override suspend fun claims(): List<FacilityClaim> = call { owner.ownerClaimsList() }.items.map { it.toDomain() }
+
+    override suspend fun claim(claimId: String): FacilityClaim =
+        call { owner.ownerClaimRetrieve(UUID.fromString(claimId)) }.toDomain()
+
+    override suspend fun startClaim(facilityId: String): FacilityClaim =
+        call { owner.ownerClaimStart(ClaimStart(UUID.fromString(facilityId))) }.toDomain()
+
+    override suspend fun uploadClaimEvidence(
+        claimId: String,
+        requirementId: String,
+        payload: OwnerUploadPayload,
+    ): ClaimEvidence = call {
+        media.ownerClaimEvidenceCreate(
+            claimId = UUID.fromString(claimId),
+            requirementId = requirementId.toInt(),
+            file = payload.toPart(),
+        )
+    }.toDomain()
+
+    override suspend fun deleteClaimEvidence(claimId: String, evidenceId: String) {
+        callForNoContent { media.ownerClaimEvidenceDelete(UUID.fromString(claimId), UUID.fromString(evidenceId)) }
+    }
+
+    override suspend fun submitClaim(claimId: String): FacilityClaim =
+        call { owner.ownerClaimSubmit(UUID.fromString(claimId)) }.toDomain()
+
+    override suspend fun withdrawClaim(claimId: String) {
+        callForNoContent { owner.ownerClaimWithdraw(UUID.fromString(claimId)) }
     }
 
     override suspend fun duty(id: String): List<DutyShift> =

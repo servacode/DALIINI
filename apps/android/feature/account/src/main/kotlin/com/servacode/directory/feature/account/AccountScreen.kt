@@ -80,6 +80,10 @@ fun AccountScreen(
     bottomBar: @Composable () -> Unit = {},
     onRecentlyViewed: () -> Unit = {},
     onMyRatings: () -> Unit = {},
+    /** The invitations to help run someone else's facility. */
+    onInvitations: () -> Unit = {},
+    /** «هذه منشأتي»: claiming a facility already listed without an owner. */
+    onClaim: () -> Unit = {},
     viewModel: AccountViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -179,7 +183,25 @@ fun AccountScreen(
                             icon = DirectoryIcons.hospital,
                             subtitle = AccountCopy.JOIN_AS_OWNER_HINT,
                         )
+                        DirectoryMenuDivider()
+                        // Someone whose facility is listed already joins by claiming it, not by
+                        // adding it a second time.
+                        DirectoryMenuRow(
+                            title = AccountCopy.CLAIM,
+                            onClick = onClaim,
+                            icon = DirectoryIcons.verified,
+                            subtitle = AccountCopy.CLAIM_HINT,
+                        )
                     }
+                    DirectoryMenuDivider()
+                    // Owner or not: an invitation is addressed to the phone number, and whoever
+                    // holds it may have been asked to help run a facility.
+                    DirectoryMenuRow(
+                        title = AccountCopy.INVITATIONS,
+                        onClick = onInvitations,
+                        icon = DirectoryIcons.person,
+                        subtitle = AccountCopy.INVITATIONS_HINT,
+                    )
                 }
 
                 // Everything about the app, in one place — the password and the switches with it.
@@ -326,6 +348,11 @@ object AccountCopy {
         @Composable @ReadOnlyComposable get() = stringResource(R.string.account_join_as_owner_hint)
     val FACILITIES_HINT: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.account_facilities_hint)
+    val INVITATIONS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_invitations)
+    val CLAIM: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_claim)
+    val CLAIM_HINT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_claim_hint)
+    val INVITATIONS_HINT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.account_invitations_hint)
     val EDIT_PROFILE_HINT: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.account_edit_profile_hint)
     val SETTINGS_HINT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_settings_hint)

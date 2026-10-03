@@ -16,7 +16,7 @@ scope is places only: nothing about medicines (DECISION-054).
 ## Where things stand
 
 The roadmap was approved on 2026-10-03. Phases 0 to 3 are done, merged through pull requests
-#27 to #40; phase 4 is under way from #41:
+#27 to #40, and phase 4 through #41 to #44. Phase 5 is under way:
 
 | Phase | What it delivered | Decisions |
 |---|---|---|
@@ -38,16 +38,15 @@ The roadmap was approved on 2026-10-03. Phases 0 to 3 are done, merged through p
 | 4.2 | a system page that asks each service, and records for those that cannot be asked | 073 |
 | 4.3 | tables that sort from their headers and remember columns, density and page size | 074 |
 | 4.4 | daily charts, status bars, and the facility map on the platform's own style | 075 |
+| 5.1 | Android: invitations by phone both ways, «هذه منشأتي», the edit-under-review banner | 076 |
 
 **Now: phase 5, Android v2.** Phase 4 (the console v2) is done. An owner portal on the web was
 offered at the start of phase 3 and set aside: owners use the Android app. Then the VPS (6),
 content and the Play launch (7), and the iPhone app from the Android code with Kotlin
 Multiplatform (8).
 
-Server work that Android has not caught up with yet, all planned for phase 5:
-- the «تعديلاتك بانتظار المراجعة» banner (`pendingChange`);
-- the claim and invitation screens;
-- syncing the notification switches with `account/notification-preferences/`.
+Server work that Android has not caught up with yet, planned for phase 5.2: syncing the
+notification switches with `account/notification-preferences/`.
 
 ## The repository
 

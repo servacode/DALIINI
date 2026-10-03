@@ -2,7 +2,11 @@ package com.servacode.directory.core.network
 
 import com.servacode.directory.core.model.HoursConfirmation
 import com.servacode.directory.core.model.BusinessHour
+import com.servacode.directory.core.model.ClaimEvidence
+import com.servacode.directory.core.model.ClaimableFacility
+import com.servacode.directory.core.model.FacilityClaim
 import com.servacode.directory.core.model.DutyShift
+import com.servacode.directory.core.model.FacilityInvitation
 import com.servacode.directory.core.model.FacilityMember
 import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.model.OwnerConfig
@@ -12,6 +16,7 @@ import com.servacode.directory.core.model.OwnerFacilityImage
 import com.servacode.directory.core.model.OwnerFacilityInsights
 import com.servacode.directory.core.model.OwnerFacilitySummary
 import com.servacode.directory.core.model.OwnerSubmission
+import com.servacode.directory.core.model.ReceivedInvitation
 import com.servacode.directory.core.model.TemporaryClosure
 
 data class OwnerFacilityDraftInput(
@@ -96,6 +101,33 @@ interface OwnerApiBoundary {
         role: FacilityMemberRole,
     ): FacilityMember
     suspend fun deleteMember(id: String, userId: String)
+
+    /** The facility's invitations, newest first, whatever became of them (DECISION-064). */
+    suspend fun invitations(id: String): List<FacilityInvitation>
+
+    /** Invite a phone number; whoever registers or holds that number may accept. */
+    suspend fun invite(id: String, phone: String, role: FacilityMemberRole): FacilityInvitation
+    suspend fun revokeInvitation(id: String, invitationId: String)
+
+    /** The invitations waiting for the signed-in account. */
+    suspend fun receivedInvitations(): List<ReceivedInvitation>
+
+    /** Accept, and get back the facility the account now belongs to. */
+    suspend fun acceptInvitation(invitationId: String): String
+    suspend fun declineInvitation(invitationId: String)
+
+    /** «هذه منشأتي»: published facilities with no owner, by name; `query` needs two letters. */
+    suspend fun claimableFacilities(query: String, provinceId: String? = null): List<ClaimableFacility>
+    /** This account's claims, newest first. */
+    suspend fun claims(): List<FacilityClaim>
+    suspend fun claim(claimId: String): FacilityClaim
+    /** Starts a claim, or returns the open one this account already has for the facility. */
+    suspend fun startClaim(facilityId: String): FacilityClaim
+    suspend fun uploadClaimEvidence(claimId: String, requirementId: String, payload: OwnerUploadPayload): ClaimEvidence
+    suspend fun deleteClaimEvidence(claimId: String, evidenceId: String)
+    suspend fun submitClaim(claimId: String): FacilityClaim
+    /** Withdraws an open claim; its documents are deleted with it. */
+    suspend fun withdrawClaim(claimId: String)
     suspend fun duty(id: String): List<DutyShift>
     suspend fun createDuty(id: String, input: DutyShiftInput): DutyShift
     suspend fun updateDuty(id: String, shiftId: String, input: DutyShiftInput): DutyShift
