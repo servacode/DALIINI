@@ -1,8 +1,8 @@
 [versions]
-agp = "9.4.0"
-kotlin = "2.3.21"
+agp = "9.4.1"
+kotlin = "2.4.20"
 ksp = "2.3.12"
-core = "1.19.0"
+core = "1.19.1"
 splashscreen = "1.2.0"
 # Installs the baseline profiles (the libraries' and app/src/main/baseline-prof.txt) on devices
 # that do not get Play's cloud profiles. Compose already brings it; named so it cannot drop out.
@@ -11,17 +11,17 @@ activity = "1.13.0"
 lifecycle = "2.11.0"
 composeUi = "1.12.1"
 material3 = "1.4.0"
-navigation = "2.10.1"
+navigation = "2.10.2"
 hilt = "2.60.1"
-androidxHilt = "1.3.0"
-coroutines = "1.10.2"
+androidxHilt = "1.4.0"
+coroutines = "1.11.0"
 # Dates and time zones in the code shared with the iPhone app (DECISION-086).
 datetime = "0.8.0"
 # Locks in shared code; the version kotlinx-coroutines already brings (DECISION-088).
-atomicfu = "0.26.1"
+atomicfu = "0.33.0"
 # The shared transport (DECISION-090): the release that needs no newer coroutines or stdlib.
-ktor = "3.4.3"
-serialization = "1.9.0"
+ktor = "3.6.0"
+serialization = "1.11.0"
 # The iPhone app's screens (DECISION-093). Its Android side is the same Compose UI as composeUi.
 composeMultiplatform = "1.12.1"
 # What Compose Multiplatform 1.12 pairs its Material 3 with (its Gradle plugin's own choice); on
@@ -33,15 +33,15 @@ room = "2.8.5"
 sqliteIos = "2.7.1"
 datastore = "1.2.1"
 retrofit = "3.0.0"
-okhttp = "5.3.0"
+okhttp = "5.5.0"
 maplibre = "13.6.1"
 junit = "4.13.2"
 # AndroidJUnit4, the runner an instrumentation test names. Not pulled in by the Compose test
 # artifacts, which bring the rule but not the runner.
 androidxTestExtJunit = "1.3.0"
-coil = "3.6.2"
+coil = "3.6.3"
 # The iPhone's Coil: the newest built with Kotlin 2.3 (3.5 on are 2.4, which iOS cannot read here).
-coilIos = "3.4.0"
+coilIos = "3.6.3"
 # The home-screen widget and its periodic refresh.
 glance = "1.2.0"
 work = "2.12.0"
@@ -50,7 +50,7 @@ sentry = "8.58.0"
 desugarJdkLibs = "2.1.5"
 # A published release, confirmed from Google Maven's own artifacts in the local cache. Google Maven
 # does not answer this network, so no newer release could be checked for; check when it does.
-firebaseMessaging = "25.1.1"
+firebaseMessaging = "25.1.3"
 
 [libraries]
 androidx-core = { module = "androidx.core:core", version.ref = "core" }
