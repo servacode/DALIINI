@@ -35,6 +35,12 @@ sealed interface DirectoryRoute {
     @Serializable data object MyFacilities : DirectoryRoute
     @Serializable data class Onboarding(val draftId: String? = null) : DirectoryRoute
     @Serializable data class ManageFacility(val id: String) : DirectoryRoute
+    /** The invitations to help run a facility that are waiting for this account's answer. */
+    @Serializable data object Invitations : DirectoryRoute
+    /** «هذه منشأتي»: find a published facility nobody owns, to claim it. */
+    @Serializable data object ClaimFacility : DirectoryRoute
+    /** One of the account's claims: its documents, sending it, withdrawing it. */
+    @Serializable data class Claim(val id: String) : DirectoryRoute
     /**
      * An owner's duty roster. [date] ("YYYY-MM-DD") prefills a night shift on that day — a gap
      * nudge from the platform opens it this way.

@@ -1,15 +1,21 @@
 package com.servacode.directory.feature.owner
 
+import com.servacode.directory.core.model.ClaimEvidence
+import com.servacode.directory.core.model.ClaimableFacility
+import com.servacode.directory.core.model.FacilityClaim
 import com.servacode.directory.core.model.HoursConfirmation
 import com.servacode.directory.core.model.OwnerFacilityInsights
+import com.servacode.directory.core.model.FacilityInvitation
 import com.servacode.directory.core.model.FacilityMember
 import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.model.OwnerConfig
 import com.servacode.directory.core.model.OwnerFacilityDetail
 import com.servacode.directory.core.model.OwnerFacilitySummary
+import com.servacode.directory.core.model.ReceivedInvitation
 import com.servacode.directory.core.model.TemporaryClosure
 import com.servacode.directory.core.network.OwnerApiBoundary
 import com.servacode.directory.core.network.OwnerFacilityPatch
+import com.servacode.directory.core.network.OwnerUploadPayload
 import com.servacode.directory.core.network.TemporaryClosureInput
 import javax.inject.Inject
 
@@ -47,4 +53,31 @@ class OwnerRepository @Inject constructor(
     ): Result<FacilityMember> = runCatching { api.upsertMember(id, userId, role) }
     suspend fun deleteMember(id: String, userId: String): Result<Unit> =
         runCatching { api.deleteMember(id, userId) }
+
+    /** Owners only: a manager's request is refused, and the screen then offers no invitations. */
+    suspend fun invitations(id: String): Result<List<FacilityInvitation>> = runCatching { api.invitations(id) }
+    suspend fun invite(id: String, phone: String, role: FacilityMemberRole): Result<FacilityInvitation> =
+        runCatching { api.invite(id, phone, role) }
+    suspend fun revokeInvitation(id: String, invitationId: String): Result<Unit> =
+        runCatching { api.revokeInvitation(id, invitationId) }
+    suspend fun receivedInvitations(): Result<List<ReceivedInvitation>> = runCatching { api.receivedInvitations() }
+    suspend fun acceptInvitation(invitationId: String): Result<String> =
+        runCatching { api.acceptInvitation(invitationId) }
+    suspend fun declineInvitation(invitationId: String): Result<Unit> =
+        runCatching { api.declineInvitation(invitationId) }
+
+    suspend fun claimable(query: String): Result<List<ClaimableFacility>> =
+        runCatching { api.claimableFacilities(query) }
+    suspend fun claims(): Result<List<FacilityClaim>> = runCatching { api.claims() }
+    suspend fun claim(claimId: String): Result<FacilityClaim> = runCatching { api.claim(claimId) }
+    suspend fun startClaim(facilityId: String): Result<FacilityClaim> = runCatching { api.startClaim(facilityId) }
+    suspend fun uploadClaimEvidence(
+        claimId: String,
+        requirementId: String,
+        payload: OwnerUploadPayload,
+    ): Result<ClaimEvidence> = runCatching { api.uploadClaimEvidence(claimId, requirementId, payload) }
+    suspend fun deleteClaimEvidence(claimId: String, evidenceId: String): Result<Unit> =
+        runCatching { api.deleteClaimEvidence(claimId, evidenceId) }
+    suspend fun submitClaim(claimId: String): Result<FacilityClaim> = runCatching { api.submitClaim(claimId) }
+    suspend fun withdrawClaim(claimId: String): Result<Unit> = runCatching { api.withdrawClaim(claimId) }
 }

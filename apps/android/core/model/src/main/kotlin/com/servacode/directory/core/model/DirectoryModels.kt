@@ -357,7 +357,113 @@ data class OwnerFacilityDetail(
     val hours: List<BusinessHour> = emptyList(),
     val evidence: List<OwnerEvidence> = emptyList(),
     val application: OwnerApplication? = null,
+    /**
+     * An edit to the published facility that waits for an operator (DECISION-063). The values
+     * above already show the proposal; the directory keeps showing the approved ones until then.
+     */
+    val pendingChange: OwnerPendingChange? = null,
 )
+
+@Serializable
+data class OwnerPendingChange(
+    val id: String,
+    /** Which of the facility's values are proposed rather than published: nameAr, location… */
+    val proposedFields: List<String>,
+    val submittedAtEpochMillis: Long? = null,
+)
+
+enum class InvitationStatus { PENDING, ACCEPTED, DECLINED, REVOKED, EXPIRED }
+
+/** An invitation the facility sent to a phone number, as its owner sees it (DECISION-064). */
+@Serializable
+data class FacilityInvitation(
+    val id: String,
+    val phone: String,
+    val role: FacilityMemberRole,
+    val status: InvitationStatus,
+    val createdAtEpochMillis: Long,
+    val expiresAtEpochMillis: Long,
+    val respondedAtEpochMillis: Long? = null,
+)
+
+/** An invitation waiting for this account to accept or decline it. */
+@Serializable
+data class ReceivedInvitation(
+    val id: String,
+    val role: FacilityMemberRole,
+    val facilityId: String,
+    val facilityNameAr: String,
+    val categoryNameAr: String,
+    val provinceNameAr: String,
+    val invitedByName: String? = null,
+    val createdAtEpochMillis: Long,
+    val expiresAtEpochMillis: Long,
+)
+
+/** A published facility nobody owns yet, found by name for «هذه منشأتي». */
+@Serializable
+data class ClaimableFacility(
+    val id: String,
+    val nameAr: String,
+    val categoryNameAr: String,
+    val provinceNameAr: String,
+    val cityNameAr: String? = null,
+    val addressAr: String? = null,
+)
+
+/** Where a claim stands: being prepared, with the reviewers, or decided. */
+enum class ClaimStatus { DRAFT, SUBMITTED, APPROVED, REJECTED }
+
+/** A document a claim must or may carry: the category's own verification requirements. */
+@Serializable
+data class ClaimRequirement(
+    val id: String,
+    val labelAr: String,
+    val required: Boolean,
+    val minFiles: Int,
+    val maxFiles: Int,
+)
+
+@Serializable
+data class ClaimEvidence(
+    val id: String,
+    val requirementId: String,
+    val createdAtEpochMillis: Long,
+)
+
+/**
+ * An account's request to own a facility already in the directory (DECISION-064).
+ *
+ * It is prepared as a draft — documents uploaded against the requirements — then sent; until a
+ * reviewer decides, the facility stays as it is. Approved, the facility joins the account's own.
+ */
+@Serializable
+data class FacilityClaim(
+    val id: String,
+    val status: ClaimStatus,
+    val facilityId: String,
+    val facilityNameAr: String,
+    val categoryNameAr: String,
+    val provinceNameAr: String,
+    val addressAr: String? = null,
+    val requirements: List<ClaimRequirement> = emptyList(),
+    val evidence: List<ClaimEvidence> = emptyList(),
+    val rejectionReason: String? = null,
+    val submittedAtEpochMillis: Long? = null,
+    val reviewedAtEpochMillis: Long? = null,
+) {
+    /** How many documents are uploaded against [requirementId]. */
+    fun filesFor(requirementId: String): Int = evidence.count { it.requirementId == requirementId }
+
+    /** The required documents still missing, by requirement; empty when it may be sent. */
+    val missing: List<ClaimRequirement>
+        get() = requirements.filter { it.required && filesFor(it.id) < it.minFiles }
+
+    val canSubmit: Boolean get() = status == ClaimStatus.DRAFT && missing.isEmpty()
+
+    /** Withdrawn while it is still open; a decided claim stays as the record of the decision. */
+    val canWithdraw: Boolean get() = status == ClaimStatus.DRAFT || status == ClaimStatus.SUBMITTED
+}
 
 @Serializable
 data class DutyShift(

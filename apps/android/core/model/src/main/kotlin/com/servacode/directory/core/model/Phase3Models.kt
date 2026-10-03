@@ -81,6 +81,8 @@ enum class NotificationCategory {
                 // A change staff made to the owner's own shift is always shown: it is not news,
                 // it is their roster.
                 value == NotificationTypes.DUTY_SHIFT_ADMIN_CHANGED -> null
+                // An invitation is addressed to this person, not news about a facility: never muted.
+                value == NotificationTypes.INVITATION_RECEIVED -> null
                 value == NotificationTypes.DUTY_GAP_NUDGE || value == "duty_gap" -> DUTY_REMINDER
                 value.startsWith("duty.") -> DUTY_REMINDER
                 value.startsWith("facility.") -> APPLICATION_STATUS
@@ -98,6 +100,7 @@ object NotificationTypes {
     const val DUTY_SHIFT_ADMIN_CHANGED = "duty.shift.admin_changed"
     const val HOURS_CONFIRM_REQUEST = "facility.hours.confirm_request"
     const val PLATFORM_BROADCAST = "platform.broadcast"
+    const val INVITATION_RECEIVED = "facility.invitation.received"
 }
 
 /** Where opening a notice leads, from its type and whatever identifiers came with it. */
@@ -112,6 +115,9 @@ sealed interface NotificationTarget {
 
     data object OwnerFacilities : NotificationTarget
 
+    /** The invitations waiting for this account, to accept or decline. */
+    data object Invitations : NotificationTarget
+
     data object None : NotificationTarget
 
     companion object {
@@ -125,6 +131,7 @@ sealed interface NotificationTarget {
                 DutyScheduling(facilityId, DutyPresets.parseDate(date)?.toString())
             NotificationTypes.DUTY_SHIFT_ADMIN_CHANGED -> DutyScheduling(facilityId, null)
             NotificationTypes.HOURS_CONFIRM_REQUEST -> HoursConfirmation(facilityId)
+            NotificationTypes.INVITATION_RECEIVED -> Invitations
             else -> when (destination) {
                 MessageDestination.FACILITY -> facilityId?.let(::Facility) ?: None
                 MessageDestination.OWNER_FACILITIES -> OwnerFacilities

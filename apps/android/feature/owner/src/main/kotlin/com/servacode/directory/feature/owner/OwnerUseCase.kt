@@ -1,8 +1,13 @@
 package com.servacode.directory.feature.owner
 
 import com.servacode.directory.core.model.CategoryTags
+import com.servacode.directory.core.model.FacilityInvitation
+import com.servacode.directory.core.model.FacilityMember
 import com.servacode.directory.core.model.FacilityMemberRole
+import com.servacode.directory.core.model.OwnerFacilityDetail
+import com.servacode.directory.core.model.TemporaryClosure
 import com.servacode.directory.core.network.OwnerFacilityPatch
+import com.servacode.directory.core.network.OwnerUploadPayload
 import com.servacode.directory.core.network.TemporaryClosureInput
 import javax.inject.Inject
 
@@ -12,15 +17,23 @@ class LoadOwnerFacilitiesUseCase @Inject constructor(
     suspend operator fun invoke() = repository.facilities()
 }
 
+data class ManageFacilityLoad(
+    val facility: Result<OwnerFacilityDetail>,
+    val closures: Result<List<TemporaryClosure>>,
+    val members: Result<List<FacilityMember>>,
+    /** A failure here is not the page's: only the facility's owner may see its invitations. */
+    val invitations: Result<List<FacilityInvitation>>,
+)
+
 class LoadManageFacilityUseCase @Inject constructor(
     private val repository: OwnerRepository,
 ) {
-    suspend operator fun invoke(id: String) = Triple(
-        repository.facility(id),
-        repository.closures(id),
-        repository.members(id),
+    suspend operator fun invoke(id: String) = ManageFacilityLoad(
+        facility = repository.facility(id),
+        closures = repository.closures(id),
+        members = repository.members(id),
+        invitations = repository.invitations(id),
     )
-
 }
 
 /** How people engaged with one of the owner's facilities over the last 30 days. */
@@ -61,4 +74,34 @@ class ManageFacilityUseCase @Inject constructor(
     suspend fun upsertMember(id: String, userId: String, role: FacilityMemberRole) =
         repository.upsertMember(id, userId, role)
     suspend fun deleteMember(id: String, userId: String) = repository.deleteMember(id, userId)
+    suspend fun invite(id: String, phone: String) = repository.invite(id, phone, FacilityMemberRole.MANAGER)
+    suspend fun revokeInvitation(id: String, invitationId: String) = repository.revokeInvitation(id, invitationId)
+}
+
+/**
+ * «هذه منشأتي» (DECISION-064): find a published facility nobody owns, start a claim on it, upload
+ * the documents its category asks for, and send it; or withdraw it while it is open.
+ */
+class ClaimFacilityUseCase @Inject constructor(
+    private val repository: OwnerRepository,
+) {
+    suspend fun search(query: String) = repository.claimable(query)
+    suspend fun claims() = repository.claims()
+    suspend fun claim(claimId: String) = repository.claim(claimId)
+    suspend fun start(facilityId: String) = repository.startClaim(facilityId)
+    suspend fun upload(claimId: String, requirementId: String, payload: OwnerUploadPayload) =
+        repository.uploadClaimEvidence(claimId, requirementId, payload)
+    suspend fun deleteEvidence(claimId: String, evidenceId: String) =
+        repository.deleteClaimEvidence(claimId, evidenceId)
+    suspend fun submit(claimId: String) = repository.submitClaim(claimId)
+    suspend fun withdraw(claimId: String) = repository.withdrawClaim(claimId)
+}
+
+/** The invitations waiting for the signed-in account (DECISION-064). */
+class ReceivedInvitationsUseCase @Inject constructor(
+    private val repository: OwnerRepository,
+) {
+    suspend fun load() = repository.receivedInvitations()
+    suspend fun accept(invitationId: String) = repository.acceptInvitation(invitationId)
+    suspend fun decline(invitationId: String) = repository.declineInvitation(invitationId)
 }

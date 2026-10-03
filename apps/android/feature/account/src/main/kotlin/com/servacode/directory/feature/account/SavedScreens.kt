@@ -135,6 +135,8 @@ fun NotificationsScreen(
     onDuty: (facilityId: String, date: String?) -> Unit,
     /** A facility's management page, where its hours are confirmed. */
     onManageFacility: (String) -> Unit,
+    /** The invitations to help run a facility, waiting for an answer. */
+    onInvitations: () -> Unit,
     onBack: () -> Unit,
     viewModel: InboxViewModel = hiltViewModel(),
 ) {
@@ -198,6 +200,7 @@ fun NotificationsScreen(
                                     is NotificationTarget.HoursConfirmation ->
                                         target.facilityId?.let(onManageFacility) ?: onOwnerFacilities()
                                     NotificationTarget.OwnerFacilities -> onOwnerFacilities()
+                                    NotificationTarget.Invitations -> onInvitations()
                                     NotificationTarget.None -> Unit
                                 }
                             },

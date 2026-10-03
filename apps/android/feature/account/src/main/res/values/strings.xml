@@ -17,6 +17,10 @@
     <string name="account_join_as_owner">انضم كصاحب منشأة</string>
     <string name="account_join_as_owner_hint">أضف منشأتك</string>
     <string name="account_facilities_hint">المواعيد والمناوبة والصور</string>
+    <string name="account_invitations">دعوات الإدارة</string>
+    <string name="account_claim">هذه منشأتي</string>
+    <string name="account_claim_hint">منشأتك منشورة في الدليل بلا مالك؟ اطلب تملّكها</string>
+    <string name="account_invitations_hint">منشآت دعاك أصحابها إلى إدارتها</string>
     <string name="account_edit_profile_hint">الاسم والعنوان والصورة والمحافظة</string>
     <string name="account_settings_hint">كلمة المرور والإشعارات والأذونات</string>
     <string name="account_help">المساعدة والمعلومات</string>

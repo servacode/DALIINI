@@ -66,6 +66,8 @@ class DeepLinksTest {
         // Staff changing the owner's own shift cannot be turned off.
         assertNull(NotificationCategory.of("duty.shift.admin_changed"))
         assertNull(NotificationCategory.of("account.security"))
+        // An invitation is addressed to this person by number; it is never muted.
+        assertNull(NotificationCategory.of(NotificationTypes.INVITATION_RECEIVED))
     }
 
     @Test fun `each notice opens where it is about`() {
@@ -92,6 +94,10 @@ class DeepLinksTest {
         assertEquals(
             NotificationTarget.DutyScheduling(null, null),
             NotificationTarget.of("duty.gap_nudge", MessageDestination.OWNER_FACILITIES, null, "soon"),
+        )
+        assertEquals(
+            NotificationTarget.Invitations,
+            NotificationTarget.of("facility.invitation.received", MessageDestination.NONE, "f-1"),
         )
     }
 }

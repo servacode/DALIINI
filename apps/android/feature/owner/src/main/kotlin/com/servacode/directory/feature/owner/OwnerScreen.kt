@@ -44,7 +44,6 @@ import com.servacode.directory.core.designsystem.DateTimeField
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryChipRow
 import com.servacode.directory.core.designsystem.DirectoryConfirmDialog
-import com.servacode.directory.core.designsystem.DirectoryEmptyState
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryFilterChip
 import com.servacode.directory.core.designsystem.DirectoryIcons
@@ -62,7 +61,16 @@ import com.servacode.directory.core.designsystem.MetaRow
 import com.servacode.directory.core.designsystem.OwnerWords
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.designsystem.StatusTone
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import com.servacode.directory.core.model.DamascusTime
+import com.servacode.directory.core.designsystem.DirectoryIllustrations
+import com.servacode.directory.core.designsystem.DirectoryMessageState
+import com.servacode.directory.core.model.FacilityClaim
+import com.servacode.directory.core.model.FacilityInvitation
 import com.servacode.directory.core.model.FacilityMemberRole
+import com.servacode.directory.core.model.InvitationStatus
+import com.servacode.directory.core.model.OwnerPendingChange
 import com.servacode.directory.core.model.FacilityTag
 import com.servacode.directory.core.model.OwnerFacilityStatus
 import com.servacode.directory.core.model.OwnerFacilitySummary
@@ -92,6 +100,9 @@ fun MyFacilitiesScreen(
     onBack: (() -> Unit)? = null,
     /** The app's own bar, where the owner has a place in it. */
     bottomBar: @Composable () -> Unit = {},
+    /** «هذه منشأتي»: the facility is already in the directory, without an owner. */
+    onClaim: () -> Unit = {},
+    onOpenClaim: (String) -> Unit = {},
     viewModel: MyFacilitiesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -108,13 +119,19 @@ fun MyFacilitiesScreen(
                 error = value.error,
                 onRetry = viewModel::refresh,
             )
-            is MyFacilitiesUiState.Content -> if (value.items.isEmpty()) {
-                DirectoryEmptyState(
+            is MyFacilitiesUiState.Content -> if (value.items.isEmpty() && value.claims.isEmpty()) {
+                // Two ways in, for two different owners: one whose facility is not listed yet,
+                // and one whose facility is, without anyone answering for it.
+                DirectoryMessageState(
+                    icon = DirectoryIcons.hospital,
+                    illustration = DirectoryIllustrations.empty,
                     title = OwnerCopy.EMPTY,
                     modifier = Modifier.padding(padding),
                     body = OwnerCopy.EMPTY_BODY,
-                    action = OwnerCopy.ADD,
-                    onAction = onAdd,
+                    primaryAction = OwnerCopy.ADD,
+                    onPrimaryAction = onAdd,
+                    secondaryAction = OwnerCopy.CLAIM_ACTION,
+                    onSecondaryAction = onClaim,
                 )
             } else {
                 LazyColumn(
@@ -134,6 +151,19 @@ fun MyFacilitiesScreen(
                             onDuty = { onDuty(item.id) },
                         )
                     }
+                    if (value.claims.isNotEmpty()) {
+                        item(key = "claims") {
+                            Text(
+                                text = OwnerCopy.CLAIMS,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.padding(top = Space.sm).semantics { heading() },
+                            )
+                        }
+                        items(value.claims, key = { "claim-${it.id}" }) { claim ->
+                            ClaimRow(claim, onOpen = { onOpenClaim(claim.id) })
+                        }
+                    }
                     item(key = "add") {
                         DirectorySecondaryButton(
                             text = OwnerCopy.ADD,
@@ -141,8 +171,41 @@ fun MyFacilitiesScreen(
                             modifier = Modifier.fillMaxWidth().padding(top = Space.sm),
                         )
                     }
+                    item(key = "claim") {
+                        DirectoryTextButton(
+                            text = OwnerCopy.CLAIM_ACTION,
+                            onClick = onClaim,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 }
             }
+        }
+    }
+}
+
+/** A claim in the owner's list: which facility, and where the claim stands. */
+@Composable
+private fun ClaimRow(claim: FacilityClaim, onOpen: () -> Unit) {
+    DirectoryCard(onClick = onOpen) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Space.md),
+        ) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+                Text(
+                    text = claim.facilityNameAr,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = "${claim.categoryNameAr} - ${claim.provinceNameAr}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            StatusChip(ClaimCopy.status(claim.status), claim.status.tone())
         }
     }
 }
@@ -213,9 +276,9 @@ private fun OwnerFacilityCard(
  * The owner's own screen for one facility: what it is going through, its temporary closures,
  * and who else may manage it.
  *
- * Three subjects, three labelled cards. It was one long column where a date field, a list of
- * closures, a list of people and a field for an account id followed each other with nothing
- * between them, so nothing said where one job ended and the next began.
+ * Each subject is its own labelled card, so it is clear where one job ends and the next begins.
+ * An edit still under review says so on the first card, naming what it changes: the values on
+ * this screen are the proposed ones, while the public listing keeps the published ones.
  */
 @Composable
 fun ManageFacilityScreen(
@@ -235,11 +298,13 @@ fun ManageFacilityScreen(
     // backend made of it — a review, for one already published — shows on its card above.
     val tagsSaved = (tags as? FacilityTagsUiState.Content)?.saved == true
     LaunchedEffect(tagsSaved) { if (tagsSaved) viewModel.refresh() }
-    var managerId by remember { mutableStateOf("") }
+    var invitePhone by remember { mutableStateOf("") }
     var closureStart by remember { mutableStateOf<Long?>(null) }
     var closureEnd by remember { mutableStateOf<Long?>(null) }
     var closureReason by remember { mutableStateOf("") }
     var removing by remember { mutableStateOf<String?>(null) }
+    val invited = (state as? ManageFacilityUiState.Content)?.invited
+    LaunchedEffect(invited) { if (invited != null) invitePhone = "" }
 
     DirectoryPage(
         topBar = { DirectoryTopBar(title = OwnerCopy.MANAGE_TITLE, onBack = onBack) },
@@ -281,6 +346,9 @@ fun ManageFacilityScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                        value.facility.pendingChange?.let { change ->
+                            PendingChangeNotice(change)
+                        }
                         value.failure?.let {
                             Text(
                                 text = appErrorText(it),
@@ -399,6 +467,9 @@ fun ManageFacilityScreen(
                 }
 
                 DirectorySection(OwnerCopy.MEMBERS) {
+                    // Only the owner gets the invitations back, and only the owner may change
+                    // who manages the facility.
+                    val owner = value.invitations != null
                     value.members.forEachIndexed { index, member ->
                         if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                         Row(
@@ -418,7 +489,7 @@ fun ManageFacilityScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
-                            if (member.role == FacilityMemberRole.MANAGER) {
+                            if (owner && member.role == FacilityMemberRole.MANAGER) {
                                 DirectoryTextButton(
                                     text = OwnerCopy.REMOVE,
                                     onClick = { removing = member.userId },
@@ -426,34 +497,60 @@ fun ManageFacilityScreen(
                             }
                         }
                     }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline)
-                    Text(
-                        text = OwnerCopy.MANAGER_ADD,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    // INT-084: a manager is still added by raw account id, because the API has
-                    // no lookup by phone. The field says so rather than pretending otherwise.
-                    DirectoryTextField(
-                        value = managerId,
-                        onValueChange = { managerId = it },
-                        label = OwnerCopy.MANAGER_ID,
-                        placeholder = OwnerCopy.MANAGER_ID_HINT,
-                    )
-                    Text(
-                        text = OwnerCopy.MANAGER_NOTE,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    DirectoryPrimaryButton(
-                        text = OwnerCopy.MANAGER_ADD,
-                        onClick = {
-                            viewModel.addManager(managerId)
-                            managerId = ""
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = managerId.isNotBlank(),
-                    )
+                    value.invitations?.let { invitations ->
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+                        Text(
+                            text = OwnerCopy.INVITE_TITLE,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.semantics { heading() },
+                        )
+                        DirectoryTextField(
+                            value = invitePhone,
+                            onValueChange = {
+                                invitePhone = it
+                                viewModel.dismissInvited()
+                            },
+                            label = OwnerCopy.INVITE_PHONE,
+                            placeholder = OwnerCopy.INVITE_PHONE_HINT,
+                            leadingIcon = DirectoryIcons.phone,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                        )
+                        Text(
+                            text = OwnerCopy.INVITE_NOTE,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        value.invited?.let { phone ->
+                            Text(
+                                text = OwnerCopy.inviteSent(phone),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                            )
+                        }
+                        DirectoryPrimaryButton(
+                            text = OwnerCopy.INVITE_SEND,
+                            onClick = { viewModel.invite(invitePhone) },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = invitePhone.isNotBlank(),
+                        )
+                        if (invitations.isNotEmpty()) {
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+                            Text(
+                                text = OwnerCopy.INVITATIONS,
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.semantics { heading() },
+                            )
+                            invitations.forEach { invitation ->
+                                InvitationRow(
+                                    invitation = invitation,
+                                    onRevoke = { viewModel.revokeInvitation(invitation.id) },
+                                )
+                            }
+                        }
+                    }
                 }
                 Spacer(Modifier.height(Space.lg))
             }
@@ -478,7 +575,60 @@ fun ManageFacilityScreen(
 /** The colour a status is read in: the shared vocabulary's tone for it. */
 internal fun OwnerFacilityStatus.tone(): StatusTone = StatusTones.facilityStatus(this)
 
-/** The words of the owner's screens, provisional until product copy is approved. */
+/**
+ * An edit to the name or the address waits for review while the facility stays published: say
+ * so, and name what it changes, on the brand's soft green like the other "waiting" lines.
+ */
+@Composable
+private fun PendingChangeNotice(change: OwnerPendingChange) {
+    val fields = change.proposedFields.mapNotNull { OwnerCopy.proposedField(it) }.distinct()
+    if (fields.isEmpty()) return
+    DirectoryPill(brand = true, modifier = Modifier.fillMaxWidth()) {
+        MetaRow(
+            icon = DirectoryIcons.info,
+            text = OwnerCopy.pendingChange(fields.joinToString(OwnerCopy.FIELD_SEPARATOR)),
+            modifier = Modifier.padding(horizontal = Space.md, vertical = Space.sm),
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+    }
+}
+
+/** One invitation the owner sent: to which number, where it stands, and a way to take it back. */
+@Composable
+private fun InvitationRow(invitation: FacilityInvitation, onRevoke: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.md),
+    ) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+            Text(
+                // A phone number reads left to right inside the Arabic line.
+                text = "\u2066${invitation.phone}\u2069",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = OwnerCopy.invitationSentOn(DamascusTime.format(invitation.createdAtEpochMillis)),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (invitation.status == InvitationStatus.PENDING) {
+            DirectoryTextButton(text = OwnerCopy.INVITATION_REVOKE, onClick = onRevoke)
+        } else {
+            StatusChip(OwnerCopy.invitationStatus(invitation.status), invitation.status.tone())
+        }
+    }
+}
+
+internal fun InvitationStatus.tone(): StatusTone = when (this) {
+    InvitationStatus.PENDING -> StatusTone.WARNING
+    InvitationStatus.ACCEPTED -> StatusTone.POSITIVE
+    InvitationStatus.DECLINED -> StatusTone.DANGER
+    InvitationStatus.REVOKED, InvitationStatus.EXPIRED -> StatusTone.NEUTRAL
+}
+
 /**
  * Views, calls and directions over the last 30 days: what the listing has done for the owner.
  * Loading, failure and an empty window each say so in their own words.
@@ -799,8 +949,50 @@ object OwnerCopy {
     val REMOVE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_remove)
     val REMOVE_TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_remove_title)
     val REMOVE_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_remove_body)
-    val MANAGER_ID: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_manager_id)
-    val MANAGER_ID_HINT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_manager_id_hint)
-    val MANAGER_ADD: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_manager_add)
-    val MANAGER_NOTE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_manager_note)
+    val CLAIMS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_claims)
+    val CLAIM_ACTION: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_claim_action)
+    val INVITE_TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_invite_title)
+    val INVITE_PHONE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_invite_phone)
+    val INVITE_PHONE_HINT: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_invite_phone_hint)
+    val INVITE_NOTE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_invite_note)
+    val INVITE_SEND: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_invite_send)
+    val INVITATIONS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_invitations)
+    val INVITATION_REVOKE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_invitation_revoke)
+    val FIELD_SEPARATOR: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_field_separator)
+
+    @Composable @ReadOnlyComposable
+    fun inviteSent(phone: String): String = stringResource(R.string.owner_invite_sent, "\u2066$phone\u2069")
+
+    @Composable @ReadOnlyComposable
+    fun invitationSentOn(date: String): String = stringResource(R.string.owner_invitation_sent_on, date)
+
+    @Composable @ReadOnlyComposable
+    fun invitationStatus(status: InvitationStatus): String = stringResource(
+        when (status) {
+            InvitationStatus.PENDING -> R.string.owner_invitation_pending
+            InvitationStatus.ACCEPTED -> R.string.owner_invitation_accepted
+            InvitationStatus.DECLINED -> R.string.owner_invitation_declined
+            InvitationStatus.REVOKED -> R.string.owner_invitation_revoked
+            InvitationStatus.EXPIRED -> R.string.owner_invitation_expired
+        },
+    )
+
+    @Composable @ReadOnlyComposable
+    fun pendingChange(fields: String): String = stringResource(R.string.owner_pending_change, fields)
+
+    /** A proposed field's name, or null for one this app does not know yet. */
+    @Composable @ReadOnlyComposable
+    fun proposedField(name: String): String? = when (name) {
+        "nameAr" -> R.string.owner_field_name_ar
+        "nameEn" -> R.string.owner_field_name_en
+        "addressAr" -> R.string.owner_field_address_ar
+        "addressEn" -> R.string.owner_field_address_en
+        "cityId" -> R.string.owner_field_city
+        "neighborhoodId" -> R.string.owner_field_neighborhood
+        "location" -> R.string.owner_field_location
+        else -> null
+    }?.let { stringResource(it) }
 }

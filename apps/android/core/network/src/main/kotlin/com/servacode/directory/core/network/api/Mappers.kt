@@ -5,6 +5,11 @@ import com.servacode.directory.api.models.EmergencyNumber as WireEmergencyNumber
 import com.servacode.directory.api.models.EmergencyNumberScopeEnum
 import com.servacode.directory.api.models.PublicDutyDay
 import com.servacode.directory.core.model.AppRelease
+import com.servacode.directory.core.model.ClaimEvidence
+import com.servacode.directory.core.model.ClaimRequirement
+import com.servacode.directory.core.model.ClaimStatus
+import com.servacode.directory.core.model.ClaimableFacility
+import com.servacode.directory.core.model.FacilityClaim
 import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.core.model.DutyWindow
 import com.servacode.directory.core.model.EmergencyNumber
@@ -36,6 +41,13 @@ import com.servacode.directory.api.models.Coordinates
 import com.servacode.directory.api.models.DutyShift as WireDutyShift
 import com.servacode.directory.api.models.FacilityCursorPage
 import com.servacode.directory.api.models.FacilityMemberRoleEnum
+import com.servacode.directory.api.models.Claim as WireClaim
+import com.servacode.directory.api.models.ClaimEvidence as WireClaimEvidence
+import com.servacode.directory.api.models.ClaimableFacility as WireClaimableFacility
+import com.servacode.directory.api.models.FacilityApplicationStatusEnum
+import com.servacode.directory.api.models.Invitation as WireInvitation
+import com.servacode.directory.api.models.InvitationStatusEnum
+import com.servacode.directory.api.models.ReceivedInvitation as WireReceivedInvitation
 import com.servacode.directory.api.models.FacilityStatusEnum
 import com.servacode.directory.api.models.HomeCategory
 import com.servacode.directory.api.models.MapMarker
@@ -75,6 +87,7 @@ import com.servacode.directory.core.model.CategoryTags
 import com.servacode.directory.core.model.DutyShift
 import com.servacode.directory.core.model.FacilityCapabilities
 import com.servacode.directory.core.model.FacilityDetail
+import com.servacode.directory.core.model.FacilityInvitation
 import com.servacode.directory.core.model.FacilityMember
 import com.servacode.directory.core.model.FacilityMemberRole
 import com.servacode.directory.core.model.FacilitySummary
@@ -85,6 +98,7 @@ import com.servacode.directory.core.model.HomeSnapshot
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import com.servacode.directory.core.model.InboxMessage
+import com.servacode.directory.core.model.InvitationStatus
 import com.servacode.directory.core.model.InboxPage
 import com.servacode.directory.core.model.LegalPage
 import com.servacode.directory.core.model.LegalPageKey
@@ -98,6 +112,8 @@ import com.servacode.directory.core.model.OwnerEvidence
 import com.servacode.directory.core.model.OwnerFacilityDetail
 import com.servacode.directory.core.model.OwnerFacilityImage
 import com.servacode.directory.core.model.OwnerFacilityStatus
+import com.servacode.directory.core.model.OwnerPendingChange
+import com.servacode.directory.core.model.ReceivedInvitation
 import com.servacode.directory.core.model.OwnerFacilitySummary
 import com.servacode.directory.core.model.OwnerSubmission
 import com.servacode.directory.core.model.Page
@@ -578,6 +594,79 @@ internal fun WireOwnerFacilityDetail.toDomain() = OwnerFacilityDetail(
     hours = hours.map { it.toDomain() }.sortedWith(hourOrder),
     evidence = evidence.map { it.toDomain() },
     application = application?.toDomain(),
+    pendingChange = pendingChange?.let { change ->
+        OwnerPendingChange(
+            id = change.id.toString(),
+            proposedFields = change.proposedFields.map { it.value },
+            submittedAtEpochMillis = change.submittedAt?.toEpochMillis(),
+        )
+    },
+)
+
+internal fun WireInvitation.toDomain() = FacilityInvitation(
+    id = id.toString(),
+    phone = phone,
+    role = role.toDomain(),
+    status = when (status) {
+        InvitationStatusEnum.PENDING -> InvitationStatus.PENDING
+        InvitationStatusEnum.ACCEPTED -> InvitationStatus.ACCEPTED
+        InvitationStatusEnum.DECLINED -> InvitationStatus.DECLINED
+        InvitationStatusEnum.REVOKED -> InvitationStatus.REVOKED
+        InvitationStatusEnum.EXPIRED -> InvitationStatus.EXPIRED
+    },
+    createdAtEpochMillis = createdAt.toEpochMillis(),
+    expiresAtEpochMillis = expiresAt.toEpochMillis(),
+    respondedAtEpochMillis = respondedAt?.toEpochMillis(),
+)
+
+internal fun WireReceivedInvitation.toDomain() = ReceivedInvitation(
+    id = id.toString(),
+    role = role.toDomain(),
+    facilityId = facility.id.toString(),
+    facilityNameAr = facility.nameAr,
+    categoryNameAr = facility.categoryNameAr,
+    provinceNameAr = facility.provinceNameAr,
+    invitedByName = invitedByName?.takeIf { it.isNotBlank() },
+    createdAtEpochMillis = createdAt.toEpochMillis(),
+    expiresAtEpochMillis = expiresAt.toEpochMillis(),
+)
+
+internal fun WireClaimableFacility.toDomain() = ClaimableFacility(
+    id = id.toString(),
+    nameAr = nameAr,
+    categoryNameAr = categoryNameAr,
+    provinceNameAr = provinceNameAr,
+    cityNameAr = cityNameAr?.takeIf { it.isNotBlank() },
+    addressAr = addressAr?.takeIf { it.isNotBlank() },
+)
+
+internal fun WireClaimEvidence.toDomain() = ClaimEvidence(
+    id = id.toString(),
+    requirementId = requirementId.toString(),
+    createdAtEpochMillis = createdAt.toEpochMillis(),
+)
+
+internal fun WireClaim.toDomain() = FacilityClaim(
+    id = id.toString(),
+    status = when (status) {
+        FacilityApplicationStatusEnum.DRAFT -> ClaimStatus.DRAFT
+        FacilityApplicationStatusEnum.SUBMITTED -> ClaimStatus.SUBMITTED
+        FacilityApplicationStatusEnum.APPROVED -> ClaimStatus.APPROVED
+        FacilityApplicationStatusEnum.REJECTED -> ClaimStatus.REJECTED
+    },
+    facilityId = facility.id.toString(),
+    facilityNameAr = facility.nameAr,
+    categoryNameAr = facility.categoryNameAr,
+    provinceNameAr = facility.provinceNameAr,
+    addressAr = facility.addressAr?.takeIf { it.isNotBlank() },
+    // The model's integer keys (INT-068); the domain keeps every id opaque.
+    requirements = requirements.map {
+        ClaimRequirement(it.id.toString(), it.labelAr, it.required, it.minFiles, it.maxFiles)
+    },
+    evidence = evidence.map { it.toDomain() },
+    rejectionReason = rejectionReason?.takeIf { it.isNotBlank() },
+    submittedAtEpochMillis = submittedAt?.toEpochMillis(),
+    reviewedAtEpochMillis = reviewedAt?.toEpochMillis(),
 )
 
 internal fun WireOwnerFacilityInsights.toDomain() = OwnerFacilityInsights(
