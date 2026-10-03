@@ -3,7 +3,7 @@
 # deps    -> installs exactly what pnpm-lock.yaml pins (--frozen-lockfile fails on drift)
 # build   -> `next build` with output: "standalone" (apps/web/next.config.ts)
 # runtime -> only the traced standalone server, run as the unprivileged `node` user
-FROM node:24-bookworm-slim AS deps
+FROM node:26-bookworm-slim AS deps
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 RUN corepack enable && corepack prepare pnpm@10.17.1 --activate
@@ -42,7 +42,7 @@ ARG SUPPORT_EMAIL
 ARG PRIVACY_CONTACT_EMAIL
 RUN pnpm --filter @servacode/public-web build
 
-FROM node:24-bookworm-slim AS runtime
+FROM node:26-bookworm-slim AS runtime
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     HOSTNAME=0.0.0.0 \
