@@ -150,3 +150,23 @@ def test_a_mangled_cursor_is_a_validation_error(admin_api: Any) -> None:
 
     assert response.status_code == 400
     assert "cursor" in response.json()["details"]
+
+
+@pytest.mark.django_db
+def test_users_can_be_walked_by_name_in_either_direction_and_a_bad_order_is_refused(
+    admin_api: Any,
+) -> None:
+    client = admin_api("admin.users.read")
+    for name in ("ياسر", "أحمد", "باسل", "أحمد", "تامر"):
+        User.objects.create_user(
+            phone=f"+96398820{User.objects.count():04d}", password="x" * 12, name=name
+        )
+
+    ascending = _walk(client, USERS, ordering="name")
+    descending = _walk(client, USERS, ordering="-name")
+
+    names = [row["name"] for row in ascending]
+    assert names == sorted(names)
+    assert len(ascending) == len(set(_ids(ascending))) == User.objects.count()
+    assert _ids(descending) == list(reversed(_ids(ascending)))
+    assert client.get(USERS, {"ordering": "phone"}).status_code == 400

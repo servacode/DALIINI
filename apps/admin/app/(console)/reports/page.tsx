@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { useCan } from "../../../components/admin-shell";
+import { ExportButton } from "../../../components/export-button";
 import {
   type Column,
   ConfirmDialog,
@@ -19,6 +20,7 @@ import {
   termsFor,
   labelsFor,
   Pagination,
+  pageSummary,
 } from "../../../components/ui";
 import { useMutation } from "../../../lib/client/use-mutation";
 import { useCursorPage } from "../../../lib/client/use-cursor-page";
@@ -210,6 +212,7 @@ export default function ReportsPage() {
       <PageHeader
         title="البلاغات"
         description="ما أبلغ عنه المستخدمون من أخطاء في بيانات المنشآت."
+        actions={<ExportButton name="reports" params={filters} />}
       />
       <FilterBar
         fields={[
@@ -265,10 +268,12 @@ export default function ReportsPage() {
       {reports.error ? <ErrorState error={reports.error} onRetry={reports.reload} /> : null}
       {reports.data ? (
         <DataTable
+          id="reports"
           caption="البلاغات"
           columns={columns}
           rows={reports.data.items}
           rowKey={(row) => row.id}
+          summary={pageSummary(reports.data.items.length, reports.data.hasMore)}
           empty={
             <EmptyState
               title="لا بلاغات"

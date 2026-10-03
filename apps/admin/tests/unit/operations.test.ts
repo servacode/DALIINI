@@ -210,14 +210,14 @@ describe("smart console reads", () => {
     expect(calls[0]?.args[0]).toEqual({ issue: "STALE", ordering: "qualityScore" });
   });
 
-  it("hands the cursor back on every paged list, and nothing else that was not declared", async () => {
+  it("hands back the cursor and the page size on every paged list, and nothing undeclared", async () => {
     const { apis, calls } = spyApis();
 
     for (const name of ["reviews", "facilities", "users", "audit", "reports"] as const) {
-      await READS[name](apis, { cursor: "cD0yMDI2", limit: "999" });
+      await READS[name](apis, { cursor: "cD0yMDI2", limit: "25", upstreamOnly: "x" });
     }
 
-    for (const call of calls) expect(call.args[0]).toEqual({ cursor: "cD0yMDI2" });
+    for (const call of calls) expect(call.args[0]).toEqual({ cursor: "cD0yMDI2", limit: "25" });
   });
 
   it("filters the facility list by city on the server", async () => {
@@ -387,7 +387,7 @@ describe("operations screens: reads", () => {
   it("pages the inbox and the broadcast history by cursor, with their filters", async () => {
     const { apis, calls } = spyApis();
 
-    await READS.contactMessages(apis, { status: "open", kind: "", cursor: "c-2", limit: "999" });
+    await READS.contactMessages(apis, { status: "open", kind: "", cursor: "c-2", other: "x" });
     await READS.broadcasts(apis, { cursor: "" });
 
     expect(calls[0]?.args[0]).toEqual({ status: "open", cursor: "c-2" });

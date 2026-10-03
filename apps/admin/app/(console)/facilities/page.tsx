@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { useCan } from "../../../components/admin-shell";
+import { ExportButton } from "../../../components/export-button";
 
 import {
   type Column,
@@ -15,6 +16,7 @@ import {
   formatDateTime,
   termsFor,
   Pagination,
+  pageSummary,
 } from "../../../components/ui";
 import { useLookups } from "../../../lib/client/use-lookups";
 import { useCursorPage } from "../../../lib/client/use-cursor-page";
@@ -78,6 +80,7 @@ export default function FacilitiesPage() {
     {
       key: "name",
       header: "المنشأة",
+      required: true,
       render: (row) => <Link href={`/facilities/${row.id}`}>{row.nameAr}</Link>,
     },
     {
@@ -92,6 +95,8 @@ export default function FacilitiesPage() {
     {
       key: "quality",
       header: "الجودة",
+      // The weakest listings first: the order this column is for.
+      sortKey: "qualityScore",
       render: (row) =>
         row.qualityScore === undefined ? (
           <span className="muted">—</span>
@@ -119,18 +124,22 @@ export default function FacilitiesPage() {
     {
       key: "owner",
       header: "المالك",
+      hiddenByDefault: true,
       render: (row) => row.ownerName ?? <span className="muted">—</span>,
     },
     {
       key: "updatedAt",
       header: "آخر تحديث",
       ltr: true,
+      sortKey: "updatedAt",
+      sortFirst: "desc",
       render: (row) => formatDateTime(row.updatedAt),
     },
     {
       key: "open",
       header: "",
       width: "1%",
+      required: true,
       render: (row) => (
         <Link className="button-ghost" href={`/facilities/${row.id}`}>
           فتح
@@ -145,11 +154,15 @@ export default function FacilitiesPage() {
         title="المنشآت"
         description="متابعة الحالة التشغيلية للمنشآت وإدارتها."
         actions={
-          canEdit ? (
-            <Link className="button-primary" href="/facilities/new" data-testid="facility-new">
-              إضافة منشأة
-            </Link>
-          ) : null
+          <>
+            {/* The file holds what the filters hold, without the page's limit. */}
+            <ExportButton name="facilities" params={filters} />
+            {canEdit ? (
+              <Link className="button-primary" href="/facilities/new" data-testid="facility-new">
+                إضافة منشأة
+              </Link>
+            ) : null}
+          </>
         }
       />
       <FilterBar
@@ -172,17 +185,6 @@ export default function FacilitiesPage() {
             type: "select",
             options: Object.entries(QUALITY_ISSUES).map(([value, label]) => ({ value, label })),
           },
-          {
-            name: "ordering",
-            label: "الترتيب",
-            type: "select",
-            options: [
-              { value: "qualityScore", label: "الأقل جودة أولاً" },
-              { value: "-qualityScore", label: "الأعلى جودة أولاً" },
-              { value: "-updatedAt", label: "الأحدث تحديثاً" },
-              { value: "updatedAt", label: "الأقدم تحديثاً" },
-            ],
-          },
         ]}
         values={filters}
         onApply={setFilters}
@@ -193,10 +195,14 @@ export default function FacilitiesPage() {
       ) : null}
       {facilities.data ? (
         <DataTable
+          id="facilities"
           caption="المنشآت"
           columns={columns}
           rows={facilities.data.items}
           rowKey={(row) => row.id}
+          sort={filters.ordering}
+          onSort={(ordering) => setFilters({ ...filters, ordering })}
+          summary={pageSummary(facilities.data.items.length, facilities.data.hasMore)}
         />
       ) : null}
       {facilities.pagination ? <Pagination {...facilities.pagination} /> : null}

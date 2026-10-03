@@ -59,9 +59,20 @@ export default function ProvincesPage() {
   }
 
   const columns: readonly Column<Province>[] = [
-    { key: "nameAr", header: "المحافظة", render: (row) => row.nameAr },
+    {
+      key: "nameAr",
+      header: "المحافظة",
+      sortValue: (row) => row.nameAr,
+      render: (row) => row.nameAr,
+    },
     { key: "code", header: "الرمز", ltr: true, render: (row) => <code>{row.code}</code> },
-    { key: "sortOrder", header: "الترتيب", ltr: true, render: (row) => row.sortOrder },
+    {
+      key: "sortOrder",
+      header: "الترتيب",
+      ltr: true,
+      sortValue: (row) => row.sortOrder,
+      render: (row) => row.sortOrder,
+    },
     {
       key: "active",
       header: "الحالة",

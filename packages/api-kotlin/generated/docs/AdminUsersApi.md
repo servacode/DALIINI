@@ -434,7 +434,7 @@ Configure bearerAccessToken:
 
 Search user accounts
 
-Password hashes and session secret material are never returned. Newest first, in cursor pages. Every filter is optional.
+Password hashes and session secret material are never returned. Newest first unless &#x60;ordering&#x60; says otherwise, in cursor pages. Every filter is optional.
 
 ### Example
 ```kotlin
@@ -448,18 +448,20 @@ apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AdminUsersApi::class.java)
 val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
 val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 200, default 50.
+val ordering : kotlin.String = ordering_example // kotlin.String | createdAt, -createdAt (the default), name or -name.
 val q : kotlin.String = q_example // kotlin.String | Free text matched against the account name and phone number.
 val role : kotlin.String = role_example // kotlin.String | Admin role id or code; keeps accounts holding that role actively. The value `any` keeps every operator, `none` every non-operator.
 val status : kotlin.String = status_example // kotlin.String | `active` keeps active accounts; any other value keeps blocked accounts.
 
 launch(Dispatchers.IO) {
-    val result : AdminUserList = webService.adminUsersList(cursor, limit, q, role, status)
+    val result : AdminUserList = webService.adminUsersList(cursor, limit, ordering, q, role, status)
 }
 ```
 
 ### Parameters
 | **cursor** | **kotlin.String**| Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] |
 | **limit** | **kotlin.Int**| Page size, maximum 200, default 50. | [optional] |
+| **ordering** | **kotlin.String**| createdAt, -createdAt (the default), name or -name. | [optional] |
 | **q** | **kotlin.String**| Free text matched against the account name and phone number. | [optional] |
 | **role** | **kotlin.String**| Admin role id or code; keeps accounts holding that role actively. The value &#x60;any&#x60; keeps every operator, &#x60;none&#x60; every non-operator. | [optional] |
 | Name | Type | Description  | Notes |

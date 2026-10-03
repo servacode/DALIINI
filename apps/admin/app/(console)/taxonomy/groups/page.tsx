@@ -89,9 +89,15 @@ export default function TaxonomyGroupsPage() {
   }
 
   const columns: readonly Column<Group>[] = [
-    { key: "nameAr", header: "الاسم", render: (row) => row.nameAr },
+    { key: "nameAr", header: "الاسم", sortValue: (row) => row.nameAr, render: (row) => row.nameAr },
     { key: "code", header: "الرمز", ltr: true, render: (row) => <code>{row.code}</code> },
-    { key: "sortOrder", header: "الترتيب", ltr: true, render: (row) => row.sortOrder },
+    {
+      key: "sortOrder",
+      header: "الترتيب",
+      ltr: true,
+      sortValue: (row) => row.sortOrder,
+      render: (row) => row.sortOrder,
+    },
     {
       key: "active",
       header: "الحالة",

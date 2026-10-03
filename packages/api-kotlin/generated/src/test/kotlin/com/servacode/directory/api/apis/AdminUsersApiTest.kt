@@ -117,10 +117,11 @@ class AdminUsersApiTest : ShouldSpec() {
             // uncomment below to test adminUsersList
             //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
             //val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 200, default 50.
+            //val ordering : kotlin.String = ordering_example // kotlin.String | createdAt, -createdAt (the default), name or -name.
             //val q : kotlin.String = q_example // kotlin.String | Free text matched against the account name and phone number.
             //val role : kotlin.String = role_example // kotlin.String | Admin role id or code; keeps accounts holding that role actively. The value `any` keeps every operator, `none` every non-operator.
             //val status : kotlin.String = status_example // kotlin.String | `active` keeps active accounts; any other value keeps blocked accounts.
-            //val result : AdminUserList = apiInstance.adminUsersList(cursor, limit, q, role, status)
+            //val result : AdminUserList = apiInstance.adminUsersList(cursor, limit, ordering, q, role, status)
             //result shouldBe ("TODO")
         }
 

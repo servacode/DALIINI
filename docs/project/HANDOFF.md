@@ -36,8 +36,9 @@ The roadmap was approved on 2026-10-03. Phases 0 to 3 are done, merged through p
 | 3.4 | the site's map, the app's own style drawn by MapLibre | 071 |
 | 4.1 | the role editor, the owner role, `grant_operator` for the first operator | 072 |
 | 4.2 | a system page that asks each service, and records for those that cannot be asked | 073 |
+| 4.3 | tables that sort from their headers and remember columns, density and page size | 074 |
 
-**Now: phase 4, the console v2** (4.3 tables, 4.4 map and charts). An owner
+**Now: phase 4, the console v2** (4.4 map and charts). An owner
 portal on the web was offered at the start of phase 3 and set aside: owners use the Android app.
 Then Android v2 (5), the VPS (6), content and the Play launch (7), and the iPhone app from the
 Android code with Kotlin Multiplatform (8).

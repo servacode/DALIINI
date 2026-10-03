@@ -42,7 +42,17 @@ export const READS = {
   systemStatus: (apis: AdminApis) => apis.system.adminSystemStatusRetrieve(),
   reviews: (apis: AdminApis, p: Params) =>
     apis.reviews.adminReviewsList(
-      filled(p, ["kind", "status", "province", "category", "from", "to", "evidence", "cursor"]),
+      filled(p, [
+        "kind",
+        "status",
+        "province",
+        "category",
+        "from",
+        "to",
+        "evidence",
+        "cursor",
+        "limit",
+      ]) as never,
     ),
   review: (apis: AdminApis, p: Params) =>
     apis.reviews.adminReviewRetrieve({ applicationId: p.id! }),
@@ -58,6 +68,7 @@ export const READS = {
         "issue",
         "ordering",
         "cursor",
+        "limit",
       ]) as never,
     ),
   facilityTimeline: (apis: AdminApis, p: Params) =>
@@ -66,7 +77,9 @@ export const READS = {
     apis.facilities.adminFacilityRetrieve({ facilityId: p.id! }),
 
   users: (apis: AdminApis, p: Params) =>
-    apis.users.adminUsersList(filled(p, ["q", "status", "role", "cursor"])),
+    apis.users.adminUsersList(
+      filled(p, ["q", "status", "role", "ordering", "cursor", "limit"]) as never,
+    ),
   user: (apis: AdminApis, p: Params) => apis.users.adminUserRetrieve({ userId: p.id! }),
   roles: (apis: AdminApis) => apis.users.adminRolesList(),
   permissions: (apis: AdminApis) => apis.users.adminPermissionsList(),
@@ -86,11 +99,22 @@ export const READS = {
 
   audit: (apis: AdminApis, p: Params) =>
     apis.audit.adminAuditList(
-      filled(p, ["actor", "action", "resource", "requestId", "from", "to", "cursor"]),
+      filled(p, [
+        "actor",
+        "action",
+        "resource",
+        "requestId",
+        "from",
+        "to",
+        "cursor",
+        "limit",
+      ]) as never,
     ),
 
   reports: (apis: AdminApis, p: Params) =>
-    apis.reports.adminReportsList(filled(p, ["status", "facility", "cursor"])),
+    apis.reports.adminReportsList(
+      filled(p, ["status", "facility", "cursor", "limit"]) as never,
+    ),
   provinceCities: (apis: AdminApis, p: Params) =>
     apis.provinces.adminProvinceCitiesList({ provinceId: p.id! }),
 
@@ -116,9 +140,11 @@ export const READS = {
   emergencyNumbers: (apis: AdminApis, p: Params) =>
     apis.content.adminEmergencyNumbersList(filled(p, ["provinceId"])),
   contactMessages: (apis: AdminApis, p: Params) =>
-    apis.content.adminContactMessagesList(filled(p, ["status", "kind", "cursor"])),
+    apis.content.adminContactMessagesList(
+      filled(p, ["status", "kind", "cursor", "limit"]) as never,
+    ),
   broadcasts: (apis: AdminApis, p: Params) =>
-    apis.notifications.adminNotificationBroadcastsList(filled(p, ["cursor"])),
+    apis.notifications.adminNotificationBroadcastsList(filled(p, ["cursor", "limit"]) as never),
   rejectionTemplates: (apis: AdminApis, p: Params) =>
     apis.reviews.adminRejectionTemplatesList(p.active === "true" ? { active: true } : {}),
 

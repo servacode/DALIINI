@@ -6049,7 +6049,8 @@ paths:
     get:
       operationId: adminUsersList
       description: Password hashes and session secret material are never returned.
-        Newest first, in cursor pages. Every filter is optional.
+        Newest first unless `ordering` says otherwise, in cursor pages. Every filter
+        is optional.
       summary: Search user accounts
       parameters:
       - in: query
@@ -6062,6 +6063,11 @@ paths:
         schema:
           type: integer
         description: Page size, maximum 200, default 50.
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: createdAt, -createdAt (the default), name or -name.
       - in: query
         name: q
         schema:

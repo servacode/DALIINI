@@ -156,6 +156,33 @@ test.describe("user lifecycle", () => {
   });
 });
 
+test.describe("tables", () => {
+  test("a header asks the backend for its order, and a hidden column stays hidden", async ({
+    page,
+  }) => {
+    await openConsole(page);
+    await page.goto("/facilities");
+    await expect(page.getByTestId("data-table")).toBeVisible();
+
+    await page.getByTestId("sort-updatedAt").click();
+    await expect(page).toHaveURL(/ordering=-updatedAt/);
+    await expect(page.getByTestId("sort-updatedAt").locator("xpath=..")).toHaveAttribute(
+      "aria-sort",
+      "descending",
+    );
+
+    await page.getByTestId("table-columns").click();
+    await page.getByTestId("column-category").uncheck();
+    await page.reload();
+    await expect(page.getByTestId("data-table")).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "التصنيف" })).toHaveCount(0);
+    await expect(page.getByTestId("sort-updatedAt").locator("xpath=..")).toHaveAttribute(
+      "aria-sort",
+      "descending",
+    );
+  });
+});
+
 test.describe("roles", () => {
   test("a role is created with its permissions, then deleted", async ({ page }) => {
     const name = `e2e-دور ${Date.now()}`;
