@@ -37,6 +37,9 @@ private fun AppErrorMessage.resource(): Int = when (this) {
     AppErrorMessage.TEMPORARY_CLOSURE_NOT_SUPPORTED -> R.string.ds_error_closure_not_supported
     AppErrorMessage.EVIDENCE_MAX_FILES -> R.string.ds_error_evidence_max_files
     AppErrorMessage.EVIDENCE_LOCKED_DURING_REVIEW -> R.string.ds_error_evidence_locked
+    AppErrorMessage.FACILITY_LOCKED_DURING_REVIEW -> R.string.ds_error_facility_locked
+    AppErrorMessage.OTP_RECIPIENT_INVALID -> R.string.ds_error_otp_recipient_invalid
+    AppErrorMessage.OTP_DELIVERY_UNAVAILABLE -> R.string.ds_error_otp_unavailable
     AppErrorMessage.LAST_OWNER_PROTECTED -> R.string.ds_error_last_owner
     AppErrorMessage.MAINTENANCE -> R.string.ds_error_maintenance
     AppErrorMessage.OFFLINE -> R.string.ds_error_offline

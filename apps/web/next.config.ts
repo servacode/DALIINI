@@ -44,7 +44,8 @@ const contentSecurityPolicy = [
   // inline. The risk that normally carries is script injection through rendered data;
   // React escapes everything it renders here and no page uses dangerouslySetInnerHTML
   // for anything but JSON-LD built from JSON.stringify.
-  "script-src 'self' 'unsafe-inline'",
+  // `next dev` alone needs eval for React's debugging call stacks, as the console allows.
+  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
   `connect-src ${withApi("'self'")}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",

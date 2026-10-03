@@ -119,6 +119,9 @@ REST_FRAMEWORK = {
         "otp_verify": "10/hour",
         "login": "10/minute",
         "recovery": "5/hour",
+        # Per destination number, across every caller address: the sending account's budget.
+        "otp_phone_hour": env("THROTTLE_OTP_PHONE_HOUR", "5/hour"),
+        "otp_phone_day": env("THROTTLE_OTP_PHONE_DAY", "10/day"),
         # Abuse protection for public and account writes; override per environment.
         "ratings_write": env("THROTTLE_RATINGS_WRITE", "30/hour"),
         "favorites_write": env("THROTTLE_FAVORITES_WRITE", "60/hour"),

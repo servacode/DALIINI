@@ -29,6 +29,10 @@ ARG NEXT_PUBLIC_API_ORIGIN
 ARG NEXT_PUBLIC_PLAY_STORE_URL
 ARG NEXT_PUBLIC_APP_STORE_URL
 ARG NEXT_PUBLIC_ANDROID_PACKAGE
+# The media store's origin goes into the CSP's img-src at build time; without it every
+# facility photograph and ad slide is blocked by the site's own policy.
+ARG NEXT_PUBLIC_MEDIA_ORIGIN
+ARG NEXT_PUBLIC_APP_DOWNLOAD_URL
 ARG PUBLIC_API_ORIGIN
 ARG SUPPORT_EMAIL
 ARG PRIVACY_CONTACT_EMAIL
@@ -42,6 +46,8 @@ ENV NODE_ENV=production \
 WORKDIR /app
 COPY --from=build --chown=node:node /workspace/apps/web/.next/standalone ./
 COPY --from=build --chown=node:node /workspace/apps/web/.next/static ./apps/web/.next/static
+# The standalone output leaves out `public/`; Next.js expects it beside the server.
+COPY --from=build --chown=node:node /workspace/apps/web/public ./apps/web/public
 USER node
 EXPOSE 10000
 # Render probes its own healthCheckPath; this covers plain `docker run` / compose.

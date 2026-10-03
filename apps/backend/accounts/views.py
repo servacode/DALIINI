@@ -12,7 +12,14 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.openapi import CONFLICT_409, THROTTLED_429, VALIDATION_400, protected
+from core.openapi import (
+    CONFLICT_409,
+    OTP_UNAVAILABLE_503,
+    OTP_UNDELIVERABLE_422,
+    THROTTLED_429,
+    VALIDATION_400,
+    protected,
+)
 from locations.models import Province
 
 from .authentication import AuthenticatedRequest
@@ -55,7 +62,13 @@ from .services import (
     start_phone_change,
     verify_challenge,
 )
-from .throttles import LoginThrottle, OtpStartThrottle, OtpVerifyThrottle, RecoveryThrottle
+from .throttles import (
+    OTP_SEND_THROTTLES,
+    LoginThrottle,
+    OtpStartThrottle,
+    OtpVerifyThrottle,
+    RecoveryThrottle,
+)
 
 
 def _profile_payload(user: User) -> dict[str, Any]:
@@ -88,7 +101,7 @@ def _challenge_response(challenge: OTPChallenge) -> Response:
 
 
 class RegisterStartView(APIView):
-    throttle_classes = [OtpStartThrottle]
+    throttle_classes = [OtpStartThrottle, *OTP_SEND_THROTTLES]
     permission_classes = [AllowAny]
     authentication_classes = []
 
@@ -102,7 +115,13 @@ class RegisterStartView(APIView):
             "never returned in the response."
         ),
         request=RegisterStartSerializer,
-        responses={202: ChallengeAcceptedSerializer, 400: VALIDATION_400, 429: THROTTLED_429},
+        responses={
+            202: ChallengeAcceptedSerializer,
+            400: VALIDATION_400,
+            422: OTP_UNDELIVERABLE_422,
+            429: THROTTLED_429,
+            503: OTP_UNAVAILABLE_503,
+        },
     )
     def post(self, request: Request) -> Response:
         serializer = RegisterStartSerializer(data=request.data)
@@ -275,7 +294,7 @@ class SessionDetailView(APIView):
 
 
 class RecoveryStartView(APIView):
-    throttle_classes = [RecoveryThrottle]
+    throttle_classes = [RecoveryThrottle, *OTP_SEND_THROTTLES]
     permission_classes = [AllowAny]
     authentication_classes = []
 
@@ -284,7 +303,13 @@ class RecoveryStartView(APIView):
         tags=["Auth"],
         summary="Start password recovery by requesting an OTP challenge",
         request=RecoveryStartSerializer,
-        responses={202: ChallengeAcceptedSerializer, 400: VALIDATION_400, 429: THROTTLED_429},
+        responses={
+            202: ChallengeAcceptedSerializer,
+            400: VALIDATION_400,
+            422: OTP_UNDELIVERABLE_422,
+            429: THROTTLED_429,
+            503: OTP_UNAVAILABLE_503,
+        },
     )
     def post(self, request: Request) -> Response:
         serializer = RecoveryStartSerializer(data=request.data)
@@ -439,7 +464,7 @@ class ProfileImageView(APIView):
 class PhoneChangeStartView(APIView):
     """Ask for a code on the number the account is to move to."""
 
-    throttle_classes = [RecoveryThrottle]
+    throttle_classes = [RecoveryThrottle, *OTP_SEND_THROTTLES]
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
@@ -454,7 +479,9 @@ class PhoneChangeStartView(APIView):
         responses={
             202: ChallengeAcceptedSerializer,
             400: VALIDATION_400,
+            422: OTP_UNDELIVERABLE_422,
             429: THROTTLED_429,
+            503: OTP_UNAVAILABLE_503,
             **protected(),
         },
     )

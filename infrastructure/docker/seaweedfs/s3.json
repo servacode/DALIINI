@@ -1,0 +1,18 @@
+{
+  "identities": [
+    {
+      "name": "directory",
+      "credentials": [
+        {
+          "accessKey": "directory-dev",
+          "secretKey": "directory-dev-only-change-me"
+        }
+      ],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    },
+    {
+      "name": "anonymous",
+      "actions": ["Read:directory-public"]
+    }
+  ]
+}
