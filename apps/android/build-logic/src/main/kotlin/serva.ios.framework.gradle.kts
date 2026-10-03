@@ -5,6 +5,9 @@
 plugins {
     id("org.jetbrains.kotlin.multiplatform")
     id("org.jetbrains.kotlin.plugin.compose")
+    // Compose resources: the framework's build copies every module's strings, fonts and images
+    // into the app's bundle, where the shared design system reads them (DECISION-094).
+    id("org.jetbrains.compose")
 }
 
 kotlin {

@@ -1,5 +1,6 @@
 package com.servacode.directory.feature.map
 
+import com.servacode.directory.core.designsystem.CategoryDrawables
 import com.servacode.directory.core.designsystem.DirectoryVocabulary
 import com.servacode.directory.core.model.AvailabilityState
 import android.content.pm.PackageManager
@@ -423,7 +424,7 @@ private fun FacilityMap(
                     label = it.label,
                     // The section's own mark, the same one the rail and the cards wear: a map
                     // of identical teardrops asks someone who does not read to give up.
-                    iconRes = DirectoryIcons.category(it.categoryIconKey),
+                    iconRes = CategoryDrawables.of(it.categoryIconKey),
                 )
             },
             state.selectedFacilityId,
@@ -446,9 +447,9 @@ private const val MY_LOCATION_ZOOM = 15.0
 /** The words of the map, provisional until product copy is approved. */
 object MapCopy {
     val OPEN_NOW: String
-        @Composable @ReadOnlyComposable get() = DirectoryVocabulary.availability(AvailabilityState.OPEN)
+        @Composable get() = DirectoryVocabulary.availability(AvailabilityState.OPEN)
     val DUTY_NOW: String
-        @Composable @ReadOnlyComposable get() = DirectoryVocabulary.availability(AvailabilityState.DUTY)
+        @Composable get() = DirectoryVocabulary.availability(AvailabilityState.DUTY)
     val MY_LOCATION: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_my_location)
     val OPEN_DETAILS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_open_details)
     val DISMISS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.map_dismiss)

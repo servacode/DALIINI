@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The design system's words that Android reads by id outside Compose: the duty widget, the
+     trip's notification and the push notification. Copies of the same strings in
+     src/commonMain/composeResources/values/strings.xml, where every screen reads them; a test
+     (AndroidWordsTest) holds the two to each other. The separator is quoted because Android trims
+     a string's ends otherwise, and the space after the comma is part of it. -->
+<resources>
+    <string name="directory_list_separator">"، "</string>
+    <string name="ds_distance_kilometres">%1$d.%2$d كم</string>
+    <string name="ds_distance_metres">%1$d م</string>
+    <string name="ds_error_offline">لا يوجد اتصال بالإنترنت.</string>
+    <string name="ds_offline">غير متصل — تعرض بيانات محفوظة قد لا تكون محدثة</string>
+</resources>

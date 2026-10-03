@@ -19,4 +19,7 @@ dependencies {
     )
     implementation("com.google.dagger:hilt-android-gradle-plugin:${libs.versions.hilt.get()}")
     implementation("com.google.devtools.ksp:symbol-processing-gradle-plugin:${libs.versions.ksp.get()}")
+    // Compose Multiplatform's resources (strings, fonts, images) for the shared design system
+    // (DECISION-094).
+    implementation(libs.compose.multiplatform.gradle.plugin)
 }

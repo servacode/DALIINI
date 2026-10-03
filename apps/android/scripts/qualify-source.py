@@ -141,7 +141,7 @@ def check_architecture() -> None:
     ):
         require(route in routes, f"missing route: {route}")
     theme = text(
-        "core/designsystem/src/main/kotlin/"
+        "core/designsystem/src/commonMain/kotlin/"
         "com/servacode/directory/core/designsystem/DirectoryTheme.kt"
     )
     require("LayoutDirection.Rtl" in theme, "RTL must be first-class")

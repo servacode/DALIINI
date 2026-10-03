@@ -1,10 +1,10 @@
 package com.servacode.directory.feature.navigation
 
+import com.servacode.directory.core.designsystem.DirectoryGlyph
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -364,8 +364,7 @@ private fun TripSummary(progress: NavigationProgress, switching: Boolean) {
     }
 }
 
-@DrawableRes
-private fun RoutingProfile.icon(): Int = when (this) {
+private fun RoutingProfile.icon(): DirectoryGlyph = when (this) {
     RoutingProfile.WALKING -> DirectoryIcons.walk
     RoutingProfile.MOTORCYCLE -> DirectoryIcons.motorcycle
     RoutingProfile.DRIVING -> DirectoryIcons.car

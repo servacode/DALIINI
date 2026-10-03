@@ -1,8 +1,8 @@
 package com.servacode.directory.feature.owner
 
+import com.servacode.directory.core.designsystem.DirectoryGlyph
 import com.servacode.directory.core.designsystem.StatusTones
 import com.servacode.directory.core.designsystem.StatusChip
-import androidx.annotation.DrawableRes
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
@@ -856,7 +856,7 @@ private fun TagsStatus(state: FacilityTagsUiState.Content, onRefresh: () -> Unit
 }
 
 @Composable
-private fun InsightFigure(count: Int, label: String, @DrawableRes icon: Int) {
+private fun InsightFigure(count: Int, label: String, icon: DirectoryGlyph) {
     Column(
         // "١٢ مشاهدة" as one statement, not a number and a word read apart.
         modifier = Modifier.semantics(mergeDescendants = true) { },

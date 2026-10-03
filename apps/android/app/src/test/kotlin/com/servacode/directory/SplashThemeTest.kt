@@ -53,7 +53,7 @@ class SplashThemeTest {
             "@color/brand_splash_background",
             style("Theme.Directory.Starting").item("windowSplashScreenBackground"),
         )
-        val alias = colour("../core/designsystem/src/main/res/values/brand.xml", "brand_splash_background")
+        val alias = colour("../core/designsystem/src/androidMain/res/values/brand.xml", "brand_splash_background")
         assertEquals("@color/token_semantic_surface_default", alias)
         val value = colour(
             "../../../packages/design-tokens/generated/android/values/directory_token_colors.xml",
@@ -66,7 +66,7 @@ class SplashThemeTest {
 
     @Test fun `the system splash draws one picture, and it carries its own margin`() {
         assertEquals("@drawable/brand_mark", style("Theme.Directory.Starting").item("windowSplashScreenAnimatedIcon"))
-        val mark = document("../core/designsystem/src/main/res/drawable/brand_mark.xml").documentElement
+        val mark = document("../core/designsystem/src/androidMain/res/drawable/brand_mark.xml").documentElement
 
         // A bitmap rather than a layer list: Android masks a splash icon, and a margin expressed
         // as a layer is one the system is free to ignore — on the A52 it did, and cut the sides
@@ -90,7 +90,7 @@ class SplashThemeTest {
 
         assertEquals("@color/brand_launcher_background", background.getAttributeNS(android, "drawable"))
         assertEquals("@drawable/ic_launcher_foreground", foreground.getAttributeNS(android, "drawable"))
-        val alias = colour("../core/designsystem/src/main/res/values/brand.xml", "brand_launcher_background")
+        val alias = colour("../core/designsystem/src/androidMain/res/values/brand.xml", "brand_launcher_background")
         assertEquals("@color/token_colors_primary_soft", alias)
     }
 }

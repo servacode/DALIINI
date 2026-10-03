@@ -161,8 +161,9 @@ jobs:
       - name: Gate 2 — Android unit tests
         id: unit
         if: steps.assemble.outcome == 'success'
-        # testAndroidHostTest: the multiplatform modules' tests on the JVM (DECISION-085).
-        run: ./gradlew testDebugUnitTest testAndroidHostTest :app:testLocalDebugUnitTest --continue --stacktrace
+        # testAndroidHostTest: the multiplatform modules' tests on the JVM (DECISION-085). Every
+        # module but the app is multiplatform since the design system became one (DECISION-094).
+        run: ./gradlew testAndroidHostTest :app:testLocalDebugUnitTest --continue --stacktrace
 
       - name: Gate 2b — platform-free JVM harness
         if: always() && steps.assemble.outcome == 'success'
@@ -201,8 +202,9 @@ jobs:
       - name: Gate 3 — Android lint
         id: lint
         if: always() && steps.assemble.outcome == 'success'
-        # lintAndroidMain: the multiplatform modules' Android lint (DECISION-085).
-        run: ./gradlew lintDebug lintAndroidMain :app:lintLocalDebug --continue --stacktrace
+        # lintAndroidMain: the multiplatform modules' Android lint (DECISION-085), every module
+        # but the app's since DECISION-094.
+        run: ./gradlew lintAndroidMain :app:lintLocalDebug --continue --stacktrace
 
       # The two source qualifiers that describe the current source. The public, owner,
       # navigation and live-data qualifiers still assert the pre-binding stubs that INT-013

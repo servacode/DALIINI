@@ -184,7 +184,6 @@ object DutyCopy {
 
     /** The app's own objection to the times, naming the shift or closure it clashes with. */
     @Composable
-    @ReadOnlyComposable
     fun problem(problem: DutyProblem): String = when (problem) {
         DutyProblem.InvalidRange -> stringResource(R.string.duty_invalid_times)
         DutyProblem.InPast -> stringResource(R.string.duty_in_past)

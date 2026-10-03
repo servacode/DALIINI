@@ -1,23 +1,16 @@
-/* The shell's words (DECISION-093). The keys are Android's where Android says the same thing,
-   with the same sentence, so moving the screens to shared resources keeps every word. */
+/* The shell's own words (DECISIONS 093 and 094). The keys are Android's where Android says the
+   same thing, with the same sentence, so moving the screens to shared resources keeps every word.
+   What the design system says itself — a retry, an error, the offline notice — is its own. */
 
 "app_name" = "دليني";
 "province_title" = "اختر المحافظة";
 "province_stale" = "يعرض آخر قائمة محفوظة";
 "home_province_choose" = "اختيار المحافظة";
+"home_error" = "تعذر تحميل الصفحة";
 "home_chip_nearest" = "الأقرب إليك";
 "widget_duty_title" = "المناوب الآن";
-"ds_retry" = "إعادة المحاولة";
-
-"ds_error_offline" = "لا يوجد اتصال بالإنترنت.";
-"ds_error_maintenance" = "الخدمة قيد الصيانة حاليًا. حاول بعد قليل.";
-"ds_error_server" = "حدث خطأ في الخادم. حاول لاحقًا.";
-"ds_error_not_found" = "العنصر المطلوب غير موجود.";
-"ds_error_throttled" = "محاولات كثيرة. حاول بعد قليل.";
-"ds_error_unexpected" = "حدث خطأ غير متوقع.";
 
 /* The shell's own, until the real screens bring theirs. */
-"shell_loading" = "جارٍ التحميل…";
 "shell_home_stale" = "يعرض آخر نسخة محفوظة؛ تعذّر التحديث الآن.";
 "shell_open_now" = "مفتوح الآن";
 "shell_categories" = "التصنيفات";

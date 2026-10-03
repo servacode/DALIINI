@@ -1,21 +1,17 @@
 package com.servacode.directory.ios
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -25,41 +21,42 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.servacode.directory.core.database.Loaded
-import com.servacode.directory.core.model.AppError
+import com.servacode.directory.core.designsystem.DirectoryErrorState
+import com.servacode.directory.core.designsystem.DirectoryGlyph
+import com.servacode.directory.core.designsystem.DirectoryIcon
+import com.servacode.directory.core.designsystem.DirectoryIcons
+import com.servacode.directory.core.designsystem.DirectoryLoading
+import com.servacode.directory.core.designsystem.DirectoryMenuDivider
+import com.servacode.directory.core.designsystem.DirectoryMenuGroup
+import com.servacode.directory.core.designsystem.DirectoryMenuRow
+import com.servacode.directory.core.designsystem.DirectoryMenuSection
+import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
+import com.servacode.directory.core.designsystem.DirectoryPage
+import com.servacode.directory.core.designsystem.DirectoryTheme
+import com.servacode.directory.core.designsystem.DirectoryTopBar
+import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.HomeSnapshot
-import com.servacode.directory.core.model.Province
-import com.servacode.directory.designsystem.generated.DirectoryTokens
 import com.servacode.directory.feature.home.HomeLoad
 import kotlinx.coroutines.launch
 
 /**
  * The shell's two screens: the province, and that province's home. They read the shared use
- * cases exactly as Android's view models do; the real screens replace them when Android's move
- * to Compose Multiplatform (ROADMAP ٨).
+ * cases as Android's view models do, and draw with the shared design system (DECISION-094); the
+ * real screens replace them when Android's move to Compose Multiplatform (ROADMAP ٨).
  */
 @Composable
 internal fun ShellApp(graph: ShellGraph) {
-    val preferences by graph.preferences.values.collectAsState(initial = null)
-    var choosing by remember { mutableStateOf(false) }
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-        Box(Modifier.fillMaxSize().background(Palette.background).safeDrawingPadding()) {
-            val selected = preferences ?: return@Box
-            val provinceId = selected.selectedProvinceId
-            if (provinceId == null || choosing) {
-                ProvinceScreen(graph, onChosen = { choosing = false })
-            } else {
-                HomeScreen(graph, provinceId, onChangeProvince = { choosing = true })
-            }
+    DirectoryTheme {
+        val preferences by graph.preferences.values.collectAsState(initial = null)
+        var choosing by remember { mutableStateOf(false) }
+        val selected = preferences ?: return@DirectoryTheme
+        val provinceId = selected.selectedProvinceId
+        if (provinceId == null || choosing) {
+            ProvinceScreen(graph, onChosen = { choosing = false })
+        } else {
+            HomeScreen(graph, provinceId, onChangeProvince = { choosing = true })
         }
     }
 }
@@ -69,19 +66,36 @@ private fun ProvinceScreen(graph: ShellGraph, onChosen: () -> Unit) {
     var attempt by remember { mutableIntStateOf(0) }
     val loaded by remember(attempt) { graph.provinces.provinces() }.collectAsState(initial = null)
     val scope = rememberCoroutineScope()
-    Column(Modifier.fillMaxSize()) {
-        Bar(ShellWord.CHOOSE_PROVINCE.text())
-        when (val state = loaded) {
-            null -> Note(ShellWord.LOADING.text())
-            is Loaded.Failed -> Failure(state.error) { attempt++ }
-            else -> {
-                if (state is Loaded.Stale) Note(ShellWord.STALE_LIST.text())
-                LazyColumn(Modifier.fillMaxSize()) {
-                    items(state.valueOrEmpty(), key = Province::id) { province ->
-                        ListRow(province.nameAr) {
-                            scope.launch {
-                                graph.provinces.select(province.id)
-                                onChosen()
+    DirectoryPage(topBar = { DirectoryTopBar(title = ShellWord.CHOOSE_PROVINCE.text()) }) { padding ->
+        Box(Modifier.fillMaxSize().padding(padding)) {
+            when (val state = loaded) {
+                null -> DirectoryLoading()
+                is Loaded.Failed -> DirectoryErrorState(
+                    title = ShellWord.LOAD_FAILED.text(),
+                    error = state.error,
+                    onRetry = { attempt++ },
+                )
+                else -> LazyColumn(
+                    contentPadding = PaddingValues(Space.base),
+                    verticalArrangement = Arrangement.spacedBy(Space.md),
+                ) {
+                    if (state is Loaded.Stale) {
+                        item { DirectoryOfflineNotice(text = ShellWord.STALE_LIST.text(), onRetry = { attempt++ }) }
+                    }
+                    item {
+                        DirectoryMenuGroup {
+                            state.valueOrNull().orEmpty().forEachIndexed { index, province ->
+                                if (index > 0) DirectoryMenuDivider()
+                                DirectoryMenuRow(
+                                    title = province.nameAr,
+                                    icon = DirectoryIcons.pin,
+                                    onClick = {
+                                        scope.launch {
+                                            graph.provinces.select(province.id)
+                                            onChosen()
+                                        }
+                                    },
+                                )
                             }
                         }
                     }
@@ -95,116 +109,79 @@ private fun ProvinceScreen(graph: ShellGraph, onChosen: () -> Unit) {
 private fun HomeScreen(graph: ShellGraph, provinceId: String, onChangeProvince: () -> Unit) {
     var attempt by remember { mutableIntStateOf(0) }
     val load by remember(provinceId, attempt) { graph.home() }.collectAsState(initial = null)
-    Column(Modifier.fillMaxSize()) {
-        when (val state = load) {
-            null -> {
-                Bar(ShellWord.APP_NAME.text())
-                Note(ShellWord.LOADING.text())
-            }
-            HomeLoad.ProvinceRequired -> ProvinceScreen(graph, onChosen = {})
-            is HomeLoad.Snapshot -> when (val loaded = state.loaded) {
-                is Loaded.Failed -> {
-                    Bar(ShellWord.APP_NAME.text(), ShellWord.CHANGE_PROVINCE.text(), onChangeProvince)
-                    Failure(loaded.error) { attempt++ }
-                }
-                else -> {
-                    val snapshot = loaded.valueOrNull() ?: return@Column
-                    Bar(snapshot.province.nameAr, ShellWord.CHANGE_PROVINCE.text(), onChangeProvince)
-                    if (loaded is Loaded.Stale) Note(ShellWord.STALE_HOME.text())
-                    HomeLists(snapshot)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun HomeLists(snapshot: HomeSnapshot) {
-    LazyColumn(Modifier.fillMaxSize()) {
-        homeSections(snapshot).forEach { section ->
-            item(key = "title:${section.title.key}") { SectionTitle(section.title.text()) }
-            items(section.rows, key = { "${section.title.key}:${it.id}" }) { row -> ListRow(row.text, row.detail) }
-        }
-    }
-}
-
-@Composable
-private fun Bar(title: String, action: String? = null, onAction: () -> Unit = {}) {
-    Row(
-        Modifier.fillMaxWidth().background(Palette.bar).padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        BasicText(title, style = TextStyle(color = Palette.onBar, fontSize = 20.sp, fontWeight = FontWeight.Bold))
-        if (action != null) {
-            BasicText(
-                action,
-                modifier = Modifier.clickable(onClick = onAction).padding(8.dp),
-                style = TextStyle(color = Palette.onBarMuted, fontSize = 14.sp),
+    val snapshot = (load as? HomeLoad.Snapshot)?.loaded?.valueOrNull()
+    DirectoryPage(
+        topBar = {
+            DirectoryTopBar(
+                title = snapshot?.province?.nameAr ?: ShellWord.APP_NAME.text(),
+                actionIcon = DirectoryIcons.pin,
+                actionLabel = ShellWord.CHANGE_PROVINCE.text(),
+                onAction = onChangeProvince,
             )
+        },
+    ) { padding ->
+        Box(Modifier.fillMaxSize().padding(padding)) {
+            when (val state = load) {
+                null -> DirectoryLoading()
+                HomeLoad.ProvinceRequired -> ProvinceScreen(graph, onChosen = {})
+                is HomeLoad.Snapshot -> when (val loaded = state.loaded) {
+                    is Loaded.Failed -> DirectoryErrorState(
+                        title = ShellWord.LOAD_FAILED.text(),
+                        error = loaded.error,
+                        onRetry = { attempt++ },
+                    )
+                    else -> HomeLists(
+                        snapshot = loaded.valueOrNull() ?: return@Box,
+                        stale = loaded is Loaded.Stale,
+                        onRetry = { attempt++ },
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun SectionTitle(text: String) {
-    BasicText(
-        text,
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 8.dp),
-        style = TextStyle(color = Palette.primary, fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
-    )
-}
-
-@Composable
-private fun ListRow(text: String, detail: String? = null, onClick: (() -> Unit)? = null) {
-    val base = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = 12.dp, vertical = 4.dp)
-        .clip(RoundedCornerShape(12.dp))
-        .background(Palette.surface)
-    Column((if (onClick != null) base.clickable(onClick = onClick) else base).padding(16.dp)) {
-        BasicText(text, style = TextStyle(color = Palette.text, fontSize = 17.sp))
-        if (detail != null) {
-            BasicText(detail, style = TextStyle(color = Palette.textSecondary, fontSize = 14.sp))
+private fun HomeLists(snapshot: HomeSnapshot, stale: Boolean, onRetry: () -> Unit) {
+    LazyColumn(
+        contentPadding = PaddingValues(Space.base),
+        verticalArrangement = Arrangement.spacedBy(Space.lg),
+    ) {
+        if (stale) item { DirectoryOfflineNotice(text = ShellWord.STALE_HOME.text(), onRetry = onRetry) }
+        homeSections(snapshot).forEach { section ->
+            item(key = section.title.key) {
+                DirectoryMenuSection(label = section.title.text()) {
+                    section.rows.forEachIndexed { index, row ->
+                        if (index > 0) DirectoryMenuDivider()
+                        InfoRow(row)
+                    }
+                }
+            }
         }
     }
 }
 
+/** A row that says something and leads nowhere yet: the shell has no facility page. */
 @Composable
-private fun Note(text: String) {
-    BasicText(
-        text,
-        modifier = Modifier.fillMaxWidth().background(Palette.surfaceAlt).padding(16.dp),
-        style = TextStyle(color = Palette.textSecondary, fontSize = 14.sp),
-    )
-}
-
-@Composable
-private fun Failure(error: AppError, onRetry: () -> Unit) {
-    Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        BasicText(failureWord(error).text(), style = TextStyle(color = Palette.text, fontSize = 16.sp))
-        BasicText(
-            ShellWord.RETRY.text(),
-            modifier = Modifier.padding(top = 16.dp).clickable(onClick = onRetry).padding(12.dp),
-            style = TextStyle(color = Palette.primary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold),
-        )
+private fun InfoRow(row: HomeRow) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = Space.base, vertical = Space.md),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.md),
+    ) {
+        DirectoryIcon(row.icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+        Column(Modifier.weight(1f)) {
+            Text(row.text, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+            if (row.detail != null) {
+                Text(
+                    row.detail,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
-
-/** The brand's colours, from the same generated tokens as the site and Android. */
-private object Palette {
-    val background = DirectoryTokens.ColorsBackground.toColor()
-    val surface = DirectoryTokens.ColorsSurface.toColor()
-    val surfaceAlt = DirectoryTokens.ColorsSurfaceAlt.toColor()
-    val primary = DirectoryTokens.ColorsPrimary.toColor()
-    val bar = DirectoryTokens.ColorsBarDeep.toColor()
-    val onBar = DirectoryTokens.ColorsBarContent.toColor()
-    val onBarMuted = DirectoryTokens.ColorsBarContentMuted.toColor()
-    val text = DirectoryTokens.ColorsTextPrimary.toColor()
-    val textSecondary = DirectoryTokens.ColorsTextSecondary.toColor()
-}
-
-internal fun String.toColor(): Color = Color(0xFF000000 or removePrefix("#").toLong(16))
 
 private fun <T> Loaded<T>.valueOrNull(): T? = when (this) {
     is Loaded.Cached -> value
@@ -213,20 +190,21 @@ private fun <T> Loaded<T>.valueOrNull(): T? = when (this) {
     is Loaded.Failed -> null
 }
 
-private fun Loaded<List<Province>>.valueOrEmpty(): List<Province> = valueOrNull().orEmpty()
-
-/** One row of the home: a facility's name, and its category beneath it. */
-internal data class HomeRow(val id: String, val text: String, val detail: String?)
+/** One row of the home: a name, what it is beneath it, and its section's mark. */
+internal data class HomeRow(val id: String, val text: String, val detail: String?, val icon: DirectoryGlyph)
 
 internal data class HomeSection(val title: ShellWord, val rows: List<HomeRow>)
 
 /** What the home lists, in order; a section with nothing in it is left out. */
 internal fun homeSections(snapshot: HomeSnapshot): List<HomeSection> {
-    fun FacilitySummary.row() = HomeRow(id, nameAr, category.nameAr)
+    fun FacilitySummary.row() = HomeRow(id, nameAr, category.nameAr, DirectoryIcons.category(category.iconKey))
     return listOf(
         HomeSection(ShellWord.DUTY_NOW, snapshot.dutyNow.map { it.row() }),
         HomeSection(ShellWord.OPEN_NOW, snapshot.openNearby.map { it.row() }),
         HomeSection(ShellWord.NEARBY, snapshot.nearby.map { it.row() }),
-        HomeSection(ShellWord.CATEGORIES, snapshot.categories.map { HomeRow(it.id, it.nameAr, null) }),
+        HomeSection(
+            ShellWord.CATEGORIES,
+            snapshot.categories.map { HomeRow(it.id, it.nameAr, null, DirectoryIcons.category(it.iconKey)) },
+        ),
     ).filter { it.rows.isNotEmpty() }
 }

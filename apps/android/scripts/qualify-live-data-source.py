@@ -85,15 +85,16 @@ def check_rest_truth_and_offline() -> None:
     # own sentence, so the warning is asserted where it is now written.
     require("DirectoryOfflineNotice" in screens, "offline notice missing from the public screens")
     notice = read(
-        "core/designsystem/src/main/kotlin/com/servacode/directory/core/designsystem/States.kt"
+        "core/designsystem/src/commonMain/kotlin/com/servacode/directory/core/designsystem/States.kt"
     )
     require(
-        "R.string.ds_offline" in notice,
+        "Res.string.ds_offline" in notice,
         "the offline notice does not read its sentence from resources",
     )
     # The sentence itself is in the design system's strings.xml, so that a second language is
-    # a second file rather than a search through the components.
-    words = read("core/designsystem/src/main/res/values/strings.xml")
+    # a second file rather than a search through the components. Compose resources since
+    # DECISION-094, read the same way on Android and on the iPhone.
+    words = read("core/designsystem/src/commonMain/composeResources/values/strings.xml")
     require(
         "قد لا تكون محدثة" in words,
         "offline time-sensitive freshness warning missing",

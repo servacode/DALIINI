@@ -75,7 +75,6 @@ object HomeCopy {
         @Composable @ReadOnlyComposable get() = stringResource(R.string.home_location_action)
 
     @Composable
-    @ReadOnlyComposable
     fun chip(chip: HomeChip): String = when (chip) {
         HomeChip.NEAREST -> stringResource(R.string.home_chip_nearest)
         HomeChip.OPEN_NOW -> DirectoryVocabulary.availability(AvailabilityState.OPEN)
