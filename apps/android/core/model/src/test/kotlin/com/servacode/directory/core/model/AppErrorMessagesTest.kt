@@ -58,7 +58,10 @@ class AppErrorMessagesTest {
             "TEMPORARY_CLOSURE_NOT_SUPPORTED",
             "EVIDENCE_MAX_FILES",
             "EVIDENCE_LOCKED_DURING_REVIEW",
+            "FACILITY_LOCKED_DURING_REVIEW",
             "LAST_OWNER_PROTECTED",
+            "OTP_RECIPIENT_INVALID",
+            "OTP_DELIVERY_UNAVAILABLE",
         ).forEach { code ->
             assertEquals(code, AppErrorMessage.valueOf(code), message(code, AppError.Kind.SERVER))
         }
