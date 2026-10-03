@@ -23,6 +23,7 @@ EXPECTED_MODULES = {
     ":core:api",
     ":core:transport",
     ":core:testing",
+    ":ios-framework",
     ":feature:bootstrap",
     ":feature:home",
     ":feature:province",
@@ -90,6 +91,16 @@ def check_security() -> None:
         ".putstring(\"refresh_token\"" not in lowered,
         "raw refresh token preference storage is forbidden",
     )
+    # The iPhone keeps the same rules (DECISION-093): its refresh secret never leaves the device,
+    # it never asks for the position in the background, and it allows no cleartext but localhost.
+    keychain = text("core/auth/src/iosMain/kotlin/com/servacode/directory/core/auth/KeychainRefreshTokenVault.kt")
+    require(
+        "kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly" in keychain,
+        "the iPhone's refresh secret must be this-device-only",
+    )
+    ios_project = (ROOT.parent / "ios" / "project.yml").read_text()
+    require("NSLocationAlways" not in ios_project, "background location is forbidden on the iPhone too")
+    require("NSAllowsArbitraryLoads" not in ios_project, "arbitrary cleartext loads are forbidden on the iPhone")
     coordinator = text("core/auth/src/commonMain/kotlin/com/servacode/directory/core/auth/SessionCoordinator.kt")
     require("Mutex()" in coordinator and "withLock" in coordinator, "refresh mutex missing")
     access = text("core/auth/src/commonMain/kotlin/com/servacode/directory/core/auth/AccessTokenStore.kt")

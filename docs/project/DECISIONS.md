@@ -2309,6 +2309,82 @@ vault arrives with the app, tested inside it.
 * The shared layers wired by hand.
 * The first screens.
 
+## DECISION-093 — The iPhone app's shell: an Xcode project from a file, one Kotlin framework, tests inside the app
+
+**Date:** 2026-10-03 · **Phase 8.9 of the roadmap.**
+
+**Why:** everything below the screens is shared and runs on the iPhone (DECISIONS 085 to 092).
+What was missing is the app itself:
+* a project Xcode builds;
+* the shared layers wired together without Hilt;
+* somewhere to keep the session's refresh secret;
+* screens.
+
+It also needs a check in CI, so the iPhone app cannot break unnoticed while all the work happens
+in Kotlin.
+
+**Decision:**
+
+* **`apps/ios` is generated, not committed.**
+  * `project.yml` is the project; XcodeGen writes `Daliini.xcodeproj` from it.
+  * A change to the project is a readable diff, never a pbxproj merge.
+  * The Swift is one file that gives the shared screens a window, plus the app's tests.
+* **One static framework, `DaliiniKit`, from `:ios-framework`.**
+  * It is iOS-only, on its own convention `serva.ios.framework`.
+  * Xcode builds it in a build phase before the app, with Gradle's
+    `embedAndSignAppleFrameworkForXcode`.
+  * Static because it is linked into the app and needs no embedding or signing of its own. The
+    app links the system SQLite the database needs (`-lsqlite3`).
+* **The graph is wired by hand.** `ShellGraph` builds what Hilt builds on Android: the
+  transport on the Darwin engine with `ClientPlatform.IOS`, the session coordinator, and the
+  shared stores, repositories and use cases. Every class in it is shared; only the platform parts
+  are the iPhone's.
+* **The refresh secret is in the Keychain.** `KeychainRefreshTokenVault` keeps one
+  generic-password item, readable after the first unlock and on this device only.
+  * It is never restored to another phone from a backup, as Android's Keystore key never leaves
+    the phone.
+  * A source check requires the this-device-only attribute.
+* **Tests inside the app.** The simulator gives the Keychain only to an app. So the vault's
+  tests are an XCTest bundle hosted in the app:
+  * a secret is kept and replaced;
+  * it outlives the object that wrote it;
+  * it can be cleared twice;
+  * Arabic text survives exactly.
+
+  The same bundle checks the build's configuration, that every word the screens use is in the
+  strings file, and that the shared screens load.
+* **Two first screens in Compose Multiplatform:** the province, and that province's home
+  (on duty now, open now, nearest, categories).
+  * They read the shared use cases as Android's view models do, and show cached data first,
+    marked when it is stale.
+  * Their colours come from the same generated tokens as the site and Android.
+  * Their words live in the app's `ar.lproj/Shell.strings` under Android's own keys and
+    sentences, not in Kotlin. The rule that keeps words out of Kotlin now covers this module.
+  * Android's screens replace these two when they move to Compose Multiplatform.
+* **Configuration from the build.**
+  * Debug points at a backend on the same Mac (`http://localhost:8000/`), the only cleartext
+    App Transport Security allows.
+  * Release carries a placeholder, which the app refuses and reports as not connected to a
+    server.
+  * The source check forbids background location and arbitrary cleartext in the project.
+* **CI.** A new `ios-app` job on macOS:
+  1. It generates the project.
+  2. It builds the app with its framework.
+  3. It runs the hosted tests on a simulator.
+
+  `ios-shared` runs the framework's Kotlin tests with the other modules'. Those tests use the
+  real wiring against a mock backend: provinces fetched through the shared transport and kept in
+  the shared cache, a choice kept in the preferences, and the home asking for a province.
+
+**Not yet:**
+* Android's screens in Compose Multiplatform, with the brand's fonts.
+* The map (MapLibre on iOS).
+* Notices (APNs).
+* Asking for the location from a screen.
+* Signing and the App Store, which need the owner's Apple developer account.
+
+**Next:** the screens move to Compose Multiplatform for both apps.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.
