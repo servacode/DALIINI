@@ -68,7 +68,7 @@ Decisions taken with the approval, and respected by every screen since:
 
 ## The design system
 
-`core:designsystem` carries the whole visual language: Tajawal in three weights set once in the
+`core:designsystem` carries the whole visual language: the brand faces (Tajawal then, Alexandria and IBM Plex Sans Arabic since identity v2) set once in the
 theme, the tokens that give every measurement, colour, radius and elevation, the app's own icon
 set, and the components every screen is assembled from. No screen sets a font, a colour or a
 corner of its own.
