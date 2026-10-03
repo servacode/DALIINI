@@ -60,15 +60,20 @@ through #49 to #52. Phase 7's code is done, and phase 8 has begun:
 | 8.10 | the design system shared on Compose Multiplatform: icons and illustrations drawn from the token package's paths, words and faces as Compose resources | 094 |
 | 8.11 | the first screens shared: province, search, ratings and duty, their view models and words in common code, Hilt's subclass for Android | 095 |
 
-**Now: phase 8, the iPhone app from the Android code** (DECISION-051). The shared layers move
-into Kotlin Multiplatform one module at a time, each step leaving the Android app green and
-unchanged; everything below the screens is shared, the design system too, and the iPhone app
-builds and is tested in CI with its first two screens. The screens are moving to Compose
-Multiplatform for both apps, one feature at a time: province, search, ratings and duty are shared
-(DECISION-095); the home and the facility page are next (ROADMAP ٨). Everything else that remains waits on the owner: the server and domain
-(EXT-007, EXT-001), approving the launch texts and graphic, the Play account (EXT-003), and then
-the closed test and the public release, step by step in `docs/runbooks/launch.md`. An owner
-portal on the web was offered at the start of phase 3 and set aside: owners use the Android app.
+**Now: the launch, on Android, the site and the console.** The code for it is done: the
+server, the site, the console, the Android app, the production stack, the map and the launch
+material (phases 0 to 7.1). Everything that remains waits on the owner:
+* the server and domain (EXT-007, EXT-001), and production credentials (EXT-002);
+* approving the launch texts and graphic;
+* the Play account (EXT-003);
+* then the closed test and the public release, step by step in `docs/runbooks/launch.md`.
+
+**The iPhone is paused** (DECISION-100). 8.1 to 8.11 are merged and stay green in CI. 8.12 to
+8.16 were not merged and are kept on the branch `claude/ios-parked`, to resume when the owner
+decides.
+
+An owner portal on the web was offered at the start of phase 3 and set aside: owners use the
+Android app.
 
 Android has caught up with every server feature, a trip survives a locked screen, and builds
 number themselves. What remains of phase 5 needs a real phone: a full check on the device, a road

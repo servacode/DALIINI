@@ -42,7 +42,8 @@ The shared modules' own tests run on the simulator in the `ios-shared` job.
 ## Not yet
 
 * The rest of the real screens. The province picker is already the shared screen
-  (DECISION-095); the home moves next and replaces the shell's own, which already draws with
-  the shared design system (DECISION-094).
+  (DECISION-095). The work is paused (DECISION-100). The next screens (the home, the facility
+  page, the account, the owner's screens, and settings, unfinished) are kept on the branch
+  `claude/ios-parked`.
 * The map, notices, and signing for the App Store. Signing needs the owner's Apple developer
   account.
