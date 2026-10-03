@@ -8,7 +8,8 @@ stack with its own env file, project name and domain.
 | The stack | `compose.yml` (API, worker, beat, migrations, site, console, WhatsApp bot, PostgreSQL/PostGIS, Redis, Caddy, the backup tool) |
 | TLS and the four names | `Caddyfile`: `<ROOT>`, `www.<ROOT>` → `<ROOT>`, `api.<ROOT>`, `admin.<ROOT>` |
 | Every setting | `production.env.example`, copied to `/srv/daliini/production.env` on the server |
-| Nightly backup | `systemd/daliini-backup.{service,timer}` |
+| Hourly backup, monthly restore drill | `systemd/`, `restore-drill.sh` |
+| Deploying a commit | `deploy.sh`, run by `.github/workflows/deploy.yml` over SSH |
 | What CI holds it to | `apps/backend/core/tests/test_production_stack.py`, `infrastructure/scripts/qualify-production-stack.py` |
 
 Not on the server, on purpose: photographs and verification documents live in an S3 service
@@ -50,6 +51,10 @@ docker compose --env-file /srv/daliini/production.env up -d --build
 docker compose --env-file /srv/daliini/production.env ps
 ```
 
+If the repository is made private, clone it over SSH with a read-only deploy key instead (GitHub →
+the repository's Settings → Deploy keys; `git clone git@github.com:servacode/DALIINI.git`).
+Deploys fetch through the same remote.
+
 `migrate` runs `check --deploy` and the migrations, then exits; the API starts only after it
 succeeded. Then:
 
@@ -64,7 +69,7 @@ docker compose --env-file /srv/daliini/production.env logs -f whatsapp-bot
 Check from outside: `https://api.<ROOT>/health/ready/` answers `{"status": "ready", ...}`,
 `https://<ROOT>/` is the site, `https://admin.<ROOT>/login` the console.
 
-## The nightly backup
+## Backups
 
 ```sh
 sudo cp systemd/daliini-backup.service systemd/daliini-backup.timer /etc/systemd/system/
@@ -72,23 +77,56 @@ sudo systemctl daemon-reload && sudo systemctl enable --now daliini-backup.timer
 sudo systemctl start daliini-backup.service   # one now, to see it work
 ```
 
-Each run reports to the console's «حالة النظام» page. Restoring, and the monthly drill:
-`infrastructure/BACKUP-RESTORE.md`.
+Each run reports to the console's «حالة النظام» page. The restore drill runs on the first Sunday
+of each month: it restores the newest backup into a throwaway database, checks it, and writes
+its evidence to `/srv/daliini/evidence/` (DECISION-081). Install its timer too, and run it once
+by hand before trusting the server:
 
-## Deploying a new version
+```sh
+sudo cp systemd/daliini-restore-drill.service systemd/daliini-restore-drill.timer /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable --now daliini-restore-drill.timer
+sudo systemctl start daliini-restore-drill.service && journalctl -u daliini-restore-drill -n 20
+```
 
-`docs/runbooks/deploy.md`: pull the commit, `up -d --build`, check health, and how to go back.
+Restoring by hand: `infrastructure/BACKUP-RESTORE.md`.
+
+## Deploying from GitHub
+
+Releases are images on GHCR, and a deploy is `deploy.sh` run over SSH (DECISION-081).
+`docs/runbooks/deploy.md` has the sequence. Once, for each environment:
+
+1. **GitHub → Settings → Environments → `production`** (and `staging`):
+   - *Variables*: `ROOT_DOMAIN`, `MEDIA_ORIGIN`, `SUPPORT_EMAIL`, `PRIVACY_CONTACT_EMAIL`, and
+     if used `MAP_STYLE_URL`, `MAP_ORIGINS`, `PLAY_STORE_URL`, `APP_STORE_URL` and
+     `APP_DOWNLOAD_URL`. The site's image is built with them.
+   - *Secrets*: `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY` (the private half of a key
+     made for deploys only: `ssh-keygen -t ed25519 -f daliini-deploy -N ''`, with its `.pub`
+     in the deploy user's `~/.ssh/authorized_keys`), and `DEPLOY_KNOWN_HOSTS`
+     (`ssh-keyscan -t ed25519 <server>`, compared by hand with
+     `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` on the server).
+   - *Required reviewers* for `production`, if a second person should approve each deploy.
+2. **On the server**, as the deploy user, let Docker pull the images. Use a GitHub token with
+   only `read:packages`, or make the packages public:
+   `echo <token> | docker login ghcr.io -u <github-user> --password-stdin`.
+3. In `/srv/daliini/production.env`, set `IMAGE_REGISTRY=ghcr.io/servacode/`.
+
+Without GitHub, the same deploy runs by hand on the server, and builds the images there when
+`IMAGE_REGISTRY` is empty:
+
+```sh
+/srv/daliini/repo/infrastructure/production/deploy.sh /srv/daliini/production.env <commit>
+```
 
 ## Staging
 
-The same file under another project name, env file and domain (`staging.<ROOT>` and its
-`api.`, `admin.` and `www.` names):
+The same file under another env file and domain (`staging.<ROOT>` and its `api.`, `admin.` and
+`www.` names). `/srv/daliini/staging.env` says `ENVIRONMENT=staging` (the settings module that
+keeps the schema readable for operators) and `COMPOSE_PROJECT_NAME=daliini-staging`, and has
+its own secrets, database password and buckets:
 
 ```sh
-docker compose -p daliini-staging --env-file /srv/daliini/staging.env up -d --build
+docker compose --env-file /srv/daliini/staging.env up -d --build
 ```
 
-with `ENVIRONMENT=staging` (the settings module that keeps the schema readable for operators)
-and its own secrets, database password and buckets. On the same server, give one of the two
-stacks other published ports, or put staging on its own small server: two Caddys cannot both
-hold 80 and 443.
+On the same server, give one of the two stacks other published ports, or put staging on its own
+small server: two Caddys cannot both hold 80 and 443.

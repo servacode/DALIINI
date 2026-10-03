@@ -33,6 +33,7 @@ HEALTH_CHECK_KEY = [
     "worker",
     "scheduler",
     "storage",
+    "disk",
     "otp",
     "push",
     "backup",

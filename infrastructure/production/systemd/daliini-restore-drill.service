@@ -1,0 +1,11 @@
+# The monthly restore drill (DECISION-081): the newest backup restored into a throwaway
+# database and checked; the evidence lands in /srv/daliini/evidence/. A failed drill fails the
+# unit, which `systemctl --failed` and the monitoring (docs/runbooks/monitoring.md) show.
+[Unit]
+Description=Daliini: restore the newest backup into a throwaway database and check it
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/srv/daliini/repo/infrastructure/production/restore-drill.sh /srv/daliini/production.env

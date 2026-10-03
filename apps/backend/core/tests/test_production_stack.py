@@ -211,3 +211,27 @@ def test_the_site_and_console_reach_the_api_through_caddy() -> None:
     assert SERVICES["web"]["build"]["args"]["PUBLIC_API_ORIGIN"] == public
     assert environment("admin")["ADMIN_API_ORIGIN"] == public
     assert "api.${ROOT_DOMAIN:?}" in SERVICES["caddy"]["networks"]["default"]["aliases"]
+
+
+def test_a_released_site_is_built_with_the_arguments_the_stack_builds_it_with() -> None:
+    """The site's public addresses are fixed when its image is built. The release workflow
+    passes the same arguments the stack does, read from the environment's variables of the same
+    names, so a pulled image and a built one are the same site (DECISION-081)."""
+    workflow = yaml.safe_load(
+        (ROOT / ".github" / "workflows" / "release-images.yml").read_text(encoding="utf-8")
+    )
+    build = next(
+        step
+        for step in workflow["jobs"]["image"]["steps"]
+        if str(step.get("uses", "")).startswith("docker/build-push-action")
+    )
+    released = dict(
+        line.strip().split("=", 1) for line in build["with"]["build-args"].splitlines() if line
+    )
+    stack = {key: str(value) for key, value in SERVICES["web"]["build"]["args"].items()}
+    assert set(released) == set(stack)
+    for key, value in stack.items():
+        assert re.findall(r"\$\{(\w+)", value) == re.findall(r"vars\.(\w+)", released[key]), key
+        assert re.sub(r"\$\{\w+:?[?-]?\}", "X", value) == re.sub(
+            r"\$\{\{ vars\.\w+ \}\}", "X", released[key]
+        ), key

@@ -1,11 +1,12 @@
 [Unit]
-Description=Daliini: nightly database backup at 02:17 UTC
+Description=Daliini: hourly database backup, at 17 minutes past
 
 [Timer]
-OnCalendar=*-*-* 02:17:00 UTC
-# A server that was off at 02:17 takes the backup when it comes back.
+# Every hour, so at most an hour of changes can be lost (RPO <= 1 hour, DECISION-081).
+OnCalendar=*-*-* *:17:00 UTC
+# A server that was off takes the backup when it comes back.
 Persistent=true
-RandomizedDelaySec=5m
+RandomizedDelaySec=2m
 
 [Install]
 WantedBy=timers.target

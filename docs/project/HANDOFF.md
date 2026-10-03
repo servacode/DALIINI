@@ -127,3 +127,10 @@ Production is one VPS running `infrastructure/production/compose.yml` behind Cad
 Cloudflare (DECISION-080). Bringing a server up is `infrastructure/production/README.md`; each
 deploy after is `docs/runbooks/deploy.md`. CI boots the whole stack on every pull request
 (`production-stack`). Render is not used (owner's decision), and its files are gone.
+
+A release is five images on GHCR tagged `<environment>-<commit>` (**Release images** workflow),
+and a deploy is `infrastructure/production/deploy.sh` run on the server by the **Deploy**
+workflow over SSH. Both are started by hand, and rollback is a deploy of the previous commit
+(DECISION-081). Backups run hourly, and a restore drill runs on the first Sunday of each month
+and writes evidence to `/srv/daliini/evidence/`. The system page watches the disk; an outside
+uptime service watches the server (`docs/runbooks/monitoring.md`).

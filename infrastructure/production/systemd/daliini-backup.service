@@ -1,4 +1,4 @@
-# The nightly database backup (DECISION-080). Installed by infrastructure/production/README.md.
+# The hourly database backup (DECISION-081). Installed by infrastructure/production/README.md.
 [Unit]
 Description=Daliini: dump the database to the backup bucket
 After=docker.service

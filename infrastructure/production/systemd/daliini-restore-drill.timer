@@ -1,0 +1,10 @@
+[Unit]
+Description=Daliini: monthly restore drill
+
+[Timer]
+# The first Sunday of each month at 03:40 UTC, away from the hourly backup at :17.
+OnCalendar=Sun *-*-01..07 03:40:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target

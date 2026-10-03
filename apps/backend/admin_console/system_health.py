@@ -13,7 +13,9 @@ reported as "configured" because a setting exists:
   last code that got through;
 * push notifications: the provider, the devices that can receive, the last delivery and any
   failure after it;
-* the nightly backup reported back within the last day (`scripts/db-backup.sh`);
+* the hourly backup reported back within the last two hours (`scripts/db-backup.sh`,
+  DECISION-081);
+* the server's disk, which the database, each release's images and the logs share;
 * error reporting, and maintenance mode.
 
 A check answers with a status — `ok`, `warning` (working, but someone should look), `failed`
@@ -23,6 +25,7 @@ failure is described by what it means, and the detail stays in the server log.
 """
 
 import logging
+import shutil
 import time
 import urllib.error
 import urllib.request
@@ -46,9 +49,16 @@ logger = logging.getLogger(__name__)
 
 PROBE_TIMEOUT = 2.0
 SCHEDULER_LATE = timedelta(minutes=15)
-BACKUP_DUE = timedelta(hours=26)
-BACKUP_LATE = timedelta(hours=50)
+# Hourly dumps (DECISION-081): one missed run is a warning, a day of them a failure, because the
+# promise is to lose at most an hour.
+BACKUP_DUE = timedelta(hours=2)
+BACKUP_LATE = timedelta(hours=26)
 DAY = timedelta(hours=24)
+# A full disk stops the database (DECISION-081): warn with room left to clean up, fail before it
+# is too late to.
+DISK_WARNING = 80
+DISK_FAILED = 90
+GIB = 1024**3
 # Consecutive failed sends after which the channel reads as down rather than unsteady.
 FAILING = 3
 
@@ -358,10 +368,38 @@ def check_backup(signal: ServiceSignal | None, now: datetime) -> Check:
     status = "ok" if age <= BACKUP_DUE else "warning" if age <= BACKUP_LATE else "failed"
     summary = f"آخر نسخة {_ago(signal.ok_at, now)}."
     if status != "ok":
-        summary = f"{summary} النسخ اليومي متأخر."
+        summary = f"{summary} النسخ كل ساعة متأخر."
     return Check(
         "backup", status, summary, last_ok_at=signal.ok_at, last_failure_at=signal.failed_at
     )
+
+
+def check_disk(path: str = "/") -> Check:
+    """How full the server's disk is. Inside the API's container `/` is the filesystem Docker
+    keeps everything on, the database's volume included."""
+    try:
+        usage = shutil.disk_usage(path)
+    except OSError:
+        logger.exception("health.disk_unreadable")
+        return Check("disk", "failed", "تعذّر الفحص.")
+    percent = round(usage.used * 100 / usage.total) if usage.total else 0
+    free = usage.free // GIB
+    metrics = {"diskUsedPercent": percent, "diskFreeGb": free}
+    if _development():
+        return Check("disk", "off", "قرص جهاز التطوير لا يُراقب.", metrics=metrics)
+    summary = f"مستخدم {percent}٪، ومتاح {free} غيغابايت."
+    if percent >= DISK_FAILED:
+        return Check(
+            "disk", "failed", f"{summary} قاعدة البيانات تتوقف حين يمتلئ.", metrics=metrics
+        )
+    if percent >= DISK_WARNING:
+        return Check(
+            "disk",
+            "warning",
+            f"{summary} احذف صور الإصدارات القديمة أو وسّع القرص.",
+            metrics=metrics,
+        )
+    return Check("disk", "ok", summary, metrics=metrics)
 
 
 def check_errors() -> Check:
@@ -416,6 +454,7 @@ def run_checks() -> dict[str, Any]:
         worker,
         scheduler,
         files,
+        check_disk(),
         otp,
         push,
         backup,
