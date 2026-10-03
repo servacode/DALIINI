@@ -1708,6 +1708,58 @@ the console would not have started.
   and the Render steps in the runbooks. `staging-deploy.md` became `deploy.md`. The DNS plan
   now names the bare domain as the site's address, as the site and App Links already do.
 
+## DECISION-081 — Releases are images, deploys are started by a person, backups are hourly and drilled
+
+**Date:** 2026-10-03 · **Phase 6.2 of the roadmap.** Builds on DECISION-080.
+
+**Why:** DECISION-080 put the stack on one server, but a deploy still meant building on that
+server by hand. Backups were nightly, which promised to lose up to a day, and nothing proved
+they restore. A full disk, which stops the database, would have shown nowhere.
+
+**Decision:**
+
+* **A release is a set of images.**
+  * `.github/workflows/release-images.yml`, started by hand for `staging` or `production`,
+    publishes five images to GHCR: backend, web, admin, whatsapp-bot and backup. Each is tagged
+    `<environment>-<commit>`.
+  * The site's public addresses are fixed when its image is built. They come from the GitHub
+    environment's variables, and a test holds them to the same build arguments the stack
+    uses.
+  * The compose file runs `${IMAGE_REGISTRY}daliini-<name>:${RELEASE}`. With `IMAGE_REGISTRY`
+    empty, the server builds the images itself as before.
+* **A deploy is one command on the server.** `infrastructure/production/deploy.sh <env-file>
+  <commit> [release]` does the whole deploy:
+  * it checks out the commit, writes `RELEASE`, and adds a history line to the env file;
+  * it pulls only the project's own images, so Docker Hub's limits never stall a deploy;
+  * it brings the stack up and waits up to five minutes until
+    `https://api.<ROOT>/health/ready/` answers through Caddy, its certificate included;
+  * it then removes that environment's images older than the release it replaced.
+
+  Going back is the same command with the previous commit.
+* **`.github/workflows/deploy.yml` runs that command over SSH.**
+  * It is started by hand. The GitHub environment can require a reviewer.
+  * The server's host key must match `DEPLOY_KNOWN_HOSTS`, and the commit must be a full SHA.
+  * Nothing deploys on merge. Until a server exists (EXT-007), neither workflow has anything
+    to run against.
+* **Backups run hourly.** The timer fires at minute 17 of every hour, so the target is an
+  RPO of 60 minutes.
+  * The system page warns after two hours without a backup and fails after 26.
+* **A restore drill runs every month.** It runs on the first Sunday at 03:40 UTC
+  (`restore-drill.sh`, `daliini-restore-drill.timer`):
+  * it restores the newest backup into a throwaway PostGIS container, on its own network;
+  * it checks the schema against the release's migrations, counts the data, sees that a sample
+    of photographs is still in the media bucket, and finds Raqqa;
+  * it writes evidence that `restore_evidence.py` holds to RPO ≤ 60 minutes and RTO ≤ 4 hours.
+  * It never touches the running stack.
+* **The disk is on the system page.**
+  * A new check, `disk`, reads how full the filesystem Docker keeps everything on is, from
+    inside the API container.
+  * It warns at 80% and fails at 90%. The numbers are shown, and a development machine's disk
+    is reported but not judged.
+* **Outside watching stays outside.** An uptime service outside the server
+  (`docs/runbooks/monitoring.md`) watches `/health/live/`, `/health/ready/` and the site. A
+  check that runs on the server cannot report that the server is down.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

@@ -41,9 +41,10 @@ const CHECKS: Record<string, { label: string; detail: string; icon: IconName }> 
   worker: { label: "عامل المهام", detail: "يرسل الإشعارات وينفّذ المهام الخلفية.", icon: "tool" },
   scheduler: { label: "المجدول", detail: "التذكيرات والتنظيف الليلي.", icon: "calendar" },
   storage: { label: "مساحة الملفات", detail: "الصور ووثائق التحقق.", icon: "image" },
+  disk: { label: "قرص الخادم", detail: "قاعدة البيانات وصور الإصدارات والسجلات.", icon: "chart" },
   otp: { label: "رموز التحقق", detail: "التسجيل واستعادة الحساب.", icon: "whatsapp" },
   push: { label: "الإشعارات", detail: "تنبيهات الهواتف.", icon: "bell" },
-  backup: { label: "النسخ الاحتياطي", detail: "نسخة يومية من قاعدة البيانات.", icon: "download" },
+  backup: { label: "النسخ الاحتياطي", detail: "نسخة كل ساعة من قاعدة البيانات.", icon: "download" },
   errors: { label: "تتبع الأخطاء", detail: "يُعلمنا بالأعطال قبل أن يبلغ عنها الناس.", icon: "alert" },
   maintenance: { label: "وضع الصيانة", detail: "يوقف الواجهات العامة عند الحاجة.", icon: "settings" },
 };
@@ -56,6 +57,8 @@ const METRICS: Record<string, string> = {
   failures: "إخفاقات متتالية",
   activeDevices: "أجهزة تستقبل الإشعارات",
   deliveries24h: "إشعارات وصلت خلال ٢٤ ساعة",
+  diskUsedPercent: "٪ مستخدمة من القرص",
+  diskFreeGb: "غيغابايت متاحة",
 };
 
 const STATUS: Record<Status, { label: string; tone: Tone }> = {
@@ -78,7 +81,7 @@ const NUMBER = new Intl.NumberFormat("ar-SY");
  *
  * Each card is one service: whether it works, a sentence saying what that means, how long it
  * took to answer, and the numbers behind the answer. The ones that do not answer requests (the
- * scheduler, the code channel, push, the nightly backup) are read from what they last recorded.
+ * scheduler, the code channel, push, the hourly backup) are read from what they last recorded.
  * Nothing here is a host, an address or a credential: the backend does not send them.
  */
 export default function SystemPage() {

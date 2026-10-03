@@ -1,33 +1,44 @@
 # Deploy Runbook
 
 The production server runs `infrastructure/production/compose.yml` (DECISION-080). First-time
-setup is `infrastructure/production/README.md`; this is every deploy after it.
+setup is `infrastructure/production/README.md`; this is every deploy after it (DECISION-081).
 
 ## Preconditions
 - CI green for the exact commit, the Android workflow included when the app changed.
-- No production credentials in staging, and staging deployed and checked first.
-- A backup from the last 24 hours (the console's «حالة النظام» page, row «النسخ الاحتياطي»), or
+- Staging deployed with the same commit and checked first. No production credentials in staging.
+- A backup from the last two hours (the console's «حالة النظام» page, row «النسخ الاحتياطي»), or
   take one now: `sudo systemctl start daliini-backup.service`.
 - Migrations reviewed for expand/contract: a destructive change waits for the release after the
   code stopped using what it drops.
 
 ## Sequence
-On the server, in `/srv/daliini/repo/infrastructure/production`:
+1. **Release the images.** GitHub → Actions → **Release images** → *Run workflow* on `main`,
+   with the environment. It publishes `ghcr.io/servacode/daliini-<name>:<environment>-<commit>`
+   for the five images; the run's summary names the commit.
+2. **Deploy.** Actions → **Deploy** → *Run workflow*: the environment and that full commit SHA.
+   If the environment requires a reviewer, they approve the run. Over SSH the server runs:
 
-1. `git -C /srv/daliini/repo fetch && git -C /srv/daliini/repo checkout <commit>`; record the
-   commit and the OpenAPI schema hash.
-2. Set `RELEASE=<commit>` in `/srv/daliini/production.env`, so the images carry the commit and
-   the previous ones stay on the server for a rollback.
-3. `docker compose --env-file /srv/daliini/production.env up -d --build`. `migrate` runs
-   `check --deploy` and the migrations first; the API, worker and beat restart only after it
-   succeeded, and a failed migration leaves the running version in place.
-4. Require `https://api.<ROOT>/health/live/` and `/health/ready/` to answer 200.
-5. Run `STAGING_API_ORIGIN=https://api.<ROOT> infrastructure/scripts/staging-smoke.sh` (the same
-   smoke, any origin) and open the site and the console.
-6. Record the commit, the schema hash, the time and anything known to be wrong.
+   ```sh
+   infrastructure/production/deploy.sh /srv/daliini/<environment>.env <commit> <environment>-<commit>
+   ```
 
-A version is rolled back by checking out the previous commit, setting `RELEASE` back, and the
-same `up -d --build` (`rollback.md`).
+   which checks the commit out, writes `RELEASE` (and a history line) into the env file, pulls
+   the images, and runs `up -d`. `migrate` runs `check --deploy` and the migrations first. The
+   API, worker and beat restart only after it succeeds, so a failed migration leaves the
+   running version in place. The script waits until `https://api.<ROOT>/health/ready/` answers
+   through Caddy, then removes that environment's images older than the one it replaced.
+3. Check `https://api.<ROOT>/health/live/` and `/health/ready/`, run
+   `STAGING_API_ORIGIN=https://api.<ROOT> infrastructure/scripts/staging-smoke.sh` (the same
+   smoke works against any origin), and open the site and the console. The system page should
+   show every card green.
+4. Record the commit, the schema hash (the system page, «بصمة العقد»), the time and anything
+   known to be wrong.
+
+The same command works by hand on the server, for example when GitHub is unreachable. Without
+`IMAGE_REGISTRY` in the env file, it builds the images on the server instead of pulling them.
+
+A version is rolled back by deploying the previous commit the same way (`rollback.md`). Its
+images are still on the server.
 
 ## Push notifications (Android)
 

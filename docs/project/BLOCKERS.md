@@ -11,7 +11,7 @@ up to 2026-09-29 (EXT-001 to EXT-006, INT-084) is `docs/archive/BLOCKERS-2026-09
 | ID | What is missing | Needed for | What is ready meanwhile |
 |---|---|---|---|
 | EXT-001 | A domain the project owns | phase 6: DNS, TLS, the site's and the app's links, store listings | Every host is a setting; nothing names a domain |
-| EXT-007 | A VPS (sized and paid for by the owner) | phase 6: the production stack | The production stack is ready and booted on every pull request (`infrastructure/production/`, DECISION-080); bringing a server up is `infrastructure/production/README.md` |
+| EXT-007 | A VPS (sized and paid for by the owner) | phase 6: the production stack | The production stack is ready and booted on every pull request (`infrastructure/production/`, DECISION-080). Bringing a server up is `infrastructure/production/README.md`, and deploying to it from GitHub is ready too (DECISION-081). It needs the GitHub environments' variables and deploy secrets, which the same README lists |
 | EXT-002 | Production credentials: the WhatsApp account or Cloud API number that sends codes, FCM for each environment, S3 storage, optionally Sentry | sign-in, push, photos in production | Each provider is behind its adapter. FCM was proven on a phone on 2026-10-01 (`NOTIFICATIONS-SETUP.md`). Production refuses to start half-configured |
 | EXT-003 | The Google Play developer account and the app signing key | phase 7: closed testing, then release | The release build, App Links and store material are prepared (`apps/android/play/`) |
 

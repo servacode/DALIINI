@@ -2,9 +2,11 @@
 
 import io
 import json
+import shutil
 import urllib.error
 from datetime import timedelta
 from email.message import Message
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -16,6 +18,7 @@ from admin_console import system_health
 from admin_console.system_health import (
     Check,
     check_backup,
+    check_disk,
     check_otp,
     check_push,
     check_scheduler,
@@ -65,16 +68,18 @@ def test_the_scheduler_reads_from_its_heartbeat() -> None:
 
 @pytest.mark.django_db
 @override_settings(ENVIRONMENT_NAME="production")
-def test_a_backup_is_due_daily_and_a_failed_one_is_said_so() -> None:
+def test_a_backup_is_due_hourly_and_a_failed_one_is_said_so() -> None:
     assert check_backup(None, NOW).status == "failed"
-    signal = _signal(BACKUP, ok_at=NOW - timedelta(hours=3))
+    signal = _signal(BACKUP, ok_at=NOW - timedelta(minutes=50))
     assert check_backup(signal, NOW).status == "ok"
-    signal.ok_at = NOW - timedelta(hours=30)
-    assert check_backup(signal, NOW).status == "warning"
-    signal.ok_at = NOW - timedelta(hours=60)
-    assert check_backup(signal, NOW).status == "failed"
     signal.ok_at = NOW - timedelta(hours=3)
-    signal.failed_at = NOW - timedelta(hours=1)
+    late = check_backup(signal, NOW)
+    assert late.status == "warning"
+    assert "متأخر" in late.summary
+    signal.ok_at = NOW - timedelta(hours=30)
+    assert check_backup(signal, NOW).status == "failed"
+    signal.ok_at = NOW - timedelta(minutes=50)
+    signal.failed_at = NOW - timedelta(minutes=10)
     failed = check_backup(signal, NOW)
     assert failed.status == "failed"
     assert "فشلت" in failed.summary
@@ -225,6 +230,7 @@ def test_the_endpoint_reports_every_check_and_the_worst_status_without_secrets(
         "worker",
         "scheduler",
         "storage",
+        "disk",
         "otp",
         "push",
         "backup",
@@ -243,3 +249,37 @@ def test_the_endpoint_reports_every_check_and_the_worst_status_without_secrets(
 def test_the_endpoint_needs_its_permission(admin_api: Any) -> None:
     response = admin_api("admin.dashboard.read").get("/api/v1/admin/system/status/")
     assert response.status_code == 403
+
+
+@pytest.mark.parametrize(
+    ("used", "status", "words"),
+    [(50, "ok", "مستخدم 50٪"), (85, "warning", "احذف صور الإصدارات"), (95, "failed", "تتوقف")],
+)
+@override_settings(ENVIRONMENT_NAME="production")
+def test_the_disk_warns_with_room_left_and_fails_before_it_is_full(
+    used: int, status: str, words: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    gib = 1024**3
+    usage = SimpleNamespace(total=100 * gib, used=used * gib, free=(100 - used) * gib)
+    monkeypatch.setattr(shutil, "disk_usage", lambda path: usage)
+
+    check = check_disk()
+
+    assert check.status == status
+    assert words in check.summary
+    assert check.metrics == {"diskUsedPercent": used, "diskFreeGb": 100 - used}
+
+
+@override_settings(ENVIRONMENT_NAME="development")
+def test_a_development_disk_is_reported_but_not_judged() -> None:
+    check = check_disk()
+    assert check.status == "off"
+    assert set(check.metrics) == {"diskUsedPercent", "diskFreeGb"}
+
+
+def test_an_unreadable_disk_is_said_so(monkeypatch: pytest.MonkeyPatch) -> None:
+    def unreadable(path: str) -> None:
+        raise OSError("no")
+
+    monkeypatch.setattr(shutil, "disk_usage", unreadable)
+    assert check_disk().status == "failed"

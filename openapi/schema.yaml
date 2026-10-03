@@ -12266,6 +12266,7 @@ components:
       - worker
       - scheduler
       - storage
+      - disk
       - otp
       - push
       - backup
@@ -12278,6 +12279,7 @@ components:
         * `worker` - worker
         * `scheduler` - scheduler
         * `storage` - storage
+        * `disk` - disk
         * `otp` - otp
         * `push` - push
         * `backup` - backup

@@ -60,6 +60,32 @@ for key in [
 ]:
     assert f'{key} = env("{key}", required=True)' in production
 
+# Deploys and backups (DECISION-081): images published per environment, a deploy started by a
+# person, an hourly backup and a monthly drill that proves it restores.
+for name in ("migrate", "api", "worker", "beat", "web", "admin", "whatsapp-bot", "backup"):
+    image = services[name]["image"]
+    assert image.startswith("${IMAGE_REGISTRY:-}daliini-"), f"{name} runs another image: {image}"
+    assert image.endswith(":${RELEASE:-local}"), f"{name} must run the release deployed: {image}"
+workflows = ROOT / ".github" / "workflows"
+release = yaml.safe_load((workflows / "release-images.yml").read_text(encoding="utf-8"))
+deploy = yaml.safe_load((workflows / "deploy.yml").read_text(encoding="utf-8"))
+for workflow in (release, deploy):
+    # PyYAML reads the key `on` as True.
+    assert list(workflow[True]) == ["workflow_dispatch"], "nothing deploys by itself"
+released = {entry["name"] for entry in release["jobs"]["image"]["strategy"]["matrix"]["include"]}
+assert released == {"backend", "web", "admin", "whatsapp-bot", "backup"}, released
+deploy_text = (workflows / "deploy.yml").read_text(encoding="utf-8")
+assert "StrictHostKeyChecking=yes" in deploy_text, "the deploy must know the server's key"
+assert "infrastructure/production/deploy.sh" in deploy_text
+timer = (STACK / "systemd" / "daliini-backup.timer").read_text(encoding="utf-8")
+assert "OnCalendar=*-*-* *:17:00 UTC" in timer, "backups run every hour (RPO 60 minutes)"
+drill = (STACK / "systemd" / "daliini-restore-drill.timer").read_text(encoding="utf-8")
+assert "OnCalendar=Sun *-*-01..07" in drill, "the restore drill runs on the first Sunday of a month"
+restore = (STACK / "restore-drill.sh").read_text(encoding="utf-8")
+assert "--max-rpo-minutes 60" in restore and "restore_evidence.py" in restore
+for script in ("deploy.sh", "restore-drill.sh", "smoke.sh"):
+    assert (STACK / script).stat().st_mode & 0o111, f"{script} is not executable"
+
 for path in [
     "infrastructure/production/README.md",
     "docs/runbooks/deploy.md",

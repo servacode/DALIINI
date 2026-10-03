@@ -3,8 +3,8 @@
 #   cp infrastructure/production/production.env.example /srv/daliini/production.env   # fill it in
 #   docker compose -f infrastructure/production/compose.yml --env-file /srv/daliini/production.env up -d --build
 #
-# Staging is the same file with its own env file and project name (`-p daliini-staging`); see
-# README.md beside this file. Nothing here carries a secret: every credential comes from the env
+# Staging is the same file with its own env file, whose COMPOSE_PROJECT_NAME (daliini-staging)
+# overrides the name below; see README.md beside this file. Nothing here carries a secret: every credential comes from the env
 # file, which lives on the server and never in the repository.
 #
 # What is not on this server, on purpose:
@@ -60,7 +60,9 @@ x-backend-env: &backend-env
   DRF_NUM_PROXIES: "1"
 
 x-backend: &backend
-  image: daliini-backend:${RELEASE:-local}
+  # IMAGE_REGISTRY empty: the images are built on this server (`up -d --build`). Set to
+  # ghcr.io/servacode/: they are the ones CI published for RELEASE, pulled (docs/runbooks/deploy.md).
+  image: ${IMAGE_REGISTRY:-}daliini-backend:${RELEASE:-local}
   build:
     context: ../../apps/backend
     dockerfile: Dockerfile
@@ -179,7 +181,7 @@ services:
       disable: true
 
   whatsapp-bot:
-    image: daliini-whatsapp-bot:${RELEASE:-local}
+    image: ${IMAGE_REGISTRY:-}daliini-whatsapp-bot:${RELEASE:-local}
     build:
       context: ../../services/whatsapp-bot
       dockerfile: Dockerfile
@@ -193,7 +195,7 @@ services:
     logging: *logging
 
   web:
-    image: daliini-web:${RELEASE:-local}
+    image: ${IMAGE_REGISTRY:-}daliini-web:${RELEASE:-local}
     build:
       context: ../..
       dockerfile: apps/web/Dockerfile
@@ -230,7 +232,7 @@ services:
     logging: *logging
 
   admin:
-    image: daliini-admin:${RELEASE:-local}
+    image: ${IMAGE_REGISTRY:-}daliini-admin:${RELEASE:-local}
     build:
       context: ../..
       dockerfile: apps/admin/Dockerfile
@@ -251,9 +253,9 @@ services:
       - api
     logging: *logging
 
-  # Nightly, by the server's own timer (README.md): `docker compose run --rm backup`.
+  # Hourly, by the server's own timer (README.md): `docker compose run --rm backup`.
   backup:
-    image: daliini-backup:${RELEASE:-local}
+    image: ${IMAGE_REGISTRY:-}daliini-backup:${RELEASE:-local}
     build:
       context: ../..
       dockerfile: infrastructure/backup/Dockerfile

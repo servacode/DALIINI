@@ -19,6 +19,7 @@
  * * `worker` - worker
  * * `scheduler` - scheduler
  * * `storage` - storage
+ * * `disk` - disk
  * * `otp` - otp
  * * `push` - push
  * * `backup` - backup
@@ -32,6 +33,7 @@ export const AdminHealthCheckKeyEnum = {
     Worker: 'worker',
     Scheduler: 'scheduler',
     Storage: 'storage',
+    Disk: 'disk',
     Otp: 'otp',
     Push: 'push',
     Backup: 'backup',

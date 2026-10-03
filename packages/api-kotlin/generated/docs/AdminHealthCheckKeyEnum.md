@@ -14,6 +14,8 @@
 
     * `storage` (value: `"storage"`)
 
+    * `disk` (value: `"disk"`)
+
     * `otp` (value: `"otp"`)
 
     * `push` (value: `"push"`)
