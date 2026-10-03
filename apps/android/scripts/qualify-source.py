@@ -98,7 +98,7 @@ def check_architecture() -> None:
         "core/network/src/main/kotlin/com/servacode/directory/core/network/GeneratedApiClientBoundary.kt"
     )
     require("Transport DTOs must not be duplicated" in boundary, "generated client boundary missing")
-    routes = text("core/model/src/main/kotlin/com/servacode/directory/core/model/DirectoryRoute.kt")
+    routes = text("core/model/src/commonMain/kotlin/com/servacode/directory/core/model/DirectoryRoute.kt")
     for route in (
         "Welcome",
         "LocationPermission",

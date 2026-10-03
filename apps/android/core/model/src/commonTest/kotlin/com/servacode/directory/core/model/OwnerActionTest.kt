@@ -1,8 +1,8 @@
 package com.servacode.directory.core.model
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
-import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.Test
 
 /**
  * Every action the contract lists is one this app knows.
@@ -20,12 +20,12 @@ class OwnerActionTest {
             "WAIT_FOR_REVIEW",
             "CONTACT_SUPPORT",
         ).forEach { code ->
-            assertEquals(code, OwnerAction.valueOf(code), ownerAction(code))
-            assertNotEquals(code, OwnerAction.UNKNOWN, ownerAction(code))
+            assertEquals(OwnerAction.valueOf(code), ownerAction(code), code)
+            assertNotEquals(OwnerAction.UNKNOWN, ownerAction(code), code)
         }
     }
 
-    @Test fun `a code from a newer backend is unknown, not shown as itself`() {
+    @Test fun `a code from a newer backend is unknown and not shown as itself`() {
         assertEquals(OwnerAction.UNKNOWN, ownerAction("SOMETHING_NEW"))
     }
 }

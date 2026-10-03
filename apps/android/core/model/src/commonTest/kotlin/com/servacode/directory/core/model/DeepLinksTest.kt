@@ -1,9 +1,9 @@
 package com.servacode.directory.core.model
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
-import java.time.LocalDate
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.Test
+import kotlinx.datetime.LocalDate
 
 class DeepLinksTest {
     private val hosts = setOf("daliini.example")
@@ -44,17 +44,34 @@ class DeepLinksTest {
             "intent://daliini.example/duty",
             "not a link",
             null,
-        ).forEach { assertNull(it, DeepLinks.parse(it, hosts)) }
+        ).forEach { assertNull(DeepLinks.parse(it, hosts), it) }
+    }
+
+    @Test fun `a link is read the way java net URI read it before the code was shared`() {
+        // An escaped letter is that letter; a port, a fragment, a query or the scheme's case
+        // change nothing.
+        assertEquals(DeepLinkTarget.Province("raqqa"), DeepLinks.parse("https://daliini.example/raqq%61", hosts))
+        assertEquals(DeepLinkTarget.DutyNow, DeepLinks.parse("HTTPS://daliini.example:443/duty#top", hosts))
+        assertEquals(DeepLinkTarget.DutyNow, DeepLinks.parse("https://daliini.example/duty?q=صيدلية", hosts))
+        listOf(
+            "https://daliini.example/raqq%6",
+            "https://daliini.example/raqq%zz",
+            "https://daliini.example/du ty",
+            "https://daliini.example/\"duty\"",
+            "https://daliini.example:x/duty",
+            "https:///duty",
+            "https:daliini.example/duty",
+        ).forEach { assertNull(DeepLinks.parse(it, hosts), it) }
     }
 
     @Test fun `duty presets are night shifts on Damascus clocks`() {
-        val day = LocalDate.of(2026, 9, 28)
+        val day = LocalDate(2026, 9, 28)
         val (start, end) = DutyPresets.tonight(day)
         assertEquals("2026-09-28 20:00", DamascusTime.format(start))
         assertEquals("2026-09-29 08:00", DamascusTime.format(end))
         assertEquals("2026-09-29 20:00", DamascusTime.format(DutyPresets.tomorrow(day).first))
-        assertEquals(LocalDate.of(2026, 9, 30), DutyPresets.parseDate("2026-09-30"))
-        assertEquals(LocalDate.of(2026, 9, 30), DutyPresets.parseDate("2026-09-30T00:00:00Z"))
+        assertEquals(LocalDate(2026, 9, 30), DutyPresets.parseDate("2026-09-30"))
+        assertEquals(LocalDate(2026, 9, 30), DutyPresets.parseDate("2026-09-30T00:00:00Z"))
         assertNull(DutyPresets.parseDate("tomorrow"))
     }
 

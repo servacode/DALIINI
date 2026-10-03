@@ -1,8 +1,8 @@
 package com.servacode.directory.core.model
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
-import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.Test
 
 /**
  * The sentence a refusal is shown as.
@@ -19,7 +19,7 @@ class AppErrorMessagesTest {
     private fun message(code: String?, kind: AppError.Kind) =
         AppErrorMessages.of(AppError(kind, code))
 
-    @Test fun `a number that already has an account is told so, and told what to do`() {
+    @Test fun `a number that already has an account is told so and told what to do`() {
         val message = message("PHONE_ALREADY_REGISTERED", AppError.Kind.CONFLICT)
 
         assertEquals(AppErrorMessage.PHONE_ALREADY_REGISTERED, message)
@@ -63,7 +63,7 @@ class AppErrorMessagesTest {
             "OTP_RECIPIENT_INVALID",
             "OTP_DELIVERY_UNAVAILABLE",
         ).forEach { code ->
-            assertEquals(code, AppErrorMessage.valueOf(code), message(code, AppError.Kind.SERVER))
+            assertEquals(AppErrorMessage.valueOf(code), message(code, AppError.Kind.SERVER), code)
         }
     }
 }

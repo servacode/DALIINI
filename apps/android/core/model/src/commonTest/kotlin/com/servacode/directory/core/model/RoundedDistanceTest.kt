@@ -1,7 +1,7 @@
 package com.servacode.directory.core.model
 
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.Test
 
 /**
  * How far it is, rounded the way it is shown.
@@ -11,12 +11,12 @@ import org.junit.Test
  */
 class RoundedDistanceTest {
     private fun assertMetres(expected: Long, meters: Double) =
-        assertEquals("$meters m", RoundedDistance.Metres(expected), roundedDistance(meters))
+        assertEquals(RoundedDistance.Metres(expected), roundedDistance(meters), "$meters m")
 
     private fun assertKilometres(whole: Long, tenth: Long, meters: Double) =
-        assertEquals("$meters m", RoundedDistance.Kilometres(whole, tenth), roundedDistance(meters))
+        assertEquals(RoundedDistance.Kilometres(whole, tenth), roundedDistance(meters), "$meters m")
 
-    @Test fun `below a kilometre, whole metres rounded half up`() {
+    @Test fun `below a kilometre whole metres rounded half up`() {
         assertMetres(0, 0.0)
         assertMetres(1, 1.0)
         assertMetres(499, 499.4)
@@ -25,12 +25,12 @@ class RoundedDistanceTest {
         assertMetres(999, 999.4)
     }
 
-    @Test fun `a distance that rounds to a kilometre is shown in kilometres, not as 1000 metres`() {
+    @Test fun `a distance that rounds to a kilometre is shown in kilometres and not as 1000 metres`() {
         assertKilometres(1, 0, 999.6)
         assertKilometres(1, 0, 1000.0)
     }
 
-    @Test fun `from a kilometre, kilometres with one decimal, rounded half up`() {
+    @Test fun `from a kilometre kilometres with one decimal rounded half up`() {
         assertKilometres(1, 1, 1094.9)
         assertKilometres(7, 8, 7758.0)
         assertKilometres(10, 0, 9999.96)

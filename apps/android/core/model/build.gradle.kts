@@ -1,9 +1,15 @@
+// Shared with the iPhone app (DECISION-086).
 plugins {
-    id("serva.android.library")
+    id("serva.kmp.library")
     alias(libs.plugins.kotlin.serialization)
 }
 
-dependencies {
-    implementation(libs.kotlinx.serialization.json)
-    testImplementation(libs.junit)
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.kotlinx.serialization.json)
+            // Dates on Damascus clocks are part of this module's API.
+            api(libs.kotlinx.datetime)
+        }
+    }
 }

@@ -1,8 +1,8 @@
 package com.servacode.directory.core.model
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.Test
 
 /**
  * A closure shows its period, and a reason only where there is one.
@@ -17,13 +17,13 @@ class ClosureTextTest {
 
     private fun closure(reason: String?) = TemporaryClosure("c1", start, end, reason)
 
-    @Test fun `no reason, an empty one or one of spaces is not shown`() {
+    @Test fun `no reason or an empty one or one of spaces is not shown`() {
         assertNull(closure(null).shownReason())
         assertNull(closure("").shownReason())
         assertNull(closure("   ").shownReason())
     }
 
-    @Test fun `a real reason is shown, trimmed`() {
+    @Test fun `a real reason is shown trimmed`() {
         assertEquals("سبب فعلي", closure("  سبب فعلي  ").shownReason())
     }
 }

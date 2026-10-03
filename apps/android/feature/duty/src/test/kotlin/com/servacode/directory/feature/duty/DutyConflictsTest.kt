@@ -9,7 +9,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
 
 class DutyConflictsTest {
     private val hour = 3_600_000L
@@ -42,7 +42,7 @@ class DutyConflictsTest {
 
 class DutyRosterRepositoryTest {
     private val api = ScriptedPublicApi()
-    private val today = LocalDate.of(2026, 9, 28)
+    private val today = LocalDate(2026, 9, 28)
 
     @Test fun `today, tomorrow and the week ask for the right days`() = runTest {
         api.rosterAnswer = { _, date, _ -> listOf(DutyDay(date!!, emptyList(), emptyList())) }

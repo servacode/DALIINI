@@ -142,7 +142,7 @@ class DutyViewModel(
     private fun content(): DutyUiState.Content =
         _state.value as? DutyUiState.Content ?: DutyUiState.Content(emptyList())
 
-    private fun today() = DamascusTime.localDateTime(clock()).toLocalDate()
+    private fun today() = DamascusTime.localDateTime(clock()).date
 
     private fun Pair<Long, Long>.toDraft() = DutyDraft(first, second)
 }

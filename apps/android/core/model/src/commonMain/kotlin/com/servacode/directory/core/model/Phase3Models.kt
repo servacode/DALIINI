@@ -1,8 +1,10 @@
 package com.servacode.directory.core.model
 
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.plus
 import kotlinx.serialization.Serializable
-import java.time.LocalDate
-import java.time.LocalTime
 
 /** Whether an emergency number is the country's or the province's. */
 enum class EmergencyScope { NATIONAL, PROVINCE }
@@ -157,16 +159,17 @@ sealed interface NotificationTarget {
  * submitted, on Damascus clocks, so the owner confirms the times before anything is sent.
  */
 object DutyPresets {
-    val NIGHT_START: LocalTime = LocalTime.of(20, 0)
-    val NIGHT_END: LocalTime = LocalTime.of(8, 0)
+    val NIGHT_START: LocalTime = LocalTime(20, 0)
+    val NIGHT_END: LocalTime = LocalTime(8, 0)
+    private val ONE_DAY = DatePeriod(days = 1)
 
     /** A night's shift starting on [date]: 20:00 to 08:00 the next morning. */
     fun night(date: LocalDate): Pair<Long, Long> =
-        DamascusTime.toEpochMillis(date, NIGHT_START) to DamascusTime.toEpochMillis(date.plusDays(1), NIGHT_END)
+        DamascusTime.toEpochMillis(date, NIGHT_START) to DamascusTime.toEpochMillis(date + ONE_DAY, NIGHT_END)
 
-    fun tonight(today: LocalDate = DamascusTime.now().toLocalDate()): Pair<Long, Long> = night(today)
+    fun tonight(today: LocalDate = DamascusTime.now().date): Pair<Long, Long> = night(today)
 
-    fun tomorrow(today: LocalDate = DamascusTime.now().toLocalDate()): Pair<Long, Long> = night(today.plusDays(1))
+    fun tomorrow(today: LocalDate = DamascusTime.now().date): Pair<Long, Long> = night(today + ONE_DAY)
 
     /** A day sent by a gap nudge ("2026-09-30"), or null when it is not a date. */
     fun parseDate(value: String?): LocalDate? =
