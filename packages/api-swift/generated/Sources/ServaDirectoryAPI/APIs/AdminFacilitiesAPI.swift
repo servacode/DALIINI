@@ -102,6 +102,63 @@ open class AdminFacilitiesAPI {
     }
 
     /**
+     Located facilities as map points, with the same filters as the list
+     
+     - parameter category: (query) Category id. (optional)
+     - parameter city: (query) City id. (optional)
+     - parameter issue: (query) One of NO_PHOTOS, NO_HOURS, NO_LOCATION, NO_PHONE, STALE, OPEN_REPORTS, NOT_VERIFIED_RECENTLY. (optional)
+     - parameter province: (query) Province id. (optional)
+     - parameter q: (query) Free text matched against the facility names. (optional)
+     - parameter status: (query) Facility status. (optional)
+     - returns: AdminFacilityMap
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminFacilitiesMap(category: String? = nil, city: String? = nil, issue: String? = nil, province: String? = nil, q: String? = nil, status: String? = nil) async throws -> AdminFacilityMap {
+        return try await adminFacilitiesMapWithRequestBuilder(category: category, city: city, issue: issue, province: province, q: q, status: status).execute().body
+    }
+
+    /**
+     Located facilities as map points, with the same filters as the list
+     - GET /api/v1/admin/facilities/map/
+     - Every located facility the filters select, as points (DECISION-075).  The same filters as the list, so \"the map of what I am looking at\" is one click. Only what a pin needs travels: the name, the state and the coordinates. A facility without a location is counted rather than dropped silently, so the operator can go and fix it.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter category: (query) Category id. (optional)
+     - parameter city: (query) City id. (optional)
+     - parameter issue: (query) One of NO_PHOTOS, NO_HOURS, NO_LOCATION, NO_PHONE, STALE, OPEN_REPORTS, NOT_VERIFIED_RECENTLY. (optional)
+     - parameter province: (query) Province id. (optional)
+     - parameter q: (query) Free text matched against the facility names. (optional)
+     - parameter status: (query) Facility status. (optional)
+     - returns: RequestBuilder<AdminFacilityMap> 
+     */
+    open class func adminFacilitiesMapWithRequestBuilder(category: String? = nil, city: String? = nil, issue: String? = nil, province: String? = nil, q: String? = nil, status: String? = nil) -> RequestBuilder<AdminFacilityMap> {
+        let localVariablePath = "/api/v1/admin/facilities/map/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "category": (wrappedValue: category?.encodeToJSON(), isExplode: true),
+            "city": (wrappedValue: city?.encodeToJSON(), isExplode: true),
+            "issue": (wrappedValue: issue?.encodeToJSON(), isExplode: true),
+            "province": (wrappedValue: province?.encodeToJSON(), isExplode: true),
+            "q": (wrappedValue: q?.encodeToJSON(), isExplode: true),
+            "status": (wrappedValue: status?.encodeToJSON(), isExplode: true),
+        ])
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminFacilityMap>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Close a facility
      
      - parameter facilityId: (path)  

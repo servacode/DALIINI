@@ -5,6 +5,7 @@ All URIs are relative to *http://localhost*
 | Method | HTTP request | Description |
 | ------------- | ------------- | ------------- |
 | [**adminFacilitiesList**](AdminFacilitiesApi.md#adminFacilitiesList) | **GET** api/v1/admin/facilities/ | List facilities for operations |
+| [**adminFacilitiesMap**](AdminFacilitiesApi.md#adminFacilitiesMap) | **GET** api/v1/admin/facilities/map/ | Located facilities as map points, with the same filters as the list |
 | [**adminFacilityClose**](AdminFacilitiesApi.md#adminFacilityClose) | **POST** api/v1/admin/facilities/{facility_id}/close/ | Close a facility |
 | [**adminFacilityCreate**](AdminFacilitiesApi.md#adminFacilityCreate) | **POST** api/v1/admin/facilities/ | Add a facility to the directory |
 | [**adminFacilityReactivate**](AdminFacilitiesApi.md#adminFacilityReactivate) | **POST** api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility |
@@ -60,6 +61,58 @@ launch(Dispatchers.IO) {
 ### Return type
 
 [**AdminFacilityList**](AdminFacilityList.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Located facilities as map points, with the same filters as the list
+
+Every located facility the filters select, as points (DECISION-075).  The same filters as the list, so \&quot;the map of what I am looking at\&quot; is one click. Only what a pin needs travels: the name, the state and the coordinates. A facility without a location is counted rather than dropped silently, so the operator can go and fix it.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminFacilitiesApi::class.java)
+val category : kotlin.String = category_example // kotlin.String | Category id.
+val city : kotlin.String = city_example // kotlin.String | City id.
+val issue : kotlin.String = issue_example // kotlin.String | One of NO_PHOTOS, NO_HOURS, NO_LOCATION, NO_PHONE, STALE, OPEN_REPORTS, NOT_VERIFIED_RECENTLY.
+val province : kotlin.String = province_example // kotlin.String | Province id.
+val q : kotlin.String = q_example // kotlin.String | Free text matched against the facility names.
+val status : kotlin.String = status_example // kotlin.String | Facility status.
+
+launch(Dispatchers.IO) {
+    val result : AdminFacilityMap = webService.adminFacilitiesMap(category, city, issue, province, q, status)
+}
+```
+
+### Parameters
+| **category** | **kotlin.String**| Category id. | [optional] |
+| **city** | **kotlin.String**| City id. | [optional] |
+| **issue** | **kotlin.String**| One of NO_PHOTOS, NO_HOURS, NO_LOCATION, NO_PHONE, STALE, OPEN_REPORTS, NOT_VERIFIED_RECENTLY. | [optional] |
+| **province** | **kotlin.String**| Province id. | [optional] |
+| **q** | **kotlin.String**| Free text matched against the facility names. | [optional] |
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **status** | **kotlin.String**| Facility status. | [optional] |
+
+### Return type
+
+[**AdminFacilityMap**](AdminFacilityMap.md)
 
 ### Authorization
 

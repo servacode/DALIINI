@@ -5,6 +5,7 @@ All URIs are relative to *http://localhost*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**adminFacilitiesList**](AdminFacilitiesAPI.md#adminfacilitieslist) | **GET** /api/v1/admin/facilities/ | List facilities for operations
+[**adminFacilitiesMap**](AdminFacilitiesAPI.md#adminfacilitiesmap) | **GET** /api/v1/admin/facilities/map/ | Located facilities as map points, with the same filters as the list
 [**adminFacilityClose**](AdminFacilitiesAPI.md#adminfacilityclose) | **POST** /api/v1/admin/facilities/{facility_id}/close/ | Close a facility
 [**adminFacilityCreate**](AdminFacilitiesAPI.md#adminfacilitycreate) | **POST** /api/v1/admin/facilities/ | Add a facility to the directory
 [**adminFacilityReactivate**](AdminFacilitiesAPI.md#adminfacilityreactivate) | **POST** /api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility
@@ -68,6 +69,66 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**AdminFacilityList**](AdminFacilityList.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminFacilitiesMap**
+```swift
+    open class func adminFacilitiesMap(category: String? = nil, city: String? = nil, issue: String? = nil, province: String? = nil, q: String? = nil, status: String? = nil, completion: @escaping (_ data: AdminFacilityMap?, _ error: Error?) -> Void)
+```
+
+Located facilities as map points, with the same filters as the list
+
+Every located facility the filters select, as points (DECISION-075).  The same filters as the list, so \"the map of what I am looking at\" is one click. Only what a pin needs travels: the name, the state and the coordinates. A facility without a location is counted rather than dropped silently, so the operator can go and fix it.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let category = "category_example" // String | Category id. (optional)
+let city = "city_example" // String | City id. (optional)
+let issue = "issue_example" // String | One of NO_PHOTOS, NO_HOURS, NO_LOCATION, NO_PHONE, STALE, OPEN_REPORTS, NOT_VERIFIED_RECENTLY. (optional)
+let province = "province_example" // String | Province id. (optional)
+let q = "q_example" // String | Free text matched against the facility names. (optional)
+let status = "status_example" // String | Facility status. (optional)
+
+// Located facilities as map points, with the same filters as the list
+AdminFacilitiesAPI.adminFacilitiesMap(category: category, city: city, issue: issue, province: province, q: q, status: status) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **category** | **String** | Category id. | [optional] 
+ **city** | **String** | City id. | [optional] 
+ **issue** | **String** | One of NO_PHOTOS, NO_HOURS, NO_LOCATION, NO_PHONE, STALE, OPEN_REPORTS, NOT_VERIFIED_RECENTLY. | [optional] 
+ **province** | **String** | Province id. | [optional] 
+ **q** | **String** | Free text matched against the facility names. | [optional] 
+ **status** | **String** | Facility status. | [optional] 
+
+### Return type
+
+[**AdminFacilityMap**](AdminFacilityMap.md)
 
 ### Authorization
 

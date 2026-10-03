@@ -183,6 +183,34 @@ test.describe("tables", () => {
   });
 });
 
+test.describe("charts and the map", () => {
+  test("the analytics page draws the period day by day, with its numbers as a table", async ({
+    page,
+  }) => {
+    await openConsole(page);
+    await page.goto("/analytics");
+    const usage = page.locator(".chart").first();
+    await expect(usage).toBeVisible();
+    await expect(usage.locator(".chart-legend")).toContainText("بحث");
+    // Thirty days back, both ends included: the hidden table has a row for each.
+    expect(await usage.locator("table tbody tr").count()).toBeGreaterThanOrEqual(30);
+  });
+
+  test("the map page counts what it can place and links to what it cannot", async ({ page }) => {
+    await openConsole(page);
+    await page.goto("/facilities/map");
+    await expect(page.getByTestId("map-summary")).toContainText("على الخريطة");
+
+    const points = await readOperation<{ items: unknown[]; withoutLocation: number }>(
+      page,
+      "facilitiesMap",
+    );
+    if (points.withoutLocation > 0) {
+      await expect(page.getByTestId("map-unlocated")).toHaveAttribute("href", /issue=NO_LOCATION/);
+    }
+  });
+});
+
 test.describe("roles", () => {
   test("a role is created with its permissions, then deleted", async ({ page }) => {
     const name = `e2e-دور ${Date.now()}`;

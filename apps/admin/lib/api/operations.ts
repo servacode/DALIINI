@@ -71,6 +71,11 @@ export const READS = {
         "limit",
       ]) as never,
     ),
+  // Located facilities as points, with the list's own filters (DECISION-075).
+  facilitiesMap: (apis: AdminApis, p: Params) =>
+    apis.facilities.adminFacilitiesMap(
+      filled(p, ["status", "province", "city", "category", "q", "issue"]) as never,
+    ),
   facilityTimeline: (apis: AdminApis, p: Params) =>
     apis.facilities.adminFacilityTimelineRetrieve({ facilityId: p.id! }),
   facility: (apis: AdminApis, p: Params) =>
@@ -121,6 +126,9 @@ export const READS = {
   // Operations screens
   analyticsPeriod: (apis: AdminApis, p: Params) =>
     apis.analytics.adminAnalyticsRetrieve(filled(p, ["from", "to"])),
+  // The same period, one Damascus day at a time, for the charts (DECISION-075).
+  analyticsSeries: (apis: AdminApis, p: Params) =>
+    apis.analytics.adminAnalyticsSeriesRetrieve(filled(p, ["from", "to"]) as never),
   staffPerformance: (apis: AdminApis, p: Params) =>
     apis.analytics.adminAnalyticsStaffRetrieve(filled(p, ["from", "to"])),
   provinceReadiness: (apis: AdminApis, p: Params) =>

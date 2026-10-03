@@ -58,6 +58,51 @@ open class AdminAnalyticsAPI {
     }
 
     /**
+     The period's numbers, one Damascus day at a time
+     
+     - parameter from: (query) ISO date or datetime; default 30 days before &#x60;to&#x60;. (optional)
+     - parameter to: (query) ISO date or datetime; a bare date includes that whole day. (optional)
+     - returns: AdminAnalyticsSeries
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminAnalyticsSeriesRetrieve(from: String? = nil, to: String? = nil) async throws -> AdminAnalyticsSeries {
+        return try await adminAnalyticsSeriesRetrieveWithRequestBuilder(from: from, to: to).execute().body
+    }
+
+    /**
+     The period's numbers, one Damascus day at a time
+     - GET /api/v1/admin/analytics/series/
+     - Every day from `from` to `to` is present, a quiet day as zeros. The event series are the same four the period totals count; `newUsers` are accounts created, `approvals` applications approved and `reports` problem reports received.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter from: (query) ISO date or datetime; default 30 days before &#x60;to&#x60;. (optional)
+     - parameter to: (query) ISO date or datetime; a bare date includes that whole day. (optional)
+     - returns: RequestBuilder<AdminAnalyticsSeries> 
+     */
+    open class func adminAnalyticsSeriesRetrieveWithRequestBuilder(from: String? = nil, to: String? = nil) -> RequestBuilder<AdminAnalyticsSeries> {
+        let localVariablePath = "/api/v1/admin/analytics/series/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "from": (wrappedValue: from?.encodeToJSON(), isExplode: true),
+            "to": (wrappedValue: to?.encodeToJSON(), isExplode: true),
+        ])
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminAnalyticsSeries>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Reviewer performance in a period
      
      - parameter from: (query)  (optional)

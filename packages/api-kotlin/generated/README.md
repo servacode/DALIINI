@@ -80,6 +80,7 @@ All URIs are relative to *http://localhost*
 | *AdminAdsApi* | [**adminAdUpdate**](docs/AdminAdsApi.md#adminadupdate) | **PUT** api/v1/admin/ads/{advertisement_id}/ | Edit an advertisement, its schedule or its activation |
 | *AdminAdsApi* | [**adminAdsList**](docs/AdminAdsApi.md#adminadslist) | **GET** api/v1/admin/ads/ | List advertisements |
 | *AdminAnalyticsApi* | [**adminAnalyticsRetrieve**](docs/AdminAnalyticsApi.md#adminanalyticsretrieve) | **GET** api/v1/admin/analytics/ | Operational KPIs |
+| *AdminAnalyticsApi* | [**adminAnalyticsSeriesRetrieve**](docs/AdminAnalyticsApi.md#adminanalyticsseriesretrieve) | **GET** api/v1/admin/analytics/series/ | The period's numbers, one Damascus day at a time |
 | *AdminAnalyticsApi* | [**adminAnalyticsStaffRetrieve**](docs/AdminAnalyticsApi.md#adminanalyticsstaffretrieve) | **GET** api/v1/admin/analytics/staff/ | Reviewer performance in a period |
 | *AdminAuditApi* | [**adminAuditList**](docs/AdminAuditApi.md#adminauditlist) | **GET** api/v1/admin/audit/ | Search the audit trail |
 | *AdminContentApi* | [**adminContactMessageHandle**](docs/AdminContentApi.md#admincontactmessagehandle) | **POST** api/v1/admin/contact-messages/{message_id}/handle/ | Mark a contact message handled |
@@ -111,6 +112,7 @@ All URIs are relative to *http://localhost*
 | *AdminExportsApi* | [**adminExportFacilitiesCsv**](docs/AdminExportsApi.md#adminexportfacilitiescsv) | **GET** api/v1/admin/exports/facilities.csv | Export the facility list as CSV |
 | *AdminExportsApi* | [**adminExportReportsCsv**](docs/AdminExportsApi.md#adminexportreportscsv) | **GET** api/v1/admin/exports/reports.csv | Export problem reports as CSV |
 | *AdminFacilitiesApi* | [**adminFacilitiesList**](docs/AdminFacilitiesApi.md#adminfacilitieslist) | **GET** api/v1/admin/facilities/ | List facilities for operations |
+| *AdminFacilitiesApi* | [**adminFacilitiesMap**](docs/AdminFacilitiesApi.md#adminfacilitiesmap) | **GET** api/v1/admin/facilities/map/ | Located facilities as map points, with the same filters as the list |
 | *AdminFacilitiesApi* | [**adminFacilityClose**](docs/AdminFacilitiesApi.md#adminfacilityclose) | **POST** api/v1/admin/facilities/{facility_id}/close/ | Close a facility |
 | *AdminFacilitiesApi* | [**adminFacilityCreate**](docs/AdminFacilitiesApi.md#adminfacilitycreate) | **POST** api/v1/admin/facilities/ | Add a facility to the directory |
 | *AdminFacilitiesApi* | [**adminFacilityReactivate**](docs/AdminFacilitiesApi.md#adminfacilityreactivate) | **POST** api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility |
@@ -273,7 +275,9 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminAlertList](docs/AdminAlertList.md)
  - [com.servacode.directory.api.models.AdminAlertSeverityEnum](docs/AdminAlertSeverityEnum.md)
  - [com.servacode.directory.api.models.AdminAnalytics](docs/AdminAnalytics.md)
+ - [com.servacode.directory.api.models.AdminAnalyticsDay](docs/AdminAnalyticsDay.md)
  - [com.servacode.directory.api.models.AdminAnalyticsPeriodKpis](docs/AdminAnalyticsPeriodKpis.md)
+ - [com.servacode.directory.api.models.AdminAnalyticsSeries](docs/AdminAnalyticsSeries.md)
  - [com.servacode.directory.api.models.AdminAppRelease](docs/AdminAppRelease.md)
  - [com.servacode.directory.api.models.AdminAppReleaseRequest](docs/AdminAppReleaseRequest.md)
  - [com.servacode.directory.api.models.AdminApplication](docs/AdminApplication.md)
@@ -322,6 +326,8 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminFacilityCreateStatusEnum](docs/AdminFacilityCreateStatusEnum.md)
  - [com.servacode.directory.api.models.AdminFacilityDetail](docs/AdminFacilityDetail.md)
  - [com.servacode.directory.api.models.AdminFacilityList](docs/AdminFacilityList.md)
+ - [com.servacode.directory.api.models.AdminFacilityMap](docs/AdminFacilityMap.md)
+ - [com.servacode.directory.api.models.AdminFacilityPoint](docs/AdminFacilityPoint.md)
  - [com.servacode.directory.api.models.AdminFacilityQuality](docs/AdminFacilityQuality.md)
  - [com.servacode.directory.api.models.AdminFacilityReport](docs/AdminFacilityReport.md)
  - [com.servacode.directory.api.models.AdminFacilityReportList](docs/AdminFacilityReportList.md)

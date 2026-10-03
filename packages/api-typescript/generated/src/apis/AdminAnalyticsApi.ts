@@ -16,12 +16,15 @@
 import * as runtime from '../runtime';
 import type {
   AdminAnalytics,
+  AdminAnalyticsSeries,
   AdminStaffPerformance,
   ApiError,
 } from '../models/index';
 import {
     AdminAnalyticsFromJSON,
     AdminAnalyticsToJSON,
+    AdminAnalyticsSeriesFromJSON,
+    AdminAnalyticsSeriesToJSON,
     AdminStaffPerformanceFromJSON,
     AdminStaffPerformanceToJSON,
     ApiErrorFromJSON,
@@ -29,6 +32,11 @@ import {
 } from '../models/index';
 
 export interface AdminAnalyticsRetrieveRequest {
+    from?: string;
+    to?: string;
+}
+
+export interface AdminAnalyticsSeriesRetrieveRequest {
     from?: string;
     to?: string;
 }
@@ -87,6 +95,53 @@ export class AdminAnalyticsApi extends runtime.BaseAPI {
      */
     async adminAnalyticsRetrieve(requestParameters: AdminAnalyticsRetrieveRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminAnalytics> {
         const response = await this.adminAnalyticsRetrieveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Every day from `from` to `to` is present, a quiet day as zeros. The event series are the same four the period totals count; `newUsers` are accounts created, `approvals` applications approved and `reports` problem reports received.
+     * The period\'s numbers, one Damascus day at a time
+     */
+    async adminAnalyticsSeriesRetrieveRaw(requestParameters: AdminAnalyticsSeriesRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminAnalyticsSeries>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['from'] != null) {
+            queryParameters['from'] = requestParameters['from'];
+        }
+
+        if (requestParameters['to'] != null) {
+            queryParameters['to'] = requestParameters['to'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/analytics/series/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminAnalyticsSeriesFromJSON(jsonValue));
+    }
+
+    /**
+     * Every day from `from` to `to` is present, a quiet day as zeros. The event series are the same four the period totals count; `newUsers` are accounts created, `approvals` applications approved and `reports` problem reports received.
+     * The period\'s numbers, one Damascus day at a time
+     */
+    async adminAnalyticsSeriesRetrieve(requestParameters: AdminAnalyticsSeriesRetrieveRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminAnalyticsSeries> {
+        const response = await this.adminAnalyticsSeriesRetrieveRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

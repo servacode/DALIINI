@@ -1557,6 +1557,56 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+  /api/v1/admin/analytics/series/:
+    get:
+      operationId: adminAnalyticsSeriesRetrieve
+      description: Every day from `from` to `to` is present, a quiet day as zeros.
+        The event series are the same four the period totals count; `newUsers` are
+        accounts created, `approvals` applications approved and `reports` problem
+        reports received.
+      summary: The period's numbers, one Damascus day at a time
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: ISO date or datetime; default 30 days before `to`.
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: ISO date or datetime; a bare date includes that whole day.
+      tags:
+      - Admin Analytics
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAnalyticsSeries'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/admin/analytics/staff/:
     get:
       operationId: adminAnalyticsStaffRetrieve
@@ -4646,6 +4696,79 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/admin/facilities/map/:
+    get:
+      operationId: adminFacilitiesMap
+      description: |-
+        Every located facility the filters select, as points (DECISION-075).
+
+        The same filters as the list, so "the map of what I am looking at" is one click. Only what
+        a pin needs travels: the name, the state and the coordinates. A facility without a location
+        is counted rather than dropped silently, so the operator can go and fix it.
+      summary: Located facilities as map points, with the same filters as the list
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Category id.
+      - in: query
+        name: city
+        schema:
+          type: string
+        description: City id.
+      - in: query
+        name: issue
+        schema:
+          type: string
+        description: One of NO_PHOTOS, NO_HOURS, NO_LOCATION, NO_PHONE, STALE, OPEN_REPORTS,
+          NOT_VERIFIED_RECENTLY.
+      - in: query
+        name: province
+        schema:
+          type: string
+        description: Province id.
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Free text matched against the facility names.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Facility status.
+      tags:
+      - Admin Facilities
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminFacilityMap'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/admin/me/:
     get:
       operationId: adminMeRetrieve
@@ -10378,6 +10501,36 @@ components:
       - searches
       - to
       - zeroResultSearches
+    AdminAnalyticsDay:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          description: A Damascus calendar day.
+        searches:
+          type: integer
+        zeroResultSearches:
+          type: integer
+        facilityViews:
+          type: integer
+        directionsRequests:
+          type: integer
+        newUsers:
+          type: integer
+        approvals:
+          type: integer
+        reports:
+          type: integer
+      required:
+      - approvals
+      - date
+      - directionsRequests
+      - facilityViews
+      - newUsers
+      - reports
+      - searches
+      - zeroResultSearches
     AdminAnalyticsPeriodKpis:
       type: object
       description: The period-bound KPIs of the comparison period, `from` inclusive,
@@ -10409,6 +10562,26 @@ components:
       - searches
       - to
       - zeroResultSearches
+    AdminAnalyticsSeries:
+      type: object
+      properties:
+        from:
+          type: string
+          format: date-time
+          description: Period start, inclusive.
+        to:
+          type: string
+          format: date-time
+          description: Period end, exclusive.
+        days:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminAnalyticsDay'
+          description: Every day of the period, in order.
+      required:
+      - days
+      - from
+      - to
     AdminAppRelease:
       type: object
       properties:
@@ -11801,6 +11974,49 @@ components:
       - hasMore
       - items
       - nextCursor
+    AdminFacilityMap:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminFacilityPoint'
+        truncated:
+          type: boolean
+          description: True when more facilities matched than the map draws (5,000).
+        withoutLocation:
+          type: integer
+          description: Facilities the filters select that have no location yet.
+      required:
+      - items
+      - truncated
+      - withoutLocation
+    AdminFacilityPoint:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        status:
+          $ref: '#/components/schemas/FacilityStatusEnum'
+        categoryId:
+          type: string
+          format: uuid
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+      required:
+      - categoryId
+      - id
+      - latitude
+      - longitude
+      - nameAr
+      - status
     AdminFacilityQuality:
       type: object
       description: An Admin facility row with its data-quality score (see `admin_console.quality`).

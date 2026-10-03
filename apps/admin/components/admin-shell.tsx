@@ -88,7 +88,10 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
         key: "facilities",
         label: "المنشآت",
         icon: "building",
-        pages: [{ href: "/facilities", label: "المنشآت", permission: "admin.facilities.read" }],
+        pages: [
+          { href: "/facilities", label: "المنشآت", permission: "admin.facilities.read" },
+          { href: "/facilities/map", label: "الخريطة", permission: "admin.facilities.read" },
+        ],
       },
       {
         key: "users",

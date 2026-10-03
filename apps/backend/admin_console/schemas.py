@@ -655,6 +655,48 @@ class AdminAnalyticsSerializer(serializers.Serializer[Any]):
         }
 
 
+class AdminFacilityPointSerializer(serializers.Serializer[Any]):
+    id = serializers.UUIDField()
+    nameAr = serializers.CharField()
+    status = serializers.ChoiceField(choices=Facility.Status.choices)
+    categoryId = serializers.UUIDField()
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
+
+
+class AdminFacilityMapSerializer(serializers.Serializer[Any]):
+    items = AdminFacilityPointSerializer(many=True)
+    truncated = serializers.BooleanField(
+        help_text="True when more facilities matched than the map draws (5,000)."
+    )
+    withoutLocation = serializers.IntegerField(
+        help_text="Facilities the filters select that have no location yet."
+    )
+
+
+class AdminAnalyticsDaySerializer(serializers.Serializer[Any]):
+    date = serializers.DateField(help_text="A Damascus calendar day.")
+    searches = serializers.IntegerField()
+    zeroResultSearches = serializers.IntegerField()
+    facilityViews = serializers.IntegerField()
+    directionsRequests = serializers.IntegerField()
+    newUsers = serializers.IntegerField()
+    approvals = serializers.IntegerField()
+    reports = serializers.IntegerField()
+
+
+class AdminAnalyticsSeriesSerializer(serializers.Serializer[Any]):
+    days = AdminAnalyticsDaySerializer(many=True, help_text="Every day of the period, in order.")
+
+    def get_fields(self) -> Any:
+        fields = super().get_fields()
+        return {
+            "from": serializers.DateTimeField(help_text="Period start, inclusive."),
+            "to": serializers.DateTimeField(help_text="Period end, exclusive."),
+            **fields,
+        }
+
+
 class AdminSettingSerializer(serializers.Serializer[Any]):
     key = serializers.CharField()
     valueType = serializers.CharField(source="value_type")

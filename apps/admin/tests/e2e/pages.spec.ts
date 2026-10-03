@@ -35,6 +35,7 @@ const PAGES: readonly { path: string; heading: string }[] = [
   { path: "/taxonomy/tags", heading: "التخصصات والخدمات" },
   { path: "/users/broadcast", heading: "إرسال إشعار" },
   { path: "/users/roles", heading: "الأدوار والصلاحيات" },
+  { path: "/facilities/map", heading: "خريطة المنشآت" },
   { path: "/settings", heading: "الإعدادات" },
 ];
 
