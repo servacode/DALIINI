@@ -5,19 +5,15 @@ import com.servacode.directory.core.model.AppException
 import com.servacode.directory.core.model.DamascusTime
 import com.servacode.directory.core.model.DutyShift
 import com.servacode.directory.core.model.TemporaryClosure
-import com.servacode.directory.core.testing.MainDispatcherRule
+import com.servacode.directory.core.testing.runMainTest
 import com.servacode.directory.core.testing.ScriptedOwnerApi
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Rule
-import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+import kotlin.test.Test
 
 class DutyViewModelTest {
-    @get:Rule val main = MainDispatcherRule()
-
     private val hour = 3_600_000L
     private val now = 1_790_589_600_000L
     private val api = ScriptedOwnerApi()
@@ -26,7 +22,7 @@ class DutyViewModelTest {
     private fun viewModel(date: String? = null) =
         DutyViewModel("f-1", date, LoadDutyUseCase(repository), ManageDutyUseCase(repository)) { now }
 
-    @Test fun `a gap nudge's day arrives as tonight's shift on that day`() = runTest(main.dispatcher) {
+    @Test fun `a gap nudge's day arrives as tonight's shift on that day`() = runMainTest {
         api.dutyAnswer = { emptyList() }
         api.closuresAnswer = { emptyList() }
 
@@ -36,7 +32,7 @@ class DutyViewModelTest {
         assertEquals("2026-10-01 08:00", DamascusTime.format(draft.endsAt))
     }
 
-    @Test fun `a clash with the owner's own shift is named and nothing is sent`() = runTest(main.dispatcher) {
+    @Test fun `a clash with the owner's own shift is named and nothing is sent`() = runMainTest {
         val existing = DutyShift("s-1", now + hour, now + 5 * hour)
         api.dutyAnswer = { listOf(existing) }
         api.closuresAnswer = { emptyList() }
@@ -50,7 +46,7 @@ class DutyViewModelTest {
         assertTrue(api.calls.none { it.startsWith("createDuty") })
     }
 
-    @Test fun `a shift inside a closure is caught before it is sent`() = runTest(main.dispatcher) {
+    @Test fun `a shift inside a closure is caught before it is sent`() = runMainTest {
         val closure = TemporaryClosure("c-1", now, now + 48 * hour)
         api.dutyAnswer = { emptyList() }
         api.closuresAnswer = { listOf(closure) }
@@ -62,7 +58,7 @@ class DutyViewModelTest {
         assertEquals(DutyProblem.DuringClosure(closure), (model.state.value as DutyUiState.Content).problem)
     }
 
-    @Test fun `the backend's closure refusal keeps its own code for the words`() = runTest(main.dispatcher) {
+    @Test fun `the backend's closure refusal keeps its own code for the words`() = runMainTest {
         api.dutyAnswer = { emptyList() }
         api.closuresAnswer = { throw AppException(AppError(AppError.Kind.SERVER)) }
         api.createDutyAnswer = { _, _ ->
@@ -79,7 +75,7 @@ class DutyViewModelTest {
         assertNull(state.problem)
     }
 
-    @Test fun `presets fill the form rather than sending anything`() = runTest(main.dispatcher) {
+    @Test fun `presets fill the form rather than sending anything`() = runMainTest {
         api.dutyAnswer = { emptyList() }
         api.closuresAnswer = { emptyList() }
         val model = viewModel()

@@ -1,14 +1,12 @@
 package com.servacode.directory.feature.search
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.servacode.directory.core.analytics.AnalyticsEvent
 import com.servacode.directory.core.analytics.AnalyticsTracker
-import androidx.lifecycle.viewModelScope
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.toAppError
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,8 +26,11 @@ sealed interface SearchUiState {
     data class Error(val error: AppError) : SearchUiState
 }
 
-@HiltViewModel
-class SearchViewModel @Inject constructor(
+/**
+ * The search's state, on both platforms. Android's navigation asks Hilt for the subclass in
+ * androidMain; the iPhone makes this one with its graph's use case (DECISION-095).
+ */
+open class SearchViewModel(
     private val search: SearchUseCase,
     private val analytics: AnalyticsTracker,
 ) : ViewModel() {

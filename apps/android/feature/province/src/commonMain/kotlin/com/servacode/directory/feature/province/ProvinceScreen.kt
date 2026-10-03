@@ -9,10 +9,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcons
@@ -22,6 +19,7 @@ import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectorySettingRow
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Where the whole app is pointed. It is not one of the numbered screens, but it is what every
@@ -29,9 +27,9 @@ import com.servacode.directory.core.designsystem.Space
  */
 @Composable
 fun ProvinceScreen(
+    viewModel: ProvinceViewModel,
     onSelected: () -> Unit,
     onBack: (() -> Unit)? = null,
-    viewModel: ProvinceViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -79,7 +77,7 @@ fun ProvinceScreen(
 
 /** The words of the province picker, provisional until product copy is approved. */
 object ProvinceCopy {
-    val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.province_title)
-    val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.province_error)
-    val STALE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.province_stale)
+    val TITLE: String @Composable get() = stringResource(Res.string.province_title)
+    val ERROR: String @Composable get() = stringResource(Res.string.province_error)
+    val STALE: String @Composable get() = stringResource(Res.string.province_stale)
 }

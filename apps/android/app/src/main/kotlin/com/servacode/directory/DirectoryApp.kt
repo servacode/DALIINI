@@ -46,8 +46,8 @@ import com.servacode.directory.feature.bootstrap.BootstrapScreen
 import com.servacode.directory.feature.bootstrap.LocationPermissionScreen
 import com.servacode.directory.feature.bootstrap.StartDestination
 import com.servacode.directory.feature.bootstrap.WelcomeScreen
-import com.servacode.directory.feature.duty.DutyScreen
-import com.servacode.directory.feature.duty.DutyRosterScreen
+import com.servacode.directory.feature.duty.DutyRoute
+import com.servacode.directory.feature.duty.DutyRosterRoute
 import com.servacode.directory.feature.facility.FacilityScreen
 import com.servacode.directory.feature.home.HomeScreen
 import com.servacode.directory.feature.map.MapScreen
@@ -59,9 +59,9 @@ import com.servacode.directory.feature.owner.InvitationsScreen
 import com.servacode.directory.feature.owner.ManageFacilityScreen
 import com.servacode.directory.feature.owner.MyFacilitiesScreen
 import com.servacode.directory.feature.owner.OwnerPresenceViewModel
-import com.servacode.directory.feature.province.ProvinceScreen
-import com.servacode.directory.feature.ratings.RatingsScreen
-import com.servacode.directory.feature.search.SearchScreen
+import com.servacode.directory.feature.province.ProvinceRoute
+import com.servacode.directory.feature.ratings.RatingsRoute
+import com.servacode.directory.feature.search.SearchRoute
 import com.servacode.directory.feature.settings.HelpScreen
 import com.servacode.directory.feature.settings.EmergencyNumbersScreen
 import com.servacode.directory.feature.settings.LegalPageScreen
@@ -211,7 +211,7 @@ fun DirectoryApp(
             )
         }
         composable<DirectoryRoute.ProvincePicker> {
-            ProvinceScreen(
+            ProvinceRoute(
                 onSelected = {
                     navController.navigate(DirectoryRoute.Home) {
                         popUpTo<DirectoryRoute.Home> { inclusive = true }
@@ -221,7 +221,7 @@ fun DirectoryApp(
             )
         }
         composable<DirectoryRoute.Search> {
-            SearchScreen(
+            SearchRoute(
                 onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
                 onBack = { navController.popBackStack() },
             )
@@ -467,7 +467,7 @@ fun DirectoryApp(
             )
         }
         composable<DirectoryRoute.MyRatings> {
-            RatingsScreen(onBack = { navController.popBackStack() })
+            RatingsRoute(onBack = { navController.popBackStack() })
         }
 
         composable<DirectoryRoute.MyFacilities> {
@@ -540,11 +540,11 @@ fun DirectoryApp(
             )
         }
         composable<DirectoryRoute.Duty> {
-            DutyScreen(onBack = { navController.popBackStack() })
+            DutyRoute(onBack = { navController.popBackStack() })
         }
         // Who is on duty in the province today, tomorrow or this week: the site's /duty.
         composable<DirectoryRoute.DutyNow> {
-            DutyRosterScreen(
+            DutyRosterRoute(
                 onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
                 onProvince = { navController.navigate(DirectoryRoute.ProvincePicker) },
                 onBack = {

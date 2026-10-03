@@ -31,6 +31,14 @@ kotlin {
     }
     iosArm64()
     iosSimulatorArm64()
+    // The shared database opens the system's SQLite (DECISION-092). A module's tests reach it
+    // through the shared fakes once its view models are common (DECISION-095), so every test
+    // binary links it, as the app does.
+    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().configureEach {
+        binaries.withType<org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable>().configureEach {
+            linkerOpts("-lsqlite3")
+        }
+    }
 
     compilerOptions {
         // Expect/actual classes are Beta; the shared modules use them for the injection

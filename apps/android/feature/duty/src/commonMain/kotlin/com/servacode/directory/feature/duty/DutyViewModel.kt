@@ -1,23 +1,19 @@
 package com.servacode.directory.feature.duty
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.DamascusTime
-import com.servacode.directory.core.model.DirectoryRoute
 import com.servacode.directory.core.model.DutyPresets
 import com.servacode.directory.core.model.DutyShift
 import com.servacode.directory.core.model.TemporaryClosure
 import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.network.DutyShiftInput
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
 
 sealed interface DutyUiState {
     data object Loading : DutyUiState
@@ -39,25 +35,18 @@ sealed interface DutyUiState {
 /** Times to put in the form: a preset, or the day a gap nudge named. Consumed once shown. */
 data class DutyDraft(val startsAt: Long, val endsAt: Long)
 
-@HiltViewModel
-class DutyViewModel(
+/**
+ * The owner's duty shifts for one facility, on both platforms: [initialDate] is the night a gap
+ * nudge named, if one did. Android's navigation asks Hilt for the subclass in androidMain, which
+ * reads both from the route (DECISION-095).
+ */
+open class DutyViewModel(
     private val facilityId: String,
     initialDate: String?,
     private val load: LoadDutyUseCase,
     private val manage: ManageDutyUseCase,
-    private val clock: () -> Long,
+    private val clock: () -> Long = { Clock.System.now().toEpochMilliseconds() },
 ) : ViewModel() {
-    @Inject constructor(
-        savedStateHandle: SavedStateHandle,
-        load: LoadDutyUseCase,
-        manage: ManageDutyUseCase,
-    ) : this(
-        savedStateHandle.toRoute<DirectoryRoute.Duty>().id,
-        savedStateHandle.toRoute<DirectoryRoute.Duty>().date,
-        load,
-        manage,
-        System::currentTimeMillis,
-    )
 
     private val _state = MutableStateFlow<DutyUiState>(DutyUiState.Loading)
     val state: StateFlow<DutyUiState> = _state.asStateFlow()

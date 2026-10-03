@@ -5,8 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.servacode.directory.core.database.Loaded
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.Province
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,8 +17,11 @@ sealed interface ProvinceUiState {
     data class Error(val error: AppError) : ProvinceUiState
 }
 
-@HiltViewModel
-class ProvinceViewModel @Inject constructor(
+/**
+ * The province picker's state, on both platforms. Android's navigation asks Hilt for the
+ * subclass in androidMain; the iPhone makes this one with its graph's use case (DECISION-095).
+ */
+open class ProvinceViewModel(
     private val useCase: ProvinceUseCase,
 ) : ViewModel() {
     private val _state = MutableStateFlow<ProvinceUiState>(ProvinceUiState.Loading)

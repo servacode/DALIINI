@@ -17,10 +17,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.servacode.directory.core.database.Loaded
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryGlyph
@@ -28,8 +28,6 @@ import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIcons
 import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryMenuDivider
-import com.servacode.directory.core.designsystem.DirectoryMenuGroup
-import com.servacode.directory.core.designsystem.DirectoryMenuRow
 import com.servacode.directory.core.designsystem.DirectoryMenuSection
 import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
 import com.servacode.directory.core.designsystem.DirectoryPage
@@ -39,12 +37,13 @@ import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.HomeSnapshot
 import com.servacode.directory.feature.home.HomeLoad
-import kotlinx.coroutines.launch
+import com.servacode.directory.feature.province.ProvinceScreen
+import com.servacode.directory.feature.province.ProvinceViewModel
 
 /**
- * The shell's two screens: the province, and that province's home. They read the shared use
- * cases as Android's view models do, and draw with the shared design system (DECISION-094); the
- * real screens replace them when Android's move to Compose Multiplatform (ROADMAP ٨).
+ * The shell's two screens: the province, which is the shared screen itself (DECISION-095), and
+ * that province's home, which reads the shared use case and draws with the shared design system
+ * until Android's home moves to common code too (ROADMAP ٨).
  */
 @Composable
 internal fun ShellApp(graph: ShellGraph) {
@@ -54,55 +53,25 @@ internal fun ShellApp(graph: ShellGraph) {
         val selected = preferences ?: return@DirectoryTheme
         val provinceId = selected.selectedProvinceId
         if (provinceId == null || choosing) {
-            ProvinceScreen(graph, onChosen = { choosing = false })
+            ShellProvince(
+                graph,
+                onChosen = { choosing = false },
+                onBack = if (provinceId == null) null else ({ choosing = false }),
+            )
         } else {
             HomeScreen(graph, provinceId, onChangeProvince = { choosing = true })
         }
     }
 }
 
+/**
+ * The shared province picker (DECISION-095), its view model kept by the screen's owner for as long
+ * as the app runs. A province already chosen can be gone back to.
+ */
 @Composable
-private fun ProvinceScreen(graph: ShellGraph, onChosen: () -> Unit) {
-    var attempt by remember { mutableIntStateOf(0) }
-    val loaded by remember(attempt) { graph.provinces.provinces() }.collectAsState(initial = null)
-    val scope = rememberCoroutineScope()
-    DirectoryPage(topBar = { DirectoryTopBar(title = ShellWord.CHOOSE_PROVINCE.text()) }) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
-            when (val state = loaded) {
-                null -> DirectoryLoading()
-                is Loaded.Failed -> DirectoryErrorState(
-                    title = ShellWord.LOAD_FAILED.text(),
-                    error = state.error,
-                    onRetry = { attempt++ },
-                )
-                else -> LazyColumn(
-                    contentPadding = PaddingValues(Space.base),
-                    verticalArrangement = Arrangement.spacedBy(Space.md),
-                ) {
-                    if (state is Loaded.Stale) {
-                        item { DirectoryOfflineNotice(text = ShellWord.STALE_LIST.text(), onRetry = { attempt++ }) }
-                    }
-                    item {
-                        DirectoryMenuGroup {
-                            state.valueOrNull().orEmpty().forEachIndexed { index, province ->
-                                if (index > 0) DirectoryMenuDivider()
-                                DirectoryMenuRow(
-                                    title = province.nameAr,
-                                    icon = DirectoryIcons.pin,
-                                    onClick = {
-                                        scope.launch {
-                                            graph.provinces.select(province.id)
-                                            onChosen()
-                                        }
-                                    },
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+private fun ShellProvince(graph: ShellGraph, onChosen: () -> Unit, onBack: (() -> Unit)? = null) {
+    val model = viewModel { ProvinceViewModel(graph.provinces) }
+    ProvinceScreen(model, onSelected = onChosen, onBack = onBack)
 }
 
 @Composable
@@ -123,7 +92,7 @@ private fun HomeScreen(graph: ShellGraph, provinceId: String, onChangeProvince: 
         Box(Modifier.fillMaxSize().padding(padding)) {
             when (val state = load) {
                 null -> DirectoryLoading()
-                HomeLoad.ProvinceRequired -> ProvinceScreen(graph, onChosen = {})
+                HomeLoad.ProvinceRequired -> ShellProvince(graph, onChosen = {})
                 is HomeLoad.Snapshot -> when (val loaded = state.loaded) {
                     is Loaded.Failed -> DirectoryErrorState(
                         title = ShellWord.LOAD_FAILED.text(),

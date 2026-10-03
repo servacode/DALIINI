@@ -5,8 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.core.model.toAppError
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,9 +20,11 @@ sealed interface DutyRosterUiState {
     data class Error(val error: AppError) : DutyRosterUiState
 }
 
-/** «المناوبات»: today, tomorrow or the week, as the site's `/duty` page shows them. */
-@HiltViewModel
-class DutyRosterViewModel @Inject constructor(
+/**
+ * «المناوبات»: today, tomorrow or the week, as the site's `/duty` page shows them. Android's
+ * navigation asks Hilt for the subclass in androidMain (DECISION-095).
+ */
+open class DutyRosterViewModel(
     private val repository: DutyRosterRepository,
 ) : ViewModel() {
     private val _range = MutableStateFlow(RosterRange.TODAY)
