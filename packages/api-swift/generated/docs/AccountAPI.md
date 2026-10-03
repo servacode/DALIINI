@@ -11,6 +11,11 @@ Method | HTTP request | Description
 [**accountInvitationAccept**](AccountAPI.md#accountinvitationaccept) | **POST** /api/v1/account/invitations/{invitation_id}/accept/ | Join the facility an invitation is for
 [**accountInvitationDecline**](AccountAPI.md#accountinvitationdecline) | **POST** /api/v1/account/invitations/{invitation_id}/decline/ | Decline an invitation
 [**accountInvitationsList**](AccountAPI.md#accountinvitationslist) | **GET** /api/v1/account/invitations/ | Invitations waiting for this account&#39;s phone number
+[**accountMfaConfirm**](AccountAPI.md#accountmfaconfirm) | **POST** /api/v1/account/mfa/confirm/ | Confirm the authenticator with its first code
+[**accountMfaDisable**](AccountAPI.md#accountmfadisable) | **POST** /api/v1/account/mfa/disable/ | Switch the authenticator off
+[**accountMfaRetrieve**](AccountAPI.md#accountmfaretrieve) | **GET** /api/v1/account/mfa/ | The second sign-in step, for this account and session
+[**accountMfaSetup**](AccountAPI.md#accountmfasetup) | **POST** /api/v1/account/mfa/setup/ | Start setting up an authenticator app
+[**accountMfaVerify**](AccountAPI.md#accountmfaverify) | **POST** /api/v1/account/mfa/verify/ | Pass the second step for this session
 [**accountNotificationMarkRead**](AccountAPI.md#accountnotificationmarkread) | **POST** /api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read
 [**accountNotificationsList**](AccountAPI.md#accountnotificationslist) | **GET** /api/v1/account/notifications/ | List the caller&#39;s notifications, newest first
 [**accountNotificationsMarkAllRead**](AccountAPI.md#accountnotificationsmarkallread) | **POST** /api/v1/account/notifications/read-all/ | Mark every unread notification as read
@@ -367,6 +372,246 @@ This endpoint does not need any parameter.
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **accountMfaConfirm**
+```swift
+    open class func accountMfaConfirm(mfaCode: MfaCode, completion: @escaping (_ data: MfaRecoveryCodes?, _ error: Error?) -> Void)
+```
+
+Confirm the authenticator with its first code
+
+Enables it, marks this session as having passed the second step, and returns ten recovery codes, shown this once.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let mfaCode = MfaCode(code: "code_example") // MfaCode | 
+
+// Confirm the authenticator with its first code
+AccountAPI.accountMfaConfirm(mfaCode: mfaCode) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **mfaCode** | [**MfaCode**](MfaCode.md) |  | 
+
+### Return type
+
+[**MfaRecoveryCodes**](MfaRecoveryCodes.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **accountMfaDisable**
+```swift
+    open class func accountMfaDisable(mfaCode: MfaCode, completion: @escaping (_ data: MfaStatus?, _ error: Error?) -> Void)
+```
+
+Switch the authenticator off
+
+Needs a current code from the app. Refused with 409 MFA_REQUIRED_BY_POLICY where every operator must have one.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let mfaCode = MfaCode(code: "code_example") // MfaCode | 
+
+// Switch the authenticator off
+AccountAPI.accountMfaDisable(mfaCode: mfaCode) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **mfaCode** | [**MfaCode**](MfaCode.md) |  | 
+
+### Return type
+
+[**MfaStatus**](MfaStatus.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **accountMfaRetrieve**
+```swift
+    open class func accountMfaRetrieve(completion: @escaping (_ data: MfaStatus?, _ error: Error?) -> Void)
+```
+
+The second sign-in step, for this account and session
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+
+// The second sign-in step, for this account and session
+AccountAPI.accountMfaRetrieve() { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**MfaStatus**](MfaStatus.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **accountMfaSetup**
+```swift
+    open class func accountMfaSetup(completion: @escaping (_ data: MfaSetup?, _ error: Error?) -> Void)
+```
+
+Start setting up an authenticator app
+
+Operators only. Returns a new secret and its QR code; nothing is enabled until a code from the app confirms it. Starting again replaces an unconfirmed secret.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+
+// Start setting up an authenticator app
+AccountAPI.accountMfaSetup() { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**MfaSetup**](MfaSetup.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **accountMfaVerify**
+```swift
+    open class func accountMfaVerify(mfaCode: MfaCode, completion: @escaping (_ data: MfaStatus?, _ error: Error?) -> Void)
+```
+
+Pass the second step for this session
+
+A code from the app, or one of the recovery codes (each works once).
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let mfaCode = MfaCode(code: "code_example") // MfaCode | 
+
+// Pass the second step for this session
+AccountAPI.accountMfaVerify(mfaCode: mfaCode) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **mfaCode** | [**MfaCode**](MfaCode.md) |  | 
+
+### Return type
+
+[**MfaStatus**](MfaStatus.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

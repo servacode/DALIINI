@@ -41,6 +41,7 @@ PRODUCTION_ENV = {
     "OTP_PROVIDER": "sms-gateway",
     "PUSH_PROVIDER": "fcm",
     "PUSH_TOKEN_ENCRYPTION_KEY": "k" * 40,
+    "MFA_ENCRYPTION_KEY": "m" * 40,
     "ANALYTICS_HASH_SALT": "s" * 40,
     "FCM_PROJECT_ID": "daliini",
     "DRF_NUM_PROXIES": "1",

@@ -27,6 +27,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.authentication import AuthenticatedRequest
+from accounts.mfa import status as mfa_status
 from accounts.models import AdminRole, User, UserAdminRole
 from accounts.rbac import admin_permissions_for
 from analytics.models import ProductAnalyticsEvent
@@ -407,6 +408,9 @@ class AdminMeView(APIView):
                 "userId": str(request.user.pk),
                 "displayName": request.user.name,
                 "permissions": admin_permissions_for(request.user),
+                # Where the console sends the operator before anything else: the second step,
+                # or setting it up (DECISION-065).
+                "mfa": mfa_status(request.user, getattr(request, "user_session", None)),
             }
         )
 

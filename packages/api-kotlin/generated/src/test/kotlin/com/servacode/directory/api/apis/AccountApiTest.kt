@@ -29,6 +29,10 @@ import com.servacode.directory.api.models.DeletionRequest
 import com.servacode.directory.api.models.FavoriteList
 import com.servacode.directory.api.models.FavoriteState
 import com.servacode.directory.api.models.FavoriteWrite
+import com.servacode.directory.api.models.MfaCode
+import com.servacode.directory.api.models.MfaRecoveryCodes
+import com.servacode.directory.api.models.MfaSetup
+import com.servacode.directory.api.models.MfaStatus
 import com.servacode.directory.api.models.NotificationPage
 import com.servacode.directory.api.models.PasswordChange
 import com.servacode.directory.api.models.PatchedProfilePatch
@@ -96,6 +100,44 @@ class AccountApiTest : ShouldSpec() {
         should("test accountInvitationsList") {
             // uncomment below to test accountInvitationsList
             //val result : ReceivedInvitationList = apiInstance.accountInvitationsList()
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountMfaConfirm
+        should("test accountMfaConfirm") {
+            // uncomment below to test accountMfaConfirm
+            //val mfaCode : MfaCode =  // MfaCode | 
+            //val result : MfaRecoveryCodes = apiInstance.accountMfaConfirm(mfaCode)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountMfaDisable
+        should("test accountMfaDisable") {
+            // uncomment below to test accountMfaDisable
+            //val mfaCode : MfaCode =  // MfaCode | 
+            //val result : MfaStatus = apiInstance.accountMfaDisable(mfaCode)
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountMfaRetrieve
+        should("test accountMfaRetrieve") {
+            // uncomment below to test accountMfaRetrieve
+            //val result : MfaStatus = apiInstance.accountMfaRetrieve()
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountMfaSetup
+        should("test accountMfaSetup") {
+            // uncomment below to test accountMfaSetup
+            //val result : MfaSetup = apiInstance.accountMfaSetup()
+            //result shouldBe ("TODO")
+        }
+
+        // to test accountMfaVerify
+        should("test accountMfaVerify") {
+            // uncomment below to test accountMfaVerify
+            //val mfaCode : MfaCode =  // MfaCode | 
+            //val result : MfaStatus = apiInstance.accountMfaVerify(mfaCode)
             //result shouldBe ("TODO")
         }
 

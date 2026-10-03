@@ -25,6 +25,10 @@ import type {
   FavoriteList,
   FavoriteState,
   FavoriteWrite,
+  MfaCode,
+  MfaRecoveryCodes,
+  MfaSetup,
+  MfaStatus,
   NotificationPage,
   PasswordChange,
   PatchedProfilePatch,
@@ -56,6 +60,14 @@ import {
     FavoriteStateToJSON,
     FavoriteWriteFromJSON,
     FavoriteWriteToJSON,
+    MfaCodeFromJSON,
+    MfaCodeToJSON,
+    MfaRecoveryCodesFromJSON,
+    MfaRecoveryCodesToJSON,
+    MfaSetupFromJSON,
+    MfaSetupToJSON,
+    MfaStatusFromJSON,
+    MfaStatusToJSON,
     NotificationPageFromJSON,
     NotificationPageToJSON,
     PasswordChangeFromJSON,
@@ -99,6 +111,18 @@ export interface AccountInvitationAcceptRequest {
 
 export interface AccountInvitationDeclineRequest {
     invitationId: string;
+}
+
+export interface AccountMfaConfirmRequest {
+    mfaCode: MfaCode;
+}
+
+export interface AccountMfaDisableRequest {
+    mfaCode: MfaCode;
+}
+
+export interface AccountMfaVerifyRequest {
+    mfaCode: MfaCode;
 }
 
 export interface AccountNotificationMarkReadRequest {
@@ -460,6 +484,229 @@ export class AccountApi extends runtime.BaseAPI {
      */
     async accountInvitationsList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ReceivedInvitationList> {
         const response = await this.accountInvitationsListRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Enables it, marks this session as having passed the second step, and returns ten recovery codes, shown this once.
+     * Confirm the authenticator with its first code
+     */
+    async accountMfaConfirmRaw(requestParameters: AccountMfaConfirmRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MfaRecoveryCodes>> {
+        if (requestParameters['mfaCode'] == null) {
+            throw new runtime.RequiredError(
+                'mfaCode',
+                'Required parameter "mfaCode" was null or undefined when calling accountMfaConfirm().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/mfa/confirm/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: MfaCodeToJSON(requestParameters['mfaCode']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MfaRecoveryCodesFromJSON(jsonValue));
+    }
+
+    /**
+     * Enables it, marks this session as having passed the second step, and returns ten recovery codes, shown this once.
+     * Confirm the authenticator with its first code
+     */
+    async accountMfaConfirm(requestParameters: AccountMfaConfirmRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MfaRecoveryCodes> {
+        const response = await this.accountMfaConfirmRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Needs a current code from the app. Refused with 409 MFA_REQUIRED_BY_POLICY where every operator must have one.
+     * Switch the authenticator off
+     */
+    async accountMfaDisableRaw(requestParameters: AccountMfaDisableRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MfaStatus>> {
+        if (requestParameters['mfaCode'] == null) {
+            throw new runtime.RequiredError(
+                'mfaCode',
+                'Required parameter "mfaCode" was null or undefined when calling accountMfaDisable().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/mfa/disable/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: MfaCodeToJSON(requestParameters['mfaCode']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MfaStatusFromJSON(jsonValue));
+    }
+
+    /**
+     * Needs a current code from the app. Refused with 409 MFA_REQUIRED_BY_POLICY where every operator must have one.
+     * Switch the authenticator off
+     */
+    async accountMfaDisable(requestParameters: AccountMfaDisableRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MfaStatus> {
+        const response = await this.accountMfaDisableRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * The second sign-in step, for this account and session
+     */
+    async accountMfaRetrieveRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MfaStatus>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/mfa/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MfaStatusFromJSON(jsonValue));
+    }
+
+    /**
+     * The second sign-in step, for this account and session
+     */
+    async accountMfaRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MfaStatus> {
+        const response = await this.accountMfaRetrieveRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Operators only. Returns a new secret and its QR code; nothing is enabled until a code from the app confirms it. Starting again replaces an unconfirmed secret.
+     * Start setting up an authenticator app
+     */
+    async accountMfaSetupRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MfaSetup>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/mfa/setup/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MfaSetupFromJSON(jsonValue));
+    }
+
+    /**
+     * Operators only. Returns a new secret and its QR code; nothing is enabled until a code from the app confirms it. Starting again replaces an unconfirmed secret.
+     * Start setting up an authenticator app
+     */
+    async accountMfaSetup(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MfaSetup> {
+        const response = await this.accountMfaSetupRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * A code from the app, or one of the recovery codes (each works once).
+     * Pass the second step for this session
+     */
+    async accountMfaVerifyRaw(requestParameters: AccountMfaVerifyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MfaStatus>> {
+        if (requestParameters['mfaCode'] == null) {
+            throw new runtime.RequiredError(
+                'mfaCode',
+                'Required parameter "mfaCode" was null or undefined when calling accountMfaVerify().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/account/mfa/verify/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: MfaCodeToJSON(requestParameters['mfaCode']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MfaStatusFromJSON(jsonValue));
+    }
+
+    /**
+     * A code from the app, or one of the recovery codes (each works once).
+     * Pass the second step for this session
+     */
+    async accountMfaVerify(requestParameters: AccountMfaVerifyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MfaStatus> {
+        const response = await this.accountMfaVerifyRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

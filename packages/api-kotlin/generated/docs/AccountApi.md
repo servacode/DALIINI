@@ -11,6 +11,11 @@ All URIs are relative to *http://localhost*
 | [**accountInvitationAccept**](AccountApi.md#accountInvitationAccept) | **POST** api/v1/account/invitations/{invitation_id}/accept/ | Join the facility an invitation is for |
 | [**accountInvitationDecline**](AccountApi.md#accountInvitationDecline) | **POST** api/v1/account/invitations/{invitation_id}/decline/ | Decline an invitation |
 | [**accountInvitationsList**](AccountApi.md#accountInvitationsList) | **GET** api/v1/account/invitations/ | Invitations waiting for this account&#39;s phone number |
+| [**accountMfaConfirm**](AccountApi.md#accountMfaConfirm) | **POST** api/v1/account/mfa/confirm/ | Confirm the authenticator with its first code |
+| [**accountMfaDisable**](AccountApi.md#accountMfaDisable) | **POST** api/v1/account/mfa/disable/ | Switch the authenticator off |
+| [**accountMfaRetrieve**](AccountApi.md#accountMfaRetrieve) | **GET** api/v1/account/mfa/ | The second sign-in step, for this account and session |
+| [**accountMfaSetup**](AccountApi.md#accountMfaSetup) | **POST** api/v1/account/mfa/setup/ | Start setting up an authenticator app |
+| [**accountMfaVerify**](AccountApi.md#accountMfaVerify) | **POST** api/v1/account/mfa/verify/ | Pass the second step for this session |
 | [**accountNotificationMarkRead**](AccountApi.md#accountNotificationMarkRead) | **POST** api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read |
 | [**accountNotificationsList**](AccountApi.md#accountNotificationsList) | **GET** api/v1/account/notifications/ | List the caller&#39;s notifications, newest first |
 | [**accountNotificationsMarkAllRead**](AccountApi.md#accountNotificationsMarkAllRead) | **POST** api/v1/account/notifications/read-all/ | Mark every unread notification as read |
@@ -314,6 +319,208 @@ Configure bearerAccessToken:
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Confirm the authenticator with its first code
+
+Enables it, marks this session as having passed the second step, and returns ten recovery codes, shown this once.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+val mfaCode : MfaCode =  // MfaCode | 
+
+launch(Dispatchers.IO) {
+    val result : MfaRecoveryCodes = webService.accountMfaConfirm(mfaCode)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **mfaCode** | [**MfaCode**](MfaCode.md)|  | |
+
+### Return type
+
+[**MfaRecoveryCodes**](MfaRecoveryCodes.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+Switch the authenticator off
+
+Needs a current code from the app. Refused with 409 MFA_REQUIRED_BY_POLICY where every operator must have one.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+val mfaCode : MfaCode =  // MfaCode | 
+
+launch(Dispatchers.IO) {
+    val result : MfaStatus = webService.accountMfaDisable(mfaCode)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **mfaCode** | [**MfaCode**](MfaCode.md)|  | |
+
+### Return type
+
+[**MfaStatus**](MfaStatus.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+The second sign-in step, for this account and session
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+
+launch(Dispatchers.IO) {
+    val result : MfaStatus = webService.accountMfaRetrieve()
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**MfaStatus**](MfaStatus.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Start setting up an authenticator app
+
+Operators only. Returns a new secret and its QR code; nothing is enabled until a code from the app confirms it. Starting again replaces an unconfirmed secret.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+
+launch(Dispatchers.IO) {
+    val result : MfaSetup = webService.accountMfaSetup()
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**MfaSetup**](MfaSetup.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Pass the second step for this session
+
+A code from the app, or one of the recovery codes (each works once).
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AccountApi::class.java)
+val mfaCode : MfaCode =  // MfaCode | 
+
+launch(Dispatchers.IO) {
+    val result : MfaStatus = webService.accountMfaVerify(mfaCode)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **mfaCode** | [**MfaCode**](MfaCode.md)|  | |
+
+### Return type
+
+[**MfaStatus**](MfaStatus.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
  - **Accept**: application/json
 
 

@@ -139,7 +139,10 @@ def test_the_response_carries_nothing_sensitive(user: User) -> None:
 
     body: dict[str, Any] = _client(user).get(URL).json()
 
-    assert set(body) == {"userId", "displayName", "permissions"}
+    assert set(body) == {"userId", "displayName", "permissions", "mfa"}
+    # Where the console sends the operator next: flags and a count, never a secret.
+    assert set(body["mfa"]) == {"enabled", "required", "verified", "recoveryCodesLeft"}
+    assert all(isinstance(value, bool | int) for value in body["mfa"].values())
     serialised = str(body)
     for forbidden in (user.phone, "password", "pbkdf2", "refresh", "session", "superuser"):
         assert forbidden not in serialised, f"{forbidden} leaked"

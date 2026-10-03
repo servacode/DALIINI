@@ -52,6 +52,11 @@ All URIs are relative to *http://localhost*
 | *AccountApi* | [**accountInvitationAccept**](docs/AccountApi.md#accountinvitationaccept) | **POST** api/v1/account/invitations/{invitation_id}/accept/ | Join the facility an invitation is for |
 | *AccountApi* | [**accountInvitationDecline**](docs/AccountApi.md#accountinvitationdecline) | **POST** api/v1/account/invitations/{invitation_id}/decline/ | Decline an invitation |
 | *AccountApi* | [**accountInvitationsList**](docs/AccountApi.md#accountinvitationslist) | **GET** api/v1/account/invitations/ | Invitations waiting for this account's phone number |
+| *AccountApi* | [**accountMfaConfirm**](docs/AccountApi.md#accountmfaconfirm) | **POST** api/v1/account/mfa/confirm/ | Confirm the authenticator with its first code |
+| *AccountApi* | [**accountMfaDisable**](docs/AccountApi.md#accountmfadisable) | **POST** api/v1/account/mfa/disable/ | Switch the authenticator off |
+| *AccountApi* | [**accountMfaRetrieve**](docs/AccountApi.md#accountmfaretrieve) | **GET** api/v1/account/mfa/ | The second sign-in step, for this account and session |
+| *AccountApi* | [**accountMfaSetup**](docs/AccountApi.md#accountmfasetup) | **POST** api/v1/account/mfa/setup/ | Start setting up an authenticator app |
+| *AccountApi* | [**accountMfaVerify**](docs/AccountApi.md#accountmfaverify) | **POST** api/v1/account/mfa/verify/ | Pass the second step for this session |
 | *AccountApi* | [**accountNotificationMarkRead**](docs/AccountApi.md#accountnotificationmarkread) | **POST** api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read |
 | *AccountApi* | [**accountNotificationsList**](docs/AccountApi.md#accountnotificationslist) | **GET** api/v1/account/notifications/ | List the caller's notifications, newest first |
 | *AccountApi* | [**accountNotificationsMarkAllRead**](docs/AccountApi.md#accountnotificationsmarkallread) | **POST** api/v1/account/notifications/read-all/ | Mark every unread notification as read |
@@ -152,6 +157,7 @@ All URIs are relative to *http://localhost*
 | *AdminTaxonomyApi* | [**adminSpecialtyUpdate**](docs/AdminTaxonomyApi.md#adminspecialtyupdate) | **PUT** api/v1/admin/specialties/{specialty_id}/ | Rename, reorder, retire or bring back a specialty |
 | *AdminUsersApi* | [**adminRolesList**](docs/AdminUsersApi.md#adminroleslist) | **GET** api/v1/admin/roles/ | List admin roles and their permission codes |
 | *AdminUsersApi* | [**adminUserBlock**](docs/AdminUsersApi.md#adminuserblock) | **POST** api/v1/admin/users/{user_id}/block/ | Block a user account |
+| *AdminUsersApi* | [**adminUserMfaReset**](docs/AdminUsersApi.md#adminusermfareset) | **POST** api/v1/admin/users/{user_id}/mfa/reset/ | Clear an operator's authenticator after they lost it |
 | *AdminUsersApi* | [**adminUserRetrieve**](docs/AdminUsersApi.md#adminuserretrieve) | **GET** api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned |
 | *AdminUsersApi* | [**adminUserRolesReplace**](docs/AdminUsersApi.md#adminuserrolesreplace) | **PUT** api/v1/admin/users/{user_id}/roles/ | Replace the admin roles of a user |
 | *AdminUsersApi* | [**adminUserUnblock**](docs/AdminUsersApi.md#adminuserunblock) | **POST** api/v1/admin/users/{user_id}/unblock/ | Unblock a user account |
@@ -452,6 +458,10 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.LogoutRequest](docs/LogoutRequest.md)
  - [com.servacode.directory.api.models.MapMarker](docs/MapMarker.md)
  - [com.servacode.directory.api.models.MapMarkerList](docs/MapMarkerList.md)
+ - [com.servacode.directory.api.models.MfaCode](docs/MfaCode.md)
+ - [com.servacode.directory.api.models.MfaRecoveryCodes](docs/MfaRecoveryCodes.md)
+ - [com.servacode.directory.api.models.MfaSetup](docs/MfaSetup.md)
+ - [com.servacode.directory.api.models.MfaStatus](docs/MfaStatus.md)
  - [com.servacode.directory.api.models.NamedIntRef](docs/NamedIntRef.md)
  - [com.servacode.directory.api.models.NamedRef](docs/NamedRef.md)
  - [com.servacode.directory.api.models.Notification](docs/Notification.md)

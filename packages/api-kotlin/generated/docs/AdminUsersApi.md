@@ -6,6 +6,7 @@ All URIs are relative to *http://localhost*
 | ------------- | ------------- | ------------- |
 | [**adminRolesList**](AdminUsersApi.md#adminRolesList) | **GET** api/v1/admin/roles/ | List admin roles and their permission codes |
 | [**adminUserBlock**](AdminUsersApi.md#adminUserBlock) | **POST** api/v1/admin/users/{user_id}/block/ | Block a user account |
+| [**adminUserMfaReset**](AdminUsersApi.md#adminUserMfaReset) | **POST** api/v1/admin/users/{user_id}/mfa/reset/ | Clear an operator&#39;s authenticator after they lost it |
 | [**adminUserRetrieve**](AdminUsersApi.md#adminUserRetrieve) | **GET** api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned |
 | [**adminUserRolesReplace**](AdminUsersApi.md#adminUserRolesReplace) | **PUT** api/v1/admin/users/{user_id}/roles/ | Replace the admin roles of a user |
 | [**adminUserUnblock**](AdminUsersApi.md#adminUserUnblock) | **POST** api/v1/admin/users/{user_id}/unblock/ | Unblock a user account |
@@ -79,6 +80,48 @@ launch(Dispatchers.IO) {
 ### Return type
 
 [**AdminUser**](AdminUser.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Clear an operator&#39;s authenticator after they lost it
+
+They set up a new one at their next console sign-in. Their recovery codes are cleared too. Audited.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminUsersApi::class.java)
+val userId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+
+launch(Dispatchers.IO) {
+    webService.adminUserMfaReset(userId)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **userId** | **java.util.UUID**|  | |
+
+### Return type
+
+null (empty response body)
 
 ### Authorization
 

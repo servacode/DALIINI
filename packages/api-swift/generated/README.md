@@ -33,6 +33,11 @@ Class | Method | HTTP request | Description
 *AccountAPI* | [**accountInvitationAccept**](docs/AccountAPI.md#accountinvitationaccept) | **POST** /api/v1/account/invitations/{invitation_id}/accept/ | Join the facility an invitation is for
 *AccountAPI* | [**accountInvitationDecline**](docs/AccountAPI.md#accountinvitationdecline) | **POST** /api/v1/account/invitations/{invitation_id}/decline/ | Decline an invitation
 *AccountAPI* | [**accountInvitationsList**](docs/AccountAPI.md#accountinvitationslist) | **GET** /api/v1/account/invitations/ | Invitations waiting for this account&#39;s phone number
+*AccountAPI* | [**accountMfaConfirm**](docs/AccountAPI.md#accountmfaconfirm) | **POST** /api/v1/account/mfa/confirm/ | Confirm the authenticator with its first code
+*AccountAPI* | [**accountMfaDisable**](docs/AccountAPI.md#accountmfadisable) | **POST** /api/v1/account/mfa/disable/ | Switch the authenticator off
+*AccountAPI* | [**accountMfaRetrieve**](docs/AccountAPI.md#accountmfaretrieve) | **GET** /api/v1/account/mfa/ | The second sign-in step, for this account and session
+*AccountAPI* | [**accountMfaSetup**](docs/AccountAPI.md#accountmfasetup) | **POST** /api/v1/account/mfa/setup/ | Start setting up an authenticator app
+*AccountAPI* | [**accountMfaVerify**](docs/AccountAPI.md#accountmfaverify) | **POST** /api/v1/account/mfa/verify/ | Pass the second step for this session
 *AccountAPI* | [**accountNotificationMarkRead**](docs/AccountAPI.md#accountnotificationmarkread) | **POST** /api/v1/account/notifications/{notification_id}/read/ | Mark one notification as read
 *AccountAPI* | [**accountNotificationsList**](docs/AccountAPI.md#accountnotificationslist) | **GET** /api/v1/account/notifications/ | List the caller&#39;s notifications, newest first
 *AccountAPI* | [**accountNotificationsMarkAllRead**](docs/AccountAPI.md#accountnotificationsmarkallread) | **POST** /api/v1/account/notifications/read-all/ | Mark every unread notification as read
@@ -133,6 +138,7 @@ Class | Method | HTTP request | Description
 *AdminTaxonomyAPI* | [**adminSpecialtyUpdate**](docs/AdminTaxonomyAPI.md#adminspecialtyupdate) | **PUT** /api/v1/admin/specialties/{specialty_id}/ | Rename, reorder, retire or bring back a specialty
 *AdminUsersAPI* | [**adminRolesList**](docs/AdminUsersAPI.md#adminroleslist) | **GET** /api/v1/admin/roles/ | List admin roles and their permission codes
 *AdminUsersAPI* | [**adminUserBlock**](docs/AdminUsersAPI.md#adminuserblock) | **POST** /api/v1/admin/users/{user_id}/block/ | Block a user account
+*AdminUsersAPI* | [**adminUserMfaReset**](docs/AdminUsersAPI.md#adminusermfareset) | **POST** /api/v1/admin/users/{user_id}/mfa/reset/ | Clear an operator&#39;s authenticator after they lost it
 *AdminUsersAPI* | [**adminUserRetrieve**](docs/AdminUsersAPI.md#adminuserretrieve) | **GET** /api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned
 *AdminUsersAPI* | [**adminUserRolesReplace**](docs/AdminUsersAPI.md#adminuserrolesreplace) | **PUT** /api/v1/admin/users/{user_id}/roles/ | Replace the admin roles of a user
 *AdminUsersAPI* | [**adminUserUnblock**](docs/AdminUsersAPI.md#adminuserunblock) | **POST** /api/v1/admin/users/{user_id}/unblock/ | Unblock a user account
@@ -432,6 +438,10 @@ Class | Method | HTTP request | Description
  - [LogoutRequest](docs/LogoutRequest.md)
  - [MapMarker](docs/MapMarker.md)
  - [MapMarkerList](docs/MapMarkerList.md)
+ - [MfaCode](docs/MfaCode.md)
+ - [MfaRecoveryCodes](docs/MfaRecoveryCodes.md)
+ - [MfaSetup](docs/MfaSetup.md)
+ - [MfaStatus](docs/MfaStatus.md)
  - [NamedIntRef](docs/NamedIntRef.md)
  - [NamedRef](docs/NamedRef.md)
  - [Notification](docs/Notification.md)

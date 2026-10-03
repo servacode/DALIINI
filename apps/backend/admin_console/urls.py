@@ -1,5 +1,7 @@
 from django.urls import path
 
+from accounts.views_mfa import AdminUserMfaResetView
+
 from . import (
     exports,
     views,
@@ -71,6 +73,7 @@ urlpatterns = [
     path("admin/users/<uuid:user_id>/", views.UserDetailView.as_view()),
     path("admin/users/<uuid:user_id>/block/", views.UserBlockView.as_view()),
     path("admin/users/<uuid:user_id>/unblock/", views.UserUnblockView.as_view()),
+    path("admin/users/<uuid:user_id>/mfa/reset/", AdminUserMfaResetView.as_view()),
     path("admin/roles/", views.RoleListView.as_view()),
     path("admin/users/<uuid:user_id>/roles/", views.UserRolesView.as_view()),
     path("admin/category-groups/", views.CategoryGroupListView.as_view()),

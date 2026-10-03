@@ -88,6 +88,8 @@
 .sidebar-user { flex: 1; min-width: 0; display: grid; line-height: 1.3; }
 .sidebar-user strong { font-size: var(--ad-text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sidebar-user span { font-size: var(--ad-text-xs); color: var(--ad-shell-text-muted); }
+.sidebar-user a { font-size: var(--ad-text-xs); color: var(--ad-shell-text-muted); text-decoration: none; }
+.sidebar-user a:hover, .sidebar-user a:focus-visible { color: var(--ad-shell-text, inherit); text-decoration: underline; }
 .sidebar-logout {
   width: 34px; height: 34px; display: grid; place-items: center;
   border: 0; border-radius: var(--ad-radius);
@@ -288,3 +290,12 @@
 }
 .maintenance-pill svg { width: 14px; height: 14px; }
 @media (max-width: 640px) { .maintenance-pill { font-size: 0; gap: 0; padding: 0 8px; } .maintenance-pill svg { width: 16px; height: 16px; } }
+
+/* The second sign-in step (components/mfa.tsx) */
+.login-card-wide { width: min(600px, 100%); }
+.mfa-setup { display: grid; grid-template-columns: auto 1fr; gap: var(--ad-space-5); align-items: start; }
+.mfa-setup img { width: 200px; height: 200px; padding: var(--ad-space-2); border-radius: var(--ad-radius-md); background: #fff; border: 1px solid var(--ad-stroke); }
+.mfa-setup p { margin: 0; }
+.mfa-secret { display: block; padding: var(--ad-space-2) var(--ad-space-3); border-radius: var(--ad-radius-sm); background: var(--ad-surface-subtle); font-size: var(--ad-text-sm); letter-spacing: 0.06em; word-break: break-all; user-select: all; }
+.recovery-codes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ad-space-2) var(--ad-space-5); margin: 0; padding-inline-start: var(--ad-space-6); font-size: var(--ad-text-md, 1rem); }
+@media (max-width: 560px) { .mfa-setup { grid-template-columns: 1fr; justify-items: center; } }

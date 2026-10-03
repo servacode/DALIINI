@@ -15,6 +15,7 @@
 
 package com.servacode.directory.api.models
 
+import com.servacode.directory.api.models.MfaStatus
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -25,6 +26,7 @@ import kotlinx.serialization.Contextual
  *
  * @param userId 
  * @param displayName 
+ * @param mfa The second sign-in step for this operator and session (accountMfaRetrieve).
  * @param permissions Every permission code the caller holds, deduplicated and sorted. An operator whose roles carry no permissions gets an empty list, which is a valid state.
  */
 @Serializable
@@ -36,6 +38,10 @@ data class AdminMe (
 
     @SerialName(value = "displayName")
     val displayName: kotlin.String,
+
+    /* The second sign-in step for this operator and session (accountMfaRetrieve). */
+    @SerialName(value = "mfa")
+    val mfa: MfaStatus,
 
     /* Every permission code the caller holds, deduplicated and sorted. An operator whose roles carry no permissions gets an empty list, which is a valid state. */
     @SerialName(value = "permissions")

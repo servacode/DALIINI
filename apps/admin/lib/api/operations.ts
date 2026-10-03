@@ -33,6 +33,7 @@ function filled(params: Params, keys: readonly string[]): Record<string, string>
 
 export const READS = {
   me: (apis: AdminApis) => apis.system.adminMeRetrieve(),
+  mfaStatus: (apis: AdminApis) => apis.account.accountMfaRetrieve(),
   dashboard: (apis: AdminApis) => apis.system.adminDashboardRetrieve(),
   tasks: (apis: AdminApis) => apis.system.adminTasksRetrieve(),
   alerts: (apis: AdminApis) => apis.system.adminAlertsList(),
@@ -176,6 +177,17 @@ export const WRITES = {
       patchedAdminFacilityWrite: fields as never,
     });
   },
+
+  // The operator's own second sign-in step (DECISION-065). The code travels in the body only.
+  mfaSetup: (apis: AdminApis) => apis.account.accountMfaSetup(),
+  mfaConfirm: (apis: AdminApis, b: Body) =>
+    apis.account.accountMfaConfirm({ mfaCode: { code: String(b.code ?? "") } }),
+  mfaVerify: (apis: AdminApis, b: Body) =>
+    apis.account.accountMfaVerify({ mfaCode: { code: String(b.code ?? "") } }),
+  mfaDisable: (apis: AdminApis, b: Body) =>
+    apis.account.accountMfaDisable({ mfaCode: { code: String(b.code ?? "") } }),
+  userMfaReset: (apis: AdminApis, b: Body) =>
+    apis.users.adminUserMfaReset({ userId: String(b.id) }),
 
   facilitySuspend: (apis: AdminApis, b: Body) =>
     apis.facilities.adminFacilitySuspend({

@@ -1097,6 +1097,30 @@ the same number renews it, an owner may revoke it, and accepting can raise a man
 never lowers anyone. Adding a member by account id stays for now, marked deprecated, until the
 Android owner screens move to invitations in phase 5.
 
+## DECISION-065 — The console needs a second sign-in step
+
+**Date:** 2026-10-03 · **Phase 2.5 of the roadmap.**
+
+**Why:** the console decides which facilities are public, reads verification documents and can
+block accounts. A leaked password was enough to do all of it.
+
+**Decision:**
+
+* **Where it applies.** A password alone still opens a session, and the app, the owner screens and
+  the account work on it as before. The console does not: every check of an admin permission
+  (`HasAdminPermission`), and the console's realtime channel, also requires that the session passed
+  the second step (`UserSession.mfa_verified_at`), for an operator who has an authenticator.
+* **What it is.** TOTP as every authenticator app implements it (RFC 6238: SHA-1, 30 s, six digits,
+  one step of drift), implemented in `accounts/mfa.py` and checked against the RFC's vectors. A
+  code is accepted once; ten one-time recovery codes are issued at setup and only their digests
+  kept; the secret is sealed with its own `MFA_ENCRYPTION_KEY`. Ten attempts an hour per account.
+* **Policy.** `STAFF_MFA_REQUIRED` is on in production: an operator without an authenticator gets
+  403 `MFA_ENROLLMENT_REQUIRED` from the console and is shown the setup screen, and cannot switch it
+  off. Locally and in tests it is off, so nothing changes for development until someone enrols.
+* **Recovery.** Whoever holds `admin.roles.manage` can clear a colleague's authenticator after
+  verifying who they are; they set up a new one at their next sign-in. Enabling, disabling,
+  verifying with a recovery code and resetting are all audited.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

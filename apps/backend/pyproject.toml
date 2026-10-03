@@ -21,6 +21,7 @@ dependencies = [
   "cryptography>=50,<51",
   "sentry-sdk>=2,<3",
   "uvicorn[standard]>=0.37,<1",
+  "segno>=1.6,<2",
 ]
 
 [dependency-groups]
