@@ -13,11 +13,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DirectoryCard
@@ -30,6 +27,7 @@ import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.designsystem.StarPicker
 import com.servacode.directory.core.model.UserRating
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Screen 09, as far as the contract reaches: a rating in this app is a number of stars and
@@ -40,8 +38,8 @@ import com.servacode.directory.core.model.UserRating
  */
 @Composable
 fun RatingsScreen(
+    viewModel: RatingsViewModel,
     onBack: () -> Unit,
-    viewModel: RatingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -126,13 +124,12 @@ private fun RatingCard(
 
 /** The words of the user's own ratings, provisional until product copy is approved. */
 object RatingsCopy {
-    val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.ratings_title)
-    val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.ratings_error)
-    val EMPTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.ratings_empty)
-    val EMPTY_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.ratings_empty_body)
-    val DELETE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.ratings_delete)
+    val TITLE: String @Composable get() = stringResource(Res.string.ratings_title)
+    val ERROR: String @Composable get() = stringResource(Res.string.ratings_error)
+    val EMPTY: String @Composable get() = stringResource(Res.string.ratings_empty)
+    val EMPTY_BODY: String @Composable get() = stringResource(Res.string.ratings_empty_body)
+    val DELETE: String @Composable get() = stringResource(Res.string.ratings_delete)
 
     @Composable
-    @ReadOnlyComposable
-    fun starLabel(stars: Int): String = stringResource(R.string.ratings_star_label, stars)
+    fun starLabel(stars: Int): String = stringResource(Res.string.ratings_star_label, stars)
 }

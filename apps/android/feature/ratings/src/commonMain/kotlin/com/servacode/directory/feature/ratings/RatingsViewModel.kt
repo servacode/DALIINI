@@ -5,8 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.model.UserRating
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,8 +20,11 @@ sealed interface RatingsUiState {
     data object Error : RatingsUiState
 }
 
-@HiltViewModel
-class RatingsViewModel @Inject constructor(
+/**
+ * The user's own ratings, on both platforms. Android's navigation asks Hilt for the subclass in
+ * androidMain; the iPhone makes this one with its graph's use case (DECISION-095).
+ */
+open class RatingsViewModel(
     private val ratings: RatingsUseCase,
 ) : ViewModel() {
     private val _state = MutableStateFlow<RatingsUiState>(RatingsUiState.Loading)

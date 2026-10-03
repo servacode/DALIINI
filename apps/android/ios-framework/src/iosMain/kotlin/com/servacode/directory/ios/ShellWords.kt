@@ -9,10 +9,8 @@ import platform.Foundation.NSBundle
  */
 enum class ShellWord(val key: String) {
     APP_NAME("app_name"),
-    CHOOSE_PROVINCE("province_title"),
     CHANGE_PROVINCE("home_province_choose"),
     LOAD_FAILED("home_error"),
-    STALE_LIST("province_stale"),
     STALE_HOME("shell_home_stale"),
     DUTY_NOW("widget_duty_title"),
     OPEN_NOW("shell_open_now"),

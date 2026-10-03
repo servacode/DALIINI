@@ -7,10 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
@@ -25,6 +22,7 @@ import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.FacilityCard
 import com.servacode.directory.core.designsystem.LoadMoreRow
 import com.servacode.directory.core.designsystem.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Screen 06. One field, and what the backend answered under it.
@@ -34,9 +32,9 @@ import com.servacode.directory.core.designsystem.Space
  */
 @Composable
 fun SearchScreen(
+    viewModel: SearchViewModel,
     onFacility: (String) -> Unit,
     onBack: () -> Unit,
-    viewModel: SearchViewModel = hiltViewModel(),
 ) {
     val query by viewModel.query.collectAsStateWithLifecycle()
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -111,11 +109,11 @@ fun SearchScreen(
 
 /** The words of the search, provisional until product copy is approved. */
 object SearchCopy {
-    val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.search_title)
-    val PLACEHOLDER: String @Composable @ReadOnlyComposable get() = stringResource(R.string.search_placeholder)
-    val IDLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.search_idle)
-    val IDLE_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.search_idle_body)
-    val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.search_error)
-    val EMPTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.search_empty)
-    val EMPTY_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.search_empty_body)
+    val TITLE: String @Composable get() = stringResource(Res.string.search_title)
+    val PLACEHOLDER: String @Composable get() = stringResource(Res.string.search_placeholder)
+    val IDLE: String @Composable get() = stringResource(Res.string.search_idle)
+    val IDLE_BODY: String @Composable get() = stringResource(Res.string.search_idle_body)
+    val ERROR: String @Composable get() = stringResource(Res.string.search_error)
+    val EMPTY: String @Composable get() = stringResource(Res.string.search_empty)
+    val EMPTY_BODY: String @Composable get() = stringResource(Res.string.search_empty_body)
 }

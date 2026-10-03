@@ -3,21 +3,17 @@ package com.servacode.directory.feature.duty
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.core.testing.FakePreferences
-import com.servacode.directory.core.testing.MainDispatcherRule
+import com.servacode.directory.core.testing.runMainTest
 import com.servacode.directory.core.testing.ScriptedPublicApi
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Rule
-import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import kotlin.test.Test
 
 class DutyRosterViewModelTest {
-    @get:Rule val main = MainDispatcherRule()
-
     private val api = ScriptedPublicApi()
 
-    @Test fun `today first, then the week when it is picked`() = runTest(main.dispatcher) {
+    @Test fun `today first and then the week when it is picked`() = runMainTest {
         api.rosterAnswer = { _, date, days -> List(days) { DutyDay("$date+$it", emptyList(), emptyList()) } }
         val model = DutyRosterViewModel(DutyRosterRepository(api, FakePreferences("raqqa")))
         advanceUntilIdle()
@@ -33,7 +29,7 @@ class DutyRosterViewModelTest {
         assertTrue(week.isEmpty)
     }
 
-    @Test fun `no province asks for one, a failure offers to retry`() = runTest(main.dispatcher) {
+    @Test fun `no province asks for one and a failure offers to retry`() = runMainTest {
         val none = DutyRosterViewModel(DutyRosterRepository(api, FakePreferences(null)))
         advanceUntilIdle()
         assertEquals(DutyRosterUiState.ProvinceRequired, none.state.value)

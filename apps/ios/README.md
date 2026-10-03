@@ -41,7 +41,8 @@ The shared modules' own tests run on the simulator in the `ios-shared` job.
 
 ## Not yet
 
-* The real screens. Android's screens move to Compose Multiplatform and replace the shell's two,
-  which already draw with the shared design system (DECISION-094).
+* The rest of the real screens. The province picker is already the shared screen
+  (DECISION-095); the home moves next and replaces the shell's own, which already draws with
+  the shared design system (DECISION-094).
 * The map, notices, and signing for the App Store. Signing needs the owner's Apple developer
   account.

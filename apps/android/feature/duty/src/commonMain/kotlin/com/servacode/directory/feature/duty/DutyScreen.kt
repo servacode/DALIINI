@@ -18,12 +18,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.servacode.directory.core.designsystem.appErrorText
 import com.servacode.directory.core.designsystem.DateTimeField
@@ -38,6 +35,7 @@ import com.servacode.directory.core.designsystem.DirectoryTextButton
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.DirectoryWords
 import com.servacode.directory.core.designsystem.Space
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The owner's duty shifts. Not one of the numbered screens, and not a screen to remove either:
@@ -46,8 +44,8 @@ import com.servacode.directory.core.designsystem.Space
  */
 @Composable
 fun DutyScreen(
+    viewModel: DutyViewModel,
     onBack: () -> Unit,
-    viewModel: DutyViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val draft by viewModel.draft.collectAsStateWithLifecycle()
@@ -177,35 +175,34 @@ fun DutyScreen(
 
 /** The words of the duty screen, provisional until product copy is approved. */
 object DutyCopy {
-    val INVALID_TIMES: String
-        @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_invalid_times)
-    val TONIGHT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_tonight)
-    val TOMORROW: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_tomorrow)
+    val INVALID_TIMES: String @Composable get() = stringResource(Res.string.duty_invalid_times)
+    val TONIGHT: String @Composable get() = stringResource(Res.string.duty_tonight)
+    val TOMORROW: String @Composable get() = stringResource(Res.string.duty_tomorrow)
 
     /** The app's own objection to the times, naming the shift or closure it clashes with. */
     @Composable
     fun problem(problem: DutyProblem): String = when (problem) {
-        DutyProblem.InvalidRange -> stringResource(R.string.duty_invalid_times)
-        DutyProblem.InPast -> stringResource(R.string.duty_in_past)
+        DutyProblem.InvalidRange -> stringResource(Res.string.duty_invalid_times)
+        DutyProblem.InPast -> stringResource(Res.string.duty_in_past)
         is DutyProblem.Overlaps -> stringResource(
-            R.string.duty_overlaps,
+            Res.string.duty_overlaps,
             DirectoryWords.period(problem.shift.startsAtEpochMillis, problem.shift.endsAtEpochMillis),
         )
         is DutyProblem.DuringClosure -> stringResource(
-            R.string.duty_during_closure,
+            Res.string.duty_during_closure,
             DirectoryWords.period(problem.closure.startsAtEpochMillis, problem.closure.endsAtEpochMillis),
         )
     }
 
-    val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_title)
-    val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_error)
-    val ERROR_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_error_body)
-    val NEW_SHIFT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_new_shift)
-    val START: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_start)
-    val END: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_end)
-    val SCHEDULE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_schedule)
-    val START_NOW: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_start_now)
-    val SHIFTS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_shifts)
-    val END_EARLY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_end_early)
-    val CANCEL: String @Composable @ReadOnlyComposable get() = stringResource(R.string.duty_cancel)
+    val TITLE: String @Composable get() = stringResource(Res.string.duty_title)
+    val ERROR: String @Composable get() = stringResource(Res.string.duty_error)
+    val ERROR_BODY: String @Composable get() = stringResource(Res.string.duty_error_body)
+    val NEW_SHIFT: String @Composable get() = stringResource(Res.string.duty_new_shift)
+    val START: String @Composable get() = stringResource(Res.string.duty_start)
+    val END: String @Composable get() = stringResource(Res.string.duty_end)
+    val SCHEDULE: String @Composable get() = stringResource(Res.string.duty_schedule)
+    val START_NOW: String @Composable get() = stringResource(Res.string.duty_start_now)
+    val SHIFTS: String @Composable get() = stringResource(Res.string.duty_shifts)
+    val END_EARLY: String @Composable get() = stringResource(Res.string.duty_end_early)
+    val CANCEL: String @Composable get() = stringResource(Res.string.duty_cancel)
 }

@@ -39,6 +39,9 @@ val androidOnly = listOf(
     "**/*Screens.kt",
     "**/*ViewModel.kt",
     "**/*ViewModels.kt",
+    // Where Hilt meets a shared screen (DECISION-095), in a feature's androidMain.
+    "**/feature/*/*Route.kt",
+    "**/feature/*/*Routes.kt",
     "**/feature/bootstrap/BootstrapModule.kt",
     // Reads the built-in emergency lines' names from the settings module's strings.xml.
     "**/feature/settings/EmergencyLabelsModule.kt",
@@ -104,6 +107,8 @@ sourceSets {
         // goes for anything that reaches into the design system: it is a Compose library and
         // this harness has no Android framework. Those tests run in the Android unit suite.
         kotlin.exclude("**/*ViewModelTest.kt", "**/OwnerStatusToneTest.kt")
+        // Reads its module's Compose resources by path, from the module's own directory.
+        kotlin.exclude("**/RosterWeekdaysTest.kt")
         // The preferences' tests drive DataStore itself (see `androidOnly`).
         kotlin.exclude(
             "**/core/datastore/MemoryDataStore.kt",

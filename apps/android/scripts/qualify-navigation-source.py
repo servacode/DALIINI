@@ -168,6 +168,8 @@ def check_hygiene() -> None:
         *ROOT.joinpath("feature/navigation").rglob("*.kt"),
         ROOT / "app/build.gradle.kts",
     ]
+    # The sources as written: what a build generates (KSP's factories, Compose's `Res`) is not.
+    sources = [path for path in sources if path.name == "build.gradle.kts" or "build" not in path.parts]
     policy = ROOT / "core/maps/src/commonMain/kotlin/com/servacode/directory/core/maps/NavigationModels.kt"
     runtime_sources = [
         path for path in sources

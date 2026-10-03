@@ -122,7 +122,8 @@ def check_hygiene() -> None:
         *(ROOT / "feature/duty").rglob("*.kt"),
         *(ROOT / "core/network").rglob("*.kt"),
     ]
-    for path in sources:
+    # The sources as written: what a build generates (KSP's factories, Compose's `Res`) is not.
+    for path in (path for path in sources if "build" not in path.parts):
         text = path.read_text(encoding="utf-8")
         require("storage_key" not in text, f"raw storage key reference found: {path}")
         require("ACCESS_BACKGROUND_LOCATION" not in text, f"background location found: {path}")

@@ -2460,6 +2460,64 @@ Android's night resources.
 **Next:** the screens. Android's screens and view models move from each feature's androidMain to
 common code, one feature at a time, and replace the shell's two.
 
+## DECISION-095 — The screens move to common code: a shared screen and view model, a Hilt subclass for Android
+
+**Date:** 2026-10-03 · **Phase 8.11 of the roadmap.**
+
+**Why:** with the design system shared (DECISION-094), what stood between a feature and the
+iPhone was its screens, its view models and its words, all in androidMain:
+* each view model was built by Hilt (`@HiltViewModel`, `javax.inject`), which iOS does not have;
+* each screen took its view model from `hiltViewModel()`;
+* each screen's words were Android resources.
+
+**Decision:**
+
+* **A feature's screens, view models and words live in commonMain,** feature by feature. This
+  phase moves four features:
+  * the province picker;
+  * search (screen 06);
+  * the user's own ratings (screen 09);
+  * duty: the owner's shifts and the public roster.
+
+  The rest follow in the next phases.
+* **The view model is a plain class on androidx's multiplatform `ViewModel`,** opened so Android
+  can extend it. Its constructor takes what it needs; a clock defaults to the system's.
+  * **Android:** a one-line subclass in androidMain carries `@HiltViewModel` and `@Inject`, and
+    reads the route where one is needed: `HiltDutyViewModel` takes the facility and the nudged
+    night from `DirectoryRoute.Duty`. The app's navigation calls the feature's `…Route`, which
+    asks Hilt for that subclass and draws the shared screen with it. Hilt, the navigation and the
+    app are otherwise unchanged.
+  * **iPhone:** the app makes the shared class itself, from its hand-wired graph, with Compose's
+    `viewModel { }`.
+* **The screen takes its view model as its first argument,** and nothing else changes:
+  * the same composables, from the shared design system;
+  * the same `collectAsStateWithLifecycle`, from JetBrains' multiplatform lifecycle (androidx's
+    own on Android).
+* **The words are Compose resources in the feature's commonMain,** under the feature's own `Res`
+  in its namespace. The getters lose `@ReadOnlyComposable`.
+* **The duty roster's day names are words now, not Java's.**
+  * The roster headed each day of the week with Java's Arabic weekday name, and common code has no
+    Java. The seven names are written in the resources, so a second language is a second file.
+  * A host test holds them to Java's names, so Android shows the same headings as before.
+  * The date is read with kotlinx-datetime, as before with `java.time`.
+* **`serva.kmp.feature` is a Compose Multiplatform module.** It applies `serva.kmp.compose` and
+  gives commonMain the design system and the multiplatform lifecycle. Its tests get:
+  * the shared fakes in commonTest;
+  * Compose's UI test on the iPhone simulator.
+* **A view model's tests are common:** `runMainTest` (core:testing) swaps in a test main
+  dispatcher on both platforms, as `MainDispatcherRule` does under JUnit.
+  * New tests: the province, search and ratings view models.
+  * Ported to common: duty's two existing view-model tests.
+  * They run on the JVM and on the simulator.
+* **The iPhone shell's province screen is now the shared one,** with the shared view model,
+  drawn the same way on Android. Its own words for that screen are gone from `Shell.strings`.
+  * A province already chosen can be gone back to.
+  * A simulator test draws the shared picker, its words from the shared resources and its list
+    from the shared view model, and chooses a province.
+
+**Next:** the home and the facility page, then the account, owner, onboarding and settings
+features, the same way; the map and navigation last, with MapLibre's iPhone side.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.
