@@ -2,17 +2,22 @@ package com.servacode.directory.feature.home
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.hasScrollToNodeAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.runComposeUiTest
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.servacode.directory.core.analytics.NoOpAnalyticsTracker
 import com.servacode.directory.core.designsystem.DirectoryTheme
 import com.servacode.directory.core.model.HomeSnapshot
+import com.servacode.directory.core.model.Page
 import com.servacode.directory.core.model.Province
 import com.servacode.directory.core.network.BackendLocationNameResolver
 import com.servacode.directory.core.network.NetworkMonitor
@@ -23,8 +28,8 @@ import com.servacode.directory.core.testing.FakePreferences
 import com.servacode.directory.core.testing.FakePublicCache
 import com.servacode.directory.core.testing.FakeRecentlyViewedStore
 import com.servacode.directory.core.testing.ScriptedPublicApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.test.Test
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * The home Android shows, drawn on the iPhone simulator from the same code (DECISION-095): the
@@ -47,7 +52,11 @@ class HomeScreenOnIosTest {
         val raqqa = Province("raqqa", "الرقة")
         val cache = FakePublicCache().apply { provinces = listOf(raqqa) }
         val snapshot = HomeSnapshot(raqqa, emptyList(), listOf(facility("a")), refreshedAtEpochMillis = 1)
-        val api = ScriptedPublicApi().apply { homeAnswer = { snapshot } }
+        val api = ScriptedPublicApi().apply {
+            homeAnswer = { snapshot }
+            // The list under the offers is the directory's own page, not the snapshot's.
+            directoryAnswer = { _, _ -> Page(listOf(facility("a")), nextCursor = null, hasMore = false) }
+        }
         val preferences = FakePreferences("raqqa")
         val home = HomeViewModel(
             HomeUseCase(HomeRepository(cache, api, preferences, FakeLocation(), BackendLocationNameResolver(api))),
@@ -76,6 +85,13 @@ class HomeScreenOnIosTest {
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("الرقة").fetchSemanticsNodes().isNotEmpty() }
         // The simulator's test process has never been asked for the position.
         onNodeWithText("السماح بالموقع").assertExists()
+        // The list is under the offers, and a lazy list draws only what is on screen: it is
+        // scrolled to, as a reader would, once its page has arrived.
+        waitUntil(timeoutMillis = 5_000) {
+            runCatching {
+                onAllNodes(hasScrollToNodeAction()).onFirst().performScrollToNode(hasText("صيدلية a"))
+            }.isSuccess
+        }
         onNodeWithText("صيدلية a").performClick()
         waitUntil { opened == "a" }
     }
