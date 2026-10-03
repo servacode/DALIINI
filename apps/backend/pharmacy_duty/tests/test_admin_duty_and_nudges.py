@@ -208,13 +208,17 @@ def test_upsert_is_idempotent_for_imports(pharmacy: Facility) -> None:
 
 @pytest.mark.django_db
 def test_gap_nudges_once_per_gap_day_and_once_per_owner_per_day(
-    pharmacy: Facility, user: User
+    pharmacy: Facility, user: User, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     second = Facility.objects.create(
         category=pharmacy.category, province=pharmacy.province, name_ar="ثانية", status="ACTIVE"
     )
     FacilityMembership.objects.create(facility=second, user=user, role="OWNER")
-    now = timezone.now()
+    # Noon in Damascus, on a clock the notifications are stamped by too: run at 23:55 there,
+    # "five minutes later" was the next day, which is rightly asked about again.
+    now = day_bounds(local_today(timezone.now()))[0] + timedelta(hours=12)
+    clock = {"now": now}
+    monkeypatch.setattr(timezone, "now", lambda: clock["now"])
 
     sent = nudge_duty_gaps(now)
 
@@ -225,9 +229,11 @@ def test_gap_nudges_once_per_gap_day_and_once_per_owner_per_day(
     nudged = DutyGapNudge.objects.get(province=pharmacy.province)
     assert nudged.gap_date == local_today(now)
 
-    assert nudge_duty_gaps(now + timedelta(minutes=5)) == 0
+    clock["now"] = now + timedelta(minutes=5)
+    assert nudge_duty_gaps(clock["now"]) == 0
     assert messages.count() == 1
     # Tomorrow the next uncovered day is asked about, once.
-    nudge_duty_gaps(now + timedelta(days=1))
+    clock["now"] = now + timedelta(days=1)
+    nudge_duty_gaps(clock["now"])
     assert messages.count() == 2
     assert DutyGapNudge.objects.filter(province=pharmacy.province).count() == 2
