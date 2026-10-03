@@ -55,19 +55,25 @@ val androidOnly = listOf(
 
 // Feature modules whose repositories and use cases are platform-free.
 val features = listOf(
-    "account", "auth", "bootstrap", "directory", "duty", "facility", "home", "map", "navigation",
+    "account", "auth", "bootstrap", "duty", "facility", "home", "map", "navigation",
     "onboarding", "owner", "province", "ratings", "search", "settings",
 )
+
+// Kotlin Multiplatform modules shared with the iPhone app (DECISION-085): their common code is
+// compiled here too, so the JVM harness keeps seeing the whole app.
+val sharedCores = listOf("observability", "analytics")
 
 sourceSets {
     main {
         kotlin.srcDir(generatedClient)
         val platformFreeCores = listOf(
-            "model", "observability", "analytics", "auth",
-            "network", "database", "datastore", "location", "maps",
+            "model", "auth", "network", "database", "datastore", "location", "maps",
         )
         for (core in platformFreeCores) {
             kotlin.srcDir(android.resolve("core/$core/src/main/kotlin"))
+        }
+        for (core in sharedCores) {
+            kotlin.srcDir(android.resolve("core/$core/src/commonMain/kotlin"))
         }
         for (feature in features) {
             kotlin.srcDir(android.resolve("feature/$feature/src/main/kotlin"))
@@ -81,7 +87,9 @@ sourceSets {
         kotlin.srcDir(android.resolve("core/database/src/test/kotlin"))
         kotlin.srcDir(android.resolve("core/model/src/test/kotlin"))
         kotlin.srcDir(android.resolve("core/maps/src/test/kotlin"))
-        kotlin.srcDir(android.resolve("core/analytics/src/test/kotlin"))
+        for (core in sharedCores) {
+            kotlin.srcDir(android.resolve("core/$core/src/commonTest/kotlin"))
+        }
         for (feature in features) {
             kotlin.srcDir(android.resolve("feature/$feature/src/test/kotlin"))
         }
@@ -129,6 +137,8 @@ dependencies {
     compileOnly("com.google.dagger:hilt-core:${libs.versions.hilt.get()}")
 
     testImplementation(libs.junit)
+    // The shared modules' tests are written against kotlin.test, which runs on JUnit here.
+    testImplementation(kotlin("test"))
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.okhttp.mockwebserver)
 }

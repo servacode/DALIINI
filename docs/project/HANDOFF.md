@@ -16,8 +16,8 @@ scope is places only: nothing about medicines (DECISION-054).
 ## Where things stand
 
 The roadmap was approved on 2026-10-03. Phases 0 to 3 are done, merged through pull requests
-#27 to #40, phase 4 through #41 to #44, and phase 5's code through #45 to #48. Phase 6 is
-under way:
+#27 to #40, phase 4 through #41 to #44, phase 5's code through #45 to #48, and phase 6's
+through #49 to #52. Phase 7's code is done, and phase 8 has begun:
 
 | Phase | What it delivered | Decisions |
 |---|---|---|
@@ -44,12 +44,18 @@ under way:
 | 5.3 | Android: a trip keeps its readings and voice with the screen locked | 078 |
 | 5.4 | Android: build numbers from CI, a baseline profile, map motion that follows the system | 079 |
 | 6.1 | the production stack on one server behind Caddy; Render retired | 080 |
+| 6.2 | release images on GHCR, deploys over SSH started by a person, hourly backups with a monthly restore drill | 081 |
+| 6.3 | the map's tiles, Arabic glyphs and routing served from `maps.<ROOT>`, rebuilt from OpenStreetMap | 082 |
+| 6.4 | a load test at launch scale in CI; the map and search made constant-query; a database pool | 083 |
+| 7.1 | the second draft of the legal and help pages, the Play listing and feature graphic, the launch runbook | 084 |
+| 8.1 | a Kotlin Multiplatform convention; observability and analytics shared and tested on the iPhone simulator | 085 |
 
-**Now: phase 6, the production server.** The stack is ready and booted in CI on every pull
-request (`infrastructure/production/`); a real server waits on EXT-007. Next: deploys from
-GitHub, backups with a restore drill and monitoring (6.2), then self-hosted map tiles and routing
-(6.3). After that, content and the Play launch (7), and the iPhone app from the Android code with
-Kotlin Multiplatform (8). An owner portal on the web was offered at the start of phase 3 and set
+**Now: phase 8, the iPhone app from the Android code** (DECISION-051). The shared layers move
+into Kotlin Multiplatform one module at a time, each step leaving the Android app green and
+unchanged; `core:model` is next (ROADMAP ٨). Everything else that remains waits on the owner:
+the server and domain (EXT-007, EXT-001), approving the launch texts and graphic, the Play
+account (EXT-003), and then the closed test and the public release, step by step in
+`docs/runbooks/launch.md`. An owner portal on the web was offered at the start of phase 3 and set
 aside: owners use the Android app.
 
 Android has caught up with every server feature, a trip survives a locked screen, and builds
@@ -64,7 +70,7 @@ test with the screen locked, and a generated baseline profile.
 | `apps/admin` | the operators' console: Next.js 16, a server-only BFF in front of the API |
 | `apps/web` | the public site: Next.js |
 | `apps/android` | Kotlin and Compose, on the generated Kotlin client |
-| `apps/ios` | empty until phase 8 |
+| `apps/ios` | empty: the iPhone app's shell comes later in phase 8; its shared code lives in the Android modules that are multiplatform |
 | `services/whatsapp-bot` | delivers registration codes over WhatsApp (DECISION-052) |
 | `openapi/` | the contract, generated from the backend and committed with its hash |
 | `packages/api-*` | the TypeScript, Kotlin and Swift clients generated from it |
@@ -94,7 +100,7 @@ the stack's database.
 | console | in `apps/admin`: `npx tsc --noEmit`, `npx eslint .`, `npx vitest run` |
 | console in a browser | `scripts/e2e-admin.sh` (its own stack, production build) |
 | the whole cycle | `scripts/e2e-android.sh`, or `scripts/verify-all.sh` for everything |
-| Android | the **Android Build Verification** workflow, started by hand on the branch (`workflow_dispatch`); `ci.yml` does not build the app |
+| Android | the **Android Build Verification** workflow, started by hand on the branch (`workflow_dispatch`); `ci.yml` does not build the app. Its `ios-shared` job runs the multiplatform modules' tests on the iPhone simulator |
 
 CI (`ci.yml`, `codeql.yml`, `security.yml`) runs on every pull request. A change that touches
 Android, or the contract Android consumes, is not done until that workflow is green on its branch.
