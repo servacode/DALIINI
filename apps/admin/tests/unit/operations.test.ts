@@ -614,4 +614,23 @@ describe("specialties and services", () => {
     expect(calls[0]?.args[0]).toEqual({ userId: "u-1", adminUserRolesRequest: { roleIds: [3, 12] } });
     expect(calls[1]?.args[0]).toEqual({ userId: "u-2", adminUserRolesRequest: { roleIds: [] } });
   });
+
+  it("edits a role by its integer key and leaves out what was not changed", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.roleCreate(apis, { name: "مراجع", permissions: ["admin.reviews.read"] });
+    await WRITES.roleUpdate(apis, { id: "4", name: "مراجع أول" });
+    await WRITES.roleUpdate(apis, { id: 4, permissions: [] });
+    await WRITES.roleDelete(apis, { id: "4" });
+
+    expect(calls.map((call) => [call.name, call.args[0]])).toEqual([
+      [
+        "users.adminRoleCreate",
+        { adminRoleCreateRequest: { name: "مراجع", permissions: ["admin.reviews.read"] } },
+      ],
+      ["users.adminRoleUpdate", { roleId: 4, patchedAdminRoleUpdateRequest: { name: "مراجع أول" } }],
+      ["users.adminRoleUpdate", { roleId: 4, patchedAdminRoleUpdateRequest: { permissions: [] } }],
+      ["users.adminRoleDelete", { roleId: 4 }],
+    ]);
+  });
 });

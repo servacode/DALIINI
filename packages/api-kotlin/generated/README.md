@@ -164,7 +164,11 @@ All URIs are relative to *http://localhost*
 | *AdminTaxonomyApi* | [**adminServiceTagUpdate**](docs/AdminTaxonomyApi.md#adminservicetagupdate) | **PUT** api/v1/admin/service-tags/{service_tag_id}/ | Rename, reorder, retire or bring back a service |
 | *AdminTaxonomyApi* | [**adminSpecialtyDelete**](docs/AdminTaxonomyApi.md#adminspecialtydelete) | **DELETE** api/v1/admin/specialties/{specialty_id}/ | Delete a specialty no facility lists |
 | *AdminTaxonomyApi* | [**adminSpecialtyUpdate**](docs/AdminTaxonomyApi.md#adminspecialtyupdate) | **PUT** api/v1/admin/specialties/{specialty_id}/ | Rename, reorder, retire or bring back a specialty |
-| *AdminUsersApi* | [**adminRolesList**](docs/AdminUsersApi.md#adminroleslist) | **GET** api/v1/admin/roles/ | List admin roles and their permission codes |
+| *AdminUsersApi* | [**adminPermissionsList**](docs/AdminUsersApi.md#adminpermissionslist) | **GET** api/v1/admin/permissions/ | Every permission a role can carry |
+| *AdminUsersApi* | [**adminRoleCreate**](docs/AdminUsersApi.md#adminrolecreate) | **POST** api/v1/admin/roles/ | Create a role with the permissions it carries |
+| *AdminUsersApi* | [**adminRoleDelete**](docs/AdminUsersApi.md#adminroledelete) | **DELETE** api/v1/admin/roles/{role_id}/ | Delete a role nobody holds |
+| *AdminUsersApi* | [**adminRoleUpdate**](docs/AdminUsersApi.md#adminroleupdate) | **PATCH** api/v1/admin/roles/{role_id}/ | Rename a role or change the permissions it carries |
+| *AdminUsersApi* | [**adminRolesList**](docs/AdminUsersApi.md#adminroleslist) | **GET** api/v1/admin/roles/ | List admin roles, their permission codes and how many hold each |
 | *AdminUsersApi* | [**adminUserBlock**](docs/AdminUsersApi.md#adminuserblock) | **POST** api/v1/admin/users/{user_id}/block/ | Block a user account |
 | *AdminUsersApi* | [**adminUserMfaReset**](docs/AdminUsersApi.md#adminusermfareset) | **POST** api/v1/admin/users/{user_id}/mfa/reset/ | Clear an operator's authenticator after they lost it |
 | *AdminUsersApi* | [**adminUserRetrieve**](docs/AdminUsersApi.md#adminuserretrieve) | **GET** api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned |
@@ -328,6 +332,8 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminId](docs/AdminId.md)
  - [com.servacode.directory.api.models.AdminLinkEntityTypeEnum](docs/AdminLinkEntityTypeEnum.md)
  - [com.servacode.directory.api.models.AdminMe](docs/AdminMe.md)
+ - [com.servacode.directory.api.models.AdminPermission](docs/AdminPermission.md)
+ - [com.servacode.directory.api.models.AdminPermissionList](docs/AdminPermissionList.md)
  - [com.servacode.directory.api.models.AdminProvince](docs/AdminProvince.md)
  - [com.servacode.directory.api.models.AdminProvinceList](docs/AdminProvinceList.md)
  - [com.servacode.directory.api.models.AdminProvinceReadiness](docs/AdminProvinceReadiness.md)
@@ -348,6 +354,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminReportDecisionRequest](docs/AdminReportDecisionRequest.md)
  - [com.servacode.directory.api.models.AdminReviewDecisionRequest](docs/AdminReviewDecisionRequest.md)
  - [com.servacode.directory.api.models.AdminRole](docs/AdminRole.md)
+ - [com.servacode.directory.api.models.AdminRoleCreateRequest](docs/AdminRoleCreateRequest.md)
  - [com.servacode.directory.api.models.AdminRoleList](docs/AdminRoleList.md)
  - [com.servacode.directory.api.models.AdminSearchGroup](docs/AdminSearchGroup.md)
  - [com.servacode.directory.api.models.AdminSearchHit](docs/AdminSearchHit.md)
@@ -510,6 +517,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.PasswordChange](docs/PasswordChange.md)
  - [com.servacode.directory.api.models.PatchedAdminDutyShiftUpdateRequest](docs/PatchedAdminDutyShiftUpdateRequest.md)
  - [com.servacode.directory.api.models.PatchedAdminFacilityWrite](docs/PatchedAdminFacilityWrite.md)
+ - [com.servacode.directory.api.models.PatchedAdminRoleUpdateRequest](docs/PatchedAdminRoleUpdateRequest.md)
  - [com.servacode.directory.api.models.PatchedDutyRotationRequest](docs/PatchedDutyRotationRequest.md)
  - [com.servacode.directory.api.models.PatchedDutyShiftInput](docs/PatchedDutyShiftInput.md)
  - [com.servacode.directory.api.models.PatchedFacilityPatch](docs/PatchedFacilityPatch.md)

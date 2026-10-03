@@ -1324,6 +1324,45 @@ same map, not a second, different one.
 Arabic labels on real tiles are to be checked in phase 6, once the style and tiles are hosted;
 the plugin is in place for them.
 
+## DECISION-072 — Roles are edited in the console; the owner role and a role manager always exist
+
+**Date:** 2026-10-03 · **Phase 4.1 of the roadmap.**
+
+**Why:**
+* Roles could only be assigned. A role was created by a fixture or a database shell, so the team
+  could not make "reviewer" or "duty desk" without a developer.
+* A new deployment had no way to appoint its first operator.
+* Nothing stopped the last person able to grant roles from being blocked, or from losing that
+  permission. Either would leave the platform with nobody to appoint anyone.
+
+**Decision:**
+
+* **The role editor** (`/users/roles`, under المستخدمون والصلاحيات).
+  * Whoever holds `admin.roles.manage` can create a role, rename it, choose its permissions and
+    delete it.
+  * Permissions are chosen by area (التشغيل، المراجعات والبلاغات، المنشآت والمناوبات…), with an
+    Arabic label for each. A permission the console does not know yet still appears, under «أخرى».
+  * A change reaches every holder on their next request.
+  * Every create, edit and delete is in the audit log (`admin_role.*`).
+  * New endpoints: `GET admin/permissions/`, `POST admin/roles/`,
+    `PATCH`/`DELETE admin/roles/<id>/`. Each role now also reports `holderCount` and `locked`.
+* **The owner role.**
+  * `owner` («مدير المنصة») is created by `migrate` and given every permission after each
+    `migrate`, so a permission a release adds reaches it without anybody editing it.
+  * The console shows it but cannot edit or delete it (`ROLE_LOCKED`).
+* **The first operator.** `manage.py grant_operator <phone>` gives one account the owner role.
+  * The account normally registered in the app first.
+  * `--create --name` makes it instead, with a password typed at a prompt, never on the command
+    line.
+  * The grant is audited (`admin_role.granted_from_shell`).
+* **Somebody can always grant roles.** These are refused with `LAST_ROLE_MANAGER` (409) when
+  they would leave no active account holding `admin.roles.manage`:
+  * replacing an operator's roles;
+  * editing a role's permissions;
+  * blocking an account.
+* **A role somebody holds is not deleted** (`ROLE_IN_USE`, 409), so a role is never taken from
+  anyone as a side effect.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

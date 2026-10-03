@@ -19,17 +19,52 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.AdminUsersApi
+import com.servacode.directory.api.models.AdminPermissionList
+import com.servacode.directory.api.models.AdminRole
+import com.servacode.directory.api.models.AdminRoleCreateRequest
 import com.servacode.directory.api.models.AdminRoleList
 import com.servacode.directory.api.models.AdminUser
 import com.servacode.directory.api.models.AdminUserDetail
 import com.servacode.directory.api.models.AdminUserList
 import com.servacode.directory.api.models.AdminUserRolesRequest
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.PatchedAdminRoleUpdateRequest
 
 class AdminUsersApiTest : ShouldSpec() {
     init {
         // uncomment below to create an instance of AdminUsersApi
         //val apiInstance = AdminUsersApi()
+
+        // to test adminPermissionsList
+        should("test adminPermissionsList") {
+            // uncomment below to test adminPermissionsList
+            //val result : AdminPermissionList = apiInstance.adminPermissionsList()
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminRoleCreate
+        should("test adminRoleCreate") {
+            // uncomment below to test adminRoleCreate
+            //val adminRoleCreateRequest : AdminRoleCreateRequest =  // AdminRoleCreateRequest | 
+            //val result : AdminRole = apiInstance.adminRoleCreate(adminRoleCreateRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminRoleDelete
+        should("test adminRoleDelete") {
+            // uncomment below to test adminRoleDelete
+            //val roleId : kotlin.Int = 56 // kotlin.Int | 
+            //apiInstance.adminRoleDelete(roleId)
+        }
+
+        // to test adminRoleUpdate
+        should("test adminRoleUpdate") {
+            // uncomment below to test adminRoleUpdate
+            //val roleId : kotlin.Int = 56 // kotlin.Int | 
+            //val patchedAdminRoleUpdateRequest : PatchedAdminRoleUpdateRequest =  // PatchedAdminRoleUpdateRequest | 
+            //val result : AdminRole = apiInstance.adminRoleUpdate(roleId, patchedAdminRoleUpdateRequest)
+            //result shouldBe ("TODO")
+        }
 
         // to test adminRolesList
         should("test adminRolesList") {

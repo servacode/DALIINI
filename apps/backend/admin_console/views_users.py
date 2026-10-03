@@ -17,7 +17,6 @@ from core.openapi import NOT_FOUND_404, VALIDATION_400, protected
 from core.pagination import QueryOrderedCursorPage, page_parameters
 
 from .schemas import (
-    AdminRoleListSerializer,
     AdminUserDetailSerializer,
     AdminUserListSerializer,
     AdminUserRolesRequestSerializer,
@@ -135,33 +134,6 @@ class UserBlockView(AdminView):
 )
 class UserUnblockView(UserBlockView):
     blocked = False
-
-
-class RoleListView(AdminView):
-    required_permission = "admin.roles.read"
-
-    @extend_schema(
-        operation_id="adminRolesList",
-        tags=["Admin Users"],
-        summary="List admin roles and their permission codes",
-        responses={200: AdminRoleListSerializer, **protected()},
-    )
-    def get(self, request: AuthenticatedRequest) -> Response:
-        items = AdminRole.objects.prefetch_related("permissions").order_by("name")
-        return Response(
-            {
-                "items": [
-                    {
-                        # An integer, as `AdminRoleSerializer` has always declared it.
-                        "id": role.id,
-                        "code": role.code,
-                        "name": role.name,
-                        "permissions": list(role.permissions.values_list("code", flat=True)),
-                    }
-                    for role in items
-                ]
-            }
-        )
 
 
 class UserRolesView(AdminView):

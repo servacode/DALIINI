@@ -145,7 +145,11 @@ Class | Method | HTTP request | Description
 *AdminTaxonomyAPI* | [**adminServiceTagUpdate**](docs/AdminTaxonomyAPI.md#adminservicetagupdate) | **PUT** /api/v1/admin/service-tags/{service_tag_id}/ | Rename, reorder, retire or bring back a service
 *AdminTaxonomyAPI* | [**adminSpecialtyDelete**](docs/AdminTaxonomyAPI.md#adminspecialtydelete) | **DELETE** /api/v1/admin/specialties/{specialty_id}/ | Delete a specialty no facility lists
 *AdminTaxonomyAPI* | [**adminSpecialtyUpdate**](docs/AdminTaxonomyAPI.md#adminspecialtyupdate) | **PUT** /api/v1/admin/specialties/{specialty_id}/ | Rename, reorder, retire or bring back a specialty
-*AdminUsersAPI* | [**adminRolesList**](docs/AdminUsersAPI.md#adminroleslist) | **GET** /api/v1/admin/roles/ | List admin roles and their permission codes
+*AdminUsersAPI* | [**adminPermissionsList**](docs/AdminUsersAPI.md#adminpermissionslist) | **GET** /api/v1/admin/permissions/ | Every permission a role can carry
+*AdminUsersAPI* | [**adminRoleCreate**](docs/AdminUsersAPI.md#adminrolecreate) | **POST** /api/v1/admin/roles/ | Create a role with the permissions it carries
+*AdminUsersAPI* | [**adminRoleDelete**](docs/AdminUsersAPI.md#adminroledelete) | **DELETE** /api/v1/admin/roles/{role_id}/ | Delete a role nobody holds
+*AdminUsersAPI* | [**adminRoleUpdate**](docs/AdminUsersAPI.md#adminroleupdate) | **PATCH** /api/v1/admin/roles/{role_id}/ | Rename a role or change the permissions it carries
+*AdminUsersAPI* | [**adminRolesList**](docs/AdminUsersAPI.md#adminroleslist) | **GET** /api/v1/admin/roles/ | List admin roles, their permission codes and how many hold each
 *AdminUsersAPI* | [**adminUserBlock**](docs/AdminUsersAPI.md#adminuserblock) | **POST** /api/v1/admin/users/{user_id}/block/ | Block a user account
 *AdminUsersAPI* | [**adminUserMfaReset**](docs/AdminUsersAPI.md#adminusermfareset) | **POST** /api/v1/admin/users/{user_id}/mfa/reset/ | Clear an operator&#39;s authenticator after they lost it
 *AdminUsersAPI* | [**adminUserRetrieve**](docs/AdminUsersAPI.md#adminuserretrieve) | **GET** /api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned
@@ -308,6 +312,8 @@ Class | Method | HTTP request | Description
  - [AdminId](docs/AdminId.md)
  - [AdminLinkEntityTypeEnum](docs/AdminLinkEntityTypeEnum.md)
  - [AdminMe](docs/AdminMe.md)
+ - [AdminPermission](docs/AdminPermission.md)
+ - [AdminPermissionList](docs/AdminPermissionList.md)
  - [AdminProvince](docs/AdminProvince.md)
  - [AdminProvinceList](docs/AdminProvinceList.md)
  - [AdminProvinceReadiness](docs/AdminProvinceReadiness.md)
@@ -328,6 +334,7 @@ Class | Method | HTTP request | Description
  - [AdminReportDecisionRequest](docs/AdminReportDecisionRequest.md)
  - [AdminReviewDecisionRequest](docs/AdminReviewDecisionRequest.md)
  - [AdminRole](docs/AdminRole.md)
+ - [AdminRoleCreateRequest](docs/AdminRoleCreateRequest.md)
  - [AdminRoleList](docs/AdminRoleList.md)
  - [AdminSearchGroup](docs/AdminSearchGroup.md)
  - [AdminSearchHit](docs/AdminSearchHit.md)
@@ -490,6 +497,7 @@ Class | Method | HTTP request | Description
  - [PasswordChange](docs/PasswordChange.md)
  - [PatchedAdminDutyShiftUpdateRequest](docs/PatchedAdminDutyShiftUpdateRequest.md)
  - [PatchedAdminFacilityWrite](docs/PatchedAdminFacilityWrite.md)
+ - [PatchedAdminRoleUpdateRequest](docs/PatchedAdminRoleUpdateRequest.md)
  - [PatchedDutyRotationRequest](docs/PatchedDutyRotationRequest.md)
  - [PatchedDutyShiftInput](docs/PatchedDutyShiftInput.md)
  - [PatchedFacilityPatch](docs/PatchedFacilityPatch.md)

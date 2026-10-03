@@ -49,5 +49,17 @@ class AdminRoleTest : ShouldSpec() {
             //modelInstance.permissions shouldBe ("TODO")
         }
 
+        // to test the property `holderCount` - Active accounts holding this role now. Blocked accounts are not counted.
+        should("test holderCount") {
+            // uncomment below to test the property
+            //modelInstance.holderCount shouldBe ("TODO")
+        }
+
+        // to test the property `locked` - The platform's own role (`owner`): it holds every permission and the console can neither edit nor delete it.
+        should("test locked") {
+            // uncomment below to test the property
+            //modelInstance.locked shouldBe ("TODO")
+        }
+
     }
 }

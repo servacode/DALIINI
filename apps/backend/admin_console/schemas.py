@@ -244,10 +244,43 @@ class AdminRoleSerializer(serializers.Serializer[Any]):
     code = serializers.CharField()
     name = serializers.CharField()
     permissions = serializers.ListField(child=serializers.CharField())
+    holderCount = serializers.IntegerField(
+        help_text="Active accounts holding this role now. Blocked accounts are not counted."
+    )
+    locked = serializers.BooleanField(
+        help_text="The platform's own role (`owner`): it holds every permission and the "
+        "console can neither edit nor delete it."
+    )
 
 
 class AdminRoleListSerializer(serializers.Serializer[Any]):
     items = AdminRoleSerializer(many=True)
+
+
+class AdminRoleCreateRequestSerializer(serializers.Serializer[Any]):
+    name = serializers.CharField(max_length=120)
+    code = serializers.RegexField(
+        r"^[a-z][a-z0-9-]{1,79}$",
+        required=False,
+        help_text="Lower-case Latin letters, digits and hyphens. Generated when omitted.",
+    )
+    permissions = serializers.ListField(child=serializers.CharField(), allow_empty=True)
+
+
+class AdminRoleUpdateRequestSerializer(serializers.Serializer[Any]):
+    name = serializers.CharField(max_length=120, required=False)
+    permissions = serializers.ListField(
+        child=serializers.CharField(), allow_empty=True, required=False
+    )
+
+
+class AdminPermissionSerializer(serializers.Serializer[Any]):
+    code = serializers.CharField()
+    description = serializers.CharField(allow_blank=True)
+
+
+class AdminPermissionListSerializer(serializers.Serializer[Any]):
+    items = AdminPermissionSerializer(many=True)
 
 
 class AdminUserRolesRequestSerializer(serializers.Serializer[Any]):

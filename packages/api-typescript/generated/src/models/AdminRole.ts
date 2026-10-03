@@ -43,6 +43,18 @@ export interface AdminRole {
      * @memberof AdminRole
      */
     permissions: Array<string>;
+    /**
+     * Active accounts holding this role now. Blocked accounts are not counted.
+     * @type {number}
+     * @memberof AdminRole
+     */
+    holderCount: number;
+    /**
+     * The platform's own role (`owner`): it holds every permission and the console can neither edit nor delete it.
+     * @type {boolean}
+     * @memberof AdminRole
+     */
+    locked: boolean;
 }
 
 /**
@@ -53,6 +65,8 @@ export function instanceOfAdminRole(value: object): value is AdminRole {
     if (!('code' in value) || value['code'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('permissions' in value) || value['permissions'] === undefined) return false;
+    if (!('holderCount' in value) || value['holderCount'] === undefined) return false;
+    if (!('locked' in value) || value['locked'] === undefined) return false;
     return true;
 }
 
@@ -70,6 +84,8 @@ export function AdminRoleFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'code': json['code'],
         'name': json['name'],
         'permissions': json['permissions'],
+        'holderCount': json['holderCount'],
+        'locked': json['locked'],
     };
 }
 
@@ -88,6 +104,8 @@ export function AdminRoleToJSONTyped(value?: AdminRole | null, ignoreDiscriminat
         'code': value['code'],
         'name': value['name'],
         'permissions': value['permissions'],
+        'holderCount': value['holderCount'],
+        'locked': value['locked'],
     };
 }
 
