@@ -1,0 +1,13 @@
+# The monthly map rebuild (DECISION-082): a fresh OpenStreetMap extract of Syria becomes the
+# map's tiles and the routing graph, is switched in, checked through Caddy, and switched back
+# if the check fails. The system page's «الخريطة والمسارات» card says how old the graph is.
+[Unit]
+Description=Daliini: rebuild the map and the routing graph from OpenStreetMap
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+TimeoutStartSec=3h
+Nice=10
+ExecStart=/srv/daliini/repo/infrastructure/production/map/build-map.sh /srv/daliini/production.env

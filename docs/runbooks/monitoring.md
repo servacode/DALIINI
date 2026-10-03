@@ -11,6 +11,9 @@ Each dependency is asked directly when the page opens and every minute after tha
 - both storage buckets;
 - the sign-in code channel and push notifications;
 - the hourly backup: a warning after 2 hours without one, a failure after 26;
+- **the map and routing** (DECISION-082): Martin has the archive and Valhalla has a graph; a
+  warning when routing is down or the road data is older than 45 days (the monthly rebuild did
+  not run: `journalctl -u daliini-map`);
 - **the server's disk**: a warning at 80%, a failure at 90%. A full disk stops the database.
   Free space by removing old release images (`docker image prune -a` keeps only what runs) or
   by growing the disk;
@@ -29,6 +32,7 @@ every one to five minutes and alerting by e-mail and phone:
 | `https://api.<ROOT>/health/ready/` | 200: the database and Redis answer |
 | `https://<ROOT>/` | 200: the site renders |
 | `https://admin.<ROOT>/login` | 200: the console renders |
+| `https://maps.<ROOT>/style/daliini` | 200: the base map's style |
 | the TLS certificate of `<ROOT>` | more than 14 days left |
 
 For the backup, a dead-man's switch is optional: `db-backup.sh` already reports each run to the
@@ -52,7 +56,8 @@ Alerts must be actionable:
 - a stalled worker;
 - elevated 5xx;
 - a failed or late backup;
-- a failed restore drill (`journalctl -u daliini-restore-drill`);
+- a failed restore drill (`journalctl -u daliini-restore-drill`) or map rebuild
+  (`journalctl -u daliini-map`);
 - storage failures;
 - a disk above 80%;
 - a crash spike in Sentry, for the backend and the Android app.

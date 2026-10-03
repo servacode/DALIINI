@@ -42,6 +42,7 @@ const CHECKS: Record<string, { label: string; detail: string; icon: IconName }> 
   scheduler: { label: "المجدول", detail: "التذكيرات والتنظيف الليلي.", icon: "calendar" },
   storage: { label: "مساحة الملفات", detail: "الصور ووثائق التحقق.", icon: "image" },
   disk: { label: "قرص الخادم", detail: "قاعدة البيانات وصور الإصدارات والسجلات.", icon: "chart" },
+  map: { label: "الخريطة والمسارات", detail: "الخريطة الأساسية وتوجيه التطبيق.", icon: "map" },
   otp: { label: "رموز التحقق", detail: "التسجيل واستعادة الحساب.", icon: "whatsapp" },
   push: { label: "الإشعارات", detail: "تنبيهات الهواتف.", icon: "bell" },
   backup: { label: "النسخ الاحتياطي", detail: "نسخة كل ساعة من قاعدة البيانات.", icon: "download" },
@@ -59,6 +60,7 @@ const METRICS: Record<string, string> = {
   deliveries24h: "إشعارات وصلت خلال ٢٤ ساعة",
   diskUsedPercent: "٪ مستخدمة من القرص",
   diskFreeGb: "غيغابايت متاحة",
+  mapAgeDays: "عمر بيانات الطرق بالأيام",
 };
 
 const STATUS: Record<Status, { label: string; tone: Tone }> = {

@@ -16,6 +16,8 @@
 
     * `disk` (value: `"disk"`)
 
+    * `map` (value: `"map"`)
+
     * `otp` (value: `"otp"`)
 
     * `push` (value: `"push"`)

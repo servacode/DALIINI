@@ -134,3 +134,10 @@ workflow over SSH. Both are started by hand, and rollback is a deploy of the pre
 (DECISION-081). Backups run hourly, and a restore drill runs on the first Sunday of each month
 and writes evidence to `/srv/daliini/evidence/`. The system page watches the disk; an outside
 uptime service watches the server (`docs/runbooks/monitoring.md`).
+
+The base map and routing come from the server itself, under `maps.<ROOT>` (DECISION-082).
+Martin serves the tiles, the Arabic glyphs, the icons and the style; Valhalla serves routes, by
+POST only. `infrastructure/production/map/build-map.sh` rebuilds both from OpenStreetMap
+monthly. The style's one source is `maps/raqqa.style.json`; `bind-style.py` points it at a
+host. `map-labels` (CI) and the **Map build** workflow draw it in a browser and fail when
+Arabic names are not joined or not placed.

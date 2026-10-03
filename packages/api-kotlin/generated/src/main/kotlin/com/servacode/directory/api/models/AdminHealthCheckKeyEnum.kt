@@ -21,9 +21,9 @@ import kotlinx.serialization.Serializable
 
 
 /**
- * * `database` - database * `redis` - redis * `worker` - worker * `scheduler` - scheduler * `storage` - storage * `disk` - disk * `otp` - otp * `push` - push * `backup` - backup * `errors` - errors * `maintenance` - maintenance
+ * * `database` - database * `redis` - redis * `worker` - worker * `scheduler` - scheduler * `storage` - storage * `disk` - disk * `map` - map * `otp` - otp * `push` - push * `backup` - backup * `errors` - errors * `maintenance` - maintenance
  *
- * Values: database,redis,worker,scheduler,storage,disk,otp,push,backup,errors,maintenance
+ * Values: database,redis,worker,scheduler,storage,disk,map,otp,push,backup,errors,maintenance
  */
 @Serializable
 enum class AdminHealthCheckKeyEnum(val value: kotlin.String) {
@@ -45,6 +45,9 @@ enum class AdminHealthCheckKeyEnum(val value: kotlin.String) {
 
     @SerialName(value = "disk")
     disk("disk"),
+
+    @SerialName(value = "map")
+    map("map"),
 
     @SerialName(value = "otp")
     otp("otp"),

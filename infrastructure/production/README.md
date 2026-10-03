@@ -5,8 +5,9 @@ stack with its own env file, project name and domain.
 
 | What | Where |
 |---|---|
-| The stack | `compose.yml` (API, worker, beat, migrations, site, console, WhatsApp bot, PostgreSQL/PostGIS, Redis, Caddy, the backup tool) |
-| TLS and the four names | `Caddyfile`: `<ROOT>`, `www.<ROOT>` → `<ROOT>`, `api.<ROOT>`, `admin.<ROOT>` |
+| The stack | `compose.yml` (API, worker, beat, migrations, site, console, WhatsApp bot, PostgreSQL/PostGIS, Redis, Caddy, the map's Martin and Valhalla, the backup tool) |
+| TLS and the five names | `Caddyfile`: `<ROOT>`, `www.<ROOT>` → `<ROOT>`, `api.<ROOT>`, `admin.<ROOT>`, `maps.<ROOT>` |
+| The base map and routing | `map/build-map.sh` (monthly, `systemd/daliini-map.*`), the style and icons in `maps/` |
 | Every setting | `production.env.example`, copied to `/srv/daliini/production.env` on the server |
 | Hourly backup, monthly restore drill | `systemd/`, `restore-drill.sh` |
 | Deploying a commit | `deploy.sh`, run by `.github/workflows/deploy.yml` over SSH |
@@ -19,19 +20,20 @@ loses neither.
 ## The server
 
 - Debian 12 or Ubuntu 24.04, 4 GB of memory and 2 vCPU to start, 60 GB of disk. Docker Engine
-  with the compose plugin (`docs.docker.com/engine/install`).
+  with the compose plugin (`docs.docker.com/engine/install`), and `python3` (it ships with both).
+  The map takes about 5 GB of that disk: two builds kept, plus Planetiler's sources.
 - A user for deploys in the `docker` group; SSH by key only; the firewall open on 22, 80 and
   443 only (`ufw allow OpenSSH && ufw allow 80,443/tcp && ufw allow 443/udp && ufw enable`).
 - Unattended security upgrades on (`apt install unattended-upgrades`).
 
 ## DNS and TLS (Cloudflare)
 
-1. Point `<ROOT>`, `www`, `api` and `admin` at the server (A, and AAAA if it has IPv6).
+1. Point `<ROOT>`, `www`, `api`, `admin` and `maps` at the server (A, and AAAA if it has IPv6).
 2. Proxied (orange cloud) is fine. SSL/TLS mode: **Full (strict)**. Leave **Always Use HTTPS**
    off: certificate renewals answer a challenge over plain HTTP, and Caddy redirects every other
    plain request itself.
 3. Caddy obtains and renews the certificates on its first start. If the first issuance fails
-   behind the proxy, switch the four records to DNS only (grey cloud), start Caddy, and turn the
+   behind the proxy, switch the five records to DNS only (grey cloud), start Caddy, and turn the
    proxy back on once the certificates exist.
 
 Caddy believes Cloudflare's `CF-Connecting-IP` only from Cloudflare's own ranges, listed in the
@@ -69,6 +71,32 @@ docker compose --env-file /srv/daliini/production.env logs -f whatsapp-bot
 Check from outside: `https://api.<ROOT>/health/ready/` answers `{"status": "ready", ...}`,
 `https://<ROOT>/` is the site, `https://admin.<ROOT>/login` the console.
 
+## The map
+
+The base map and the app's routing are this server's own (DECISION-082), under `maps.<ROOT>`.
+`map/build-map.sh` downloads Syria's OpenStreetMap extract from Geofabrik and builds two things
+from it:
+- the vector tiles, with Planetiler;
+- Valhalla's routing graph.
+
+It binds the style to `maps.<ROOT>` and switches Martin and Valhalla to the new build. It then
+asks both through Caddy, and goes back to the previous build if they do not answer.
+
+The first build takes 20 to 40 minutes and downloads about 1.4 GB. Until it finishes, the site
+and the app have no map. Everything else works. Run it after the first start, then let the
+timer rebuild it monthly:
+
+```sh
+sudo cp systemd/daliini-map.service systemd/daliini-map.timer /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable --now daliini-map.timer
+sudo systemctl start daliini-map.service && journalctl -u daliini-map -n 30
+```
+
+Check it at `https://maps.<ROOT>/style/daliini`, and on the console's «حالة النظام» page, card
+«الخريطة والمسارات», which also shows how old the road data is. On a 4 GB server the build
+runs Planetiler with a 1.5 GB heap (`MAP_BUILD_HEAP`) at low priority, next to the running
+stack.
+
 ## Backups
 
 ```sh
@@ -96,9 +124,9 @@ Releases are images on GHCR, and a deploy is `deploy.sh` run over SSH (DECISION-
 `docs/runbooks/deploy.md` has the sequence. Once, for each environment:
 
 1. **GitHub → Settings → Environments → `production`** (and `staging`):
-   - *Variables*: `ROOT_DOMAIN`, `MEDIA_ORIGIN`, `SUPPORT_EMAIL`, `PRIVACY_CONTACT_EMAIL`, and
-     if used `MAP_STYLE_URL`, `MAP_ORIGINS`, `PLAY_STORE_URL`, `APP_STORE_URL` and
-     `APP_DOWNLOAD_URL`. The site's image is built with them.
+   - *Variables*: `ROOT_DOMAIN`, `MEDIA_ORIGIN`, `SUPPORT_EMAIL`, `PRIVACY_CONTACT_EMAIL`,
+     `MAP_STYLE_URL` (`https://maps.<ROOT>/style/daliini`), and if used `PLAY_STORE_URL`,
+     `APP_STORE_URL` and `APP_DOWNLOAD_URL`. The site's image is built with them.
    - *Secrets*: `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY` (the private half of a key
      made for deploys only: `ssh-keygen -t ed25519 -f daliini-deploy -N ''`, with its `.pub`
      in the deploy user's `~/.ssh/authorized_keys`), and `DEPLOY_KNOWN_HOSTS`

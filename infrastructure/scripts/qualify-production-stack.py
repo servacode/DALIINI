@@ -86,6 +86,18 @@ assert "--max-rpo-minutes 60" in restore and "restore_evidence.py" in restore
 for script in ("deploy.sh", "restore-drill.sh", "smoke.sh"):
     assert (STACK / script).stat().st_mode & 0o111, f"{script} is not executable"
 
+# The map host (DECISION-082): Martin and Valhalla, pinned, behind Caddy's fifth name; routes
+# only by POST; the build, the binding, the fixture and the local server beside the stack.
+for name in ("martin", "valhalla"):
+    assert name in services, f"the stack has no {name}"
+    assert not services[name]["image"].endswith(":latest"), f"{name} must be pinned"
+assert "maps.{$ROOT_DOMAIN}" in caddyfile, "the Caddyfile does not serve maps.<ROOT>"
+assert "method POST\n\t\t\tpath /route" in caddyfile, "routes are taken by POST only"
+for script in ("map/build-map.sh", "map/serve.sh", "map/bind-style.py", "map/fixture.py"):
+    assert (STACK / script).stat().st_mode & 0o111, f"{script} is not executable"
+assert "OnCalendar=Sun *-*-08..14" in (STACK / "systemd" / "daliini-map.timer").read_text()
+assert (ROOT / "maps" / "sprite" / "daliini" / "poi-pharmacy.svg").is_file()
+
 for path in [
     "infrastructure/production/README.md",
     "docs/runbooks/deploy.md",

@@ -46,6 +46,8 @@ x-backend-env: &backend-env
   WHATSAPP_TEMPLATE_NAME: ${WHATSAPP_TEMPLATE_NAME:-}
   WHATSAPP_TEMPLATE_LANGUAGE: ${WHATSAPP_TEMPLATE_LANGUAGE:-ar}
   WHATSAPP_BOT_URL: http://whatsapp-bot:8085
+  MAP_TILES_INTERNAL_URL: http://martin:3000
+  ROUTING_INTERNAL_URL: http://valhalla:8002
   WHATSAPP_BOT_TOKEN: ${WHATSAPP_BOT_TOKEN:-}
   PUSH_PROVIDER: ${PUSH_PROVIDER:?}
   FCM_PROJECT_ID: ${FCM_PROJECT_ID:-}
@@ -251,6 +253,38 @@ services:
       NEXT_PUBLIC_ROOT_DOMAIN: ${ROOT_DOMAIN:?}
     depends_on:
       - api
+    logging: *logging
+
+  # The base map (DECISION-082): the PMTiles archive, the style bound to maps.<ROOT>, glyphs
+  # generated from the brand's Arabic font and the icons drawn for the map. map/build-map.sh
+  # builds the archive and the routing graph into $MAP_DIR/releases/ and points
+  # $MAP_DIR/current at the newest; until the first build Martin has nothing to serve and
+  # restarts, which costs the site its map and nothing else.
+  martin:
+    image: ghcr.io/maplibre/martin:1.16.1
+    restart: unless-stopped
+    command:
+      - /map/syria.pmtiles
+      - --font
+      - /fonts
+      - --sprite
+      - /sprites/daliini
+      - --style
+      - /map/styles
+    volumes:
+      - ${MAP_DIR:-/srv/daliini/map}/current:/map:ro
+      - ../../packages/design-tokens/fonts/android/font:/fonts:ro
+      - ../../maps/sprite/daliini:/sprites/daliini:ro
+    logging: *logging
+
+  # Routing for the app's guidance (DECISION-082), over the graph built from the same extract.
+  # Caddy lets through only POST /route and GET /status.
+  valhalla:
+    image: ghcr.io/valhalla/valhalla:3.9.0
+    restart: unless-stopped
+    command: ["valhalla_service", "/data/valhalla.json", "2"]
+    volumes:
+      - ${MAP_DIR:-/srv/daliini/map}/current/valhalla:/data:ro
     logging: *logging
 
   # Hourly, by the server's own timer (README.md): `docker compose run --rm backup`.

@@ -1,4 +1,4 @@
-# The server's front door (DECISION-080): TLS, the four names, and the visitor's real address.
+# The server's front door (DECISION-080): TLS, the five names, and the visitor's real address.
 #
 # Certificates are Caddy's own (Let's Encrypt, renewed by itself). Behind Cloudflare, set SSL/TLS
 # to "Full (strict)" and leave Cloudflare's "Always Use HTTPS" off: renewals answer a challenge
@@ -51,5 +51,48 @@ admin.{$ROOT_DOMAIN} {
 	import edge
 	reverse_proxy admin:10000 {
 		header_up X-Forwarded-For {client_ip}
+	}
+}
+
+# The base map and the routing engine (DECISION-082). Martin serves the style, the tiles, the
+# glyphs and the icons; they change only when the map is rebuilt (monthly), so browsers and
+# Cloudflare keep them a day, and the style an hour so a rebuild reaches everyone the same day.
+# Valhalla is reached for one thing, a route, and only by POST: a route's body holds two
+# positions, Valhalla writes each request line to its log, and positions must not be in a log.
+# Its other actions (matrices, isochrones) are heavy and nothing here uses them.
+maps.{$ROOT_DOMAIN} {
+	import edge
+	handle_path /routing/* {
+		@route {
+			method POST
+			path /route
+		}
+		@status {
+			method GET
+			path /status
+		}
+		handle @route {
+			reverse_proxy valhalla:8002 {
+				header_down Cache-Control "no-store"
+			}
+		}
+		handle @status {
+			reverse_proxy valhalla:8002 {
+				header_down Cache-Control "no-store"
+			}
+		}
+		handle {
+			respond 404
+		}
+	}
+	handle /style/* {
+		reverse_proxy martin:3000 {
+			header_down Cache-Control "public, max-age=3600"
+		}
+	}
+	handle {
+		reverse_proxy martin:3000 {
+			header_down Cache-Control "public, max-age=86400"
+		}
 	}
 }

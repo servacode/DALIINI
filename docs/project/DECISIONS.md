@@ -1760,6 +1760,66 @@ they restore. A full disk, which stops the database, would have shown nowhere.
   (`docs/runbooks/monitoring.md`) watches `/health/live/`, `/health/ready/` and the site. A
   check that runs on the server cannot report that the server is down.
 
+## DECISION-082 — The map and its routing are served from the platform's own host
+
+**Date:** 2026-10-03 · **Phase 6.3 of the roadmap.** Builds on DECISION-071 and DECISION-081.
+
+**Why:** the style named another project's hosts for its glyphs and icons, its tiles were served
+only on a developer's machine, and routing ran only there too. The style also carried an
+expression that MapLibre on the web refuses outright. `poi-dot`'s radius chose between two zoom
+interpolations inside a `case`. Measured in a browser on 2026-10-03, the site's map did not draw
+at all, not merely that one layer.
+
+**Decision:**
+
+* **One more name, `maps.<ROOT>`, behind the same Caddy.**
+  * Martin 1.16.1 serves:
+    * the PMTiles archive as XYZ tiles (`/syria/{z}/{x}/{y}`);
+    * glyphs generated from the brand's IBM Plex Sans Arabic (`/font/...`), which covers Arabic
+      Presentation Forms-B in full and most of A;
+    * the sprite drawn from `maps/sprite/daliini` (four icons in the brand's colours);
+    * the bound style (`/style/daliini`).
+  * Valhalla 3.9.0 answers routes under `/routing/`. Caddy forwards only `POST /route` and
+    `GET /status` to it. Valhalla logs each request line, so a GET would put both positions
+    in its log; the other actions are heavy and unused.
+  * Tiles, glyphs and icons are cached for a day and the style for an hour. Routes are never
+    cached.
+* **Built on the server from OpenStreetMap.** `infrastructure/production/map/build-map.sh` runs
+  monthly from a systemd timer (second Sunday) and does the following:
+  * it downloads Geofabrik's Syria extract and checks its MD5;
+  * Planetiler builds OpenMapTiles-schema tiles with Arabic and English names;
+  * Valhalla builds its graph from the same file;
+  * `bind-style.py` writes the style, with the tiles, glyphs and icons on `maps.<ROOT>`, the
+    fonts swapped for Plex, and the zoom range and bounds read from the archive;
+  * it switches `$MAP_DIR/current` to the new build and asks both services through Caddy,
+    switching back if they do not answer;
+  * two builds are kept.
+* **The reference style stays the one source.** `maps/raqqa.style.json` keeps its layer ids,
+  because the app inserts its route and markers at its anchors. The `poi-dot` radius now
+  interpolates by zoom at the top, with the class chosen at each stop; the values are
+  unchanged.
+* **What holds it.**
+  * `fixture.py` writes a one-tile PMTiles archive of central Raqqa in the same schema, with
+    Arabic names on a city, a town, a street and a pharmacy.
+  * The stack smoke asks every map path through Caddy. It also checks that a GET route is
+    refused.
+  * A CI job, `map-labels`, draws the fixture with the site's own MapLibre and RTL plugin in
+    Chromium. It fails unless:
+    * the plugin loaded from the site's own path (a check of the site's setup: MapLibre 6
+      joins Arabic letters by itself, measured with the plugin missing);
+    * glyphs in the presentation-form ranges were requested, which happens only once letters
+      have been joined;
+    * every expected name was placed;
+    * the map reported no error.
+  * The **Map build** workflow builds the real map of Syria. It runs on changes to the map, monthly
+    and by hand. It draws Raqqa, Damascus and Aleppo the same way, and asks for a route in Raqqa
+    and in Damascus for car, motorcycle and walking.
+  * The system page gains a `map` check: the tiles, the routing graph, and the graph's age (a
+    warning after 45 days).
+* **The app** reads `https://maps.<ROOT>/style/daliini` and routes through
+  `https://maps.<ROOT>/routing/`. A test holds the adapter to `POST /routing/route`. No screen
+  calls a geocoder: place names come from the API. The unused geocoding setting stays as it is.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

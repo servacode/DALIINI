@@ -16,6 +16,8 @@ reported as "configured" because a setting exists:
 * the hourly backup reported back within the last two hours (`scripts/db-backup.sh`,
   DECISION-081);
 * the server's disk, which the database, each release's images and the logs share;
+* the base map and the routing engine: Martin has the archive, Valhalla has a graph, and the
+  graph is from the last monthly build (DECISION-082);
 * error reporting, and maintenance mode.
 
 A check answers with a status — `ok`, `warning` (working, but someone should look), `failed`
@@ -31,7 +33,7 @@ import urllib.error
 import urllib.request
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from django.conf import settings
@@ -56,6 +58,8 @@ BACKUP_LATE = timedelta(hours=26)
 DAY = timedelta(hours=24)
 # A full disk stops the database (DECISION-081): warn with room left to clean up, fail before it
 # is too late to.
+# The map is rebuilt monthly (DECISION-082); a graph older than a missed month is stale.
+MAP_STALE = timedelta(days=45)
 DISK_WARNING = 80
 DISK_FAILED = 90
 GIB = 1024**3
@@ -192,6 +196,61 @@ def probe_bot() -> tuple[str, int | None]:
     except Exception:
         logger.warning("health.bot_unreachable", exc_info=True)
         return "unreachable", None
+
+
+def _read_json(url: str) -> dict[str, Any]:
+    import json
+
+    with urllib.request.urlopen(url, timeout=PROBE_TIMEOUT) as response:
+        body = json.loads(response.read() or b"{}")
+    return body if isinstance(body, dict) else {}
+
+
+def probe_map() -> Check:
+    """The base map and the routing engine, asked on the stack's network (DECISION-082).
+
+    The tiles answer when Martin lists the archive; routing answers when Valhalla reports a
+    graph, whose age says whether the monthly rebuild ran.
+    """
+    tiles = str(getattr(settings, "MAP_TILES_INTERNAL_URL", "") or "").rstrip("/")
+    routing = str(getattr(settings, "ROUTING_INTERNAL_URL", "") or "").rstrip("/")
+    if not tiles and not routing:
+        return Check("map", "off", "الخريطة لا تُخدم من هذا الخادم.")
+    start = time.perf_counter()
+    drawn = False
+    if tiles:
+        try:
+            drawn = "syria" in _read_json(f"{tiles}/catalog").get("tiles", {})
+        except Exception:
+            logger.warning("health.map_unreachable", exc_info=True)
+    built: datetime | None = None
+    if routing:
+        try:
+            modified = int(_read_json(f"{routing}/status").get("tileset_last_modified") or 0)
+            built = datetime.fromtimestamp(modified, tz=UTC) if modified > 0 else None
+        except Exception:
+            logger.warning("health.routing_unreachable", exc_info=True)
+    latency = _ms(start)
+    if tiles and not drawn:
+        return Check("map", "failed", "الخريطة لا تُرسم: خادمها لا يجيب أو لم تُبنَ بعد.", latency)
+    if routing and built is None:
+        return Check(
+            "map", "warning", "الخريطة تعمل والتوجيه متوقف: لا بيانات طرق عند محركه.", latency
+        )
+    if built is None:
+        return Check("map", "ok", "الخريطة تعمل.", latency)
+    age = timezone.now() - built
+    metrics = {"mapAgeDays": age.days}
+    if age > MAP_STALE:
+        summary = f"بيانات الطرق عمرها {age.days} يوماً: التحديث الشهري لم يجرِ."
+        return Check("map", "warning", summary, latency, metrics=metrics)
+    return Check(
+        "map",
+        "ok",
+        f"الخريطة والتوجيه يعملان. بيانات الطرق عمرها {age.days} يوماً.",
+        latency,
+        metrics=metrics,
+    )
 
 
 # --------------------------------------------------------------------------------------
@@ -430,10 +489,11 @@ def _settled(future: Future[Any], fallback: Any) -> Any:
 def run_checks() -> dict[str, Any]:
     """Every check, in the order the page shows them, and the worst status among them."""
     now = timezone.now()
-    with ThreadPoolExecutor(max_workers=3, thread_name_prefix="health") as pool:
+    with ThreadPoolExecutor(max_workers=4, thread_name_prefix="health") as pool:
         queue = pool.submit(probe_queue)
         storage = pool.submit(probe_storage)
         bot = pool.submit(probe_bot)
+        base_map = pool.submit(probe_map)
         database = check_database()
         signals = _signals()
         scheduler = check_scheduler(signals.get(SCHEDULER), now)
@@ -448,6 +508,7 @@ def run_checks() -> dict[str, Any]:
         )
         otp = check_otp(signals.get(OTP), _settled(bot, ("unreachable", None)), now)
         files = _settled(storage, Check("storage", "failed", "تعذّر الفحص."))
+        map_check = _settled(base_map, Check("map", "failed", "تعذّر الفحص."))
     checks = [
         database,
         redis,
@@ -455,6 +516,7 @@ def run_checks() -> dict[str, Any]:
         scheduler,
         files,
         check_disk(),
+        map_check,
         otp,
         push,
         backup,

@@ -116,6 +116,17 @@ class ValhallaRoutingProviderTest {
         assertEquals(36.2910, locations[1].jsonObject["lon"]!!.jsonPrimitive.content.toDouble(), 1e-9)
     }
 
+    @Test fun `behind the platform's map host a route is a POST to routing's route`() = runTest {
+        // maps.<ROOT>/routing/ (DECISION-082): Caddy lets through POST /routing/route and nothing
+        // else there, because a GET would carry both positions into the engine's log.
+        val hosted = providerFor(server.url("/routing/").toString())
+        respond(trip())
+        hosted.route(origin, destination, RoutingProfile.DRIVING)
+        val request = server.takeRequest()
+        assertEquals("POST", request.method)
+        assertEquals("/routing/route", request.url.encodedPath)
+    }
+
     // B — geometry, at six decimal places.
 
     @Test fun `the shape is decoded at six decimal places`() = runTest {

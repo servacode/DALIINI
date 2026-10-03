@@ -10,15 +10,15 @@ plugins {
 val apiBaseUrl = providers.gradleProperty("DIRECTORY_API_BASE_URL")
     .orElse(providers.environmentVariable("DIRECTORY_API_BASE_URL"))
     .orElse("https://api.<ROOT_DOMAIN>/")
-// The map style, per environment. Local builds use OpenFreeMap's Liberty style, free and
-// without a key, for development only (INT-087). Staging and production have their own settings
-// and stay unset until a provider is decided; the map refuses to render from the placeholder.
+// The map style, per environment. Staging and production read the platform's own map host,
+// maps.<ROOT> (DECISION-082): Martin serves the style, tiles, glyphs and icons, and Valhalla
+// answers routes under /routing/. The map refuses to render from the placeholder.
 val mapStyleUrl = providers.gradleProperty("DIRECTORY_MAP_STYLE_URL")
     .orElse(providers.environmentVariable("DIRECTORY_MAP_STYLE_URL"))
-    .orElse("https://maps.<ROOT_DOMAIN>/style.json")
+    .orElse("https://maps.<ROOT_DOMAIN>/style/daliini")
 val stagingMapStyleUrl = providers.gradleProperty("DIRECTORY_STAGING_MAP_STYLE_URL")
     .orElse(providers.environmentVariable("DIRECTORY_STAGING_MAP_STYLE_URL"))
-    .orElse("https://maps.<ROOT_DOMAIN>/style.json")
+    .orElse("https://maps.<ROOT_DOMAIN>/style/daliini")
 // The province's own map, served from this machine: RahalGo's cartography over vector tiles
 // built from the same OpenStreetMap extract, in the local media store beside the photographs.
 // Reachable from a phone through `adb reverse tcp:9000`.
@@ -27,7 +27,7 @@ val localMapStyleUrl = providers.gradleProperty("DIRECTORY_LOCAL_MAP_STYLE_URL")
     .orElse("http://localhost:9000/directory-public/map/style.json")
 val routingBaseUrl = providers.gradleProperty("DIRECTORY_ROUTING_BASE_URL")
     .orElse(providers.environmentVariable("DIRECTORY_ROUTING_BASE_URL"))
-    .orElse("https://<ROUTING_PROVIDER_HOST>/")
+    .orElse("https://maps.<ROOT_DOMAIN>/routing/")
 // Valhalla on this machine, over Syria's extract, started by scripts/valhalla.sh. Reachable
 // from a phone through `adb reverse tcp:8002`, the same way Django and the media store are.
 val localRoutingBaseUrl = providers.gradleProperty("DIRECTORY_LOCAL_ROUTING_BASE_URL")

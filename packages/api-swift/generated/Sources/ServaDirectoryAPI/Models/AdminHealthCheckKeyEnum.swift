@@ -10,7 +10,7 @@ import Foundation
 import AnyCodable
 #endif
 
-/** * &#x60;database&#x60; - database * &#x60;redis&#x60; - redis * &#x60;worker&#x60; - worker * &#x60;scheduler&#x60; - scheduler * &#x60;storage&#x60; - storage * &#x60;disk&#x60; - disk * &#x60;otp&#x60; - otp * &#x60;push&#x60; - push * &#x60;backup&#x60; - backup * &#x60;errors&#x60; - errors * &#x60;maintenance&#x60; - maintenance */
+/** * &#x60;database&#x60; - database * &#x60;redis&#x60; - redis * &#x60;worker&#x60; - worker * &#x60;scheduler&#x60; - scheduler * &#x60;storage&#x60; - storage * &#x60;disk&#x60; - disk * &#x60;map&#x60; - map * &#x60;otp&#x60; - otp * &#x60;push&#x60; - push * &#x60;backup&#x60; - backup * &#x60;errors&#x60; - errors * &#x60;maintenance&#x60; - maintenance */
 public enum AdminHealthCheckKeyEnum: String, Codable, CaseIterable {
     case database = "database"
     case redis = "redis"
@@ -18,6 +18,7 @@ public enum AdminHealthCheckKeyEnum: String, Codable, CaseIterable {
     case scheduler = "scheduler"
     case storage = "storage"
     case disk = "disk"
+    case map = "map"
     case otp = "otp"
     case push = "push"
     case backup = "backup"
