@@ -1686,3 +1686,13 @@ tr:last-child td { border-bottom: 0; }
 
 /* A map whose style could not be loaded steps aside; the list beside it is the same places. */
 .facility-map[data-failed] { display: none; }
+
+/* The ways to reach a pharmacy on the duty roster, as on a card. */
+.roster-ways {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sd-spacing-xs);
+  margin-block-start: var(--sd-spacing-sm);
+}
+
+.roster-row .meta { align-items: center; }
