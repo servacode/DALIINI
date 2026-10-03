@@ -2518,6 +2518,36 @@ iPhone was its screens, its view models and its words, all in androidMain:
 **Next:** the home and the facility page, then the account, owner, onboarding and settings
 features, the same way; the map and navigation last, with MapLibre's iPhone side.
 
+## DECISION-100 — The iPhone is paused until it is needed; its unmerged work is kept on a branch
+
+**Date:** 2026-10-03 · **Phase 8 of the roadmap.**
+
+**Why:** the launch is the Android app, the site and the console, and the iPhone app will not be
+used for now. Each shared screen still costs a cycle of the iPhone's own CI jobs and its own
+fixes. Moving the Android screens before the launch also changes code nobody needs changed yet.
+
+**Decision (the owner's, 2026-10-03):**
+
+* **No new iPhone work until the owner resumes it.** This covers:
+  * the rest of the shared screens;
+  * the map with MapLibre on the iPhone;
+  * the iPhone's notices (APNs);
+  * moving Android onto the shared Ktor transport;
+  * the App Store.
+* **What is merged stays:** 8.1 to 8.11 (DECISIONS 085 to 095). Android builds the shared code
+  it already uses, so `ios-shared` and `ios-app` keep running on every pull request, guarding
+  the shared modules.
+* **What was not merged is kept, not lost.** It sits on the branch `claude/ios-parked`, on top of
+  `main` as it was at 8.11:
+  * 8.12 to 8.15: the home, the facility page, signing in and the account, and the owner's
+    screens. They were finished and checked locally, and their decisions were drafted as 096
+    to 099.
+  * The fix for 8.12's iPhone test, which failed in CI (pull request #65, closed unmerged).
+  * 8.16, settings and help, unfinished and not verified.
+* **Resuming** means bringing that branch up to date with `main`, re-running each phase's checks,
+  and merging the phases one at a time, as before. Their decision numbers are given out again
+  then, after this one.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.
