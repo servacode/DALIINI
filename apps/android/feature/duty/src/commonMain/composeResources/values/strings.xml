@@ -31,12 +31,4 @@
     <string name="roster_empty">لا توجد مناوبات مسجلة لهذه الفترة</string>
     <string name="roster_province">اختر محافظتك لعرض المناوبات</string>
     <string name="roster_province_action">اختيار المحافظة</string>
-    <!-- A day's name above its list when the week is shown, as "الثلاثاء 29/09". -->
-    <string name="roster_monday">الاثنين</string>
-    <string name="roster_tuesday">الثلاثاء</string>
-    <string name="roster_wednesday">الأربعاء</string>
-    <string name="roster_thursday">الخميس</string>
-    <string name="roster_friday">الجمعة</string>
-    <string name="roster_saturday">السبت</string>
-    <string name="roster_sunday">الأحد</string>
 </resources>

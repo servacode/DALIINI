@@ -61,13 +61,15 @@ through #49 to #52. Phase 7's code is done, and phase 8 has begun:
 | 8.11 | the first screens shared: province, search, ratings and duty, their view models and words in common code, Hilt's subclass for Android | 095 |
 | 8.12 | the home shared, the location question on each platform's own dialog; the iPhone shell is the shared province, home and search | 096 |
 | 8.13 | the facility page shared; the iPhone shell has a back stack, and a facility's call, WhatsApp, share and way there go to the phone's own apps | 097 |
+| 8.14 | signing in and the account shared; the iPhone's photo picker, and a tab bar of the home and the account | 098 |
 
 **Now: phase 8, the iPhone app from the Android code** (DECISION-051). The shared layers move
 into Kotlin Multiplatform one module at a time, each step leaving the Android app green and
 unchanged; everything below the screens is shared, the design system too, and the iPhone app
 builds and is tested in CI, on the screens shared so far. The screens are moving to Compose
-Multiplatform for both apps, one feature at a time: province, search, ratings, duty, the home
-and the facility page are shared (DECISIONS 095 to 097); the account screens are next (ROADMAP ٨). Everything else that remains waits on the owner: the server and domain
+Multiplatform for both apps, one feature at a time: province, search, ratings, duty, the home,
+the facility page, signing in and the account are shared (DECISIONS 095 to 098); the owner's
+screens are next (ROADMAP ٨). Everything else that remains waits on the owner: the server and domain
 (EXT-007, EXT-001), approving the launch texts and graphic, the Play account (EXT-003), and then
 the closed test and the public release, step by step in `docs/runbooks/launch.md`. An owner
 portal on the web was offered at the start of phase 3 and set aside: owners use the Android app.

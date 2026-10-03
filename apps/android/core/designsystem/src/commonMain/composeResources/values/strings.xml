@@ -109,4 +109,9 @@
     <!-- From when to when, and a closure's reason before its period. -->
     <string name="ds_period">من %1$s إلى %2$s</string>
     <string name="ds_closure_with_reason">%1$s • %2$s</string>
+    <!-- The app's main places, as its bar along the bottom names them on both platforms. -->
+    <string name="ds_tab_home">الرئيسية</string>
+    <string name="ds_tab_map">الخريطة</string>
+    <string name="ds_tab_facilities">منشآتي</string>
+    <string name="ds_tab_account">حسابي</string>
 </resources>

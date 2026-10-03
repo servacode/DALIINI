@@ -28,11 +28,14 @@ def main() -> int:
         "apps/android/core/network/src/commonMain/kotlin/com/servacode/directory/core/network/"
         "PublicApiBoundary.kt"
     )
+    # Shared with the iPhone since DECISION-098: the screen and its words are common.
     account_screen = text(
-        "apps/android/feature/account/src/androidMain/kotlin/com/servacode/directory/feature/"
+        "apps/android/feature/account/src/commonMain/kotlin/com/servacode/directory/feature/"
         "account/AccountScreen.kt"
     )
-    account_words = text("apps/android/feature/account/src/androidMain/res/values/strings.xml")
+    account_words = text(
+        "apps/android/feature/account/src/commonMain/composeResources/values/strings.xml"
+    )
 
     require("targetSdk = 36" in convention, "Play RC must target API 36")
     require(
@@ -52,7 +55,7 @@ def main() -> int:
     require("READ_SMS" not in manifest and "READ_CONTACTS" not in manifest, "unexpected permission")
     require("requestAccountDeletion" in boundary, "generated API boundary lacks account deletion")
     # The screen shows the deletion and its confirmation; the words are in the module's own
-    # strings.xml, which is where a second language replaces them.
+    # strings file, which is where a second language replaces them.
     require(
         "AccountCopy.DELETE" in account_screen and "AccountCopy.DELETE_CONFIRM" in account_screen,
         "in-app deletion UI missing",

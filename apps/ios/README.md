@@ -42,7 +42,7 @@ The shared modules' own tests run on the simulator in the `ios-shared` job.
 
 ## Not yet
 
-* The rest of the real screens. The province picker, the home, search and the facility page
-  are already the shared screens (DECISIONS 095 to 097); signing in and the account move next.
+* The rest of the real screens. The directory's screens, signing in and the account are already
+  the shared screens (DECISIONS 095 to 098); the owner's screens move next.
 * The map, notices, and signing for the App Store. Signing needs the owner's Apple developer
   account.

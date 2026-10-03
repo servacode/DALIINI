@@ -40,6 +40,12 @@ object DirectoryWords {
     /** What the app is for. Its name is `DirectoryBrand.NAME`, which is not a translation. */
     val TAGLINE: String @Composable get() = stringResource(Res.string.ds_tagline)
 
+    /** The app's main places, as the bar along the bottom names them (DECISION-098). */
+    val TAB_HOME: String @Composable get() = stringResource(Res.string.ds_tab_home)
+    val TAB_MAP: String @Composable get() = stringResource(Res.string.ds_tab_map)
+    val TAB_FACILITIES: String @Composable get() = stringResource(Res.string.ds_tab_facilities)
+    val TAB_ACCOUNT: String @Composable get() = stringResource(Res.string.ds_tab_account)
+
     /**
      * How far it is, in whichever unit the figure deserves.
      *

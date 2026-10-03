@@ -59,6 +59,19 @@ class ShellNavigationTest {
     }
 
     @Test
+    fun `a tab opens afresh and its own place is never left`() {
+        val navigation = ShellNavigation()
+        navigation.open(ShellPlace.Search)
+        val search = navigation.probe(ShellPlace.Search)
+
+        navigation.tab(ShellPlace.Account)
+        navigation.back()
+
+        assertEquals(listOf<ShellPlace>(ShellPlace.Account), navigation.places)
+        assertTrue(search.cleared)
+    }
+
+    @Test
     fun `a shared facility carries the site's link when the build has one`() {
         assertEquals("Pharmacy\nhttps://example.org/f/f-1", shareText("Pharmacy", "f-1", "example.org"))
         assertEquals("Pharmacy", shareText("Pharmacy", "f-1", " "))

@@ -24,12 +24,12 @@ import com.servacode.directory.core.designsystem.DirectoryIllustrations
 import com.servacode.directory.core.designsystem.DirectoryLoading
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryTopBar
+import com.servacode.directory.core.designsystem.DirectoryWords
 import com.servacode.directory.core.designsystem.FacilityCard
 import com.servacode.directory.core.designsystem.Space
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -143,21 +143,14 @@ object RosterCopy {
         },
     )
 
-    /** "الثلاثاء 29/09": the weekday in the reader's language, the date in digits. */
+    /**
+     * "الثلاثاء 29/09": the weekday in the reader's language, from the shared vocabulary (Monday
+     * first, as `DayOfWeek` counts), and the date in digits.
+     */
     @Composable
     fun day(date: String): String {
         val day = RosterDay.of(date) ?: return date
-        return stringResource(weekday(day.weekday)) + " " + day.digits
-    }
-
-    private fun weekday(day: DayOfWeek): StringResource = when (day) {
-        DayOfWeek.MONDAY -> Res.string.roster_monday
-        DayOfWeek.TUESDAY -> Res.string.roster_tuesday
-        DayOfWeek.WEDNESDAY -> Res.string.roster_wednesday
-        DayOfWeek.THURSDAY -> Res.string.roster_thursday
-        DayOfWeek.FRIDAY -> Res.string.roster_friday
-        DayOfWeek.SATURDAY -> Res.string.roster_saturday
-        DayOfWeek.SUNDAY -> Res.string.roster_sunday
+        return DirectoryWords.weekdays()[day.weekday.ordinal] + " " + day.digits
     }
 }
 

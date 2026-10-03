@@ -11,12 +11,13 @@ import org.w3c.dom.Element
 
 /**
  * The roster's day names were Java's Arabic ones until the screen moved to shared code, where
- * there is no Java (DECISION-095). The words now written in the resources are those same names.
+ * there is no Java (DECISION-095). It now reads the shared vocabulary's (DECISION-098), whose
+ * words are those same names.
  */
 class RosterWeekdaysTest {
     private val words: Map<String, String> by lazy {
         val strings = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-            .parse(File("src/commonMain/composeResources/values/strings.xml"))
+            .parse(File("../../../../packages/design-tokens/generated/android/values/directory_vocabulary.xml"))
             .getElementsByTagName("string")
         (0 until strings.length).map { strings.item(it) as Element }
             .associate { it.getAttribute("name") to it.textContent }
@@ -26,7 +27,7 @@ class RosterWeekdaysTest {
         DayOfWeek.entries.forEach { day ->
             assertEquals(
                 day.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("ar")),
-                words.getValue("roster_" + day.name.lowercase()),
+                words.getValue("vocab_weekday_" + day.name.lowercase()),
             )
         }
     }

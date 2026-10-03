@@ -2622,6 +2622,58 @@ what the home and search open. Four things in it were Android's alone:
 iPhone can sign in; then the owner's screens, onboarding and settings; the map and navigation
 last.
 
+## DECISION-098 — Signing in and the account are shared; the iPhone's photo picker is its own
+
+**Date:** 2026-10-03 · **Phase 8.14 of the roadmap.**
+
+**Why:** with the directory's screens shared (DECISIONS 095 to 097), what stood between the
+iPhone and the rest of the app was signing in. The owner's screens, settings and the notices all
+sit behind the account. These screens were Android's, and so were two things in them:
+* the profile picture, picked with Android's photo picker and read with Android's content
+  resolver;
+* the tab bar's words, which were the app module's own resources.
+
+**Decision:**
+
+* **Sign in, register, recover the password (auth), and the account's screens, their view models
+  and their words move to common code.** The account's screens are the account itself, editing
+  the profile, changing the phone and the password, the favourites, the notices and the recently
+  viewed.
+  * This is the DECISION-095 pattern. Each feature's Hilt subclasses and `…Route` functions are
+    one file of its androidMain: `AuthRoutes.kt` and `AccountRoutes.kt`.
+* **The profile picture is `rememberImagePicker`,** an expect/actual in the account feature that
+  hands back the upload as it will be sent:
+  * **Android:** the same photo picker and `UploadReader` as before.
+  * **iPhone:** the system's PHPicker, which needs no permission because the app sees only the
+    picture chosen. The picture is sent as a JPEG, whatever the library keeps it as (HEIC on most
+    iPhones), and the same 10 MB limit applies.
+
+  The owner's evidence and photographs will use the same picker when the owner's screens move,
+  and it will then leave the account feature for a shared place.
+* **The tab bar's words are the design system's** (`DirectoryWords.TAB_*`), read by Android's bar
+  and the iPhone's.
+* **The duty roster's day names come from the shared vocabulary.** The names are the same words,
+  which the host test still holds to Java's. The seven the roster wrote for itself in
+  DECISION-095 are gone.
+* **The iPhone shell has a tab bar: the home and the account.**
+  * Signed out, the account tab is signing in; signed in, it is the account.
+  * A tab opens afresh, as Android's bar opens its places.
+  * Signing in to rate or save from a facility opens the sign-in page.
+  * The notices open a facility or an owner's duty shifts.
+  * What has not moved yet opens nothing on the iPhone for now: an owner's facilities and
+    invitations, joining as an owner, settings and help.
+  * The phone is listed among the account's sessions by its model.
+* **Every iOS test binary links the system's SQLite.** The view models' tests reach the shared
+  database through the shared fakes (DECISION-092).
+* **Tests:**
+  * Signing in, a refused sign-in and recovery, in common tests, beside the auth repository's
+    tests, now common too.
+  * The favourites' paging and its failure.
+  * The shell's tabs.
+
+**Next:** the owner's screens (claims, onboarding a facility, managing it, invitations), with the
+photo picker made shared; then settings and help; then the map and navigation.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

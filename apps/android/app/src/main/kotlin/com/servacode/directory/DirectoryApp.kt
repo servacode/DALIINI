@@ -12,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,21 +26,22 @@ import com.servacode.directory.core.auth.SessionState
 import com.servacode.directory.core.designsystem.DirectoryBottomBar
 import com.servacode.directory.core.designsystem.DirectoryDestination
 import com.servacode.directory.core.designsystem.DirectoryIcons
+import com.servacode.directory.core.designsystem.DirectoryWords
 import com.servacode.directory.core.model.DirectoryRoute
 import com.servacode.directory.core.model.DeepLinkTarget
 import com.servacode.directory.core.model.LegalPageKey
 import com.servacode.directory.core.model.MapNavigation
 import com.servacode.directory.core.model.NotificationTarget
-import com.servacode.directory.feature.account.AccountScreen
-import com.servacode.directory.feature.account.FavoritesScreen
-import com.servacode.directory.feature.account.NotificationsScreen
-import com.servacode.directory.feature.account.PasswordChangeScreen
-import com.servacode.directory.feature.account.PhoneChangeScreen
-import com.servacode.directory.feature.account.RecentlyViewedScreen
-import com.servacode.directory.feature.account.ProfileEditScreen
-import com.servacode.directory.feature.auth.LoginScreen
-import com.servacode.directory.feature.auth.RecoveryScreen
-import com.servacode.directory.feature.auth.RegisterScreen
+import com.servacode.directory.feature.account.AccountRoute
+import com.servacode.directory.feature.account.FavoritesRoute
+import com.servacode.directory.feature.account.NotificationsRoute
+import com.servacode.directory.feature.account.PasswordChangeRoute
+import com.servacode.directory.feature.account.PhoneChangeRoute
+import com.servacode.directory.feature.account.ProfileEditRoute
+import com.servacode.directory.feature.account.RecentlyViewedRoute
+import com.servacode.directory.feature.auth.LoginRoute
+import com.servacode.directory.feature.auth.RecoveryRoute
+import com.servacode.directory.feature.auth.RegisterRoute
 import com.servacode.directory.feature.bootstrap.BootstrapScreen
 import com.servacode.directory.feature.bootstrap.LocationPermissionScreen
 import com.servacode.directory.feature.bootstrap.StartDestination
@@ -329,7 +329,7 @@ fun DirectoryApp(
             // Signed out, the tab is signing in — not a profile with nothing in it. There is no
             // account to show, so the page that makes one is the page the tab opens.
             if (session != SessionState.SIGNED_IN) {
-                LoginScreen(
+                LoginRoute(
                     onSignedIn = { },
                     onRegister = { navController.navigate(DirectoryRoute.Register) },
                     onRecovery = { navController.navigate(DirectoryRoute.Recovery) },
@@ -339,7 +339,7 @@ fun DirectoryApp(
                 )
                 return@composable
             }
-            AccountScreen(
+            AccountRoute(
                 onFacilities = { navController.navigate(DirectoryRoute.MyFacilities) },
                 // Joining is adding the first facility; there is nothing else to join.
                 onJoinAsOwner = { navController.navigate(DirectoryRoute.Onboarding()) },
@@ -363,7 +363,7 @@ fun DirectoryApp(
             )
         }
         composable<DirectoryRoute.Login> {
-            LoginScreen(
+            LoginRoute(
                 onSignedIn = { navController.popBackStack() },
                 onRegister = { navController.navigate(DirectoryRoute.Register) },
                 onRecovery = { navController.navigate(DirectoryRoute.Recovery) },
@@ -371,7 +371,7 @@ fun DirectoryApp(
             )
         }
         composable<DirectoryRoute.Register> {
-            RegisterScreen(
+            RegisterRoute(
                 onRegistered = {
                     navController.navigate(DirectoryRoute.Account) {
                         popUpTo<DirectoryRoute.Home>()
@@ -383,19 +383,19 @@ fun DirectoryApp(
             )
         }
         composable<DirectoryRoute.Recovery> {
-            RecoveryScreen(
+            RecoveryRoute(
                 onDone = { navController.popBackStack() },
                 onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Favorites> {
-            FavoritesScreen(
+            FavoritesRoute(
                 onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
                 onBack = { navController.popBackStack() },
             )
         }
         composable<DirectoryRoute.Notifications> {
-            NotificationsScreen(
+            NotificationsRoute(
                 onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
                 onOwnerFacilities = { navController.navigate(DirectoryRoute.MyFacilities) },
                 onDuty = { id, date -> navController.navigate(DirectoryRoute.Duty(id, date)) },
@@ -405,14 +405,14 @@ fun DirectoryApp(
             )
         }
         composable<DirectoryRoute.EditProfile> {
-            ProfileEditScreen(
+            ProfileEditRoute(
                 onDone = { navController.popBackStack() },
                 onBack = { navController.popBackStack() },
                 onChangePhone = { navController.navigate(DirectoryRoute.ChangePhone) },
             )
         }
         composable<DirectoryRoute.ChangePhone> {
-            PhoneChangeScreen(
+            PhoneChangeRoute(
                 // Every session ended, this one included: the app goes back to signing in, and
                 // the number it signs in with is now the new one.
                 onChanged = {
@@ -424,7 +424,7 @@ fun DirectoryApp(
             )
         }
         composable<DirectoryRoute.ChangePassword> {
-            PasswordChangeScreen(
+            PasswordChangeRoute(
                 // Every session ended, this one included: the app goes back to signing in.
                 onChanged = {
                     navController.navigate(DirectoryRoute.Login) {
@@ -447,7 +447,7 @@ fun DirectoryApp(
             EmergencyNumbersScreen(onBack = { navController.popBackStack() })
         }
         composable<DirectoryRoute.RecentlyViewed> {
-            RecentlyViewedScreen(
+            RecentlyViewedRoute(
                 onFacility = { navController.navigate(DirectoryRoute.FacilityDetailRoute(it)) },
                 onBack = { navController.popBackStack() },
             )
@@ -578,7 +578,7 @@ private fun DirectoryTabs(
     DirectoryBottomBar(
         listOfNotNull(
             DirectoryDestination(
-                label = stringResource(R.string.app_tab_home),
+                label = DirectoryWords.TAB_HOME,
                 icon = DirectoryIcons.home,
                 selected = current == DirectoryTab.HOME,
             ) {
@@ -590,7 +590,7 @@ private fun DirectoryTabs(
                 }
             },
             DirectoryDestination(
-                label = stringResource(R.string.app_tab_map),
+                label = DirectoryWords.TAB_MAP,
                 icon = DirectoryIcons.map,
                 selected = current == DirectoryTab.MAP,
             ) {
@@ -607,7 +607,7 @@ private fun DirectoryTabs(
                 null
             } else {
                 DirectoryDestination(
-                    label = stringResource(R.string.app_tab_facilities),
+                    label = DirectoryWords.TAB_FACILITIES,
                     icon = DirectoryIcons.hospital,
                     selected = current == DirectoryTab.FACILITIES,
                 ) {
@@ -620,7 +620,7 @@ private fun DirectoryTabs(
                 }
             },
             DirectoryDestination(
-                label = stringResource(R.string.app_tab_account),
+                label = DirectoryWords.TAB_ACCOUNT,
                 icon = DirectoryIcons.person,
                 selected = current == DirectoryTab.ACCOUNT,
             ) {
