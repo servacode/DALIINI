@@ -20,6 +20,9 @@ kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
         }
+        // As in serva.android.library: java.time, which the generated API client and
+        // kotlinx-datetime use on Android, predates minSdk 24 (API 26).
+        enableCoreLibraryDesugaring = true
         withHostTestBuilder {}
     }
     iosArm64()
@@ -36,4 +39,12 @@ kotlin {
             implementation(kotlin("test"))
         }
     }
+}
+
+// Looked up on the project. Inside `dependencies { }`, `extensions` is the dependency
+// handler's own, which holds no version catalog.
+val catalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
+
+dependencies {
+    add("coreLibraryDesugaring", catalog.findLibrary("desugar-jdk-libs").get())
 }

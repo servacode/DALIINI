@@ -25,7 +25,7 @@ def main() -> int:
     app_gradle = text("apps/android/app/build.gradle.kts")
     manifest = text("apps/android/app/src/main/AndroidManifest.xml")
     boundary = text(
-        "apps/android/core/network/src/main/kotlin/com/servacode/directory/core/network/"
+        "apps/android/core/network/src/commonMain/kotlin/com/servacode/directory/core/network/"
         "PublicApiBoundary.kt"
     )
     account_screen = text(

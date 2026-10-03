@@ -11,7 +11,7 @@ val generatedClient = rootDir.resolve("../../../packages/api-kotlin/generated/sr
 // Files that need the Android framework, an AAR, Room, DataStore or Compose. Everything else
 // in these directories is compiled here exactly as the app compiles it.
 val androidOnly = listOf(
-    "**/core/network/NetworkMonitor.kt",
+    "**/core/network/AndroidNetworkMonitor.kt",
     "**/core/network/UploadReader.kt",
     "**/core/network/NetworkBindings.kt",
     // Builds its Retrofit service from the generated client, which is an AAR here.
@@ -50,18 +50,25 @@ val features = listOf(
 // code and its tests are compiled here too, so the JVM harness keeps seeing the whole app. Their
 // androidMain, where Room, DataStore, the Keystore and Hilt's modules live, is not.
 val sharedCores = listOf(
-    "model", "observability", "analytics", "auth", "database", "datastore", "location",
+    "model", "observability", "analytics", "auth", "database", "datastore", "location", "network",
 )
+
+// Shared modules whose Android side is plain JVM code worth compiling here too: the network's
+// transport is Retrofit and OkHttp on the generated client (DECISION-088).
+val sharedCoresWithJvmAndroidSide = listOf("network")
 
 sourceSets {
     main {
         kotlin.srcDir(generatedClient)
-        val platformFreeCores = listOf("network", "maps")
+        val platformFreeCores = listOf("maps")
         for (core in platformFreeCores) {
             kotlin.srcDir(android.resolve("core/$core/src/main/kotlin"))
         }
         for (core in sharedCores) {
             kotlin.srcDir(android.resolve("core/$core/src/commonMain/kotlin"))
+        }
+        for (core in sharedCoresWithJvmAndroidSide) {
+            kotlin.srcDir(android.resolve("core/$core/src/androidMain/kotlin"))
         }
         for (feature in features) {
             kotlin.srcDir(android.resolve("feature/$feature/src/main/kotlin"))
@@ -70,10 +77,12 @@ sourceSets {
     }
     test {
         kotlin.srcDir(android.resolve("core/testing/src/main/kotlin"))
-        kotlin.srcDir(android.resolve("core/network/src/test/kotlin"))
         kotlin.srcDir(android.resolve("core/maps/src/test/kotlin"))
         for (core in sharedCores) {
             kotlin.srcDir(android.resolve("core/$core/src/commonTest/kotlin"))
+        }
+        for (core in sharedCoresWithJvmAndroidSide) {
+            kotlin.srcDir(android.resolve("core/$core/src/androidHostTest/kotlin"))
         }
         for (feature in features) {
             kotlin.srcDir(android.resolve("feature/$feature/src/test/kotlin"))
@@ -112,6 +121,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.datetime)
+    implementation(libs.kotlinx.atomicfu)
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.converter.kotlinx.serialization)
     implementation(libs.retrofit.converter.scalars)

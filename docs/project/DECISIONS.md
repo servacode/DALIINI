@@ -2039,6 +2039,66 @@ Room, the location manager) and with Hilt, which does not exist on iOS.
   and `java.time` throughout.
 * `core:maps` waits for the screens' step, because it is part Compose.
 
+## DECISION-088 — The network's contracts are shared; Android keeps its transport in androidMain
+
+**Date:** 2026-10-03 · **Phase 8.4 of the roadmap; the fourth step of DECISION-085.**
+
+**Why:** every repository talks to the backend through `core:network`'s boundaries, so they have
+to be in common code before any repository can be. The transport behind them is another matter.
+It is Retrofit and OkHttp on a client generated for the JVM, with `java.util.UUID` and
+`java.time` in 270 places, and replacing it is its own step.
+
+**Decision:**
+
+* **`core:network` is a multiplatform module** (`serva.kmp.hilt`, with the serialization
+  plugin).
+  * **`commonMain`** holds what a repository depends on, all with `@Inject` from `core:inject`:
+    * the public, owner, auth and push boundaries and their inputs;
+    * the realtime models, invalidation rules, bus, deduplicator, reconnect policy and the
+      stream's contract;
+    * the maintenance state, envelope, retry policy and coordinator;
+    * push registration and the push payload;
+    * sign-out;
+    * the place-name resolver;
+    * the network monitor's contract;
+    * the API environment.
+  * **`androidMain`** holds Android's transport:
+    * the generated JVM client, compiled from `packages/api-kotlin` as before;
+    * Retrofit and its adapters and mappers;
+    * the OkHttp interceptors (token, request id, refresh, maintenance) and the realtime socket;
+    * Valhalla, OSRM and Nominatim;
+    * the Android network monitor and upload reader;
+    * the Hilt modules.
+  * Nothing about how the Android app talks to the server changes.
+* **What moving to common code changed:**
+  * `Retry-After` dates are read with kotlinx-datetime's RFC 1123 format instead of
+    `java.time`'s, and the envelope's clock is a `kotlin.time.Instant`. The tests for both forms
+    of the header pass unchanged.
+  * The realtime deduplicator's `@Synchronized` became an atomicfu lock. atomicfu 0.26.1 is
+    already in the graph through kotlinx-coroutines; the catalog now names it.
+  * Push registration holds the last token in a `@Volatile` field instead of an
+    `AtomicReference`.
+  * The push payload's day is a `kotlinx.datetime.LocalDate`. Its only reader, the notice
+    intent, uses its ISO text, which is the same.
+  * The place-name resolver's clock is `kotlin.time.Clock` instead of `System.currentTimeMillis`.
+  * Multiplatform modules now enable core-library desugaring on their Android target, as the
+    Android libraries always have. Without it lint refused the generated client's `java.time`
+    at minSdk 24.
+* **Tests:**
+  * Those whose subjects are common moved to `commonTest` on `kotlin.test`, so they also run on
+    the iPhone simulator: reconnect, realtime config and invalidation, deduplication, push
+    payload and registration, notification permission.
+  * Those that drive OkHttp's mock server stay JUnit tests in `androidHostTest`.
+  * 119 tests before, 119 after.
+* **The JVM harness** compiles the module's common code and, since it is plain JVM code, its
+  Android transport as well, with their tests. The qualifiers read the files where they now
+  live.
+
+**Next:** a shared transport. Ktor on a client generated for Kotlin Multiplatform (openapi-generator's
+`multiplatform` library, with dates mapped to `kotlin.time.Instant`, since kotlinx-datetime 0.8
+no longer has its own `Instant`), implementing these same boundaries for iOS. Android can move
+to it once it is proven.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

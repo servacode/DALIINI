@@ -51,14 +51,16 @@ through #49 to #52. Phase 7's code is done, and phase 8 has begun:
 | 8.1 | a Kotlin Multiplatform convention; observability and analytics shared and tested on the iPhone simulator | 085 |
 | 8.2 | the models shared: Damascus dates on kotlinx-datetime, the site's links read in common code | 086 |
 | 8.3 | the session, cache, preferences and location shared, Android's parts in androidMain; `@Inject` usable in common code | 087 |
+| 8.4 | the network's contracts shared; Android's Retrofit and OkHttp transport in androidMain, unchanged | 088 |
 
 **Now: phase 8, the iPhone app from the Android code** (DECISION-051). The shared layers move
 into Kotlin Multiplatform one module at a time, each step leaving the Android app green and
-unchanged; the models and the core layers are shared, and the network layer is next (ROADMAP ٨).
-Everything else that remains waits on the owner: the server and domain (EXT-007, EXT-001),
-approving the launch texts and graphic, the Play account (EXT-003), and then the closed test and
-the public release, step by step in `docs/runbooks/launch.md`. An owner portal on the web was
-offered at the start of phase 3 and set aside: owners use the Android app.
+unchanged; the models, the core layers and the network's contracts are shared, and a shared
+transport for iOS is next (ROADMAP ٨). Everything else that remains waits on the owner: the
+server and domain (EXT-007, EXT-001), approving the launch texts and graphic, the Play account
+(EXT-003), and then the closed test and the public release, step by step in
+`docs/runbooks/launch.md`. An owner portal on the web was offered at the start of phase 3 and set
+aside: owners use the Android app.
 
 Android has caught up with every server feature, a trip survives a locked screen, and builds
 number themselves. What remains of phase 5 needs a real phone: a full check on the device, a road

@@ -71,13 +71,13 @@ def check_onboarding() -> None:
 
 def check_generated_boundary() -> None:
     boundary = read(
-        "core/network/src/main/kotlin/com/servacode/directory/core/network/OwnerApiBoundary.kt"
+        "core/network/src/commonMain/kotlin/com/servacode/directory/core/network/OwnerApiBoundary.kt"
     )
     # Before P10 this boundary failed closed because no generated client existed. One exists
     # now, so what has to hold is that the boundary stays a domain interface: no transport type
     # crosses it, and the generated adapter is the only implementation.
     adapter = read(
-        "core/network/src/main/kotlin/com/servacode/directory/core/network/api/GeneratedOwnerApi.kt"
+        "core/network/src/androidMain/kotlin/com/servacode/directory/core/network/api/GeneratedOwnerApi.kt"
     )
     require("interface OwnerApiBoundary" in boundary, "owner boundary interface missing")
     require(

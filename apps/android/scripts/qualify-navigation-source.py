@@ -27,7 +27,7 @@ def check_provider_configuration() -> None:
         "core/maps/src/main/kotlin/com/servacode/directory/core/maps/NavigationModels.kt"
     )
     adapters = read(
-        "core/network/src/main/kotlin/com/servacode/directory/core/network/MapProviderAdapters.kt"
+        "core/network/src/androidMain/kotlin/com/servacode/directory/core/network/MapProviderAdapters.kt"
     )
     for key in (
         "DIRECTORY_ROUTING_BASE_URL",
