@@ -79,7 +79,10 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
         key: "duty",
         label: "المناوبات",
         icon: "moon",
-        pages: [{ href: "/duty", label: "جدول المناوبات", permission: "admin.duty.read" }],
+        pages: [
+          { href: "/duty", label: "جدول المناوبات", permission: "admin.duty.read" },
+          { href: "/duty/import", label: "الاستيراد والقوالب", permission: "admin.duty.manage" },
+        ],
       },
       {
         key: "facilities",

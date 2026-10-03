@@ -247,6 +247,26 @@ describe("review decisions", () => {
   });
 });
 
+describe("duty rotations", () => {
+  it("sends calendar days as the dates the generated client turns back into days", async () => {
+    const { apis, calls } = spyApis();
+
+    await WRITES.dutyRotationGenerate(apis, {
+      id: "rot-1",
+      fromDate: "2026-12-01",
+      toDate: "2026-12-31",
+      apply: true,
+    });
+    await WRITES.dutyRotationCreate(apis, { name: "ليلية", anchorDate: "2026-12-01" });
+
+    const generate = calls[0]?.args[0] as { dutyRotationGenerate: { fromDate: Date; apply: boolean } };
+    expect(generate.dutyRotationGenerate.fromDate.toISOString().slice(0, 10)).toBe("2026-12-01");
+    expect(generate.dutyRotationGenerate.apply).toBe(true);
+    const created = calls[1]?.args[0] as { dutyRotationRequest: { anchorDate: Date } };
+    expect(created.dutyRotationRequest.anchorDate.toISOString().slice(0, 10)).toBe("2026-12-01");
+  });
+});
+
 describe("facility editing", () => {
   it("creates with the whole body", async () => {
     const { apis, calls } = spyApis();

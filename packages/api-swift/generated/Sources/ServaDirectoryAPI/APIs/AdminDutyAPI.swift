@@ -13,6 +13,56 @@ import AnyCodable
 open class AdminDutyAPI {
 
     /**
+     Read a duty roster from a spreadsheet; preview it, or apply it
+     
+     - parameter file: (form) CSV (UTF-8) or XLSX, first sheet, header row first. 
+     - parameter provinceId: (form)  
+     - parameter apply: (form) False previews; true writes, refused if any row has an error. (optional, default to false)
+     - returns: DutyImportResult
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminDutyImport(file: URL, provinceId: UUID, apply: Bool? = nil) async throws -> DutyImportResult {
+        return try await adminDutyImportWithRequestBuilder(file: file, provinceId: provinceId, apply: apply).execute().body
+    }
+
+    /**
+     Read a duty roster from a spreadsheet; preview it, or apply it
+     - POST /api/v1/admin/duty/import/
+     - Columns in Arabic or English: the pharmacy (`facilityId`, `pharmacy`/`الصيدلية` by name, or `phone`/`الهاتف`) and either `date`/`التاريخ` with `from`/`من` and `to`/`إلى` in Damascus time (an end at or before the start is the next morning), or `startsAt` and `endsAt`. Every row is checked against the province's pharmacies and the stored shifts. `apply` writes all rows or none, and only when no row has an error; re-applying the same file changes nothing. At most 2000 rows.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter file: (form) CSV (UTF-8) or XLSX, first sheet, header row first. 
+     - parameter provinceId: (form)  
+     - parameter apply: (form) False previews; true writes, refused if any row has an error. (optional, default to false)
+     - returns: RequestBuilder<DutyImportResult> 
+     */
+    open class func adminDutyImportWithRequestBuilder(file: URL, provinceId: UUID, apply: Bool? = nil) -> RequestBuilder<DutyImportResult> {
+        let localVariablePath = "/api/v1/admin/duty/import/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableFormParams: [String: Any?] = [
+            "file": file.encodeToJSON(),
+            "provinceId": provinceId.encodeToJSON(),
+            "apply": apply?.encodeToJSON(),
+        ]
+
+        let localVariableNonNullParameters = APIHelper.rejectNil(localVariableFormParams)
+        let localVariableParameters = APIHelper.convertBoolToString(localVariableNonNullParameters)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "multipart/form-data",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<DutyImportResult>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      The duty roster of a province (or city), day by day
      
      - parameter provinceId: (query)  
@@ -59,6 +109,209 @@ open class AdminDutyAPI {
         let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
 
         let localVariableRequestBuilder: RequestBuilder<AdminDutyRoster>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Save a duty rotation
+     
+     - parameter dutyRotationRequest: (body)  
+     - returns: DutyRotation
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminDutyRotationCreate(dutyRotationRequest: DutyRotationRequest) async throws -> DutyRotation {
+        return try await adminDutyRotationCreateWithRequestBuilder(dutyRotationRequest: dutyRotationRequest).execute().body
+    }
+
+    /**
+     Save a duty rotation
+     - POST /api/v1/admin/duty/rotations/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter dutyRotationRequest: (body)  
+     - returns: RequestBuilder<DutyRotation> 
+     */
+    open class func adminDutyRotationCreateWithRequestBuilder(dutyRotationRequest: DutyRotationRequest) -> RequestBuilder<DutyRotation> {
+        let localVariablePath = "/api/v1/admin/duty/rotations/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: dutyRotationRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<DutyRotation>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Delete a saved duty rotation
+     
+     - parameter rotationId: (path)  
+     - returns: Void
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminDutyRotationDelete(rotationId: UUID) async throws {
+        return try await adminDutyRotationDeleteWithRequestBuilder(rotationId: rotationId).execute().body
+    }
+
+    /**
+     Delete a saved duty rotation
+     - DELETE /api/v1/admin/duty/rotations/{rotation_id}/
+     - The shifts it generated stay; only the template goes.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter rotationId: (path)  
+     - returns: RequestBuilder<Void> 
+     */
+    open class func adminDutyRotationDeleteWithRequestBuilder(rotationId: UUID) -> RequestBuilder<Void> {
+        var localVariablePath = "/api/v1/admin/duty/rotations/{rotation_id}/"
+        let rotationIdPreEscape = "\(APIHelper.mapValueToPathItem(rotationId))"
+        let rotationIdPostEscape = rotationIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{rotation_id}", with: rotationIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return localVariableRequestBuilder.init(method: "DELETE", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Generate a period's shifts from a rotation; preview them, or apply them
+     
+     - parameter rotationId: (path)  
+     - parameter dutyRotationGenerate: (body)  
+     - returns: DutyImportResult
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminDutyRotationGenerate(rotationId: UUID, dutyRotationGenerate: DutyRotationGenerate) async throws -> DutyImportResult {
+        return try await adminDutyRotationGenerateWithRequestBuilder(rotationId: rotationId, dutyRotationGenerate: dutyRotationGenerate).execute().body
+    }
+
+    /**
+     Generate a period's shifts from a rotation; preview them, or apply them
+     - POST /api/v1/admin/duty/rotations/{rotation_id}/generate/
+     - Up to three months at a time. The same checks and all-or-nothing writing as an import; applying a period twice changes nothing.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter rotationId: (path)  
+     - parameter dutyRotationGenerate: (body)  
+     - returns: RequestBuilder<DutyImportResult> 
+     */
+    open class func adminDutyRotationGenerateWithRequestBuilder(rotationId: UUID, dutyRotationGenerate: DutyRotationGenerate) -> RequestBuilder<DutyImportResult> {
+        var localVariablePath = "/api/v1/admin/duty/rotations/{rotation_id}/generate/"
+        let rotationIdPreEscape = "\(APIHelper.mapValueToPathItem(rotationId))"
+        let rotationIdPostEscape = rotationIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{rotation_id}", with: rotationIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: dutyRotationGenerate)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<DutyImportResult>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Change a saved duty rotation
+     
+     - parameter rotationId: (path)  
+     - parameter patchedDutyRotationRequest: (body)  (optional)
+     - returns: DutyRotation
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminDutyRotationUpdate(rotationId: UUID, patchedDutyRotationRequest: PatchedDutyRotationRequest? = nil) async throws -> DutyRotation {
+        return try await adminDutyRotationUpdateWithRequestBuilder(rotationId: rotationId, patchedDutyRotationRequest: patchedDutyRotationRequest).execute().body
+    }
+
+    /**
+     Change a saved duty rotation
+     - PATCH /api/v1/admin/duty/rotations/{rotation_id}/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter rotationId: (path)  
+     - parameter patchedDutyRotationRequest: (body)  (optional)
+     - returns: RequestBuilder<DutyRotation> 
+     */
+    open class func adminDutyRotationUpdateWithRequestBuilder(rotationId: UUID, patchedDutyRotationRequest: PatchedDutyRotationRequest? = nil) -> RequestBuilder<DutyRotation> {
+        var localVariablePath = "/api/v1/admin/duty/rotations/{rotation_id}/"
+        let rotationIdPreEscape = "\(APIHelper.mapValueToPathItem(rotationId))"
+        let rotationIdPostEscape = rotationIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{rotation_id}", with: rotationIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: patchedDutyRotationRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<DutyRotation>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "PATCH", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Saved duty rotations
+     
+     - returns: DutyRotationList
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminDutyRotationsList() async throws -> DutyRotationList {
+        return try await adminDutyRotationsListWithRequestBuilder().execute().body
+    }
+
+    /**
+     Saved duty rotations
+     - GET /api/v1/admin/duty/rotations/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<DutyRotationList> 
+     */
+    open class func adminDutyRotationsListWithRequestBuilder() -> RequestBuilder<DutyRotationList> {
+        let localVariablePath = "/api/v1/admin/duty/rotations/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<DutyRotationList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
 
         return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
     }

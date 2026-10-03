@@ -19,7 +19,13 @@ import type {
   AdminDutyShift,
   AdminDutyShiftCreateRequest,
   ApiError,
+  DutyImportResult,
+  DutyRotation,
+  DutyRotationGenerate,
+  DutyRotationList,
+  DutyRotationRequest,
   PatchedAdminDutyShiftUpdateRequest,
+  PatchedDutyRotationRequest,
 } from '../models/index';
 import {
     AdminDutyRosterFromJSON,
@@ -30,15 +36,51 @@ import {
     AdminDutyShiftCreateRequestToJSON,
     ApiErrorFromJSON,
     ApiErrorToJSON,
+    DutyImportResultFromJSON,
+    DutyImportResultToJSON,
+    DutyRotationFromJSON,
+    DutyRotationToJSON,
+    DutyRotationGenerateFromJSON,
+    DutyRotationGenerateToJSON,
+    DutyRotationListFromJSON,
+    DutyRotationListToJSON,
+    DutyRotationRequestFromJSON,
+    DutyRotationRequestToJSON,
     PatchedAdminDutyShiftUpdateRequestFromJSON,
     PatchedAdminDutyShiftUpdateRequestToJSON,
+    PatchedDutyRotationRequestFromJSON,
+    PatchedDutyRotationRequestToJSON,
 } from '../models/index';
+
+export interface AdminDutyImportRequest {
+    file: Blob;
+    provinceId: string;
+    apply?: boolean;
+}
 
 export interface AdminDutyRosterRetrieveRequest {
     provinceId: string;
     cityId?: string;
     from?: string;
     to?: string;
+}
+
+export interface AdminDutyRotationCreateRequest {
+    dutyRotationRequest: DutyRotationRequest;
+}
+
+export interface AdminDutyRotationDeleteRequest {
+    rotationId: string;
+}
+
+export interface AdminDutyRotationGenerateRequest {
+    rotationId: string;
+    dutyRotationGenerate: DutyRotationGenerate;
+}
+
+export interface AdminDutyRotationUpdateRequest {
+    rotationId: string;
+    patchedDutyRotationRequest?: PatchedDutyRotationRequest;
 }
 
 export interface AdminDutyShiftCreateOperationRequest {
@@ -58,6 +100,88 @@ export interface AdminDutyShiftUpdateRequest {
  * 
  */
 export class AdminDutyApi extends runtime.BaseAPI {
+
+    /**
+     * Columns in Arabic or English: the pharmacy (`facilityId`, `pharmacy`/`الصيدلية` by name, or `phone`/`الهاتف`) and either `date`/`التاريخ` with `from`/`من` and `to`/`إلى` in Damascus time (an end at or before the start is the next morning), or `startsAt` and `endsAt`. Every row is checked against the province\'s pharmacies and the stored shifts. `apply` writes all rows or none, and only when no row has an error; re-applying the same file changes nothing. At most 2000 rows.
+     * Read a duty roster from a spreadsheet; preview it, or apply it
+     */
+    async adminDutyImportRaw(requestParameters: AdminDutyImportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DutyImportResult>> {
+        if (requestParameters['file'] == null) {
+            throw new runtime.RequiredError(
+                'file',
+                'Required parameter "file" was null or undefined when calling adminDutyImport().'
+            );
+        }
+
+        if (requestParameters['provinceId'] == null) {
+            throw new runtime.RequiredError(
+                'provinceId',
+                'Required parameter "provinceId" was null or undefined when calling adminDutyImport().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters['file'] != null) {
+            formParams.append('file', requestParameters['file'] as any);
+        }
+
+        if (requestParameters['provinceId'] != null) {
+            formParams.append('provinceId', requestParameters['provinceId'] as any);
+        }
+
+        if (requestParameters['apply'] != null) {
+            formParams.append('apply', requestParameters['apply'] as any);
+        }
+
+
+        let urlPath = `/api/v1/admin/duty/import/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DutyImportResultFromJSON(jsonValue));
+    }
+
+    /**
+     * Columns in Arabic or English: the pharmacy (`facilityId`, `pharmacy`/`الصيدلية` by name, or `phone`/`الهاتف`) and either `date`/`التاريخ` with `from`/`من` and `to`/`إلى` in Damascus time (an end at or before the start is the next morning), or `startsAt` and `endsAt`. Every row is checked against the province\'s pharmacies and the stored shifts. `apply` writes all rows or none, and only when no row has an error; re-applying the same file changes nothing. At most 2000 rows.
+     * Read a duty roster from a spreadsheet; preview it, or apply it
+     */
+    async adminDutyImport(requestParameters: AdminDutyImportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DutyImportResult> {
+        const response = await this.adminDutyImportRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Days are Damascus calendar days from `from` to `to` inclusive, by default today and the next 13 days, at most 62. Each day lists the shifts of ACTIVE duty pharmacies overlapping it, and `gap` is true when there is none: the rule behind the DUTY_GAP alert. With `cityId`, shifts and gaps are those of that city\'s pharmacies.
@@ -118,6 +242,241 @@ export class AdminDutyApi extends runtime.BaseAPI {
      */
     async adminDutyRosterRetrieve(requestParameters: AdminDutyRosterRetrieveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminDutyRoster> {
         const response = await this.adminDutyRosterRetrieveRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Save a duty rotation
+     */
+    async adminDutyRotationCreateRaw(requestParameters: AdminDutyRotationCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DutyRotation>> {
+        if (requestParameters['dutyRotationRequest'] == null) {
+            throw new runtime.RequiredError(
+                'dutyRotationRequest',
+                'Required parameter "dutyRotationRequest" was null or undefined when calling adminDutyRotationCreate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/duty/rotations/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DutyRotationRequestToJSON(requestParameters['dutyRotationRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DutyRotationFromJSON(jsonValue));
+    }
+
+    /**
+     * Save a duty rotation
+     */
+    async adminDutyRotationCreate(requestParameters: AdminDutyRotationCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DutyRotation> {
+        const response = await this.adminDutyRotationCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * The shifts it generated stay; only the template goes.
+     * Delete a saved duty rotation
+     */
+    async adminDutyRotationDeleteRaw(requestParameters: AdminDutyRotationDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['rotationId'] == null) {
+            throw new runtime.RequiredError(
+                'rotationId',
+                'Required parameter "rotationId" was null or undefined when calling adminDutyRotationDelete().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/duty/rotations/{rotation_id}/`;
+        urlPath = urlPath.replace(`{${"rotation_id"}}`, encodeURIComponent(String(requestParameters['rotationId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * The shifts it generated stay; only the template goes.
+     * Delete a saved duty rotation
+     */
+    async adminDutyRotationDelete(requestParameters: AdminDutyRotationDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.adminDutyRotationDeleteRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Up to three months at a time. The same checks and all-or-nothing writing as an import; applying a period twice changes nothing.
+     * Generate a period\'s shifts from a rotation; preview them, or apply them
+     */
+    async adminDutyRotationGenerateRaw(requestParameters: AdminDutyRotationGenerateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DutyImportResult>> {
+        if (requestParameters['rotationId'] == null) {
+            throw new runtime.RequiredError(
+                'rotationId',
+                'Required parameter "rotationId" was null or undefined when calling adminDutyRotationGenerate().'
+            );
+        }
+
+        if (requestParameters['dutyRotationGenerate'] == null) {
+            throw new runtime.RequiredError(
+                'dutyRotationGenerate',
+                'Required parameter "dutyRotationGenerate" was null or undefined when calling adminDutyRotationGenerate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/duty/rotations/{rotation_id}/generate/`;
+        urlPath = urlPath.replace(`{${"rotation_id"}}`, encodeURIComponent(String(requestParameters['rotationId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DutyRotationGenerateToJSON(requestParameters['dutyRotationGenerate']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DutyImportResultFromJSON(jsonValue));
+    }
+
+    /**
+     * Up to three months at a time. The same checks and all-or-nothing writing as an import; applying a period twice changes nothing.
+     * Generate a period\'s shifts from a rotation; preview them, or apply them
+     */
+    async adminDutyRotationGenerate(requestParameters: AdminDutyRotationGenerateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DutyImportResult> {
+        const response = await this.adminDutyRotationGenerateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Change a saved duty rotation
+     */
+    async adminDutyRotationUpdateRaw(requestParameters: AdminDutyRotationUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DutyRotation>> {
+        if (requestParameters['rotationId'] == null) {
+            throw new runtime.RequiredError(
+                'rotationId',
+                'Required parameter "rotationId" was null or undefined when calling adminDutyRotationUpdate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/duty/rotations/{rotation_id}/`;
+        urlPath = urlPath.replace(`{${"rotation_id"}}`, encodeURIComponent(String(requestParameters['rotationId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PatchedDutyRotationRequestToJSON(requestParameters['patchedDutyRotationRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DutyRotationFromJSON(jsonValue));
+    }
+
+    /**
+     * Change a saved duty rotation
+     */
+    async adminDutyRotationUpdate(requestParameters: AdminDutyRotationUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DutyRotation> {
+        const response = await this.adminDutyRotationUpdateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Saved duty rotations
+     */
+    async adminDutyRotationsListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DutyRotationList>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/duty/rotations/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DutyRotationListFromJSON(jsonValue));
+    }
+
+    /**
+     * Saved duty rotations
+     */
+    async adminDutyRotationsList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DutyRotationList> {
+        const response = await this.adminDutyRotationsListRaw(initOverrides);
         return await response.value();
     }
 

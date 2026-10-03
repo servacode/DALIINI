@@ -1121,6 +1121,30 @@ block accounts. A leaked password was enough to do all of it.
   verifying who they are; they set up a new one at their next sign-in. Enabling, disabling,
   verifying with a recovery code and resetting are all audited.
 
+## DECISION-066 — Duty rosters arrive as files and rotations, previewed before they are written
+
+**Date:** 2026-10-03 · **Phase 2.6 of the roadmap.**
+
+**Why:** the night roster is published by the syndicate or the health directorate as a table, and
+most provinces run it as a fixed rotation. Typing it shift by shift is slow and is where mistakes
+come from.
+
+**Decision:**
+
+* **Import.** `POST /admin/duty/import/` reads a CSV (UTF-8) or XLSX (first sheet) of up to 2,000
+  rows, with Arabic or English headers. A pharmacy is named by id, by name in the province (spelling
+  folded as search folds it; an ambiguous name is an error that asks for the phone) or by phone; a
+  shift by date with from/to in Damascus time (an end at or before the start is the next morning)
+  or by ISO start and end.
+* **Rotations.** A saved `DutyRotation` is an ordered list of pharmacies, fixed hours, how many are
+  on duty a night and the day the first one is. It generates any period of up to three months.
+* **Preview, then all or nothing.** Both answer with every row: what it would do (new, already
+  stored) or why it cannot, including clashes with stored shifts and closures, each tried in its own
+  savepoint and rolled back. Applying is refused while any row has a problem, writes every row in
+  one transaction with source IMPORT, and changes nothing when repeated.
+* **Who hears of it.** Each pharmacy that gains shifts has its owners told once, with the count.
+  Imports, rotation changes and generated periods are audited.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

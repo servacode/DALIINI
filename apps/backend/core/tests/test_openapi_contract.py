@@ -82,6 +82,7 @@ NO_CONTENT_OPERATIONS = {
     ("/api/v1/owner/claims/{claim_id}/evidence/{evidence_id}/", "delete"),
     ("/api/v1/owner/facilities/{facility_id}/invitations/{invitation_id}/", "delete"),
     ("/api/v1/admin/users/{user_id}/mfa/reset/", "post"),
+    ("/api/v1/admin/duty/rotations/{rotation_id}/", "delete"),
 }
 
 PUBLIC_PREFIXES = ("/api/v1/public/",)
