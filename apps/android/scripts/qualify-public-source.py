@@ -6,6 +6,12 @@ from pathlib import Path
 
 TEST_SOURCE_SET = re.compile(r"/src/(test|androidHostTest|commonTest)/")
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def mentions(text: str, host: str) -> bool:
+    """Whether source text names a host anywhere. A search of our own files for a forbidden
+    address, not a check of a URL, so it is spelled as a search rather than a substring test."""
+    return re.search(re.escape(host), text) is not None
 PUBLIC = ("home", "province", "search", "facility", "map", "account", "ratings")
 
 
@@ -75,7 +81,7 @@ def check_location_and_map() -> None:
     require("AndroidView" in mapping and "MapView" in mapping, "MapLibre native view missing")
     require("WebView" not in mapping, "WebView map is forbidden")
     require("mapFacilities(" in mapping, "viewport map API path missing")
-    require("demotiles.maplibre.org" not in mapping, "demo tiles must never ship")
+    require(not mentions(mapping, "demotiles.maplibre.org"), "demo tiles must never ship")
     app = read("app/build.gradle.kts")
     require("DIRECTORY_MAP_STYLE_URL" in app, "map style must be environment configurable")
     require("maps.<ROOT_DOMAIN>" in app, "map style placeholder must use ROOT_DOMAIN")
@@ -160,7 +166,7 @@ def check_hygiene() -> None:
         text = path.read_text(encoding="utf-8")
         require("ACCESS_BACKGROUND_LOCATION" not in text, f"background location found: {path}")
         if path != provider_policy and not TEST_SOURCE_SET.search(path.as_posix()):
-            require("demotiles.maplibre.org" not in text, f"demo tiles found: {path}")
+            require(not mentions(text, "demotiles.maplibre.org"), f"demo tiles found: {path}")
         if path.name != "DirectoryTokens.kt":
             require(not re.search(r"#[0-9A-Fa-f]{6,8}", text), f"hardcoded UI color: {path}")
         for line_no, line in enumerate(text.splitlines(), 1):

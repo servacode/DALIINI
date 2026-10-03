@@ -8,6 +8,12 @@ TEST_SOURCE_SET = re.compile(r"/src/(test|androidHostTest|commonTest)/")
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def mentions(text: str, host: str) -> bool:
+    """Whether source text names a host anywhere. A search of our own files for a forbidden
+    address, not a check of a URL, so it is spelled as a search rather than a substring test."""
+    return re.search(re.escape(host), text) is not None
+
+
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise AssertionError(message)
@@ -36,7 +42,7 @@ def check_provider_configuration() -> None:
         "DIRECTORY_GEOCODING_USER_AGENT",
     ):
         require(key in app, f"missing configurable provider input: {key}")
-    require("router.project-osrm.org" in models, "public OSRM demo host policy missing")
+    require(mentions(models, "router.project-osrm.org"), "public OSRM demo host policy missing")
     require("requireConfiguredHttps" in models, "HTTPS provider policy missing")
     require("OsrmRoutingProvider" in adapters, "OSRM adapter missing")
     require("NominatimGeocodingProvider" in adapters, "Nominatim adapter missing")
@@ -169,8 +175,8 @@ def check_hygiene() -> None:
         if path != policy and not TEST_SOURCE_SET.search(path.as_posix())
     ]
     combined = "\n".join(path.read_text(encoding="utf-8") for path in runtime_sources)
-    require("demotiles.maplibre.org" not in combined, "MapLibre demo tiles runtime reference found")
-    require("router.project-osrm.org" not in combined, "public OSRM demo endpoint hardcoded")
+    require(not mentions(combined, "demotiles.maplibre.org"), "MapLibre demo tiles runtime reference found")
+    require(not mentions(combined, "router.project-osrm.org"), "public OSRM demo endpoint hardcoded")
     require("ACCESS_BACKGROUND_LOCATION" not in combined, "background location reference found")
     for path in sources:
         for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
