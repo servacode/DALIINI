@@ -4,7 +4,14 @@ import re
 import sys
 from pathlib import Path
 
+TEST_SOURCE_SET = re.compile(r"/src/(test|androidHostTest|commonTest)/")
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def mentions(text: str, host: str) -> bool:
+    """Whether source text names a host anywhere. A search of our own files for a forbidden
+    address, not a check of a URL, so it is spelled as a search rather than a substring test."""
+    return re.search(re.escape(host), text) is not None
 
 
 def require(condition: bool, message: str) -> None:
@@ -24,7 +31,7 @@ def nav_text() -> str:
 def check_provider_configuration() -> None:
     app = read("app/build.gradle.kts")
     models = read(
-        "core/maps/src/main/kotlin/com/servacode/directory/core/maps/NavigationModels.kt"
+        "core/maps/src/commonMain/kotlin/com/servacode/directory/core/maps/NavigationModels.kt"
     )
     adapters = read(
         "core/network/src/androidMain/kotlin/com/servacode/directory/core/network/MapProviderAdapters.kt"
@@ -35,7 +42,7 @@ def check_provider_configuration() -> None:
         "DIRECTORY_GEOCODING_USER_AGENT",
     ):
         require(key in app, f"missing configurable provider input: {key}")
-    require("router.project-osrm.org" in models, "public OSRM demo host policy missing")
+    require(mentions(models, "router.project-osrm.org"), "public OSRM demo host policy missing")
     require("requireConfiguredHttps" in models, "HTTPS provider policy missing")
     require("OsrmRoutingProvider" in adapters, "OSRM adapter missing")
     require("NominatimGeocodingProvider" in adapters, "Nominatim adapter missing")
@@ -45,10 +52,10 @@ def check_provider_configuration() -> None:
 
 def check_navigation_engine() -> None:
     engine = read(
-        "feature/navigation/src/main/kotlin/com/servacode/directory/feature/navigation/NavigationEngine.kt"
+        "feature/navigation/src/commonMain/kotlin/com/servacode/directory/feature/navigation/NavigationEngine.kt"
     )
     models = read(
-        "core/maps/src/main/kotlin/com/servacode/directory/core/maps/NavigationModels.kt"
+        "core/maps/src/commonMain/kotlin/com/servacode/directory/core/maps/NavigationModels.kt"
     )
     for state in ("Idle", "Routing", "Navigating", "Rerouting", "Arrived", "Error"):
         require(state in engine, f"navigation state missing: {state}")
@@ -76,7 +83,7 @@ def check_voice_and_map() -> None:
         "ManeuverPhrases" in source and "NavigationWords" in source,
         "maneuver phrase builder missing",
     )
-    words = read("feature/navigation/src/main/res/values/strings.xml")
+    words = read("feature/navigation/src/androidMain/res/values/strings.xml")
     require(
         "nav_maneuver_turn_right" in words and "انعطف يمينًا" in words,
         "Arabic maneuver phrases missing",
@@ -122,7 +129,7 @@ def check_location_policy() -> None:
 def check_product_integration() -> None:
     app = read("app/src/main/kotlin/com/servacode/directory/DirectoryApp.kt")
     facility = read(
-        "feature/facility/src/main/kotlin/com/servacode/directory/feature/facility/FacilityScreen.kt"
+        "feature/facility/src/androidMain/kotlin/com/servacode/directory/feature/facility/FacilityScreen.kt"
     )
     require("BuiltInNavigationScreen" in app, "built-in navigation destination not wired")
     require("DirectoryRoute.BuiltInNavigation" in app, "navigation route not wired")
@@ -135,19 +142,19 @@ def check_product_integration() -> None:
     # travelling, which is everything the preview existed to show.
     require("onDirections" in facility, "facility directions action missing")
     navigation = read(
-        "feature/navigation/src/main/kotlin/com/servacode/directory/feature/navigation/NavigationScreen.kt"
+        "feature/navigation/src/androidMain/kotlin/com/servacode/directory/feature/navigation/NavigationScreen.kt"
     )
     require("frameRoute" in read(
-        "feature/navigation/src/main/kotlin/com/servacode/directory/feature/navigation/NavigationMap.kt"
+        "feature/navigation/src/androidMain/kotlin/com/servacode/directory/feature/navigation/NavigationMap.kt"
     ), "the whole route is no longer framed on opening")
     require("TravelModeRow" in navigation, "the travel modes are not offered on the navigation screen")
 
 
 def check_tests() -> None:
     expected = (
-        "core/maps/src/test/kotlin/com/servacode/directory/core/maps/NavigationModelsTest.kt",
-        "feature/navigation/src/test/kotlin/com/servacode/directory/feature/navigation/NavigationEngineTest.kt",
-        "feature/navigation/src/test/kotlin/com/servacode/directory/feature/navigation/ManeuverPhrasesTest.kt",
+        "core/maps/src/androidHostTest/kotlin/com/servacode/directory/core/maps/NavigationModelsTest.kt",
+        "feature/navigation/src/androidHostTest/kotlin/com/servacode/directory/feature/navigation/NavigationEngineTest.kt",
+        "feature/navigation/src/androidHostTest/kotlin/com/servacode/directory/feature/navigation/ManeuverPhrasesTest.kt",
     )
     for relative in expected:
         require((ROOT / relative).exists(), f"navigation test missing: {relative}")
@@ -161,14 +168,15 @@ def check_hygiene() -> None:
         *ROOT.joinpath("feature/navigation").rglob("*.kt"),
         ROOT / "app/build.gradle.kts",
     ]
-    policy = ROOT / "core/maps/src/main/kotlin/com/servacode/directory/core/maps/NavigationModels.kt"
+    policy = ROOT / "core/maps/src/commonMain/kotlin/com/servacode/directory/core/maps/NavigationModels.kt"
     runtime_sources = [
         path for path in sources
-        if path != policy and "/src/test/" not in path.as_posix()
+        # Tests, in whichever source set (DECISION-089), may name what the code must not use.
+        if path != policy and not TEST_SOURCE_SET.search(path.as_posix())
     ]
     combined = "\n".join(path.read_text(encoding="utf-8") for path in runtime_sources)
-    require("demotiles.maplibre.org" not in combined, "MapLibre demo tiles runtime reference found")
-    require("router.project-osrm.org" not in combined, "public OSRM demo endpoint hardcoded")
+    require(not mentions(combined, "demotiles.maplibre.org"), "MapLibre demo tiles runtime reference found")
+    require(not mentions(combined, "router.project-osrm.org"), "public OSRM demo endpoint hardcoded")
     require("ACCESS_BACKGROUND_LOCATION" not in combined, "background location reference found")
     for path in sources:
         for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):

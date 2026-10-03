@@ -4,7 +4,14 @@ import re
 import sys
 from pathlib import Path
 
+TEST_SOURCE_SET = re.compile(r"/src/(test|androidHostTest|commonTest)/")
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def mentions(text: str, host: str) -> bool:
+    """Whether source text names a host anywhere. A search of our own files for a forbidden
+    address, not a check of a URL, so it is spelled as a search rather than a substring test."""
+    return re.search(re.escape(host), text) is not None
 PUBLIC = ("home", "province", "search", "facility", "map", "account", "ratings")
 
 
@@ -18,8 +25,14 @@ def read(path: str) -> str:
 
 
 def feature_text(name: str) -> str:
-    base = ROOT / "feature" / name / "src" / "main"
-    return "\n".join(p.read_text(encoding="utf-8") for p in base.rglob("*.kt") if "build" not in p.parts)
+    # Every source set but the tests: a feature is split between commonMain and androidMain
+    # (DECISION-089).
+    base = ROOT / "feature" / name / "src"
+    return "\n".join(
+        p.read_text(encoding="utf-8")
+        for p in base.rglob("*.kt")
+        if "build" not in p.parts and not TEST_SOURCE_SET.search(p.as_posix())
+    )
 
 
 def check_public_features() -> None:
@@ -68,7 +81,7 @@ def check_location_and_map() -> None:
     require("AndroidView" in mapping and "MapView" in mapping, "MapLibre native view missing")
     require("WebView" not in mapping, "WebView map is forbidden")
     require("mapFacilities(" in mapping, "viewport map API path missing")
-    require("demotiles.maplibre.org" not in mapping, "demo tiles must never ship")
+    require(not mentions(mapping, "demotiles.maplibre.org"), "demo tiles must never ship")
     app = read("app/build.gradle.kts")
     require("DIRECTORY_MAP_STYLE_URL" in app, "map style must be environment configurable")
     require("maps.<ROOT_DOMAIN>" in app, "map style placeholder must use ROOT_DOMAIN")
@@ -117,11 +130,11 @@ def check_routes() -> None:
 
 def check_ratings() -> None:
     validator = read(
-        "feature/ratings/src/main/kotlin/com/servacode/directory/feature/ratings/RatingValidator.kt"
+        "feature/ratings/src/commonMain/kotlin/com/servacode/directory/feature/ratings/RatingValidator.kt"
     )
     require("stars in 1..5" in validator, "rating range invariant missing")
     require(
-        (ROOT / "feature/ratings/src/test/kotlin/com/servacode/directory/feature/ratings/RatingValidatorTest.kt").exists(),
+        (ROOT / "feature/ratings/src/androidHostTest/kotlin/com/servacode/directory/feature/ratings/RatingValidatorTest.kt").exists(),
         "rating validator test missing",
     )
 
@@ -147,13 +160,13 @@ def check_hygiene() -> None:
     # Gradle's own build output is not this project's source; a fresh checkout has none of it.
     sources = [path for path in sources if "build" not in path.parts]
     provider_policy = ROOT / (
-        "core/maps/src/main/kotlin/com/servacode/directory/core/maps/NavigationModels.kt"
+        "core/maps/src/commonMain/kotlin/com/servacode/directory/core/maps/NavigationModels.kt"
     )
     for path in sources:
         text = path.read_text(encoding="utf-8")
         require("ACCESS_BACKGROUND_LOCATION" not in text, f"background location found: {path}")
-        if path != provider_policy and "/src/test/" not in path.as_posix():
-            require("demotiles.maplibre.org" not in text, f"demo tiles found: {path}")
+        if path != provider_policy and not TEST_SOURCE_SET.search(path.as_posix()):
+            require(not mentions(text, "demotiles.maplibre.org"), f"demo tiles found: {path}")
         if path.name != "DirectoryTokens.kt":
             require(not re.search(r"#[0-9A-Fa-f]{6,8}", text), f"hardcoded UI color: {path}")
         for line_no, line in enumerate(text.splitlines(), 1):

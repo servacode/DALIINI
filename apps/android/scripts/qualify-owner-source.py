@@ -35,11 +35,11 @@ def check_feature_architecture() -> None:
 
 def check_onboarding() -> None:
     vm = read(
-        "feature/onboarding/src/main/kotlin/com/servacode/directory/feature/onboarding/"
+        "feature/onboarding/src/androidMain/kotlin/com/servacode/directory/feature/onboarding/"
         "OnboardingViewModel.kt"
     )
     screen = read(
-        "feature/onboarding/src/main/kotlin/com/servacode/directory/feature/onboarding/"
+        "feature/onboarding/src/androidMain/kotlin/com/servacode/directory/feature/onboarding/"
         "OnboardingScreen.kt"
     )
     steps = (
@@ -98,7 +98,7 @@ def check_manage_and_duty() -> None:
     require("startNow(endsAt" in duty, "start-now must use owner-selected end time")
     require("DutyValidator.isValid" in duty, "duty validation missing")
     require(
-        (ROOT / "feature/duty/src/test/kotlin/com/servacode/directory/feature/duty/DutyValidatorTest.kt").exists(),
+        (ROOT / "feature/duty/src/androidHostTest/kotlin/com/servacode/directory/feature/duty/DutyValidatorTest.kt").exists(),
         "duty validator test missing",
     )
 
@@ -108,7 +108,7 @@ def check_routes_and_map() -> None:
     for route in ("MyFacilities", "Onboarding", "ManageFacility", "Duty"):
         require(f"DirectoryRoute.{route}" in app, f"owner route not wired: {route}")
     picker = read(
-        "feature/onboarding/src/main/kotlin/com/servacode/directory/feature/onboarding/"
+        "feature/onboarding/src/androidMain/kotlin/com/servacode/directory/feature/onboarding/"
         "OnboardingMapPicker.kt"
     )
     require("MapView" in picker and "MapLibreController" in picker, "MapLibre native picker missing")

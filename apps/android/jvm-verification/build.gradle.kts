@@ -51,33 +51,35 @@ val features = listOf(
 // androidMain, where Room, DataStore, the Keystore and Hilt's modules live, is not.
 val sharedCores = listOf(
     "model", "observability", "analytics", "auth", "database", "datastore", "location", "network",
+    "maps",
 )
 
-// Shared modules whose Android side is plain JVM code worth compiling here too: the network's
-// transport is Retrofit and OkHttp on the generated client (DECISION-088).
-val sharedCoresWithJvmAndroidSide = listOf("network")
+// Shared modules whose Android side is largely plain JVM code worth compiling here too, less
+// the files in `androidOnly`: the network's transport is Retrofit and OkHttp on the generated
+// client (DECISION-088), and the map's rules sit beside MapLibre (DECISION-089).
+val sharedCoresWithJvmAndroidSide = listOf("network", "maps")
 
 sourceSets {
     main {
         kotlin.srcDir(generatedClient)
-        val platformFreeCores = listOf("maps")
-        for (core in platformFreeCores) {
-            kotlin.srcDir(android.resolve("core/$core/src/main/kotlin"))
-        }
         for (core in sharedCores) {
             kotlin.srcDir(android.resolve("core/$core/src/commonMain/kotlin"))
         }
         for (core in sharedCoresWithJvmAndroidSide) {
             kotlin.srcDir(android.resolve("core/$core/src/androidMain/kotlin"))
         }
+        // The features are multiplatform too (DECISION-089); their Android side is compiled here,
+        // less `androidOnly`, exactly as before the split.
         for (feature in features) {
-            kotlin.srcDir(android.resolve("feature/$feature/src/main/kotlin"))
+            kotlin.srcDir(android.resolve("feature/$feature/src/commonMain/kotlin"))
+            kotlin.srcDir(android.resolve("feature/$feature/src/androidMain/kotlin"))
         }
         kotlin.exclude(androidOnly)
     }
     test {
-        kotlin.srcDir(android.resolve("core/testing/src/main/kotlin"))
-        kotlin.srcDir(android.resolve("core/maps/src/test/kotlin"))
+        // The tests' fakes, common since DECISION-089, and the JUnit rule beside them.
+        kotlin.srcDir(android.resolve("core/testing/src/commonMain/kotlin"))
+        kotlin.srcDir(android.resolve("core/testing/src/androidMain/kotlin"))
         for (core in sharedCores) {
             kotlin.srcDir(android.resolve("core/$core/src/commonTest/kotlin"))
         }
@@ -85,7 +87,7 @@ sourceSets {
             kotlin.srcDir(android.resolve("core/$core/src/androidHostTest/kotlin"))
         }
         for (feature in features) {
-            kotlin.srcDir(android.resolve("feature/$feature/src/test/kotlin"))
+            kotlin.srcDir(android.resolve("feature/$feature/src/androidHostTest/kotlin"))
         }
         // ViewModels are not compiled here (androidOnly), so neither are their tests. The same
         // goes for anything that reaches into the design system: it is a Compose library and

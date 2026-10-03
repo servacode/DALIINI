@@ -17,10 +17,10 @@ without this file being rebuilt is a compilation error rather than a trip that s
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-RAW = ROOT / "feature/navigation/src/main/res/raw"
+RAW = ROOT / "feature/navigation/src/androidMain/res/raw"
 OUT = (
     ROOT
-    / "feature/navigation/src/main/kotlin/com/servacode/directory/feature/navigation/NavigationClipResources.kt"
+    / "feature/navigation/src/androidMain/kotlin/com/servacode/directory/feature/navigation/NavigationClipResources.kt"
 )
 
 names = sorted(path.stem for path in RAW.glob("*.mp3"))

@@ -29,10 +29,10 @@ def main() -> int:
         "PublicApiBoundary.kt"
     )
     account_screen = text(
-        "apps/android/feature/account/src/main/kotlin/com/servacode/directory/feature/"
+        "apps/android/feature/account/src/androidMain/kotlin/com/servacode/directory/feature/"
         "account/AccountScreen.kt"
     )
-    account_words = text("apps/android/feature/account/src/main/res/values/strings.xml")
+    account_words = text("apps/android/feature/account/src/androidMain/res/values/strings.xml")
 
     require("targetSdk = 36" in convention, "Play RC must target API 36")
     require(

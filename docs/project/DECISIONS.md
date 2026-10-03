@@ -2099,6 +2099,46 @@ It is Retrofit and OkHttp on a client generated for the JVM, with `java.util.UUI
 no longer has its own `Instant`), implementing these same boundaries for iOS. Android can move
 to it once it is proven.
 
+## DECISION-089 — The features' repositories and use cases are shared; their screens stay Android's for now
+
+**Date:** 2026-10-03 · **Phase 8.5 of the roadmap; the fifth step of DECISION-085.**
+
+**Why:** with the models, the core layers and the network's contracts in common code, the
+repositories and use cases are the last layer an iPhone screen needs below it. They live in the
+feature modules beside the screens. The map's rules, which the map and navigation features
+build on, live in `core:maps` beside MapLibre.
+
+**Decision:**
+
+* **`serva.kmp.feature`** is the convention for a module whose Android side draws screens. It is
+  `serva.kmp.hilt` plus:
+  * the Compose compiler, limited to the Android target, since nothing on iOS is composable yet;
+  * Android resources on the Android target, so the strings and drawables keep the module's own
+    `R` as before.
+* **All fourteen feature modules, `core:maps` and `core:testing` are multiplatform.**
+  * A feature's repositories, use cases and plain rules are in `commonMain`, with `@Inject` from
+    `core:inject`. Its screens, view models, copy, Hilt modules and `res/` are in `androidMain`.
+  * A conversion script made the split, by rule: a file is common unless it is a screen, view
+    model, copy or module, imports Android, the JVM, Compose or the design system, or uses a
+    declaration that is itself Android's.
+  * A few files the rule kept on Android only because of a name they share with an Android
+    declaration can move later, one at a time.
+  * `core:maps` shares its camera, route, pack, geometry and navigation models. MapLibre, the
+    offline packs and the composables that host the map stay in `androidMain`.
+    * `java.lang.Math`'s degree conversions became the same multiplications by the same
+      constants, so the bearings and the tile maths are what the JVM gave, to the last bit.
+    * `RoutingException` is an `Exception` rather than a `java.io.IOException`. Nothing caught
+      it as one; its one reader asks for its `failure`.
+  * `core:testing`'s fakes are common, so a shared module's tests can use them on every
+    platform. Its JUnit rule for the main dispatcher stays in `androidMain`. One fake's
+    `toSortedMap()` became a sort by key.
+* **The tests did not change.** They moved from `src/test` to `src/androidHostTest` and still run
+  on the JVM against the shared code, as JUnit tests, through `testAndroidHostTest`. Moving them
+  to `commonTest`, so they also run on the iPhone simulator, is a later step, module by module.
+* **The JVM harness** compiles each feature's `commonMain` and `androidMain`, less its Android-only
+  list, which is what it compiled before. The qualifiers read the files where they now live, and
+  their test exclusions cover every test source set.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.
