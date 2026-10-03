@@ -98,9 +98,9 @@ jobs:
         run: ./scripts/generate-api-clients.sh
       - name: Fail on generated client drift
         run: |
-          if [[ -n "$(git status --porcelain -- packages/api-typescript packages/api-kotlin packages/api-swift)" ]]; then
+          if [[ -n "$(git status --porcelain -- packages/api-typescript packages/api-kotlin packages/api-swift packages/api-kotlin-multiplatform)" ]]; then
             echo "FAIL: generated clients differ from the committed artefacts." >&2
-            git --no-pager status --porcelain -- packages/api-typescript packages/api-kotlin packages/api-swift >&2
+            git --no-pager status --porcelain -- packages/api-typescript packages/api-kotlin packages/api-swift packages/api-kotlin-multiplatform >&2
             exit 1
           fi
           echo "PASS: generated clients match the committed artefacts."

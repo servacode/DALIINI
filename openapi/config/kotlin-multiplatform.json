@@ -1,0 +1,13 @@
+{
+  "packageName": "com.servacode.directory.api.multiplatform",
+  "library": "multiplatform",
+  "dateLibrary": "kotlinx-datetime",
+  "typeMappings": {
+    "AnyType": "JsonElement",
+    "DateTime": "Instant"
+  },
+  "importMappings": {
+    "JsonElement": "kotlinx.serialization.json.JsonElement",
+    "Instant": "kotlin.time.Instant"
+  }
+}

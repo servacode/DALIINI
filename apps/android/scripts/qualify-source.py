@@ -20,6 +20,7 @@ EXPECTED_MODULES = {
     ":core:analytics",
     ":core:observability",
     ":core:inject",
+    ":core:api",
     ":core:testing",
     ":feature:bootstrap",
     ":feature:home",

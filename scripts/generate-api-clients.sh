@@ -44,25 +44,31 @@ esac
 
 generate() {
   local generator="$1" config="$2" out="$3"
+  shift 3
   rm -rf "$ROOT/$out"
   mkdir -p "$ROOT/$out"
   if [[ $use_local -eq 1 ]]; then
     openapi-generator-cli generate \
-      -i "$SCHEMA" -g "$generator" -c "$ROOT/$config" -o "$ROOT/$out"
+      -i "$SCHEMA" -g "$generator" -c "$ROOT/$config" -o "$ROOT/$out" "$@"
   else
     MSYS_NO_PATHCONV=1 docker run --rm "${docker_as_me[@]}" -v "$ROOT:/work" -w /work "$IMAGE" generate \
-      -i "openapi/schema.yaml" -g "$generator" -c "$config" -o "$out"
+      -i "openapi/schema.yaml" -g "$generator" -c "$config" -o "$out" "$@"
   fi
 }
 
 generate typescript-fetch openapi/config/typescript.json packages/api-typescript/generated
 generate kotlin           openapi/config/kotlin.json     packages/api-kotlin/generated
 generate swift5           openapi/config/swift.json      packages/api-swift/generated
+# The client the code shared with the iPhone app uses (DECISION-090): Ktor and kotlinx-datetime,
+# every date-time a kotlin.time.Instant. Only the sources; nothing reads the docs or the stubs
+# of tests the generator would otherwise write beside them.
+generate kotlin           openapi/config/kotlin-multiplatform.json packages/api-kotlin-multiplatform/generated \
+  --global-property apiTests=false,modelTests=false,apiDocs=false,modelDocs=false
 
 # Generators emit their own bookkeeping directory, whose FILES manifest changes on every
 # run, and a helper script for pushing to GitHub. Neither belongs to the contract, and the
 # manifest would make the drift gate fail spuriously.
-for dir in packages/api-typescript packages/api-kotlin packages/api-swift; do
+for dir in packages/api-typescript packages/api-kotlin packages/api-swift packages/api-kotlin-multiplatform; do
   rm -rf "$ROOT/$dir/generated/.openapi-generator"
   rm -f "$ROOT/$dir/generated/git_push.sh"
 done

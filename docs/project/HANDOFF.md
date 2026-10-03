@@ -53,14 +53,16 @@ through #49 to #52. Phase 7's code is done, and phase 8 has begun:
 | 8.3 | the session, cache, preferences and location shared, Android's parts in androidMain; `@Inject` usable in common code | 087 |
 | 8.4 | the network's contracts shared; Android's Retrofit and OkHttp transport in androidMain, unchanged | 088 |
 | 8.5 | every feature's repositories and use cases, the map's rules and the test fakes shared; screens stay Android's | 089 |
+| 8.6 | a second API client, generated for Kotlin Multiplatform (Ktor), compiled and tested for Android and iOS | 090 |
 
 **Now: phase 8, the iPhone app from the Android code** (DECISION-051). The shared layers move
 into Kotlin Multiplatform one module at a time, each step leaving the Android app green and
-unchanged; everything below the screens is shared, and a shared transport for iOS is next
-(ROADMAP ٨). Everything else that remains waits on the owner: the server and domain (EXT-007,
-EXT-001), approving the launch texts and graphic, the Play account (EXT-003), and then the closed
-test and the public release, step by step in `docs/runbooks/launch.md`. An owner portal on the
-web was offered at the start of phase 3 and set aside: owners use the Android app.
+unchanged; everything below the screens is shared, a multiplatform client is generated, and the
+transport for iOS on it is next (ROADMAP ٨). Everything else that remains waits on the owner: the
+server and domain (EXT-007, EXT-001), approving the launch texts and graphic, the Play account
+(EXT-003), and then the closed test and the public release, step by step in
+`docs/runbooks/launch.md`. An owner portal on the web was offered at the start of phase 3 and set
+aside: owners use the Android app.
 
 Android has caught up with every server feature, a trip survives a locked screen, and builds
 number themselves. What remains of phase 5 needs a real phone: a full check on the device, a road
@@ -77,7 +79,7 @@ test with the screen locked, and a generated baseline profile.
 | `apps/ios` | empty: the iPhone app's shell comes later in phase 8; its shared code lives in the Android modules that are multiplatform |
 | `services/whatsapp-bot` | delivers registration codes over WhatsApp (DECISION-052) |
 | `openapi/` | the contract, generated from the backend and committed with its hash |
-| `packages/api-*` | the TypeScript, Kotlin and Swift clients generated from it |
+| `packages/api-*` | the TypeScript, Kotlin, Kotlin Multiplatform and Swift clients generated from it |
 | `packages/design-tokens` | identity v2, generated into each platform |
 | `infrastructure/docker` | the development stack, and the suites' own stack beside it |
 | `scripts/` | stack, end-to-end, contract, map and backup scripts |
