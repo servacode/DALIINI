@@ -121,6 +121,30 @@ class OwnerApplicationSerializer(serializers.Serializer[Any]):
     submittedAt = serializers.DateTimeField(allow_null=True)
 
 
+class OwnerPendingChangeSerializer(serializers.Serializer[Any]):
+    """A live facility's edit waiting for review; the facility stays published meanwhile."""
+
+    id = serializers.UUIDField(help_text="The CHANGE application.")
+    proposedFields = serializers.ListField(
+        child=serializers.ChoiceField(
+            choices=[
+                (name, name)
+                for name in (
+                    "nameAr",
+                    "nameEn",
+                    "addressAr",
+                    "addressEn",
+                    "cityId",
+                    "neighborhoodId",
+                    "location",
+                )
+            ]
+        ),
+        help_text="Which of the values in this response are proposed rather than published.",
+    )
+    submittedAt = serializers.DateTimeField(allow_null=True)
+
+
 class OwnerFacilityDetailSerializer(OwnerFacilitySummarySerializer):
     nameEn = serializers.CharField(allow_null=True)
     descriptionAr = serializers.CharField(allow_null=True)
@@ -150,6 +174,13 @@ class OwnerFacilityDetailSerializer(OwnerFacilitySummarySerializer):
         ),
     )
     application = OwnerApplicationSerializer(allow_null=True)
+    pendingChange = OwnerPendingChangeSerializer(
+        allow_null=True,
+        help_text=(
+            "Set while an edit to the live facility waits for review. The listed fields show "
+            "the owner's proposed values; the public still sees the published ones."
+        ),
+    )
 
 
 class OwnerSubmitResultSerializer(serializers.Serializer[Any]):

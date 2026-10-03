@@ -22,7 +22,8 @@
   },
   "applicationKind": {
     "INITIAL": {"ar": "تسجيل جديد", "tone": "info"},
-    "REVERIFICATION": {"ar": "إعادة تحقق", "tone": "warning"}
+    "REVERIFICATION": {"ar": "إعادة تحقق", "tone": "warning"},
+    "CHANGE": {"ar": "تعديل بيانات", "tone": "info"}
   },
   "reportReason": {
     "WRONG_INFO": {"ar": "معلومات خاطئة", "tone": "warning"},

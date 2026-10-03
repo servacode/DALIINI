@@ -267,7 +267,7 @@ Name | Type | Description  | Notes
 
 # **adminReviewApprove**
 ```swift
-    open class func adminReviewApprove(applicationId: UUID, adminDecisionRequest: AdminDecisionRequest? = nil, completion: @escaping (_ data: AdminApplication?, _ error: Error?) -> Void)
+    open class func adminReviewApprove(applicationId: UUID, adminReviewDecisionRequest: AdminReviewDecisionRequest? = nil, completion: @escaping (_ data: AdminApplication?, _ error: Error?) -> Void)
 ```
 
 Approve an application
@@ -280,10 +280,10 @@ Runs in one transaction: the application and the facility lifecycle are locked, 
 import ServaDirectoryAPI
 
 let applicationId = 987 // UUID | 
-let adminDecisionRequest = AdminDecisionRequest(reason: "reason_example") // AdminDecisionRequest |  (optional)
+let adminReviewDecisionRequest = AdminReviewDecisionRequest(reason: "reason_example", revision: 123) // AdminReviewDecisionRequest |  (optional)
 
 // Approve an application
-AdminReviewsAPI.adminReviewApprove(applicationId: applicationId, adminDecisionRequest: adminDecisionRequest) { (response, error) in
+AdminReviewsAPI.adminReviewApprove(applicationId: applicationId, adminReviewDecisionRequest: adminReviewDecisionRequest) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -300,7 +300,7 @@ AdminReviewsAPI.adminReviewApprove(applicationId: applicationId, adminDecisionRe
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **applicationId** | **UUID** |  | 
- **adminDecisionRequest** | [**AdminDecisionRequest**](AdminDecisionRequest.md) |  | [optional] 
+ **adminReviewDecisionRequest** | [**AdminReviewDecisionRequest**](AdminReviewDecisionRequest.md) |  | [optional] 
 
 ### Return type
 
@@ -319,7 +319,7 @@ Name | Type | Description  | Notes
 
 # **adminReviewReject**
 ```swift
-    open class func adminReviewReject(applicationId: UUID, adminDecisionRequest: AdminDecisionRequest? = nil, completion: @escaping (_ data: AdminApplication?, _ error: Error?) -> Void)
+    open class func adminReviewReject(applicationId: UUID, adminReviewDecisionRequest: AdminReviewDecisionRequest? = nil, completion: @escaping (_ data: AdminApplication?, _ error: Error?) -> Void)
 ```
 
 Reject an application
@@ -332,10 +332,10 @@ A reason is recorded in the audit trail; nothing is silently deleted.
 import ServaDirectoryAPI
 
 let applicationId = 987 // UUID | 
-let adminDecisionRequest = AdminDecisionRequest(reason: "reason_example") // AdminDecisionRequest |  (optional)
+let adminReviewDecisionRequest = AdminReviewDecisionRequest(reason: "reason_example", revision: 123) // AdminReviewDecisionRequest |  (optional)
 
 // Reject an application
-AdminReviewsAPI.adminReviewReject(applicationId: applicationId, adminDecisionRequest: adminDecisionRequest) { (response, error) in
+AdminReviewsAPI.adminReviewReject(applicationId: applicationId, adminReviewDecisionRequest: adminReviewDecisionRequest) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -352,7 +352,7 @@ AdminReviewsAPI.adminReviewReject(applicationId: applicationId, adminDecisionReq
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **applicationId** | **UUID** |  | 
- **adminDecisionRequest** | [**AdminDecisionRequest**](AdminDecisionRequest.md) |  | [optional] 
+ **adminReviewDecisionRequest** | [**AdminReviewDecisionRequest**](AdminReviewDecisionRequest.md) |  | [optional] 
 
 ### Return type
 

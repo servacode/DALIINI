@@ -37,6 +37,9 @@ class AdminTaskApplicationBucketSerializer(serializers.Serializer[Any]):
 class AdminTaskApplicationsSerializer(serializers.Serializer[Any]):
     initial = AdminTaskApplicationBucketSerializer()
     reverification = AdminTaskApplicationBucketSerializer()
+    change = AdminTaskApplicationBucketSerializer(
+        help_text="Edits to live facilities, which stay published while these wait."
+    )
 
 
 class AdminTaskReportGroupSerializer(serializers.Serializer[Any]):

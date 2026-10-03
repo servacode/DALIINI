@@ -1042,6 +1042,36 @@ screens in the new identity until phases 3, 4 and 5 redesign them.
   الإدارة»: since DECISION-061 an owner's shifts are audited too, and the actor is named beside
   the title. Removed shifts and closures stay on the facility's timeline.
 
+## DECISION-063 — A live facility is never taken down to review an owner's edit
+
+**Date:** 2026-10-03 · **Phase 2.3 of the roadmap.** Supersedes the rule that an owner's edit to an
+ACTIVE facility moves it to REVERIFICATION_REQUIRED.
+
+**Why:** a facility waiting for re-verification is not public. A pharmacy that corrected its
+address disappeared from the directory until an operator reached it, which punished exactly the
+owners who keep their listing accurate.
+
+**Decision:**
+
+* **What waits, what does not.** On an ACTIVE facility, the name (Arabic and English), the address
+  (both), the city, the neighbourhood and the map point are *reviewed*: they are what a fake or
+  hijacked listing would change. Everything else (phone, WhatsApp, description, specialties,
+  services, hours, photos) applies at once, as before.
+* **How it waits.** The reviewed part becomes a `CHANGE` application with `proposed_changes`, sent
+  as it is saved; the facility keeps its status and its published values. The owner's own view
+  shows the proposed values with `pendingChange` naming them. A further edit is merged into the
+  same application and bumps its `revision`; an edit back to the published values withdraws it.
+  Submitting a live facility never takes it down: it answers with the waiting change, or 400.
+* **Deciding.** Approval applies the proposal, refreshes `last_verified_at` and leaves the status
+  alone; rejection leaves the facility exactly as approved. Either way the owners are told. The
+  approval carries the `revision` the reviewer saw, and a proposal revised since is refused with
+  409 `APPLICATION_CHANGED`, so nothing is published that nobody read. A proposal whose places no
+  longer fit (a retired city) is refused with 409 `APPLICATION_NO_LONGER_VALID`.
+* **What the reviewer sees.** For a waiting change, `snapshot` and `previous` are computed when
+  the page is read — the facility as published, and the same with the proposal applied — so only
+  the proposal shows as a difference, whatever changed live meanwhile. Documents are not asked
+  for again. The task board counts these on their own.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.

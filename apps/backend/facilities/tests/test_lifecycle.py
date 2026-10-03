@@ -83,32 +83,40 @@ def test_reject_needs_a_reason_and_returns_to_draft(
 
 
 @pytest.mark.django_db
-def test_sensitive_edit_requires_reverification(draft: Facility, user: User, operator: Any) -> None:
-    decide_application(request=operator, application_id=_submit(draft, user).pk, approve=True)
-    update_facility_core(actor=user, facility=draft, data={"nameAr": "اسم جديد"})
-    draft.refresh_from_db()
-    assert draft.status == Facility.Status.REVERIFICATION_REQUIRED
-
-    application = _submit(draft, user)
-    assert application.kind == FacilityApplication.Kind.REVERIFICATION
-    decide_application(request=operator, application_id=application.pk, approve=True)
-    draft.refresh_from_db()
-    assert draft.status == Facility.Status.ACTIVE
-
-
-@pytest.mark.django_db
-def test_location_edit_requires_reverification_and_rejection_keeps_it_there(
+def test_a_sensitive_edit_waits_for_review_while_the_facility_stays_live(
     draft: Facility, user: User, operator: Any
 ) -> None:
     decide_application(request=operator, application_id=_submit(draft, user).pk, approve=True)
-    update_facility_location(actor=user, facility=draft, latitude=35.9, longitude=39.0)
+    update_facility_core(actor=user, facility=draft, data={"nameAr": "اسم جديد"})
     draft.refresh_from_db()
-    assert draft.status == Facility.Status.REVERIFICATION_REQUIRED
+    # Still published, under the name that was approved.
+    assert draft.status == Facility.Status.ACTIVE
+    assert draft.name_ar != "اسم جديد"
+
+    # Submitting again only hands back the change already sent.
+    application = _submit(draft, user)
+    assert application.kind == FacilityApplication.Kind.CHANGE
+    decide_application(request=operator, application_id=application.pk, approve=True)
+    draft.refresh_from_db()
+    assert draft.status == Facility.Status.ACTIVE
+    assert draft.name_ar == "اسم جديد"
+
+
+@pytest.mark.django_db
+def test_a_rejected_move_leaves_the_published_point(
+    draft: Facility, user: User, operator: Any
+) -> None:
+    decide_application(request=operator, application_id=_submit(draft, user).pk, approve=True)
+    draft.refresh_from_db()
+    published = (draft.location.x, draft.location.y) if draft.location else None
+    update_facility_location(actor=user, facility=draft, latitude=35.9, longitude=39.0)
     application = _submit(draft, user)
     decide_application(request=operator, application_id=application.pk, approve=False, reason="x")
     draft.refresh_from_db()
-    # A previously live facility is not demoted to a never-published draft.
-    assert draft.status == Facility.Status.REVERIFICATION_REQUIRED
+    # Live throughout, and still where it was approved.
+    assert draft.status == Facility.Status.ACTIVE
+    assert draft.location is not None
+    assert (draft.location.x, draft.location.y) == published
 
 
 @pytest.mark.django_db

@@ -11,10 +11,10 @@ import kotlinx.serialization.Serializable
 import com.servacode.directory.api.models.AdminApplication
 import com.servacode.directory.api.models.AdminApplicationDetail
 import com.servacode.directory.api.models.AdminApplicationList
-import com.servacode.directory.api.models.AdminDecisionRequest
 import com.servacode.directory.api.models.AdminRejectionTemplate
 import com.servacode.directory.api.models.AdminRejectionTemplateList
 import com.servacode.directory.api.models.AdminRejectionTemplateRequest
+import com.servacode.directory.api.models.AdminReviewDecisionRequest
 import com.servacode.directory.api.models.ApiError
 
 interface AdminReviewsApi {
@@ -111,11 +111,11 @@ interface AdminReviewsApi {
      *  - 404: The addressed resource does not exist or is not visible to the caller.
      *
      * @param applicationId 
-     * @param adminDecisionRequest  (optional)
+     * @param adminReviewDecisionRequest  (optional)
      * @return [AdminApplication]
      */
     @POST("api/v1/admin/applications/{application_id}/approve/")
-    suspend fun adminReviewApprove(@Path("application_id") applicationId: java.util.UUID, @Body adminDecisionRequest: AdminDecisionRequest? = null): Response<AdminApplication>
+    suspend fun adminReviewApprove(@Path("application_id") applicationId: java.util.UUID, @Body adminReviewDecisionRequest: AdminReviewDecisionRequest? = null): Response<AdminApplication>
 
     /**
      * POST api/v1/admin/applications/{application_id}/reject/
@@ -129,11 +129,11 @@ interface AdminReviewsApi {
      *  - 404: The addressed resource does not exist or is not visible to the caller.
      *
      * @param applicationId 
-     * @param adminDecisionRequest  (optional)
+     * @param adminReviewDecisionRequest  (optional)
      * @return [AdminApplication]
      */
     @POST("api/v1/admin/applications/{application_id}/reject/")
-    suspend fun adminReviewReject(@Path("application_id") applicationId: java.util.UUID, @Body adminDecisionRequest: AdminDecisionRequest? = null): Response<AdminApplication>
+    suspend fun adminReviewReject(@Path("application_id") applicationId: java.util.UUID, @Body adminReviewDecisionRequest: AdminReviewDecisionRequest? = null): Response<AdminApplication>
 
     /**
      * GET api/v1/admin/applications/{application_id}/

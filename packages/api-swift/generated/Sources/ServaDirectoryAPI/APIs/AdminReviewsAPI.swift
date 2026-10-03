@@ -224,12 +224,12 @@ open class AdminReviewsAPI {
      Approve an application
      
      - parameter applicationId: (path)  
-     - parameter adminDecisionRequest: (body)  (optional)
+     - parameter adminReviewDecisionRequest: (body)  (optional)
      - returns: AdminApplication
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminReviewApprove(applicationId: UUID, adminDecisionRequest: AdminDecisionRequest? = nil) async throws -> AdminApplication {
-        return try await adminReviewApproveWithRequestBuilder(applicationId: applicationId, adminDecisionRequest: adminDecisionRequest).execute().body
+    open class func adminReviewApprove(applicationId: UUID, adminReviewDecisionRequest: AdminReviewDecisionRequest? = nil) async throws -> AdminApplication {
+        return try await adminReviewApproveWithRequestBuilder(applicationId: applicationId, adminReviewDecisionRequest: adminReviewDecisionRequest).execute().body
     }
 
     /**
@@ -240,16 +240,16 @@ open class AdminReviewsAPI {
        - type: http
        - name: bearerAccessToken
      - parameter applicationId: (path)  
-     - parameter adminDecisionRequest: (body)  (optional)
+     - parameter adminReviewDecisionRequest: (body)  (optional)
      - returns: RequestBuilder<AdminApplication> 
      */
-    open class func adminReviewApproveWithRequestBuilder(applicationId: UUID, adminDecisionRequest: AdminDecisionRequest? = nil) -> RequestBuilder<AdminApplication> {
+    open class func adminReviewApproveWithRequestBuilder(applicationId: UUID, adminReviewDecisionRequest: AdminReviewDecisionRequest? = nil) -> RequestBuilder<AdminApplication> {
         var localVariablePath = "/api/v1/admin/applications/{application_id}/approve/"
         let applicationIdPreEscape = "\(APIHelper.mapValueToPathItem(applicationId))"
         let applicationIdPostEscape = applicationIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
         localVariablePath = localVariablePath.replacingOccurrences(of: "{application_id}", with: applicationIdPostEscape, options: .literal, range: nil)
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
-        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminDecisionRequest)
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminReviewDecisionRequest)
 
         let localVariableUrlComponents = URLComponents(string: localVariableURLString)
 
@@ -268,12 +268,12 @@ open class AdminReviewsAPI {
      Reject an application
      
      - parameter applicationId: (path)  
-     - parameter adminDecisionRequest: (body)  (optional)
+     - parameter adminReviewDecisionRequest: (body)  (optional)
      - returns: AdminApplication
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminReviewReject(applicationId: UUID, adminDecisionRequest: AdminDecisionRequest? = nil) async throws -> AdminApplication {
-        return try await adminReviewRejectWithRequestBuilder(applicationId: applicationId, adminDecisionRequest: adminDecisionRequest).execute().body
+    open class func adminReviewReject(applicationId: UUID, adminReviewDecisionRequest: AdminReviewDecisionRequest? = nil) async throws -> AdminApplication {
+        return try await adminReviewRejectWithRequestBuilder(applicationId: applicationId, adminReviewDecisionRequest: adminReviewDecisionRequest).execute().body
     }
 
     /**
@@ -284,16 +284,16 @@ open class AdminReviewsAPI {
        - type: http
        - name: bearerAccessToken
      - parameter applicationId: (path)  
-     - parameter adminDecisionRequest: (body)  (optional)
+     - parameter adminReviewDecisionRequest: (body)  (optional)
      - returns: RequestBuilder<AdminApplication> 
      */
-    open class func adminReviewRejectWithRequestBuilder(applicationId: UUID, adminDecisionRequest: AdminDecisionRequest? = nil) -> RequestBuilder<AdminApplication> {
+    open class func adminReviewRejectWithRequestBuilder(applicationId: UUID, adminReviewDecisionRequest: AdminReviewDecisionRequest? = nil) -> RequestBuilder<AdminApplication> {
         var localVariablePath = "/api/v1/admin/applications/{application_id}/reject/"
         let applicationIdPreEscape = "\(APIHelper.mapValueToPathItem(applicationId))"
         let applicationIdPostEscape = applicationIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
         localVariablePath = localVariablePath.replacingOccurrences(of: "{application_id}", with: applicationIdPostEscape, options: .literal, range: nil)
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
-        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminDecisionRequest)
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminReviewDecisionRequest)
 
         let localVariableUrlComponents = URLComponents(string: localVariableURLString)
 

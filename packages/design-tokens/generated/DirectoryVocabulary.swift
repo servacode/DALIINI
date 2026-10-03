@@ -24,7 +24,8 @@ enum DirectoryVocabulary {
     ]
     static let applicationKind: [String: (ar: String, tone: String)] = [
         "INITIAL": ("تسجيل جديد", "info"),
-        "REVERIFICATION": ("إعادة تحقق", "warning")
+        "REVERIFICATION": ("إعادة تحقق", "warning"),
+        "CHANGE": ("تعديل بيانات", "info")
     ]
     static let reportReason: [String: (ar: String, tone: String)] = [
         "WRONG_INFO": ("معلومات خاطئة", "warning"),

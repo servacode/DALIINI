@@ -342,7 +342,7 @@ export class OwnerApi extends runtime.BaseAPI {
     }
 
     /**
-     * WGS84 decimal degrees. PostGIS remains the source of truth for geo.
+     * WGS84 decimal degrees. PostGIS remains the source of truth for geo. On an ACTIVE facility the new point waits for review and the published one stays.
      * Set the map point of a facility
      */
     async ownerFacilityLocationReplaceRaw(requestParameters: OwnerFacilityLocationReplaceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OwnerFacilityDetail>> {
@@ -390,7 +390,7 @@ export class OwnerApi extends runtime.BaseAPI {
     }
 
     /**
-     * WGS84 decimal degrees. PostGIS remains the source of truth for geo.
+     * WGS84 decimal degrees. PostGIS remains the source of truth for geo. On an ACTIVE facility the new point waits for review and the published one stays.
      * Set the map point of a facility
      */
     async ownerFacilityLocationReplace(requestParameters: OwnerFacilityLocationReplaceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OwnerFacilityDetail> {
@@ -600,7 +600,7 @@ export class OwnerApi extends runtime.BaseAPI {
     }
 
     /**
-     * Submission re-validates the current onboarding policy and the completeness of the current evidence requirements. Only one submitted application of a given kind can exist per facility at a time.
+     * Submission re-validates the current onboarding policy and the completeness of the current evidence requirements. Only one submitted application of a given kind can exist per facility at a time. An ACTIVE facility is never taken down to be reviewed: its edits are sent as they are saved, and submitting answers with the change already waiting, or 400 when there is none.
      * Submit a facility for review
      */
     async ownerFacilitySubmitRaw(requestParameters: OwnerFacilitySubmitRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OwnerSubmitResult>> {
@@ -638,7 +638,7 @@ export class OwnerApi extends runtime.BaseAPI {
     }
 
     /**
-     * Submission re-validates the current onboarding policy and the completeness of the current evidence requirements. Only one submitted application of a given kind can exist per facility at a time.
+     * Submission re-validates the current onboarding policy and the completeness of the current evidence requirements. Only one submitted application of a given kind can exist per facility at a time. An ACTIVE facility is never taken down to be reviewed: its edits are sent as they are saved, and submitting answers with the change already waiting, or 400 when there is none.
      * Submit a facility for review
      */
     async ownerFacilitySubmit(requestParameters: OwnerFacilitySubmitRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OwnerSubmitResult> {
@@ -647,7 +647,7 @@ export class OwnerApi extends runtime.BaseAPI {
     }
 
     /**
-     * Editing a sensitive field on an active facility moves it into REVERIFICATION_REQUIRED, so the change is reviewed before it becomes public.
+     * On an ACTIVE facility the facility stays published: its name, address, city, neighbourhood and map point wait for an operator as a CHANGE application (`pendingChange` in the response), and every other field applies at once. A second edit while one waits is merged into it. Elsewhere the edit applies as it stands and is reviewed at the next submission.
      * Update the core fields of a facility
      */
     async ownerFacilityUpdateRaw(requestParameters: OwnerFacilityUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OwnerFacilityDetail>> {
@@ -688,7 +688,7 @@ export class OwnerApi extends runtime.BaseAPI {
     }
 
     /**
-     * Editing a sensitive field on an active facility moves it into REVERIFICATION_REQUIRED, so the change is reviewed before it becomes public.
+     * On an ACTIVE facility the facility stays published: its name, address, city, neighbourhood and map point wait for an operator as a CHANGE application (`pendingChange` in the response), and every other field applies at once. A second edit while one waits is merged into it. Elsewhere the edit applies as it stands and is reviewed at the next submission.
      * Update the core fields of a facility
      */
     async ownerFacilityUpdate(requestParameters: OwnerFacilityUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OwnerFacilityDetail> {

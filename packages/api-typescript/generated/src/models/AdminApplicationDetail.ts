@@ -179,11 +179,23 @@ export interface AdminApplicationDetail {
      */
     snapshot: { [key: string]: any; };
     /**
-     * Snapshot of the last approved application of this facility (plus `approvedAt`), for diffing a REVERIFICATION. Null when the facility was never approved.
+     * Snapshot of the last approved application of this facility (plus `approvedAt`), for diffing a REVERIFICATION; for a CHANGE, the facility as it is published now. Null when the facility was never approved.
      * @type {{ [key: string]: any; }}
      * @memberof AdminApplicationDetail
      */
     previous: { [key: string]: any; } | null;
+    /**
+     * CHANGE only: the fields the owner proposes to change; empty otherwise.
+     * @type {Array<string>}
+     * @memberof AdminApplicationDetail
+     */
+    proposedFields: Array<string>;
+    /**
+     * CHANGE only: send it back with the approval. 0 for other kinds.
+     * @type {number}
+     * @memberof AdminApplicationDetail
+     */
+    revision: number;
     /**
      * 
      * @type {Coordinates}
@@ -246,6 +258,8 @@ export function instanceOfAdminApplicationDetail(value: object): value is AdminA
     if (!('facility' in value) || value['facility'] === undefined) return false;
     if (!('snapshot' in value) || value['snapshot'] === undefined) return false;
     if (!('previous' in value) || value['previous'] === undefined) return false;
+    if (!('proposedFields' in value) || value['proposedFields'] === undefined) return false;
+    if (!('revision' in value) || value['revision'] === undefined) return false;
     if (!('location' in value) || value['location'] === undefined) return false;
     if (!('duplicates' in value) || value['duplicates'] === undefined) return false;
     if (!('publicImageIds' in value) || value['publicImageIds'] === undefined) return false;
@@ -283,6 +297,8 @@ export function AdminApplicationDetailFromJSONTyped(json: any, ignoreDiscriminat
         'facility': AdminFacilityFromJSON(json['facility']),
         'snapshot': json['snapshot'],
         'previous': json['previous'],
+        'proposedFields': json['proposedFields'],
+        'revision': json['revision'],
         'location': CoordinatesFromJSON(json['location']),
         'duplicates': ((json['duplicates'] as Array<any>).map(AdminDuplicateCandidateFromJSON)),
         'publicImageIds': json['publicImageIds'],
@@ -321,6 +337,8 @@ export function AdminApplicationDetailToJSONTyped(value?: AdminApplicationDetail
         'facility': AdminFacilityToJSON(value['facility']),
         'snapshot': value['snapshot'],
         'previous': value['previous'],
+        'proposedFields': value['proposedFields'],
+        'revision': value['revision'],
         'location': CoordinatesToJSON(value['location']),
         'duplicates': ((value['duplicates'] as Array<any>).map(AdminDuplicateCandidateToJSON)),
         'publicImageIds': value['publicImageIds'],

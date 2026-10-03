@@ -1379,13 +1379,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AdminDecisionRequest'
+              $ref: '#/components/schemas/AdminReviewDecisionRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AdminDecisionRequest'
+              $ref: '#/components/schemas/AdminReviewDecisionRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AdminDecisionRequest'
+              $ref: '#/components/schemas/AdminReviewDecisionRequest'
       security:
       - bearerAccessToken: []
       responses:
@@ -1440,13 +1440,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AdminDecisionRequest'
+              $ref: '#/components/schemas/AdminReviewDecisionRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AdminDecisionRequest'
+              $ref: '#/components/schemas/AdminReviewDecisionRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AdminDecisionRequest'
+              $ref: '#/components/schemas/AdminReviewDecisionRequest'
       security:
       - bearerAccessToken: []
       responses:
@@ -6433,8 +6433,11 @@ paths:
             the caller.
     patch:
       operationId: ownerFacilityUpdate
-      description: Editing a sensitive field on an active facility moves it into REVERIFICATION_REQUIRED,
-        so the change is reviewed before it becomes public.
+      description: 'On an ACTIVE facility the facility stays published: its name,
+        address, city, neighbourhood and map point wait for an operator as a CHANGE
+        application (`pendingChange` in the response), and every other field applies
+        at once. A second edit while one waits is merged into it. Elsewhere the edit
+        applies as it stands and is reviewed at the next submission.'
       summary: Update the core fields of a facility
       parameters:
       - in: path
@@ -7175,7 +7178,8 @@ paths:
     put:
       operationId: ownerFacilityLocationReplace
       description: WGS84 decimal degrees. PostGIS remains the source of truth for
-        geo.
+        geo. On an ACTIVE facility the new point waits for review and the published
+        one stays.
       summary: Set the map point of a facility
       parameters:
       - in: path
@@ -7406,9 +7410,11 @@ paths:
   /api/v1/owner/facilities/{facility_id}/submit/:
     post:
       operationId: ownerFacilitySubmit
-      description: Submission re-validates the current onboarding policy and the completeness
-        of the current evidence requirements. Only one submitted application of a
-        given kind can exist per facility at a time.
+      description: 'Submission re-validates the current onboarding policy and the
+        completeness of the current evidence requirements. Only one submitted application
+        of a given kind can exist per facility at a time. An ACTIVE facility is never
+        taken down to be reviewed: its edits are sent as they are saved, and submitting
+        answers with the change already waiting, or 400 when there is none.'
       summary: Submit a facility for review
       parameters:
       - in: path
@@ -8943,8 +8949,17 @@ components:
           additionalProperties: {}
           nullable: true
           description: Snapshot of the last approved application of this facility
-            (plus `approvedAt`), for diffing a REVERIFICATION. Null when the facility
-            was never approved.
+            (plus `approvedAt`), for diffing a REVERIFICATION; for a CHANGE, the facility
+            as it is published now. Null when the facility was never approved.
+        proposedFields:
+          type: array
+          items:
+            type: string
+          description: 'CHANGE only: the fields the owner proposes to change; empty
+            otherwise.'
+        revision:
+          type: integer
+          description: 'CHANGE only: send it back with the approval. 0 for other kinds.'
         location:
           allOf:
           - $ref: '#/components/schemas/Coordinates'
@@ -8988,12 +9003,14 @@ components:
       - ownerName
       - ownerPhone
       - previous
+      - proposedFields
       - provinceId
       - provinceNameAr
       - publicImageIds
       - publicImages
       - rejectionReason
       - reviewedAt
+      - revision
       - snapshot
       - status
       - submittedAt
@@ -10648,6 +10665,18 @@ components:
           type: string
           description: Recorded in the audit trail.
           maxLength: 500
+    AdminReviewDecisionRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: Required in practice for a rejection; recorded in the audit
+            trail.
+        revision:
+          type: integer
+          minimum: 1
+          description: 'CHANGE only: the `revision` the reviewer saw. If the owner
+            revised the proposal since, approval is refused with 409 APPLICATION_CHANGED.'
     AdminRole:
       type: object
       properties:
@@ -11084,7 +11113,13 @@ components:
           $ref: '#/components/schemas/AdminTaskApplicationBucket'
         reverification:
           $ref: '#/components/schemas/AdminTaskApplicationBucket'
+        change:
+          allOf:
+          - $ref: '#/components/schemas/AdminTaskApplicationBucket'
+          description: Edits to live facilities, which stay published while these
+            wait.
       required:
+      - change
       - initial
       - reverification
     AdminTaskReportGroup:
@@ -12186,10 +12221,12 @@ components:
       enum:
       - INITIAL
       - REVERIFICATION
+      - CHANGE
       type: string
       description: |-
         * `INITIAL` - Initial
         * `REVERIFICATION` - Reverification
+        * `CHANGE` - Change
     FacilityApplicationStatusEnum:
       enum:
       - DRAFT
@@ -13031,6 +13068,13 @@ components:
           allOf:
           - $ref: '#/components/schemas/OwnerApplication'
           nullable: true
+        pendingChange:
+          allOf:
+          - $ref: '#/components/schemas/OwnerPendingChange'
+          nullable: true
+          description: Set while an edit to the live facility waits for review. The
+            listed fields show the owner's proposed values; the public still sees
+            the published ones.
       required:
       - addressAr
       - addressEn
@@ -13049,6 +13093,7 @@ components:
       - nameAr
       - nameEn
       - neighborhoodId
+      - pendingChange
       - phone
       - province
       - requiredAction
@@ -13236,6 +13281,29 @@ components:
       - name
       - role
       - userId
+    OwnerPendingChange:
+      type: object
+      description: A live facility's edit waiting for review; the facility stays published
+        meanwhile.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The CHANGE application.
+        proposedFields:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProposedFieldsEnum'
+          description: Which of the values in this response are proposed rather than
+            published.
+        submittedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - id
+      - proposedFields
+      - submittedAt
     OwnerRequiredActionEnum:
       enum:
       - REVIEW_REJECTION
@@ -13519,6 +13587,24 @@ components:
           format: binary
       required:
       - file
+    ProposedFieldsEnum:
+      enum:
+      - nameAr
+      - nameEn
+      - addressAr
+      - addressEn
+      - cityId
+      - neighborhoodId
+      - location
+      type: string
+      description: |-
+        * `nameAr` - nameAr
+        * `nameEn` - nameEn
+        * `addressAr` - addressAr
+        * `addressEn` - addressEn
+        * `cityId` - cityId
+        * `neighborhoodId` - neighborhoodId
+        * `location` - location
     PublicAdvertisement:
       type: object
       properties:

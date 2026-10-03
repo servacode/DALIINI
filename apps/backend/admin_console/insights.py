@@ -200,6 +200,8 @@ def tasks_center(now: datetime | None = None) -> dict[str, Any]:
             "reverification": _application_bucket(
                 FacilityApplication.Kind.REVERIFICATION, now, sla
             ),
+            # Edits to live facilities: the facility stays published while these wait.
+            "change": _application_bucket(FacilityApplication.Kind.CHANGE, now, sla),
         },
         "reports": _report_bucket(now, sla),
         "reverificationRequired": _reverification_bucket(now, sla),

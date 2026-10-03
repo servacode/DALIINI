@@ -72,6 +72,10 @@ export const vocabulary = {
     "REVERIFICATION": {
       "ar": "إعادة تحقق",
       "tone": "warning"
+    },
+    "CHANGE": {
+      "ar": "تعديل بيانات",
+      "tone": "info"
     }
   },
   "reportReason": {

@@ -28,6 +28,7 @@
 | **hours** | [**kotlin.collections.List&lt;OwnerHoursEntry&gt;**](OwnerHoursEntry.md) |  |  |
 | **hoursConfirmedAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) | When a member last confirmed the opening hours (or replaced them). The app asks again once this is a week old. |  |
 | **application** | [**OwnerApplication**](OwnerApplication.md) |  |  |
+| **pendingChange** | [**OwnerPendingChange**](OwnerPendingChange.md) | Set while an edit to the live facility waits for review. The listed fields show the owner&#39;s proposed values; the public still sees the published ones. |  |
 
 
 

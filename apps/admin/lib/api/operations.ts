@@ -149,15 +149,20 @@ function withDates(body: Body, keys: readonly string[]): Record<string, unknown>
 const SCHEDULE = ["startsAt", "endsAt"] as const;
 
 export const WRITES = {
+  // `revision` comes back with a CHANGE: the version of the owner's proposal the reviewer saw.
+  // If the owner revised it since, the backend refuses rather than publish what nobody read.
   reviewApprove: (apis: AdminApis, b: Body) =>
     apis.reviews.adminReviewApprove({
       applicationId: String(b.id),
-      adminDecisionRequest: { reason: String(b.reason ?? "") },
+      adminReviewDecisionRequest: {
+        reason: String(b.reason ?? ""),
+        ...(b.revision ? { revision: Number(b.revision) } : {}),
+      },
     }),
   reviewReject: (apis: AdminApis, b: Body) =>
     apis.reviews.adminReviewReject({
       applicationId: String(b.id),
-      adminDecisionRequest: { reason: String(b.reason ?? "") },
+      adminReviewDecisionRequest: { reason: String(b.reason ?? "") },
     }),
 
   // The record an operator adds or corrects. `location` arrives as `{latitude, longitude}` or

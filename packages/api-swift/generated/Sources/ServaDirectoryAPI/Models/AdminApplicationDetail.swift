@@ -31,8 +31,12 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
     public var facility: AdminFacility
     /** Redacted submission snapshot. */
     public var snapshot: [String: AnyCodable]
-    /** Snapshot of the last approved application of this facility (plus `approvedAt`), for diffing a REVERIFICATION. Null when the facility was never approved. */
+    /** Snapshot of the last approved application of this facility (plus `approvedAt`), for diffing a REVERIFICATION; for a CHANGE, the facility as it is published now. Null when the facility was never approved. */
     public var previous: [String: AnyCodable]?
+    /** CHANGE only: the fields the owner proposes to change; empty otherwise. */
+    public var proposedFields: [String]
+    /** CHANGE only: send it back with the approval. 0 for other kinds. */
+    public var revision: Int
     public var location: Coordinates?
     /** Up to 5 other facilities with the same phone, or the same normalized Arabic name within 200 m. */
     public var duplicates: [AdminDuplicateCandidate]
@@ -41,7 +45,7 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
     public var evidence: [AdminEvidenceRef]
     public var audit: [AdminAuditTrailEntry]
 
-    public init(id: UUID, facilityId: UUID, facilityNameAr: String, kind: FacilityApplicationKindEnum, status: FacilityApplicationStatusEnum, provinceId: UUID, categoryId: UUID, submittedAt: Date?, reviewedAt: Date?, rejectionReason: String?, evidenceComplete: Bool, categoryNameAr: String, provinceNameAr: String, ownerName: String?, ownerPhone: String?, facility: AdminFacility, snapshot: [String: AnyCodable], previous: [String: AnyCodable]?, location: Coordinates?, duplicates: [AdminDuplicateCandidate], publicImageIds: [UUID], publicImages: [AdminPublicImage], evidence: [AdminEvidenceRef], audit: [AdminAuditTrailEntry]) {
+    public init(id: UUID, facilityId: UUID, facilityNameAr: String, kind: FacilityApplicationKindEnum, status: FacilityApplicationStatusEnum, provinceId: UUID, categoryId: UUID, submittedAt: Date?, reviewedAt: Date?, rejectionReason: String?, evidenceComplete: Bool, categoryNameAr: String, provinceNameAr: String, ownerName: String?, ownerPhone: String?, facility: AdminFacility, snapshot: [String: AnyCodable], previous: [String: AnyCodable]?, proposedFields: [String], revision: Int, location: Coordinates?, duplicates: [AdminDuplicateCandidate], publicImageIds: [UUID], publicImages: [AdminPublicImage], evidence: [AdminEvidenceRef], audit: [AdminAuditTrailEntry]) {
         self.id = id
         self.facilityId = facilityId
         self.facilityNameAr = facilityNameAr
@@ -60,6 +64,8 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
         self.facility = facility
         self.snapshot = snapshot
         self.previous = previous
+        self.proposedFields = proposedFields
+        self.revision = revision
         self.location = location
         self.duplicates = duplicates
         self.publicImageIds = publicImageIds
@@ -87,6 +93,8 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
         case facility
         case snapshot
         case previous
+        case proposedFields
+        case revision
         case location
         case duplicates
         case publicImageIds
@@ -117,6 +125,8 @@ public struct AdminApplicationDetail: Codable, JSONEncodable, Hashable {
         try container.encode(facility, forKey: .facility)
         try container.encode(snapshot, forKey: .snapshot)
         try container.encode(previous, forKey: .previous)
+        try container.encode(proposedFields, forKey: .proposedFields)
+        try container.encode(revision, forKey: .revision)
         try container.encode(location, forKey: .location)
         try container.encode(duplicates, forKey: .duplicates)
         try container.encode(publicImageIds, forKey: .publicImageIds)

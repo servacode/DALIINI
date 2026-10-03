@@ -41,6 +41,9 @@ type Detail = Readonly<{
   ownerPhone: string | null;
   snapshot: Record<string, unknown>;
   previous: Record<string, unknown> | null;
+  /** CHANGE only: what the owner proposes, and the version of it this page shows. */
+  proposedFields?: readonly string[];
+  revision?: number;
   location: { latitude: number; longitude: number } | null;
   duplicates: readonly { id: string; nameAr: string; status: string; reasons: readonly string[] }[];
   publicImages: readonly { id: string; url: string }[];
@@ -75,13 +78,27 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
   const [reason, setReason] = useState("");
   const [toast, setToast] = useState<string | null>(null);
 
+  const isChange = detail.data?.kind === "CHANGE";
+  const waiting = detail.data?.status === "SUBMITTED";
+  // Where a waiting change would move the facility, beside where the public sees it now.
+  const proposedPoint =
+    isChange && waiting && detail.data?.proposedFields?.includes("location")
+      ? (detail.data.snapshot.location as { latitude: number; longitude: number } | null)
+      : null;
+
   async function submit(): Promise<void> {
     const approving = dialog === "approve";
     const ok = await decision.run(approving ? "reviewApprove" : "reviewReject", {
       id,
       reason: reason.trim(),
+      // The version on screen. If the owner revised it since, the backend refuses, and the
+      // page reloads so the reviewer reads what would actually be published.
+      ...(approving && isChange ? { revision: detail.data?.revision } : {}),
     });
-    if (!ok) return;
+    if (!ok) {
+      if (isChange) detail.reload();
+      return;
+    }
     setDialog(null);
     setReason("");
     setToast(approving ? "تم قبول الطلب." : "تم رفض الطلب.");
@@ -159,15 +176,21 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
                     ),
                   },
                   { label: "النوع", value: KIND[detail.data.kind] ?? detail.data.kind },
-                  {
-                    label: "الوثائق المطلوبة",
-                    value: (
-                      <TermBadge
-                        group="evidenceState"
-                        value={detail.data.evidenceComplete ? "COMPLETE" : "INCOMPLETE"}
-                      />
-                    ),
-                  },
+                  // A change to a live facility is decided on what changed; the facility's
+                  // documents were checked when it was approved and are not asked for again.
+                  ...(isChange
+                    ? []
+                    : [
+                        {
+                          label: "الوثائق المطلوبة",
+                          value: (
+                            <TermBadge
+                              group="evidenceState"
+                              value={detail.data.evidenceComplete ? "COMPLETE" : "INCOMPLETE"}
+                            />
+                          ),
+                        },
+                      ]),
                   { label: "التصنيف", value: detail.data.categoryNameAr },
                   { label: "المحافظة", value: detail.data.provinceNameAr },
                   { label: "مقدّم الطلب", value: detail.data.ownerName ?? "—" },
@@ -189,10 +212,28 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
                   <KeyValueList
                     items={[
                       {
-                        label: "الإحداثيات",
+                        label: isChange && proposedPoint ? "المنشور الآن" : "الإحداثيات",
                         value: `${detail.data.location.latitude.toFixed(5)}, ${detail.data.location.longitude.toFixed(5)}`,
                         ltr: true,
                       },
+                      ...(proposedPoint
+                        ? [
+                            {
+                              label: "المقترح",
+                              value: (
+                                <a
+                                  href={`https://www.openstreetmap.org/?mlat=${proposedPoint.latitude}&mlon=${proposedPoint.longitude}#map=18/${proposedPoint.latitude}/${proposedPoint.longitude}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  data-testid="open-proposed-map"
+                                >
+                                  {`${proposedPoint.latitude.toFixed(5)}, ${proposedPoint.longitude.toFixed(5)}`}
+                                </a>
+                              ),
+                              ltr: true,
+                            },
+                          ]
+                        : []),
                     ]}
                   />
                   <a
@@ -211,11 +252,22 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
             </Panel>
           </div>
 
+          {isChange && waiting ? (
+            <p className="notice" data-testid="change-callout">
+              المنشأة ظاهرة للعامة الآن ببياناتها المعتمدة. القبول ينشر الحقول المعدّلة فقط، والرفض
+              يبقيها كما هي.
+            </p>
+          ) : null}
+
           {detail.data.previous ? (
             <div className="grid-2">
               <Panel
                 title="التغييرات المطلوبة"
-                description="الفرق بين آخر نسخة معتمدة وما أرسله المالك."
+                description={
+                  isChange
+                    ? "الفرق بين ما يظهر للعامة الآن وما يطلبه المالك."
+                    : "الفرق بين آخر نسخة معتمدة وما أرسله المالك."
+                }
               >
                 <DiffViewer before={detail.data.previous} after={detail.data.snapshot} />
               </Panel>
@@ -224,7 +276,16 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
               </Panel>
             </div>
           ) : (
-            <Panel title="لقطة الطلب" description="تسجيل أول: لا نسخة معتمدة سابقة للمقارنة.">
+            <Panel
+              title="لقطة الطلب"
+              description={
+                !isChange
+                  ? "تسجيل أول: لا نسخة معتمدة سابقة للمقارنة."
+                  : detail.data.status === "APPROVED"
+                    ? "البيانات كما نُشرت عند اعتماد التعديل."
+                    : "التعديل كما طلبه المالك."
+              }
+            >
               <DiffViewer before={{}} after={detail.data.snapshot} />
             </Panel>
           )}
@@ -282,8 +343,12 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
 
       <ConfirmDialog
         open={dialog === "approve"}
-        title="قبول الطلب"
-        body="ستصبح المنشأة فعّالة وتظهر للعامة. لا يمكن التراجع عن هذا الإجراء من هنا."
+        title={isChange ? "اعتماد التعديل" : "قبول الطلب"}
+        body={
+          isChange
+            ? "ستظهر الحقول المعدّلة للعامة فوراً بدل الحالية."
+            : "ستصبح المنشأة فعّالة وتظهر للعامة. لا يمكن التراجع عن هذا الإجراء من هنا."
+        }
         confirmLabel="تأكيد القبول"
         pending={decision.pending}
         error={decision.error}
@@ -293,8 +358,12 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
 
       <ConfirmDialog
         open={dialog === "reject"}
-        title="رفض الطلب"
-        body="يعود الطلب إلى المالك مع السبب الذي تكتبه."
+        title={isChange ? "رفض التعديل" : "رفض الطلب"}
+        body={
+          isChange
+            ? "تبقى المنشأة ظاهرة كما هي، ويصل السبب الذي تكتبه إلى المالك."
+            : "يعود الطلب إلى المالك مع السبب الذي تكتبه."
+        }
         confirmLabel="تأكيد الرفض"
         destructive
         pending={decision.pending}

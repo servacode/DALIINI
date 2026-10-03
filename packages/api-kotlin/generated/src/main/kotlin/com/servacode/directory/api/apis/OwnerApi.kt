@@ -105,7 +105,7 @@ interface OwnerApi {
     /**
      * PUT api/v1/owner/facilities/{facility_id}/location/
      * Set the map point of a facility
-     * WGS84 decimal degrees. PostGIS remains the source of truth for geo.
+     * WGS84 decimal degrees. PostGIS remains the source of truth for geo. On an ACTIVE facility the new point waits for review and the published one stays.
      * Responses:
      *  - 200: 
      *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
@@ -193,7 +193,7 @@ interface OwnerApi {
     /**
      * POST api/v1/owner/facilities/{facility_id}/submit/
      * Submit a facility for review
-     * Submission re-validates the current onboarding policy and the completeness of the current evidence requirements. Only one submitted application of a given kind can exist per facility at a time.
+     * Submission re-validates the current onboarding policy and the completeness of the current evidence requirements. Only one submitted application of a given kind can exist per facility at a time. An ACTIVE facility is never taken down to be reviewed: its edits are sent as they are saved, and submitting answers with the change already waiting, or 400 when there is none.
      * Responses:
      *  - 200: 
      *  - 400: A domain rule rejected the request; `code` names the rule.
@@ -210,7 +210,7 @@ interface OwnerApi {
     /**
      * PATCH api/v1/owner/facilities/{facility_id}/
      * Update the core fields of a facility
-     * Editing a sensitive field on an active facility moves it into REVERIFICATION_REQUIRED, so the change is reviewed before it becomes public.
+     * On an ACTIVE facility the facility stays published: its name, address, city, neighbourhood and map point wait for an operator as a CHANGE application (&#x60;pendingChange&#x60; in the response), and every other field applies at once. A second edit while one waits is merged into it. Elsewhere the edit applies as it stands and is reviewed at the next submission.
      * Responses:
      *  - 200: 
      *  - 400: A domain rule rejected the request; `code` names the rule.

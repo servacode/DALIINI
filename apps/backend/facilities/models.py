@@ -112,6 +112,9 @@ class FacilityApplication(models.Model):
     class Kind(models.TextChoices):
         INITIAL = "INITIAL", "Initial"
         REVERIFICATION = "REVERIFICATION", "Reverification"
+        # A live facility's owner changed how it is named or where it is. The facility stays
+        # published as it was; `proposed_changes` is applied only when an operator approves.
+        CHANGE = "CHANGE", "Change"
 
     class Status(models.TextChoices):
         DRAFT = "DRAFT", "Draft"
@@ -128,6 +131,10 @@ class FacilityApplication(models.Model):
     kind = models.CharField(max_length=24, choices=Kind.choices)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
     snapshot = models.JSONField(default=dict, blank=True)
+    # CHANGE only: the reviewed fields the owner wants, in wire names, and how many times they
+    # were revised while waiting. An approval names the revision it saw (DECISION-063).
+    proposed_changes = models.JSONField(default=dict, blank=True)
+    revision = models.PositiveIntegerField(default=0)
     submitted_at = models.DateTimeField(null=True, blank=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     reviewed_by = models.ForeignKey(

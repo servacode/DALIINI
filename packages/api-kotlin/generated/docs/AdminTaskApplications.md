@@ -6,6 +6,7 @@
 | ------------ | ------------- | ------------- | ------------- |
 | **initial** | [**AdminTaskApplicationBucket**](AdminTaskApplicationBucket.md) |  |  |
 | **reverification** | [**AdminTaskApplicationBucket**](AdminTaskApplicationBucket.md) |  |  |
+| **change** | [**AdminTaskApplicationBucket**](AdminTaskApplicationBucket.md) | Edits to live facilities, which stay published while these wait. |  |
 
 
 

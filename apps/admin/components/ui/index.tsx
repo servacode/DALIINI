@@ -668,9 +668,13 @@ export function DiffViewer({
         <div key={key} className="diff-row">
           <dt>{key}</dt>
           <dd>
-            <span className="diff-before">{format(before?.[key])}</span>
+            <span className="diff-before" dir={isPoint(before?.[key]) ? "ltr" : undefined}>
+              {format(before?.[key])}
+            </span>
             <span aria-hidden="true">←</span>
-            <span className="diff-after">{format(after?.[key])}</span>
+            <span className="diff-after" dir={isPoint(after?.[key]) ? "ltr" : undefined}>
+              {format(after?.[key])}
+            </span>
           </dd>
         </div>
       ))}
@@ -681,8 +685,19 @@ export function DiffViewer({
 function format(value: unknown): string {
   if (value === null || value === undefined) return "—";
   if (typeof value === "boolean") return value ? "نعم" : "لا";
+  if (isPoint(value)) return `${value.latitude.toFixed(5)}, ${value.longitude.toFixed(5)}`;
   if (typeof value === "object") return JSON.stringify(value);
   return String(value);
+}
+
+/** A map point reads as coordinates, not as the JSON it travels in. */
+function isPoint(value: unknown): value is { latitude: number; longitude: number } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as { latitude?: unknown }).latitude === "number" &&
+    typeof (value as { longitude?: unknown }).longitude === "number"
+  );
 }
 
 export type AuditEntry = Readonly<{

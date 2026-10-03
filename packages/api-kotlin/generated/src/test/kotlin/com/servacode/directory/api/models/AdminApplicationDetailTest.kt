@@ -135,10 +135,22 @@ class AdminApplicationDetailTest : ShouldSpec() {
             //modelInstance.snapshot shouldBe ("TODO")
         }
 
-        // to test the property `previous` - Snapshot of the last approved application of this facility (plus `approvedAt`), for diffing a REVERIFICATION. Null when the facility was never approved.
+        // to test the property `previous` - Snapshot of the last approved application of this facility (plus `approvedAt`), for diffing a REVERIFICATION; for a CHANGE, the facility as it is published now. Null when the facility was never approved.
         should("test previous") {
             // uncomment below to test the property
             //modelInstance.previous shouldBe ("TODO")
+        }
+
+        // to test the property `proposedFields` - CHANGE only: the fields the owner proposes to change; empty otherwise.
+        should("test proposedFields") {
+            // uncomment below to test the property
+            //modelInstance.proposedFields shouldBe ("TODO")
+        }
+
+        // to test the property `revision` - CHANGE only: send it back with the approval. 0 for other kinds.
+        should("test revision") {
+            // uncomment below to test the property
+            //modelInstance.revision shouldBe ("TODO")
         }
 
         // to test the property `location`
