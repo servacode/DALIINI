@@ -10,8 +10,13 @@
 // anything already set in the environment wins.
 import { spawn } from "node:child_process";
 
-const API = "http://localhost:8000";
-const MEDIA = "http://localhost:9000";
+// 127.0.0.1 rather than localhost, deliberately. On Windows `localhost` resolves to ::1 first,
+// and Docker Desktop advertises the IPv6 publisher without serving it — so every request waits
+// out its timeout and fails, while the same call to 127.0.0.1 answers in milliseconds. The
+// console's sign-in failed this way with «تعذر الوصول إلى الخدمة» while the API was perfectly
+// healthy.
+const API = "http://127.0.0.1:8000";
+const MEDIA = "http://127.0.0.1:9000";
 
 const apps = {
   admin: {

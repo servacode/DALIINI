@@ -2,6 +2,8 @@ package com.servacode.directory.feature.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.servacode.directory.core.auth.SessionCoordinator
+import com.servacode.directory.core.auth.SessionState
 import com.servacode.directory.core.database.Loaded
 import com.servacode.directory.core.model.AdAction
 import com.servacode.directory.core.model.AppError
@@ -52,6 +54,7 @@ class HomeViewModel @Inject constructor(
     private val loadAds: HomeAdsUseCase,
     private val invalidations: RealtimeInvalidationBus,
     private val analytics: AnalyticsTracker,
+    private val session: SessionCoordinator,
 ) : ViewModel() {
     /** So a province that is reloaded ten times is still one person arriving once. */
     private var lastReportedProvince: String? = null
@@ -138,7 +141,13 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _hasLocation.value = loadHome.hasLocation()
             _place.value = runCatching { loadHome.place() }.getOrNull() ?: _place.value
-            _unread.value = loadHome.unreadMessages()
+            // Only for someone who has signed in. A visitor has no inbox, so asking costs a
+            // request that can only answer 401 — and a badge they could never open.
+            _unread.value = if (session.state.value == SessionState.SIGNED_IN) {
+                loadHome.unreadMessages()
+            } else {
+                0
+            }
             // A position arriving after the first list would otherwise leave it ordered by
             // name with no distances, so the list is asked again once — not on every fix.
             if (_hasLocation.value && _list.value.items.none { it.distanceMeters != null }) {

@@ -9,6 +9,7 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":core:model"))
             implementation(project(":core:network"))
+            implementation(project(":core:auth"))
             implementation(project(":core:analytics"))
             implementation(project(":core:database"))
             implementation(project(":core:datastore"))
