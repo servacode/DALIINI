@@ -40,9 +40,9 @@ def user_rows(queryset: Any) -> Any:
         # One query for the whole page, however many accounts are on it.
         Prefetch(
             "facility_memberships",
-            queryset=FacilityMembership.objects.select_related("facility").order_by(
-                "facility__name_ar"
-            ),
+            queryset=FacilityMembership.objects.select_related("facility")
+            .prefetch_related(_first_images())
+            .order_by("facility__name_ar"),
             to_attr="card_memberships",
         )
     ).annotate(
@@ -107,6 +107,27 @@ def _seen_at(user: Any) -> Any:
 CARD_FACILITIES = 2
 
 
+def _first_images() -> Any:
+    """Every facility's photographs in order, in one query for the whole page."""
+    from facilities.models import FacilityImage
+
+    return Prefetch(
+        "facility__images",
+        queryset=FacilityImage.objects.order_by("sort_order", "created_at"),
+        to_attr="card_images",
+    )
+
+
+def _image_url(facility: Any) -> str | None:
+    from storage.public_media import public_media_url
+
+    images = getattr(facility, "card_images", None)
+    if images is None:
+        first = facility.images.order_by("sort_order", "created_at").first()
+        return public_media_url(first.storage_key) if first else None
+    return public_media_url(images[0].storage_key) if images else None
+
+
 def _card_facilities(user: Any) -> list[dict[str, Any]]:
     """The first few places on the account, by name — what a card shows without growing."""
     links = getattr(user, "card_memberships", None)
@@ -114,6 +135,7 @@ def _card_facilities(user: Any) -> list[dict[str, Any]]:
         links = list(
             FacilityMembership.objects.filter(user=user)
             .select_related("facility")
+            .prefetch_related(_first_images())
             .order_by("facility__name_ar")[:CARD_FACILITIES]
         )
     return [
@@ -122,6 +144,7 @@ def _card_facilities(user: Any) -> list[dict[str, Any]]:
             "nameAr": link.facility.name_ar,
             "role": link.role,
             "status": link.facility.status,
+            "imageUrl": _image_url(link.facility),
         }
         for link in links[:CARD_FACILITIES]
     ]
@@ -175,6 +198,7 @@ def user_facilities_payload(user: Any) -> list[dict[str, Any]]:
     links = (
         FacilityMembership.objects.filter(user=user)
         .select_related("facility")
+        .prefetch_related(_first_images())
         .order_by("facility__name_ar")
     )
     return [
@@ -183,6 +207,7 @@ def user_facilities_payload(user: Any) -> list[dict[str, Any]]:
             "nameAr": link.facility.name_ar,
             "role": link.role,
             "status": link.facility.status,
+            "imageUrl": _image_url(link.facility),
         }
         for link in links
     ]

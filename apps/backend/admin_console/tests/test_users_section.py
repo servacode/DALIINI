@@ -385,3 +385,26 @@ def test_the_list_keeps_owners_or_everyone_else(admin_api: Any, facility: Facili
     assert str(owner.pk) in owners and str(plain.pk) not in owners
     assert str(plain.pk) in users and str(owner.pk) not in users
     assert client.get("/api/v1/admin/users/?kind=nonsense").status_code == 400
+
+
+@pytest.mark.django_db
+def test_a_card_shows_the_place_by_its_first_photograph(
+    admin_api: Any, facility: Facility
+) -> None:
+    from facilities.models import FacilityImage
+
+    person = _person(facility.province)
+    FacilityMembership.objects.create(
+        user=person, facility=facility, role=FacilityMembership.Role.OWNER
+    )
+    for key, order in (("facilities/x/second.jpg", 1), ("facilities/x/first.jpg", 0)):
+        FacilityImage.objects.create(facility=facility, storage_key=key, sort_order=order)
+    client = admin_api(READ)
+
+    row = next(
+        item
+        for item in client.get("/api/v1/admin/users/").json()["items"]
+        if item["id"] == str(person.pk)
+    )
+
+    assert row["facilities"][0]["imageUrl"].endswith("facilities/x/first.jpg")

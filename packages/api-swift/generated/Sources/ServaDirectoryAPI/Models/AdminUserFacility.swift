@@ -16,12 +16,14 @@ public struct AdminUserFacility: Codable, JSONEncodable, Hashable {
     public var nameAr: String
     public var role: String
     public var status: String
+    public var imageUrl: String?
 
-    public init(id: UUID, nameAr: String, role: String, status: String) {
+    public init(id: UUID, nameAr: String, role: String, status: String, imageUrl: String?) {
         self.id = id
         self.nameAr = nameAr
         self.role = role
         self.status = status
+        self.imageUrl = imageUrl
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
@@ -29,6 +31,7 @@ public struct AdminUserFacility: Codable, JSONEncodable, Hashable {
         case nameAr
         case role
         case status
+        case imageUrl
     }
 
     // Encodable protocol methods
@@ -39,6 +42,7 @@ public struct AdminUserFacility: Codable, JSONEncodable, Hashable {
         try container.encode(nameAr, forKey: .nameAr)
         try container.encode(role, forKey: .role)
         try container.encode(status, forKey: .status)
+        try container.encode(imageUrl, forKey: .imageUrl)
     }
 }
 

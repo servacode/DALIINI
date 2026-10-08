@@ -27,6 +27,7 @@ import kotlinx.serialization.encoding.*
  * @param nameAr 
  * @param role 
  * @param status 
+ * @param imageUrl 
  */
 @Serializable
 
@@ -38,7 +39,9 @@ data class AdminUserFacility (
 
     @SerialName(value = "role") @Required val role: kotlin.String,
 
-    @SerialName(value = "status") @Required val status: kotlin.String
+    @SerialName(value = "status") @Required val status: kotlin.String,
+
+    @SerialName(value = "imageUrl") @Required val imageUrl: kotlin.String?
 
 ) {
 

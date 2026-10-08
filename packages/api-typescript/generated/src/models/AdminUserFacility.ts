@@ -43,6 +43,12 @@ export interface AdminUserFacility {
      * @memberof AdminUserFacility
      */
     status: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminUserFacility
+     */
+    imageUrl: string | null;
 }
 
 /**
@@ -53,6 +59,7 @@ export function instanceOfAdminUserFacility(value: object): value is AdminUserFa
     if (!('nameAr' in value) || value['nameAr'] === undefined) return false;
     if (!('role' in value) || value['role'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
+    if (!('imageUrl' in value) || value['imageUrl'] === undefined) return false;
     return true;
 }
 
@@ -70,6 +77,7 @@ export function AdminUserFacilityFromJSONTyped(json: any, ignoreDiscriminator: b
         'nameAr': json['nameAr'],
         'role': json['role'],
         'status': json['status'],
+        'imageUrl': json['imageUrl'],
     };
 }
 
@@ -88,6 +96,7 @@ export function AdminUserFacilityToJSONTyped(value?: AdminUserFacility | null, i
         'nameAr': value['nameAr'],
         'role': value['role'],
         'status': value['status'],
+        'imageUrl': value['imageUrl'],
     };
 }
 

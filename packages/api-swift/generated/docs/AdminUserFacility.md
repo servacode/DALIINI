@@ -7,6 +7,7 @@ Name | Type | Description | Notes
 **nameAr** | **String** |  | 
 **role** | **String** |  | 
 **status** | **String** |  | 
+**imageUrl** | **String** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

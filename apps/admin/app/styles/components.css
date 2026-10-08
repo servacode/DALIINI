@@ -1252,169 +1252,252 @@ a.bar-row:hover .bar-label { color: var(--ad-brand); }
 .map-card a { font-weight: 700; color: #0f6b4f; }
 
 /* Profile cards ------------------------------------------------------------------------ *
- * A person drawn as an identity card (DECISION-106). Shared: the accounts section is the
- * first to use it, and every section that lists people or places inherits the same card.
+ * A person drawn as an identity card (DECISION-106, drawn to the owner's mockup in 108).
+ * Shared: accounts first, and every section that lists people or places after it.
  *
- * **One shape, always.** Every card has the same parts in the same places, whatever the
- * account carries: no part appears, grows or opens for one account and not another. An empty
- * account fills the same frame with quiet words, so a row of four reads as four of the same
- * thing — which is what lets the eye compare them.
+ * **One shape, always.** Every card has the same parts in the same places — band, picture,
+ * name, two tiles, the state, the places, two dates, the actions — whatever the account
+ * carries. An empty account fills the same frame with quiet words, so a row of cards is a row
+ * of the same thing and can be compared at a glance.
  *
- * The band says what kind of account it is before a word is read: emerald for one that runs
- * a place, sand for an ordinary one, red for one that is shut. The ring round the picture
- * says whether it is in use. Everything else is type, in two weights and two sizes. */
+ * The card is narrow on a wide screen (four across), so it is written for its own width rather
+ * than the window's: a container query stacks the tiles when the card is narrower than they
+ * need, and nothing else has to know. */
 .profile-grid {
   display: grid; gap: var(--ad-space-5); margin: 0; padding: 0; list-style: none;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 }
 @media (min-width: 1200px) { .profile-grid { grid-template-columns: repeat(4, 1fr); } }
 @media (max-width: 560px) { .profile-grid { grid-template-columns: 1fr; } }
 
 .profile {
+  container: profile / inline-size;
   position: relative;
   display: flex; flex-direction: column; height: 100%;
   background: var(--ad-surface);
   border: 1px solid var(--ad-stroke);
-  border-radius: var(--ad-radius-xl);
-  box-shadow: var(--ad-shadow-xs);
+  border-radius: 22px;
+  box-shadow: 0 1px 2px rgba(19, 32, 26, 0.04), 0 8px 24px -12px rgba(19, 32, 26, 0.12);
   overflow: hidden;
-  text-align: center;
-  transition: box-shadow var(--ad-fast) var(--ad-ease), transform var(--ad-fast) var(--ad-ease),
-    border-color var(--ad-fast) var(--ad-ease);
+  transition: box-shadow 220ms var(--ad-ease), transform 220ms var(--ad-ease),
+    border-color 220ms var(--ad-ease);
 }
-.profile:hover { box-shadow: var(--ad-shadow-md); border-color: var(--ad-stroke-strong); }
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .profile:hover { transform: translateY(-2px); }
+.profile:hover {
+  border-color: var(--ad-stroke-strong);
+  box-shadow: 0 2px 4px rgba(19, 32, 26, 0.05), 0 18px 36px -14px rgba(19, 32, 26, 0.22);
 }
 .profile-focus { border-color: var(--ad-brand); box-shadow: 0 0 0 3px var(--ad-brand-soft); }
 
-/* The band, and the tag in its corner that names what the colour means. */
+/* ----- the band, with the curves of the mockup drawn as two soft rings ----- */
+/* Tall enough that the picture always begins below the tag in the corner: on a card a quarter
+   of the screen wide the two met, and the picture covered the end of the tag's word. */
 .profile-band {
-  position: relative;
-  height: 64px;
-  background:
-    radial-gradient(120% 140% at 100% 0%, rgba(255, 255, 255, 0.55) 0%, transparent 55%),
-    var(--ad-surface-subtle);
+  position: relative; height: 108px; overflow: hidden;
+  background: linear-gradient(140deg, #ECE7DA 0%, #E3DDCD 100%);
 }
-.profile-owner .profile-band {
-  background:
-    radial-gradient(120% 140% at 100% 0%, rgba(255, 255, 255, 0.18) 0%, transparent 60%),
-    linear-gradient(135deg, var(--ad-brand) 0%, var(--ad-brand-strong) 100%);
+.profile-owner .profile-band { background: linear-gradient(140deg, #0E7553 0%, #08533B 100%); }
+.profile-blocked .profile-band { background: linear-gradient(140deg, #F6DCD9 0%, #EFC9C4 100%); }
+.profile-band::before, .profile-band::after {
+  content: ""; position: absolute; border-radius: 50%; pointer-events: none;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
 }
-.profile-blocked .profile-band { background: var(--ad-danger-bg); }
+.profile-band::before { width: 260px; height: 160px; inset-inline-end: -120px; inset-block-start: 10px; }
+.profile-band::after { width: 220px; height: 140px; inset-inline-start: -110px; inset-block-start: -70px; }
+.profile-owner .profile-band::before, .profile-owner .profile-band::after { border-color: rgba(255, 255, 255, 0.12); }
+
 .profile-tag {
-  position: absolute; inset-block-start: var(--ad-space-3); inset-inline-start: var(--ad-space-3);
-  padding: 2px var(--ad-space-2);
+  position: absolute; z-index: 1;
+  inset-block-start: 12px; inset-inline-start: 12px;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px;
   border-radius: var(--ad-radius-pill);
-  font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
-  background: var(--ad-surface); color: var(--ad-text-secondary);
+  font-size: 12px; font-weight: 700;
+  background: rgba(255, 255, 255, 0.86); color: var(--ad-text-secondary);
+  box-shadow: 0 2px 8px rgba(19, 32, 26, 0.08);
 }
-.profile-owner .profile-tag { background: rgba(255, 255, 255, 0.16); color: #fff; }
+.profile-owner .profile-tag { background: var(--ad-accent); color: #fff; }
 .profile-blocked .profile-tag { background: var(--ad-danger); color: #fff; }
 
-/* The picture sits across the band's lower edge, so the card reads as one person and not as
-   a header with a box under it. The ring is the one live signal on the card. */
-.profile-mark {
-  position: relative; z-index: 1;
-  display: grid; place-items: center;
-  width: 64px; height: 64px;
-  margin: -32px auto 0;
-  border-radius: var(--ad-radius-pill);
-  background: var(--ad-brand-softer);
-  color: var(--ad-brand-strong);
-  font-family: var(--ad-font-display); font-size: 20px; font-weight: 700;
-  box-shadow: 0 0 0 4px var(--ad-surface), 0 0 0 6px var(--ad-stroke);
+/* The white body rises over the band with rounded shoulders, as in the mockup, and the picture
+   sits across the seam. */
+.profile-body {
+  position: relative; flex: 1 1 auto;
+  display: flex; flex-direction: column;
+  margin-block-start: -22px;
+  padding: 0 14px 14px;
+  border-radius: 22px 22px 0 0;
+  background: var(--ad-surface);
 }
-.profile-live .profile-mark { box-shadow: 0 0 0 4px var(--ad-surface), 0 0 0 6px var(--ad-success); }
+.profile-mark {
+  position: relative; z-index: 2;
+  display: grid; place-items: center;
+  width: 80px; height: 80px; margin: -42px auto 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, #F4FAF6 0%, #E3F1E9 100%);
+  color: var(--ad-brand-strong);
+  font-family: var(--ad-font-display); font-size: 26px; font-weight: 700;
+  box-shadow: 0 0 0 5px var(--ad-surface), 0 0 0 7px #E3E0D6, 0 10px 20px -8px rgba(19, 32, 26, 0.25);
+}
+.profile-live .profile-mark {
+  box-shadow: 0 0 0 5px var(--ad-surface), 0 0 0 7px var(--ad-success), 0 10px 20px -8px rgba(19, 32, 26, 0.25);
+}
 .profile-blocked .profile-mark { background: var(--ad-surface-hover); color: var(--ad-text-muted); }
 
-.profile-id { padding: var(--ad-space-3) var(--ad-space-4) 0; display: grid; gap: 2px; min-width: 0; }
 .profile-name {
-  font-family: var(--ad-font-display); font-size: var(--ad-text-lg); font-weight: 700;
-  line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  margin-block-start: 10px;
+  text-align: center;
+  font-family: var(--ad-font-display); font-size: 19px; font-weight: 700; line-height: 1.35;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .profile-blocked .profile-name { color: var(--ad-text-secondary); }
-/* Read digit by digit and compared against another number, so its digits line up. */
-.profile-phone {
-  font-size: var(--ad-text-sm); color: var(--ad-text-muted);
-  font-variant-numeric: tabular-nums; letter-spacing: 0.03em;
-}
-.profile-meta {
-  display: inline-flex; align-items: center; justify-content: center; gap: var(--ad-space-1);
-  font-size: var(--ad-text-sm); color: var(--ad-text-secondary);
-}
-.profile-meta svg { color: var(--ad-text-muted); }
 
-.profile-status {
-  justify-self: center;
+/* ----- two tiles: number and province ----- */
+.profile-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-block-start: 12px; }
+.profile-tile {
+  display: flex; align-items: center; gap: 8px; min-width: 0;
+  padding: 8px 10px;
+  border-radius: 14px; border: 1px solid var(--ad-stroke-subtle);
+  background: #FBFAF7;
+}
+.profile-tile-icon {
+  flex: 0 0 auto; display: grid; place-items: center;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--ad-success-bg); color: var(--ad-brand);
+}
+.profile-tile-icon[data-tone="gold"] { background: #F8ECD3; color: #A8771F; }
+.profile-tile-text { display: grid; min-width: 0; text-align: start; }
+.profile-tile-text strong {
+  font-size: 13px; font-weight: 700; color: var(--ad-text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.profile-tile-text strong[dir="ltr"] { font-variant-numeric: tabular-nums; text-align: end; }
+.profile-tile-text span { font-size: 11px; color: var(--ad-text-muted); }
+@container profile (max-width: 330px) {
+  .profile-tiles { grid-template-columns: 1fr; }
+}
+
+/* ----- the state: account and activity ----- */
+.profile-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-block-start: 10px; }
+.profile-pill {
   display: inline-flex; align-items: center; gap: 6px;
-  margin-block-start: var(--ad-space-2);
-  padding: 3px var(--ad-space-3);
-  border-radius: var(--ad-radius-pill);
-  background: var(--ad-surface-subtle);
-  font-size: 12px; color: var(--ad-text-muted);
+  padding: 4px 12px; border-radius: var(--ad-radius-pill);
+  font-size: 12px; font-weight: 600;
+  background: var(--ad-surface-subtle); color: var(--ad-text-muted);
 }
-.profile-status::before {
-  content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ad-stroke-strong);
-}
-.profile-live .profile-status { background: var(--ad-success-bg); color: var(--ad-success); font-weight: 600; }
-.profile-live .profile-status::before { background: var(--ad-success); }
+.profile-pill[data-tone="positive"] { background: var(--ad-success-bg); color: var(--ad-success); }
+.profile-pill[data-tone="danger"] { background: var(--ad-danger-bg); color: var(--ad-danger); }
+.profile-pill-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: 0.85; }
 
-/* Three figures under a hairline, each its own cell, so the eye can run along a row of
-   cards and compare one figure across all four. */
-.profile-stats {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  margin: var(--ad-space-4) var(--ad-space-4) 0;
-  padding-block: var(--ad-space-3);
-  border-block: 1px solid var(--ad-stroke-subtle);
-}
-.profile-stat { display: grid; gap: 2px; min-width: 0; }
-.profile-stat + .profile-stat { border-inline-start: 1px solid var(--ad-stroke-subtle); }
-.profile-stat strong {
-  font-family: var(--ad-font-display); font-size: var(--ad-text-md); font-weight: 700;
-  color: var(--ad-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  padding-inline: var(--ad-space-1);
-}
-.profile-stat span { font-size: 11px; color: var(--ad-text-muted); }
+.profile-rule { height: 1px; margin: 12px 0; background: var(--ad-stroke-subtle); border: 0; }
 
-/* The places, named. A fixed height — two lines and «and N more» — so a card with none and a card with
-   three are the same card; the empty one says so in the same space. */
-.profile-list {
+/* ----- the places this account runs ----- */
+.profile-places {
   display: grid; align-content: start; gap: 6px;
-  height: calc(2 * 26px + 3 * 6px + 16px + 18px);
-  margin: var(--ad-space-3) var(--ad-space-4) 0;
-  text-align: start;
+  padding: 10px; border-radius: 16px;
+  background: var(--ad-surface-subtle);
+  /* Two rows and their header, always: a card with none is the same card. */
+  min-height: calc(40px + 2 * 54px + 2 * 6px + 20px);
 }
-.profile-list-title { font-size: 11px; font-weight: 700; color: var(--ad-text-muted); letter-spacing: 0.02em; }
-.profile-item {
-  display: flex; align-items: center; gap: var(--ad-space-2);
-  height: 26px; min-width: 0;
-  font-size: var(--ad-text-sm);
+.profile-places-head { display: flex; align-items: center; gap: 10px; padding: 2px 2px 4px; }
+.profile-places-icon {
+  flex: 0 0 auto; display: grid; place-items: center;
+  width: 36px; height: 36px; border-radius: 12px;
+  background: var(--ad-success-bg); color: var(--ad-brand);
 }
-.profile-item-name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.profile-item-dot { flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: var(--ad-stroke-strong); }
-.profile-item-dot[data-tone="positive"] { background: var(--ad-success); }
-.profile-item-dot[data-tone="warning"] { background: var(--ad-accent); }
-.profile-item-dot[data-tone="danger"] { background: var(--ad-danger); }
-.profile-item-dot[data-tone="info"] { background: var(--ad-info); }
-.profile-item-role { flex: 0 0 auto; font-size: 11px; color: var(--ad-text-muted); }
-.profile-item-more { font-size: 12px; color: var(--ad-brand); font-weight: 600; }
-.profile-empty {
-  display: flex; align-items: center; gap: var(--ad-space-2);
-  height: 26px; font-size: var(--ad-text-sm); color: var(--ad-text-muted);
+.profile-places-head div { display: grid; text-align: start; }
+.profile-places-head strong { font-size: 14px; font-weight: 700; }
+.profile-places-head span { font-size: 11px; color: var(--ad-text-muted); }
+.profile-place {
+  display: flex; align-items: center; gap: 10px; min-width: 0;
+  height: 54px; padding: 6px 8px;
+  border-radius: 12px; background: var(--ad-surface);
+  box-shadow: 0 1px 2px rgba(19, 32, 26, 0.04);
+  transition: transform 160ms var(--ad-ease), box-shadow 160ms var(--ad-ease);
+}
+.profile-place:hover { box-shadow: 0 4px 12px -6px rgba(19, 32, 26, 0.2); }
+.profile-place-thumb {
+  flex: 0 0 auto; width: 40px; height: 40px; border-radius: 10px; overflow: hidden;
+  display: grid; place-items: center;
+  background: var(--ad-brand-softer); color: var(--ad-brand);
+}
+.profile-place-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.profile-place-text { flex: 1 1 auto; display: grid; min-width: 0; text-align: start; }
+.profile-place-text strong {
+  font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.profile-place-text span { font-size: 11px; color: var(--ad-text-muted); }
+.profile-place-state {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: var(--ad-radius-pill);
+  font-size: 11px; font-weight: 700;
+  background: var(--ad-surface-subtle); color: var(--ad-text-muted);
+  border-inline-start: 0;
+}
+.profile-place-state::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.profile-place-state[data-tone="positive"] { background: var(--ad-success-bg); color: var(--ad-success); }
+.profile-place-state[data-tone="warning"] { background: #F8ECD3; color: #8A5B12; }
+.profile-place-state[data-tone="danger"] { background: var(--ad-danger-bg); color: var(--ad-danger); }
+.profile-place-state[data-tone="info"] { background: var(--ad-info-bg); color: var(--ad-info); }
+.profile-places-empty {
+  display: grid; place-items: center; gap: 4px;
+  min-height: calc(2 * 54px + 6px);
+  border: 1.5px dashed var(--ad-stroke); border-radius: 12px;
+  font-size: 12px; color: var(--ad-text-muted); text-align: center;
+}
+.profile-places-more { font-size: 12px; font-weight: 600; color: var(--ad-brand); text-align: center; }
+
+/* ----- two dates ----- */
+.profile-dates { display: grid; grid-template-columns: 1fr 1fr; }
+.profile-date { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 2px 4px; }
+.profile-date + .profile-date { border-inline-start: 1px solid var(--ad-stroke-subtle); padding-inline-start: 10px; }
+.profile-date-icon {
+  flex: 0 0 auto; display: grid; place-items: center;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--ad-success-bg); color: var(--ad-brand);
+}
+.profile-date-icon[data-tone="info"] { background: var(--ad-info-bg); color: var(--ad-info); }
+.profile-date div { display: grid; min-width: 0; text-align: start; }
+.profile-date span { font-size: 11px; color: var(--ad-text-muted); }
+.profile-date strong {
+  font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* The actions, at the foot of every card on the same line. The everyday one takes the room;
-   the irreversible one is quiet until it is hovered. */
-.profile-actions {
-  display: flex; gap: var(--ad-space-2);
-  margin-block-start: auto;
-  padding: var(--ad-space-4);
-}
+/* ----- the actions, at the foot ----- */
+.profile-actions { display: flex; gap: 8px; margin-block-start: auto; padding-block-start: 14px; }
 .profile-actions > button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 40px; padding: 0 10px; border-radius: 12px;
+  font: inherit; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer;
+}
+.profile-act-main { flex: 1.7 1 0; min-width: 0; border: 0; background: var(--ad-brand); color: #fff; }
+.profile-act-main:hover:not(:disabled) { background: var(--ad-brand-strong); }
+.profile-act-danger {
   flex: 1 1 0; min-width: 0;
-  min-height: var(--ad-control-h-sm); padding: 0 var(--ad-space-2); font-size: var(--ad-text-sm);
-  white-space: nowrap;
+  border: 1px solid var(--ad-danger-border); background: #FDF3F2; color: var(--ad-danger);
+}
+.profile-act-danger:hover:not(:disabled) { background: var(--ad-danger-bg); border-color: var(--ad-danger); }
+.profile-act-icon {
+  flex: 0 0 40px; border: 1px solid var(--ad-stroke); background: var(--ad-surface);
+  color: var(--ad-text-secondary);
+}
+.profile-act-icon:hover { border-color: var(--ad-stroke-strong); color: var(--ad-text); }
+.profile-actions > button:focus-visible { outline: none; box-shadow: var(--ad-focus-ring); }
+
+/* ----- motion: cards rise into place in turn; an active account's ring breathes ----- */
+@media (prefers-reduced-motion: no-preference) {
+  .profile { animation: profile-rise 420ms var(--ad-ease) both; animation-delay: calc(var(--i, 0) * 45ms); }
+  .profile:hover { transform: translateY(-3px); }
+  .profile-live .profile-mark { animation: profile-breathe 2.8s ease-in-out infinite; }
+  .profile-place:hover { transform: translateX(-2px); }
+}
+@keyframes profile-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes profile-breathe {
+  0%, 100% { box-shadow: 0 0 0 5px var(--ad-surface), 0 0 0 7px var(--ad-success), 0 10px 20px -8px rgba(19, 32, 26, 0.25); }
+  50% { box-shadow: 0 0 0 5px var(--ad-surface), 0 0 0 9px rgba(24, 122, 80, 0.45), 0 10px 20px -8px rgba(19, 32, 26, 0.25); }
 }
 .button-danger-quiet {
   border: 1px solid var(--ad-danger-border); background: transparent; color: var(--ad-danger);
@@ -1569,3 +1652,46 @@ a.bar-row:hover .bar-label { color: var(--ad-brand); }
 .form-result-warn .form-result-mark { background: var(--ad-accent-bg, #F8ECD3); color: var(--ad-accent-text, #7A4F0E); }
 .form-result strong { font-family: var(--ad-font-display); font-size: var(--ad-text-lg); }
 .form-result p { color: var(--ad-text-secondary); font-size: var(--ad-text-sm); max-width: 36ch; }
+
+/* The loading state (DECISION-108): the platform's mark, a ring turning round it. The ring is a
+   conic gradient cut to a band, so its leading edge is bright and its tail fades — the motion
+   reads as going somewhere rather than as a wheel spinning in place. */
+.brand-loader {
+  display: grid; justify-items: center; align-content: center; gap: var(--ad-space-3);
+  min-height: 180px; padding: var(--ad-space-6);
+  color: var(--ad-text-muted); font-size: var(--ad-text-sm);
+}
+.brand-loader-page { min-height: 60vh; }
+.brand-loader-ring {
+  position: relative; display: grid; place-items: center;
+  width: 88px; height: 88px; border-radius: 50%;
+}
+.brand-loader-page .brand-loader-ring { width: 120px; height: 120px; }
+.brand-loader-ring img {
+  position: relative; z-index: 1;
+  width: 56%; height: 56%; object-fit: contain;
+  padding: 10%; border-radius: 50%;
+  background: var(--ad-surface);
+  box-shadow: 0 6px 18px -8px rgba(19, 32, 26, 0.3);
+}
+.brand-loader-ring::before, .brand-loader-ring::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+}
+/* The track, quiet. */
+.brand-loader-ring::before { border: 3px solid var(--ad-stroke-subtle); }
+/* The moving arc: emerald fading into gold at its tail. */
+.brand-loader-ring::after {
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(201, 146, 46, 0.55) 120deg,
+    var(--ad-brand) 300deg, var(--ad-brand) 330deg, transparent 331deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .brand-loader-ring::after { animation: ad-spin 1.1s linear infinite; }
+  .brand-loader-ring img { animation: brand-loader-breathe 2.2s ease-in-out infinite; }
+}
+@keyframes brand-loader-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.94); }
+}
+.brand-loader-label { font-weight: 600; letter-spacing: 0.01em; }

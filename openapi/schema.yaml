@@ -13671,8 +13671,13 @@ components:
           type: string
         status:
           type: string
+        imageUrl:
+          type: string
+          format: uri
+          nullable: true
       required:
       - id
+      - imageUrl
       - nameAr
       - role
       - status

@@ -49,5 +49,11 @@ class AdminUserFacilityTest : ShouldSpec() {
             //modelInstance.status shouldBe ("TODO")
         }
 
+        // to test the property `imageUrl`
+        should("test imageUrl") {
+            // uncomment below to test the property
+            //modelInstance.imageUrl shouldBe ("TODO")
+        }
+
     }
 }

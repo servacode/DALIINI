@@ -27,6 +27,7 @@ import kotlinx.serialization.Contextual
  * @param nameAr 
  * @param role 
  * @param status 
+ * @param imageUrl 
  */
 @Serializable
 
@@ -42,7 +43,10 @@ data class AdminUserFacility (
     val role: kotlin.String,
 
     @SerialName(value = "status")
-    val status: kotlin.String
+    val status: kotlin.String,
+
+    @Contextual @SerialName(value = "imageUrl")
+    val imageUrl: java.net.URI?
 
 ) {
 

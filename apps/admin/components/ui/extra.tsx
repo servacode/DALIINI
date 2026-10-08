@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  type CSSProperties,
   type ReactNode,
   useEffect,
   useEffectEvent,
@@ -410,59 +411,50 @@ function SlideImage({ src, fallback }: { src: string; fallback: string | null })
 }
 
 /**
- * A person, or a place, drawn as an identity card (DECISION-106).
+ * A person, or a place, drawn as an identity card (DECISION-106; drawn to the owner's mockup,
+ * DECISION-108).
  *
- * **One shape, always, and everything on it.** There is no button that opens a card and no
- * part that appears for one account and not another: the band, the picture, the name, the
- * three figures, the list and the actions are on every card in the same places. An account
- * with nothing to show fills the same frame with quiet words. That is what lets a row of
- * four be compared at a glance, and it is what the owner asked for in as many words.
+ * **One shape, always, and everything on it.** No part opens, appears or grows for one record
+ * and not another: band, picture, name, two tiles, the state, the places, two dates and the
+ * actions sit in the same places on every card. A record with nothing to show fills the same
+ * frame with quiet words. That is what lets a row of cards be compared at a glance.
  *
- * The band's colour says what kind of record this is before a word is read, and the ring
- * round the picture says whether it is in use. The list holds three lines at most, in a
- * fixed height, and says how many more there are rather than growing.
+ * The band's colour says what kind of record this is before a word is read, the word in its
+ * corner names it, and the ring round the picture says whether the record is in use.
  */
 export function ProfileCard({
   mark,
   name,
-  phone,
-  meta,
   tag,
   kind = "plain",
   live,
-  status,
-  stats,
-  listTitle,
-  items,
-  more,
-  empty,
+  tiles,
+  pills,
+  places,
+  dates,
   actions,
   focused,
+  index = 0,
   testId,
 }: {
   /** A letter or two standing in for a picture: the first letters of the name. */
   mark: ReactNode;
   name: ReactNode;
-  phone?: ReactNode;
-  /** One line under the number: a province, a category. */
-  meta?: ReactNode;
-  /** The word in the band's corner that names what its colour means. */
-  tag: string;
+  /** The word in the band's corner, and its icon. */
+  tag: Readonly<{ label: string; icon: IconName }>;
   kind?: "plain" | "owner" | "blocked";
-  /** Rings the picture: in use recently. */
+  /** Rings the picture, and lets it breathe: in use recently. */
   live?: boolean;
-  /** The pill under the name: «نشط الآن», «آخر ظهور منذ…». */
-  status: ReactNode;
-  /** Exactly three figures, compared across a row of cards. */
-  stats: readonly [ProfileStat, ProfileStat, ProfileStat];
-  listTitle: string;
-  items: readonly ProfileItem[];
-  /** How many more there are than the list shows. */
-  more?: number;
-  /** What the list says when there is nothing in it. */
-  empty: string;
+  /** Exactly two: what identifies the record beside its name. */
+  tiles: readonly [ProfileTile, ProfileTile];
+  pills: readonly ProfilePill[];
+  places: ProfilePlaces;
+  /** Exactly two: when it began, and when it was last seen. */
+  dates: readonly [ProfileDate, ProfileDate];
   actions?: ReactNode;
   focused?: boolean;
+  /** The card's place in the list, so the cards rise into place one after another. */
+  index?: number;
   testId?: string;
 }) {
   const classes = [
@@ -475,68 +467,161 @@ export function ProfileCard({
     .filter(Boolean)
     .join(" ");
   return (
-    <li className={classes} data-testid={testId}>
+    <li
+      className={classes}
+      data-testid={testId}
+      // Capped, so the twentieth card does not wait a second to appear.
+      style={{ "--i": Math.min(index, 12) } as CSSProperties}
+    >
       <div className="profile-band">
-        <span className="profile-tag">{tag}</span>
+        <span className="profile-tag">
+          <Icon name={tag.icon} width={14} height={14} />
+          {tag.label}
+        </span>
       </div>
-      <span className="profile-mark" aria-hidden="true">
-        {mark}
-      </span>
-      <div className="profile-id">
+      <div className="profile-body">
+        <span className="profile-mark" aria-hidden="true">
+          {mark}
+        </span>
         <span className="profile-name">{name}</span>
-        {phone ? <span className="profile-phone">{phone}</span> : null}
-        {meta ? (
-          <span className="profile-meta">
-            <Icon name="mapPin" width={13} height={13} />
-            {meta}
-          </span>
-        ) : null}
-        <span className="profile-status">{status}</span>
-      </div>
-      <div className="profile-stats">
-        {stats.map((stat) => (
-          <span key={stat.label} className="profile-stat">
-            <strong>{stat.value}</strong>
-            <span>{stat.label}</span>
-          </span>
-        ))}
-      </div>
-      <div className="profile-list">
-        <span className="profile-list-title">{listTitle}</span>
-        {items.length === 0 ? (
-          <span className="profile-empty">
-            <Icon name="building" width={14} height={14} />
-            {empty}
-          </span>
-        ) : (
-          items.map((item) => (
-            <span key={item.key} className="profile-item">
-              <span className="profile-item-dot" data-tone={item.tone} title={item.toneLabel} />
-              <span className="profile-item-name">{item.label}</span>
-              {item.aside ? <span className="profile-item-role">{item.aside}</span> : null}
+
+        <div className="profile-tiles">
+          {tiles.map((tile) => (
+            <span key={tile.label} className="profile-tile">
+              <span className="profile-tile-icon" data-tone={tile.tone} aria-hidden="true">
+                <Icon name={tile.icon} width={16} height={16} />
+              </span>
+              <span className="profile-tile-text">
+                <strong dir={tile.ltr ? "ltr" : undefined}>{tile.value}</strong>
+                <span>{tile.label}</span>
+              </span>
             </span>
-          ))
-        )}
-        {more && more > 0 ? (
-          <span className="profile-item-more">{`و${NUMERALS.format(more)} غيرها`}</span>
-        ) : null}
+          ))}
+        </div>
+
+        <div className="profile-pills">
+          {pills.map((pill) => (
+            <span key={pill.label} className="profile-pill" data-tone={pill.tone}>
+              {pill.icon ? (
+                <Icon name={pill.icon} width={14} height={14} />
+              ) : (
+                <span className="profile-pill-dot" aria-hidden="true" />
+              )}
+              {pill.label}
+            </span>
+          ))}
+        </div>
+
+        <hr className="profile-rule" />
+
+        <section className="profile-places" aria-label={places.title}>
+          <div className="profile-places-head">
+            <span className="profile-places-icon" aria-hidden="true">
+              <Icon name="building" width={18} height={18} />
+            </span>
+            <div>
+              <strong>{places.title}</strong>
+              <span>{places.subtitle}</span>
+            </div>
+          </div>
+          {places.items.length === 0 ? (
+            <span className="profile-places-empty">
+              <Icon name="building" width={18} height={18} />
+              {places.empty}
+            </span>
+          ) : (
+            places.items.map((item) => (
+              <span key={item.key} className="profile-place">
+                <span className="profile-place-thumb" aria-hidden="true">
+                  {item.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- public media, no loader
+                    <img src={item.image} alt="" loading="lazy" />
+                  ) : (
+                    <Icon name="building" width={18} height={18} />
+                  )}
+                </span>
+                <span className="profile-place-text">
+                  <strong>{item.label}</strong>
+                  {item.aside ? <span>{item.aside}</span> : null}
+                </span>
+                {item.state ? (
+                  <span className="profile-place-state" data-tone={item.stateTone}>
+                    {item.state}
+                  </span>
+                ) : null}
+              </span>
+            ))
+          )}
+          {places.more && places.more > 0 ? (
+            <span className="profile-places-more">{`و${NUMERALS.format(places.more)} غيرها`}</span>
+          ) : null}
+        </section>
+
+        <hr className="profile-rule" />
+
+        <div className="profile-dates">
+          {dates.map((date) => (
+            <span key={date.label} className="profile-date">
+              <span className="profile-date-icon" data-tone={date.tone} aria-hidden="true">
+                <Icon name={date.icon} width={15} height={15} />
+              </span>
+              <div>
+                <span>{date.label}</span>
+                <strong>{date.value}</strong>
+              </div>
+            </span>
+          ))}
+        </div>
+
+        {actions ? <div className="profile-actions">{actions}</div> : null}
       </div>
-      {actions ? <div className="profile-actions">{actions}</div> : null}
     </li>
   );
 }
 
-export type ProfileStat = Readonly<{ value: ReactNode; label: string }>;
+export type ProfileTile = Readonly<{
+  icon: IconName;
+  /** `gold` for a place; the brand green otherwise. */
+  tone?: "gold";
+  value: ReactNode;
+  label: string;
+  /** A number read left to right, such as a phone number. */
+  ltr?: boolean;
+}>;
 
-export type ProfileItem = Readonly<{
+export type ProfilePill = Readonly<{
+  label: string;
+  tone?: "positive" | "danger";
+  /** An icon instead of the dot. */
+  icon?: IconName;
+}>;
+
+export type ProfilePlaces = Readonly<{
+  title: string;
+  subtitle: string;
+  items: readonly ProfilePlace[];
+  /** How many more there are than the card shows. */
+  more?: number;
+  /** What the panel says when there is nothing in it. */
+  empty: string;
+}>;
+
+export type ProfilePlace = Readonly<{
   key: string;
   label: string;
-  /** A word beside the name: «مالك», «مدير». */
+  /** A word under the name: «مالك», «مدير». */
   aside?: string;
-  /** The dot's colour, from the status vocabulary's tone. */
-  tone?: string;
-  /** What the dot means, for whoever hovers it and for a screen reader. */
-  toneLabel?: string;
+  image?: string | null;
+  state?: string;
+  /** The vocabulary tone of the state: positive, warning, danger, info. */
+  stateTone?: string;
+}>;
+
+export type ProfileDate = Readonly<{
+  icon: IconName;
+  tone?: "info";
+  label: string;
+  value: string;
 }>;
 
 /** «منذ ٣ ساعات», «أمس», «قبل ٥ أيام» — Arabic, and never a bare timestamp on a card. */

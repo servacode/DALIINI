@@ -8,6 +8,7 @@
 | **nameAr** | **kotlin.String** |  |  |
 | **role** | **kotlin.String** |  |  |
 | **status** | **kotlin.String** |  |  |
+| **imageUrl** | [**java.net.URI**](java.net.URI.md) |  |  |
 
 
 

@@ -2854,3 +2854,33 @@ the card itself and for a card that keeps one shape; the button did neither. Now
   right-to-left mark between day, month and year, which with Latin digits drew «8/10/26» as
   «26/10/8»; `withoutDirectionMarks` strips it from dates — seen on the rendered page, not in
   any test.
+
+## DECISION-108 — The identity card drawn to the owner's mockup; one branded loading state
+
+**Date:** 2026-10-09 · **Owner's decision**, from a mockup the owner made and asked to be followed
+«with small changes, fitting icons and some motion».
+
+* **The card follows the mockup:** an emerald band with soft curves (sand for an ordinary
+  account, red for a blocked one) and a tag in its corner — gold «صاحب منشأة», «مستخدم»,
+  «محظور» — each with its icon; the white body rising over the band with rounded shoulders and
+  the picture across the seam, double-ringed; the name; two tiles (number with a phone icon,
+  province with a gold pin); two pills (account state with a tick, activity with a dot); a
+  panel of the account's places, each row with the place's **first photograph**, its name, the
+  account's role in it and its status; two date tiles (registration, last sign-in, year first:
+  «2026/10/08»); and a filled «إرسال رمز استعادة» with the WhatsApp mark beside a quiet «حظر».
+  The authenticator reset is a small icon button, on operators' cards only.
+* **Changed from the mockup, deliberately:** the count says «منشأة واحدة», «منشأتان», «3 منشآت»,
+  «11 منشأة» — the mockup's «2 منشأة» reads as a slip, and it would be on most cards; and the
+  band is taller, because at four cards across the picture covered the end of the tag.
+* **Written for its own width.** Four across makes a card narrower than the mockup, so the card
+  is a CSS container and its tiles stack when it is too narrow for them side by side.
+* **Motion, kept calm:** cards rise into place one after another (capped, so the twentieth
+  does not wait); an active account's ring breathes; rows answer the pointer. All of it is off
+  for anyone whose system asks for reduced motion.
+* **Each place's first photograph** is in the row payload, prefetched with the memberships, so
+  a page of cards still asks the database the same number of questions.
+* **One loading state for the whole console.** `LoadingState` — used in seventy-odd places —
+  is the platform's mark in a white disc with a ring turning round it, its leading edge emerald
+  and its tail fading to gold, so the motion reads as going somewhere. A section shows the
+  larger form (`(console)/loading.tsx`) while it loads. With reduced motion the ring stands
+  still and the words carry it.

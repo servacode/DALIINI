@@ -26,7 +26,7 @@ import { useCursorPage } from "../../../lib/client/use-cursor-page";
 import { useMutation } from "../../../lib/client/use-mutation";
 import { useResource } from "../../../lib/client/use-resource";
 import { useUrlFilters } from "../../../lib/client/use-url-filters";
-import { LOCALE, withoutDirectionMarks } from "../../../lib/locale";
+import { LOCALE } from "../../../lib/locale";
 
 type AdminUser = Readonly<{
   id: string;
@@ -46,7 +46,13 @@ type AdminUser = Readonly<{
 
 type Created = AdminUser & Readonly<{ codeSent: boolean; codeError: string | null }>;
 
-type Facility = Readonly<{ id: string; nameAr: string; role: string; status: string }>;
+type Facility = Readonly<{
+  id: string;
+  nameAr: string;
+  role: string;
+  status: string;
+  imageUrl: string | null;
+}>;
 
 type Province = Readonly<{ id: string; nameAr: string }>;
 
@@ -214,9 +220,10 @@ export default function UsersPage() {
 
       {users.data && users.data.items.length > 0 ? (
         <ul className="profile-grid" data-testid="accounts">
-          {users.data.items.map((user) => (
+          {users.data.items.map((user, index) => (
             <AccountCard
               key={user.id}
+              index={index}
               user={user}
               focused={linked === user.id}
               canManageUsers={canManageUsers}
@@ -363,18 +370,20 @@ export default function UsersPage() {
 
 function AccountCard({
   user,
+  index,
   focused,
   canManageUsers,
   onAction,
 }: {
   user: AdminUser;
+  index: number;
   focused: boolean;
   canManageUsers: boolean;
   onAction: (action: Action, user: AdminUser) => void;
 }) {
   const owner = user.facilityCount > 0;
   const kind = !user.active ? "blocked" : owner ? "owner" : "plain";
-  const status = user.lastSeenAt
+  const activity = user.lastSeenAt
     ? user.recentlyActive
       ? "نشط الآن"
       : `آخر ظهور ${relativeTime(user.lastSeenAt)}`
@@ -382,75 +391,104 @@ function AccountCard({
   return (
     <ProfileCard
       testId={`account-${user.id}`}
+      index={index}
       focused={focused}
       kind={kind}
-      tag={!user.active ? "محظور" : owner ? "صاحب منشأة" : "مستخدم"}
+      tag={
+        !user.active
+          ? { label: "محظور", icon: "lock" }
+          : owner
+            ? { label: "صاحب منشأة", icon: "building" }
+            : { label: "مستخدم", icon: "user" }
+      }
       live={user.recentlyActive}
       mark={initials(user.name)}
       name={user.name}
-      phone={<span dir="ltr">{user.phone}</span>}
-      meta={user.provinceName ?? "بلا محافظة"}
-      status={status}
-      stats={[
-        { value: NUMBER.format(user.facilityCount), label: "منشآت" },
-        { value: shortDate(user.createdAt), label: "التسجيل" },
+      tiles={[
+        { icon: "phone", value: user.phone, label: "رقم الجوال", ltr: true },
         {
-          value: user.lastLoginAt ? shortAgo(user.lastLoginAt) : "—",
-          label: "آخر دخول",
+          icon: "mapPin",
+          tone: "gold",
+          value: user.provinceName ?? "—",
+          label: "المحافظة",
         },
       ]}
-      listTitle="المنشآت باسمه"
-      items={user.facilities.map((facility) => ({
-        key: facility.id,
-        label: facility.nameAr,
-        aside: MEMBER_ROLE[facility.role] ?? facility.role,
-        tone: FACILITY_STATUS[facility.status]?.tone,
-        toneLabel: FACILITY_STATUS[facility.status]?.label,
-      }))}
-      more={user.facilityCount - user.facilities.length}
-      empty="لا منشأة باسمه"
+      pills={[
+        user.active
+          ? { label: "فعّال", tone: "positive", icon: "checkCircle" }
+          : { label: "محظور", tone: "danger", icon: "lock" },
+        { label: activity, tone: user.recentlyActive ? "positive" : undefined },
+      ]}
+      places={{
+        title: facilitiesPhrase(user.facilityCount),
+        subtitle: "المنشآت التابعة للحساب",
+        empty: "لا منشأة باسمه",
+        more: user.facilityCount - user.facilities.length,
+        items: user.facilities.map((facility) => ({
+          key: facility.id,
+          label: facility.nameAr,
+          aside: MEMBER_ROLE[facility.role] ?? facility.role,
+          image: facility.imageUrl,
+          state: FACILITY_STATUS[facility.status]?.label,
+          stateTone: FACILITY_STATUS[facility.status]?.tone,
+        })),
+      }}
+      dates={[
+        { icon: "calendar", label: "تاريخ التسجيل", value: isoDay(user.createdAt) },
+        {
+          icon: "clock",
+          tone: "info",
+          label: "آخر دخول",
+          value: user.lastLoginAt ? isoDay(user.lastLoginAt) : "لم يدخل بعد",
+        },
+      ]}
       actions={
         canManageUsers ? (
           <>
             <button
               type="button"
-              className="button-ghost"
+              className="profile-act-main"
               data-testid={`recovery-${user.id}`}
               onClick={() => onAction("recovery", user)}
             >
-              رمز استعادة
+              <Icon name="whatsapp" width={16} height={16} />
+              إرسال رمز استعادة
             </button>
-            {/* Only an operator ever sets up an authenticator, so only their card is
-                offered the button that clears one. */}
-            {user.hasTwoFactor ? (
-              <button
-                type="button"
-                className="button-ghost"
-                data-testid={`mfa-${user.id}`}
-                onClick={() => onAction("mfa", user)}
-              >
-                تصفير التحقق
-              </button>
-            ) : null}
             {user.active ? (
               <button
                 type="button"
-                className="button-ghost button-danger-quiet"
+                className="profile-act-danger"
                 data-testid={`block-${user.id}`}
                 onClick={() => onAction("block", user)}
               >
+                <Icon name="lock" width={15} height={15} />
                 حظر
               </button>
             ) : (
               <button
                 type="button"
-                className="button-primary"
+                className="profile-act-danger"
                 data-testid={`unblock-${user.id}`}
                 onClick={() => onAction("unblock", user)}
               >
+                <Icon name="lock" width={15} height={15} />
                 رفع الحظر
               </button>
             )}
+            {/* Only an operator ever sets up an authenticator, so only their card carries the
+                small button that clears one. */}
+            {user.hasTwoFactor ? (
+              <button
+                type="button"
+                className="profile-act-icon"
+                data-testid={`mfa-${user.id}`}
+                title="تصفير التحقق بخطوتين"
+                aria-label="تصفير التحقق بخطوتين"
+                onClick={() => onAction("mfa", user)}
+              >
+                <Icon name="shield" width={16} height={16} />
+              </button>
+            ) : null}
           </>
         ) : null
       }
@@ -458,26 +496,31 @@ function AccountCard({
   );
 }
 
-/** «8/10/26» — a date that fits a third of a narrow card; the month's name did not. */
-function shortDate(value: string | null): string {
-  if (!value) return "—";
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? "—"
-    : withoutDirectionMarks(
-        date.toLocaleDateString(LOCALE, { day: "numeric", month: "numeric", year: "2-digit" }),
-      );
+/**
+ * How many places, said as Arabic says it: «منشأة واحدة», «منشأتان», «3 منشآت», «11 منشأة».
+ * The mockup's «2 منشأة» reads as a slip, and on a page of cards it would be one on most of them.
+ */
+function facilitiesPhrase(count: number): string {
+  if (count === 0) return "لا منشآت";
+  if (count === 1) return "منشأة واحدة";
+  if (count === 2) return "منشأتان";
+  const n = NUMBER.format(count);
+  const lastTwo = count % 100;
+  return lastTwo >= 3 && lastTwo <= 10 ? `${n} منشآت` : `${n} منشأة`;
 }
 
-/** «3 س», «أمس», «5 يوم» — the last sign-in, short enough for a third of a card. */
-function shortAgo(value: string): string {
-  const minutes = Math.max(0, Math.round((Date.now() - new Date(value).getTime()) / 60000));
-  if (minutes < 60) return `${NUMBER.format(minutes)} د`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${NUMBER.format(hours)} س`;
-  const days = Math.round(hours / 24);
-  if (days === 1) return "أمس";
-  return `${NUMBER.format(days)} يوم`;
+/** «2024/01/15» — year first, as in the owner's mockup, and the same width on every card. */
+function isoDay(value: string | null): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "Asia/Damascus",
+  }).format(date);
+  return parts.replace(/-/g, "/");
 }
 
 /** The four confirmations an action on an account asks for, in one place. */

@@ -34,6 +34,9 @@ class AdminUserFacilitySerializer(serializers.Serializer[Any]):
     nameAr = serializers.CharField()
     role = serializers.CharField()
     status = serializers.CharField()
+    # The facility's first public photograph, so a card shows the place and not only its
+    # name. Null until the owner has uploaded one.
+    imageUrl = serializers.URLField(allow_null=True)
 
 
 class AdminUserSerializer(serializers.Serializer[Any]):

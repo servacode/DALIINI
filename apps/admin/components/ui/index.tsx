@@ -181,11 +181,34 @@ export function KeyValueList({
   );
 }
 
-export function LoadingState({ label = "جارٍ التحميل…" }: { label?: string }) {
+/**
+ * The console's one loading state: the platform's mark in the middle, a ring turning round it
+ * (DECISION-108).
+ *
+ * One component for all seventy-odd places that wait, so waiting looks the same everywhere and
+ * says whose console this is. `page` is the larger form a whole section shows while it loads.
+ * For anyone who has asked their system for less motion the ring stands still and the words
+ * carry the meaning.
+ */
+export function LoadingState({
+  label = "جارٍ التحميل…",
+  page,
+}: {
+  label?: string;
+  page?: boolean;
+}) {
   return (
-    <div className="state-block" role="status" aria-live="polite" data-testid="loading-state">
-      <span className="spinner" aria-hidden="true" />
-      <span>{label}</span>
+    <div
+      className={page ? "brand-loader brand-loader-page" : "brand-loader"}
+      role="status"
+      aria-live="polite"
+      data-testid="loading-state"
+    >
+      <span className="brand-loader-ring" aria-hidden="true">
+        {/* eslint-disable-next-line @next/next/no-img-element -- a 128px static asset */}
+        <img src={brandSymbol.src} width={128} height={128} alt="" />
+      </span>
+      <span className="brand-loader-label">{label}</span>
     </div>
   );
 }
