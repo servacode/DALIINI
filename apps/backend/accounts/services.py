@@ -182,11 +182,41 @@ def complete_registration(
     )
     challenge.consumed_at = timezone.now()
     challenge.save(update_fields=["consumed_at"])
-    # Invitations sent to this number before it had an account are announced now.
+    _welcome(user)
+    # Invitations sent to this number before it had an account are announced now. After the
+    # welcome, so that an invitation — the one thing here that asks the reader to act — is the
+    # first message in an inbox that shows the newest at the top.
     from facilities.invitations import announce_waiting
 
     announce_waiting(user)
     return create_session(user=user, platform=platform, device_name=device_name)
+
+
+WELCOME_TYPE = "account.welcome"
+
+
+def _welcome(user: User) -> None:
+    """The platform's first word to a new account, in the inbox.
+
+    In the inbox and not over WhatsApp, deliberately. The code must go out over that channel;
+    nothing else has to, and every extra message from an unofficial account raises the chance
+    of the number being blocked, which would stop every registration at once (DECISION-052).
+
+    No push is expected to leave with it either: the device registers its token after the
+    session exists, which is after this. The inbox is the record, and it is open in front of
+    the reader at this exact moment.
+    """
+    from notifications.services import notify
+
+    notify(
+        user=user,
+        type=WELCOME_TYPE,
+        title_ar="أهلًا بك في دليني",
+        body_ar=(
+            "حسابك جاهز. تستطيع الآن تقييم المنشآت وحفظ ما يهمّك، "
+            "وإن كانت لك منشأة فأضفها من «حسابي» لتظهر للناس بعد المراجعة."
+        ),
+    )
 
 
 def login(*, phone: str, password: str, platform: str, device_name: str) -> dict[str, Any]:

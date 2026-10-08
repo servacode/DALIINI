@@ -20,7 +20,12 @@ FIELDS = {
     PROVINCE_NEWS: "province_news",
     APPLICATION_STATUS: "application_status",
 }
-ALWAYS_SHOWN = {"duty.shift.admin_changed"}
+# Kept the same as `NotificationCategory.of` on Android, which is the list's home. A staff
+# change to an owner's own shift is not news but their roster; an invitation is addressed to
+# this person rather than news about a facility. Both fall under a prefix below, so without
+# this set the backend would decline to push them while the app considers them unmutable —
+# and the backend is the side that decides, so the reader would simply never hear.
+ALWAYS_SHOWN = {"duty.shift.admin_changed", "facility.invitation.received"}
 
 
 def category_of(notification_type: str) -> str | None:
