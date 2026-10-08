@@ -65,6 +65,20 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
         icon: "dashboard",
         pages: [{ href: "/dashboard", label: "الرئيسية", permission: "admin.dashboard.read" }],
       },
+      // Three sections, not one drawer. Managing an account, deciding what a role may do,
+      // and announcing something to every phone in a province are three different jobs done
+      // by different people on different days; filed together, each one was a click deeper
+      // than it should be and none of them had a name of its own in the sidebar.
+      //
+      // Accounts sits directly under the home entry, at the owner's instruction: it is the
+      // section an operator opens most, and a section opened every day does not belong
+      // below four that are not.
+      {
+        key: "accounts",
+        label: "الحسابات",
+        icon: "users",
+        pages: [{ href: "/users", label: "الحسابات", permission: "admin.users.read" }],
+      },
       {
         key: "tasks",
         label: "المراجعات والبلاغات",
@@ -92,16 +106,6 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
           { href: "/facilities", label: "المنشآت", permission: "admin.facilities.read" },
           { href: "/facilities/map", label: "الخريطة", permission: "admin.facilities.read" },
         ],
-      },
-      // Three sections, not one drawer. Managing an account, deciding what a role may do,
-      // and announcing something to every phone in a province are three different jobs done
-      // by different people on different days; filed together, each one was a click deeper
-      // than it should be and none of them had a name of its own in the sidebar.
-      {
-        key: "accounts",
-        label: "الحسابات",
-        icon: "users",
-        pages: [{ href: "/users", label: "الحسابات", permission: "admin.users.read" }],
       },
       {
         key: "roles",

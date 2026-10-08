@@ -1259,22 +1259,48 @@ a.bar-row:hover .bar-label { color: var(--ad-brand); }
  *
  * Shared on purpose — the accounts section is the first to use it, and every section after
  * it gets the same card without a second stylesheet. */
-.record-list { display: grid; gap: var(--ad-space-4); margin: 0; padding: 0; list-style: none; }
+/* Four across on a wide screen, fewer as it narrows, and never a half-width orphan: the
+   track is a minimum rather than a count, so the last row fills. */
+.record-list {
+  display: grid; gap: var(--ad-space-4); margin: 0; padding: 0; list-style: none;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+@media (min-width: 1200px) { .record-list { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 560px) { .record-list { grid-template-columns: 1fr; } }
 .record {
   background: var(--ad-surface);
   border: 1px solid var(--ad-stroke);
   border-radius: var(--ad-radius-xl);
   box-shadow: var(--ad-shadow-xs);
   transition: border-color var(--ad-fast) var(--ad-ease), box-shadow var(--ad-fast) var(--ad-ease);
+  /* Every card in a row ends on the same line, whatever it happens to carry. One account
+     with no badge made its card shorter than the three beside it, and a row of cards that
+     do not line up reads as a mistake rather than as a difference between the accounts. */
+  display: flex; flex-direction: column; height: 100%;
 }
 .record:hover { border-color: var(--ad-stroke-strong); box-shadow: var(--ad-shadow-sm); }
-.record-open { border-color: var(--ad-brand); box-shadow: var(--ad-shadow-md); }
+/* An opened card takes the whole row. In a grid it would otherwise grow inside its own
+   column and shove every card beside it down the page, and the detail it opens — three
+   sections meant to sit side by side — has no room in a quarter of the width. */
+.record-open {
+  border-color: var(--ad-brand); box-shadow: var(--ad-shadow-md);
+  grid-column: 1 / -1;
+}
 /* A blocked account is told apart before anything on it is read. */
 .record-muted { background: var(--ad-surface-subtle); }
 .record-muted .record-name { color: var(--ad-text-secondary); }
 
+/* Closed, a card is a quarter of the width, so its head stacks: the mark beside the name,
+   and everything else under them. Opened, it has the whole row and reads along a line. */
 .record-head {
-  display: flex; align-items: center; gap: var(--ad-space-4);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ad-space-2) var(--ad-space-4);
+  padding: var(--ad-space-5);
+}
+.record-open .record-head {
+  grid-template-columns: auto minmax(0, 1fr) auto;
   padding: var(--ad-space-5) var(--ad-space-6);
 }
 .record-mark {
@@ -1295,23 +1321,37 @@ a.bar-row:hover .bar-label { color: var(--ad-brand); }
 }
 .record-name a { color: inherit; text-decoration: none; }
 .record-name a:hover { color: var(--ad-brand); }
-/* Phone, province, dates: one line of quiet facts, each separated by a dot. */
+/* Phone, province, when last active. Stacked in a narrow card and strung along one line,
+   dot-separated, once the card is open and has the width for it. */
 .record-sub {
-  display: flex; flex-wrap: wrap; align-items: center; gap: var(--ad-space-1) var(--ad-space-3);
+  display: grid; gap: 2px;
   color: var(--ad-text-muted); font-size: var(--ad-text-md);
 }
-.record-sub > * + *::before { content: "·"; margin-inline-end: var(--ad-space-3); }
-.record-badges {
-  margin-inline-start: auto;
-  display: flex; flex-wrap: wrap; justify-content: flex-end;
-  gap: var(--ad-space-2);
+.record-sub > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.record-open .record-sub {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--ad-space-1) var(--ad-space-3);
 }
+.record-open .record-sub > * + *::before { content: "·"; margin-inline-end: var(--ad-space-3); }
+/* Under the name while the card is narrow; at the end of the line once it is open. */
+.record-badges {
+  grid-column: 2;
+  display: flex; flex-wrap: wrap; gap: var(--ad-space-2);
+}
+.record-badges:empty { display: none; }
+.record-open .record-badges { grid-column: auto; justify-content: flex-end; }
 
 /* The actions, on the card and above everything else it holds, as the owner asked. */
+/* Separated from the head by a hairline, so the card reads as «who» then «what can be
+   done», which is the order the operator decides in. */
 .record-actions {
   display: flex; flex-wrap: wrap; gap: var(--ad-space-2);
-  padding: 0 var(--ad-space-6) var(--ad-space-4);
+  /* Pushed to the foot of the card, so the action rows line up across a row of cards. */
+  margin-block-start: auto;
+  margin-inline: var(--ad-space-5);
+  padding-block: var(--ad-space-4);
+  border-block-start: 1px solid var(--ad-stroke-subtle);
 }
+.record-open .record-actions { margin-inline: var(--ad-space-6); }
 .record-actions .button-ghost, .record-actions .button-primary, .record-actions .button-danger {
   min-height: var(--ad-control-h-sm); padding: 0 var(--ad-space-3); font-size: var(--ad-text-sm);
 }
