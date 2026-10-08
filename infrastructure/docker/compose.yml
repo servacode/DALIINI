@@ -26,7 +26,12 @@ x-backend-env: &backend-env
   S3_SECRET_ACCESS_KEY: directory-dev-only-change-me
   S3_PUBLIC_BUCKET: directory-public
   S3_PRIVATE_BUCKET: directory-private
-  S3_PUBLIC_MEDIA_BASE_URL: http://localhost:9000/directory-public
+  # 127.0.0.1, not localhost. Every facility photograph is addressed from this base, and a
+  # browser on Windows resolves `localhost` to ::1 first — which Docker Desktop advertises and
+  # does not serve, so each picture waits out its timeout and the card shows nothing. The same
+  # address through 127.0.0.1 answers immediately. A phone reaches it through
+  # `adb reverse tcp:9000`, which forwards its own loopback either way.
+  S3_PUBLIC_MEDIA_BASE_URL: http://127.0.0.1:9000/directory-public
   # Codes are not sent anywhere locally; `manage.py e2e_set_otp` sets a known one.
   OTP_PROVIDER: development
   PUSH_PROVIDER: development

@@ -680,6 +680,36 @@ tr:last-child td { border-bottom: 0; }
   box-shadow: var(--shadow-medium);
 }
 
+/* A card that has a photograph gives it the full width and the top, and the text follows it.
+   The band bleeds past the card's padding so the picture meets its edges, which is what makes
+   it read as a photograph of a place rather than as an illustration dropped into a box. */
+.facility-card.has-photo {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "photo"
+    "main"
+    "ways";
+  padding-block-start: 0;
+  overflow: hidden;
+}
+
+.facility-photo {
+  grid-area: photo;
+  display: block;
+  margin-inline: calc(var(--sd-spacing-md) * -1);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--sd-semantic-surface-brand-soft);
+}
+
+.facility-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* A shopfront photographed at an angle keeps its sign in view rather than its pavement. */
+  object-position: center;
+}
+
 .facility-thumb {
   grid-area: thumb;
   display: grid;
@@ -690,12 +720,6 @@ tr:last-child td { border-bottom: 0; }
   border-radius: var(--sd-radius-medium);
   background: var(--sd-semantic-surface-brand-soft);
   color: var(--sd-semantic-action-primary);
-}
-
-.facility-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .facility-main {
@@ -807,22 +831,17 @@ tr:last-child td { border-bottom: 0; }
 
 .way-whatsapp:hover { filter: brightness(1.06); }
 
+/* Carries `way-button` for its shape, and only what differs is said here: it is pushed to the
+   end of the row, and it is a button element rather than a link. */
 .facility-more {
-  display: grid;
   margin-inline-start: auto;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border: 0;
-  border-radius: var(--sd-radius-pill);
-  background: none;
-  color: var(--sd-semantic-content-muted);
+  border: 1px solid var(--sd-semantic-stroke-subtle);
   cursor: pointer;
-  transition: background var(--quick) var(--ease), color var(--quick) var(--ease);
+  font-family: inherit;
 }
 
 .facility-more:hover {
-  background: var(--sd-semantic-surface-hover);
+  border-color: var(--sd-semantic-stroke-strong);
   color: var(--sd-semantic-action-primary);
 }
 

@@ -90,3 +90,10 @@ apps/web/test-results/
 apps/web/public/vendor/
 apps/admin/public/vendor/
 apps/admin/test-results/
+
+# Written into each app by `next dev` itself (node_modules/next/dist/server/lib/
+# generate-agent-files.js): a pointer to the bundled Next docs for coding agents. It is
+# regenerated on every run and changes with every Next upgrade, so it is the tool's output
+# and not this repository's content.
+apps/*/AGENTS.md
+apps/*/CLAUDE.md

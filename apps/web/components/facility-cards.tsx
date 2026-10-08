@@ -137,10 +137,17 @@ function Card({ f }: { f: CompactFacility }) {
   );
 
   return (
-    <article className="facility-card">
-      {/* The shopfront when an owner has uploaded one, the category's mark until then. The name
-          beside it is the link a reader uses; this one is the same page for a pointer. */}
-      <Link href={page} className="facility-thumb" tabIndex={-1} aria-hidden="true">
+    <article className={f.imageUrl ? "facility-card has-photo" : "facility-card"}>
+      {/* The shopfront, when an owner has uploaded one: across the top of the card, at the size
+          a photograph deserves. A reader recognises a place they have walked past long before
+          they read its name. With no photograph there is no empty band — the category's mark
+          sits beside the name instead, and the card stays compact. */}
+      <Link
+        href={page}
+        className={f.imageUrl ? "facility-photo" : "facility-thumb"}
+        tabIndex={-1}
+        aria-hidden="true"
+      >
         {f.imageUrl ? (
           /* eslint-disable-next-line @next/next/no-img-element -- remote media, no loader */
           <img src={f.imageUrl} alt="" loading="lazy" />
@@ -200,15 +207,17 @@ function Card({ f }: { f: CompactFacility }) {
             <Icon name="directions" size={17} />
           </a>
         ) : null}
+        {/* Labelled, not a bare icon. Three things live behind it — the hours, the link, a
+            report of something wrong — and none of them is guessable from a drawing. */}
         <button
           type="button"
-          className="facility-more"
+          className="way-button facility-more"
           aria-haspopup="dialog"
           onClick={() => setPanel("menu")}
           aria-label={`المزيد عن ${f.nameAr}: الدوام، المشاركة، الإبلاغ`}
-          title="المزيد"
         >
-          <Icon name="menu" size={18} />
+          <Icon name="menu" size={17} />
+          <span>المزيد</span>
         </button>
       </div>
 
