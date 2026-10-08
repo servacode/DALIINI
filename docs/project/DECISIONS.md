@@ -2548,6 +2548,98 @@ fixes. Moving the Android screens before the launch also changes code nobody nee
   and merging the phases one at a time, as before. Their decision numbers are given out again
   then, after this one.
 
+## DECISION-101 — A new account is welcomed twice: in the inbox, and over WhatsApp
+
+**Date:** 2026-10-08 · **Owner's decision.**
+
+**Why:** `complete_registration` opened the account and said nothing at all. Someone who had
+just proved their number, chosen a password and arrived in the app met an empty inbox.
+
+**Decision:**
+
+* **In the inbox** (`account.welcome`, done): the lasting record. It belongs to no category a
+  reader can switch off, and no push leaves with it — the device registers its token after the
+  session exists, which is after this. That is fine: the inbox is open in front of the reader
+  at that moment. It is written before the waiting invitations are announced, so an invitation —
+  the one thing that asks the reader to act — stays above it in an inbox that shows the newest
+  first.
+* **Over WhatsApp** (to do): one message per *completed registration*, not per code request. It
+  is a reply inside a thread the person opened a minute earlier by asking for a code, not cold
+  outreach, so it is among the lowest-risk messages this channel can carry. It must never fail
+  a registration: queued, and a failure is recorded, not raised.
+* **The welcome carries the support line, and the code message does not.** The earlier proposal
+  was to add «للمساعدة راسلنا على هذا الرقم» to the code itself. The welcome is the better
+  carrier: the code message stays short and security-shaped, and the person reads the support
+  line once they have an account rather than before.
+
+## DECISION-102 — One number sends the codes and answers support, and it is the owner's phone
+
+**Date:** 2026-10-08 · **Owner's decision.**
+
+**Why:** the platform had no support number at all — only `SUPPORT_EMAIL`, a contact form, and,
+in the Android app, a «المساعدة» screen carrying the legal pages and no way to reach anybody. A
+written label «تواصل مع الدعم» existed in the design system with no screen behind it.
+
+**Decision:**
+
+* **One number**, the owner's own: the bot sends codes through it as a linked device, and the
+  owner answers by hand from the phone, which stays the primary device. Checked before deciding:
+  the bot subscribes to `creds.update` and `connection.update` only — it never reads an incoming
+  message, never marks one read, never replies, and `markOnlineOnConnect: false` keeps the
+  account from appearing online, so the owner's own notifications arrive as usual.
+* **What this costs, accepted knowingly:** the day the number is blocked — always possible on an
+  unofficial channel — registration and support stop in the same moment.
+* **What it gains:** an account that only sends codes to strangers looks automated; one that also
+  holds human conversations does not. Answering by hand lowers the risk rather than raising it.
+* **A setting, never a constant.** The number is configuration, like `SUPPORT_EMAIL`. Nothing is
+  shown until it is set — no invented number, no empty field in front of a reader — and it is
+  never committed: this repository is public.
+* **Shown on the site** (`/support`, `/contact`, the footer) with a `wa.me` link, **and in the
+  app's «المساعدة» screen.** The app is not optional: browsing needs no account, so most readers
+  never receive any WhatsApp message and would otherwise have no number at all. The app's change
+  rides the next Android build rather than paying for a cycle of its own.
+
+## DECISION-103 — Offline maps are per province, built and consumed as RahalGo already proved
+
+**Date:** 2026-10-08 · **Owner's decision.** Reference implementation: `D:\RahalGo`.
+
+**Why:** a reader in Raqqa loses the network and the map goes blank. The owner asked for Syria
+split into its fourteen provinces, each province's map downloadable once its province is switched
+on. The specification says nothing about offline maps (`13-MAPS-GEO-NAVIGATION.md`,
+`14-REALTIME-NOTIFICATIONS-OFFLINE.md` cover cached *content*, not tiles), so this is new scope,
+decided by the owner.
+
+**Decision:**
+
+* **The map works offline; routing does not.** The owner's other platform shipped exactly this:
+  tiles from a downloaded pack, routes from OSRM on the server, and a named `NETWORK` reroute
+  failure for when the network is gone. Offline turn-by-turn would mean a routing graph on the
+  device — a second engine beside Valhalla, built through the NDK — and it is not being taken on.
+* **The shape to mirror:**
+  * one Syria base from Planetiler, then `pmtiles cluster` once and `pmtiles extract --bbox`
+    per province — a single file a phone downloads and verifies by digest, not tens of thousands
+    of tile requests;
+  * a `manifest.json` **published last**, after every artefact is uploaded, so it can never name
+    something that is not there;
+  * on the phone: one package store with atomic installs (temporary file, then a rename on the
+    same filesystem; the old version is kept until the new one succeeds), and **one** resolver
+    that decides network-or-pack-or-unavailable, so no map screen carries an `if (network)` of
+    its own.
+* **Where we differ, and better:** their region boxes are written by hand in `build.env`. Ours
+  come from the province polygons already imported from OpenStreetMap (`locations/osm.py`), so a
+  province's pack is bounded by the province, and switching a province on in the console is what
+  puts its pack in the manifest. No new build of any client.
+* **Measured there, and the reason z16 is not negotiable:** Syria is 110 MB at z14 — which drops
+  60% of Raqqa's streets — 187 MB at z15 and 310 MB at z16. One city pack for Raqqa came to
+  1.92 MB and installed on a real Galaxy A52. A whole province is larger; it is measured before
+  anything is promised.
+* **Two of their scars, taken for free:** the style's source must declare its `maxzoom` or the
+  renderer stretches z16 data at z17.5 (their `GAP-MAPS-01`); and a pack that does not cover the
+  reader's position is never chosen merely because it was installed last — «a driver in Aleppo
+  with the Raqqa pack sees emptiness, and that is worse than no map, because it looks like a map».
+* **The manifest is text from the network, not truth.** Every field is validated and a manifest
+  that fails anywhere is rejected whole — a half-valid manifest produces a half-valid pack.
+
 ## DEBT-001 — Ruff baseline
 
 **Recorded:** 2026-09-17 · **Baseline:** 106 issues at `bc12f4d`, 104 after this batch. **99** after the Android binding batch (2026-09-19), and still 99 after the Android golden path batch. **Measured again 2026-09-26: 106**, after the OpenStreetMap batch cleared thirteen (its own eleven and three it found in a file it touched). The count had drifted upward between those two readings without anyone recording it, which is what this entry exists to prevent.
