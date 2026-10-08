@@ -56,6 +56,7 @@ interface AdminFacilitiesApi {
      * @param category Category id. (optional)
      * @param city City id. (optional)
      * @param cursor Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     * @param id One facility by id: what a link written before the console had cards resolves to. (optional)
      * @param issue Keep facilities that have this quality issue. (optional)
      * @param limit Page size, maximum 200, default 50. (optional)
      * @param ordering Sort order; the default is &#x60;-updatedAt&#x60; (most recently changed). (optional)
@@ -65,7 +66,7 @@ interface AdminFacilitiesApi {
      * @return [AdminFacilityList]
      */
     @GET("api/v1/admin/facilities/")
-    suspend fun adminFacilitiesList(@Query("category") category: kotlin.String? = null, @Query("city") city: kotlin.String? = null, @Query("cursor") cursor: kotlin.String? = null, @Query("issue") issue: IssueAdminFacilitiesList? = null, @Query("limit") limit: kotlin.Int? = null, @Query("ordering") ordering: OrderingAdminFacilitiesList? = null, @Query("province") province: kotlin.String? = null, @Query("q") q: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminFacilityList>
+    suspend fun adminFacilitiesList(@Query("category") category: kotlin.String? = null, @Query("city") city: kotlin.String? = null, @Query("cursor") cursor: kotlin.String? = null, @Query("id") id: kotlin.String? = null, @Query("issue") issue: IssueAdminFacilitiesList? = null, @Query("limit") limit: kotlin.Int? = null, @Query("ordering") ordering: OrderingAdminFacilitiesList? = null, @Query("province") province: kotlin.String? = null, @Query("q") q: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminFacilityList>
 
     /**
      * GET api/v1/admin/facilities/map/

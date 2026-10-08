@@ -1265,9 +1265,11 @@ a.bar-row:hover .bar-label { color: var(--ad-brand); }
  * need, and nothing else has to know. */
 .profile-grid {
   display: grid; gap: var(--ad-space-5); margin: 0; padding: 0; list-style: none;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
-@media (min-width: 1200px) { .profile-grid { grid-template-columns: repeat(4, 1fr); } }
+/* Three across (the owner's choice): each card gets the room its tiles and places were drawn
+   for, instead of being squeezed until they stack. */
+@media (min-width: 1100px) { .profile-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 560px) { .profile-grid { grid-template-columns: 1fr; } }
 
 .profile {
@@ -1371,7 +1373,10 @@ a.bar-row:hover .bar-label { color: var(--ad-brand); }
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .profile-tile-text strong[dir="ltr"] { font-variant-numeric: tabular-nums; text-align: end; }
-.profile-tile-text span { font-size: 11px; color: var(--ad-text-muted); }
+.profile-tile-text span {
+  font-size: 11px; color: var(--ad-text-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 @container profile (max-width: 330px) {
   .profile-tiles { grid-template-columns: 1fr; }
 }
@@ -1395,8 +1400,10 @@ a.bar-row:hover .bar-label { color: var(--ad-brand); }
   display: grid; align-content: start; gap: 6px;
   padding: 10px; border-radius: 16px;
   background: var(--ad-surface-subtle);
-  /* Two rows and their header, always: a card with none is the same card. */
-  min-height: calc(40px + 2 * 54px + 2 * 6px + 20px);
+  /* One height, always: the header, two rows and the «and N more» line, reserved whether or
+     not they are used. A minimum let a long subtitle wrap and grow the panel, and every card in
+     that row stretched with it — measured, three cards of twenty-eight. */
+  height: 212px; overflow: hidden;
 }
 .profile-places-head { display: flex; align-items: center; gap: 10px; padding: 2px 2px 4px; }
 .profile-places-icon {
@@ -1404,9 +1411,12 @@ a.bar-row:hover .bar-label { color: var(--ad-brand); }
   width: 36px; height: 36px; border-radius: 12px;
   background: var(--ad-success-bg); color: var(--ad-brand);
 }
-.profile-places-head div { display: grid; text-align: start; }
+.profile-places-head div { display: grid; text-align: start; min-width: 0; }
 .profile-places-head strong { font-size: 14px; font-weight: 700; }
-.profile-places-head span { font-size: 11px; color: var(--ad-text-muted); }
+.profile-places-head span {
+  font-size: 11px; color: var(--ad-text-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .profile-place {
   display: flex; align-items: center; gap: 10px; min-width: 0;
   height: 54px; padding: 6px 8px;
@@ -1695,3 +1705,54 @@ a.bar-row:hover .bar-label { color: var(--ad-brand); }
   50% { transform: scale(0.94); }
 }
 .brand-loader-label { font-weight: 600; letter-spacing: 0.01em; }
+
+/* The location picker (DECISION-109): the map, the pin, and the coordinates under it. */
+.location-picker {
+  display: grid; overflow: hidden;
+  border: 1px solid var(--ad-stroke); border-radius: var(--ad-radius-lg, 14px);
+}
+.location-picker[data-invalid] { border-color: var(--ad-danger); }
+.location-map { height: 280px; background: var(--ad-surface-subtle); cursor: crosshair; }
+.location-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--ad-space-3);
+  padding: var(--ad-space-2) var(--ad-space-3);
+  border-block-start: 1px solid var(--ad-stroke-subtle);
+  background: var(--ad-surface-subtle); font-size: var(--ad-text-sm);
+}
+.location-hint { display: inline-flex; align-items: center; gap: 6px; color: var(--ad-text-secondary); }
+.location-coords { font-variant-numeric: tabular-nums; color: var(--ad-text-muted); margin-inline-start: auto; }
+.location-pin { color: var(--ad-brand); cursor: grab; filter: drop-shadow(0 4px 6px rgba(19, 32, 26, 0.35)); }
+.location-pin:active { cursor: grabbing; }
+
+/* A longer form in a window: wider, the body scrolls, and the buttons stay in view. */
+.form-dialog-wide { width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 48px); display: flex; flex-direction: column; }
+.form-dialog-wide .form-dialog-body { overflow-y: auto; }
+.form-dialog-sticky {
+  position: sticky; inset-block-end: calc(var(--ad-space-6) * -1); z-index: 5;
+  margin-inline: calc(var(--ad-space-6) * -1); margin-block-end: calc(var(--ad-space-6) * -1);
+  padding: var(--ad-space-4) var(--ad-space-6);
+  background: var(--ad-surface-subtle); border-block-start: 1px solid var(--ad-stroke-subtle);
+}
+.form-danger-zone {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--ad-space-3);
+  padding: var(--ad-space-4); border-radius: var(--ad-radius-lg, 14px);
+  border: 1px dashed var(--ad-danger-border); background: #FDF7F6;
+}
+.form-danger-zone p { font-size: var(--ad-text-sm); color: var(--ad-text-secondary); max-width: 46ch; }
+
+/* A card that wears its own photograph as its band (a facility with one). */
+.profile-cover .profile-band {
+  background:
+    linear-gradient(180deg, rgba(8, 83, 59, 0.05) 0%, rgba(8, 83, 59, 0.55) 100%),
+    var(--cover) center / cover no-repeat;
+}
+.profile-cover .profile-band::before, .profile-cover .profile-band::after { display: none; }
+.profile-mark svg { width: 34px; height: 34px; }
+.profile-pill[data-tone="warning"] { background: #F8ECD3; color: #8A5B12; }
+.profile-pill[data-tone="info"] { background: var(--ad-info-bg); color: var(--ad-info); }
+/* An icon action that goes somewhere is a link, drawn as the icon buttons beside it. */
+.profile-actions > a.profile-act-link {
+  display: inline-grid; place-items: center; flex: 0 0 40px; min-height: 40px; border-radius: 12px;
+  border: 1px solid var(--ad-stroke); background: var(--ad-surface); color: var(--ad-text-secondary);
+}
+.profile-actions > a.profile-act-link:hover { border-color: var(--ad-stroke-strong); color: var(--ad-text); }

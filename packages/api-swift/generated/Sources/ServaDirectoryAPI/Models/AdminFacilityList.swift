@@ -17,9 +17,9 @@ public struct AdminFacilityList: Codable, JSONEncodable, Hashable {
     public var nextCursor: String?
     /** True when `nextCursor` is set. */
     public var hasMore: Bool
-    public var items: [AdminFacilityQuality]
+    public var items: [AdminFacilityCard]
 
-    public init(nextCursor: String?, hasMore: Bool, items: [AdminFacilityQuality]) {
+    public init(nextCursor: String?, hasMore: Bool, items: [AdminFacilityCard]) {
         self.nextCursor = nextCursor
         self.hasMore = hasMore
         self.items = items

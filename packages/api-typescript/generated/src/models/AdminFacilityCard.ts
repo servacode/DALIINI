@@ -36,109 +36,154 @@ import {
 } from './FacilityStatusEnum';
 
 /**
- * An Admin facility row with its data-quality score (see `admin_console.quality`).
+ * A facility as its card in the console shows it (DECISION-109).
+ * 
+ * The card holds the whole facility and never fetches anything else, so the row carries
+ * what the card shows: how to reach the place, where it is, and what it looks like.
  * @export
- * @interface AdminFacilityQuality
+ * @interface AdminFacilityCard
  */
-export interface AdminFacilityQuality {
+export interface AdminFacilityCard {
     /**
      * 
      * @type {string}
-     * @memberof AdminFacilityQuality
+     * @memberof AdminFacilityCard
      */
     id: string;
     /**
      * 
      * @type {string}
-     * @memberof AdminFacilityQuality
+     * @memberof AdminFacilityCard
      */
     nameAr: string;
     /**
      * 
      * @type {string}
-     * @memberof AdminFacilityQuality
+     * @memberof AdminFacilityCard
      */
     nameEn: string | null;
     /**
      * 
      * @type {string}
-     * @memberof AdminFacilityQuality
+     * @memberof AdminFacilityCard
      */
     categoryId: string;
     /**
      * 
      * @type {string}
-     * @memberof AdminFacilityQuality
+     * @memberof AdminFacilityCard
      */
     provinceId: string;
     /**
      * 
      * @type {string}
-     * @memberof AdminFacilityQuality
+     * @memberof AdminFacilityCard
      */
     cityId: string | null;
     /**
      * 
      * @type {FacilityStatusEnum}
-     * @memberof AdminFacilityQuality
+     * @memberof AdminFacilityCard
      */
     status: FacilityStatusEnum;
     /**
      * 
      * @type {Coordinates}
-     * @memberof AdminFacilityQuality
+     * @memberof AdminFacilityCard
      */
     location: Coordinates | null;
     /**
      * 
      * @type {Date}
-     * @memberof AdminFacilityQuality
+     * @memberof AdminFacilityCard
      */
     updatedAt: Date | null;
     /**
      * 
      * @type {string}
-     * @memberof AdminFacilityQuality
+     * @memberof AdminFacilityCard
      */
     categoryNameAr: string;
     /**
      * 
      * @type {string}
-     * @memberof AdminFacilityQuality
+     * @memberof AdminFacilityCard
      */
     provinceNameAr: string;
     /**
      * First owner membership.
      * @type {string}
-     * @memberof AdminFacilityQuality
+     * @memberof AdminFacilityCard
      */
     ownerName: string | null;
     /**
      * First owner membership.
      * @type {string}
-     * @memberof AdminFacilityQuality
+     * @memberof AdminFacilityCard
      */
     ownerPhone: string | null;
     /**
      * 100 minus a fixed penalty per issue.
      * @type {number}
-     * @memberof AdminFacilityQuality
+     * @memberof AdminFacilityCard
      */
     qualityScore: number;
     /**
      * NO_PHOTOS 10, NO_HOURS 15, NO_LOCATION 20, NO_PHONE 20, STALE 10 (nothing changed or confirmed for 90 days), OPEN_REPORTS 15, NOT_VERIFIED_RECENTLY 10 (never approved, or not in 180 days). Photos and hours count only where the category supports them.
      * @type {Array<FacilityQualityIssueEnum>}
-     * @memberof AdminFacilityQuality
+     * @memberof AdminFacilityCard
      */
     qualityIssues: Array<FacilityQualityIssueEnum>;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminFacilityCard
+     */
+    phone: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminFacilityCard
+     */
+    whatsapp: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminFacilityCard
+     */
+    addressAr: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminFacilityCard
+     */
+    cityNameAr: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminFacilityCard
+     */
+    categoryIconKey: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminFacilityCard
+     */
+    imageUrl: string | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof AdminFacilityCard
+     */
+    createdAt: Date | null;
 }
 
 
 
 /**
- * Check if a given object implements the AdminFacilityQuality interface.
+ * Check if a given object implements the AdminFacilityCard interface.
  */
-export function instanceOfAdminFacilityQuality(value: object): value is AdminFacilityQuality {
+export function instanceOfAdminFacilityCard(value: object): value is AdminFacilityCard {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('nameAr' in value) || value['nameAr'] === undefined) return false;
     if (!('nameEn' in value) || value['nameEn'] === undefined) return false;
@@ -154,14 +199,21 @@ export function instanceOfAdminFacilityQuality(value: object): value is AdminFac
     if (!('ownerPhone' in value) || value['ownerPhone'] === undefined) return false;
     if (!('qualityScore' in value) || value['qualityScore'] === undefined) return false;
     if (!('qualityIssues' in value) || value['qualityIssues'] === undefined) return false;
+    if (!('phone' in value) || value['phone'] === undefined) return false;
+    if (!('whatsapp' in value) || value['whatsapp'] === undefined) return false;
+    if (!('addressAr' in value) || value['addressAr'] === undefined) return false;
+    if (!('cityNameAr' in value) || value['cityNameAr'] === undefined) return false;
+    if (!('categoryIconKey' in value) || value['categoryIconKey'] === undefined) return false;
+    if (!('imageUrl' in value) || value['imageUrl'] === undefined) return false;
+    if (!('createdAt' in value) || value['createdAt'] === undefined) return false;
     return true;
 }
 
-export function AdminFacilityQualityFromJSON(json: any): AdminFacilityQuality {
-    return AdminFacilityQualityFromJSONTyped(json, false);
+export function AdminFacilityCardFromJSON(json: any): AdminFacilityCard {
+    return AdminFacilityCardFromJSONTyped(json, false);
 }
 
-export function AdminFacilityQualityFromJSONTyped(json: any, ignoreDiscriminator: boolean): AdminFacilityQuality {
+export function AdminFacilityCardFromJSONTyped(json: any, ignoreDiscriminator: boolean): AdminFacilityCard {
     if (json == null) {
         return json;
     }
@@ -182,14 +234,21 @@ export function AdminFacilityQualityFromJSONTyped(json: any, ignoreDiscriminator
         'ownerPhone': json['ownerPhone'],
         'qualityScore': json['qualityScore'],
         'qualityIssues': ((json['qualityIssues'] as Array<any>).map(FacilityQualityIssueEnumFromJSON)),
+        'phone': json['phone'],
+        'whatsapp': json['whatsapp'],
+        'addressAr': json['addressAr'],
+        'cityNameAr': json['cityNameAr'],
+        'categoryIconKey': json['categoryIconKey'],
+        'imageUrl': json['imageUrl'],
+        'createdAt': (json['createdAt'] == null ? null : new Date(json['createdAt'])),
     };
 }
 
-export function AdminFacilityQualityToJSON(json: any): AdminFacilityQuality {
-    return AdminFacilityQualityToJSONTyped(json, false);
+export function AdminFacilityCardToJSON(json: any): AdminFacilityCard {
+    return AdminFacilityCardToJSONTyped(json, false);
 }
 
-export function AdminFacilityQualityToJSONTyped(value?: AdminFacilityQuality | null, ignoreDiscriminator: boolean = false): any {
+export function AdminFacilityCardToJSONTyped(value?: AdminFacilityCard | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
@@ -211,6 +270,13 @@ export function AdminFacilityQualityToJSONTyped(value?: AdminFacilityQuality | n
         'ownerPhone': value['ownerPhone'],
         'qualityScore': value['qualityScore'],
         'qualityIssues': ((value['qualityIssues'] as Array<any>).map(FacilityQualityIssueEnumToJSON)),
+        'phone': value['phone'],
+        'whatsapp': value['whatsapp'],
+        'addressAr': value['addressAr'],
+        'cityNameAr': value['cityNameAr'],
+        'categoryIconKey': value['categoryIconKey'],
+        'imageUrl': value['imageUrl'],
+        'createdAt': ((value['createdAt'] as any).toISOString()),
     };
 }
 

@@ -27,13 +27,18 @@ from .facility_editor import (
     create_facility,
     update_facility,
 )
-from .quality import QUALITY_ISSUES, quality_payload, with_quality
+from .quality import QUALITY_ISSUES, with_quality
 from .schemas import (
     AdminFacilityDetailSerializer,
     AdminFacilityListSerializer,
     AdminFacilityMapSerializer,
 )
-from .serializers import facility_detail_payload, facility_payload, with_facility_names
+from .serializers import (
+    facility_card_payload,
+    facility_detail_payload,
+    with_facility_cards,
+    with_facility_names,
+)
 from .views import (
     FACILITY_ORDERINGS,
     AdminView,
@@ -68,6 +73,11 @@ class FacilityListView(AdminView):
         ),
         parameters=[
             *page_parameters(QueryOrderedCursorPage),
+            _filter(
+                "id",
+                "One facility by id: what a link written before the console had cards resolves "
+                "to.",
+            ),
             _filter("status", "Facility status, for example ACTIVE or SUSPENDED."),
             _filter("province", "Province id."),
             _filter("city", "City id."),
@@ -93,8 +103,8 @@ class FacilityListView(AdminView):
         responses={200: AdminFacilityListSerializer, 400: VALIDATION_400, **protected()},
     )
     def get(self, request: AuthenticatedRequest) -> Response:
-        qs = filtered_facilities(request.query_params)
-        return _page(request, qs, lambda item: {**facility_payload(item), **quality_payload(item)})
+        qs = with_facility_cards(filtered_facilities(request.query_params))
+        return _page(request, qs, facility_card_payload)
 
     @extend_schema(
         operation_id="adminFacilityCreate",

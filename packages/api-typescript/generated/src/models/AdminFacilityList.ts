@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { AdminFacilityQuality } from './AdminFacilityQuality';
+import type { AdminFacilityCard } from './AdminFacilityCard';
 import {
-    AdminFacilityQualityFromJSON,
-    AdminFacilityQualityFromJSONTyped,
-    AdminFacilityQualityToJSON,
-    AdminFacilityQualityToJSONTyped,
-} from './AdminFacilityQuality';
+    AdminFacilityCardFromJSON,
+    AdminFacilityCardFromJSONTyped,
+    AdminFacilityCardToJSON,
+    AdminFacilityCardToJSONTyped,
+} from './AdminFacilityCard';
 
 /**
  * The two fields every cursor page adds beside its `items`.
@@ -41,10 +41,10 @@ export interface AdminFacilityList {
     hasMore: boolean;
     /**
      * 
-     * @type {Array<AdminFacilityQuality>}
+     * @type {Array<AdminFacilityCard>}
      * @memberof AdminFacilityList
      */
-    items: Array<AdminFacilityQuality>;
+    items: Array<AdminFacilityCard>;
 }
 
 /**
@@ -69,7 +69,7 @@ export function AdminFacilityListFromJSONTyped(json: any, ignoreDiscriminator: b
         
         'nextCursor': json['nextCursor'],
         'hasMore': json['hasMore'],
-        'items': ((json['items'] as Array<any>).map(AdminFacilityQualityFromJSON)),
+        'items': ((json['items'] as Array<any>).map(AdminFacilityCardFromJSON)),
     };
 }
 
@@ -86,7 +86,7 @@ export function AdminFacilityListToJSONTyped(value?: AdminFacilityList | null, i
         
         'nextCursor': value['nextCursor'],
         'hasMore': value['hasMore'],
-        'items': ((value['items'] as Array<any>).map(AdminFacilityQualityToJSON)),
+        'items': ((value['items'] as Array<any>).map(AdminFacilityCardToJSON)),
     };
 }
 

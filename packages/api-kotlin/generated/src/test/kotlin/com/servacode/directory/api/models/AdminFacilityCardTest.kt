@@ -18,15 +18,15 @@ package com.servacode.directory.api.models
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
-import com.servacode.directory.api.models.AdminFacilityQuality
+import com.servacode.directory.api.models.AdminFacilityCard
 import com.servacode.directory.api.models.Coordinates
 import com.servacode.directory.api.models.FacilityQualityIssueEnum
 import com.servacode.directory.api.models.FacilityStatusEnum
 
-class AdminFacilityQualityTest : ShouldSpec() {
+class AdminFacilityCardTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of AdminFacilityQuality
-        //val modelInstance = AdminFacilityQuality()
+        // uncomment below to create an instance of AdminFacilityCard
+        //val modelInstance = AdminFacilityCard()
 
         // to test the property `id`
         should("test id") {
@@ -116,6 +116,48 @@ class AdminFacilityQualityTest : ShouldSpec() {
         should("test qualityIssues") {
             // uncomment below to test the property
             //modelInstance.qualityIssues shouldBe ("TODO")
+        }
+
+        // to test the property `phone`
+        should("test phone") {
+            // uncomment below to test the property
+            //modelInstance.phone shouldBe ("TODO")
+        }
+
+        // to test the property `whatsapp`
+        should("test whatsapp") {
+            // uncomment below to test the property
+            //modelInstance.whatsapp shouldBe ("TODO")
+        }
+
+        // to test the property `addressAr`
+        should("test addressAr") {
+            // uncomment below to test the property
+            //modelInstance.addressAr shouldBe ("TODO")
+        }
+
+        // to test the property `cityNameAr`
+        should("test cityNameAr") {
+            // uncomment below to test the property
+            //modelInstance.cityNameAr shouldBe ("TODO")
+        }
+
+        // to test the property `categoryIconKey`
+        should("test categoryIconKey") {
+            // uncomment below to test the property
+            //modelInstance.categoryIconKey shouldBe ("TODO")
+        }
+
+        // to test the property `imageUrl`
+        should("test imageUrl") {
+            // uncomment below to test the property
+            //modelInstance.imageUrl shouldBe ("TODO")
+        }
+
+        // to test the property `createdAt`
+        should("test createdAt") {
+            // uncomment below to test the property
+            //modelInstance.createdAt shouldBe ("TODO")
         }
 
     }

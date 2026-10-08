@@ -24,7 +24,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * An Admin facility row with its data-quality score (see `admin_console.quality`).
+ * A facility as its card in the console shows it (DECISION-109).  The card holds the whole facility and never fetches anything else, so the row carries what the card shows: how to reach the place, where it is, and what it looks like.
  *
  * @param id 
  * @param nameAr 
@@ -41,10 +41,17 @@ import kotlinx.serialization.Contextual
  * @param ownerPhone First owner membership.
  * @param qualityScore 100 minus a fixed penalty per issue.
  * @param qualityIssues NO_PHOTOS 10, NO_HOURS 15, NO_LOCATION 20, NO_PHONE 20, STALE 10 (nothing changed or confirmed for 90 days), OPEN_REPORTS 15, NOT_VERIFIED_RECENTLY 10 (never approved, or not in 180 days). Photos and hours count only where the category supports them.
+ * @param phone 
+ * @param whatsapp 
+ * @param addressAr 
+ * @param cityNameAr 
+ * @param categoryIconKey 
+ * @param imageUrl 
+ * @param createdAt 
  */
 @Serializable
 
-data class AdminFacilityQuality (
+data class AdminFacilityCard (
 
     @Contextual @SerialName(value = "id")
     val id: java.util.UUID,
@@ -93,7 +100,28 @@ data class AdminFacilityQuality (
 
     /* NO_PHOTOS 10, NO_HOURS 15, NO_LOCATION 20, NO_PHONE 20, STALE 10 (nothing changed or confirmed for 90 days), OPEN_REPORTS 15, NOT_VERIFIED_RECENTLY 10 (never approved, or not in 180 days). Photos and hours count only where the category supports them. */
     @SerialName(value = "qualityIssues")
-    val qualityIssues: kotlin.collections.List<@Contextual FacilityQualityIssueEnum>
+    val qualityIssues: kotlin.collections.List<@Contextual FacilityQualityIssueEnum>,
+
+    @SerialName(value = "phone")
+    val phone: kotlin.String?,
+
+    @SerialName(value = "whatsapp")
+    val whatsapp: kotlin.String?,
+
+    @SerialName(value = "addressAr")
+    val addressAr: kotlin.String?,
+
+    @SerialName(value = "cityNameAr")
+    val cityNameAr: kotlin.String?,
+
+    @SerialName(value = "categoryIconKey")
+    val categoryIconKey: kotlin.String,
+
+    @Contextual @SerialName(value = "imageUrl")
+    val imageUrl: java.net.URI?,
+
+    @Contextual @SerialName(value = "createdAt")
+    val createdAt: java.time.OffsetDateTime?
 
 ) {
 

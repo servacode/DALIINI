@@ -2884,3 +2884,44 @@ the card itself and for a card that keeps one shape; the button did neither. Now
   and its tail fading to gold, so the motion reads as going somewhere. A section shows the
   larger form (`(console)/loading.tsx`) while it loads. With reduced motion the ring stands
   still and the words carry it.
+
+## DECISION-109 — Facilities as cards, edited in a window, placed with a pin; the map its own section
+
+**Date:** 2026-10-09 · **Owner's decisions.**
+
+* **The sidebar:** الحسابات, then المنشآت directly under it, then **الخريطة as a section of its
+  own** — it is where an operator goes to look at a district, not a second way of reading the
+  list. Accounts show **three cards across** (the owner's choice), so each card has the room its
+  tiles and places were drawn for.
+* **Facilities are identity cards** on the accounts' page pattern — hero, live toolbar, three
+  across — built from the same shared `ProfileCard`. A facility **wears its first photograph as
+  its band**; without one the band's colour is its state (emerald active, sand draft or under
+  review, red suspended or closed) and the tag in its corner names the state with an icon. The
+  mark is the category's own drawing. Two tiles (phone; city and province, with the address as
+  its label), two pills (category; how complete its data is), the owner panel — who owns it,
+  and what its data is missing — and two facts (last update; whether it is on the map).
+* **Everything the detail page held is on the card or one press from it:** «تعديل» opens the
+  edit window; «إيقاف» or «تفعيل» with a reason; the facility's history in a window; the map,
+  for one that has a location. **Closing a facility for good** is in the edit window's danger
+  zone — rare and drastic, one deliberate press deeper, and still never without a reason.
+* **Adding and editing happen in a window over the list**, wide, its body scrolling and its
+  buttons always in view.
+* **Where a facility is, is chosen on the map:** press to drop the pin, drag to correct it,
+  coordinates shown underneath to five decimals (about a metre — as exact as a hand-placed pin
+  honestly is). The map is the platform's own style, the streets the public will see the pin on.
+  With no map configured, or a map that fails to load, the window falls back to the two typed
+  fields, so adding a facility never stops at a blank square.
+* **Locally** the map is RahalGo's Raqqa archive published by `scripts/local-map.sh`, and the
+  committed style's tile address moved from `localhost` to `127.0.0.1` — the fourth time that
+  trap has been met (browsers on Windows try IPv6 first and hang); production rebinds it anyway.
+  `pnpm dev:admin` now sets the map by default.
+* **The list row carries what the card shows** — phone, WhatsApp, address, city, the category's
+  icon, the first photograph, created — with the city joined and the photographs prefetched, so
+  a page of cards costs the same queries as a page of one; a test proves it with eleven.
+* **Every card is one height, measured.** A first build had three of twenty-eight taller: the
+  owner panel's «ينقصها: …» line wrapped and stretched every card in its row. The panel is now
+  one fixed height with the «and N more» line reserved, long lines are cut with «…», and the
+  whole of them shows on hover.
+* `/facilities/<id>`, `/facilities/<id>/edit` and `/facilities/new` redirect to the list — that
+  card outlined, its edit window open, or the add window — so links already written keep
+  working. The list answers an `id` filter for it.

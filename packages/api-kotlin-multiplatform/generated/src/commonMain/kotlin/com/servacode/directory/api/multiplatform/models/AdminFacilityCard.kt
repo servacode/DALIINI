@@ -24,7 +24,7 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- * An Admin facility row with its data-quality score (see `admin_console.quality`).
+ * A facility as its card in the console shows it (DECISION-109).  The card holds the whole facility and never fetches anything else, so the row carries what the card shows: how to reach the place, where it is, and what it looks like.
  *
  * @param id 
  * @param nameAr 
@@ -41,10 +41,17 @@ import kotlinx.serialization.encoding.*
  * @param ownerPhone First owner membership.
  * @param qualityScore 100 minus a fixed penalty per issue.
  * @param qualityIssues NO_PHOTOS 10, NO_HOURS 15, NO_LOCATION 20, NO_PHONE 20, STALE 10 (nothing changed or confirmed for 90 days), OPEN_REPORTS 15, NOT_VERIFIED_RECENTLY 10 (never approved, or not in 180 days). Photos and hours count only where the category supports them.
+ * @param phone 
+ * @param whatsapp 
+ * @param addressAr 
+ * @param cityNameAr 
+ * @param categoryIconKey 
+ * @param imageUrl 
+ * @param createdAt 
  */
 @Serializable
 
-data class AdminFacilityQuality (
+data class AdminFacilityCard (
 
     @SerialName(value = "id") @Required val id: kotlin.String,
 
@@ -78,7 +85,21 @@ data class AdminFacilityQuality (
     @SerialName(value = "qualityScore") @Required val qualityScore: kotlin.Int,
 
     /* NO_PHOTOS 10, NO_HOURS 15, NO_LOCATION 20, NO_PHONE 20, STALE 10 (nothing changed or confirmed for 90 days), OPEN_REPORTS 15, NOT_VERIFIED_RECENTLY 10 (never approved, or not in 180 days). Photos and hours count only where the category supports them. */
-    @SerialName(value = "qualityIssues") @Required val qualityIssues: kotlin.collections.List<FacilityQualityIssueEnum>
+    @SerialName(value = "qualityIssues") @Required val qualityIssues: kotlin.collections.List<FacilityQualityIssueEnum>,
+
+    @SerialName(value = "phone") @Required val phone: kotlin.String?,
+
+    @SerialName(value = "whatsapp") @Required val whatsapp: kotlin.String?,
+
+    @SerialName(value = "addressAr") @Required val addressAr: kotlin.String?,
+
+    @SerialName(value = "cityNameAr") @Required val cityNameAr: kotlin.String?,
+
+    @SerialName(value = "categoryIconKey") @Required val categoryIconKey: kotlin.String,
+
+    @SerialName(value = "imageUrl") @Required val imageUrl: kotlin.String?,
+
+    @SerialName(value = "createdAt") @Required val createdAt: kotlin.time.Instant?
 
 ) {
 

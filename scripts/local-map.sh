@@ -78,6 +78,6 @@ for i, path in enumerate(tiles, 1):
 PY
 
 echo
-echo "style:  http://localhost:9000/directory-public/$BUCKET_PREFIX/style.json"
-echo "a tile: http://localhost:9000/directory-public/$BUCKET_PREFIX/tiles/14/0/0.pbf"
+echo "style:  http://127.0.0.1:9000/directory-public/$BUCKET_PREFIX/style.json"
+echo "a tile: http://127.0.0.1:9000/directory-public/$BUCKET_PREFIX/tiles/14/0/0.pbf"
 echo "the app reads it through adb reverse tcp:9000 tcp:9000"

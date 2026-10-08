@@ -33,6 +33,7 @@ val webService = apiClient.createWebservice(AdminFacilitiesApi::class.java)
 val category : kotlin.String = category_example // kotlin.String | Category id.
 val city : kotlin.String = city_example // kotlin.String | City id.
 val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
+val id : kotlin.String = id_example // kotlin.String | One facility by id: what a link written before the console had cards resolves to.
 val issue : kotlin.String = issue_example // kotlin.String | Keep facilities that have this quality issue.
 val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 200, default 50.
 val ordering : kotlin.String = ordering_example // kotlin.String | Sort order; the default is `-updatedAt` (most recently changed).
@@ -41,7 +42,7 @@ val q : kotlin.String = q_example // kotlin.String | Free text matched against t
 val status : kotlin.String = status_example // kotlin.String | Facility status, for example ACTIVE or SUSPENDED.
 
 launch(Dispatchers.IO) {
-    val result : AdminFacilityList = webService.adminFacilitiesList(category, city, cursor, issue, limit, ordering, province, q, status)
+    val result : AdminFacilityList = webService.adminFacilitiesList(category, city, cursor, id, issue, limit, ordering, province, q, status)
 }
 ```
 
@@ -49,6 +50,7 @@ launch(Dispatchers.IO) {
 | **category** | **kotlin.String**| Category id. | [optional] |
 | **city** | **kotlin.String**| City id. | [optional] |
 | **cursor** | **kotlin.String**| Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] |
+| **id** | **kotlin.String**| One facility by id: what a link written before the console had cards resolves to. | [optional] |
 | **issue** | **kotlin.String**| Keep facilities that have this quality issue. | [optional] [enum: NOT_VERIFIED_RECENTLY, NO_HOURS, NO_LOCATION, NO_PHONE, NO_PHOTOS, OPEN_REPORTS, STALE] |
 | **limit** | **kotlin.Int**| Page size, maximum 200, default 50. | [optional] |
 | **ordering** | **kotlin.String**| Sort order; the default is &#x60;-updatedAt&#x60; (most recently changed). | [optional] [enum: -qualityScore, -updatedAt, qualityScore, updatedAt] |

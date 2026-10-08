@@ -40,13 +40,14 @@ class AdminFacilitiesApiTest : ShouldSpec() {
             //val category : kotlin.String = category_example // kotlin.String | Category id.
             //val city : kotlin.String = city_example // kotlin.String | City id.
             //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
+            //val id : kotlin.String = id_example // kotlin.String | One facility by id: what a link written before the console had cards resolves to.
             //val issue : kotlin.String = issue_example // kotlin.String | Keep facilities that have this quality issue.
             //val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 200, default 50.
             //val ordering : kotlin.String = ordering_example // kotlin.String | Sort order; the default is `-updatedAt` (most recently changed).
             //val province : kotlin.String = province_example // kotlin.String | Province id.
             //val q : kotlin.String = q_example // kotlin.String | Free text matched against the Arabic and English facility names.
             //val status : kotlin.String = status_example // kotlin.String | Facility status, for example ACTIVE or SUSPENDED.
-            //val result : AdminFacilityList = apiInstance.adminFacilitiesList(category, city, cursor, issue, limit, ordering, province, q, status)
+            //val result : AdminFacilityList = apiInstance.adminFacilitiesList(category, city, cursor, id, issue, limit, ordering, province, q, status)
             //result shouldBe ("TODO")
         }
 

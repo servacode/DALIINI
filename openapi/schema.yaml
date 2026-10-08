@@ -4239,6 +4239,12 @@ paths:
           type: string
         description: Opaque token returned as `nextCursor` by the previous page.
       - in: query
+        name: id
+        schema:
+          type: string
+        description: 'One facility by id: what a link written before the console had
+          cards resolves to.'
+      - in: query
         name: issue
         schema:
           type: string
@@ -11856,6 +11862,112 @@ components:
       - provinceNameAr
       - status
       - updatedAt
+    AdminFacilityCard:
+      type: object
+      description: |-
+        A facility as its card in the console shows it (DECISION-109).
+
+        The card holds the whole facility and never fetches anything else, so the row carries
+        what the card shows: how to reach the place, where it is, and what it looks like.
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+          nullable: true
+        categoryId:
+          type: string
+          format: uuid
+        provinceId:
+          type: string
+          format: uuid
+        cityId:
+          type: string
+          format: uuid
+          nullable: true
+        status:
+          $ref: '#/components/schemas/FacilityStatusEnum'
+        location:
+          allOf:
+          - $ref: '#/components/schemas/Coordinates'
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        categoryNameAr:
+          type: string
+        provinceNameAr:
+          type: string
+        ownerName:
+          type: string
+          nullable: true
+          description: First owner membership.
+        ownerPhone:
+          type: string
+          nullable: true
+          description: First owner membership.
+        qualityScore:
+          type: integer
+          maximum: 100
+          minimum: 0
+          description: 100 minus a fixed penalty per issue.
+        qualityIssues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacilityQualityIssueEnum'
+          description: NO_PHOTOS 10, NO_HOURS 15, NO_LOCATION 20, NO_PHONE 20, STALE
+            10 (nothing changed or confirmed for 90 days), OPEN_REPORTS 15, NOT_VERIFIED_RECENTLY
+            10 (never approved, or not in 180 days). Photos and hours count only where
+            the category supports them.
+        phone:
+          type: string
+          nullable: true
+        whatsapp:
+          type: string
+          nullable: true
+        addressAr:
+          type: string
+          nullable: true
+        cityNameAr:
+          type: string
+          nullable: true
+        categoryIconKey:
+          type: string
+        imageUrl:
+          type: string
+          format: uri
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - addressAr
+      - categoryIconKey
+      - categoryId
+      - categoryNameAr
+      - cityId
+      - cityNameAr
+      - createdAt
+      - id
+      - imageUrl
+      - location
+      - nameAr
+      - nameEn
+      - ownerName
+      - ownerPhone
+      - phone
+      - provinceId
+      - provinceNameAr
+      - qualityIssues
+      - qualityScore
+      - status
+      - updatedAt
+      - whatsapp
     AdminFacilityCreate:
       type: object
       description: |-
@@ -12083,7 +12195,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/AdminFacilityQuality'
+            $ref: '#/components/schemas/AdminFacilityCard'
       required:
       - hasMore
       - items
@@ -12131,79 +12243,6 @@ components:
       - longitude
       - nameAr
       - status
-    AdminFacilityQuality:
-      type: object
-      description: An Admin facility row with its data-quality score (see `admin_console.quality`).
-      properties:
-        id:
-          type: string
-          format: uuid
-        nameAr:
-          type: string
-        nameEn:
-          type: string
-          nullable: true
-        categoryId:
-          type: string
-          format: uuid
-        provinceId:
-          type: string
-          format: uuid
-        cityId:
-          type: string
-          format: uuid
-          nullable: true
-        status:
-          $ref: '#/components/schemas/FacilityStatusEnum'
-        location:
-          allOf:
-          - $ref: '#/components/schemas/Coordinates'
-          nullable: true
-        updatedAt:
-          type: string
-          format: date-time
-          nullable: true
-        categoryNameAr:
-          type: string
-        provinceNameAr:
-          type: string
-        ownerName:
-          type: string
-          nullable: true
-          description: First owner membership.
-        ownerPhone:
-          type: string
-          nullable: true
-          description: First owner membership.
-        qualityScore:
-          type: integer
-          maximum: 100
-          minimum: 0
-          description: 100 minus a fixed penalty per issue.
-        qualityIssues:
-          type: array
-          items:
-            $ref: '#/components/schemas/FacilityQualityIssueEnum'
-          description: NO_PHOTOS 10, NO_HOURS 15, NO_LOCATION 20, NO_PHONE 20, STALE
-            10 (nothing changed or confirmed for 90 days), OPEN_REPORTS 15, NOT_VERIFIED_RECENTLY
-            10 (never approved, or not in 180 days). Photos and hours count only where
-            the category supports them.
-      required:
-      - categoryId
-      - categoryNameAr
-      - cityId
-      - id
-      - location
-      - nameAr
-      - nameEn
-      - ownerName
-      - ownerPhone
-      - provinceId
-      - provinceNameAr
-      - qualityIssues
-      - qualityScore
-      - status
-      - updatedAt
     AdminFacilityReport:
       type: object
       properties:

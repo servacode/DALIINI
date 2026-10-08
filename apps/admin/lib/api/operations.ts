@@ -60,6 +60,7 @@ export const READS = {
   facilities: (apis: AdminApis, p: Params) =>
     apis.facilities.adminFacilitiesList(
       filled(p, [
+        "id",
         "status",
         "province",
         "city",

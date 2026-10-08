@@ -280,6 +280,37 @@ def facility_payload(facility: Any) -> Any:
     }
 
 
+def with_facility_cards(queryset: QuerySet[Facility]) -> QuerySet[Facility]:
+    """What a facility card reads beyond the row: its city and its photographs, in one query
+    each for the whole page."""
+    from facilities.models import FacilityImage
+
+    return queryset.select_related("city").prefetch_related(
+        Prefetch(
+            "images",
+            queryset=FacilityImage.objects.order_by("sort_order", "created_at"),
+            to_attr="card_images",
+        )
+    )
+
+
+def facility_card_payload(facility: Any) -> Any:
+    """A facility as its card shows it: the row, its quality, and how to reach and see it."""
+    from .quality import quality_payload
+
+    return {
+        **facility_payload(facility),
+        **quality_payload(facility),
+        "phone": facility.phone or None,
+        "whatsapp": facility.whatsapp or None,
+        "addressAr": facility.address_ar or None,
+        "cityNameAr": facility.city.name_ar if facility.city_id else None,
+        "categoryIconKey": facility.category.icon_key or "",
+        "imageUrl": _image_url(facility),
+        "createdAt": _iso(facility.created_at),
+    }
+
+
 def facility_detail_payload(facility: Any) -> Any:
     """One facility as the console reads and edits it: the row, its quality, every detail."""
     from .quality import quality_payload

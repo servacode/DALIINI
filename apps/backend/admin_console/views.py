@@ -9,6 +9,7 @@ its own module beside this one (`views_reviews`, `views_facilities`, `views_user
 import logging
 from datetime import datetime, timedelta
 from typing import Any
+from uuid import UUID
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import connection
@@ -105,6 +106,13 @@ def filtered_facilities(params: Any) -> Any:
     if ordering not in FACILITY_ORDERINGS:
         raise ValidationError({"ordering": f"Use one of {', '.join(FACILITY_ORDERINGS)}."})
     qs = with_quality(with_facility_names(Facility.objects.all()))
+    if value := params.get("id"):
+        # One facility by id: what a link to a facility, written before the console had cards,
+        # resolves to (DECISION-109).
+        try:
+            qs = qs.filter(pk=UUID(str(value)))
+        except ValueError as exc:
+            raise ValidationError({"id": "Not a facility id."}) from exc
     if value := params.get("status"):
         qs = qs.filter(status=value)
     if value := params.get("province"):

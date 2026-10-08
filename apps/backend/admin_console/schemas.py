@@ -165,8 +165,26 @@ class AdminFacilityDetailSerializer(AdminFacilityQualitySerializer):
     createdAt = serializers.DateTimeField()
 
 
+class AdminFacilityCardSerializer(AdminFacilityQualitySerializer):
+    """A facility as its card in the console shows it (DECISION-109).
+
+    The card holds the whole facility and never fetches anything else, so the row carries
+    what the card shows: how to reach the place, where it is, and what it looks like.
+    """
+
+    phone = serializers.CharField(allow_null=True)
+    whatsapp = serializers.CharField(allow_null=True)
+    addressAr = serializers.CharField(allow_null=True)
+    cityNameAr = serializers.CharField(allow_null=True)
+    categoryIconKey = serializers.CharField(allow_blank=True)
+    # The first public photograph, which the card wears as its band. Null until an owner or an
+    # operator has uploaded one.
+    imageUrl = serializers.URLField(allow_null=True)
+    createdAt = serializers.DateTimeField(allow_null=True)
+
+
 class AdminFacilityListSerializer(CursorEnvelope):
-    items = AdminFacilityQualitySerializer(many=True)
+    items = AdminFacilityCardSerializer(many=True)
 
 
 class AdminApplicationSerializer(serializers.Serializer[Any]):

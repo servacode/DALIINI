@@ -435,6 +435,7 @@ export function ProfileCard({
   actions,
   focused,
   index = 0,
+  cover,
   testId,
 }: {
   /** A letter or two standing in for a picture: the first letters of the name. */
@@ -455,6 +456,8 @@ export function ProfileCard({
   focused?: boolean;
   /** The card's place in the list, so the cards rise into place one after another. */
   index?: number;
+  /** A photograph the band wears instead of its colour: a facility's own picture. */
+  cover?: string | null;
   testId?: string;
 }) {
   const classes = [
@@ -463,6 +466,7 @@ export function ProfileCard({
     kind === "blocked" ? "profile-blocked" : "",
     live ? "profile-live" : "",
     focused ? "profile-focus" : "",
+    cover ? "profile-cover" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -471,7 +475,12 @@ export function ProfileCard({
       className={classes}
       data-testid={testId}
       // Capped, so the twentieth card does not wait a second to appear.
-      style={{ "--i": Math.min(index, 12) } as CSSProperties}
+      style={
+        {
+          "--i": Math.min(index, 12),
+          ...(cover ? { "--cover": `url("${cover.replace(/"/g, "%22")}")` } : {}),
+        } as CSSProperties
+      }
     >
       <div className="profile-band">
         <span className="profile-tag">
@@ -493,7 +502,7 @@ export function ProfileCard({
               </span>
               <span className="profile-tile-text">
                 <strong dir={tile.ltr ? "ltr" : undefined}>{tile.value}</strong>
-                <span>{tile.label}</span>
+                <span title={tile.label}>{tile.label}</span>
               </span>
             </span>
           ))}
@@ -517,11 +526,12 @@ export function ProfileCard({
         <section className="profile-places" aria-label={places.title}>
           <div className="profile-places-head">
             <span className="profile-places-icon" aria-hidden="true">
-              <Icon name="building" width={18} height={18} />
+              <Icon name={places.icon ?? "building"} width={18} height={18} />
             </span>
             <div>
               <strong>{places.title}</strong>
-              <span>{places.subtitle}</span>
+              {/* Cut to one line on the card; the whole of it on hover. */}
+              <span title={places.subtitle}>{places.subtitle}</span>
             </div>
           </div>
           {places.items.length === 0 ? (
@@ -537,7 +547,7 @@ export function ProfileCard({
                     // eslint-disable-next-line @next/next/no-img-element -- public media, no loader
                     <img src={item.image} alt="" loading="lazy" />
                   ) : (
-                    <Icon name="building" width={18} height={18} />
+                    <Icon name={item.icon ?? "building"} width={18} height={18} />
                   )}
                 </span>
                 <span className="profile-place-text">
@@ -591,12 +601,14 @@ export type ProfileTile = Readonly<{
 
 export type ProfilePill = Readonly<{
   label: string;
-  tone?: "positive" | "danger";
+  tone?: "positive" | "danger" | "warning" | "info";
   /** An icon instead of the dot. */
   icon?: IconName;
 }>;
 
 export type ProfilePlaces = Readonly<{
+  /** The panel's icon; a building unless said otherwise. */
+  icon?: IconName;
   title: string;
   subtitle: string;
   items: readonly ProfilePlace[];
@@ -612,6 +624,8 @@ export type ProfilePlace = Readonly<{
   /** A word under the name: «مالك», «مدير». */
   aside?: string;
   image?: string | null;
+  /** Shown when there is no image. */
+  icon?: IconName;
   state?: string;
   /** The vocabulary tone of the state: positive, warning, danger, info. */
   stateTone?: string;
@@ -777,6 +791,7 @@ export function FormDialog({
   locked,
   footer,
   children,
+  wide,
   testId,
 }: {
   open: boolean;
@@ -787,6 +802,8 @@ export function FormDialog({
   locked?: boolean;
   footer?: ReactNode;
   children: ReactNode;
+  /** A longer form: a wider window whose body scrolls. */
+  wide?: boolean;
   testId?: string;
 }) {
   const headingId = useId();
@@ -816,7 +833,7 @@ export function FormDialog({
       }}
     >
       <div
-        className="panel dialog form-dialog"
+        className={wide ? "panel dialog form-dialog form-dialog-wide" : "panel dialog form-dialog"}
         role="dialog"
         aria-modal="true"
         aria-labelledby={headingId}

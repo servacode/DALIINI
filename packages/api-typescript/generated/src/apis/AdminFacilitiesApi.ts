@@ -50,6 +50,7 @@ export interface AdminFacilitiesListRequest {
     category?: string;
     city?: string;
     cursor?: string;
+    id?: string;
     issue?: AdminFacilitiesListIssueEnum;
     limit?: number;
     ordering?: AdminFacilitiesListOrderingEnum;
@@ -121,6 +122,10 @@ export class AdminFacilitiesApi extends runtime.BaseAPI {
 
         if (requestParameters['cursor'] != null) {
             queryParameters['cursor'] = requestParameters['cursor'];
+        }
+
+        if (requestParameters['id'] != null) {
+            queryParameters['id'] = requestParameters['id'];
         }
 
         if (requestParameters['issue'] != null) {

@@ -41,6 +41,7 @@ open class AdminFacilitiesAPI {
      - parameter category: (query) Category id. (optional)
      - parameter city: (query) City id. (optional)
      - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     - parameter id: (query) One facility by id: what a link written before the console had cards resolves to. (optional)
      - parameter issue: (query) Keep facilities that have this quality issue. (optional)
      - parameter limit: (query) Page size, maximum 200, default 50. (optional)
      - parameter ordering: (query) Sort order; the default is &#x60;-updatedAt&#x60; (most recently changed). (optional)
@@ -50,8 +51,8 @@ open class AdminFacilitiesAPI {
      - returns: AdminFacilityList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminFacilitiesList(category: String? = nil, city: String? = nil, cursor: String? = nil, issue: Issue_adminFacilitiesList? = nil, limit: Int? = nil, ordering: Ordering_adminFacilitiesList? = nil, province: String? = nil, q: String? = nil, status: String? = nil) async throws -> AdminFacilityList {
-        return try await adminFacilitiesListWithRequestBuilder(category: category, city: city, cursor: cursor, issue: issue, limit: limit, ordering: ordering, province: province, q: q, status: status).execute().body
+    open class func adminFacilitiesList(category: String? = nil, city: String? = nil, cursor: String? = nil, id: String? = nil, issue: Issue_adminFacilitiesList? = nil, limit: Int? = nil, ordering: Ordering_adminFacilitiesList? = nil, province: String? = nil, q: String? = nil, status: String? = nil) async throws -> AdminFacilityList {
+        return try await adminFacilitiesListWithRequestBuilder(category: category, city: city, cursor: cursor, id: id, issue: issue, limit: limit, ordering: ordering, province: province, q: q, status: status).execute().body
     }
 
     /**
@@ -64,6 +65,7 @@ open class AdminFacilitiesAPI {
      - parameter category: (query) Category id. (optional)
      - parameter city: (query) City id. (optional)
      - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     - parameter id: (query) One facility by id: what a link written before the console had cards resolves to. (optional)
      - parameter issue: (query) Keep facilities that have this quality issue. (optional)
      - parameter limit: (query) Page size, maximum 200, default 50. (optional)
      - parameter ordering: (query) Sort order; the default is &#x60;-updatedAt&#x60; (most recently changed). (optional)
@@ -72,7 +74,7 @@ open class AdminFacilitiesAPI {
      - parameter status: (query) Facility status, for example ACTIVE or SUSPENDED. (optional)
      - returns: RequestBuilder<AdminFacilityList> 
      */
-    open class func adminFacilitiesListWithRequestBuilder(category: String? = nil, city: String? = nil, cursor: String? = nil, issue: Issue_adminFacilitiesList? = nil, limit: Int? = nil, ordering: Ordering_adminFacilitiesList? = nil, province: String? = nil, q: String? = nil, status: String? = nil) -> RequestBuilder<AdminFacilityList> {
+    open class func adminFacilitiesListWithRequestBuilder(category: String? = nil, city: String? = nil, cursor: String? = nil, id: String? = nil, issue: Issue_adminFacilitiesList? = nil, limit: Int? = nil, ordering: Ordering_adminFacilitiesList? = nil, province: String? = nil, q: String? = nil, status: String? = nil) -> RequestBuilder<AdminFacilityList> {
         let localVariablePath = "/api/v1/admin/facilities/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -82,6 +84,7 @@ open class AdminFacilitiesAPI {
             "category": (wrappedValue: category?.encodeToJSON(), isExplode: true),
             "city": (wrappedValue: city?.encodeToJSON(), isExplode: true),
             "cursor": (wrappedValue: cursor?.encodeToJSON(), isExplode: true),
+            "id": (wrappedValue: id?.encodeToJSON(), isExplode: true),
             "issue": (wrappedValue: issue?.encodeToJSON(), isExplode: true),
             "limit": (wrappedValue: limit?.encodeToJSON(), isExplode: true),
             "ordering": (wrappedValue: ordering?.encodeToJSON(), isExplode: true),

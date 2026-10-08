@@ -17,7 +17,7 @@ Method | HTTP request | Description
 
 # **adminFacilitiesList**
 ```swift
-    open class func adminFacilitiesList(category: String? = nil, city: String? = nil, cursor: String? = nil, issue: Issue_adminFacilitiesList? = nil, limit: Int? = nil, ordering: Ordering_adminFacilitiesList? = nil, province: String? = nil, q: String? = nil, status: String? = nil, completion: @escaping (_ data: AdminFacilityList?, _ error: Error?) -> Void)
+    open class func adminFacilitiesList(category: String? = nil, city: String? = nil, cursor: String? = nil, id: String? = nil, issue: Issue_adminFacilitiesList? = nil, limit: Int? = nil, ordering: Ordering_adminFacilitiesList? = nil, province: String? = nil, q: String? = nil, status: String? = nil, completion: @escaping (_ data: AdminFacilityList?, _ error: Error?) -> Void)
 ```
 
 List facilities for operations
@@ -32,6 +32,7 @@ import ServaDirectoryAPI
 let category = "category_example" // String | Category id. (optional)
 let city = "city_example" // String | City id. (optional)
 let cursor = "cursor_example" // String | Opaque token returned as `nextCursor` by the previous page. (optional)
+let id = "id_example" // String | One facility by id: what a link written before the console had cards resolves to. (optional)
 let issue = "issue_example" // String | Keep facilities that have this quality issue. (optional)
 let limit = 987 // Int | Page size, maximum 200, default 50. (optional)
 let ordering = "ordering_example" // String | Sort order; the default is `-updatedAt` (most recently changed). (optional)
@@ -40,7 +41,7 @@ let q = "q_example" // String | Free text matched against the Arabic and English
 let status = "status_example" // String | Facility status, for example ACTIVE or SUSPENDED. (optional)
 
 // List facilities for operations
-AdminFacilitiesAPI.adminFacilitiesList(category: category, city: city, cursor: cursor, issue: issue, limit: limit, ordering: ordering, province: province, q: q, status: status) { (response, error) in
+AdminFacilitiesAPI.adminFacilitiesList(category: category, city: city, cursor: cursor, id: id, issue: issue, limit: limit, ordering: ordering, province: province, q: q, status: status) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -59,6 +60,7 @@ Name | Type | Description  | Notes
  **category** | **String** | Category id. | [optional] 
  **city** | **String** | City id. | [optional] 
  **cursor** | **String** | Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] 
+ **id** | **String** | One facility by id: what a link written before the console had cards resolves to. | [optional] 
  **issue** | **String** | Keep facilities that have this quality issue. | [optional] 
  **limit** | **Int** | Page size, maximum 200, default 50. | [optional] 
  **ordering** | **String** | Sort order; the default is &#x60;-updatedAt&#x60; (most recently changed). | [optional] 

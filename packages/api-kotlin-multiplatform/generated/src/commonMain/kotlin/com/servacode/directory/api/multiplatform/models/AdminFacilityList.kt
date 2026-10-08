@@ -15,7 +15,7 @@
 
 package com.servacode.directory.api.multiplatform.models
 
-import com.servacode.directory.api.multiplatform.models.AdminFacilityQuality
+import com.servacode.directory.api.multiplatform.models.AdminFacilityCard
 
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
@@ -38,7 +38,7 @@ data class AdminFacilityList (
     /* True when `nextCursor` is set. */
     @SerialName(value = "hasMore") @Required val hasMore: kotlin.Boolean,
 
-    @SerialName(value = "items") @Required val items: kotlin.collections.List<AdminFacilityQuality>
+    @SerialName(value = "items") @Required val items: kotlin.collections.List<AdminFacilityCard>
 
 ) {
 

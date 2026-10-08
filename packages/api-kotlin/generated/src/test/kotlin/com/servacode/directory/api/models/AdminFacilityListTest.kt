@@ -19,7 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.models.AdminFacilityList
-import com.servacode.directory.api.models.AdminFacilityQuality
+import com.servacode.directory.api.models.AdminFacilityCard
 
 class AdminFacilityListTest : ShouldSpec() {
     init {

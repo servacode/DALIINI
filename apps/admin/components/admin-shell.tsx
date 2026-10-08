@@ -79,6 +79,22 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
         icon: "users",
         pages: [{ href: "/users", label: "الحسابات", permission: "admin.users.read" }],
       },
+      // Facilities directly under accounts (the owner's order): the two records an operator
+      // looks up most, one under the other. The map is a section of its own rather than a
+      // page tucked inside facilities — it is where an operator goes to look at a district,
+      // not a second way of reading the same list.
+      {
+        key: "facilities",
+        label: "المنشآت",
+        icon: "building",
+        pages: [{ href: "/facilities", label: "المنشآت", permission: "admin.facilities.read" }],
+      },
+      {
+        key: "map",
+        label: "الخريطة",
+        icon: "map",
+        pages: [{ href: "/facilities/map", label: "الخريطة", permission: "admin.facilities.read" }],
+      },
       {
         key: "tasks",
         label: "المراجعات والبلاغات",
@@ -96,15 +112,6 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
         pages: [
           { href: "/duty", label: "جدول المناوبات", permission: "admin.duty.read" },
           { href: "/duty/import", label: "الاستيراد والقوالب", permission: "admin.duty.manage" },
-        ],
-      },
-      {
-        key: "facilities",
-        label: "المنشآت",
-        icon: "building",
-        pages: [
-          { href: "/facilities", label: "المنشآت", permission: "admin.facilities.read" },
-          { href: "/facilities/map", label: "الخريطة", permission: "admin.facilities.read" },
         ],
       },
       {

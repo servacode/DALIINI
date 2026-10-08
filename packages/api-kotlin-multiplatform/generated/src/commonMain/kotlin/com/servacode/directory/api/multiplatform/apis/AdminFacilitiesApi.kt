@@ -107,6 +107,7 @@ open class AdminFacilitiesApi : ApiClient {
      * @param category Category id. (optional)
      * @param city City id. (optional)
      * @param cursor Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     * @param id One facility by id: what a link written before the console had cards resolves to. (optional)
      * @param issue Keep facilities that have this quality issue. (optional)
      * @param limit Page size, maximum 200, default 50. (optional)
      * @param ordering Sort order; the default is &#x60;-updatedAt&#x60; (most recently changed). (optional)
@@ -116,7 +117,7 @@ open class AdminFacilitiesApi : ApiClient {
      * @return AdminFacilityList
      */
     @Suppress("UNCHECKED_CAST")
-    open suspend fun adminFacilitiesList(category: kotlin.String? = null, city: kotlin.String? = null, cursor: kotlin.String? = null, issue: IssueAdminFacilitiesList? = null, limit: kotlin.Int? = null, ordering: OrderingAdminFacilitiesList? = null, province: kotlin.String? = null, q: kotlin.String? = null, status: kotlin.String? = null): HttpResponse<AdminFacilityList> {
+    open suspend fun adminFacilitiesList(category: kotlin.String? = null, city: kotlin.String? = null, cursor: kotlin.String? = null, id: kotlin.String? = null, issue: IssueAdminFacilitiesList? = null, limit: kotlin.Int? = null, ordering: OrderingAdminFacilitiesList? = null, province: kotlin.String? = null, q: kotlin.String? = null, status: kotlin.String? = null): HttpResponse<AdminFacilityList> {
 
         val localVariableAuthNames = listOf<String>("bearerAccessToken")
 
@@ -127,6 +128,7 @@ open class AdminFacilitiesApi : ApiClient {
         category?.apply { localVariableQuery["category"] = listOf("$category") }
         city?.apply { localVariableQuery["city"] = listOf("$city") }
         cursor?.apply { localVariableQuery["cursor"] = listOf("$cursor") }
+        id?.apply { localVariableQuery["id"] = listOf("$id") }
         issue?.apply { localVariableQuery["issue"] = listOf("${ issue.value }") }
         limit?.apply { localVariableQuery["limit"] = listOf("$limit") }
         ordering?.apply { localVariableQuery["ordering"] = listOf("${ ordering.value }") }

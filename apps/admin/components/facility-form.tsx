@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useMutation } from "../lib/client/use-mutation";
 import { useResource } from "../lib/client/use-resource";
 import { fieldErrorsFor, messageFor } from "../lib/errors/messages";
+import { LocationPicker, type Point } from "./location-picker";
 import { FormSection } from "./ui";
 
 type Named = Readonly<{ id: string; nameAr: string; active?: boolean }>;
@@ -40,8 +41,7 @@ type Draft = {
   phone: string;
   whatsapp: string;
   addressAr: string;
-  latitude: string;
-  longitude: string;
+  location: Point | null;
   specialtyIds: number[];
   serviceTagIds: number[];
   status: "ACTIVE" | "DRAFT";
@@ -58,8 +58,7 @@ function draftOf(facility: EditableFacility | null): Draft {
     phone: facility?.phone ?? "",
     whatsapp: facility?.whatsapp ?? "",
     addressAr: facility?.addressAr ?? "",
-    latitude: facility?.location ? String(facility.location.latitude) : "",
-    longitude: facility?.location ? String(facility.location.longitude) : "",
+    location: facility?.location ?? null,
     specialtyIds: [...(facility?.specialtyIds ?? [])],
     serviceTagIds: [...(facility?.serviceTagIds ?? [])],
     status: "ACTIVE",
@@ -68,13 +67,7 @@ function draftOf(facility: EditableFacility | null): Draft {
 
 /** The request body: every field on create, only what changed on edit. */
 function bodyOf(draft: Draft, original: Draft | null): Record<string, unknown> | string {
-  const lat = draft.latitude.trim();
-  const lng = draft.longitude.trim();
-  if (Boolean(lat) !== Boolean(lng)) return "أدخل خط العرض وخط الطول معاً، أو اتركهما فارغين.";
-  const location = lat ? { latitude: Number(lat), longitude: Number(lng) } : null;
-  if (location && (Number.isNaN(location.latitude) || Number.isNaN(location.longitude))) {
-    return "الإحداثيات أرقام عشرية، مثل 35.9506 و 39.0094.";
-  }
+  const location = draft.location;
   const full: Record<string, unknown> = {
     categoryId: draft.categoryId,
     provinceId: draft.provinceId,
@@ -103,9 +96,15 @@ function bodyOf(draft: Draft, original: Draft | null): Record<string, unknown> |
 export function FacilityForm({
   facility,
   onSaved,
+  onCancel,
+  mapStyleUrl = "",
 }: {
   facility: EditableFacility | null;
   onSaved: (id: string) => void;
+  /** Shown beside the save button when the form sits in a window. */
+  onCancel?: () => void;
+  /** The platform's map style; without one, the location is typed (DECISION-109). */
+  mapStyleUrl?: string;
 }) {
   const original = facility ? draftOf(facility) : null;
   const [draft, setDraft] = useState<Draft>(() => draftOf(facility));
@@ -285,12 +284,13 @@ export function FacilityForm({
         {field("addressAr", "العنوان", { testId: "facility-address" })}
       </FormSection>
 
-      <FormSection
-        title="الموقع على الخريطة"
-        description="من أي خريطة: اضغط مطولاً على المكان وانسخ الإحداثيتين. اتركهما فارغين لإزالة الموقع."
-      >
-        {field("latitude", "خط العرض", { ltr: true, hint: "مثل 35.9506" })}
-        {field("longitude", "خط الطول", { ltr: true, hint: "مثل 39.0094" })}
+      <FormSection title="الموقع على الخريطة">
+        <LocationPicker
+          styleUrl={mapStyleUrl}
+          value={draft.location}
+          invalid={Boolean(errors.location)}
+          onChange={(location) => set("location", location)}
+        />
         {errors.location ? <span className="field-error">{errors.location}</span> : null}
       </FormSection>
 
@@ -328,7 +328,7 @@ export function FacilityForm({
           {local ?? messageFor(mutation.error)}
         </p>
       ) : null}
-      <div className="button-row">
+      <div className={onCancel ? "button-row form-dialog-sticky" : "button-row"}>
         <button
           type="button"
           className="button-primary"
@@ -338,6 +338,16 @@ export function FacilityForm({
         >
           {mutation.pending ? "جارٍ الحفظ…" : submitLabel}
         </button>
+        {onCancel ? (
+          <button
+            type="button"
+            className="button-ghost"
+            disabled={mutation.pending}
+            onClick={onCancel}
+          >
+            إلغاء
+          </button>
+        ) : null}
       </div>
     </div>
   );

@@ -19,7 +19,7 @@
       "type": "vector",
       "attribution": "© OpenMapTiles © OpenStreetMap contributors",
       "tiles": [
-        "http://localhost:9000/directory-public/map/tiles/{z}/{x}/{y}.pbf"
+        "http://127.0.0.1:9000/directory-public/map/tiles/{z}/{x}/{y}.pbf"
       ],
       "minzoom": 0,
       "maxzoom": 16

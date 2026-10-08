@@ -15,7 +15,7 @@
 
 package com.servacode.directory.api.models
 
-import com.servacode.directory.api.models.AdminFacilityQuality
+import com.servacode.directory.api.models.AdminFacilityCard
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -41,7 +41,7 @@ data class AdminFacilityList (
     val hasMore: kotlin.Boolean,
 
     @SerialName(value = "items")
-    val items: kotlin.collections.List<AdminFacilityQuality>
+    val items: kotlin.collections.List<AdminFacilityCard>
 
 ) {
 

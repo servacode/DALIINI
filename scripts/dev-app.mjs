@@ -26,8 +26,12 @@ const apps = {
       ADMIN_API_ORIGIN: API,
       ADMIN_PUBLIC_ORIGIN: "http://localhost:3000",
       ADMIN_PUBLIC_MEDIA_ORIGIN: MEDIA,
-      // No map by default, as on the site; with scripts/local-map.sh done,
-      // ADMIN_MAP_STYLE_URL=$MEDIA/directory-public/map/style.json.
+      // The map the facility windows place a pin on (DECISION-109), once
+      // `scripts/local-map.sh <archive.pmtiles>` has put it in the media store. Its glyphs and
+      // icons come from the owner's RahalGo map host, which the console's policy must allow.
+      // Without the map built, the windows fall back to typing the two coordinates.
+      ADMIN_MAP_STYLE_URL: `${MEDIA}/directory-public/map/style.json`,
+      ADMIN_MAP_ORIGINS: "https://maps.rahalgo.com",
     },
   },
   web: {
