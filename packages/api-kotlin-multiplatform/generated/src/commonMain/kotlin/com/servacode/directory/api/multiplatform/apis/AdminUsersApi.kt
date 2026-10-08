@@ -414,39 +414,6 @@ open class AdminUsersApi : ApiClient {
 
 
     /**
-     * Sign every device of this account out
-     * For a phone that was lost or stolen. The account stays active — blocking would also shut its owner out of their own facilities, which is the wrong answer to a lost phone. The devices&#39; push tokens stop with the sessions.
-     * @param userId 
-     * @return AdminUserDetail
-     */
-    @Suppress("UNCHECKED_CAST")
-    open suspend fun adminUserSessionsRevoke(userId: kotlin.String): HttpResponse<AdminUserDetail> {
-
-        val localVariableAuthNames = listOf<String>("bearerAccessToken")
-
-        val localVariableBody = 
-            io.ktor.client.utils.EmptyContent
-
-        val localVariableQuery = mutableMapOf<String, List<String>>()
-        val localVariableHeaders = mutableMapOf<String, String>()
-
-        val localVariableConfig = RequestConfig<kotlin.Any?>(
-            RequestMethod.POST,
-            "/api/v1/admin/users/{user_id}/sessions/revoke/".replace("{" + "user_id" + "}", "$userId"),
-            query = localVariableQuery,
-            headers = localVariableHeaders,
-            requiresAuthentication = true,
-        )
-
-        return request(
-            localVariableConfig,
-            localVariableBody,
-            localVariableAuthNames
-        ).wrap()
-    }
-
-
-    /**
      * Unblock a user account
      * Blocking also revokes every active refresh session of that user.
      * @param userId 
@@ -483,6 +450,7 @@ open class AdminUsersApi : ApiClient {
      * Search user accounts
      * Password hashes and session secret material are never returned. Newest first unless &#x60;ordering&#x60; says otherwise, in cursor pages. Every filter is optional.
      * @param cursor Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     * @param id One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone. (optional)
      * @param limit Page size, maximum 200, default 50. (optional)
      * @param ordering createdAt, -createdAt (the default), name or -name. (optional)
      * @param q Free text matched against the account name and phone number. (optional)
@@ -491,7 +459,7 @@ open class AdminUsersApi : ApiClient {
      * @return AdminUserList
      */
     @Suppress("UNCHECKED_CAST")
-    open suspend fun adminUsersList(cursor: kotlin.String? = null, limit: kotlin.Int? = null, ordering: kotlin.String? = null, q: kotlin.String? = null, role: kotlin.String? = null, status: kotlin.String? = null): HttpResponse<AdminUserList> {
+    open suspend fun adminUsersList(cursor: kotlin.String? = null, id: kotlin.String? = null, limit: kotlin.Int? = null, ordering: kotlin.String? = null, q: kotlin.String? = null, role: kotlin.String? = null, status: kotlin.String? = null): HttpResponse<AdminUserList> {
 
         val localVariableAuthNames = listOf<String>("bearerAccessToken")
 
@@ -500,6 +468,7 @@ open class AdminUsersApi : ApiClient {
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
         cursor?.apply { localVariableQuery["cursor"] = listOf("$cursor") }
+        id?.apply { localVariableQuery["id"] = listOf("$id") }
         limit?.apply { localVariableQuery["limit"] = listOf("$limit") }
         ordering?.apply { localVariableQuery["ordering"] = listOf("$ordering") }
         q?.apply { localVariableQuery["q"] = listOf("$q") }

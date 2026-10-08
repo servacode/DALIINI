@@ -2793,3 +2793,27 @@ edge — it is the card contradicting itself.
 **Counts are annotated, not counted per row.** Facilities, live sessions and the heartbeat
 come from subqueries, so a page of fifty accounts asks the same number of questions as a page
 of one. A test proves it by loading ten accounts and comparing the query count to one.
+
+**Amended 2026-10-09 (owner's decision): the card does not open at all.** The version above
+kept a «التفاصيل» button that opened a card in place. The owner asked twice for everything on
+the card itself and for a card that keeps one shape; the button did neither. Now:
+
+* **`ProfileCard`** replaces `RecordCard`. Every card has the same parts in the same places —
+  a band, the picture across its edge, name, number, province, an activity pill, three
+  figures, a list of two places, and the actions — and no part appears, grows or opens for one
+  account and not another. An account with nothing fills the same frame with quiet words, so
+  a row of four is four of the same thing and can be compared at a glance. Measured: five
+  cards, one height.
+* **The band's colour is the account's kind** — emerald for one that runs a place, sand for an
+  ordinary one, red for one that is shut — and a word in its corner names it. **The ring round
+  the picture** says whether it was active in the last half hour.
+* **Each row now carries its first two places** (name, role, status) and the count, prefetched
+  in one query for the whole page; the card says «و N غيرها» rather than growing.
+* **Removed, at the owner's word:** devices and «sign every device out» (signing a device out
+  belongs to the person, in their own app — specification §8 — and an operator power nobody
+  needs is a risk), whether the number was verified (registration proves it before the account
+  exists, so it read the same on every card), and the role editor (it concerns operators only,
+  under one per cent of accounts; it belongs to the roles section). «تصفير التحقق» appears only
+  on an account that has an authenticator set up — in practice, an operator.
+* `/users/<id>` now redirects to `/users?id=<id>`, which the list answers with that account
+  alone, outlined, and a way back to all.

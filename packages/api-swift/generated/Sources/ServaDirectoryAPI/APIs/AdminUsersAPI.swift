@@ -461,48 +461,6 @@ open class AdminUsersAPI {
     }
 
     /**
-     Sign every device of this account out
-     
-     - parameter userId: (path)  
-     - returns: AdminUserDetail
-     */
-    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminUserSessionsRevoke(userId: UUID) async throws -> AdminUserDetail {
-        return try await adminUserSessionsRevokeWithRequestBuilder(userId: userId).execute().body
-    }
-
-    /**
-     Sign every device of this account out
-     - POST /api/v1/admin/users/{user_id}/sessions/revoke/
-     - For a phone that was lost or stolen. The account stays active — blocking would also shut its owner out of their own facilities, which is the wrong answer to a lost phone. The devices' push tokens stop with the sessions.
-     - Bearer Token:
-       - type: http
-       - name: bearerAccessToken
-     - parameter userId: (path)  
-     - returns: RequestBuilder<AdminUserDetail> 
-     */
-    open class func adminUserSessionsRevokeWithRequestBuilder(userId: UUID) -> RequestBuilder<AdminUserDetail> {
-        var localVariablePath = "/api/v1/admin/users/{user_id}/sessions/revoke/"
-        let userIdPreEscape = "\(APIHelper.mapValueToPathItem(userId))"
-        let userIdPostEscape = userIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
-        localVariablePath = localVariablePath.replacingOccurrences(of: "{user_id}", with: userIdPostEscape, options: .literal, range: nil)
-        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
-        let localVariableParameters: [String: Any]? = nil
-
-        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
-
-        let localVariableNillableHeaders: [String: Any?] = [
-            :
-        ]
-
-        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
-
-        let localVariableRequestBuilder: RequestBuilder<AdminUserDetail>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
-
-        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
-    }
-
-    /**
      Unblock a user account
      
      - parameter userId: (path)  
@@ -548,6 +506,7 @@ open class AdminUsersAPI {
      Search user accounts
      
      - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     - parameter id: (query) One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone. (optional)
      - parameter limit: (query) Page size, maximum 200, default 50. (optional)
      - parameter ordering: (query) createdAt, -createdAt (the default), name or -name. (optional)
      - parameter q: (query) Free text matched against the account name and phone number. (optional)
@@ -556,8 +515,8 @@ open class AdminUsersAPI {
      - returns: AdminUserList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminUsersList(cursor: String? = nil, limit: Int? = nil, ordering: String? = nil, q: String? = nil, role: String? = nil, status: String? = nil) async throws -> AdminUserList {
-        return try await adminUsersListWithRequestBuilder(cursor: cursor, limit: limit, ordering: ordering, q: q, role: role, status: status).execute().body
+    open class func adminUsersList(cursor: String? = nil, id: String? = nil, limit: Int? = nil, ordering: String? = nil, q: String? = nil, role: String? = nil, status: String? = nil) async throws -> AdminUserList {
+        return try await adminUsersListWithRequestBuilder(cursor: cursor, id: id, limit: limit, ordering: ordering, q: q, role: role, status: status).execute().body
     }
 
     /**
@@ -568,6 +527,7 @@ open class AdminUsersAPI {
        - type: http
        - name: bearerAccessToken
      - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     - parameter id: (query) One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone. (optional)
      - parameter limit: (query) Page size, maximum 200, default 50. (optional)
      - parameter ordering: (query) createdAt, -createdAt (the default), name or -name. (optional)
      - parameter q: (query) Free text matched against the account name and phone number. (optional)
@@ -575,7 +535,7 @@ open class AdminUsersAPI {
      - parameter status: (query) &#x60;active&#x60; keeps active accounts; any other value keeps blocked accounts. (optional)
      - returns: RequestBuilder<AdminUserList> 
      */
-    open class func adminUsersListWithRequestBuilder(cursor: String? = nil, limit: Int? = nil, ordering: String? = nil, q: String? = nil, role: String? = nil, status: String? = nil) -> RequestBuilder<AdminUserList> {
+    open class func adminUsersListWithRequestBuilder(cursor: String? = nil, id: String? = nil, limit: Int? = nil, ordering: String? = nil, q: String? = nil, role: String? = nil, status: String? = nil) -> RequestBuilder<AdminUserList> {
         let localVariablePath = "/api/v1/admin/users/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -583,6 +543,7 @@ open class AdminUsersAPI {
         var localVariableUrlComponents = URLComponents(string: localVariableURLString)
         localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
             "cursor": (wrappedValue: cursor?.encodeToJSON(), isExplode: true),
+            "id": (wrappedValue: id?.encodeToJSON(), isExplode: true),
             "limit": (wrappedValue: limit?.encodeToJSON(), isExplode: true),
             "ordering": (wrappedValue: ordering?.encodeToJSON(), isExplode: true),
             "q": (wrappedValue: q?.encodeToJSON(), isExplode: true),

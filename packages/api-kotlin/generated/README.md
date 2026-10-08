@@ -177,7 +177,6 @@ All URIs are relative to *http://localhost*
 | *AdminUsersApi* | [**adminUserRecoverySend**](docs/AdminUsersApi.md#adminuserrecoverysend) | **POST** api/v1/admin/users/{user_id}/recovery/ | Send this account a password-recovery code |
 | *AdminUsersApi* | [**adminUserRetrieve**](docs/AdminUsersApi.md#adminuserretrieve) | **GET** api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned |
 | *AdminUsersApi* | [**adminUserRolesReplace**](docs/AdminUsersApi.md#adminuserrolesreplace) | **PUT** api/v1/admin/users/{user_id}/roles/ | Replace the admin roles of a user |
-| *AdminUsersApi* | [**adminUserSessionsRevoke**](docs/AdminUsersApi.md#adminusersessionsrevoke) | **POST** api/v1/admin/users/{user_id}/sessions/revoke/ | Sign every device of this account out |
 | *AdminUsersApi* | [**adminUserUnblock**](docs/AdminUsersApi.md#adminuserunblock) | **POST** api/v1/admin/users/{user_id}/unblock/ | Unblock a user account |
 | *AdminUsersApi* | [**adminUsersList**](docs/AdminUsersApi.md#adminuserslist) | **GET** api/v1/admin/users/ | Search user accounts |
 | *AdminVerificationApi* | [**adminVerificationRequirementCreate**](docs/AdminVerificationApi.md#adminverificationrequirementcreate) | **POST** api/v1/admin/verification-requirements/ | Create a verification requirement |
@@ -406,7 +405,6 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminUserList](docs/AdminUserList.md)
  - [com.servacode.directory.api.models.AdminUserRecoverySent](docs/AdminUserRecoverySent.md)
  - [com.servacode.directory.api.models.AdminUserRolesRequest](docs/AdminUserRolesRequest.md)
- - [com.servacode.directory.api.models.AdminUserSession](docs/AdminUserSession.md)
  - [com.servacode.directory.api.models.AdminVerificationRequirement](docs/AdminVerificationRequirement.md)
  - [com.servacode.directory.api.models.AdminVerificationRequirementList](docs/AdminVerificationRequirementList.md)
  - [com.servacode.directory.api.models.AdminVerificationRequirementRequest](docs/AdminVerificationRequirementRequest.md)

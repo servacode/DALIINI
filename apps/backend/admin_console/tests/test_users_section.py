@@ -61,13 +61,6 @@ def test_the_detail_shows_what_hangs_off_the_account(admin_api: Any, facility: F
     FacilityMembership.objects.create(
         user=person, facility=facility, role=FacilityMembership.Role.OWNER
     )
-    UserSession.objects.create(
-        user=person,
-        refresh_digest="digest-one",
-        platform="ANDROID",
-        device_name="هاتف المالك",
-        expires_at=timezone.now() + timedelta(days=30),
-    )
     client = admin_api(READ)
 
     body = client.get(f"/api/v1/admin/users/{person.pk}/").json()
@@ -75,43 +68,12 @@ def test_the_detail_shows_what_hangs_off_the_account(admin_api: Any, facility: F
     assert [f["nameAr"] for f in body["facilities"]] == [facility.name_ar]
     assert body["facilities"][0]["role"] == FacilityMembership.Role.OWNER
     assert body["facilities"][0]["status"] == Facility.Status.ACTIVE
-    assert [s["deviceName"] for s in body["sessions"]] == ["هاتف المالك"]
-    assert body["phoneVerifiedAt"] is None
+    # Nothing about devices: signing one out is the person's own, in their app (§8), and
+    # the console asks for no power over them. Nor whether the number was proved: the app
+    # proves it before the account exists, so it would read the same on every card.
+    assert "sessions" not in body
+    assert "phoneVerifiedAt" not in body
     assert "lastLoginAt" in body
-
-
-@pytest.mark.django_db
-def test_a_session_payload_carries_no_secret(admin_api: Any, province: Province) -> None:
-    person = _person(province)
-    UserSession.objects.create(
-        user=person,
-        refresh_digest="a-secret-digest",
-        previous_refresh_digest="an-older-secret",
-        platform="ANDROID",
-        expires_at=timezone.now() + timedelta(days=30),
-    )
-    client = admin_api(READ)
-
-    session = client.get(f"/api/v1/admin/users/{person.pk}/").json()["sessions"][0]
-
-    assert set(session) == {"id", "platform", "deviceName", "createdAt", "lastSeenAt"}
-    assert "secret" not in str(session)
-
-
-@pytest.mark.django_db
-def test_a_revoked_session_is_not_listed_as_signed_in(
-    admin_api: Any, province: Province
-) -> None:
-    person = _person(province)
-    UserSession.objects.create(
-        user=person,
-        refresh_digest="gone",
-        expires_at=timezone.now() + timedelta(days=30),
-        revoked_at=timezone.now(),
-    )
-    client = admin_api(READ)
-
-    assert client.get(f"/api/v1/admin/users/{person.pk}/").json()["sessions"] == []
 
 
 # ----------------------------------------------------------------- recovery
@@ -222,33 +184,6 @@ def test_opening_an_account_needs_more_than_read(admin_api: Any, province: Provi
     assert not User.objects.filter(phone="+963933111444").exists()
 
 
-# ----------------------------------------------------------------- a lost phone
-
-
-@pytest.mark.django_db
-def test_revoking_sessions_signs_the_devices_out_and_leaves_the_account_active(
-    admin_api: Any, province: Province
-) -> None:
-    """A stolen phone is not a reason to lock an owner out of their own facilities."""
-    person = _person(province)
-    for digest in ("one", "two"):
-        UserSession.objects.create(
-            user=person,
-            refresh_digest=digest,
-            expires_at=timezone.now() + timedelta(days=30),
-        )
-    client = admin_api(*MANAGE)
-
-    body = client.post(f"/api/v1/admin/users/{person.pk}/sessions/revoke/").json()
-
-    person.refresh_from_db()
-    assert person.is_active is True
-    assert body["active"] is True
-    assert body["sessions"] == []
-    assert UserSession.objects.filter(user=person, revoked_at__isnull=True).count() == 0
-    assert AuditEvent.objects.filter(action="user.sessions_revoked").exists()
-
-
 # ----------------------------------------------------------------- the card's own facts
 
 
@@ -273,7 +208,10 @@ def test_a_row_carries_what_a_card_shows(admin_api: Any, facility: Facility) -> 
     )
 
     assert row["facilityCount"] == 1
-    assert row["sessionCount"] == 1
+    # The card names the place rather than counting it, and never opens to find out.
+    assert [f["nameAr"] for f in row["facilities"]] == [facility.name_ar]
+    assert row["facilities"][0]["status"] == Facility.Status.ACTIVE
+    assert "sessionCount" not in row
     assert row["lastSeenAt"] is not None
     assert row["recentlyActive"] is True
 
@@ -299,7 +237,6 @@ def test_an_account_last_seen_yesterday_is_not_called_active(
     )
 
     assert row["recentlyActive"] is False
-    assert row["sessionCount"] == 1
 
 
 @pytest.mark.django_db

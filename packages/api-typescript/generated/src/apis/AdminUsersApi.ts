@@ -93,16 +93,13 @@ export interface AdminUserRolesReplaceRequest {
     adminUserRolesRequest: AdminUserRolesRequest;
 }
 
-export interface AdminUserSessionsRevokeRequest {
-    userId: string;
-}
-
 export interface AdminUserUnblockRequest {
     userId: string;
 }
 
 export interface AdminUsersListRequest {
     cursor?: string;
+    id?: string;
     limit?: number;
     ordering?: string;
     q?: string;
@@ -627,53 +624,6 @@ export class AdminUsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * For a phone that was lost or stolen. The account stays active — blocking would also shut its owner out of their own facilities, which is the wrong answer to a lost phone. The devices\' push tokens stop with the sessions.
-     * Sign every device of this account out
-     */
-    async adminUserSessionsRevokeRaw(requestParameters: AdminUserSessionsRevokeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminUserDetail>> {
-        if (requestParameters['userId'] == null) {
-            throw new runtime.RequiredError(
-                'userId',
-                'Required parameter "userId" was null or undefined when calling adminUserSessionsRevoke().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearerAccessToken", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-
-        let urlPath = `/api/v1/admin/users/{user_id}/sessions/revoke/`;
-        urlPath = urlPath.replace(`{${"user_id"}}`, encodeURIComponent(String(requestParameters['userId'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => AdminUserDetailFromJSON(jsonValue));
-    }
-
-    /**
-     * For a phone that was lost or stolen. The account stays active — blocking would also shut its owner out of their own facilities, which is the wrong answer to a lost phone. The devices\' push tokens stop with the sessions.
-     * Sign every device of this account out
-     */
-    async adminUserSessionsRevoke(requestParameters: AdminUserSessionsRevokeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminUserDetail> {
-        const response = await this.adminUserSessionsRevokeRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Blocking also revokes every active refresh session of that user.
      * Unblock a user account
      */
@@ -729,6 +679,10 @@ export class AdminUsersApi extends runtime.BaseAPI {
 
         if (requestParameters['cursor'] != null) {
             queryParameters['cursor'] = requestParameters['cursor'];
+        }
+
+        if (requestParameters['id'] != null) {
+            queryParameters['id'] = requestParameters['id'];
         }
 
         if (requestParameters['limit'] != null) {

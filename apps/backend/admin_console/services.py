@@ -383,28 +383,3 @@ def send_recovery_code(*, request: Any, user: User) -> str:
         request_id=_request_id(request),
     )
     return user.phone
-
-
-def revoke_user_sessions(*, request: Any, user: User) -> int:
-    """Sign every one of this account's devices out, without blocking the account.
-
-    What this is for: a phone that was lost or stolen. Blocking would do it too, and would
-    also lock the owner out of their own facilities — which is the wrong answer to «someone
-    took my phone». The push tokens go with the sessions, or the lost device would keep
-    receiving the account's notices.
-    """
-    from notifications.services import deactivate_push_tokens_for_sessions
-
-    open_sessions = UserSession.objects.filter(user=user, revoked_at__isnull=True)
-    session_ids = list(open_sessions.values_list("id", flat=True))
-    count = open_sessions.update(revoked_at=timezone.now())
-    if session_ids:
-        deactivate_push_tokens_for_sessions([str(value) for value in session_ids])
-    record_audit(
-        actor=request.user,
-        action="user.sessions_revoked",
-        target=user,
-        after_snapshot={"sessions": count},
-        request_id=_request_id(request),
-    )
-    return count

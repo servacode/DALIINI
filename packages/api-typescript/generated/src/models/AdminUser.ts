@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { AdminUserFacility } from './AdminUserFacility';
+import {
+    AdminUserFacilityFromJSON,
+    AdminUserFacilityFromJSONTyped,
+    AdminUserFacilityToJSON,
+    AdminUserFacilityToJSONTyped,
+} from './AdminUserFacility';
+
 /**
  * 
  * @export
@@ -60,12 +68,6 @@ export interface AdminUser {
      * @type {Date}
      * @memberof AdminUser
      */
-    phoneVerifiedAt: Date | null;
-    /**
-     * 
-     * @type {Date}
-     * @memberof AdminUser
-     */
     lastLoginAt: Date | null;
     /**
      * 
@@ -87,10 +89,16 @@ export interface AdminUser {
     facilityCount: number;
     /**
      * 
-     * @type {number}
+     * @type {Array<AdminUserFacility>}
      * @memberof AdminUser
      */
-    sessionCount: number;
+    facilities: Array<AdminUserFacility>;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AdminUser
+     */
+    hasTwoFactor: boolean;
     /**
      * 
      * @type {Date}
@@ -115,12 +123,12 @@ export function instanceOfAdminUser(value: object): value is AdminUser {
     if (!('active' in value) || value['active'] === undefined) return false;
     if (!('provinceId' in value) || value['provinceId'] === undefined) return false;
     if (!('provinceName' in value) || value['provinceName'] === undefined) return false;
-    if (!('phoneVerifiedAt' in value) || value['phoneVerifiedAt'] === undefined) return false;
     if (!('lastLoginAt' in value) || value['lastLoginAt'] === undefined) return false;
     if (!('lastSeenAt' in value) || value['lastSeenAt'] === undefined) return false;
     if (!('recentlyActive' in value) || value['recentlyActive'] === undefined) return false;
     if (!('facilityCount' in value) || value['facilityCount'] === undefined) return false;
-    if (!('sessionCount' in value) || value['sessionCount'] === undefined) return false;
+    if (!('facilities' in value) || value['facilities'] === undefined) return false;
+    if (!('hasTwoFactor' in value) || value['hasTwoFactor'] === undefined) return false;
     if (!('createdAt' in value) || value['createdAt'] === undefined) return false;
     if (!('updatedAt' in value) || value['updatedAt'] === undefined) return false;
     return true;
@@ -142,12 +150,12 @@ export function AdminUserFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'active': json['active'],
         'provinceId': json['provinceId'],
         'provinceName': json['provinceName'],
-        'phoneVerifiedAt': (json['phoneVerifiedAt'] == null ? null : new Date(json['phoneVerifiedAt'])),
         'lastLoginAt': (json['lastLoginAt'] == null ? null : new Date(json['lastLoginAt'])),
         'lastSeenAt': (json['lastSeenAt'] == null ? null : new Date(json['lastSeenAt'])),
         'recentlyActive': json['recentlyActive'],
         'facilityCount': json['facilityCount'],
-        'sessionCount': json['sessionCount'],
+        'facilities': ((json['facilities'] as Array<any>).map(AdminUserFacilityFromJSON)),
+        'hasTwoFactor': json['hasTwoFactor'],
         'createdAt': (json['createdAt'] == null ? null : new Date(json['createdAt'])),
         'updatedAt': (json['updatedAt'] == null ? null : new Date(json['updatedAt'])),
     };
@@ -170,12 +178,12 @@ export function AdminUserToJSONTyped(value?: AdminUser | null, ignoreDiscriminat
         'active': value['active'],
         'provinceId': value['provinceId'],
         'provinceName': value['provinceName'],
-        'phoneVerifiedAt': ((value['phoneVerifiedAt'] as any).toISOString()),
         'lastLoginAt': ((value['lastLoginAt'] as any).toISOString()),
         'lastSeenAt': ((value['lastSeenAt'] as any).toISOString()),
         'recentlyActive': value['recentlyActive'],
         'facilityCount': value['facilityCount'],
-        'sessionCount': value['sessionCount'],
+        'facilities': ((value['facilities'] as Array<any>).map(AdminUserFacilityToJSON)),
+        'hasTwoFactor': value['hasTwoFactor'],
         'createdAt': ((value['createdAt'] as any).toISOString()),
         'updatedAt': ((value['updatedAt'] as any).toISOString()),
     };

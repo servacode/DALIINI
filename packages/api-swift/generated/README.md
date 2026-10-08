@@ -158,7 +158,6 @@ Class | Method | HTTP request | Description
 *AdminUsersAPI* | [**adminUserRecoverySend**](docs/AdminUsersAPI.md#adminuserrecoverysend) | **POST** /api/v1/admin/users/{user_id}/recovery/ | Send this account a password-recovery code
 *AdminUsersAPI* | [**adminUserRetrieve**](docs/AdminUsersAPI.md#adminuserretrieve) | **GET** /api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned
 *AdminUsersAPI* | [**adminUserRolesReplace**](docs/AdminUsersAPI.md#adminuserrolesreplace) | **PUT** /api/v1/admin/users/{user_id}/roles/ | Replace the admin roles of a user
-*AdminUsersAPI* | [**adminUserSessionsRevoke**](docs/AdminUsersAPI.md#adminusersessionsrevoke) | **POST** /api/v1/admin/users/{user_id}/sessions/revoke/ | Sign every device of this account out
 *AdminUsersAPI* | [**adminUserUnblock**](docs/AdminUsersAPI.md#adminuserunblock) | **POST** /api/v1/admin/users/{user_id}/unblock/ | Unblock a user account
 *AdminUsersAPI* | [**adminUsersList**](docs/AdminUsersAPI.md#adminuserslist) | **GET** /api/v1/admin/users/ | Search user accounts
 *AdminVerificationAPI* | [**adminVerificationRequirementCreate**](docs/AdminVerificationAPI.md#adminverificationrequirementcreate) | **POST** /api/v1/admin/verification-requirements/ | Create a verification requirement
@@ -386,7 +385,6 @@ Class | Method | HTTP request | Description
  - [AdminUserList](docs/AdminUserList.md)
  - [AdminUserRecoverySent](docs/AdminUserRecoverySent.md)
  - [AdminUserRolesRequest](docs/AdminUserRolesRequest.md)
- - [AdminUserSession](docs/AdminUserSession.md)
  - [AdminVerificationRequirement](docs/AdminVerificationRequirement.md)
  - [AdminVerificationRequirementList](docs/AdminVerificationRequirementList.md)
  - [AdminVerificationRequirementRequest](docs/AdminVerificationRequirementRequest.md)

@@ -122,14 +122,6 @@ class AdminUsersApiTest : ShouldSpec() {
             //apiInstance.adminUserRolesReplace(userId, adminUserRolesRequest)
         }
 
-        // to test adminUserSessionsRevoke
-        should("test adminUserSessionsRevoke") {
-            // uncomment below to test adminUserSessionsRevoke
-            //val userId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-            //val result : AdminUserDetail = apiInstance.adminUserSessionsRevoke(userId)
-            //result shouldBe ("TODO")
-        }
-
         // to test adminUserUnblock
         should("test adminUserUnblock") {
             // uncomment below to test adminUserUnblock
@@ -142,12 +134,13 @@ class AdminUsersApiTest : ShouldSpec() {
         should("test adminUsersList") {
             // uncomment below to test adminUsersList
             //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
+            //val id : kotlin.String = id_example // kotlin.String | One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone.
             //val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 200, default 50.
             //val ordering : kotlin.String = ordering_example // kotlin.String | createdAt, -createdAt (the default), name or -name.
             //val q : kotlin.String = q_example // kotlin.String | Free text matched against the account name and phone number.
             //val role : kotlin.String = role_example // kotlin.String | Admin role id or code; keeps accounts holding that role actively. The value `any` keeps every operator, `none` every non-operator.
             //val status : kotlin.String = status_example // kotlin.String | `active` keeps active accounts; any other value keeps blocked accounts.
-            //val result : AdminUserList = apiInstance.adminUsersList(cursor, limit, ordering, q, role, status)
+            //val result : AdminUserList = apiInstance.adminUsersList(cursor, id, limit, ordering, q, role, status)
             //result shouldBe ("TODO")
         }
 

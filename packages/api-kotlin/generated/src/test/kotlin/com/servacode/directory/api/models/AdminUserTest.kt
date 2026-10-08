@@ -19,6 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.models.AdminUser
+import com.servacode.directory.api.models.AdminUserFacility
 
 class AdminUserTest : ShouldSpec() {
     init {
@@ -61,12 +62,6 @@ class AdminUserTest : ShouldSpec() {
             //modelInstance.provinceName shouldBe ("TODO")
         }
 
-        // to test the property `phoneVerifiedAt`
-        should("test phoneVerifiedAt") {
-            // uncomment below to test the property
-            //modelInstance.phoneVerifiedAt shouldBe ("TODO")
-        }
-
         // to test the property `lastLoginAt`
         should("test lastLoginAt") {
             // uncomment below to test the property
@@ -91,10 +86,16 @@ class AdminUserTest : ShouldSpec() {
             //modelInstance.facilityCount shouldBe ("TODO")
         }
 
-        // to test the property `sessionCount`
-        should("test sessionCount") {
+        // to test the property `facilities`
+        should("test facilities") {
             // uncomment below to test the property
-            //modelInstance.sessionCount shouldBe ("TODO")
+            //modelInstance.facilities shouldBe ("TODO")
+        }
+
+        // to test the property `hasTwoFactor`
+        should("test hasTwoFactor") {
+            // uncomment below to test the property
+            //modelInstance.hasTwoFactor shouldBe ("TODO")
         }
 
         // to test the property `createdAt`

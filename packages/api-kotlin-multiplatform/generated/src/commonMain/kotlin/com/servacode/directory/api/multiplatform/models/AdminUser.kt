@@ -15,6 +15,7 @@
 
 package com.servacode.directory.api.multiplatform.models
 
+import com.servacode.directory.api.multiplatform.models.AdminUserFacility
 
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
@@ -29,12 +30,12 @@ import kotlinx.serialization.encoding.*
  * @param active 
  * @param provinceId 
  * @param provinceName 
- * @param phoneVerifiedAt 
  * @param lastLoginAt 
  * @param lastSeenAt 
  * @param recentlyActive 
  * @param facilityCount 
- * @param sessionCount 
+ * @param facilities 
+ * @param hasTwoFactor 
  * @param createdAt 
  * @param updatedAt 
  */
@@ -54,8 +55,6 @@ data class AdminUser (
 
     @SerialName(value = "provinceName") @Required val provinceName: kotlin.String?,
 
-    @SerialName(value = "phoneVerifiedAt") @Required val phoneVerifiedAt: kotlin.time.Instant?,
-
     @SerialName(value = "lastLoginAt") @Required val lastLoginAt: kotlin.time.Instant?,
 
     @SerialName(value = "lastSeenAt") @Required val lastSeenAt: kotlin.time.Instant?,
@@ -64,7 +63,9 @@ data class AdminUser (
 
     @SerialName(value = "facilityCount") @Required val facilityCount: kotlin.Int,
 
-    @SerialName(value = "sessionCount") @Required val sessionCount: kotlin.Int,
+    @SerialName(value = "facilities") @Required val facilities: kotlin.collections.List<AdminUserFacility>,
+
+    @SerialName(value = "hasTwoFactor") @Required val hasTwoFactor: kotlin.Boolean,
 
     @SerialName(value = "createdAt") @Required val createdAt: kotlin.time.Instant?,
 

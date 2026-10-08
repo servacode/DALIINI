@@ -9,12 +9,12 @@ Name | Type | Description | Notes
 **active** | **Bool** |  | 
 **provinceId** | **UUID** |  | 
 **provinceName** | **String** |  | 
-**phoneVerifiedAt** | **Date** |  | 
 **lastLoginAt** | **Date** |  | 
 **lastSeenAt** | **Date** |  | 
 **recentlyActive** | **Bool** |  | 
 **facilityCount** | **Int** |  | 
-**sessionCount** | **Int** |  | 
+**facilities** | [AdminUserFacility] |  | 
+**hasTwoFactor** | **Bool** |  | 
 **createdAt** | **Date** |  | 
 **updatedAt** | **Date** |  | 
 

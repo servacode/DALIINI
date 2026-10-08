@@ -146,7 +146,6 @@ export * from './AdminUserFacility';
 export * from './AdminUserList';
 export * from './AdminUserRecoverySent';
 export * from './AdminUserRolesRequest';
-export * from './AdminUserSession';
 export * from './AdminVerificationRequirement';
 export * from './AdminVerificationRequirementList';
 export * from './AdminVerificationRequirementRequest';

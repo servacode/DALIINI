@@ -6182,6 +6182,12 @@ paths:
           type: string
         description: Opaque token returned as `nextCursor` by the previous page.
       - in: query
+        name: id
+        schema:
+          type: string
+        description: One account by id. What a link to an account written before the
+          console had cards resolves to, so it still arrives at that account alone.
+      - in: query
         name: limit
         schema:
           type: integer
@@ -6498,51 +6504,6 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Request validation failed; `code` is VALIDATION_ERROR and `details`
             is populated.
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
-          description: No valid access token was supplied.
-        '403':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
-          description: Authenticated, but the caller lacks the required permission
-            or membership.
-        '404':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
-          description: The addressed resource does not exist or is not visible to
-            the caller.
-  /api/v1/admin/users/{user_id}/sessions/revoke/:
-    post:
-      operationId: adminUserSessionsRevoke
-      description: For a phone that was lost or stolen. The account stays active —
-        blocking would also shut its owner out of their own facilities, which is the
-        wrong answer to a lost phone. The devices' push tokens stop with the sessions.
-      summary: Sign every device of this account out
-      parameters:
-      - in: path
-        name: user_id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      tags:
-      - Admin Users
-      security:
-      - bearerAccessToken: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AdminUserDetail'
-          description: ''
         '401':
           content:
             application/json:
@@ -13490,10 +13451,6 @@ components:
         provinceName:
           type: string
           nullable: true
-        phoneVerifiedAt:
-          type: string
-          format: date-time
-          nullable: true
         lastLoginAt:
           type: string
           format: date-time
@@ -13506,8 +13463,12 @@ components:
           type: boolean
         facilityCount:
           type: integer
-        sessionCount:
-          type: integer
+        facilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminUserFacility'
+        hasTwoFactor:
+          type: boolean
         createdAt:
           type: string
           format: date-time
@@ -13519,17 +13480,17 @@ components:
       required:
       - active
       - createdAt
+      - facilities
       - facilityCount
+      - hasTwoFactor
       - id
       - lastLoginAt
       - lastSeenAt
       - name
       - phone
-      - phoneVerifiedAt
       - provinceId
       - provinceName
       - recentlyActive
-      - sessionCount
       - updatedAt
     AdminUserCreateRequest:
       type: object
@@ -13573,10 +13534,6 @@ components:
         provinceName:
           type: string
           nullable: true
-        phoneVerifiedAt:
-          type: string
-          format: date-time
-          nullable: true
         lastLoginAt:
           type: string
           format: date-time
@@ -13589,8 +13546,12 @@ components:
           type: boolean
         facilityCount:
           type: integer
-        sessionCount:
-          type: integer
+        facilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminUserFacility'
+        hasTwoFactor:
+          type: boolean
         createdAt:
           type: string
           format: date-time
@@ -13603,31 +13564,21 @@ components:
           type: array
           items:
             type: integer
-        facilities:
-          type: array
-          items:
-            $ref: '#/components/schemas/AdminUserFacility'
-        sessions:
-          type: array
-          items:
-            $ref: '#/components/schemas/AdminUserSession'
       required:
       - active
       - createdAt
       - facilities
       - facilityCount
+      - hasTwoFactor
       - id
       - lastLoginAt
       - lastSeenAt
       - name
       - phone
-      - phoneVerifiedAt
       - provinceId
       - provinceName
       - recentlyActive
       - roleIds
-      - sessionCount
-      - sessions
       - updatedAt
     AdminUserFacility:
       type: object
@@ -13690,31 +13641,6 @@ components:
             type: integer
       required:
       - roleIds
-    AdminUserSession:
-      type: object
-      description: A signed-in device. No secret of any kind is in it.
-      properties:
-        id:
-          type: string
-          format: uuid
-        platform:
-          type: string
-        deviceName:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-          nullable: true
-        lastSeenAt:
-          type: string
-          format: date-time
-          nullable: true
-      required:
-      - createdAt
-      - deviceName
-      - id
-      - lastSeenAt
-      - platform
     AdminVerificationRequirement:
       type: object
       properties:

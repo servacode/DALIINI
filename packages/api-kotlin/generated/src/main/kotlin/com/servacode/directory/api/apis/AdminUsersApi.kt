@@ -201,22 +201,6 @@ interface AdminUsersApi {
     suspend fun adminUserRolesReplace(@Path("user_id") userId: java.util.UUID, @Body adminUserRolesRequest: AdminUserRolesRequest): Response<Unit>
 
     /**
-     * POST api/v1/admin/users/{user_id}/sessions/revoke/
-     * Sign every device of this account out
-     * For a phone that was lost or stolen. The account stays active — blocking would also shut its owner out of their own facilities, which is the wrong answer to a lost phone. The devices&#39; push tokens stop with the sessions.
-     * Responses:
-     *  - 200: 
-     *  - 401: No valid access token was supplied.
-     *  - 403: Authenticated, but the caller lacks the required permission or membership.
-     *  - 404: The addressed resource does not exist or is not visible to the caller.
-     *
-     * @param userId 
-     * @return [AdminUserDetail]
-     */
-    @POST("api/v1/admin/users/{user_id}/sessions/revoke/")
-    suspend fun adminUserSessionsRevoke(@Path("user_id") userId: java.util.UUID): Response<AdminUserDetail>
-
-    /**
      * POST api/v1/admin/users/{user_id}/unblock/
      * Unblock a user account
      * Blocking also revokes every active refresh session of that user.
@@ -242,6 +226,7 @@ interface AdminUsersApi {
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *
      * @param cursor Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
+     * @param id One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone. (optional)
      * @param limit Page size, maximum 200, default 50. (optional)
      * @param ordering createdAt, -createdAt (the default), name or -name. (optional)
      * @param q Free text matched against the account name and phone number. (optional)
@@ -250,6 +235,6 @@ interface AdminUsersApi {
      * @return [AdminUserList]
      */
     @GET("api/v1/admin/users/")
-    suspend fun adminUsersList(@Query("cursor") cursor: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null, @Query("ordering") ordering: kotlin.String? = null, @Query("q") q: kotlin.String? = null, @Query("role") role: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminUserList>
+    suspend fun adminUsersList(@Query("cursor") cursor: kotlin.String? = null, @Query("id") id: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null, @Query("ordering") ordering: kotlin.String? = null, @Query("q") q: kotlin.String? = null, @Query("role") role: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminUserList>
 
 }

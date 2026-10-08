@@ -15,6 +15,7 @@
 
 package com.servacode.directory.api.models
 
+import com.servacode.directory.api.models.AdminUserFacility
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -29,12 +30,12 @@ import kotlinx.serialization.Contextual
  * @param active 
  * @param provinceId 
  * @param provinceName 
- * @param phoneVerifiedAt 
  * @param lastLoginAt 
  * @param lastSeenAt 
  * @param recentlyActive 
  * @param facilityCount 
- * @param sessionCount 
+ * @param facilities 
+ * @param hasTwoFactor 
  * @param createdAt 
  * @param updatedAt 
  */
@@ -60,9 +61,6 @@ data class AdminUser (
     @SerialName(value = "provinceName")
     val provinceName: kotlin.String?,
 
-    @Contextual @SerialName(value = "phoneVerifiedAt")
-    val phoneVerifiedAt: java.time.OffsetDateTime?,
-
     @Contextual @SerialName(value = "lastLoginAt")
     val lastLoginAt: java.time.OffsetDateTime?,
 
@@ -75,8 +73,11 @@ data class AdminUser (
     @SerialName(value = "facilityCount")
     val facilityCount: kotlin.Int,
 
-    @SerialName(value = "sessionCount")
-    val sessionCount: kotlin.Int,
+    @SerialName(value = "facilities")
+    val facilities: kotlin.collections.List<AdminUserFacility>,
+
+    @SerialName(value = "hasTwoFactor")
+    val hasTwoFactor: kotlin.Boolean,
 
     @Contextual @SerialName(value = "createdAt")
     val createdAt: java.time.OffsetDateTime?,

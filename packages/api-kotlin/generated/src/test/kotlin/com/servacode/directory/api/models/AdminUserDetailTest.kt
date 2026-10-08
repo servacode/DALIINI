@@ -20,7 +20,6 @@ import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.models.AdminUserDetail
 import com.servacode.directory.api.models.AdminUserFacility
-import com.servacode.directory.api.models.AdminUserSession
 
 class AdminUserDetailTest : ShouldSpec() {
     init {
@@ -63,12 +62,6 @@ class AdminUserDetailTest : ShouldSpec() {
             //modelInstance.provinceName shouldBe ("TODO")
         }
 
-        // to test the property `phoneVerifiedAt`
-        should("test phoneVerifiedAt") {
-            // uncomment below to test the property
-            //modelInstance.phoneVerifiedAt shouldBe ("TODO")
-        }
-
         // to test the property `lastLoginAt`
         should("test lastLoginAt") {
             // uncomment below to test the property
@@ -93,10 +86,16 @@ class AdminUserDetailTest : ShouldSpec() {
             //modelInstance.facilityCount shouldBe ("TODO")
         }
 
-        // to test the property `sessionCount`
-        should("test sessionCount") {
+        // to test the property `facilities`
+        should("test facilities") {
             // uncomment below to test the property
-            //modelInstance.sessionCount shouldBe ("TODO")
+            //modelInstance.facilities shouldBe ("TODO")
+        }
+
+        // to test the property `hasTwoFactor`
+        should("test hasTwoFactor") {
+            // uncomment below to test the property
+            //modelInstance.hasTwoFactor shouldBe ("TODO")
         }
 
         // to test the property `createdAt`
@@ -115,18 +114,6 @@ class AdminUserDetailTest : ShouldSpec() {
         should("test roleIds") {
             // uncomment below to test the property
             //modelInstance.roleIds shouldBe ("TODO")
-        }
-
-        // to test the property `facilities`
-        should("test facilities") {
-            // uncomment below to test the property
-            //modelInstance.facilities shouldBe ("TODO")
-        }
-
-        // to test the property `sessions`
-        should("test sessions") {
-            // uncomment below to test the property
-            //modelInstance.sessions shouldBe ("TODO")
         }
 
     }

@@ -15,7 +15,6 @@ Method | HTTP request | Description
 [**adminUserRecoverySend**](AdminUsersAPI.md#adminuserrecoverysend) | **POST** /api/v1/admin/users/{user_id}/recovery/ | Send this account a password-recovery code
 [**adminUserRetrieve**](AdminUsersAPI.md#adminuserretrieve) | **GET** /api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned
 [**adminUserRolesReplace**](AdminUsersAPI.md#adminuserrolesreplace) | **PUT** /api/v1/admin/users/{user_id}/roles/ | Replace the admin roles of a user
-[**adminUserSessionsRevoke**](AdminUsersAPI.md#adminusersessionsrevoke) | **POST** /api/v1/admin/users/{user_id}/sessions/revoke/ | Sign every device of this account out
 [**adminUserUnblock**](AdminUsersAPI.md#adminuserunblock) | **POST** /api/v1/admin/users/{user_id}/unblock/ | Unblock a user account
 [**adminUsersList**](AdminUsersAPI.md#adminuserslist) | **GET** /api/v1/admin/users/ | Search user accounts
 
@@ -562,56 +561,6 @@ Void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **adminUserSessionsRevoke**
-```swift
-    open class func adminUserSessionsRevoke(userId: UUID, completion: @escaping (_ data: AdminUserDetail?, _ error: Error?) -> Void)
-```
-
-Sign every device of this account out
-
-For a phone that was lost or stolen. The account stays active — blocking would also shut its owner out of their own facilities, which is the wrong answer to a lost phone. The devices' push tokens stop with the sessions.
-
-### Example
-```swift
-// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
-import ServaDirectoryAPI
-
-let userId = 987 // UUID | 
-
-// Sign every device of this account out
-AdminUsersAPI.adminUserSessionsRevoke(userId: userId) { (response, error) in
-    guard error == nil else {
-        print(error)
-        return
-    }
-
-    if (response) {
-        dump(response)
-    }
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **userId** | **UUID** |  | 
-
-### Return type
-
-[**AdminUserDetail**](AdminUserDetail.md)
-
-### Authorization
-
-[bearerAccessToken](../README.md#bearerAccessToken)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
 # **adminUserUnblock**
 ```swift
     open class func adminUserUnblock(userId: UUID, completion: @escaping (_ data: AdminUser?, _ error: Error?) -> Void)
@@ -664,7 +613,7 @@ Name | Type | Description  | Notes
 
 # **adminUsersList**
 ```swift
-    open class func adminUsersList(cursor: String? = nil, limit: Int? = nil, ordering: String? = nil, q: String? = nil, role: String? = nil, status: String? = nil, completion: @escaping (_ data: AdminUserList?, _ error: Error?) -> Void)
+    open class func adminUsersList(cursor: String? = nil, id: String? = nil, limit: Int? = nil, ordering: String? = nil, q: String? = nil, role: String? = nil, status: String? = nil, completion: @escaping (_ data: AdminUserList?, _ error: Error?) -> Void)
 ```
 
 Search user accounts
@@ -677,6 +626,7 @@ Password hashes and session secret material are never returned. Newest first unl
 import ServaDirectoryAPI
 
 let cursor = "cursor_example" // String | Opaque token returned as `nextCursor` by the previous page. (optional)
+let id = "id_example" // String | One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone. (optional)
 let limit = 987 // Int | Page size, maximum 200, default 50. (optional)
 let ordering = "ordering_example" // String | createdAt, -createdAt (the default), name or -name. (optional)
 let q = "q_example" // String | Free text matched against the account name and phone number. (optional)
@@ -684,7 +634,7 @@ let role = "role_example" // String | Admin role id or code; keeps accounts hold
 let status = "status_example" // String | `active` keeps active accounts; any other value keeps blocked accounts. (optional)
 
 // Search user accounts
-AdminUsersAPI.adminUsersList(cursor: cursor, limit: limit, ordering: ordering, q: q, role: role, status: status) { (response, error) in
+AdminUsersAPI.adminUsersList(cursor: cursor, id: id, limit: limit, ordering: ordering, q: q, role: role, status: status) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -701,6 +651,7 @@ AdminUsersAPI.adminUsersList(cursor: cursor, limit: limit, ordering: ordering, q
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **cursor** | **String** | Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] 
+ **id** | **String** | One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone. | [optional] 
  **limit** | **Int** | Page size, maximum 200, default 50. | [optional] 
  **ordering** | **String** | createdAt, -createdAt (the default), name or -name. | [optional] 
  **q** | **String** | Free text matched against the account name and phone number. | [optional] 

@@ -15,7 +15,6 @@ All URIs are relative to *http://localhost*
 | [**adminUserRecoverySend**](AdminUsersApi.md#adminUserRecoverySend) | **POST** api/v1/admin/users/{user_id}/recovery/ | Send this account a password-recovery code |
 | [**adminUserRetrieve**](AdminUsersApi.md#adminUserRetrieve) | **GET** api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned |
 | [**adminUserRolesReplace**](AdminUsersApi.md#adminUserRolesReplace) | **PUT** api/v1/admin/users/{user_id}/roles/ | Replace the admin roles of a user |
-| [**adminUserSessionsRevoke**](AdminUsersApi.md#adminUserSessionsRevoke) | **POST** api/v1/admin/users/{user_id}/sessions/revoke/ | Sign every device of this account out |
 | [**adminUserUnblock**](AdminUsersApi.md#adminUserUnblock) | **POST** api/v1/admin/users/{user_id}/unblock/ | Unblock a user account |
 | [**adminUsersList**](AdminUsersApi.md#adminUsersList) | **GET** api/v1/admin/users/ | Search user accounts |
 
@@ -477,48 +476,6 @@ Configure bearerAccessToken:
  - **Accept**: application/json
 
 
-Sign every device of this account out
-
-For a phone that was lost or stolen. The account stays active — blocking would also shut its owner out of their own facilities, which is the wrong answer to a lost phone. The devices&#39; push tokens stop with the sessions.
-
-### Example
-```kotlin
-// Import classes:
-//import com.servacode.directory.api.*
-//import com.servacode.directory.api.infrastructure.*
-//import com.servacode.directory.api.models.*
-
-val apiClient = ApiClient()
-apiClient.setBearerToken("TOKEN")
-val webService = apiClient.createWebservice(AdminUsersApi::class.java)
-val userId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
-
-launch(Dispatchers.IO) {
-    val result : AdminUserDetail = webService.adminUserSessionsRevoke(userId)
-}
-```
-
-### Parameters
-| Name | Type | Description  | Notes |
-| ------------- | ------------- | ------------- | ------------- |
-| **userId** | **java.util.UUID**|  | |
-
-### Return type
-
-[**AdminUserDetail**](AdminUserDetail.md)
-
-### Authorization
-
-
-Configure bearerAccessToken:
-    ApiClient().setBearerToken("TOKEN")
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-
 Unblock a user account
 
 Blocking also revokes every active refresh session of that user.
@@ -576,6 +533,7 @@ val apiClient = ApiClient()
 apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AdminUsersApi::class.java)
 val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
+val id : kotlin.String = id_example // kotlin.String | One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone.
 val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 200, default 50.
 val ordering : kotlin.String = ordering_example // kotlin.String | createdAt, -createdAt (the default), name or -name.
 val q : kotlin.String = q_example // kotlin.String | Free text matched against the account name and phone number.
@@ -583,12 +541,13 @@ val role : kotlin.String = role_example // kotlin.String | Admin role id or code
 val status : kotlin.String = status_example // kotlin.String | `active` keeps active accounts; any other value keeps blocked accounts.
 
 launch(Dispatchers.IO) {
-    val result : AdminUserList = webService.adminUsersList(cursor, limit, ordering, q, role, status)
+    val result : AdminUserList = webService.adminUsersList(cursor, id, limit, ordering, q, role, status)
 }
 ```
 
 ### Parameters
 | **cursor** | **kotlin.String**| Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] |
+| **id** | **kotlin.String**| One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone. | [optional] |
 | **limit** | **kotlin.Int**| Page size, maximum 200, default 50. | [optional] |
 | **ordering** | **kotlin.String**| createdAt, -createdAt (the default), name or -name. | [optional] |
 | **q** | **kotlin.String**| Free text matched against the account name and phone number. | [optional] |

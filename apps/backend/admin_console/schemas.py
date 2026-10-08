@@ -29,27 +29,6 @@ from .quality import QUALITY_ISSUE_CHOICES
 from .review import DUPLICATE_REASON_CHOICES
 
 
-class AdminUserSerializer(serializers.Serializer[Any]):
-    id = serializers.UUIDField()
-    name = serializers.CharField()
-    phone = serializers.CharField()
-    active = serializers.BooleanField()
-    provinceId = serializers.UUIDField(allow_null=True)
-    provinceName = serializers.CharField(allow_null=True)
-    phoneVerifiedAt = serializers.DateTimeField(allow_null=True)
-    lastLoginAt = serializers.DateTimeField(allow_null=True)
-    # When a live session of this account last rotated its refresh secret. Written at most
-    # once per access-token lifetime, so it is accurate to about a quarter of an hour.
-    lastSeenAt = serializers.DateTimeField(allow_null=True)
-    # True when that was within the last half hour. Deliberately not called «online»:
-    # nothing here knows whether an app is open, only when a session last proved itself.
-    recentlyActive = serializers.BooleanField()
-    facilityCount = serializers.IntegerField()
-    sessionCount = serializers.IntegerField()
-    createdAt = serializers.DateTimeField(allow_null=True)
-    updatedAt = serializers.DateTimeField(allow_null=True)
-
-
 class AdminUserFacilitySerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
     nameAr = serializers.CharField()
@@ -57,21 +36,36 @@ class AdminUserFacilitySerializer(serializers.Serializer[Any]):
     status = serializers.CharField()
 
 
-class AdminUserSessionSerializer(serializers.Serializer[Any]):
-    """A signed-in device. No secret of any kind is in it."""
-
+class AdminUserSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField()
-    platform = serializers.CharField(allow_blank=True)
-    deviceName = serializers.CharField(allow_blank=True)
-    createdAt = serializers.DateTimeField(allow_null=True)
+    name = serializers.CharField()
+    phone = serializers.CharField()
+    active = serializers.BooleanField()
+    provinceId = serializers.UUIDField(allow_null=True)
+    provinceName = serializers.CharField(allow_null=True)
+    lastLoginAt = serializers.DateTimeField(allow_null=True)
+    # When a live session of this account last proved itself. The console says nothing
+    # else about devices: signing one out belongs to the person, in their own app
+    # (specification §8), and an operator power nobody needs is a risk and not a feature.
     lastSeenAt = serializers.DateTimeField(allow_null=True)
+    # True when that was within the last half hour. Deliberately not called «online»:
+    # nothing here knows whether an app is open, only when a session last proved itself.
+    recentlyActive = serializers.BooleanField()
+    facilityCount = serializers.IntegerField()
+    # The places themselves, by name, so a card can say which ones rather than how many.
+    # At most two: a card holds its whole account and never grows to fit a list, and
+    # `facilityCount` says how many more there are.
+    facilities = AdminUserFacilitySerializer(many=True)
+    # Whether an authenticator is set up. Only operators ever have one, and the console
+    # offers to clear it only for the cards it can apply to.
+    hasTwoFactor = serializers.BooleanField()
+    createdAt = serializers.DateTimeField(allow_null=True)
+    updatedAt = serializers.DateTimeField(allow_null=True)
 
 
 class AdminUserDetailSerializer(AdminUserSerializer):
     # `AdminRole` is keyed by an integer, as `AdminRoleSerializer.id` says; this said UUID.
     roleIds = serializers.ListField(child=serializers.IntegerField())
-    facilities = AdminUserFacilitySerializer(many=True)
-    sessions = AdminUserSessionSerializer(many=True)
 
 
 class AdminUserCreateRequestSerializer(serializers.Serializer[Any]):

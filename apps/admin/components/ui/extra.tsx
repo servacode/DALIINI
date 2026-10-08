@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 
-import { Icons } from "../icons";
+import { Icon, Icons } from "../icons";
 import { BrandMark } from "./index";
 
 /**
@@ -409,130 +409,136 @@ function SlideImage({ src, fallback }: { src: string; fallback: string | null })
 }
 
 /**
- * One record drawn as a card: a person, a place — anything a row is about rather than a
- * figure about it (DECISION-106).
+ * A person, or a place, drawn as an identity card (DECISION-106).
  *
- * **Full width, one per line, opening in place.** A grid of tiles reflows every neighbour
- * when one of them opens, and the fact a card carries most — a name and a number — reads
- * along a line, not down a column.
+ * **One shape, always, and everything on it.** There is no button that opens a card and no
+ * part that appears for one account and not another: the band, the picture, the name, the
+ * three figures, the list and the actions are on every card in the same places. An account
+ * with nothing to show fills the same frame with quiet words. That is what lets a row of
+ * four be compared at a glance, and it is what the owner asked for in as many words.
  *
- * **The actions sit above everything the card holds**, visible without opening it, because
- * the operator who came to do something should not have to open a record to find out
- * whether they can. What opening adds is the detail behind the summary, which is also what
- * keeps a page of a hundred cards cheap: it is not rendered until it is asked for.
+ * The band's colour says what kind of record this is before a word is read, and the ring
+ * round the picture says whether it is in use. The list holds three lines at most, in a
+ * fixed height, and says how many more there are rather than growing.
  */
-export function RecordCard({
+export function ProfileCard({
   mark,
-  title,
-  facts,
-  badges,
+  name,
+  phone,
+  meta,
+  tag,
+  kind = "plain",
+  live,
+  status,
+  stats,
+  listTitle,
+  items,
+  more,
+  empty,
   actions,
-  open,
-  onToggle,
-  openLabel = "التفاصيل",
-  closeLabel = "إخفاء التفاصيل",
-  muted,
+  focused,
   testId,
-  children,
 }: {
   /** A letter or two standing in for a picture: the first letters of the name. */
   mark: ReactNode;
-  title: ReactNode;
-  /** The quiet line under the title; dots between the parts are drawn by the stylesheet. */
-  facts?: readonly ReactNode[];
-  badges?: ReactNode;
+  name: ReactNode;
+  phone?: ReactNode;
+  /** One line under the number: a province, a category. */
+  meta?: ReactNode;
+  /** The word in the band's corner that names what its colour means. */
+  tag: string;
+  kind?: "plain" | "owner" | "blocked";
+  /** Rings the picture: in use recently. */
+  live?: boolean;
+  /** The pill under the name: «نشط الآن», «آخر ظهور منذ…». */
+  status: ReactNode;
+  /** Exactly three figures, compared across a row of cards. */
+  stats: readonly [ProfileStat, ProfileStat, ProfileStat];
+  listTitle: string;
+  items: readonly ProfileItem[];
+  /** How many more there are than the list shows. */
+  more?: number;
+  /** What the list says when there is nothing in it. */
+  empty: string;
   actions?: ReactNode;
-  open?: boolean;
-  onToggle?: () => void;
-  openLabel?: string;
-  closeLabel?: string;
-  muted?: boolean;
+  focused?: boolean;
   testId?: string;
-  children?: ReactNode;
 }) {
-  const bodyId = useId();
-  const classes = ["record", open ? "record-open" : "", muted ? "record-muted" : ""]
+  const classes = [
+    "profile",
+    kind === "owner" ? "profile-owner" : "",
+    kind === "blocked" ? "profile-blocked" : "",
+    live ? "profile-live" : "",
+    focused ? "profile-focus" : "",
+  ]
     .filter(Boolean)
     .join(" ");
   return (
     <li className={classes} data-testid={testId}>
-      <div className="record-head">
-        <span className="record-mark" aria-hidden="true">
-          {mark}
-        </span>
-        <span className="record-identity">
-          <span className="record-name">{title}</span>
-          {facts && facts.length > 0 ? (
-            <span className="record-sub">
-              {facts.map((fact, index) => (
-                // The order is fixed by the caller and the parts carry no identity of
-                // their own, so the index is the key there is.
-                <span key={index}>{fact}</span>
-              ))}
-            </span>
-          ) : null}
-        </span>
-        {badges ? <span className="record-badges">{badges}</span> : null}
+      <div className="profile-band">
+        <span className="profile-tag">{tag}</span>
       </div>
-      {actions || onToggle ? (
-        <div className="record-actions">
-          {actions}
-          {onToggle ? (
-            <button
-              type="button"
-              className="button-ghost record-more"
-              aria-expanded={Boolean(open)}
-              aria-controls={bodyId}
-              onClick={onToggle}
-            >
-              {open ? closeLabel : openLabel}
-            </button>
-          ) : null}
-        </div>
-      ) : null}
-      {open ? (
-        <div className="record-body" id={bodyId}>
-          {children}
-        </div>
-      ) : null}
+      <span className="profile-mark" aria-hidden="true">
+        {mark}
+      </span>
+      <div className="profile-id">
+        <span className="profile-name">{name}</span>
+        {phone ? <span className="profile-phone">{phone}</span> : null}
+        {meta ? (
+          <span className="profile-meta">
+            <Icon name="mapPin" width={13} height={13} />
+            {meta}
+          </span>
+        ) : null}
+        <span className="profile-status">{status}</span>
+      </div>
+      <div className="profile-stats">
+        {stats.map((stat) => (
+          <span key={stat.label} className="profile-stat">
+            <strong>{stat.value}</strong>
+            <span>{stat.label}</span>
+          </span>
+        ))}
+      </div>
+      <div className="profile-list">
+        <span className="profile-list-title">{listTitle}</span>
+        {items.length === 0 ? (
+          <span className="profile-empty">
+            <Icon name="building" width={14} height={14} />
+            {empty}
+          </span>
+        ) : (
+          items.map((item) => (
+            <span key={item.key} className="profile-item">
+              <span className="profile-item-dot" data-tone={item.tone} title={item.toneLabel} />
+              <span className="profile-item-name">{item.label}</span>
+              {item.aside ? <span className="profile-item-role">{item.aside}</span> : null}
+            </span>
+          ))
+        )}
+        {more && more > 0 ? (
+          <span className="profile-item-more">{`و${NUMERALS.format(more)} غيرها`}</span>
+        ) : null}
+      </div>
+      {actions ? <div className="profile-actions">{actions}</div> : null}
     </li>
   );
 }
 
-/** A heading and its content inside an opened card; several sit side by side where there is room. */
-export function RecordSection({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="record-section">
-      <h3>{title}</h3>
-      {children}
-    </section>
-  );
-}
+export type ProfileStat = Readonly<{ value: ReactNode; label: string }>;
 
-/**
- * When a session of this account last proved itself, said as what it is.
- *
- * Never «online»: nothing in this system knows whether an app is open. A session writes its
- * heartbeat when its refresh rotates, which is at most once per access-token lifetime, so
- * the truest thing that can be said is «active recently» and, otherwise, when it last was.
- */
-export function LastSeen({
-  at,
-  recent,
-}: {
-  at: string | null | undefined;
-  recent: boolean;
-}) {
-  if (!at) return <span className="muted">لم يدخل من أي جهاز</span>;
-  return (
-    <span>
-      <span className={recent ? "seen-dot" : "seen-dot seen-off"} aria-hidden="true" />
-      {recent ? "نشط الآن" : `آخر ظهور ${relativeTime(at)}`}
-    </span>
-  );
-}
+export type ProfileItem = Readonly<{
+  key: string;
+  label: string;
+  /** A word beside the name: «مالك», «مدير». */
+  aside?: string;
+  /** The dot's colour, from the status vocabulary's tone. */
+  tone?: string;
+  /** What the dot means, for whoever hovers it and for a screen reader. */
+  toneLabel?: string;
+}>;
 
-/** «منذ ٣ ساعات», «أمس», «قبل ٥ أيام» — Arabic, and never a bare timestamp in a card. */
+/** «منذ ٣ ساعات», «أمس», «قبل ٥ أيام» — Arabic, and never a bare timestamp on a card. */
 export function relativeTime(value: string): string {
   const then = new Date(value).getTime();
   if (Number.isNaN(then)) return "";

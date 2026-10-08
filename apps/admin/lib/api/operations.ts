@@ -83,7 +83,7 @@ export const READS = {
 
   users: (apis: AdminApis, p: Params) =>
     apis.users.adminUsersList(
-      filled(p, ["q", "status", "role", "ordering", "cursor", "limit"]) as never,
+      filled(p, ["q", "status", "role", "ordering", "id", "cursor", "limit"]) as never,
     ),
   user: (apis: AdminApis, p: Params) => apis.users.adminUserRetrieve({ userId: p.id! }),
   roles: (apis: AdminApis) => apis.users.adminRolesList(),
@@ -280,8 +280,6 @@ export const WRITES = {
   // Nothing comes back that could let an operator finish it on their behalf.
   userRecovery: (apis: AdminApis, b: Body) =>
     apis.users.adminUserRecoverySend({ userId: String(b.id) }),
-  userSessionsRevoke: (apis: AdminApis, b: Body) =>
-    apis.users.adminUserSessionsRevoke({ userId: String(b.id) }),
   userCreate: (apis: AdminApis, b: Body) =>
     apis.users.adminUserCreate({
       adminUserCreateRequest: {

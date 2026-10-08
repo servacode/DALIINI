@@ -13,13 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { AdminUserSession } from './AdminUserSession';
-import {
-    AdminUserSessionFromJSON,
-    AdminUserSessionFromJSONTyped,
-    AdminUserSessionToJSON,
-    AdminUserSessionToJSONTyped,
-} from './AdminUserSession';
 import type { AdminUserFacility } from './AdminUserFacility';
 import {
     AdminUserFacilityFromJSON,
@@ -75,12 +68,6 @@ export interface AdminUserDetail {
      * @type {Date}
      * @memberof AdminUserDetail
      */
-    phoneVerifiedAt: Date | null;
-    /**
-     * 
-     * @type {Date}
-     * @memberof AdminUserDetail
-     */
     lastLoginAt: Date | null;
     /**
      * 
@@ -102,10 +89,16 @@ export interface AdminUserDetail {
     facilityCount: number;
     /**
      * 
-     * @type {number}
+     * @type {Array<AdminUserFacility>}
      * @memberof AdminUserDetail
      */
-    sessionCount: number;
+    facilities: Array<AdminUserFacility>;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AdminUserDetail
+     */
+    hasTwoFactor: boolean;
     /**
      * 
      * @type {Date}
@@ -124,18 +117,6 @@ export interface AdminUserDetail {
      * @memberof AdminUserDetail
      */
     roleIds: Array<number>;
-    /**
-     * 
-     * @type {Array<AdminUserFacility>}
-     * @memberof AdminUserDetail
-     */
-    facilities: Array<AdminUserFacility>;
-    /**
-     * 
-     * @type {Array<AdminUserSession>}
-     * @memberof AdminUserDetail
-     */
-    sessions: Array<AdminUserSession>;
 }
 
 /**
@@ -148,17 +129,15 @@ export function instanceOfAdminUserDetail(value: object): value is AdminUserDeta
     if (!('active' in value) || value['active'] === undefined) return false;
     if (!('provinceId' in value) || value['provinceId'] === undefined) return false;
     if (!('provinceName' in value) || value['provinceName'] === undefined) return false;
-    if (!('phoneVerifiedAt' in value) || value['phoneVerifiedAt'] === undefined) return false;
     if (!('lastLoginAt' in value) || value['lastLoginAt'] === undefined) return false;
     if (!('lastSeenAt' in value) || value['lastSeenAt'] === undefined) return false;
     if (!('recentlyActive' in value) || value['recentlyActive'] === undefined) return false;
     if (!('facilityCount' in value) || value['facilityCount'] === undefined) return false;
-    if (!('sessionCount' in value) || value['sessionCount'] === undefined) return false;
+    if (!('facilities' in value) || value['facilities'] === undefined) return false;
+    if (!('hasTwoFactor' in value) || value['hasTwoFactor'] === undefined) return false;
     if (!('createdAt' in value) || value['createdAt'] === undefined) return false;
     if (!('updatedAt' in value) || value['updatedAt'] === undefined) return false;
     if (!('roleIds' in value) || value['roleIds'] === undefined) return false;
-    if (!('facilities' in value) || value['facilities'] === undefined) return false;
-    if (!('sessions' in value) || value['sessions'] === undefined) return false;
     return true;
 }
 
@@ -178,17 +157,15 @@ export function AdminUserDetailFromJSONTyped(json: any, ignoreDiscriminator: boo
         'active': json['active'],
         'provinceId': json['provinceId'],
         'provinceName': json['provinceName'],
-        'phoneVerifiedAt': (json['phoneVerifiedAt'] == null ? null : new Date(json['phoneVerifiedAt'])),
         'lastLoginAt': (json['lastLoginAt'] == null ? null : new Date(json['lastLoginAt'])),
         'lastSeenAt': (json['lastSeenAt'] == null ? null : new Date(json['lastSeenAt'])),
         'recentlyActive': json['recentlyActive'],
         'facilityCount': json['facilityCount'],
-        'sessionCount': json['sessionCount'],
+        'facilities': ((json['facilities'] as Array<any>).map(AdminUserFacilityFromJSON)),
+        'hasTwoFactor': json['hasTwoFactor'],
         'createdAt': (json['createdAt'] == null ? null : new Date(json['createdAt'])),
         'updatedAt': (json['updatedAt'] == null ? null : new Date(json['updatedAt'])),
         'roleIds': json['roleIds'],
-        'facilities': ((json['facilities'] as Array<any>).map(AdminUserFacilityFromJSON)),
-        'sessions': ((json['sessions'] as Array<any>).map(AdminUserSessionFromJSON)),
     };
 }
 
@@ -209,17 +186,15 @@ export function AdminUserDetailToJSONTyped(value?: AdminUserDetail | null, ignor
         'active': value['active'],
         'provinceId': value['provinceId'],
         'provinceName': value['provinceName'],
-        'phoneVerifiedAt': ((value['phoneVerifiedAt'] as any).toISOString()),
         'lastLoginAt': ((value['lastLoginAt'] as any).toISOString()),
         'lastSeenAt': ((value['lastSeenAt'] as any).toISOString()),
         'recentlyActive': value['recentlyActive'],
         'facilityCount': value['facilityCount'],
-        'sessionCount': value['sessionCount'],
+        'facilities': ((value['facilities'] as Array<any>).map(AdminUserFacilityToJSON)),
+        'hasTwoFactor': value['hasTwoFactor'],
         'createdAt': ((value['createdAt'] as any).toISOString()),
         'updatedAt': ((value['updatedAt'] as any).toISOString()),
         'roleIds': value['roleIds'],
-        'facilities': ((value['facilities'] as Array<any>).map(AdminUserFacilityToJSON)),
-        'sessions': ((value['sessions'] as Array<any>).map(AdminUserSessionToJSON)),
     };
 }
 

@@ -29,12 +29,10 @@ from .serializers import (
     user_facilities_payload,
     user_payload,
     user_rows,
-    user_sessions_payload,
 )
 from .services import (
     create_console_account,
     replace_user_roles,
-    revoke_user_sessions,
     send_recovery_code,
     set_user_blocked,
 )
@@ -79,6 +77,11 @@ class UserListView(AdminView):
                 "`any` keeps every operator, `none` every non-operator.",
             ),
             _filter("ordering", "createdAt, -createdAt (the default), name or -name."),
+            _filter(
+                "id",
+                "One account by id. What a link to an account written before the console "
+                "had cards resolves to, so it still arrives at that account alone.",
+            ),
         ],
         responses={200: AdminUserListSerializer, **protected()},
     )
@@ -87,6 +90,11 @@ class UserListView(AdminView):
         if ordering not in USER_ORDERINGS:
             raise ValidationError({"ordering": f"Use one of {', '.join(USER_ORDERINGS)}."})
         qs = User.objects.order_by(*USER_ORDERINGS[ordering])
+        if value := request.query_params.get("id"):
+            try:
+                qs = qs.filter(pk=UUID(value))
+            except ValueError as exc:
+                raise ValidationError({"id": "Not an account id."}) from exc
         if value := request.query_params.get("q"):
             qs = qs.filter(Q(name__icontains=value) | Q(phone__icontains=value))
         if value := request.query_params.get("status"):
@@ -149,9 +157,8 @@ class UserDetailView(AdminView):
         payload["roleIds"] = list(
             user.admin_role_links.filter(active=True).values_list("role_id", flat=True)
         )
-        # What hangs off the account, so a decision about it is taken with both in view.
+        # What hangs off the account: the places a decision about it would also touch.
         payload["facilities"] = user_facilities_payload(user)
-        payload["sessions"] = user_sessions_payload(user)
         return Response(payload)
 
 
@@ -180,33 +187,6 @@ class UserRecoveryView(AdminView):
         user = get_object_or_404(User, pk=user_id)
         phone = send_recovery_code(request=request, user=user)
         return Response({"sent": True, "phone": phone})
-
-
-class UserSessionsRevokeView(AdminView):
-    required_permission = "admin.users.manage"
-
-    @extend_schema(
-        operation_id="adminUserSessionsRevoke",
-        tags=["Admin Users"],
-        summary="Sign every device of this account out",
-        description=(
-            "For a phone that was lost or stolen. The account stays active — blocking "
-            "would also shut its owner out of their own facilities, which is the wrong "
-            "answer to a lost phone. The devices' push tokens stop with the sessions."
-        ),
-        request=None,
-        responses={200: AdminUserDetailSerializer, **protected(), 404: NOT_FOUND_404},
-    )
-    def post(self, request: AuthenticatedRequest, user_id: UUID) -> Response:
-        user = get_object_or_404(User.objects.select_related("province"), pk=user_id)
-        revoke_user_sessions(request=request, user=user)
-        payload = user_payload(user)
-        payload["roleIds"] = list(
-            user.admin_role_links.filter(active=True).values_list("role_id", flat=True)
-        )
-        payload["facilities"] = user_facilities_payload(user)
-        payload["sessions"] = user_sessions_payload(user)
-        return Response(payload)
 
 
 class UserBlockView(AdminView):

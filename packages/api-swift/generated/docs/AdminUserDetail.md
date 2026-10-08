@@ -9,17 +9,15 @@ Name | Type | Description | Notes
 **active** | **Bool** |  | 
 **provinceId** | **UUID** |  | 
 **provinceName** | **String** |  | 
-**phoneVerifiedAt** | **Date** |  | 
 **lastLoginAt** | **Date** |  | 
 **lastSeenAt** | **Date** |  | 
 **recentlyActive** | **Bool** |  | 
 **facilityCount** | **Int** |  | 
-**sessionCount** | **Int** |  | 
+**facilities** | [AdminUserFacility] |  | 
+**hasTwoFactor** | **Bool** |  | 
 **createdAt** | **Date** |  | 
 **updatedAt** | **Date** |  | 
 **roleIds** | **[Int]** |  | 
-**facilities** | [AdminUserFacility] |  | 
-**sessions** | [AdminUserSession] |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

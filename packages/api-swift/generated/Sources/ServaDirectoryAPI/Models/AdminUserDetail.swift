@@ -18,36 +18,32 @@ public struct AdminUserDetail: Codable, JSONEncodable, Hashable {
     public var active: Bool
     public var provinceId: UUID?
     public var provinceName: String?
-    public var phoneVerifiedAt: Date?
     public var lastLoginAt: Date?
     public var lastSeenAt: Date?
     public var recentlyActive: Bool
     public var facilityCount: Int
-    public var sessionCount: Int
+    public var facilities: [AdminUserFacility]
+    public var hasTwoFactor: Bool
     public var createdAt: Date?
     public var updatedAt: Date?
     public var roleIds: [Int]
-    public var facilities: [AdminUserFacility]
-    public var sessions: [AdminUserSession]
 
-    public init(id: UUID, name: String, phone: String, active: Bool, provinceId: UUID?, provinceName: String?, phoneVerifiedAt: Date?, lastLoginAt: Date?, lastSeenAt: Date?, recentlyActive: Bool, facilityCount: Int, sessionCount: Int, createdAt: Date?, updatedAt: Date?, roleIds: [Int], facilities: [AdminUserFacility], sessions: [AdminUserSession]) {
+    public init(id: UUID, name: String, phone: String, active: Bool, provinceId: UUID?, provinceName: String?, lastLoginAt: Date?, lastSeenAt: Date?, recentlyActive: Bool, facilityCount: Int, facilities: [AdminUserFacility], hasTwoFactor: Bool, createdAt: Date?, updatedAt: Date?, roleIds: [Int]) {
         self.id = id
         self.name = name
         self.phone = phone
         self.active = active
         self.provinceId = provinceId
         self.provinceName = provinceName
-        self.phoneVerifiedAt = phoneVerifiedAt
         self.lastLoginAt = lastLoginAt
         self.lastSeenAt = lastSeenAt
         self.recentlyActive = recentlyActive
         self.facilityCount = facilityCount
-        self.sessionCount = sessionCount
+        self.facilities = facilities
+        self.hasTwoFactor = hasTwoFactor
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.roleIds = roleIds
-        self.facilities = facilities
-        self.sessions = sessions
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
@@ -57,17 +53,15 @@ public struct AdminUserDetail: Codable, JSONEncodable, Hashable {
         case active
         case provinceId
         case provinceName
-        case phoneVerifiedAt
         case lastLoginAt
         case lastSeenAt
         case recentlyActive
         case facilityCount
-        case sessionCount
+        case facilities
+        case hasTwoFactor
         case createdAt
         case updatedAt
         case roleIds
-        case facilities
-        case sessions
     }
 
     // Encodable protocol methods
@@ -80,17 +74,15 @@ public struct AdminUserDetail: Codable, JSONEncodable, Hashable {
         try container.encode(active, forKey: .active)
         try container.encode(provinceId, forKey: .provinceId)
         try container.encode(provinceName, forKey: .provinceName)
-        try container.encode(phoneVerifiedAt, forKey: .phoneVerifiedAt)
         try container.encode(lastLoginAt, forKey: .lastLoginAt)
         try container.encode(lastSeenAt, forKey: .lastSeenAt)
         try container.encode(recentlyActive, forKey: .recentlyActive)
         try container.encode(facilityCount, forKey: .facilityCount)
-        try container.encode(sessionCount, forKey: .sessionCount)
+        try container.encode(facilities, forKey: .facilities)
+        try container.encode(hasTwoFactor, forKey: .hasTwoFactor)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(updatedAt, forKey: .updatedAt)
         try container.encode(roleIds, forKey: .roleIds)
-        try container.encode(facilities, forKey: .facilities)
-        try container.encode(sessions, forKey: .sessions)
     }
 }
 

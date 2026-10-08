@@ -1,10 +1,8 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { useCan } from "../../../components/admin-shell";
-import { Icon } from "../../../components/icons";
 import {
   ConfirmDialog,
   EmptyState,
@@ -14,19 +12,11 @@ import {
   LoadingState,
   PageHeader,
   Pagination,
-  StatusBadge,
-  TermBadge,
+  termsFor,
   Toast,
-  formatDateTime,
   pageSummary,
 } from "../../../components/ui";
-import {
-  LastSeen,
-  RecordCard,
-  RecordSection,
-  SidePanel,
-  relativeTime,
-} from "../../../components/ui/extra";
+import { ProfileCard, SidePanel, relativeTime } from "../../../components/ui/extra";
 import { useCursorPage } from "../../../lib/client/use-cursor-page";
 import { useMutation } from "../../../lib/client/use-mutation";
 import { useResource } from "../../../lib/client/use-resource";
@@ -39,41 +29,26 @@ type AdminUser = Readonly<{
   active: boolean;
   provinceId: string | null;
   provinceName: string | null;
-  phoneVerifiedAt: string | null;
   lastLoginAt: string | null;
   lastSeenAt: string | null;
   recentlyActive: boolean;
   facilityCount: number;
-  sessionCount: number;
+  facilities: readonly Facility[];
+  hasTwoFactor: boolean;
   createdAt: string | null;
 }>;
 
 type Facility = Readonly<{ id: string; nameAr: string; role: string; status: string }>;
 
-type Session = Readonly<{
-  id: string;
-  platform: string;
-  deviceName: string;
-  createdAt: string | null;
-  lastSeenAt: string | null;
-}>;
-
-type UserDetail = AdminUser &
-  Readonly<{
-    roleIds: readonly number[];
-    facilities: readonly Facility[];
-    sessions: readonly Session[];
-  }>;
-
 type Role = Readonly<{ id: number; code: string; name: string; permissions: readonly string[] }>;
 
 type Province = Readonly<{ id: string; nameAr: string }>;
 
-type Action = "block" | "unblock" | "recovery" | "sessions" | "mfa" | "roles";
+type Action = "block" | "unblock" | "recovery" | "mfa";
 
 const NUMBER = new Intl.NumberFormat("ar-SY");
 const MEMBER_ROLE: Record<string, string> = { OWNER: "مالك", MANAGER: "مدير" };
-const PLATFORM: Record<string, string> = { ANDROID: "أندرويد", IOS: "آيفون", WEB: "متصفّح" };
+const FACILITY_STATUS = termsFor("facilityStatus");
 
 /**
  * The first letters of the name, which is what stands in for a photograph.
@@ -106,10 +81,15 @@ function initials(name: string): string {
  * a hundred cards costs one request.
  */
 export default function UsersPage() {
-  const [filters, setFilters] = useUrlFilters({ q: "", status: "", role: "", ordering: "" });
+  const [filters, setFilters] = useUrlFilters({
+    q: "",
+    status: "",
+    role: "",
+    ordering: "",
+    id: "",
+  });
   const users = useCursorPage<AdminUser>("users", filters);
   const canManageUsers = useCan("admin.users.manage");
-  const canManageRoles = useCan("admin.roles.manage");
   // Roles sit behind their own permission; without it the filter still offers "any role"
   // and "no role", which the backend answers from the user table alone.
   const roles = useResource<{ items: Role[] }>("roles");
@@ -120,12 +100,9 @@ export default function UsersPage() {
   );
   const mutation = useMutation();
 
-  // `/users/<id>` redirects here with `?open=<id>`, so a link written down before the
-  // detail page was removed still arrives at the same account. The parameter is the first
-  // value of the state and nothing keeps writing to it: opening another card is not a
-  // navigation, and the back button should leave the list rather than close a card.
-  const linked = useSearchParams().get("open");
-  const [openId, setOpenId] = useState<string | null>(linked);
+  // `/users/<id>` redirects here with `?id=<id>`: a link written down before the detail
+  // page was removed arrives at that account alone, outlined, with a way back to all.
+  const linked = filters.id || null;
   const [dialog, setDialog] = useState<{ action: Action; user: AdminUser } | null>(null);
   const [draft, setDraft] = useState<{ name: string; phone: string; provinceId: string } | null>(
     null,
@@ -216,15 +193,24 @@ export default function UsersPage() {
           <p className="muted" data-testid="accounts-summary">
             {pageSummary(users.data.items.length, users.data.hasMore)}
           </p>
-          <ul className="record-list" data-testid="accounts">
+          {linked ? (
+            <p>
+              <button
+                type="button"
+                className="button-link"
+                onClick={() => setFilters({ ...filters, id: "" })}
+              >
+                عرض كل الحسابات
+              </button>
+            </p>
+          ) : null}
+          <ul className="profile-grid" data-testid="accounts">
             {users.data.items.map((user) => (
               <AccountCard
                 key={user.id}
                 user={user}
-                open={openId === user.id}
-                onToggle={() => setOpenId(openId === user.id ? null : user.id)}
+                focused={linked === user.id}
                 canManageUsers={canManageUsers}
-                canManageRoles={canManageRoles}
                 onAction={ask}
               />
             ))}
@@ -335,80 +321,75 @@ export default function UsersPage() {
 
 function AccountCard({
   user,
-  open,
-  onToggle,
+  focused,
   canManageUsers,
-  canManageRoles,
   onAction,
 }: {
   user: AdminUser;
-  open: boolean;
-  onToggle: () => void;
+  focused: boolean;
   canManageUsers: boolean;
-  canManageRoles: boolean;
   onAction: (action: Action, user: AdminUser) => void;
 }) {
+  const owner = user.facilityCount > 0;
+  const kind = !user.active ? "blocked" : owner ? "owner" : "plain";
+  const status = user.lastSeenAt
+    ? user.recentlyActive
+      ? "نشط الآن"
+      : `آخر ظهور ${relativeTime(user.lastSeenAt)}`
+    : "لم يدخل بعد";
   return (
-    <RecordCard
+    <ProfileCard
       testId={`account-${user.id}`}
+      focused={focused}
+      kind={kind}
+      tag={!user.active ? "محظور" : owner ? "صاحب منشأة" : "مستخدم"}
+      live={user.recentlyActive}
       mark={initials(user.name)}
-      title={user.name}
-      muted={!user.active}
-      facts={[
-        <span key="phone" dir="ltr">
-          {user.phone}
-        </span>,
-        user.provinceName ?? "بلا محافظة",
-        <LastSeen key="seen" at={user.lastSeenAt} recent={user.recentlyActive} />,
+      name={user.name}
+      phone={<span dir="ltr">{user.phone}</span>}
+      meta={user.provinceName ?? "بلا محافظة"}
+      status={status}
+      stats={[
+        { value: NUMBER.format(user.facilityCount), label: "منشآت" },
+        { value: shortDate(user.createdAt), label: "التسجيل" },
+        {
+          value: user.lastLoginAt ? shortAgo(user.lastLoginAt) : "—",
+          label: "آخر دخول",
+        },
       ]}
-      badges={
-        <>
-          {!user.active ? <StatusBadge tone="danger">محظور</StatusBadge> : null}
-          {user.facilityCount > 0 ? (
-            <StatusBadge tone="info">
-              {NUMBER.format(user.facilityCount)} منشأة
-            </StatusBadge>
-          ) : null}
-          {user.sessionCount > 0 ? (
-            <StatusBadge tone="neutral">
-              {NUMBER.format(user.sessionCount)} جهاز
-            </StatusBadge>
-          ) : null}
-          {!user.phoneVerifiedAt ? (
-            <StatusBadge tone="warning">رقم غير موثّق</StatusBadge>
-          ) : null}
-        </>
-      }
+      listTitle="المنشآت باسمه"
+      items={user.facilities.map((facility) => ({
+        key: facility.id,
+        label: facility.nameAr,
+        aside: MEMBER_ROLE[facility.role] ?? facility.role,
+        tone: FACILITY_STATUS[facility.status]?.tone,
+        toneLabel: FACILITY_STATUS[facility.status]?.label,
+      }))}
+      more={user.facilityCount - user.facilities.length}
+      empty="لا منشأة باسمه"
       actions={
         canManageUsers ? (
           <>
-            {/* The everyday actions first, the irreversible one last and quiet. A filled
-                red block on every card draws the eye before the name does. */}
             <button
               type="button"
               className="button-ghost"
               data-testid={`recovery-${user.id}`}
               onClick={() => onAction("recovery", user)}
             >
-              إرسال رمز استعادة
+              رمز استعادة
             </button>
-            <button
-              type="button"
-              className="button-ghost"
-              data-testid={`sessions-${user.id}`}
-              disabled={user.sessionCount === 0}
-              onClick={() => onAction("sessions", user)}
-            >
-              إخراج الأجهزة
-            </button>
-            <button
-              type="button"
-              className="button-ghost"
-              data-testid={`mfa-${user.id}`}
-              onClick={() => onAction("mfa", user)}
-            >
-              إعادة ضبط التحقق بخطوتين
-            </button>
+            {/* Only an operator ever sets up an authenticator, so only their card is
+                offered the button that clears one. */}
+            {user.hasTwoFactor ? (
+              <button
+                type="button"
+                className="button-ghost"
+                data-testid={`mfa-${user.id}`}
+                onClick={() => onAction("mfa", user)}
+              >
+                تصفير التحقق
+              </button>
+            ) : null}
             {user.active ? (
               <button
                 type="button"
@@ -431,177 +412,28 @@ function AccountCard({
           </>
         ) : null
       }
-      open={open}
-      onToggle={onToggle}
-    >
-      {open ? <AccountBody user={user} canManageRoles={canManageRoles} /> : null}
-    </RecordCard>
+    />
   );
 }
 
-/** What is behind the counts. Fetched when the card opens, never before. */
-function AccountBody({
-  user,
-  canManageRoles,
-}: {
-  user: AdminUser;
-  canManageRoles: boolean;
-}) {
-  const detail = useResource<UserDetail>("user", { id: user.id });
-  const roles = useResource<{ items: Role[] }>("roles", {}, { enabled: canManageRoles });
-  const mutation = useMutation();
-  const [toast, setToast] = useState<string | null>(null);
-  const [confirm, setConfirm] = useState(false);
+/** «٨/١٠/٢٦» — a date that fits a third of a narrow card; the month's name did not. */
+function shortDate(value: string | null): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? "—"
+    : date.toLocaleDateString("ar-SY", { day: "numeric", month: "numeric", year: "2-digit" });
+}
 
-  // Derived from the server's answer, not mirrored into state: an edit is held as an
-  // override stamped with the value it was made against, so a reload replaces it rather
-  // than leaving a stale selection behind.
-  const [override, setOverride] = useState<{ base: string; roles: string[] } | null>(null);
-  const base = (detail.data?.roleIds ?? []).map(String).join(",");
-  const selected = override?.base === base ? override.roles : base ? base.split(",") : [];
-
-  if (detail.loading) return <LoadingState />;
-  if (detail.error) return <ErrorState error={detail.error} onRetry={detail.reload} />;
-  if (!detail.data) return null;
-  const account = detail.data;
-
-  return (
-    <>
-      <div className="record-columns">
-        <RecordSection title="الحساب">
-          <ul className="plain-list">
-            <li className="plain-row">
-              <span>الرقم موثّق</span>
-              <span>
-                {account.phoneVerifiedAt ? (
-                  <StatusBadge tone="positive">نعم</StatusBadge>
-                ) : (
-                  <StatusBadge tone="warning">لا</StatusBadge>
-                )}
-              </span>
-            </li>
-            <li className="plain-row">
-              <span>التسجيل</span>
-              <span className="muted">{formatDateTime(account.createdAt)}</span>
-            </li>
-            <li className="plain-row">
-              <span>آخر دخول</span>
-              <span className="muted">
-                {account.lastLoginAt ? relativeTime(account.lastLoginAt) : "لم يدخل بعد"}
-              </span>
-            </li>
-          </ul>
-        </RecordSection>
-
-        <RecordSection title={`المنشآت (${NUMBER.format(account.facilities.length)})`}>
-          {account.facilities.length === 0 ? (
-            <p className="muted">لا منشأة لهذا الحساب.</p>
-          ) : (
-            <ul className="plain-list" data-testid="user-facilities">
-              {account.facilities.map((facility) => (
-                <li key={facility.id} className="plain-row">
-                  <span>
-                    {facility.nameAr}{" "}
-                    <span className="muted">
-                      ({MEMBER_ROLE[facility.role] ?? facility.role})
-                    </span>
-                  </span>
-                  <TermBadge group="facilityStatus" value={facility.status} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </RecordSection>
-
-        <RecordSection title={`الأجهزة (${NUMBER.format(account.sessions.length)})`}>
-          {account.sessions.length === 0 ? (
-            <p className="muted">لا جهاز داخل الآن.</p>
-          ) : (
-            <ul className="plain-list" data-testid="user-sessions">
-              {account.sessions.map((session) => (
-                <li key={session.id} className="plain-row">
-                  <span>
-                    <Icon name="phone" />{" "}
-                    {session.deviceName || PLATFORM[session.platform] || "جهاز"}
-                  </span>
-                  <span className="muted">
-                    {session.lastSeenAt
-                      ? relativeTime(session.lastSeenAt)
-                      : formatDateTime(session.createdAt)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </RecordSection>
-      </div>
-
-      {canManageRoles && roles.data ? (
-        <RecordSection title="الأدوار الإدارية">
-          <p className="muted">
-            ما يستطيع هذا الحساب فعله داخل اللوحة. حساب بلا دور لا يرى اللوحة أصلاً.
-          </p>
-          <div>
-            {roles.data.items.map((role) => (
-              <label key={role.id} className="switch-row">
-                <span>
-                  <strong>{role.name}</strong>{" "}
-                  <span className="muted">
-                    ({NUMBER.format(role.permissions.length)} صلاحية)
-                  </span>
-                </span>
-                <input
-                  type="checkbox"
-                  data-testid={`role-${role.code}`}
-                  checked={selected.includes(String(role.id))}
-                  onChange={(event) =>
-                    setOverride({
-                      base,
-                      roles: event.target.checked
-                        ? [...selected, String(role.id)]
-                        : selected.filter((value) => value !== String(role.id)),
-                    })
-                  }
-                />
-              </label>
-            ))}
-          </div>
-          <div className="form-footer">
-            <button
-              type="button"
-              className="button-primary"
-              data-testid="save-roles"
-              onClick={() => {
-                mutation.reset();
-                setConfirm(true);
-              }}
-            >
-              حفظ الأدوار
-            </button>
-          </div>
-          <ConfirmDialog
-            open={confirm}
-            title="استبدال الأدوار الإدارية"
-            body="تحدد هذه الأدوار ما يستطيع المستخدم فعله داخل اللوحة. يُستبدل الطقم بالكامل."
-            confirmLabel="تأكيد الاستبدال"
-            destructive
-            pending={mutation.pending}
-            error={mutation.error}
-            onConfirm={async () => {
-              if (await mutation.run("userRoles", { id: account.id, roleIds: selected })) {
-                setConfirm(false);
-                setToast("حُفظت الأدوار وسُجّلت في سجل التدقيق.");
-                detail.reload();
-              }
-            }}
-            onCancel={() => setConfirm(false)}
-          />
-        </RecordSection>
-      ) : null}
-
-      <Toast message={toast} onDismiss={() => setToast(null)} />
-    </>
-  );
+/** «٣ س», «أمس», «٥ أيام» — the last sign-in, short enough for a third of a card. */
+function shortAgo(value: string): string {
+  const minutes = Math.max(0, Math.round((Date.now() - new Date(value).getTime()) / 60000));
+  if (minutes < 60) return `${NUMBER.format(minutes)} د`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${NUMBER.format(hours)} س`;
+  const days = Math.round(hours / 24);
+  if (days === 1) return "أمس";
+  return `${NUMBER.format(days)} يوم`;
 }
 
 /** The four confirmations an action on an account asks for, in one place. */
@@ -661,19 +493,6 @@ function AccountDialogs({
             "userRecovery",
             `أُرسل رمز الاستعادة إلى ${user?.phone ?? "رقم الحساب"}. يختار صاحب الحساب كلمته بنفسه.`,
           )
-        }
-        onCancel={onCancel}
-      />
-      <ConfirmDialog
-        open={dialog?.action === "sessions"}
-        title="إخراج كل الأجهزة"
-        body="تخرج كل الأجهزة من الحساب ويتوقف وصول الإشعارات إليها. الحساب يبقى فعّالاً، فيستطيع صاحبه الدخول من جديد — وهذا هو الجواب الصحيح لهاتف ضاع، لا الحظر."
-        confirmLabel="إخراج الأجهزة"
-        destructive
-        pending={mutation.pending}
-        error={mutation.error}
-        onConfirm={() =>
-          run("userSessionsRevoke", "خرجت كل الأجهزة، والحساب نفسه ما زال فعّالاً.")
         }
         onCancel={onCancel}
       />

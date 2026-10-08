@@ -14,5 +14,5 @@ export default async function UserDetailRedirect({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  redirect(`/users?open=${encodeURIComponent(id)}`);
+  redirect(`/users?id=${encodeURIComponent(id)}`);
 }

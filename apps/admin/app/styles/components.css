@@ -1251,141 +1251,172 @@ a.bar-row:hover .bar-label { color: var(--ad-brand); }
 .map-card span { color: #4b5b53; font-size: 12px; }
 .map-card a { font-weight: 700; color: #0f6b4f; }
 
-/* Record cards ------------------------------------------------------------------------- *
- * A list of records drawn as cards rather than table rows, for the sections where a row is
- * a person or a place rather than a figure. One card per line and full width, not a grid of
- * tiles: a card opens in place to show the rest of itself, and in a grid that reflows every
- * card beside it. The shape is the panel's, so a card and a panel never disagree.
+/* Profile cards ------------------------------------------------------------------------ *
+ * A person drawn as an identity card (DECISION-106). Shared: the accounts section is the
+ * first to use it, and every section that lists people or places inherits the same card.
  *
- * Shared on purpose — the accounts section is the first to use it, and every section after
- * it gets the same card without a second stylesheet. */
-/* Four across on a wide screen, fewer as it narrows, and never a half-width orphan: the
-   track is a minimum rather than a count, so the last row fills. */
-.record-list {
-  display: grid; gap: var(--ad-space-4); margin: 0; padding: 0; list-style: none;
+ * **One shape, always.** Every card has the same parts in the same places, whatever the
+ * account carries: no part appears, grows or opens for one account and not another. An empty
+ * account fills the same frame with quiet words, so a row of four reads as four of the same
+ * thing — which is what lets the eye compare them.
+ *
+ * The band says what kind of account it is before a word is read: emerald for one that runs
+ * a place, sand for an ordinary one, red for one that is shut. The ring round the picture
+ * says whether it is in use. Everything else is type, in two weights and two sizes. */
+.profile-grid {
+  display: grid; gap: var(--ad-space-5); margin: 0; padding: 0; list-style: none;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 }
-@media (min-width: 1200px) { .record-list { grid-template-columns: repeat(4, 1fr); } }
-@media (max-width: 560px) { .record-list { grid-template-columns: 1fr; } }
-.record {
+@media (min-width: 1200px) { .profile-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 560px) { .profile-grid { grid-template-columns: 1fr; } }
+
+.profile {
+  position: relative;
+  display: flex; flex-direction: column; height: 100%;
   background: var(--ad-surface);
   border: 1px solid var(--ad-stroke);
   border-radius: var(--ad-radius-xl);
   box-shadow: var(--ad-shadow-xs);
-  transition: border-color var(--ad-fast) var(--ad-ease), box-shadow var(--ad-fast) var(--ad-ease);
-  /* Every card in a row ends on the same line, whatever it happens to carry. One account
-     with no badge made its card shorter than the three beside it, and a row of cards that
-     do not line up reads as a mistake rather than as a difference between the accounts. */
-  display: flex; flex-direction: column; height: 100%;
+  overflow: hidden;
+  text-align: center;
+  transition: box-shadow var(--ad-fast) var(--ad-ease), transform var(--ad-fast) var(--ad-ease),
+    border-color var(--ad-fast) var(--ad-ease);
 }
-.record:hover { border-color: var(--ad-stroke-strong); box-shadow: var(--ad-shadow-sm); }
-/* An opened card takes the whole row. In a grid it would otherwise grow inside its own
-   column and shove every card beside it down the page, and the detail it opens — three
-   sections meant to sit side by side — has no room in a quarter of the width. */
-.record-open {
-  border-color: var(--ad-brand); box-shadow: var(--ad-shadow-md);
-  grid-column: 1 / -1;
+.profile:hover { box-shadow: var(--ad-shadow-md); border-color: var(--ad-stroke-strong); }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .profile:hover { transform: translateY(-2px); }
 }
-/* A blocked account is told apart before anything on it is read. */
-.record-muted { background: var(--ad-surface-subtle); }
-.record-muted .record-name { color: var(--ad-text-secondary); }
+.profile-focus { border-color: var(--ad-brand); box-shadow: 0 0 0 3px var(--ad-brand-soft); }
 
-/* Closed, a card is a quarter of the width, so its head stacks: the mark beside the name,
-   and everything else under them. Opened, it has the whole row and reads along a line. */
-.record-head {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: var(--ad-space-2) var(--ad-space-4);
-  padding: var(--ad-space-5);
+/* The band, and the tag in its corner that names what the colour means. */
+.profile-band {
+  position: relative;
+  height: 64px;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(255, 255, 255, 0.55) 0%, transparent 55%),
+    var(--ad-surface-subtle);
 }
-.record-open .record-head {
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  padding: var(--ad-space-5) var(--ad-space-6);
+.profile-owner .profile-band {
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(255, 255, 255, 0.18) 0%, transparent 60%),
+    linear-gradient(135deg, var(--ad-brand) 0%, var(--ad-brand-strong) 100%);
 }
-.record-mark {
-  flex: 0 0 auto;
+.profile-blocked .profile-band { background: var(--ad-danger-bg); }
+.profile-tag {
+  position: absolute; inset-block-start: var(--ad-space-3); inset-inline-start: var(--ad-space-3);
+  padding: 2px var(--ad-space-2);
+  border-radius: var(--ad-radius-pill);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
+  background: var(--ad-surface); color: var(--ad-text-secondary);
+}
+.profile-owner .profile-tag { background: rgba(255, 255, 255, 0.16); color: #fff; }
+.profile-blocked .profile-tag { background: var(--ad-danger); color: #fff; }
+
+/* The picture sits across the band's lower edge, so the card reads as one person and not as
+   a header with a box under it. The ring is the one live signal on the card. */
+.profile-mark {
+  position: relative; z-index: 1;
   display: grid; place-items: center;
-  width: 48px; height: 48px;
+  width: 64px; height: 64px;
+  margin: -32px auto 0;
   border-radius: var(--ad-radius-pill);
   background: var(--ad-brand-softer);
   color: var(--ad-brand-strong);
-  font-family: var(--ad-font-display);
-  font-size: var(--ad-text-lg); font-weight: 700;
+  font-family: var(--ad-font-display); font-size: 20px; font-weight: 700;
+  box-shadow: 0 0 0 4px var(--ad-surface), 0 0 0 6px var(--ad-stroke);
 }
-.record-muted .record-mark { background: var(--ad-surface-hover); color: var(--ad-text-muted); }
-.record-identity { min-width: 0; display: grid; gap: 2px; }
-.record-name {
-  font-size: var(--ad-text-lg); font-weight: 700;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.record-name a { color: inherit; text-decoration: none; }
-.record-name a:hover { color: var(--ad-brand); }
-/* Phone, province, when last active. Stacked in a narrow card and strung along one line,
-   dot-separated, once the card is open and has the width for it. */
-.record-sub {
-  display: grid; gap: 2px;
-  color: var(--ad-text-muted); font-size: var(--ad-text-md);
-}
-.record-sub > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.record-open .record-sub {
-  display: flex; flex-wrap: wrap; align-items: center; gap: var(--ad-space-1) var(--ad-space-3);
-}
-.record-open .record-sub > * + *::before { content: "·"; margin-inline-end: var(--ad-space-3); }
-/* Under the name while the card is narrow; at the end of the line once it is open. */
-.record-badges {
-  grid-column: 2;
-  display: flex; flex-wrap: wrap; gap: var(--ad-space-2);
-}
-.record-badges:empty { display: none; }
-.record-open .record-badges { grid-column: auto; justify-content: flex-end; }
+.profile-live .profile-mark { box-shadow: 0 0 0 4px var(--ad-surface), 0 0 0 6px var(--ad-success); }
+.profile-blocked .profile-mark { background: var(--ad-surface-hover); color: var(--ad-text-muted); }
 
-/* The actions, on the card and above everything else it holds, as the owner asked. */
-/* Separated from the head by a hairline, so the card reads as «who» then «what can be
-   done», which is the order the operator decides in. */
-.record-actions {
-  display: flex; flex-wrap: wrap; gap: var(--ad-space-2);
-  /* Pushed to the foot of the card, so the action rows line up across a row of cards. */
+.profile-id { padding: var(--ad-space-3) var(--ad-space-4) 0; display: grid; gap: 2px; min-width: 0; }
+.profile-name {
+  font-family: var(--ad-font-display); font-size: var(--ad-text-lg); font-weight: 700;
+  line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.profile-blocked .profile-name { color: var(--ad-text-secondary); }
+/* Read digit by digit and compared against another number, so its digits line up. */
+.profile-phone {
+  font-size: var(--ad-text-sm); color: var(--ad-text-muted);
+  font-variant-numeric: tabular-nums; letter-spacing: 0.03em;
+}
+.profile-meta {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--ad-space-1);
+  font-size: var(--ad-text-sm); color: var(--ad-text-secondary);
+}
+.profile-meta svg { color: var(--ad-text-muted); }
+
+.profile-status {
+  justify-self: center;
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-block-start: var(--ad-space-2);
+  padding: 3px var(--ad-space-3);
+  border-radius: var(--ad-radius-pill);
+  background: var(--ad-surface-subtle);
+  font-size: 12px; color: var(--ad-text-muted);
+}
+.profile-status::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ad-stroke-strong);
+}
+.profile-live .profile-status { background: var(--ad-success-bg); color: var(--ad-success); font-weight: 600; }
+.profile-live .profile-status::before { background: var(--ad-success); }
+
+/* Three figures under a hairline, each its own cell, so the eye can run along a row of
+   cards and compare one figure across all four. */
+.profile-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  margin: var(--ad-space-4) var(--ad-space-4) 0;
+  padding-block: var(--ad-space-3);
+  border-block: 1px solid var(--ad-stroke-subtle);
+}
+.profile-stat { display: grid; gap: 2px; min-width: 0; }
+.profile-stat + .profile-stat { border-inline-start: 1px solid var(--ad-stroke-subtle); }
+.profile-stat strong {
+  font-family: var(--ad-font-display); font-size: var(--ad-text-md); font-weight: 700;
+  color: var(--ad-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  padding-inline: var(--ad-space-1);
+}
+.profile-stat span { font-size: 11px; color: var(--ad-text-muted); }
+
+/* The places, named. A fixed height — two lines and «and N more» — so a card with none and a card with
+   three are the same card; the empty one says so in the same space. */
+.profile-list {
+  display: grid; align-content: start; gap: 6px;
+  height: calc(2 * 26px + 3 * 6px + 16px + 18px);
+  margin: var(--ad-space-3) var(--ad-space-4) 0;
+  text-align: start;
+}
+.profile-list-title { font-size: 11px; font-weight: 700; color: var(--ad-text-muted); letter-spacing: 0.02em; }
+.profile-item {
+  display: flex; align-items: center; gap: var(--ad-space-2);
+  height: 26px; min-width: 0;
+  font-size: var(--ad-text-sm);
+}
+.profile-item-name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profile-item-dot { flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: var(--ad-stroke-strong); }
+.profile-item-dot[data-tone="positive"] { background: var(--ad-success); }
+.profile-item-dot[data-tone="warning"] { background: var(--ad-accent); }
+.profile-item-dot[data-tone="danger"] { background: var(--ad-danger); }
+.profile-item-dot[data-tone="info"] { background: var(--ad-info); }
+.profile-item-role { flex: 0 0 auto; font-size: 11px; color: var(--ad-text-muted); }
+.profile-item-more { font-size: 12px; color: var(--ad-brand); font-weight: 600; }
+.profile-empty {
+  display: flex; align-items: center; gap: var(--ad-space-2);
+  height: 26px; font-size: var(--ad-text-sm); color: var(--ad-text-muted);
+}
+
+/* The actions, at the foot of every card on the same line. The everyday one takes the room;
+   the irreversible one is quiet until it is hovered. */
+.profile-actions {
+  display: flex; gap: var(--ad-space-2);
   margin-block-start: auto;
-  margin-inline: var(--ad-space-5);
-  padding-block: var(--ad-space-4);
-  border-block-start: 1px solid var(--ad-stroke-subtle);
+  padding: var(--ad-space-4);
 }
-.record-open .record-actions { margin-inline: var(--ad-space-6); }
-.record-actions .button-ghost, .record-actions .button-primary, .record-actions .button-danger {
-  min-height: var(--ad-control-h-sm); padding: 0 var(--ad-space-3); font-size: var(--ad-text-sm);
+.profile-actions > button {
+  flex: 1 1 0; min-width: 0;
+  min-height: var(--ad-control-h-sm); padding: 0 var(--ad-space-2); font-size: var(--ad-text-sm);
+  white-space: nowrap;
 }
-.record-more { margin-inline-start: auto; }
-/* The destructive action is last in the row and quiet until it is hovered. A filled red
-   block on every card in a list reads as an alarm about the list rather than an action on
-   one of its rows, and the eye goes to it before it goes to the name. */
 .button-danger-quiet {
-  border: 1px solid var(--ad-danger-border);
-  background: transparent;
-  color: var(--ad-danger);
+  border: 1px solid var(--ad-danger-border); background: transparent; color: var(--ad-danger);
 }
-.button-danger-quiet:hover:not(:disabled) {
-  background: var(--ad-danger-bg); border-color: var(--ad-danger);
-}
-
-.record-body {
-  padding: var(--ad-space-5) var(--ad-space-6);
-  border-block-start: 1px solid var(--ad-stroke-subtle);
-  display: grid; gap: var(--ad-space-5);
-}
-/* Two columns where there is room; one on a narrow screen. */
-.record-columns {
-  display: grid; gap: var(--ad-space-5);
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-}
-.record-section { display: grid; gap: var(--ad-space-2); align-content: start; min-width: 0; }
-.record-section > h3 {
-  font-size: var(--ad-text-md); font-weight: 700; color: var(--ad-text-secondary);
-}
-
-/* The one live signal a card carries: a dot that is on or off, never a claim of «online». */
-.seen-dot {
-  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-  background: var(--ad-success); margin-inline-end: 6px;
-}
-.seen-off { background: var(--ad-stroke-strong); }
+.button-danger-quiet:hover:not(:disabled) { background: var(--ad-danger-bg); border-color: var(--ad-danger); }

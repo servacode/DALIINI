@@ -22,8 +22,10 @@ def user_rows(queryset: Any) -> Any:
     questions. Subqueries rather than joins with `annotate(Count(...))`: two joins in one
     queryset multiply each other's rows and both counts come back wrong.
     """
-    from django.db.models import Count, OuterRef, Subquery
+    from django.db.models import Count, Exists, OuterRef, Subquery
     from django.db.models.functions import Coalesce
+
+    from accounts.models import StaffTotpDevice
 
     def counted(model: Any, **extra: Any) -> Any:
         return Subquery(
@@ -34,9 +36,21 @@ def user_rows(queryset: Any) -> Any:
             .values("n")[:1]
         )
 
-    return queryset.select_related("province").annotate(
+    return queryset.select_related("province").prefetch_related(
+        # One query for the whole page, however many accounts are on it.
+        Prefetch(
+            "facility_memberships",
+            queryset=FacilityMembership.objects.select_related("facility").order_by(
+                "facility__name_ar"
+            ),
+            to_attr="card_memberships",
+        )
+    ).annotate(
         facility_count=counted(FacilityMembership),
-        session_count=counted(UserSession, revoked_at__isnull=True, expires_at__gt=Now()),
+        # Only an operator ever sets up an authenticator, so only an operator's card needs
+        # the button that clears it. Without this every card carried an action that could
+        # not apply to it.
+        has_two_factor=Exists(StaffTotpDevice.objects.filter(user=OuterRef("pk"))),
         # The newest heartbeat of any live session. A session's `last_seen_at` is written
         # when its refresh rotates, which is at most once per access-token lifetime, so this
         # is accurate to about a quarter of an hour and is never «right now».
@@ -90,6 +104,37 @@ def _seen_at(user: Any) -> Any:
     )
 
 
+CARD_FACILITIES = 2
+
+
+def _card_facilities(user: Any) -> list[dict[str, Any]]:
+    """The first few places on the account, by name — what a card shows without growing."""
+    links = getattr(user, "card_memberships", None)
+    if links is None:
+        links = list(
+            FacilityMembership.objects.filter(user=user)
+            .select_related("facility")
+            .order_by("facility__name_ar")[:CARD_FACILITIES]
+        )
+    return [
+        {
+            "id": str(link.facility_id),
+            "nameAr": link.facility.name_ar,
+            "role": link.role,
+            "status": link.facility.status,
+        }
+        for link in links[:CARD_FACILITIES]
+    ]
+
+
+def _has_two_factor(user: Any) -> bool:
+    if hasattr(user, "has_two_factor"):
+        return bool(user.has_two_factor)
+    from accounts.models import StaffTotpDevice
+
+    return StaffTotpDevice.objects.filter(user=user).exists()
+
+
 def user_payload(user: Any) -> Any:
     seen_at = _seen_at(user)
     return {
@@ -102,20 +147,18 @@ def user_payload(user: Any) -> Any:
         # them nothing; without it every row would have to fetch the province list to
         # translate one field.
         "provinceName": user.province.name_ar if user.province_id else None,
-        "phoneVerifiedAt": _iso(user.phone_verified_at),
+        # Not whether the number was proved: registration proves it before the account
+        # exists, so it is true of every account the app opened. The only accounts it is
+        # false for are the ones this console opened, and «has not signed in yet» — which
+        # `lastLoginAt` already says — tells an operator that more plainly.
         "lastLoginAt": _iso(user.last_login),
         "lastSeenAt": _iso(seen_at),
         # Said as «recently active», never as «online». Nothing in this system knows whether
         # an app is open; what it knows is when a session last proved itself.
         "recentlyActive": bool(seen_at and timezone.now() - seen_at <= ACTIVE_WITHIN),
         "facilityCount": _count(user, "facility_count", FacilityMembership),
-        "sessionCount": _count(
-            user,
-            "session_count",
-            UserSession,
-            revoked_at__isnull=True,
-            expires_at__gt=timezone.now(),
-        ),
+        "facilities": _card_facilities(user),
+        "hasTwoFactor": _has_two_factor(user),
         "createdAt": _iso(user.created_at),
         "updatedAt": _iso(user.updated_at),
     }
@@ -142,28 +185,6 @@ def user_facilities_payload(user: Any) -> list[dict[str, Any]]:
             "status": link.facility.status,
         }
         for link in links
-    ]
-
-
-def user_sessions_payload(user: Any) -> list[dict[str, Any]]:
-    """The devices currently signed in, newest first.
-
-    Secrets never leave the server: neither the refresh digest nor the previous one is in
-    this payload, and nothing here can be used to sign in. Revoked and expired sessions are
-    left out — the question this answers is «who is signed in now».
-    """
-    rows = UserSession.objects.filter(
-        user=user, revoked_at__isnull=True, expires_at__gt=timezone.now()
-    ).order_by("-created_at")
-    return [
-        {
-            "id": str(row.id),
-            "platform": row.platform,
-            "deviceName": row.device_name,
-            "createdAt": _iso(row.created_at),
-            "lastSeenAt": _iso(row.last_seen_at),
-        }
-        for row in rows
     ]
 
 
