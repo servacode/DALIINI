@@ -1,8 +1,12 @@
+from datetime import timedelta
 from typing import Any
 
 from django.db.models import Prefetch, QuerySet
+from django.db.models.functions import Coalesce, Now
+from django.utils import timezone
 
 from facilities.models import Facility, FacilityApplication, FacilityMembership
+from sessions.models import UserSession
 
 from .review import evidence_complete
 
@@ -11,7 +15,83 @@ def _iso(value: Any) -> Any:
     return value.isoformat() if value else None
 
 
+def user_rows(queryset: Any) -> Any:
+    """Add every count a console row shows, in one query rather than three per row.
+
+    Without this a page of fifty accounts asked the database a hundred and fifty extra
+    questions. Subqueries rather than joins with `annotate(Count(...))`: two joins in one
+    queryset multiply each other's rows and both counts come back wrong.
+    """
+    from django.db.models import Count, OuterRef, Subquery
+    from django.db.models.functions import Coalesce
+
+    def counted(model: Any, **extra: Any) -> Any:
+        return Subquery(
+            model.objects.filter(user=OuterRef("pk"), **extra)
+            .order_by()
+            .values("user")
+            .annotate(n=Count("*"))
+            .values("n")[:1]
+        )
+
+    return queryset.select_related("province").annotate(
+        facility_count=counted(FacilityMembership),
+        session_count=counted(UserSession, revoked_at__isnull=True, expires_at__gt=Now()),
+        # The newest heartbeat of any live session. A session's `last_seen_at` is written
+        # when its refresh rotates, which is at most once per access-token lifetime, so this
+        # is accurate to about a quarter of an hour and is never «right now».
+        #
+        # Falling back to when the session was opened, because `last_seen_at` is null until
+        # the first rotation: without it a card read «5 devices» and «never signed in from
+        # any device» on the same line, which is not a detail — it is the card contradicting
+        # itself. Signing in is itself the session proving who it is.
+        seen_at=Subquery(
+            UserSession.objects.filter(
+                user=OuterRef("pk"), revoked_at__isnull=True, expires_at__gt=Now()
+            )
+            .annotate(seen=Coalesce("last_seen_at", "created_at"))
+            .order_by("-seen")
+            .values("seen")[:1]
+        ),
+    )
+
+
+# An account counts as active when its newest session rotated within this window. The access
+# token lives fifteen minutes, so a person using the app refreshes at least that often; twice
+# that leaves room for one missed rotation without calling someone away who is not.
+ACTIVE_WITHIN = timedelta(minutes=30)
+
+
+def _count(user: Any, attr: str, model: Any, **extra: Any) -> int:
+    """The annotated count when the list added one, else a direct count for a single row."""
+    value = getattr(user, attr, None)
+    if value is not None:
+        return int(value)
+    return int(model.objects.filter(user=user, **extra).count())
+
+
+def _seen_at(user: Any) -> Any:
+    """The annotated heartbeat when the list added one, else read it for this row alone.
+
+    `hasattr` rather than a sentinel default: the annotation is legitimately None for an
+    account with no live session, and a default could not tell that apart from «the list did
+    not annotate», which would cost a query per row on every page.
+    """
+    if hasattr(user, "seen_at"):
+        return user.seen_at
+    return (
+        UserSession.objects.filter(
+            user=user, revoked_at__isnull=True, expires_at__gt=timezone.now()
+        )
+        .annotate(seen=Coalesce("last_seen_at", "created_at"))
+        .order_by("-seen")
+        .values_list("seen", flat=True)
+        .first()
+    )
+
+
 def user_payload(user: Any) -> Any:
+    seen_at = _seen_at(user)
     return {
         "id": str(user.id),
         "name": user.name,
@@ -24,6 +104,18 @@ def user_payload(user: Any) -> Any:
         "provinceName": user.province.name_ar if user.province_id else None,
         "phoneVerifiedAt": _iso(user.phone_verified_at),
         "lastLoginAt": _iso(user.last_login),
+        "lastSeenAt": _iso(seen_at),
+        # Said as «recently active», never as «online». Nothing in this system knows whether
+        # an app is open; what it knows is when a session last proved itself.
+        "recentlyActive": bool(seen_at and timezone.now() - seen_at <= ACTIVE_WITHIN),
+        "facilityCount": _count(user, "facility_count", FacilityMembership),
+        "sessionCount": _count(
+            user,
+            "session_count",
+            UserSession,
+            revoked_at__isnull=True,
+            expires_at__gt=timezone.now(),
+        ),
         "createdAt": _iso(user.created_at),
         "updatedAt": _iso(user.updated_at),
     }
@@ -60,10 +152,6 @@ def user_sessions_payload(user: Any) -> list[dict[str, Any]]:
     this payload, and nothing here can be used to sign in. Revoked and expired sessions are
     left out — the question this answers is «who is signed in now».
     """
-    from django.utils import timezone
-
-    from sessions.models import UserSession
-
     rows = UserSession.objects.filter(
         user=user, revoked_at__isnull=True, expires_at__gt=timezone.now()
     ).order_by("-created_at")

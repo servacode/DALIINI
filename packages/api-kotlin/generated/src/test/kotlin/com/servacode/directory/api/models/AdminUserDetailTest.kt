@@ -75,6 +75,30 @@ class AdminUserDetailTest : ShouldSpec() {
             //modelInstance.lastLoginAt shouldBe ("TODO")
         }
 
+        // to test the property `lastSeenAt`
+        should("test lastSeenAt") {
+            // uncomment below to test the property
+            //modelInstance.lastSeenAt shouldBe ("TODO")
+        }
+
+        // to test the property `recentlyActive`
+        should("test recentlyActive") {
+            // uncomment below to test the property
+            //modelInstance.recentlyActive shouldBe ("TODO")
+        }
+
+        // to test the property `facilityCount`
+        should("test facilityCount") {
+            // uncomment below to test the property
+            //modelInstance.facilityCount shouldBe ("TODO")
+        }
+
+        // to test the property `sessionCount`
+        should("test sessionCount") {
+            // uncomment below to test the property
+            //modelInstance.sessionCount shouldBe ("TODO")
+        }
+
         // to test the property `createdAt`
         should("test createdAt") {
             // uncomment below to test the property

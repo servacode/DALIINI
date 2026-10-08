@@ -11,6 +11,10 @@ Name | Type | Description | Notes
 **provinceName** | **String** |  | 
 **phoneVerifiedAt** | **Date** |  | 
 **lastLoginAt** | **Date** |  | 
+**lastSeenAt** | **Date** |  | 
+**recentlyActive** | **Bool** |  | 
+**facilityCount** | **Int** |  | 
+**sessionCount** | **Int** |  | 
 **createdAt** | **Date** |  | 
 **updatedAt** | **Date** |  | 
 

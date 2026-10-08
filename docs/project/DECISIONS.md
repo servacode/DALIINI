@@ -2750,3 +2750,46 @@ than it should be and none had a name of its own to navigate to.
 
 They are now three sections under the home entry — **الحسابات**, **الأدوار والصلاحيات**,
 **الإشعارات** — each with its own icon. Nothing about the pages' permissions changed.
+
+## DECISION-106 — A record is a card that holds all of itself; no separate detail page
+
+**Date:** 2026-10-08 · **Owner's decision.** This is the pattern every console section that
+lists people or places follows from here, not a choice made once for the accounts screen.
+
+**Why:** the accounts list was a table of four columns and a link to a detail page. The owner
+read it as what it was — adequate, and nothing more. A row in these sections is a person or a
+place, not a figure, and a table says nothing about one except where it sits in an alphabet.
+
+**Decision:**
+
+* **One card per record, full width, one per line.** Not a grid of tiles: a card opens in
+  place, and in a grid that reflows every card beside it. The facts a card carries most — a
+  name, a number, where someone is — read along a line rather than down a column.
+* **The actions sit on the card, above everything it holds.** An operator who came to do
+  something should not have to open a record to find out whether they can.
+* **The everyday actions first, the irreversible one last and quiet.** A filled red block on
+  every card in a list reads as an alarm about the list, and the eye reaches it before the
+  name. `button-danger-quiet` is an outline until it is hovered.
+* **No detail page.** Opening a card adds the detail behind its counts, in place: the
+  operator keeps the page they searched and filtered, and can open a second account without
+  going back. The detail is **not fetched until the card is opened**, so a page of a hundred
+  cards still costs one request.
+* **The old route is kept as a redirect.** `/users/<id>` sends the reader to the list with
+  that card open. Links to it are already written down — in audit entries, in messages
+  between operators — and a dead link is a worse answer than a redirect.
+* **`RecordCard`, `RecordSection` and `LastSeen` live in the shared component set**, and
+  `.record-*` in the console's one stylesheet. The next section inherits the card; a second
+  copy of these rules under another name is how two lists in one console come to look
+  different.
+
+**«Recently active», never «online».** Nothing in this system knows whether an app is open.
+A session writes `last_seen_at` when its refresh rotates, which is at most once per
+access-token lifetime — fifteen minutes. So the card says «نشط الآن» only within twice that
+window, and otherwise when the account last was. The heartbeat **falls back to when the
+session was opened**, because it is null until the first rotation: without that a card read
+«5 devices» and «never signed in from any device» on the same line, which is not a rough
+edge — it is the card contradicting itself.
+
+**Counts are annotated, not counted per row.** Facilities, live sessions and the heartbeat
+come from subqueries, so a page of fifty accounts asks the same number of questions as a page
+of one. A test proves it by loading ten accounts and comparing the query count to one.

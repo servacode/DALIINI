@@ -1250,3 +1250,102 @@ a.bar-row:hover .bar-label { color: var(--ad-brand); }
 .map-card { display: grid; gap: 4px; min-inline-size: 160px; font-family: inherit; direction: rtl; text-align: start; color: #15231c; }
 .map-card span { color: #4b5b53; font-size: 12px; }
 .map-card a { font-weight: 700; color: #0f6b4f; }
+
+/* Record cards ------------------------------------------------------------------------- *
+ * A list of records drawn as cards rather than table rows, for the sections where a row is
+ * a person or a place rather than a figure. One card per line and full width, not a grid of
+ * tiles: a card opens in place to show the rest of itself, and in a grid that reflows every
+ * card beside it. The shape is the panel's, so a card and a panel never disagree.
+ *
+ * Shared on purpose — the accounts section is the first to use it, and every section after
+ * it gets the same card without a second stylesheet. */
+.record-list { display: grid; gap: var(--ad-space-4); margin: 0; padding: 0; list-style: none; }
+.record {
+  background: var(--ad-surface);
+  border: 1px solid var(--ad-stroke);
+  border-radius: var(--ad-radius-xl);
+  box-shadow: var(--ad-shadow-xs);
+  transition: border-color var(--ad-fast) var(--ad-ease), box-shadow var(--ad-fast) var(--ad-ease);
+}
+.record:hover { border-color: var(--ad-stroke-strong); box-shadow: var(--ad-shadow-sm); }
+.record-open { border-color: var(--ad-brand); box-shadow: var(--ad-shadow-md); }
+/* A blocked account is told apart before anything on it is read. */
+.record-muted { background: var(--ad-surface-subtle); }
+.record-muted .record-name { color: var(--ad-text-secondary); }
+
+.record-head {
+  display: flex; align-items: center; gap: var(--ad-space-4);
+  padding: var(--ad-space-5) var(--ad-space-6);
+}
+.record-mark {
+  flex: 0 0 auto;
+  display: grid; place-items: center;
+  width: 48px; height: 48px;
+  border-radius: var(--ad-radius-pill);
+  background: var(--ad-brand-softer);
+  color: var(--ad-brand-strong);
+  font-family: var(--ad-font-display);
+  font-size: var(--ad-text-lg); font-weight: 700;
+}
+.record-muted .record-mark { background: var(--ad-surface-hover); color: var(--ad-text-muted); }
+.record-identity { min-width: 0; display: grid; gap: 2px; }
+.record-name {
+  font-size: var(--ad-text-lg); font-weight: 700;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.record-name a { color: inherit; text-decoration: none; }
+.record-name a:hover { color: var(--ad-brand); }
+/* Phone, province, dates: one line of quiet facts, each separated by a dot. */
+.record-sub {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--ad-space-1) var(--ad-space-3);
+  color: var(--ad-text-muted); font-size: var(--ad-text-md);
+}
+.record-sub > * + *::before { content: "·"; margin-inline-end: var(--ad-space-3); }
+.record-badges {
+  margin-inline-start: auto;
+  display: flex; flex-wrap: wrap; justify-content: flex-end;
+  gap: var(--ad-space-2);
+}
+
+/* The actions, on the card and above everything else it holds, as the owner asked. */
+.record-actions {
+  display: flex; flex-wrap: wrap; gap: var(--ad-space-2);
+  padding: 0 var(--ad-space-6) var(--ad-space-4);
+}
+.record-actions .button-ghost, .record-actions .button-primary, .record-actions .button-danger {
+  min-height: var(--ad-control-h-sm); padding: 0 var(--ad-space-3); font-size: var(--ad-text-sm);
+}
+.record-more { margin-inline-start: auto; }
+/* The destructive action is last in the row and quiet until it is hovered. A filled red
+   block on every card in a list reads as an alarm about the list rather than an action on
+   one of its rows, and the eye goes to it before it goes to the name. */
+.button-danger-quiet {
+  border: 1px solid var(--ad-danger-border);
+  background: transparent;
+  color: var(--ad-danger);
+}
+.button-danger-quiet:hover:not(:disabled) {
+  background: var(--ad-danger-bg); border-color: var(--ad-danger);
+}
+
+.record-body {
+  padding: var(--ad-space-5) var(--ad-space-6);
+  border-block-start: 1px solid var(--ad-stroke-subtle);
+  display: grid; gap: var(--ad-space-5);
+}
+/* Two columns where there is room; one on a narrow screen. */
+.record-columns {
+  display: grid; gap: var(--ad-space-5);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+.record-section { display: grid; gap: var(--ad-space-2); align-content: start; min-width: 0; }
+.record-section > h3 {
+  font-size: var(--ad-text-md); font-weight: 700; color: var(--ad-text-secondary);
+}
+
+/* The one live signal a card carries: a dot that is on or off, never a claim of «online». */
+.seen-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--ad-success); margin-inline-end: 6px;
+}
+.seen-off { background: var(--ad-stroke-strong); }

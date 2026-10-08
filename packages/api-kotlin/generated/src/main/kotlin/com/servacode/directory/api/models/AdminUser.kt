@@ -31,6 +31,10 @@ import kotlinx.serialization.Contextual
  * @param provinceName 
  * @param phoneVerifiedAt 
  * @param lastLoginAt 
+ * @param lastSeenAt 
+ * @param recentlyActive 
+ * @param facilityCount 
+ * @param sessionCount 
  * @param createdAt 
  * @param updatedAt 
  */
@@ -61,6 +65,18 @@ data class AdminUser (
 
     @Contextual @SerialName(value = "lastLoginAt")
     val lastLoginAt: java.time.OffsetDateTime?,
+
+    @Contextual @SerialName(value = "lastSeenAt")
+    val lastSeenAt: java.time.OffsetDateTime?,
+
+    @SerialName(value = "recentlyActive")
+    val recentlyActive: kotlin.Boolean,
+
+    @SerialName(value = "facilityCount")
+    val facilityCount: kotlin.Int,
+
+    @SerialName(value = "sessionCount")
+    val sessionCount: kotlin.Int,
 
     @Contextual @SerialName(value = "createdAt")
     val createdAt: java.time.OffsetDateTime?,

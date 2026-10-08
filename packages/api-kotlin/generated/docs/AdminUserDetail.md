@@ -12,6 +12,10 @@
 | **provinceName** | **kotlin.String** |  |  |
 | **phoneVerifiedAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) |  |  |
 | **lastLoginAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) |  |  |
+| **lastSeenAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) |  |  |
+| **recentlyActive** | **kotlin.Boolean** |  |  |
+| **facilityCount** | **kotlin.Int** |  |  |
+| **sessionCount** | **kotlin.Int** |  |  |
 | **createdAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) |  |  |
 | **updatedAt** | [**java.time.OffsetDateTime**](java.time.OffsetDateTime.md) |  |  |
 | **roleIds** | **kotlin.collections.List&lt;kotlin.Int&gt;** |  |  |

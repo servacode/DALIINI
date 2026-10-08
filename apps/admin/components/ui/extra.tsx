@@ -407,3 +407,145 @@ function SlideImage({ src, fallback }: { src: string; fallback: string | null })
     />
   );
 }
+
+/**
+ * One record drawn as a card: a person, a place — anything a row is about rather than a
+ * figure about it (DECISION-106).
+ *
+ * **Full width, one per line, opening in place.** A grid of tiles reflows every neighbour
+ * when one of them opens, and the fact a card carries most — a name and a number — reads
+ * along a line, not down a column.
+ *
+ * **The actions sit above everything the card holds**, visible without opening it, because
+ * the operator who came to do something should not have to open a record to find out
+ * whether they can. What opening adds is the detail behind the summary, which is also what
+ * keeps a page of a hundred cards cheap: it is not rendered until it is asked for.
+ */
+export function RecordCard({
+  mark,
+  title,
+  facts,
+  badges,
+  actions,
+  open,
+  onToggle,
+  openLabel = "التفاصيل",
+  closeLabel = "إخفاء التفاصيل",
+  muted,
+  testId,
+  children,
+}: {
+  /** A letter or two standing in for a picture: the first letters of the name. */
+  mark: ReactNode;
+  title: ReactNode;
+  /** The quiet line under the title; dots between the parts are drawn by the stylesheet. */
+  facts?: readonly ReactNode[];
+  badges?: ReactNode;
+  actions?: ReactNode;
+  open?: boolean;
+  onToggle?: () => void;
+  openLabel?: string;
+  closeLabel?: string;
+  muted?: boolean;
+  testId?: string;
+  children?: ReactNode;
+}) {
+  const bodyId = useId();
+  const classes = ["record", open ? "record-open" : "", muted ? "record-muted" : ""]
+    .filter(Boolean)
+    .join(" ");
+  return (
+    <li className={classes} data-testid={testId}>
+      <div className="record-head">
+        <span className="record-mark" aria-hidden="true">
+          {mark}
+        </span>
+        <span className="record-identity">
+          <span className="record-name">{title}</span>
+          {facts && facts.length > 0 ? (
+            <span className="record-sub">
+              {facts.map((fact, index) => (
+                // The order is fixed by the caller and the parts carry no identity of
+                // their own, so the index is the key there is.
+                <span key={index}>{fact}</span>
+              ))}
+            </span>
+          ) : null}
+        </span>
+        {badges ? <span className="record-badges">{badges}</span> : null}
+      </div>
+      {actions || onToggle ? (
+        <div className="record-actions">
+          {actions}
+          {onToggle ? (
+            <button
+              type="button"
+              className="button-ghost record-more"
+              aria-expanded={Boolean(open)}
+              aria-controls={bodyId}
+              onClick={onToggle}
+            >
+              {open ? closeLabel : openLabel}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+      {open ? (
+        <div className="record-body" id={bodyId}>
+          {children}
+        </div>
+      ) : null}
+    </li>
+  );
+}
+
+/** A heading and its content inside an opened card; several sit side by side where there is room. */
+export function RecordSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="record-section">
+      <h3>{title}</h3>
+      {children}
+    </section>
+  );
+}
+
+/**
+ * When a session of this account last proved itself, said as what it is.
+ *
+ * Never «online»: nothing in this system knows whether an app is open. A session writes its
+ * heartbeat when its refresh rotates, which is at most once per access-token lifetime, so
+ * the truest thing that can be said is «active recently» and, otherwise, when it last was.
+ */
+export function LastSeen({
+  at,
+  recent,
+}: {
+  at: string | null | undefined;
+  recent: boolean;
+}) {
+  if (!at) return <span className="muted">لم يدخل من أي جهاز</span>;
+  return (
+    <span>
+      <span className={recent ? "seen-dot" : "seen-dot seen-off"} aria-hidden="true" />
+      {recent ? "نشط الآن" : `آخر ظهور ${relativeTime(at)}`}
+    </span>
+  );
+}
+
+/** «منذ ٣ ساعات», «أمس», «قبل ٥ أيام» — Arabic, and never a bare timestamp in a card. */
+export function relativeTime(value: string): string {
+  const then = new Date(value).getTime();
+  if (Number.isNaN(then)) return "";
+  const minutes = Math.max(0, Math.round((Date.now() - then) / 60000));
+  if (minutes < 60) return `منذ ${NUMERALS.format(minutes)} دقيقة`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `منذ ${NUMERALS.format(hours)} ساعة`;
+  const days = Math.round(hours / 24);
+  if (days === 1) return "أمس";
+  if (days < 30) return `منذ ${NUMERALS.format(days)} يوم`;
+  const months = Math.round(days / 30);
+  if (months < 12) return `منذ ${NUMERALS.format(months)} شهر`;
+  return `منذ ${NUMERALS.format(Math.round(months / 12))} سنة`;
+}
+
+const NUMERALS = new Intl.NumberFormat("ar-SY");

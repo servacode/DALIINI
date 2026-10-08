@@ -87,6 +87,30 @@ export interface AdminUserDetail {
      * @type {Date}
      * @memberof AdminUserDetail
      */
+    lastSeenAt: Date | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AdminUserDetail
+     */
+    recentlyActive: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof AdminUserDetail
+     */
+    facilityCount: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AdminUserDetail
+     */
+    sessionCount: number;
+    /**
+     * 
+     * @type {Date}
+     * @memberof AdminUserDetail
+     */
     createdAt: Date | null;
     /**
      * 
@@ -126,6 +150,10 @@ export function instanceOfAdminUserDetail(value: object): value is AdminUserDeta
     if (!('provinceName' in value) || value['provinceName'] === undefined) return false;
     if (!('phoneVerifiedAt' in value) || value['phoneVerifiedAt'] === undefined) return false;
     if (!('lastLoginAt' in value) || value['lastLoginAt'] === undefined) return false;
+    if (!('lastSeenAt' in value) || value['lastSeenAt'] === undefined) return false;
+    if (!('recentlyActive' in value) || value['recentlyActive'] === undefined) return false;
+    if (!('facilityCount' in value) || value['facilityCount'] === undefined) return false;
+    if (!('sessionCount' in value) || value['sessionCount'] === undefined) return false;
     if (!('createdAt' in value) || value['createdAt'] === undefined) return false;
     if (!('updatedAt' in value) || value['updatedAt'] === undefined) return false;
     if (!('roleIds' in value) || value['roleIds'] === undefined) return false;
@@ -152,6 +180,10 @@ export function AdminUserDetailFromJSONTyped(json: any, ignoreDiscriminator: boo
         'provinceName': json['provinceName'],
         'phoneVerifiedAt': (json['phoneVerifiedAt'] == null ? null : new Date(json['phoneVerifiedAt'])),
         'lastLoginAt': (json['lastLoginAt'] == null ? null : new Date(json['lastLoginAt'])),
+        'lastSeenAt': (json['lastSeenAt'] == null ? null : new Date(json['lastSeenAt'])),
+        'recentlyActive': json['recentlyActive'],
+        'facilityCount': json['facilityCount'],
+        'sessionCount': json['sessionCount'],
         'createdAt': (json['createdAt'] == null ? null : new Date(json['createdAt'])),
         'updatedAt': (json['updatedAt'] == null ? null : new Date(json['updatedAt'])),
         'roleIds': json['roleIds'],
@@ -179,6 +211,10 @@ export function AdminUserDetailToJSONTyped(value?: AdminUserDetail | null, ignor
         'provinceName': value['provinceName'],
         'phoneVerifiedAt': ((value['phoneVerifiedAt'] as any).toISOString()),
         'lastLoginAt': ((value['lastLoginAt'] as any).toISOString()),
+        'lastSeenAt': ((value['lastSeenAt'] as any).toISOString()),
+        'recentlyActive': value['recentlyActive'],
+        'facilityCount': value['facilityCount'],
+        'sessionCount': value['sessionCount'],
         'createdAt': ((value['createdAt'] as any).toISOString()),
         'updatedAt': ((value['updatedAt'] as any).toISOString()),
         'roleIds': value['roleIds'],

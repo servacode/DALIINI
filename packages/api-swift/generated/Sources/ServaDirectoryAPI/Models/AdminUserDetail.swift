@@ -20,13 +20,17 @@ public struct AdminUserDetail: Codable, JSONEncodable, Hashable {
     public var provinceName: String?
     public var phoneVerifiedAt: Date?
     public var lastLoginAt: Date?
+    public var lastSeenAt: Date?
+    public var recentlyActive: Bool
+    public var facilityCount: Int
+    public var sessionCount: Int
     public var createdAt: Date?
     public var updatedAt: Date?
     public var roleIds: [Int]
     public var facilities: [AdminUserFacility]
     public var sessions: [AdminUserSession]
 
-    public init(id: UUID, name: String, phone: String, active: Bool, provinceId: UUID?, provinceName: String?, phoneVerifiedAt: Date?, lastLoginAt: Date?, createdAt: Date?, updatedAt: Date?, roleIds: [Int], facilities: [AdminUserFacility], sessions: [AdminUserSession]) {
+    public init(id: UUID, name: String, phone: String, active: Bool, provinceId: UUID?, provinceName: String?, phoneVerifiedAt: Date?, lastLoginAt: Date?, lastSeenAt: Date?, recentlyActive: Bool, facilityCount: Int, sessionCount: Int, createdAt: Date?, updatedAt: Date?, roleIds: [Int], facilities: [AdminUserFacility], sessions: [AdminUserSession]) {
         self.id = id
         self.name = name
         self.phone = phone
@@ -35,6 +39,10 @@ public struct AdminUserDetail: Codable, JSONEncodable, Hashable {
         self.provinceName = provinceName
         self.phoneVerifiedAt = phoneVerifiedAt
         self.lastLoginAt = lastLoginAt
+        self.lastSeenAt = lastSeenAt
+        self.recentlyActive = recentlyActive
+        self.facilityCount = facilityCount
+        self.sessionCount = sessionCount
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.roleIds = roleIds
@@ -51,6 +59,10 @@ public struct AdminUserDetail: Codable, JSONEncodable, Hashable {
         case provinceName
         case phoneVerifiedAt
         case lastLoginAt
+        case lastSeenAt
+        case recentlyActive
+        case facilityCount
+        case sessionCount
         case createdAt
         case updatedAt
         case roleIds
@@ -70,6 +82,10 @@ public struct AdminUserDetail: Codable, JSONEncodable, Hashable {
         try container.encode(provinceName, forKey: .provinceName)
         try container.encode(phoneVerifiedAt, forKey: .phoneVerifiedAt)
         try container.encode(lastLoginAt, forKey: .lastLoginAt)
+        try container.encode(lastSeenAt, forKey: .lastSeenAt)
+        try container.encode(recentlyActive, forKey: .recentlyActive)
+        try container.encode(facilityCount, forKey: .facilityCount)
+        try container.encode(sessionCount, forKey: .sessionCount)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(updatedAt, forKey: .updatedAt)
         try container.encode(roleIds, forKey: .roleIds)

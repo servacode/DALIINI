@@ -13498,6 +13498,16 @@ components:
           type: string
           format: date-time
           nullable: true
+        lastSeenAt:
+          type: string
+          format: date-time
+          nullable: true
+        recentlyActive:
+          type: boolean
+        facilityCount:
+          type: integer
+        sessionCount:
+          type: integer
         createdAt:
           type: string
           format: date-time
@@ -13509,13 +13519,17 @@ components:
       required:
       - active
       - createdAt
+      - facilityCount
       - id
       - lastLoginAt
+      - lastSeenAt
       - name
       - phone
       - phoneVerifiedAt
       - provinceId
       - provinceName
+      - recentlyActive
+      - sessionCount
       - updatedAt
     AdminUserCreateRequest:
       type: object
@@ -13567,6 +13581,16 @@ components:
           type: string
           format: date-time
           nullable: true
+        lastSeenAt:
+          type: string
+          format: date-time
+          nullable: true
+        recentlyActive:
+          type: boolean
+        facilityCount:
+          type: integer
+        sessionCount:
+          type: integer
         createdAt:
           type: string
           format: date-time
@@ -13591,14 +13615,18 @@ components:
       - active
       - createdAt
       - facilities
+      - facilityCount
       - id
       - lastLoginAt
+      - lastSeenAt
       - name
       - phone
       - phoneVerifiedAt
       - provinceId
       - provinceName
+      - recentlyActive
       - roleIds
+      - sessionCount
       - sessions
       - updatedAt
     AdminUserFacility:

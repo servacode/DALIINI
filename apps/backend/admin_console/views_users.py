@@ -28,6 +28,7 @@ from .schemas import (
 from .serializers import (
     user_facilities_payload,
     user_payload,
+    user_rows,
     user_sessions_payload,
 )
 from .services import (
@@ -101,7 +102,7 @@ class UserListView(AdminView):
                         by |= Q(role_id=int(value))
                     operators = operators.filter(by)
                 qs = qs.filter(pk__in=operators.values("user_id"))
-        return _page(request, qs.select_related("province"), user_payload)
+        return _page(request, user_rows(qs), user_payload)
 
     @extend_schema(
         operation_id="adminUserCreate",

@@ -38,6 +38,14 @@ class AdminUserSerializer(serializers.Serializer[Any]):
     provinceName = serializers.CharField(allow_null=True)
     phoneVerifiedAt = serializers.DateTimeField(allow_null=True)
     lastLoginAt = serializers.DateTimeField(allow_null=True)
+    # When a live session of this account last rotated its refresh secret. Written at most
+    # once per access-token lifetime, so it is accurate to about a quarter of an hour.
+    lastSeenAt = serializers.DateTimeField(allow_null=True)
+    # True when that was within the last half hour. Deliberately not called «online»:
+    # nothing here knows whether an app is open, only when a session last proved itself.
+    recentlyActive = serializers.BooleanField()
+    facilityCount = serializers.IntegerField()
+    sessionCount = serializers.IntegerField()
     createdAt = serializers.DateTimeField(allow_null=True)
     updatedAt = serializers.DateTimeField(allow_null=True)
 

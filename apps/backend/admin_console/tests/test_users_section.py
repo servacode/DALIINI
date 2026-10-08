@@ -247,3 +247,91 @@ def test_revoking_sessions_signs_the_devices_out_and_leaves_the_account_active(
     assert body["sessions"] == []
     assert UserSession.objects.filter(user=person, revoked_at__isnull=True).count() == 0
     assert AuditEvent.objects.filter(action="user.sessions_revoked").exists()
+
+
+# ----------------------------------------------------------------- the card's own facts
+
+
+@pytest.mark.django_db
+def test_a_row_carries_what_a_card_shows(admin_api: Any, facility: Facility) -> None:
+    person = _person(facility.province)
+    FacilityMembership.objects.create(
+        user=person, facility=facility, role=FacilityMembership.Role.OWNER
+    )
+    UserSession.objects.create(
+        user=person,
+        refresh_digest="live",
+        last_seen_at=timezone.now(),
+        expires_at=timezone.now() + timedelta(days=30),
+    )
+    client = admin_api(READ)
+
+    row = next(
+        item
+        for item in client.get("/api/v1/admin/users/").json()["items"]
+        if item["id"] == str(person.pk)
+    )
+
+    assert row["facilityCount"] == 1
+    assert row["sessionCount"] == 1
+    assert row["lastSeenAt"] is not None
+    assert row["recentlyActive"] is True
+
+
+@pytest.mark.django_db
+def test_an_account_last_seen_yesterday_is_not_called_active(
+    admin_api: Any, province: Province
+) -> None:
+    """«Recently active» is a claim about the last half hour, and it has to be false sometimes."""
+    person = _person(province)
+    UserSession.objects.create(
+        user=person,
+        refresh_digest="stale",
+        last_seen_at=timezone.now() - timedelta(days=1),
+        expires_at=timezone.now() + timedelta(days=30),
+    )
+    client = admin_api(READ)
+
+    row = next(
+        item
+        for item in client.get("/api/v1/admin/users/").json()["items"]
+        if item["id"] == str(person.pk)
+    )
+
+    assert row["recentlyActive"] is False
+    assert row["sessionCount"] == 1
+
+
+@pytest.mark.django_db
+def test_the_list_asks_the_same_number_of_questions_however_many_rows(
+    admin_api: Any, facility: Facility, django_assert_num_queries: Any
+) -> None:
+    """Three counts per card would be three hundred queries on a page of a hundred."""
+    client = admin_api(READ)
+
+    made = 0
+
+    def load(people: int) -> int:
+        nonlocal made
+        for _ in range(people):
+            made += 1
+            person = _person(facility.province, phone=f"+96390077{made:04d}")
+            FacilityMembership.objects.create(
+                user=person, facility=facility, role=FacilityMembership.Role.MANAGER
+            )
+            UserSession.objects.create(
+                user=person,
+                refresh_digest=f"session-{person.pk}",
+                expires_at=timezone.now() + timedelta(days=30),
+            )
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        with CaptureQueriesContext(connection) as captured:
+            assert client.get("/api/v1/admin/users/").status_code == 200
+        return len(captured)
+
+    one = load(1)
+    many = load(9)
+
+    assert many == one, f"{one} queries for 1 account, {many} for 10"
