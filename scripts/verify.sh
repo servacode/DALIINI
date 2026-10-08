@@ -150,7 +150,9 @@ case " $SELECTED " in *" android "*)
 # ---------------------------------------------------------------- bot
 case " $SELECTED " in *" bot "*)
   echo "-- whatsapp bot --"
-  check "bot tests" "node --test" env -C services/whatsapp-bot node --test "test/queue.test.js"
+  # Every test file, not a named one: `message.test.js` was added later, and a gate that runs
+  # only the files it was first written for passes over the rest without a word.
+  check "bot tests" "node --test" env -C services/whatsapp-bot node --test "test/queue.test.js" "test/message.test.js"
   echo
 ;; esac
 

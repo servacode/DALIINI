@@ -313,7 +313,7 @@ Name | Type | Description  | Notes
 
 # **adminUserCreate**
 ```swift
-    open class func adminUserCreate(adminUserCreateRequest: AdminUserCreateRequest, completion: @escaping (_ data: AdminUser?, _ error: Error?) -> Void)
+    open class func adminUserCreate(adminUserCreateRequest: AdminUserCreateRequest, completion: @escaping (_ data: AdminUserCreated?, _ error: Error?) -> Void)
 ```
 
 Open an account from the console
@@ -348,7 +348,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**AdminUser**](AdminUser.md)
+[**AdminUserCreated**](AdminUserCreated.md)
 
 ### Authorization
 
@@ -613,7 +613,7 @@ Name | Type | Description  | Notes
 
 # **adminUsersList**
 ```swift
-    open class func adminUsersList(cursor: String? = nil, id: String? = nil, limit: Int? = nil, ordering: String? = nil, q: String? = nil, role: String? = nil, status: String? = nil, completion: @escaping (_ data: AdminUserList?, _ error: Error?) -> Void)
+    open class func adminUsersList(cursor: String? = nil, id: String? = nil, kind: String? = nil, limit: Int? = nil, ordering: String? = nil, q: String? = nil, role: String? = nil, status: String? = nil, completion: @escaping (_ data: AdminUserList?, _ error: Error?) -> Void)
 ```
 
 Search user accounts
@@ -627,6 +627,7 @@ import ServaDirectoryAPI
 
 let cursor = "cursor_example" // String | Opaque token returned as `nextCursor` by the previous page. (optional)
 let id = "id_example" // String | One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone. (optional)
+let kind = "kind_example" // String | `owners` keeps accounts on at least one facility; `users` keeps the rest. (optional)
 let limit = 987 // Int | Page size, maximum 200, default 50. (optional)
 let ordering = "ordering_example" // String | createdAt, -createdAt (the default), name or -name. (optional)
 let q = "q_example" // String | Free text matched against the account name and phone number. (optional)
@@ -634,7 +635,7 @@ let role = "role_example" // String | Admin role id or code; keeps accounts hold
 let status = "status_example" // String | `active` keeps active accounts; any other value keeps blocked accounts. (optional)
 
 // Search user accounts
-AdminUsersAPI.adminUsersList(cursor: cursor, id: id, limit: limit, ordering: ordering, q: q, role: role, status: status) { (response, error) in
+AdminUsersAPI.adminUsersList(cursor: cursor, id: id, kind: kind, limit: limit, ordering: ordering, q: q, role: role, status: status) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -652,6 +653,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **cursor** | **String** | Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] 
  **id** | **String** | One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone. | [optional] 
+ **kind** | **String** | &#x60;owners&#x60; keeps accounts on at least one facility; &#x60;users&#x60; keeps the rest. | [optional] 
  **limit** | **Int** | Page size, maximum 200, default 50. | [optional] 
  **ordering** | **String** | createdAt, -createdAt (the default), name or -name. | [optional] 
  **q** | **String** | Free text matched against the account name and phone number. | [optional] 

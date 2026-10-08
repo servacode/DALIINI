@@ -3,24 +3,30 @@
 import { useState } from "react";
 
 import { useCan } from "../../../components/admin-shell";
+import { Icon } from "../../../components/icons";
 import {
   ConfirmDialog,
   EmptyState,
   ErrorState,
   FieldError,
-  FilterBar,
   LoadingState,
-  PageHeader,
   Pagination,
   termsFor,
   Toast,
-  pageSummary,
 } from "../../../components/ui";
-import { ProfileCard, SidePanel, relativeTime } from "../../../components/ui/extra";
+import {
+  FilterChips,
+  FormDialog,
+  PageHero,
+  ProfileCard,
+  SearchBox,
+  relativeTime,
+} from "../../../components/ui/extra";
 import { useCursorPage } from "../../../lib/client/use-cursor-page";
 import { useMutation } from "../../../lib/client/use-mutation";
 import { useResource } from "../../../lib/client/use-resource";
 import { useUrlFilters } from "../../../lib/client/use-url-filters";
+import { LOCALE, withoutDirectionMarks } from "../../../lib/locale";
 
 type AdminUser = Readonly<{
   id: string;
@@ -38,17 +44,27 @@ type AdminUser = Readonly<{
   createdAt: string | null;
 }>;
 
-type Facility = Readonly<{ id: string; nameAr: string; role: string; status: string }>;
+type Created = AdminUser & Readonly<{ codeSent: boolean; codeError: string | null }>;
 
-type Role = Readonly<{ id: number; code: string; name: string; permissions: readonly string[] }>;
+type Facility = Readonly<{ id: string; nameAr: string; role: string; status: string }>;
 
 type Province = Readonly<{ id: string; nameAr: string }>;
 
 type Action = "block" | "unblock" | "recovery" | "mfa";
 
-const NUMBER = new Intl.NumberFormat("ar-SY");
+/** Which accounts the list shows. One choice, so it is one row of chips, not three menus. */
+type Show = "" | "owners" | "users" | "blocked";
+
+const NUMBER = new Intl.NumberFormat(LOCALE);
 const MEMBER_ROLE: Record<string, string> = { OWNER: "مالك", MANAGER: "مدير" };
 const FACILITY_STATUS = termsFor("facilityStatus");
+
+const SHOW: readonly { value: Show; label: string }[] = [
+  { value: "", label: "الكل" },
+  { value: "owners", label: "أصحاب منشآت" },
+  { value: "users", label: "مستخدمون" },
+  { value: "blocked", label: "محظورون" },
+];
 
 /**
  * The first letters of the name, which is what stands in for a photograph.
@@ -67,32 +83,32 @@ function initials(name: string): string {
 }
 
 /**
- * Every account registered in the app, each one a card that holds all of itself
- * (DECISION-106).
+ * Every account registered in the app, each one an identity card that holds all of itself
+ * (DECISION-106), on a page in the cards' own language (DECISION-107).
  *
- * There is no separate detail page. A card opens in place: the operator stays in the list,
- * keeps the page they searched and filtered, and can open a second account without going
- * back. `/users/<id>` still resolves — it redirects here with that card open — so the links
- * already written in audit entries and messages keep working.
- *
- * What a card shows closed is what a decision usually needs: who, where, whether they are
- * blocked, when they were last active, how many places hang off them. What opening adds is
- * the detail behind those counts, and it is not fetched until it is asked for, so a page of
- * a hundred cards costs one request.
+ * The filters apply as they change — a search after a pause in typing, a chip the moment it
+ * is pressed — so there is no «apply» button for the operator to remember. Opening an account
+ * is a short form in a window, and the account's first code goes to WhatsApp by itself.
  */
 export default function UsersPage() {
   const [filters, setFilters] = useUrlFilters({
     q: "",
-    status: "",
-    role: "",
+    show: "",
     ordering: "",
     id: "",
   });
-  const users = useCursorPage<AdminUser>("users", filters);
+  // The chips are one choice for the reader and two parameters for the server: who runs a
+  // place is `kind`, who is shut is `status`.
+  const show = (filters.show || "") as Show;
+  const query = {
+    q: filters.q,
+    ordering: filters.ordering,
+    id: filters.id,
+    kind: show === "owners" || show === "users" ? show : "",
+    status: show === "blocked" ? "blocked" : "",
+  };
+  const users = useCursorPage<AdminUser>("users", query);
   const canManageUsers = useCan("admin.users.manage");
-  // Roles sit behind their own permission; without it the filter still offers "any role"
-  // and "no role", which the backend answers from the user table alone.
-  const roles = useResource<{ items: Role[] }>("roles");
   const provinces = useResource<{ items: Province[] }>(
     "provinces",
     {},
@@ -107,6 +123,7 @@ export default function UsersPage() {
   const [draft, setDraft] = useState<{ name: string; phone: string; provinceId: string } | null>(
     null,
   );
+  const [created, setCreated] = useState<Created | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   function ask(action: Action, user: AdminUser): void {
@@ -114,68 +131,75 @@ export default function UsersPage() {
     setDialog({ action, user });
   }
 
+  function closeNew(): void {
+    setDraft(null);
+    setCreated(null);
+  }
+
   return (
     <div className="stack">
-      <PageHeader
+      <PageHero
+        eyebrow="إدارة المستخدمين"
         title="الحسابات"
-        description="كل حساب مسجّل في التطبيق. كل بطاقة تحمل حسابها كاملاً: حالته، وما يملكه، وأجهزته، وما يُفعل به."
-        actions={
+        description="كل حساب مسجّل في التطبيق، ببطاقته: من هو، وأين، وما المنشآت التي باسمه، ومتى كان آخر ظهور له."
+        action={
           canManageUsers ? (
             <button
               type="button"
-              className="button-primary"
+              className="page-hero-action"
               data-testid="new-account"
               onClick={() => {
                 mutation.reset();
+                setCreated(null);
                 setDraft({ name: "", phone: "", provinceId: "" });
               }}
             >
+              <Icon name="plus" />
               حساب جديد
             </button>
           ) : null
         }
       />
 
-      <FilterBar
-        fields={[
-          { name: "q", label: "بحث", placeholder: "اسم أو رقم هاتف" },
-          {
-            name: "status",
-            label: "الحالة",
-            type: "select",
-            options: [
-              { value: "active", label: "فعّال" },
-              { value: "blocked", label: "محظور" },
-            ],
-          },
-          {
-            name: "role",
-            label: "الدور",
-            type: "select",
-            options: [
-              { value: "any", label: "أي دور إداري" },
-              { value: "none", label: "بلا دور إداري" },
-              ...(roles.data?.items ?? []).map((role) => ({
-                value: role.code,
-                label: role.name,
-              })),
-            ],
-          },
-          {
-            name: "ordering",
-            label: "الترتيب",
-            type: "select",
-            options: [
-              { value: "-createdAt", label: "الأحدث تسجيلاً" },
-              { value: "createdAt", label: "الأقدم تسجيلاً" },
-              { value: "name", label: "الاسم (أ إلى ي)" },
-              { value: "-name", label: "الاسم (ي إلى أ)" },
-            ],
-          },
-        ]}
-        values={filters}
-        onApply={setFilters}
-      />
+      <div className="live-toolbar" data-testid="accounts-toolbar">
+        <SearchBox
+          value={filters.q}
+          placeholder="ابحث باسم أو رقم هاتف"
+          testId="accounts-search"
+          onChange={(q) => setFilters({ ...filters, q, id: "" })}
+        />
+        <FilterChips
+          label="عرض"
+          value={show}
+          options={SHOW}
+          testId="accounts-show"
+          onChange={(next) => setFilters({ ...filters, show: next, id: "" })}
+        />
+        <select
+          className="toolbar-select"
+          aria-label="الترتيب"
+          value={filters.ordering}
+          data-testid="accounts-ordering"
+          onChange={(event) => setFilters({ ...filters, ordering: event.target.value })}
+        >
+          <option value="">الأحدث تسجيلاً</option>
+          <option value="createdAt">الأقدم تسجيلاً</option>
+          <option value="name">الاسم (أ إلى ي)</option>
+          <option value="-name">الاسم (ي إلى أ)</option>
+        </select>
+      </div>
+
+      {linked ? (
+        <p>
+          <button
+            type="button"
+            className="button-link"
+            onClick={() => setFilters({ ...filters, id: "" })}
+          >
+            عرض كل الحسابات
+          </button>
+        </p>
+      ) : null}
 
       {users.loading ? <LoadingState /> : null}
       {users.error ? <ErrorState error={users.error} onRetry={users.reload} /> : null}
@@ -183,39 +207,23 @@ export default function UsersPage() {
       {users.data && users.data.items.length === 0 ? (
         <EmptyState
           title="لا حساب يطابق البحث."
-          hint="جرّب اسماً أو رقماً آخر، أو امسح المرشّحات."
+          hint="جرّب اسماً أو رقماً آخر، أو اختر «الكل»."
           illustration="noResults"
         />
       ) : null}
 
       {users.data && users.data.items.length > 0 ? (
-        <>
-          <p className="muted" data-testid="accounts-summary">
-            {pageSummary(users.data.items.length, users.data.hasMore)}
-          </p>
-          {linked ? (
-            <p>
-              <button
-                type="button"
-                className="button-link"
-                onClick={() => setFilters({ ...filters, id: "" })}
-              >
-                عرض كل الحسابات
-              </button>
-            </p>
-          ) : null}
-          <ul className="profile-grid" data-testid="accounts">
-            {users.data.items.map((user) => (
-              <AccountCard
-                key={user.id}
-                user={user}
-                focused={linked === user.id}
-                canManageUsers={canManageUsers}
-                onAction={ask}
-              />
-            ))}
-          </ul>
-        </>
+        <ul className="profile-grid" data-testid="accounts">
+          {users.data.items.map((user) => (
+            <AccountCard
+              key={user.id}
+              user={user}
+              focused={linked === user.id}
+              canManageUsers={canManageUsers}
+              onAction={ask}
+            />
+          ))}
+        </ul>
       ) : null}
 
       {users.pagination ? <Pagination {...users.pagination} /> : null}
@@ -231,68 +239,102 @@ export default function UsersPage() {
         onCancel={() => setDialog(null)}
       />
 
-      <SidePanel
+      <FormDialog
         open={draft !== null}
-        title="حساب جديد"
-        description="اللوحة لا تضع كلمة مرور لأحد. يُفتح الحساب بلا كلمة، ثم تُرسل له رمز استعادة من بطاقته ليختار كلمته بنفسه."
-        onClose={() => setDraft(null)}
+        icon={created ? "check" : "user"}
+        title={created ? "فُتح الحساب" : "حساب جديد"}
+        description={
+          created
+            ? created.name
+            : "لا تُكتب كلمة مرور هنا. يصل صاحب الحساب رمز على واتساب ويختار كلمته بنفسه."
+        }
+        onClose={closeNew}
         locked={mutation.pending}
-        testId="new-account-panel"
+        testId="new-account-dialog"
         footer={
-          <>
-            <button
-              type="button"
-              className="button-primary"
-              data-testid="create-account"
-              disabled={
-                mutation.pending ||
-                !draft?.name.trim() ||
-                !draft?.phone.trim() ||
-                !draft?.provinceId
-              }
-              onClick={async () => {
-                if (!draft) return;
-                if (await mutation.run("userCreate", draft)) {
-                  setDraft(null);
-                  setToast("فُتح الحساب. أرسل له رمز استعادة من بطاقته ليختار كلمة مروره.");
-                  users.reload();
+          created ? (
+            <button type="button" className="button-primary" onClick={closeNew}>
+              تمّ
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="button-primary"
+                data-testid="create-account"
+                disabled={
+                  mutation.pending ||
+                  !draft?.name.trim() ||
+                  !draft?.phone.trim() ||
+                  !draft?.provinceId
                 }
-              }}
-            >
-              {mutation.pending ? "جارٍ الفتح…" : "فتح الحساب"}
-            </button>
-            <button
-              type="button"
-              className="button-ghost"
-              disabled={mutation.pending}
-              onClick={() => setDraft(null)}
-            >
-              إلغاء
-            </button>
-          </>
+                onClick={async () => {
+                  if (!draft) return;
+                  const result = await mutation.runFor<Created>("userCreate", {
+                    ...draft,
+                    phone: `0${draft.phone.replace(/^0+/, "")}`,
+                  });
+                  if (result) {
+                    setCreated(result);
+                    users.reload();
+                  }
+                }}
+              >
+                {mutation.pending ? "جارٍ الفتح…" : "فتح الحساب وإرسال الرمز"}
+              </button>
+              <button
+                type="button"
+                className="button-ghost"
+                disabled={mutation.pending}
+                onClick={closeNew}
+              >
+                إلغاء
+              </button>
+            </>
+          )
         }
       >
-        {draft ? (
-          <div className="stack">
+        {created ? (
+          <div
+            className={created.codeSent ? "form-result" : "form-result form-result-warn"}
+            data-testid="new-account-result"
+          >
+            <span className="form-result-mark" aria-hidden="true">
+              <Icon name={created.codeSent ? "whatsapp" : "alert"} width={26} height={26} />
+            </span>
+            <strong>{created.codeSent ? "أُرسل الرمز على واتساب" : "لم يُرسل الرمز"}</strong>
+            <p>
+              {created.codeSent
+                ? `وصل الرمز إلى ${created.phone}. يفتح صاحبه التطبيق ويختار «نسيت كلمة المرور» برقمه، فيكتب الرمز ويضع كلمته.`
+                : `${created.codeError ?? "تعذّر الإرسال."} الحساب مفتوح، وتستطيع إعادة الإرسال من بطاقته بزرّ «رمز استعادة».`}
+            </p>
+          </div>
+        ) : draft ? (
+          <>
             <label className="field">
               <span>الاسم</span>
               <input
                 data-testid="account-name"
                 value={draft.name}
                 maxLength={120}
+                placeholder="الاسم الكامل"
                 onChange={(event) => setDraft({ ...draft, name: event.target.value })}
               />
             </label>
             <label className="field">
-              <span>رقم الهاتف</span>
-              <input
-                data-testid="account-phone"
-                dir="ltr"
-                inputMode="tel"
-                placeholder="09XXXXXXXX"
-                value={draft.phone}
-                onChange={(event) => setDraft({ ...draft, phone: event.target.value })}
-              />
+              <span>رقم الهاتف (واتساب)</span>
+              <span className="phone-input">
+                <span>+963</span>
+                <input
+                  data-testid="account-phone"
+                  inputMode="tel"
+                  placeholder="9XX XXX XXX"
+                  value={draft.phone}
+                  onChange={(event) =>
+                    setDraft({ ...draft, phone: event.target.value.replace(/[^\d]/g, "") })
+                  }
+                />
+              </span>
             </label>
             <label className="field">
               <span>المحافظة</span>
@@ -310,9 +352,9 @@ export default function UsersPage() {
               </select>
             </label>
             <FieldError id="create-account-error" message={mutation.error?.message} />
-          </div>
+          </>
         ) : null}
-      </SidePanel>
+      </FormDialog>
 
       <Toast message={toast} onDismiss={() => setToast(null)} />
     </div>
@@ -416,16 +458,18 @@ function AccountCard({
   );
 }
 
-/** «٨/١٠/٢٦» — a date that fits a third of a narrow card; the month's name did not. */
+/** «8/10/26» — a date that fits a third of a narrow card; the month's name did not. */
 function shortDate(value: string | null): string {
   if (!value) return "—";
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? "—"
-    : date.toLocaleDateString("ar-SY", { day: "numeric", month: "numeric", year: "2-digit" });
+    : withoutDirectionMarks(
+        date.toLocaleDateString(LOCALE, { day: "numeric", month: "numeric", year: "2-digit" }),
+      );
 }
 
-/** «٣ س», «أمس», «٥ أيام» — the last sign-in, short enough for a third of a card. */
+/** «3 س», «أمس», «5 يوم» — the last sign-in, short enough for a third of a card. */
 function shortAgo(value: string): string {
   const minutes = Math.max(0, Math.round((Date.now() - new Date(value).getTime()) / 60000));
   if (minutes < 60) return `${NUMBER.format(minutes)} د`;

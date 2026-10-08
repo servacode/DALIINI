@@ -9,8 +9,9 @@ import {
   useState,
 } from "react";
 
-import { Icon, Icons } from "../icons";
+import { type IconName, Icon, Icons } from "../icons";
 import { BrandMark } from "./index";
+import { LOCALE } from "../../lib/locale";
 
 /**
  * Shared components added with the operations screens (duty roster, content, broadcast,
@@ -21,8 +22,8 @@ import { BrandMark } from "./index";
  * RTL by inheritance, every state visible — and every one is shown on the design page.
  */
 
-const NUMBER = new Intl.NumberFormat("ar-SY");
-const PERCENT = new Intl.NumberFormat("ar-SY", { style: "percent", maximumFractionDigits: 1 });
+const NUMBER = new Intl.NumberFormat(LOCALE);
+const PERCENT = new Intl.NumberFormat(LOCALE, { style: "percent", maximumFractionDigits: 1 });
 
 // --------------------------------------------------------------------------------------
 // Side panel
@@ -554,4 +555,201 @@ export function relativeTime(value: string): string {
   return `منذ ${NUMERALS.format(Math.round(months / 12))} سنة`;
 }
 
-const NUMERALS = new Intl.NumberFormat("ar-SY");
+const NUMERALS = new Intl.NumberFormat(LOCALE);
+
+// --------------------------------------------------------------------------------------
+// Section hero, live toolbar, form dialog (DECISION-107)
+// --------------------------------------------------------------------------------------
+
+/** A section's opening: an emerald band in the identity cards' own language. */
+export function PageHero({
+  eyebrow,
+  title,
+  description,
+  action,
+}: {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  action?: ReactNode;
+}) {
+  return (
+    <header className="page-hero">
+      <div className="page-hero-text">
+        {eyebrow ? <span className="page-hero-eyebrow">{eyebrow}</span> : null}
+        <h1>{title}</h1>
+        {description ? <p>{description}</p> : null}
+      </div>
+      {action}
+    </header>
+  );
+}
+
+/**
+ * A search field that applies itself.
+ *
+ * Typing waits for a pause before it asks the server, so a name is one request rather than
+ * one per letter, and clearing it applies at once.
+ */
+export function SearchBox({
+  value,
+  onChange,
+  placeholder,
+  delay = 350,
+  testId,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  delay?: number;
+  testId?: string;
+}) {
+  const [draft, setDraft] = useState(value);
+  const [seen, setSeen] = useState(value);
+  // Follows the address bar when it changes from outside (back button, a shared link),
+  // adjusted during render so the box never shows one search while the list shows another.
+  if (seen !== value) {
+    setSeen(value);
+    setDraft(value);
+  }
+  const apply = useEffectEvent((next: string) => onChange(next));
+  useEffect(() => {
+    if (draft === value) return;
+    const timer = window.setTimeout(() => apply(draft.trim()), delay);
+    return () => window.clearTimeout(timer);
+  }, [draft, value, delay]);
+
+  return (
+    <label className="search-box">
+      <Icon name="search" />
+      <input
+        type="search"
+        value={draft}
+        placeholder={placeholder}
+        aria-label={placeholder}
+        data-testid={testId}
+        onChange={(event) => setDraft(event.target.value)}
+      />
+      {draft ? (
+        <button
+          type="button"
+          aria-label="مسح البحث"
+          onClick={() => {
+            setDraft("");
+            onChange("");
+          }}
+        >
+          <Icon name="close" width={16} height={16} />
+        </button>
+      ) : null}
+    </label>
+  );
+}
+
+/** One choice out of a few, applied the moment it is pressed. */
+export function FilterChips<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+  testId,
+}: {
+  label: string;
+  value: T;
+  options: readonly { value: T; label: string }[];
+  onChange: (value: T) => void;
+  testId?: string;
+}) {
+  return (
+    <div className="filter-chips" role="group" aria-label={label} data-testid={testId}>
+      {options.map((option) => (
+        <button
+          key={option.value || "all"}
+          type="button"
+          className="filter-chip"
+          aria-pressed={value === option.value}
+          data-testid={testId ? `${testId}-${option.value || "all"}` : undefined}
+          onClick={() => onChange(option.value)}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * A short form in a centered window: a branded head, the fields, and the two buttons.
+ *
+ * Escape and the backdrop close it unless it is sending, and focus starts on the first field.
+ */
+export function FormDialog({
+  open,
+  icon,
+  title,
+  description,
+  onClose,
+  locked,
+  footer,
+  children,
+  testId,
+}: {
+  open: boolean;
+  icon: IconName;
+  title: string;
+  description?: string;
+  onClose: () => void;
+  locked?: boolean;
+  footer?: ReactNode;
+  children: ReactNode;
+  testId?: string;
+}) {
+  const headingId = useId();
+  const box = useRef<HTMLDivElement>(null);
+  const close = useEffectEvent(() => {
+    if (!locked) onClose();
+  });
+  useEffect(() => {
+    if (!open) return;
+    box.current
+      ?.querySelector<HTMLElement>("input, select, textarea, button")
+      ?.focus({ preventScroll: true });
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  if (!open) return null;
+  return (
+    <div
+      className="dialog-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !locked) onClose();
+      }}
+    >
+      <div
+        className="panel dialog form-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={headingId}
+        ref={box}
+        data-testid={testId}
+      >
+        <div className="form-dialog-head">
+          <span className="form-dialog-icon" aria-hidden="true">
+            <Icon name={icon} width={22} height={22} />
+          </span>
+          <span>
+            <h2 id={headingId}>{title}</h2>
+            {description ? <p>{description}</p> : null}
+          </span>
+        </div>
+        <div className="form-dialog-body">{children}</div>
+        {footer ? <div className="form-dialog-foot">{footer}</div> : null}
+      </div>
+    </div>
+  );
+}

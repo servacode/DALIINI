@@ -283,7 +283,7 @@ val webService = apiClient.createWebservice(AdminUsersApi::class.java)
 val adminUserCreateRequest : AdminUserCreateRequest =  // AdminUserCreateRequest | 
 
 launch(Dispatchers.IO) {
-    val result : AdminUser = webService.adminUserCreate(adminUserCreateRequest)
+    val result : AdminUserCreated = webService.adminUserCreate(adminUserCreateRequest)
 }
 ```
 
@@ -294,7 +294,7 @@ launch(Dispatchers.IO) {
 
 ### Return type
 
-[**AdminUser**](AdminUser.md)
+[**AdminUserCreated**](AdminUserCreated.md)
 
 ### Authorization
 
@@ -534,6 +534,7 @@ apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AdminUsersApi::class.java)
 val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
 val id : kotlin.String = id_example // kotlin.String | One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone.
+val kind : kotlin.String = kind_example // kotlin.String | `owners` keeps accounts on at least one facility; `users` keeps the rest.
 val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 200, default 50.
 val ordering : kotlin.String = ordering_example // kotlin.String | createdAt, -createdAt (the default), name or -name.
 val q : kotlin.String = q_example // kotlin.String | Free text matched against the account name and phone number.
@@ -541,13 +542,14 @@ val role : kotlin.String = role_example // kotlin.String | Admin role id or code
 val status : kotlin.String = status_example // kotlin.String | `active` keeps active accounts; any other value keeps blocked accounts.
 
 launch(Dispatchers.IO) {
-    val result : AdminUserList = webService.adminUsersList(cursor, id, limit, ordering, q, role, status)
+    val result : AdminUserList = webService.adminUsersList(cursor, id, kind, limit, ordering, q, role, status)
 }
 ```
 
 ### Parameters
 | **cursor** | **kotlin.String**| Opaque token returned as &#x60;nextCursor&#x60; by the previous page. | [optional] |
 | **id** | **kotlin.String**| One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone. | [optional] |
+| **kind** | **kotlin.String**| &#x60;owners&#x60; keeps accounts on at least one facility; &#x60;users&#x60; keeps the rest. | [optional] |
 | **limit** | **kotlin.Int**| Page size, maximum 200, default 50. | [optional] |
 | **ordering** | **kotlin.String**| createdAt, -createdAt (the default), name or -name. | [optional] |
 | **q** | **kotlin.String**| Free text matched against the account name and phone number. | [optional] |

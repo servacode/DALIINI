@@ -19,6 +19,7 @@ import { type PermissionArea, areasFor, permissionLabel } from "../../../../lib/
 import { useMutation } from "../../../../lib/client/use-mutation";
 import { useResource } from "../../../../lib/client/use-resource";
 import { fieldErrorsFor } from "../../../../lib/errors/messages";
+import { LOCALE } from "../../../../lib/locale";
 
 type Role = Readonly<{
   id: number;
@@ -34,7 +35,7 @@ type Catalogue = Readonly<{ items: readonly Readonly<{ code: string; description
 /** The role in the sheet: a new one has no id. */
 type Draft = Readonly<{ id: number | null; name: string; permissions: ReadonlySet<string> }>;
 
-const NUMBER = new Intl.NumberFormat("ar-SY");
+const NUMBER = new Intl.NumberFormat(LOCALE);
 
 /**
  * The roles operators hold, and what each one may do (DECISION-072).

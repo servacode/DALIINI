@@ -12,6 +12,7 @@ import {
   formatDateTime,
 } from "../../../components/ui";
 import { useResource } from "../../../lib/client/use-resource";
+import { LOCALE } from "../../../lib/locale";
 
 type Status = "ok" | "warning" | "failed" | "off";
 
@@ -76,7 +77,7 @@ const OVERALL: Record<SystemStatus["overall"], string> = {
   failed: "خدمة على الأقل متوقفة. ابدأ بالبطاقات الحمراء.",
 };
 
-const NUMBER = new Intl.NumberFormat("ar-SY");
+const NUMBER = new Intl.NumberFormat(LOCALE);
 
 /**
  * Every dependency, asked directly when the page opens and every minute after (DECISION-073).

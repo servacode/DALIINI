@@ -126,7 +126,7 @@ describe("TaxonomyTagsPage", () => {
     await within(specialties).findByText("قلبية");
     expect((screen.getByTestId("tags-category") as HTMLSelectElement).value).toBe("c-clinic");
     expect(within(specialties).getByText("كل العيادات")).toBeTruthy();
-    expect(within(specialties).getByText("٣ منشآت")).toBeTruthy();
+    expect(within(specialties).getByText("3 منشآت")).toBeTruthy();
     expect(within(specialties).getByText("غير مستخدم")).toBeTruthy();
     const services = screen.getByTestId("service-panel");
     await within(services).findByText("لا خدمات لهذا التصنيف بعد");

@@ -22,6 +22,7 @@ import { uploadAdImage } from "../../../lib/client/files";
 import { useMutation } from "../../../lib/client/use-mutation";
 import { useResource } from "../../../lib/client/use-resource";
 import { fieldErrorsFor, isSessionExpired, messageFor } from "../../../lib/errors/messages";
+import { LOCALE } from "../../../lib/locale";
 
 type Advertisement = Readonly<{
   id: string;
@@ -49,8 +50,8 @@ type AdStats = Readonly<{
   }>[];
 }>;
 
-const NUMBER = new Intl.NumberFormat("ar-SY");
-const PERCENT = new Intl.NumberFormat("ar-SY", { style: "percent", maximumFractionDigits: 1 });
+const NUMBER = new Intl.NumberFormat(LOCALE);
+const PERCENT = new Intl.NumberFormat(LOCALE, { style: "percent", maximumFractionDigits: 1 });
 
 /** A dash while the numbers load, or for an advertisement created after they were read. */
 function count(value: number | undefined): string {

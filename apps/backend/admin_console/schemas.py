@@ -82,6 +82,18 @@ class AdminUserCreateRequestSerializer(serializers.Serializer[Any]):
     provinceId = serializers.UUIDField()
 
 
+class AdminUserCreatedSerializer(AdminUserSerializer):
+    """The account just opened, and whether its first code reached WhatsApp.
+
+    The code is sent on its own once the account exists. When it could not be — the number
+    is not on WhatsApp, the channel is down — the account is kept and `codeError` says why,
+    so the operator can tell the person or try again from the card.
+    """
+
+    codeSent = serializers.BooleanField()
+    codeError = serializers.CharField(allow_null=True)
+
+
 class AdminUserRecoverySentSerializer(serializers.Serializer[Any]):
     """The code is on its way. Neither the code nor the challenge id is returned.
 

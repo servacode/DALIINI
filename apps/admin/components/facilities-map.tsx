@@ -17,6 +17,7 @@ import {
   type Tone,
   termsFor,
 } from "./ui";
+import { LOCALE } from "../lib/locale";
 
 /**
  * Every located facility the filters select, on the base map (DECISION-075).
@@ -43,7 +44,7 @@ type Point = Readonly<{
 type MapData = Readonly<{ items: readonly Point[]; truncated: boolean; withoutLocation: number }>;
 
 const STATUS = termsFor("facilityStatus");
-const NUMBER = new Intl.NumberFormat("ar-SY");
+const NUMBER = new Intl.NumberFormat(LOCALE);
 
 const TONE_TOKENS: Record<Tone, [string, string]> = {
   positive: ["--ad-success", "#1f8a5b"],

@@ -4,6 +4,7 @@ import { type ReactNode, useState } from "react";
 
 import { Icons } from "../icons";
 import { EmptyState } from "./index";
+import { LOCALE } from "../../lib/locale";
 
 /**
  * The console's table (phase 4.3).
@@ -304,7 +305,7 @@ export function DataTable<T>({
 }
 
 
-const COUNT = new Intl.NumberFormat("ar-SY");
+const COUNT = new Intl.NumberFormat(LOCALE);
 
 /**
  * The line above a paged table. A cursor list has no total, so it says what this page holds

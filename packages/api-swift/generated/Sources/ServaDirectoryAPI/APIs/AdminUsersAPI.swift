@@ -256,10 +256,10 @@ open class AdminUsersAPI {
      Open an account from the console
      
      - parameter adminUserCreateRequest: (body)  
-     - returns: AdminUser
+     - returns: AdminUserCreated
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminUserCreate(adminUserCreateRequest: AdminUserCreateRequest) async throws -> AdminUser {
+    open class func adminUserCreate(adminUserCreateRequest: AdminUserCreateRequest) async throws -> AdminUserCreated {
         return try await adminUserCreateWithRequestBuilder(adminUserCreateRequest: adminUserCreateRequest).execute().body
     }
 
@@ -271,9 +271,9 @@ open class AdminUsersAPI {
        - type: http
        - name: bearerAccessToken
      - parameter adminUserCreateRequest: (body)  
-     - returns: RequestBuilder<AdminUser> 
+     - returns: RequestBuilder<AdminUserCreated> 
      */
-    open class func adminUserCreateWithRequestBuilder(adminUserCreateRequest: AdminUserCreateRequest) -> RequestBuilder<AdminUser> {
+    open class func adminUserCreateWithRequestBuilder(adminUserCreateRequest: AdminUserCreateRequest) -> RequestBuilder<AdminUserCreated> {
         let localVariablePath = "/api/v1/admin/users/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminUserCreateRequest)
@@ -286,7 +286,7 @@ open class AdminUsersAPI {
 
         let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
 
-        let localVariableRequestBuilder: RequestBuilder<AdminUser>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+        let localVariableRequestBuilder: RequestBuilder<AdminUserCreated>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
 
         return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
     }
@@ -507,6 +507,7 @@ open class AdminUsersAPI {
      
      - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
      - parameter id: (query) One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone. (optional)
+     - parameter kind: (query) &#x60;owners&#x60; keeps accounts on at least one facility; &#x60;users&#x60; keeps the rest. (optional)
      - parameter limit: (query) Page size, maximum 200, default 50. (optional)
      - parameter ordering: (query) createdAt, -createdAt (the default), name or -name. (optional)
      - parameter q: (query) Free text matched against the account name and phone number. (optional)
@@ -515,8 +516,8 @@ open class AdminUsersAPI {
      - returns: AdminUserList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminUsersList(cursor: String? = nil, id: String? = nil, limit: Int? = nil, ordering: String? = nil, q: String? = nil, role: String? = nil, status: String? = nil) async throws -> AdminUserList {
-        return try await adminUsersListWithRequestBuilder(cursor: cursor, id: id, limit: limit, ordering: ordering, q: q, role: role, status: status).execute().body
+    open class func adminUsersList(cursor: String? = nil, id: String? = nil, kind: String? = nil, limit: Int? = nil, ordering: String? = nil, q: String? = nil, role: String? = nil, status: String? = nil) async throws -> AdminUserList {
+        return try await adminUsersListWithRequestBuilder(cursor: cursor, id: id, kind: kind, limit: limit, ordering: ordering, q: q, role: role, status: status).execute().body
     }
 
     /**
@@ -528,6 +529,7 @@ open class AdminUsersAPI {
        - name: bearerAccessToken
      - parameter cursor: (query) Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
      - parameter id: (query) One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone. (optional)
+     - parameter kind: (query) &#x60;owners&#x60; keeps accounts on at least one facility; &#x60;users&#x60; keeps the rest. (optional)
      - parameter limit: (query) Page size, maximum 200, default 50. (optional)
      - parameter ordering: (query) createdAt, -createdAt (the default), name or -name. (optional)
      - parameter q: (query) Free text matched against the account name and phone number. (optional)
@@ -535,7 +537,7 @@ open class AdminUsersAPI {
      - parameter status: (query) &#x60;active&#x60; keeps active accounts; any other value keeps blocked accounts. (optional)
      - returns: RequestBuilder<AdminUserList> 
      */
-    open class func adminUsersListWithRequestBuilder(cursor: String? = nil, id: String? = nil, limit: Int? = nil, ordering: String? = nil, q: String? = nil, role: String? = nil, status: String? = nil) -> RequestBuilder<AdminUserList> {
+    open class func adminUsersListWithRequestBuilder(cursor: String? = nil, id: String? = nil, kind: String? = nil, limit: Int? = nil, ordering: String? = nil, q: String? = nil, role: String? = nil, status: String? = nil) -> RequestBuilder<AdminUserList> {
         let localVariablePath = "/api/v1/admin/users/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -544,6 +546,7 @@ open class AdminUsersAPI {
         localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
             "cursor": (wrappedValue: cursor?.encodeToJSON(), isExplode: true),
             "id": (wrappedValue: id?.encodeToJSON(), isExplode: true),
+            "kind": (wrappedValue: kind?.encodeToJSON(), isExplode: true),
             "limit": (wrappedValue: limit?.encodeToJSON(), isExplode: true),
             "ordering": (wrappedValue: ordering?.encodeToJSON(), isExplode: true),
             "q": (wrappedValue: q?.encodeToJSON(), isExplode: true),

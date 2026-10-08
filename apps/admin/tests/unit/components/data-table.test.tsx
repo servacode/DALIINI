@@ -135,7 +135,7 @@ describe("helpers", () => {
   });
 
   it("says what a page holds without inventing a total", () => {
-    expect(pageSummary(50, true)).toBe("النتائج في هذه الصفحة: ٥٠، وبعدها المزيد");
-    expect(pageSummary(12, false)).toBe("النتائج: ١٢");
+    expect(pageSummary(50, true)).toBe("النتائج في هذه الصفحة: 50، وبعدها المزيد");
+    expect(pageSummary(12, false)).toBe("النتائج: 12");
   });
 });

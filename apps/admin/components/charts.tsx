@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { LOCALE } from "../lib/locale";
 
 /**
  * Charts drawn by hand in SVG (DECISION-075).
@@ -21,9 +22,9 @@ export type LineSeries = Readonly<{
   values: readonly number[];
 }>;
 
-const NUMBER = new Intl.NumberFormat("ar-SY");
-const DAY = new Intl.DateTimeFormat("ar-SY", { day: "numeric", month: "short", timeZone: "UTC" });
-const FULL_DAY = new Intl.DateTimeFormat("ar-SY", {
+const NUMBER = new Intl.NumberFormat(LOCALE);
+const DAY = new Intl.DateTimeFormat(LOCALE, { day: "numeric", month: "short", timeZone: "UTC" });
+const FULL_DAY = new Intl.DateTimeFormat(LOCALE, {
   weekday: "long",
   day: "numeric",
   month: "long",

@@ -18,6 +18,7 @@ import {
 import { Trend } from "../../../components/ui/extra";
 import { addDays, damascusDay } from "../../../lib/client/calendar";
 import { useResource } from "../../../lib/client/use-resource";
+import { LOCALE } from "../../../lib/locale";
 
 type PeriodKpis = Readonly<{
   from: string;
@@ -49,8 +50,8 @@ type Day = Readonly<{
   reports: number;
 }>;
 
-const NUMBER = new Intl.NumberFormat("ar-SY");
-const DECIMAL = new Intl.NumberFormat("ar-SY", { maximumFractionDigits: 1 });
+const NUMBER = new Intl.NumberFormat(LOCALE);
+const DECIMAL = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 1 });
 
 /** A period as the backend echoes it: `to` is the exclusive next midnight. */
 function echoed(kpis: PeriodKpis): Period {

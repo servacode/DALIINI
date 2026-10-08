@@ -19,6 +19,7 @@ import { CharCount } from "../../../../components/ui/extra";
 import { useMutation } from "../../../../lib/client/use-mutation";
 import { useResource } from "../../../../lib/client/use-resource";
 import { fieldErrorsFor } from "../../../../lib/errors/messages";
+import { LOCALE } from "../../../../lib/locale";
 
 type Draft = Readonly<{
   id?: string;
@@ -30,7 +31,7 @@ type Draft = Readonly<{
 
 const TITLE_MAX = 120;
 const BODY_MAX = 1000;
-const NUMBER = new Intl.NumberFormat("ar-SY");
+const NUMBER = new Intl.NumberFormat(LOCALE);
 
 /**
  * Ready-made rejection reasons.

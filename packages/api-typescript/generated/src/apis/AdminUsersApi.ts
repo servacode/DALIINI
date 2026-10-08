@@ -21,6 +21,7 @@ import type {
   AdminRoleList,
   AdminUser,
   AdminUserCreateRequest,
+  AdminUserCreated,
   AdminUserDetail,
   AdminUserList,
   AdminUserRecoverySent,
@@ -41,6 +42,8 @@ import {
     AdminUserToJSON,
     AdminUserCreateRequestFromJSON,
     AdminUserCreateRequestToJSON,
+    AdminUserCreatedFromJSON,
+    AdminUserCreatedToJSON,
     AdminUserDetailFromJSON,
     AdminUserDetailToJSON,
     AdminUserListFromJSON,
@@ -100,6 +103,7 @@ export interface AdminUserUnblockRequest {
 export interface AdminUsersListRequest {
     cursor?: string;
     id?: string;
+    kind?: string;
     limit?: number;
     ordering?: string;
     q?: string;
@@ -384,7 +388,7 @@ export class AdminUsersApi extends runtime.BaseAPI {
      * For appointing an operator without a shell on the server. No password is set: the account is opened without a usable one and the person chooses their own through recovery, which `adminUserRecoverySend` starts.
      * Open an account from the console
      */
-    async adminUserCreateRaw(requestParameters: AdminUserCreateOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminUser>> {
+    async adminUserCreateRaw(requestParameters: AdminUserCreateOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminUserCreated>> {
         if (requestParameters['adminUserCreateRequest'] == null) {
             throw new runtime.RequiredError(
                 'adminUserCreateRequest',
@@ -417,14 +421,14 @@ export class AdminUsersApi extends runtime.BaseAPI {
             body: AdminUserCreateRequestToJSON(requestParameters['adminUserCreateRequest']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => AdminUserFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminUserCreatedFromJSON(jsonValue));
     }
 
     /**
      * For appointing an operator without a shell on the server. No password is set: the account is opened without a usable one and the person chooses their own through recovery, which `adminUserRecoverySend` starts.
      * Open an account from the console
      */
-    async adminUserCreate(requestParameters: AdminUserCreateOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminUser> {
+    async adminUserCreate(requestParameters: AdminUserCreateOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminUserCreated> {
         const response = await this.adminUserCreateRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -683,6 +687,10 @@ export class AdminUsersApi extends runtime.BaseAPI {
 
         if (requestParameters['id'] != null) {
             queryParameters['id'] = requestParameters['id'];
+        }
+
+        if (requestParameters['kind'] != null) {
+            queryParameters['kind'] = requestParameters['kind'];
         }
 
         if (requestParameters['limit'] != null) {

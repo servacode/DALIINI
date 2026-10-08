@@ -52,6 +52,7 @@ from .services import (
     change_password,
     complete_phone_change,
     complete_registration,
+    hand_over_console_code,
     login,
     request_account_deletion,
     reset_password,
@@ -314,10 +315,11 @@ class RecoveryStartView(APIView):
     def post(self, request: Request) -> Response:
         serializer = RecoveryStartSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        challenge = start_challenge(
-            phone=serializer.validated_data["phone"],
-            purpose=OTPChallenge.Purpose.RECOVERY,
-        )
+        phone = serializer.validated_data["phone"]
+        handed = hand_over_console_code(phone)
+        if handed is not None:
+            return _challenge_response(handed)
+        challenge = start_challenge(phone=phone, purpose=OTPChallenge.Purpose.RECOVERY)
         return _challenge_response(challenge)
 
 

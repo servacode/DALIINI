@@ -400,6 +400,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminTimelineEventKindEnum](docs/AdminTimelineEventKindEnum.md)
  - [com.servacode.directory.api.models.AdminUser](docs/AdminUser.md)
  - [com.servacode.directory.api.models.AdminUserCreateRequest](docs/AdminUserCreateRequest.md)
+ - [com.servacode.directory.api.models.AdminUserCreated](docs/AdminUserCreated.md)
  - [com.servacode.directory.api.models.AdminUserDetail](docs/AdminUserDetail.md)
  - [com.servacode.directory.api.models.AdminUserFacility](docs/AdminUserFacility.md)
  - [com.servacode.directory.api.models.AdminUserList](docs/AdminUserList.md)

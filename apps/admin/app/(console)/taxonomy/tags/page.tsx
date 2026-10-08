@@ -20,6 +20,7 @@ import { useMutation } from "../../../../lib/client/use-mutation";
 import { useResource } from "../../../../lib/client/use-resource";
 import { useUrlFilters } from "../../../../lib/client/use-url-filters";
 import { fieldErrorsFor } from "../../../../lib/errors/messages";
+import { LOCALE } from "../../../../lib/locale";
 
 type Category = Readonly<{ id: string; nameAr: string; specialization: string; active: boolean }>;
 
@@ -40,7 +41,7 @@ type Kind = "specialty" | "service";
 
 type Draft = Readonly<{ nameAr: string; nameEn: string; sortOrder: string; scope: Scope }>;
 
-const NUMBER = new Intl.NumberFormat("ar-SY");
+const NUMBER = new Intl.NumberFormat(LOCALE);
 const NAME_MAX = 120;
 
 /** What each shared specialization is called when a specialty is offered to all of it. */

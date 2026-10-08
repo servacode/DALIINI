@@ -6188,6 +6188,12 @@ paths:
         description: One account by id. What a link to an account written before the
           console had cards resolves to, so it still arrives at that account alone.
       - in: query
+        name: kind
+        schema:
+          type: string
+        description: '`owners` keeps accounts on at least one facility; `users` keeps
+          the rest.'
+      - in: query
         name: limit
         schema:
           type: integer
@@ -6265,7 +6271,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AdminUser'
+                $ref: '#/components/schemas/AdminUserCreated'
           description: ''
         '400':
           content:
@@ -13515,6 +13521,79 @@ components:
       - name
       - phone
       - provinceId
+    AdminUserCreated:
+      type: object
+      description: |-
+        The account just opened, and whether its first code reached WhatsApp.
+
+        The code is sent on its own once the account exists. When it could not be — the number
+        is not on WhatsApp, the channel is down — the account is kept and `codeError` says why,
+        so the operator can tell the person or try again from the card.
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phone:
+          type: string
+        active:
+          type: boolean
+        provinceId:
+          type: string
+          format: uuid
+          nullable: true
+        provinceName:
+          type: string
+          nullable: true
+        lastLoginAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastSeenAt:
+          type: string
+          format: date-time
+          nullable: true
+        recentlyActive:
+          type: boolean
+        facilityCount:
+          type: integer
+        facilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminUserFacility'
+        hasTwoFactor:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        codeSent:
+          type: boolean
+        codeError:
+          type: string
+          nullable: true
+      required:
+      - active
+      - codeError
+      - codeSent
+      - createdAt
+      - facilities
+      - facilityCount
+      - hasTwoFactor
+      - id
+      - lastLoginAt
+      - lastSeenAt
+      - name
+      - phone
+      - provinceId
+      - provinceName
+      - recentlyActive
+      - updatedAt
     AdminUserDetail:
       type: object
       properties:

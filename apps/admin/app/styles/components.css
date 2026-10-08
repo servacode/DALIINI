@@ -1420,3 +1420,152 @@ a.bar-row:hover .bar-label { color: var(--ad-brand); }
   border: 1px solid var(--ad-danger-border); background: transparent; color: var(--ad-danger);
 }
 .button-danger-quiet:hover:not(:disabled) { background: var(--ad-danger-bg); border-color: var(--ad-danger); }
+
+/* Section hero, live toolbar, form dialog --------------------------------------------- *
+ * The page around the identity cards, in the cards' own language (DECISION-107): an emerald
+ * band like the band on an owner's card, and the toolbar laid across its lower edge the way
+ * the picture is laid across the card's. Shared, so the next section opens the same way. */
+.page-hero {
+  position: relative;
+  padding: var(--ad-space-8) var(--ad-space-8) calc(var(--ad-space-8) + 28px);
+  border-radius: var(--ad-radius-xl);
+  color: #fff;
+  background:
+    radial-gradient(90% 160% at 0% 0%, rgba(255, 255, 255, 0.14) 0%, transparent 55%),
+    radial-gradient(60% 120% at 100% 100%, rgba(201, 146, 46, 0.22) 0%, transparent 60%),
+    linear-gradient(135deg, var(--ad-brand) 0%, var(--ad-brand-strong) 100%);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: var(--ad-space-6);
+  overflow: hidden;
+}
+.page-hero-text { display: grid; gap: var(--ad-space-2); min-width: 0; }
+.page-hero-eyebrow {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.04em; opacity: 0.75;
+}
+.page-hero h1 {
+  font-family: var(--ad-font-display); font-size: 30px; font-weight: 700; line-height: 1.2;
+  color: #fff;
+}
+.page-hero p { max-width: 60ch; opacity: 0.85; font-size: var(--ad-text-md); }
+.page-hero-action {
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center; gap: var(--ad-space-2);
+  min-height: var(--ad-control-h); padding: 0 var(--ad-space-5);
+  border: 0; border-radius: var(--ad-radius-pill);
+  background: #fff; color: var(--ad-brand-strong);
+  font: inherit; font-weight: 700; cursor: pointer;
+  box-shadow: 0 6px 18px rgba(8, 83, 59, 0.28);
+  transition: transform var(--ad-fast) var(--ad-ease), box-shadow var(--ad-fast) var(--ad-ease);
+}
+.page-hero-action:hover { box-shadow: 0 8px 24px rgba(8, 83, 59, 0.36); }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .page-hero-action:hover { transform: translateY(-1px); }
+}
+.page-hero-action:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.6); }
+
+/* Laid across the hero's lower edge. Filters apply as they change: there is no button to
+   press, because a list that waits for «apply» is a list the operator has to remember to
+   refresh. */
+.live-toolbar {
+  position: relative; z-index: 1;
+  margin: -28px var(--ad-space-6) 0;
+  padding: var(--ad-space-3);
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--ad-space-3);
+  background: var(--ad-surface);
+  border: 1px solid var(--ad-stroke);
+  border-radius: var(--ad-radius-xl);
+  box-shadow: var(--ad-shadow-md);
+}
+.search-box {
+  flex: 1 1 240px; min-width: 0;
+  display: flex; align-items: center; gap: var(--ad-space-2);
+  min-height: var(--ad-control-h); padding: 0 var(--ad-space-4);
+  border-radius: var(--ad-radius-pill);
+  background: var(--ad-surface-subtle);
+  border: 1px solid transparent;
+  transition: border-color var(--ad-fast) var(--ad-ease), background var(--ad-fast) var(--ad-ease);
+}
+.search-box:focus-within { background: var(--ad-surface); border-color: var(--ad-brand); box-shadow: var(--ad-focus-ring); }
+.search-box svg { flex: 0 0 auto; color: var(--ad-text-muted); }
+.search-box input {
+  flex: 1 1 auto; min-width: 0; border: 0; outline: none; background: transparent;
+  font: inherit; color: var(--ad-text);
+}
+.search-box button {
+  border: 0; background: none; color: var(--ad-text-muted); cursor: pointer; padding: 2px;
+  display: grid; place-items: center;
+}
+.filter-chips { display: flex; flex-wrap: wrap; gap: var(--ad-space-1); padding: 3px;
+  border-radius: var(--ad-radius-pill); background: var(--ad-surface-subtle); }
+.filter-chip {
+  min-height: calc(var(--ad-control-h) - 6px); padding: 0 var(--ad-space-4);
+  border: 0; border-radius: var(--ad-radius-pill);
+  background: transparent; color: var(--ad-text-secondary);
+  font: inherit; font-size: var(--ad-text-sm); font-weight: 600; cursor: pointer;
+  transition: background var(--ad-fast) var(--ad-ease), color var(--ad-fast) var(--ad-ease);
+}
+.filter-chip:hover { color: var(--ad-text); }
+.filter-chip[aria-pressed="true"] {
+  background: var(--ad-surface); color: var(--ad-brand-strong); box-shadow: var(--ad-shadow-xs);
+}
+.toolbar-select {
+  min-height: var(--ad-control-h); padding: 0 var(--ad-space-4);
+  border: 1px solid var(--ad-stroke); border-radius: var(--ad-radius-pill);
+  background: var(--ad-surface); color: var(--ad-text-secondary); font: inherit; font-size: var(--ad-text-sm);
+}
+.page-hero + .live-toolbar + * { margin-block-start: var(--ad-space-2); }
+@media (max-width: 720px) {
+  .page-hero { flex-direction: column; padding: var(--ad-space-6) var(--ad-space-5) calc(var(--ad-space-6) + 28px); }
+  .live-toolbar { margin-inline: var(--ad-space-3); }
+}
+
+/* A form in a centered window, for the few writes that are a short form of their own. */
+.form-dialog { width: min(480px, calc(100vw - 32px)); padding: 0; gap: 0; overflow: hidden; }
+.form-dialog-head {
+  display: flex; align-items: center; gap: var(--ad-space-4);
+  padding: var(--ad-space-6) var(--ad-space-6) var(--ad-space-5);
+  background:
+    radial-gradient(80% 140% at 0% 0%, rgba(255, 255, 255, 0.14) 0%, transparent 60%),
+    linear-gradient(135deg, var(--ad-brand) 0%, var(--ad-brand-strong) 100%);
+  color: #fff;
+}
+.form-dialog-icon {
+  flex: 0 0 auto; display: grid; place-items: center;
+  width: 44px; height: 44px; border-radius: var(--ad-radius-pill);
+  background: rgba(255, 255, 255, 0.16);
+}
+.form-dialog-head h2 { font-family: var(--ad-font-display); font-size: var(--ad-text-lg); font-weight: 700; color: #fff; }
+.form-dialog-head p { font-size: var(--ad-text-sm); opacity: 0.85; }
+.form-dialog-body { display: grid; gap: var(--ad-space-4); padding: var(--ad-space-6); }
+.form-dialog-foot {
+  display: flex; gap: var(--ad-space-2); justify-content: flex-start;
+  padding: var(--ad-space-4) var(--ad-space-6);
+  border-block-start: 1px solid var(--ad-stroke-subtle);
+  background: var(--ad-surface-subtle);
+}
+/* A phone field with the country fixed in front of it, so nobody types it twice. */
+.phone-input {
+  display: flex; align-items: stretch; direction: ltr;
+  border: 1px solid var(--ad-stroke); border-radius: var(--ad-radius); overflow: hidden;
+  background: var(--ad-surface);
+}
+.phone-input:focus-within { border-color: var(--ad-brand); box-shadow: var(--ad-focus-ring); }
+.phone-input span {
+  display: grid; place-items: center; padding: 0 var(--ad-space-3);
+  background: var(--ad-surface-subtle); color: var(--ad-text-muted);
+  font-variant-numeric: tabular-nums; border-inline-end: 1px solid var(--ad-stroke);
+}
+.phone-input input {
+  flex: 1 1 auto; min-width: 0; min-height: var(--ad-control-h); padding: 0 var(--ad-space-3);
+  border: 0; outline: none; font: inherit; font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
+  background: transparent; color: var(--ad-text);
+}
+/* What happened after the form was sent: shown in the same window, not a toast that is gone
+   before it is read. */
+.form-result { display: grid; justify-items: center; gap: var(--ad-space-3); text-align: center; padding-block: var(--ad-space-2); }
+.form-result-mark {
+  display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%;
+  background: var(--ad-success-bg); color: var(--ad-success);
+}
+.form-result-warn .form-result-mark { background: var(--ad-accent-bg, #F8ECD3); color: var(--ad-accent-text, #7A4F0E); }
+.form-result strong { font-family: var(--ad-font-display); font-size: var(--ad-text-lg); }
+.form-result p { color: var(--ad-text-secondary); font-size: var(--ad-text-sm); max-width: 36ch; }

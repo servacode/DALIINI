@@ -21,6 +21,7 @@ import com.servacode.directory.api.multiplatform.models.AdminRoleCreateRequest
 import com.servacode.directory.api.multiplatform.models.AdminRoleList
 import com.servacode.directory.api.multiplatform.models.AdminUser
 import com.servacode.directory.api.multiplatform.models.AdminUserCreateRequest
+import com.servacode.directory.api.multiplatform.models.AdminUserCreated
 import com.servacode.directory.api.multiplatform.models.AdminUserDetail
 import com.servacode.directory.api.multiplatform.models.AdminUserList
 import com.servacode.directory.api.multiplatform.models.AdminUserRecoverySent
@@ -253,10 +254,10 @@ open class AdminUsersApi : ApiClient {
      * Open an account from the console
      * For appointing an operator without a shell on the server. No password is set: the account is opened without a usable one and the person chooses their own through recovery, which &#x60;adminUserRecoverySend&#x60; starts.
      * @param adminUserCreateRequest 
-     * @return AdminUser
+     * @return AdminUserCreated
      */
     @Suppress("UNCHECKED_CAST")
-    open suspend fun adminUserCreate(adminUserCreateRequest: AdminUserCreateRequest): HttpResponse<AdminUser> {
+    open suspend fun adminUserCreate(adminUserCreateRequest: AdminUserCreateRequest): HttpResponse<AdminUserCreated> {
 
         val localVariableAuthNames = listOf<String>("bearerAccessToken")
 
@@ -451,6 +452,7 @@ open class AdminUsersApi : ApiClient {
      * Password hashes and session secret material are never returned. Newest first unless &#x60;ordering&#x60; says otherwise, in cursor pages. Every filter is optional.
      * @param cursor Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
      * @param id One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone. (optional)
+     * @param kind &#x60;owners&#x60; keeps accounts on at least one facility; &#x60;users&#x60; keeps the rest. (optional)
      * @param limit Page size, maximum 200, default 50. (optional)
      * @param ordering createdAt, -createdAt (the default), name or -name. (optional)
      * @param q Free text matched against the account name and phone number. (optional)
@@ -459,7 +461,7 @@ open class AdminUsersApi : ApiClient {
      * @return AdminUserList
      */
     @Suppress("UNCHECKED_CAST")
-    open suspend fun adminUsersList(cursor: kotlin.String? = null, id: kotlin.String? = null, limit: kotlin.Int? = null, ordering: kotlin.String? = null, q: kotlin.String? = null, role: kotlin.String? = null, status: kotlin.String? = null): HttpResponse<AdminUserList> {
+    open suspend fun adminUsersList(cursor: kotlin.String? = null, id: kotlin.String? = null, kind: kotlin.String? = null, limit: kotlin.Int? = null, ordering: kotlin.String? = null, q: kotlin.String? = null, role: kotlin.String? = null, status: kotlin.String? = null): HttpResponse<AdminUserList> {
 
         val localVariableAuthNames = listOf<String>("bearerAccessToken")
 
@@ -469,6 +471,7 @@ open class AdminUsersApi : ApiClient {
         val localVariableQuery = mutableMapOf<String, List<String>>()
         cursor?.apply { localVariableQuery["cursor"] = listOf("$cursor") }
         id?.apply { localVariableQuery["id"] = listOf("$id") }
+        kind?.apply { localVariableQuery["kind"] = listOf("$kind") }
         limit?.apply { localVariableQuery["limit"] = listOf("$limit") }
         ordering?.apply { localVariableQuery["ordering"] = listOf("$ordering") }
         q?.apply { localVariableQuery["q"] = listOf("$q") }

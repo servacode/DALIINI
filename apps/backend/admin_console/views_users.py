@@ -14,10 +14,13 @@ from rest_framework.response import Response
 
 from accounts.authentication import AuthenticatedRequest
 from accounts.models import AdminRole, User, UserAdminRole
+from core.exceptions import DomainError
 from core.openapi import NOT_FOUND_404, VALIDATION_400, protected
 from core.pagination import QueryOrderedCursorPage, page_parameters
+from facilities.models import FacilityMembership
 
 from .schemas import (
+    AdminUserCreatedSerializer,
     AdminUserCreateRequestSerializer,
     AdminUserDetailSerializer,
     AdminUserListSerializer,
@@ -78,6 +81,10 @@ class UserListView(AdminView):
             ),
             _filter("ordering", "createdAt, -createdAt (the default), name or -name."),
             _filter(
+                "kind",
+                "`owners` keeps accounts on at least one facility; `users` keeps the rest.",
+            ),
+            _filter(
                 "id",
                 "One account by id. What a link to an account written before the console "
                 "had cards resolves to, so it still arrives at that account alone.",
@@ -95,6 +102,14 @@ class UserListView(AdminView):
                 qs = qs.filter(pk=UUID(value))
             except ValueError as exc:
                 raise ValidationError({"id": "Not an account id."}) from exc
+        if value := request.query_params.get("kind"):
+            members = FacilityMembership.objects.values("user_id")
+            if value == "owners":
+                qs = qs.filter(pk__in=members)
+            elif value == "users":
+                qs = qs.exclude(pk__in=members)
+            else:
+                raise ValidationError({"kind": "Use owners or users."})
         if value := request.query_params.get("q"):
             qs = qs.filter(Q(name__icontains=value) | Q(phone__icontains=value))
         if value := request.query_params.get("status"):
@@ -122,7 +137,7 @@ class UserListView(AdminView):
             "through recovery, which `adminUserRecoverySend` starts."
         ),
         request=AdminUserCreateRequestSerializer,
-        responses={201: AdminUserSerializer, 400: VALIDATION_400, **protected()},
+        responses={201: AdminUserCreatedSerializer, 400: VALIDATION_400, **protected()},
     )
     def post(self, request: AuthenticatedRequest) -> Response:
         require_permission(self, request, "admin.users.manage")
@@ -138,7 +153,19 @@ class UserListView(AdminView):
             )
         except DjangoValidationError as exc:
             raise _django_error(exc) from exc
-        return Response(user_payload(user), status=201)
+        # The code goes out on its own, after the account is committed: the person should not
+        # depend on an operator remembering a second click. If it cannot go out — the number
+        # is not on WhatsApp, the channel is down — the account still exists and the operator
+        # is told why, rather than the whole opening being undone for a delivery failure.
+        try:
+            send_recovery_code(request=request, user=user)
+            sent, reason = True, None
+        except DomainError as exc:
+            sent, reason = False, exc.message
+        body = user_payload(user)
+        body["codeSent"] = sent
+        body["codeError"] = reason
+        return Response(body, status=201)
 
 
 class UserDetailView(AdminView):

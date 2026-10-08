@@ -38,6 +38,7 @@ import {
 import { useMutation } from "../../../lib/client/use-mutation";
 import { useResource } from "../../../lib/client/use-resource";
 import type { ApiErrorBody } from "../../../lib/errors/messages";
+import { LOCALE } from "../../../lib/locale";
 
 type Province = Readonly<{ id: string; nameAr: string; active: boolean; sortOrder: number }>;
 type City = Readonly<{ id: string; nameAr: string; active: boolean }>;
@@ -61,7 +62,7 @@ type Roster = Readonly<{ provinceId: string; cityId: string | null; days: readon
 const WINDOW_DAYS = 14;
 
 const WEEKDAYS = labelsFor("weekday");
-const NUMBER = new Intl.NumberFormat("ar-SY");
+const NUMBER = new Intl.NumberFormat(LOCALE);
 
 const SOURCE = termsFor("dutySource");
 

@@ -14,6 +14,7 @@ import {
   messageFor,
   requestIdFor,
 } from "../../lib/errors/messages";
+import { LOCALE, withoutDirectionMarks } from "../../lib/locale";
 
 /**
  * The shared operational components.
@@ -711,11 +712,13 @@ export function formatDateTime(value: string | null | undefined): string {
   if (!value) return "—";
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return "—";
-  return new Intl.DateTimeFormat("ar-SY", {
-    dateStyle: "short",
-    timeStyle: "short",
-    timeZone: "Asia/Damascus",
-  }).format(parsed);
+  return withoutDirectionMarks(
+    new Intl.DateTimeFormat(LOCALE, {
+      dateStyle: "short",
+      timeStyle: "short",
+      timeZone: "Asia/Damascus",
+    }).format(parsed),
+  );
 }
 
 // --------------------------------------------------------------------------------------

@@ -26,9 +26,9 @@ describe("LineChart", () => {
     );
     const rows = screen.getAllByRole("row");
     expect(rows).toHaveLength(3);
-    expect(rows[2]?.textContent).toContain("٢ أيلول");
+    expect(rows[2]?.textContent).toContain("2 أيلول");
     expect(rows[2]?.textContent).toContain("4");
-    expect(screen.getByText("٧")).toBeTruthy();
+    expect(screen.getByText("7")).toBeTruthy();
   });
 });
 
@@ -44,6 +44,6 @@ describe("BarChart", () => {
       />,
     );
     expect(screen.getByRole("link").getAttribute("href")).toBe("/facilities?status=ACTIVE");
-    expect(screen.getByText("٢٦")).toBeTruthy();
+    expect(screen.getByText("26")).toBeTruthy();
   });
 });

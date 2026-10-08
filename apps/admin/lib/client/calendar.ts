@@ -1,3 +1,5 @@
+import { LOCALE } from "../locale";
+
 /**
  * Calendar arithmetic on the Damascus clock.
  *
@@ -111,20 +113,20 @@ export const WEEK_ORDER = [
   "FRIDAY",
 ] as const;
 
-const DAY_LABEL = new Intl.DateTimeFormat("ar-SY", {
+const DAY_LABEL = new Intl.DateTimeFormat(LOCALE, {
   weekday: "long",
   day: "numeric",
   month: "long",
   timeZone: "UTC",
 });
-const DAY_MONTH = new Intl.DateTimeFormat("ar-SY", {
+const DAY_MONTH = new Intl.DateTimeFormat(LOCALE, {
   day: "numeric",
   month: "long",
   timeZone: "UTC",
 });
-const DAY_NUMBER = new Intl.DateTimeFormat("ar-SY", { day: "numeric", timeZone: "UTC" });
-const MONTH = new Intl.DateTimeFormat("ar-SY", { month: "long", timeZone: "UTC" });
-const CLOCK = new Intl.DateTimeFormat("ar-SY", {
+const DAY_NUMBER = new Intl.DateTimeFormat(LOCALE, { day: "numeric", timeZone: "UTC" });
+const MONTH = new Intl.DateTimeFormat(LOCALE, { month: "long", timeZone: "UTC" });
+const CLOCK = new Intl.DateTimeFormat(LOCALE, {
   hour: "2-digit",
   minute: "2-digit",
   hourCycle: "h23",

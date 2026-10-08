@@ -66,11 +66,11 @@ describe("a shift inside one day's cell", () => {
   const night = ["2026-09-28T19:00:00.000Z", "2026-09-29T05:00:00.000Z"] as const;
 
   it("shows the whole range on the day it starts", () => {
-    expect(shiftSpanOn("2026-09-28", ...night)).toBe("٢٢:٠٠ – ٠٨:٠٠");
+    expect(shiftSpanOn("2026-09-28", ...night)).toBe("22:00 – 08:00");
   });
 
   it("shows only the end on the morning it runs into", () => {
-    expect(shiftSpanOn("2026-09-29", ...night)).toBe("حتى ٠٨:٠٠");
+    expect(shiftSpanOn("2026-09-29", ...night)).toBe("حتى 08:00");
   });
 
   it("says a day is covered whole when a shift spans it", () => {
@@ -82,7 +82,7 @@ describe("a shift inside one day's cell", () => {
   it("does not carry a shift that ends at midnight into the next day", () => {
     expect(
       shiftSpanOn("2026-09-28", "2026-09-28T05:00:00.000Z", "2026-09-28T21:00:00.000Z"),
-    ).toBe("٠٨:٠٠ – ٠٠:٠٠");
+    ).toBe("08:00 – 00:00");
   });
 });
 

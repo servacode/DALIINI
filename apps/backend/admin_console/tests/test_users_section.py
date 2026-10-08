@@ -272,3 +272,116 @@ def test_the_list_asks_the_same_number_of_questions_however_many_rows(
     many = load(9)
 
     assert many == one, f"{one} queries for 1 account, {many} for 10"
+
+
+# ----------------------------------------------------------------- the first code, on its own
+
+
+def _open(client: Any, province: Province, phone: str = "0933222111") -> Any:
+    return client.post(
+        "/api/v1/admin/users/",
+        {"name": "مشغّل جديد", "phone": phone, "provinceId": str(province.pk)},
+        format="json",
+    )
+
+
+@pytest.mark.django_db
+def test_opening_an_account_sends_its_first_code_without_a_second_click(
+    admin_api: Any, province: Province
+) -> None:
+    client = admin_api(*MANAGE)
+
+    with mock.patch("accounts.otp.get_otp_sender") as sender:
+        response = _open(client, province)
+
+    assert response.status_code == 201
+    assert response.json()["codeSent"] is True
+    assert response.json()["codeError"] is None
+    assert sender.return_value.send.call_count == 1
+    challenge = OTPChallenge.objects.get(phone="+963933222111")
+    assert challenge.purpose == OTPChallenge.Purpose.RECOVERY
+    assert challenge.metadata["sentBy"] == "console"
+
+
+@pytest.mark.django_db
+def test_an_account_whose_code_cannot_be_delivered_is_kept_and_the_operator_told_why(
+    admin_api: Any, province: Province
+) -> None:
+    """A delivery failure is not a reason to undo the account the operator just opened."""
+    from accounts.providers.base import InvalidRecipient
+
+    client = admin_api(*MANAGE)
+
+    with mock.patch("accounts.otp.get_otp_sender") as sender:
+        sender.return_value.send.side_effect = InvalidRecipient("not on whatsapp")
+        response = _open(client, province)
+
+    assert response.status_code == 201
+    assert response.json()["codeSent"] is False
+    assert "واتساب" in response.json()["codeError"]
+    assert User.objects.filter(phone="+963933222111").exists()
+
+
+@pytest.mark.django_db
+def test_the_app_is_handed_the_code_the_console_sent_rather_than_sending_another(
+    admin_api: Any, province: Province
+) -> None:
+    """The code the operator told the person to expect is the one the app's screen accepts.
+
+    Before, the app's recovery started a challenge of its own and sent a second code, and the
+    console's matched nothing anywhere.
+    """
+    from rest_framework.test import APIClient
+
+    client = admin_api(*MANAGE)
+    with mock.patch("accounts.otp.get_otp_sender"):
+        _open(client, province)
+    console_challenge = OTPChallenge.objects.get(phone="+963933222111")
+
+    app = APIClient()
+    with mock.patch("accounts.otp.get_otp_sender") as sender:
+        first = app.post("/api/v1/auth/recovery/start/", {"phone": "0933222111"}, format="json")
+        assert sender.return_value.send.call_count == 0
+        # Asked again: the first never arrived, so this one sends a fresh code.
+        second = app.post("/api/v1/auth/recovery/start/", {"phone": "0933222111"}, format="json")
+        assert sender.return_value.send.call_count == 1
+
+    assert first.status_code == 202
+    assert first.json()["challengeId"] == str(console_challenge.pk)
+    assert second.json()["challengeId"] != str(console_challenge.pk)
+
+
+@pytest.mark.django_db
+def test_an_expired_console_code_is_not_handed_over(
+    admin_api: Any, province: Province
+) -> None:
+    from rest_framework.test import APIClient
+
+    client = admin_api(*MANAGE)
+    with mock.patch("accounts.otp.get_otp_sender"):
+        _open(client, province)
+    OTPChallenge.objects.filter(phone="+963933222111").update(
+        expires_at=timezone.now() - timedelta(seconds=1)
+    )
+
+    with mock.patch("accounts.otp.get_otp_sender") as sender:
+        APIClient().post("/api/v1/auth/recovery/start/", {"phone": "0933222111"}, format="json")
+
+    assert sender.return_value.send.call_count == 1
+
+
+@pytest.mark.django_db
+def test_the_list_keeps_owners_or_everyone_else(admin_api: Any, facility: Facility) -> None:
+    owner = _person(facility.province, phone="+963900999001")
+    plain = _person(facility.province, phone="+963900999002")
+    FacilityMembership.objects.create(
+        user=owner, facility=facility, role=FacilityMembership.Role.OWNER
+    )
+    client = admin_api(READ)
+
+    owners = {i["id"] for i in client.get("/api/v1/admin/users/?kind=owners").json()["items"]}
+    users = {i["id"] for i in client.get("/api/v1/admin/users/?kind=users").json()["items"]}
+
+    assert str(owner.pk) in owners and str(plain.pk) not in owners
+    assert str(plain.pk) in users and str(owner.pk) not in users
+    assert client.get("/api/v1/admin/users/?kind=nonsense").status_code == 400

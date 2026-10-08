@@ -16,6 +16,7 @@ import { CharCount } from "../../../../components/ui/extra";
 import { useMutation } from "../../../../lib/client/use-mutation";
 import { useResource } from "../../../../lib/client/use-resource";
 import { type ApiErrorBody, fieldErrorsFor } from "../../../../lib/errors/messages";
+import { LOCALE } from "../../../../lib/locale";
 
 type Entry = Readonly<{
   id: string;
@@ -33,7 +34,7 @@ type Draft = Readonly<{
   published: boolean;
 }>;
 
-const NUMBER = new Intl.NumberFormat("ar-SY");
+const NUMBER = new Intl.NumberFormat(LOCALE);
 const QUESTION_MAX = 300;
 const ANSWER_MAX = 4000;
 

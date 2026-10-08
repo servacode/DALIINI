@@ -19,6 +19,7 @@ import {
 import { type ChecklistItem, Checklist, SidePanel } from "../../../components/ui/extra";
 import { useMutation } from "../../../lib/client/use-mutation";
 import { useResource } from "../../../lib/client/use-resource";
+import { LOCALE } from "../../../lib/locale";
 
 type Province = Readonly<{
   id: string;
@@ -272,7 +273,7 @@ const READINESS: Record<string, { title: string; fix?: (province: Province) => {
   },
 };
 
-const NUMBER = new Intl.NumberFormat("ar-SY");
+const NUMBER = new Intl.NumberFormat(LOCALE);
 
 /**
  * The launch checklist for one province, computed by the backend on each open: whether it

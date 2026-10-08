@@ -13,6 +13,7 @@ import com.servacode.directory.api.models.AdminRoleCreateRequest
 import com.servacode.directory.api.models.AdminRoleList
 import com.servacode.directory.api.models.AdminUser
 import com.servacode.directory.api.models.AdminUserCreateRequest
+import com.servacode.directory.api.models.AdminUserCreated
 import com.servacode.directory.api.models.AdminUserDetail
 import com.servacode.directory.api.models.AdminUserList
 import com.servacode.directory.api.models.AdminUserRecoverySent
@@ -128,10 +129,10 @@ interface AdminUsersApi {
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *
      * @param adminUserCreateRequest 
-     * @return [AdminUser]
+     * @return [AdminUserCreated]
      */
     @POST("api/v1/admin/users/")
-    suspend fun adminUserCreate(@Body adminUserCreateRequest: AdminUserCreateRequest): Response<AdminUser>
+    suspend fun adminUserCreate(@Body adminUserCreateRequest: AdminUserCreateRequest): Response<AdminUserCreated>
 
     /**
      * POST api/v1/admin/users/{user_id}/mfa/reset/
@@ -227,6 +228,7 @@ interface AdminUsersApi {
      *
      * @param cursor Opaque token returned as &#x60;nextCursor&#x60; by the previous page. (optional)
      * @param id One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone. (optional)
+     * @param kind &#x60;owners&#x60; keeps accounts on at least one facility; &#x60;users&#x60; keeps the rest. (optional)
      * @param limit Page size, maximum 200, default 50. (optional)
      * @param ordering createdAt, -createdAt (the default), name or -name. (optional)
      * @param q Free text matched against the account name and phone number. (optional)
@@ -235,6 +237,6 @@ interface AdminUsersApi {
      * @return [AdminUserList]
      */
     @GET("api/v1/admin/users/")
-    suspend fun adminUsersList(@Query("cursor") cursor: kotlin.String? = null, @Query("id") id: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null, @Query("ordering") ordering: kotlin.String? = null, @Query("q") q: kotlin.String? = null, @Query("role") role: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminUserList>
+    suspend fun adminUsersList(@Query("cursor") cursor: kotlin.String? = null, @Query("id") id: kotlin.String? = null, @Query("kind") kind: kotlin.String? = null, @Query("limit") limit: kotlin.Int? = null, @Query("ordering") ordering: kotlin.String? = null, @Query("q") q: kotlin.String? = null, @Query("role") role: kotlin.String? = null, @Query("status") status: kotlin.String? = null): Response<AdminUserList>
 
 }

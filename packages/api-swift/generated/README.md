@@ -380,6 +380,7 @@ Class | Method | HTTP request | Description
  - [AdminTimelineEventKindEnum](docs/AdminTimelineEventKindEnum.md)
  - [AdminUser](docs/AdminUser.md)
  - [AdminUserCreateRequest](docs/AdminUserCreateRequest.md)
+ - [AdminUserCreated](docs/AdminUserCreated.md)
  - [AdminUserDetail](docs/AdminUserDetail.md)
  - [AdminUserFacility](docs/AdminUserFacility.md)
  - [AdminUserList](docs/AdminUserList.md)

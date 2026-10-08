@@ -83,7 +83,7 @@ export const READS = {
 
   users: (apis: AdminApis, p: Params) =>
     apis.users.adminUsersList(
-      filled(p, ["q", "status", "role", "ordering", "id", "cursor", "limit"]) as never,
+      filled(p, ["q", "status", "role", "kind", "ordering", "id", "cursor", "limit"]) as never,
     ),
   user: (apis: AdminApis, p: Params) => apis.users.adminUserRetrieve({ userId: p.id! }),
   roles: (apis: AdminApis) => apis.users.adminRolesList(),

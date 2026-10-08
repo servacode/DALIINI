@@ -107,6 +107,50 @@ def start_challenge(
     return challenge
 
 
+CONSOLE_SENT = "console"
+
+
+def hand_over_console_code(phone: str) -> OTPChallenge | None:
+    """The recovery code an operator sent this number, if one is still waiting — once.
+
+    An operator who opens an account, or helps someone locked out, sends a code from the
+    console (DECISION-104). The person then opens the app and asks to recover their password,
+    and the app starts a recovery of its own. Without this the app sent a second code under a
+    new challenge, and the first — the one the operator told them to expect — matched nothing
+    anywhere: it could not be typed into any screen. So the app's first request for this
+    number is answered with the code already on its way, and nothing new is sent.
+
+    **Once.** A second request from the app is someone asking for a code again because the
+    first never came, and that one sends a fresh code as usual. Nothing here tells a caller
+    anything a code request did not already: the challenge id is useless without the code,
+    and the code is only on the person's own phone.
+    """
+    now = timezone.now()
+    with transaction.atomic():
+        waiting = (
+            OTPChallenge.objects.select_for_update()
+            .filter(
+                phone=phone,
+                purpose=OTPChallenge.Purpose.RECOVERY,
+                metadata__sentBy=CONSOLE_SENT,
+                verified_at__isnull=True,
+                consumed_at__isnull=True,
+                expires_at__gt=now,
+            )
+            # Presence, not value: excluding `handedOver=True` compared a missing key to NULL,
+            # which is neither true nor false, and so excluded every row — the code was never
+            # handed over at all. A test caught it.
+            .exclude(metadata__has_key="handedOver")
+            .order_by("-created_at")
+            .first()
+        )
+        if waiting is None:
+            return None
+        waiting.metadata = {**waiting.metadata, "handedOver": True}
+        waiting.save(update_fields=["metadata"])
+        return waiting
+
+
 @transaction.atomic
 def verify_challenge(*, challenge_id: UUID, code: str, purpose: str) -> OTPChallenge:
     challenge = OTPChallenge.objects.select_for_update().filter(pk=challenge_id).first()

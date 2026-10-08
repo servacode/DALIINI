@@ -20,6 +20,7 @@ import {
 } from "../../../../components/ui";
 import { damascusDay } from "../../../../lib/client/calendar";
 import { useResource } from "../../../../lib/client/use-resource";
+import { LOCALE } from "../../../../lib/locale";
 
 type Member = Readonly<{
   userId: string;
@@ -33,9 +34,9 @@ type Member = Readonly<{
 
 type Performance = Readonly<{ from: string; to: string; items: readonly Member[] }>;
 
-const NUMBER = new Intl.NumberFormat("ar-SY");
-const DECIMAL = new Intl.NumberFormat("ar-SY", { maximumFractionDigits: 1 });
-const PERCENT = new Intl.NumberFormat("ar-SY", { style: "percent", maximumFractionDigits: 0 });
+const NUMBER = new Intl.NumberFormat(LOCALE);
+const DECIMAL = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 1 });
+const PERCENT = new Intl.NumberFormat(LOCALE, { style: "percent", maximumFractionDigits: 0 });
 
 /** Hours when under two days, days after that: «٥٫٢ س», «٣٫١ يوم». */
 function duration(hours: number | null): string {

@@ -372,9 +372,15 @@ def send_recovery_code(*, request: Any, user: User) -> str:
     and the caller turns that into the reason the operator reads.
     """
     from accounts.models import OTPChallenge
-    from accounts.services import start_challenge
+    from accounts.services import CONSOLE_SENT, start_challenge
 
-    start_challenge(phone=user.phone, purpose=OTPChallenge.Purpose.RECOVERY)
+    # Marked, so the app hands this very code over when the person asks to recover, instead
+    # of sending a second one that this code would then match nothing against.
+    start_challenge(
+        phone=user.phone,
+        purpose=OTPChallenge.Purpose.RECOVERY,
+        metadata={"sentBy": CONSOLE_SENT},
+    )
     record_audit(
         actor=request.user,
         action="user.recovery_sent",

@@ -8,7 +8,7 @@
  */
 
 /** How long the code is good for, in minutes. Must match the backend's own expiry. */
-export const CODE_MINUTES = 10;
+export const CODE_MINUTES = 5;
 
 export function codeMessage(code) {
   return [

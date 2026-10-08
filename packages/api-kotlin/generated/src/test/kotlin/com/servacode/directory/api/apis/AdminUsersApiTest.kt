@@ -25,6 +25,7 @@ import com.servacode.directory.api.models.AdminRoleCreateRequest
 import com.servacode.directory.api.models.AdminRoleList
 import com.servacode.directory.api.models.AdminUser
 import com.servacode.directory.api.models.AdminUserCreateRequest
+import com.servacode.directory.api.models.AdminUserCreated
 import com.servacode.directory.api.models.AdminUserDetail
 import com.servacode.directory.api.models.AdminUserList
 import com.servacode.directory.api.models.AdminUserRecoverySent
@@ -87,7 +88,7 @@ class AdminUsersApiTest : ShouldSpec() {
         should("test adminUserCreate") {
             // uncomment below to test adminUserCreate
             //val adminUserCreateRequest : AdminUserCreateRequest =  // AdminUserCreateRequest | 
-            //val result : AdminUser = apiInstance.adminUserCreate(adminUserCreateRequest)
+            //val result : AdminUserCreated = apiInstance.adminUserCreate(adminUserCreateRequest)
             //result shouldBe ("TODO")
         }
 
@@ -135,12 +136,13 @@ class AdminUsersApiTest : ShouldSpec() {
             // uncomment below to test adminUsersList
             //val cursor : kotlin.String = cursor_example // kotlin.String | Opaque token returned as `nextCursor` by the previous page.
             //val id : kotlin.String = id_example // kotlin.String | One account by id. What a link to an account written before the console had cards resolves to, so it still arrives at that account alone.
+            //val kind : kotlin.String = kind_example // kotlin.String | `owners` keeps accounts on at least one facility; `users` keeps the rest.
             //val limit : kotlin.Int = 56 // kotlin.Int | Page size, maximum 200, default 50.
             //val ordering : kotlin.String = ordering_example // kotlin.String | createdAt, -createdAt (the default), name or -name.
             //val q : kotlin.String = q_example // kotlin.String | Free text matched against the account name and phone number.
             //val role : kotlin.String = role_example // kotlin.String | Admin role id or code; keeps accounts holding that role actively. The value `any` keeps every operator, `none` every non-operator.
             //val status : kotlin.String = status_example // kotlin.String | `active` keeps active accounts; any other value keeps blocked accounts.
-            //val result : AdminUserList = apiInstance.adminUsersList(cursor, id, limit, ordering, q, role, status)
+            //val result : AdminUserList = apiInstance.adminUsersList(cursor, id, kind, limit, ordering, q, role, status)
             //result shouldBe ("TODO")
         }
 

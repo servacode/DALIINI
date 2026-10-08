@@ -21,6 +21,7 @@ import { PAGE_KINDS, SLUG_PATTERN } from "../../../../lib/client/content";
 import { useMutation } from "../../../../lib/client/use-mutation";
 import { useResource } from "../../../../lib/client/use-resource";
 import { fieldErrorsFor } from "../../../../lib/errors/messages";
+import { LOCALE } from "../../../../lib/locale";
 
 type ContentPage = Readonly<{
   slug: string;
@@ -35,7 +36,7 @@ type ContentPage = Readonly<{
   updatedAt: string;
 }>;
 
-const NUMBER = new Intl.NumberFormat("ar-SY");
+const NUMBER = new Intl.NumberFormat(LOCALE);
 
 const BLANK = { slug: "", titleAr: "", kind: "PAGE", bodyAr: "" };
 

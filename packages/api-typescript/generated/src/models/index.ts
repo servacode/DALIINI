@@ -141,6 +141,7 @@ export * from './AdminTimelineEvent';
 export * from './AdminTimelineEventKindEnum';
 export * from './AdminUser';
 export * from './AdminUserCreateRequest';
+export * from './AdminUserCreated';
 export * from './AdminUserDetail';
 export * from './AdminUserFacility';
 export * from './AdminUserList';

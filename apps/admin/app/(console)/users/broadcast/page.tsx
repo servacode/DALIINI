@@ -26,6 +26,7 @@ import {
   fieldErrorsFor,
   isSessionExpired,
 } from "../../../../lib/errors/messages";
+import { LOCALE } from "../../../../lib/locale";
 
 type Audience = "ALL" | "OWNERS";
 
@@ -45,7 +46,7 @@ type Province = Readonly<{ id: string; nameAr: string; sortOrder: number }>;
 
 const TITLE_MAX = 180;
 const BODY_MAX = 400;
-const NUMBER = new Intl.NumberFormat("ar-SY");
+const NUMBER = new Intl.NumberFormat(LOCALE);
 
 const AUDIENCES = [
   { value: "ALL", label: "الجميع", hint: "كل الحسابات الفعّالة" },

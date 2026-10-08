@@ -2817,3 +2817,40 @@ the card itself and for a card that keeps one shape; the button did neither. Now
   on an account that has an authenticator set up — in practice, an operator.
 * `/users/<id>` now redirects to `/users?id=<id>`, which the list answers with that account
   alone, outlined, and a way back to all.
+
+## DECISION-107 — The accounts page in the cards' own language; filters that apply themselves; Latin digits
+
+**Date:** 2026-10-09 · **Owner's decisions.**
+
+* **The page speaks the card's language.** An emerald hero band like the band on an owner's
+  card, with the toolbar laid across its lower edge the way the picture is laid across the
+  card's. `PageHero`, `SearchBox`, `FilterChips` and `FormDialog` are shared, so the next
+  section opens the same way.
+* **Filters apply as they change.** Search after a pause in typing; one row of chips — الكل،
+  أصحاب منشآت، مستخدمون، محظورون — applied the moment one is pressed. There is no «apply»
+  button: a list that waits for one is a list the operator has to remember to refresh. The
+  chips are one choice for the reader and two parameters for the server (`kind`, `status`).
+  The results count above the cards is gone, at the owner's word.
+* **Opening an account is a short form in a centered window**, and **its first code goes to
+  WhatsApp by itself** — the person does not depend on an operator remembering a second click.
+  The window then shows what happened in the same place: sent, to which number, and what the
+  person does next; or, when it could not go out, why — with the account kept, because a
+  delivery failure is no reason to undo it.
+* **A code sent from the console is the one the app accepts** (`hand_over_console_code`). Before
+  this, the console's «رمز استعادة» sent a code nobody could use: the app's «نسيت كلمة المرور»
+  started a recovery of its own under a new challenge, so the operator's code matched nothing
+  anywhere. Now the app's first recovery request for that number is answered with the code
+  already on its way and sends nothing new; a second request — the code never came — sends a
+  fresh one as usual. A first version excluded `handedOver=True` and so excluded every row,
+  because a missing JSON key compares as NULL; it tests for the key's presence instead, and a
+  test caught it.
+* **The code's stated life matches its real one.** The WhatsApp text said «صالح 10 دقائق»; the
+  backend expired codes at five. For five minutes a correct code was refused while the message
+  still promised it. The text now says five, and a bot test reads `OTP_TTL` from the backend's
+  own source so the two cannot drift again.
+* **Every number in the console is in Latin digits**, with Arabic words around them
+  (`ar-SY-u-nu-latn`). The locale is one constant in `lib/locale.ts`; it was the literal
+  "ar-SY" written thirty-three times across twenty files. Arabic date patterns put a
+  right-to-left mark between day, month and year, which with Latin digits drew «8/10/26» as
+  «26/10/8»; `withoutDirectionMarks` strips it from dates — seen on the rendered page, not in
+  any test.
