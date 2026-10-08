@@ -15,6 +15,8 @@
 
 package com.servacode.directory.api.models
 
+import com.servacode.directory.api.models.AdminUserFacility
+import com.servacode.directory.api.models.AdminUserSession
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -28,9 +30,14 @@ import kotlinx.serialization.Contextual
  * @param phone 
  * @param active 
  * @param provinceId 
+ * @param provinceName 
+ * @param phoneVerifiedAt 
+ * @param lastLoginAt 
  * @param createdAt 
  * @param updatedAt 
  * @param roleIds 
+ * @param facilities 
+ * @param sessions 
  */
 @Serializable
 
@@ -51,6 +58,15 @@ data class AdminUserDetail (
     @Contextual @SerialName(value = "provinceId")
     val provinceId: java.util.UUID?,
 
+    @SerialName(value = "provinceName")
+    val provinceName: kotlin.String?,
+
+    @Contextual @SerialName(value = "phoneVerifiedAt")
+    val phoneVerifiedAt: java.time.OffsetDateTime?,
+
+    @Contextual @SerialName(value = "lastLoginAt")
+    val lastLoginAt: java.time.OffsetDateTime?,
+
     @Contextual @SerialName(value = "createdAt")
     val createdAt: java.time.OffsetDateTime?,
 
@@ -58,7 +74,13 @@ data class AdminUserDetail (
     val updatedAt: java.time.OffsetDateTime?,
 
     @SerialName(value = "roleIds")
-    val roleIds: kotlin.collections.List<kotlin.Int>
+    val roleIds: kotlin.collections.List<kotlin.Int>,
+
+    @SerialName(value = "facilities")
+    val facilities: kotlin.collections.List<AdminUserFacility>,
+
+    @SerialName(value = "sessions")
+    val sessions: kotlin.collections.List<AdminUserSession>
 
 ) {
 

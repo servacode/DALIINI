@@ -317,3 +317,94 @@ def replace_user_roles(*, request: Any, user: User, role_ids: list[Any]) -> None
         after_snapshot={"roleIds": [str(value) for value in after]},
         request_id=_request_id(request),
     )
+
+
+@transaction.atomic
+def create_console_account(*, request: Any, name: str, phone: str, province_id: Any) -> User:
+    """Open an account from the console, with no password of its own.
+
+    This is how an operator is appointed on a running platform. `grant_operator` on the
+    server could already do it, which meant appointing someone needed a shell on the
+    production host — so in practice it happened once, at setup, and never again.
+
+    **No password is set here, by design (DECISION-104).** The account is created with an
+    unusable one, and the person chooses their own through the ordinary recovery flow that
+    `send_recovery_code` starts. An operator who could set a password could sign in as that
+    person, and every line the audit wrote afterwards would name the wrong human.
+
+    The number is canonicalised and checked for an existing account first: two accounts on
+    one number would make «who is this» unanswerable.
+    """
+    from accounts.phone import INVALID_SYRIAN_MOBILE, normalize_syrian_phone
+    from locations.models import Province
+
+    try:
+        canonical = normalize_syrian_phone(phone)
+    except ValueError as exc:
+        raise ValidationError({"phone": INVALID_SYRIAN_MOBILE}) from exc
+    if User.objects.filter(phone=canonical).exists():
+        raise ValidationError({"phone": "This number already has an account."})
+    province = Province.objects.filter(pk=province_id).first()
+    if province is None:
+        raise ValidationError({"provinceId": "Unknown province."})
+
+    # `create_user` sets an unusable password when none is given, which is what is wanted.
+    user = User.objects.create_user(phone=canonical, name=name[:120], province=province)
+    record_audit(
+        actor=request.user,
+        action="user.created",
+        target=user,
+        after_snapshot={"name": user.name, "provinceId": str(province.pk)},
+        request_id=_request_id(request),
+    )
+    return user
+
+
+def send_recovery_code(*, request: Any, user: User) -> str:
+    """Start the ordinary recovery flow for someone who cannot start it themselves.
+
+    The code goes to the account's own number and nowhere else, and neither the code nor
+    the challenge id comes back to the operator — they could otherwise finish the recovery
+    and own the account. What the operator gets is «sent, to this number».
+
+    It is the same `start_challenge` the app calls, so the same expiry, the same attempt
+    limit and the same per-number rate limit apply. A number that cannot receive raises,
+    and the caller turns that into the reason the operator reads.
+    """
+    from accounts.models import OTPChallenge
+    from accounts.services import start_challenge
+
+    start_challenge(phone=user.phone, purpose=OTPChallenge.Purpose.RECOVERY)
+    record_audit(
+        actor=request.user,
+        action="user.recovery_sent",
+        target=user,
+        after_snapshot={"phone": user.phone},
+        request_id=_request_id(request),
+    )
+    return user.phone
+
+
+def revoke_user_sessions(*, request: Any, user: User) -> int:
+    """Sign every one of this account's devices out, without blocking the account.
+
+    What this is for: a phone that was lost or stolen. Blocking would do it too, and would
+    also lock the owner out of their own facilities — which is the wrong answer to «someone
+    took my phone». The push tokens go with the sessions, or the lost device would keep
+    receiving the account's notices.
+    """
+    from notifications.services import deactivate_push_tokens_for_sessions
+
+    open_sessions = UserSession.objects.filter(user=user, revoked_at__isnull=True)
+    session_ids = list(open_sessions.values_list("id", flat=True))
+    count = open_sessions.update(revoked_at=timezone.now())
+    if session_ids:
+        deactivate_push_tokens_for_sessions([str(value) for value in session_ids])
+    record_audit(
+        actor=request.user,
+        action="user.sessions_revoked",
+        target=user,
+        after_snapshot={"sessions": count},
+        request_id=_request_id(request),
+    )
+    return count

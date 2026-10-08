@@ -55,6 +55,24 @@ class AdminUserTest : ShouldSpec() {
             //modelInstance.provinceId shouldBe ("TODO")
         }
 
+        // to test the property `provinceName`
+        should("test provinceName") {
+            // uncomment below to test the property
+            //modelInstance.provinceName shouldBe ("TODO")
+        }
+
+        // to test the property `phoneVerifiedAt`
+        should("test phoneVerifiedAt") {
+            // uncomment below to test the property
+            //modelInstance.phoneVerifiedAt shouldBe ("TODO")
+        }
+
+        // to test the property `lastLoginAt`
+        should("test lastLoginAt") {
+            // uncomment below to test the property
+            //modelInstance.lastLoginAt shouldBe ("TODO")
+        }
+
         // to test the property `createdAt`
         should("test createdAt") {
             // uncomment below to test the property

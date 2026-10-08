@@ -60,12 +60,12 @@ class Command(BaseCommand):
         ).delete()
         AdminRole.objects.filter(code__startswith="e2e-").delete()
 
-        full = self._operator(FULL_OPERATOR, "e2e-full", None)
-        self._operator(LIMITED_OPERATOR, "e2e-limited", LIMITED_PERMISSIONS)
-        owner = self._account(OWNER)
-
         pharmacy = Category.objects.get(code="pharmacy")
         raqqa = Province.objects.get(code="raqqa")
+
+        full = self._operator(FULL_OPERATOR, "e2e-full", None, raqqa)
+        self._operator(LIMITED_OPERATOR, "e2e-limited", LIMITED_PERMISSIONS, raqqa)
+        owner = self._account(OWNER, raqqa)
 
         # One facility waiting in the review queue, and one already active to suspend.
         pending = Facility.objects.create(
@@ -116,17 +116,27 @@ class Command(BaseCommand):
             )
         )
 
-    def _account(self, spec: dict[str, str]) -> User:
-        user = User.objects.create_user(phone=spec["phone"], name=spec["name"])
+    def _account(self, spec: dict[str, str], province: Province) -> User:
+        # Registration will not open an account without a province and will not open one on
+        # an unproved number, so neither does the seed. A fixture in a state the product
+        # cannot produce sends whoever reads the console hunting a defect that is not there.
+        user = User.objects.create_user(
+            phone=spec["phone"], name=spec["name"], province=province
+        )
         user.set_password(spec["password"])
         user.is_active = True
+        user.phone_verified_at = timezone.now()
         user.save()
         return user
 
     def _operator(
-        self, spec: dict[str, str], role_code: str, permissions: tuple[str, ...] | None
+        self,
+        spec: dict[str, str],
+        role_code: str,
+        permissions: tuple[str, ...] | None,
+        province: Province,
     ) -> User:
-        user = self._account(spec)
+        user = self._account(spec, province)
         role = AdminRole.objects.create(code=role_code, name=role_code)
         codes = (
             AdminPermission.objects.values_list("code", flat=True)

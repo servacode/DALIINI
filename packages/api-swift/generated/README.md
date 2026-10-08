@@ -153,9 +153,12 @@ Class | Method | HTTP request | Description
 *AdminUsersAPI* | [**adminRoleUpdate**](docs/AdminUsersAPI.md#adminroleupdate) | **PATCH** /api/v1/admin/roles/{role_id}/ | Rename a role or change the permissions it carries
 *AdminUsersAPI* | [**adminRolesList**](docs/AdminUsersAPI.md#adminroleslist) | **GET** /api/v1/admin/roles/ | List admin roles, their permission codes and how many hold each
 *AdminUsersAPI* | [**adminUserBlock**](docs/AdminUsersAPI.md#adminuserblock) | **POST** /api/v1/admin/users/{user_id}/block/ | Block a user account
+*AdminUsersAPI* | [**adminUserCreate**](docs/AdminUsersAPI.md#adminusercreate) | **POST** /api/v1/admin/users/ | Open an account from the console
 *AdminUsersAPI* | [**adminUserMfaReset**](docs/AdminUsersAPI.md#adminusermfareset) | **POST** /api/v1/admin/users/{user_id}/mfa/reset/ | Clear an operator&#39;s authenticator after they lost it
+*AdminUsersAPI* | [**adminUserRecoverySend**](docs/AdminUsersAPI.md#adminuserrecoverysend) | **POST** /api/v1/admin/users/{user_id}/recovery/ | Send this account a password-recovery code
 *AdminUsersAPI* | [**adminUserRetrieve**](docs/AdminUsersAPI.md#adminuserretrieve) | **GET** /api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned
 *AdminUsersAPI* | [**adminUserRolesReplace**](docs/AdminUsersAPI.md#adminuserrolesreplace) | **PUT** /api/v1/admin/users/{user_id}/roles/ | Replace the admin roles of a user
+*AdminUsersAPI* | [**adminUserSessionsRevoke**](docs/AdminUsersAPI.md#adminusersessionsrevoke) | **POST** /api/v1/admin/users/{user_id}/sessions/revoke/ | Sign every device of this account out
 *AdminUsersAPI* | [**adminUserUnblock**](docs/AdminUsersAPI.md#adminuserunblock) | **POST** /api/v1/admin/users/{user_id}/unblock/ | Unblock a user account
 *AdminUsersAPI* | [**adminUsersList**](docs/AdminUsersAPI.md#adminuserslist) | **GET** /api/v1/admin/users/ | Search user accounts
 *AdminVerificationAPI* | [**adminVerificationRequirementCreate**](docs/AdminVerificationAPI.md#adminverificationrequirementcreate) | **POST** /api/v1/admin/verification-requirements/ | Create a verification requirement
@@ -377,9 +380,13 @@ Class | Method | HTTP request | Description
  - [AdminTimelineEvent](docs/AdminTimelineEvent.md)
  - [AdminTimelineEventKindEnum](docs/AdminTimelineEventKindEnum.md)
  - [AdminUser](docs/AdminUser.md)
+ - [AdminUserCreateRequest](docs/AdminUserCreateRequest.md)
  - [AdminUserDetail](docs/AdminUserDetail.md)
+ - [AdminUserFacility](docs/AdminUserFacility.md)
  - [AdminUserList](docs/AdminUserList.md)
+ - [AdminUserRecoverySent](docs/AdminUserRecoverySent.md)
  - [AdminUserRolesRequest](docs/AdminUserRolesRequest.md)
+ - [AdminUserSession](docs/AdminUserSession.md)
  - [AdminVerificationRequirement](docs/AdminVerificationRequirement.md)
  - [AdminVerificationRequirementList](docs/AdminVerificationRequirementList.md)
  - [AdminVerificationRequirementRequest](docs/AdminVerificationRequirementRequest.md)

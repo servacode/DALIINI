@@ -24,8 +24,10 @@ import com.servacode.directory.api.models.AdminRole
 import com.servacode.directory.api.models.AdminRoleCreateRequest
 import com.servacode.directory.api.models.AdminRoleList
 import com.servacode.directory.api.models.AdminUser
+import com.servacode.directory.api.models.AdminUserCreateRequest
 import com.servacode.directory.api.models.AdminUserDetail
 import com.servacode.directory.api.models.AdminUserList
+import com.servacode.directory.api.models.AdminUserRecoverySent
 import com.servacode.directory.api.models.AdminUserRolesRequest
 import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.PatchedAdminRoleUpdateRequest
@@ -81,11 +83,27 @@ class AdminUsersApiTest : ShouldSpec() {
             //result shouldBe ("TODO")
         }
 
+        // to test adminUserCreate
+        should("test adminUserCreate") {
+            // uncomment below to test adminUserCreate
+            //val adminUserCreateRequest : AdminUserCreateRequest =  // AdminUserCreateRequest | 
+            //val result : AdminUser = apiInstance.adminUserCreate(adminUserCreateRequest)
+            //result shouldBe ("TODO")
+        }
+
         // to test adminUserMfaReset
         should("test adminUserMfaReset") {
             // uncomment below to test adminUserMfaReset
             //val userId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //apiInstance.adminUserMfaReset(userId)
+        }
+
+        // to test adminUserRecoverySend
+        should("test adminUserRecoverySend") {
+            // uncomment below to test adminUserRecoverySend
+            //val userId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : AdminUserRecoverySent = apiInstance.adminUserRecoverySend(userId)
+            //result shouldBe ("TODO")
         }
 
         // to test adminUserRetrieve
@@ -102,6 +120,14 @@ class AdminUsersApiTest : ShouldSpec() {
             //val userId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //val adminUserRolesRequest : AdminUserRolesRequest =  // AdminUserRolesRequest | 
             //apiInstance.adminUserRolesReplace(userId, adminUserRolesRequest)
+        }
+
+        // to test adminUserSessionsRevoke
+        should("test adminUserSessionsRevoke") {
+            // uncomment below to test adminUserSessionsRevoke
+            //val userId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : AdminUserDetail = apiInstance.adminUserSessionsRevoke(userId)
+            //result shouldBe ("TODO")
         }
 
         // to test adminUserUnblock

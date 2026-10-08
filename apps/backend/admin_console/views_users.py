@@ -2,6 +2,7 @@
 
 from uuid import UUID
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import (
@@ -17,16 +18,23 @@ from core.openapi import NOT_FOUND_404, VALIDATION_400, protected
 from core.pagination import QueryOrderedCursorPage, page_parameters
 
 from .schemas import (
+    AdminUserCreateRequestSerializer,
     AdminUserDetailSerializer,
     AdminUserListSerializer,
+    AdminUserRecoverySentSerializer,
     AdminUserRolesRequestSerializer,
     AdminUserSerializer,
 )
 from .serializers import (
+    user_facilities_payload,
     user_payload,
+    user_sessions_payload,
 )
 from .services import (
+    create_console_account,
     replace_user_roles,
+    revoke_user_sessions,
+    send_recovery_code,
     set_user_blocked,
 )
 from .views import (
@@ -34,6 +42,8 @@ from .views import (
     _filter,
     _page,
 )
+from .views_content import _django_error
+from .views_smart import require_permission
 
 # Wire ordering -> columns, each ending in the primary key so ties stay stable across pages.
 USER_ORDERINGS: dict[str, tuple[str, ...]] = {
@@ -91,7 +101,35 @@ class UserListView(AdminView):
                         by |= Q(role_id=int(value))
                     operators = operators.filter(by)
                 qs = qs.filter(pk__in=operators.values("user_id"))
-        return _page(request, qs, user_payload)
+        return _page(request, qs.select_related("province"), user_payload)
+
+    @extend_schema(
+        operation_id="adminUserCreate",
+        tags=["Admin Users"],
+        summary="Open an account from the console",
+        description=(
+            "For appointing an operator without a shell on the server. No password is set: "
+            "the account is opened without a usable one and the person chooses their own "
+            "through recovery, which `adminUserRecoverySend` starts."
+        ),
+        request=AdminUserCreateRequestSerializer,
+        responses={201: AdminUserSerializer, 400: VALIDATION_400, **protected()},
+    )
+    def post(self, request: AuthenticatedRequest) -> Response:
+        require_permission(self, request, "admin.users.manage")
+        payload = AdminUserCreateRequestSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        data = payload.validated_data
+        try:
+            user = create_console_account(
+                request=request,
+                name=data["name"],
+                phone=data["phone"],
+                province_id=data["provinceId"],
+            )
+        except DjangoValidationError as exc:
+            raise _django_error(exc) from exc
+        return Response(user_payload(user), status=201)
 
 
 class UserDetailView(AdminView):
@@ -104,12 +142,69 @@ class UserDetailView(AdminView):
         responses={200: AdminUserDetailSerializer, **protected(), 404: NOT_FOUND_404},
     )
     def get(self, request: AuthenticatedRequest, user_id: UUID) -> Response:
-        user = get_object_or_404(User, pk=user_id)
+        user = get_object_or_404(User.objects.select_related("province"), pk=user_id)
         payload = user_payload(user)
         # Integers, as `AdminRole` is keyed and as the role list declares its ids.
         payload["roleIds"] = list(
             user.admin_role_links.filter(active=True).values_list("role_id", flat=True)
         )
+        # What hangs off the account, so a decision about it is taken with both in view.
+        payload["facilities"] = user_facilities_payload(user)
+        payload["sessions"] = user_sessions_payload(user)
+        return Response(payload)
+
+
+class UserRecoveryView(AdminView):
+    required_permission = "admin.users.manage"
+
+    @extend_schema(
+        operation_id="adminUserRecoverySend",
+        tags=["Admin Users"],
+        summary="Send this account a password-recovery code",
+        description=(
+            "The console never sets a password. This starts the ordinary recovery flow: the "
+            "code goes to the account's own number, and the person chooses their own "
+            "password. Neither the code nor the challenge id is returned, so an operator "
+            "cannot complete someone else's recovery."
+        ),
+        request=None,
+        responses={
+            200: AdminUserRecoverySentSerializer,
+            400: VALIDATION_400,
+            **protected(),
+            404: NOT_FOUND_404,
+        },
+    )
+    def post(self, request: AuthenticatedRequest, user_id: UUID) -> Response:
+        user = get_object_or_404(User, pk=user_id)
+        phone = send_recovery_code(request=request, user=user)
+        return Response({"sent": True, "phone": phone})
+
+
+class UserSessionsRevokeView(AdminView):
+    required_permission = "admin.users.manage"
+
+    @extend_schema(
+        operation_id="adminUserSessionsRevoke",
+        tags=["Admin Users"],
+        summary="Sign every device of this account out",
+        description=(
+            "For a phone that was lost or stolen. The account stays active — blocking "
+            "would also shut its owner out of their own facilities, which is the wrong "
+            "answer to a lost phone. The devices' push tokens stop with the sessions."
+        ),
+        request=None,
+        responses={200: AdminUserDetailSerializer, **protected(), 404: NOT_FOUND_404},
+    )
+    def post(self, request: AuthenticatedRequest, user_id: UUID) -> Response:
+        user = get_object_or_404(User.objects.select_related("province"), pk=user_id)
+        revoke_user_sessions(request=request, user=user)
+        payload = user_payload(user)
+        payload["roleIds"] = list(
+            user.admin_role_links.filter(active=True).values_list("role_id", flat=True)
+        )
+        payload["facilities"] = user_facilities_payload(user)
+        payload["sessions"] = user_sessions_payload(user)
         return Response(payload)
 
 

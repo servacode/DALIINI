@@ -61,11 +61,14 @@ class Command(BaseCommand):
         User.objects.filter(phone__in=phones).delete()
         OTPChallenge.objects.filter(phone__in=phones).delete()
 
-        self._account(CITIZEN)
-        self._account(MOBILE_OWNER)
-
         pharmacy = Category.objects.get(code="pharmacy")
         raqqa = Province.objects.get(code="raqqa")
+
+        # Registration will not open an account without a province, so neither does the
+        # seed. A fixture in a state the product cannot produce sends whoever reads the
+        # console looking for a defect that is only in the fixture.
+        self._account(CITIZEN, raqqa)
+        self._account(MOBILE_OWNER, raqqa)
         now = timezone.now()
 
         # A test requirement, so that evidence travels from the owner app to the Admin exactly
@@ -158,9 +161,14 @@ class Command(BaseCommand):
         )
 
     @staticmethod
-    def _account(spec: dict[str, str]) -> User:
-        user = User.objects.create_user(phone=spec["phone"], name=spec["name"])
+    def _account(spec: dict[str, str], province: Province) -> User:
+        user = User.objects.create_user(
+            phone=spec["phone"], name=spec["name"], province=province
+        )
         user.set_password(spec["password"])
         user.is_active = True
+        # Registration proves the number before the account exists; a seeded account that
+        # claims an unproved number would read in the console as a defect it is not.
+        user.phone_verified_at = timezone.now()
         user.save()
         return user

@@ -962,13 +962,18 @@ label.switch-row { cursor: pointer; }
 .message-foot .button-ghost { min-height: var(--ad-control-h-sm); padding: 0 var(--ad-space-3); font-size: var(--ad-text-sm); }
 
 /* Exports */
-.export-list { display: grid; margin: 0; padding: 0; list-style: none; }
-.export-item {
+/* A list inside a panel: no bullets, one divider between rows, a label at the start and
+   whatever says its state at the end. One definition under two names — `export-*` is where
+   it was first written, `plain-*` is what anything else asks for. A second copy of these
+   rules under a third name is how two lists in one console end up looking different. */
+.export-list, .plain-list { display: grid; margin: 0; padding: 0; list-style: none; }
+.export-item, .plain-row {
   display: flex; align-items: center; justify-content: space-between; gap: var(--ad-space-4);
   padding-block: var(--ad-space-3);
   border-block-end: 1px solid var(--ad-stroke-subtle);
 }
-.export-item:first-child { padding-block-start: 0; }
+.export-item:first-child, .plain-row:first-child { padding-block-start: 0; }
+.export-item:last-child, .plain-row:last-child { border-block-end: 0; }
 .export-item:last-child { padding-block-end: 0; border-block-end: 0; }
 .export-item > div { display: grid; gap: 2px; min-width: 0; }
 .export-item .muted { font-size: var(--ad-text-sm); }

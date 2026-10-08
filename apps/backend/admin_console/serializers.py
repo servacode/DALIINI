@@ -18,9 +18,65 @@ def user_payload(user: Any) -> Any:
         "phone": user.phone,
         "active": user.is_active,
         "provinceId": str(user.province_id) if user.province_id else None,
+        # The name beside the id. The console shows accounts to a person, and a UUID tells
+        # them nothing; without it every row would have to fetch the province list to
+        # translate one field.
+        "provinceName": user.province.name_ar if user.province_id else None,
+        "phoneVerifiedAt": _iso(user.phone_verified_at),
+        "lastLoginAt": _iso(user.last_login),
         "createdAt": _iso(user.created_at),
         "updatedAt": _iso(user.updated_at),
     }
+
+
+def user_facilities_payload(user: Any) -> list[dict[str, Any]]:
+    """The places this account owns or helps run.
+
+    An operator about to block an account needs to know what hangs off it. Three active
+    pharmacies behind a name is the difference between a block and a phone call, and the
+    console had no way to learn it: the facility list shows its owner, and nothing showed
+    the reverse.
+    """
+    links = (
+        FacilityMembership.objects.filter(user=user)
+        .select_related("facility")
+        .order_by("facility__name_ar")
+    )
+    return [
+        {
+            "id": str(link.facility_id),
+            "nameAr": link.facility.name_ar,
+            "role": link.role,
+            "status": link.facility.status,
+        }
+        for link in links
+    ]
+
+
+def user_sessions_payload(user: Any) -> list[dict[str, Any]]:
+    """The devices currently signed in, newest first.
+
+    Secrets never leave the server: neither the refresh digest nor the previous one is in
+    this payload, and nothing here can be used to sign in. Revoked and expired sessions are
+    left out — the question this answers is «who is signed in now».
+    """
+    from django.utils import timezone
+
+    from sessions.models import UserSession
+
+    rows = UserSession.objects.filter(
+        user=user, revoked_at__isnull=True, expires_at__gt=timezone.now()
+    ).order_by("-created_at")
+    return [
+        {
+            "id": str(row.id),
+            "platform": row.platform,
+            "deviceName": row.device_name,
+            "createdAt": _iso(row.created_at),
+            "lastSeenAt": _iso(row.last_seen_at),
+        }
+        for row in rows
+    ]
 
 
 def _owner_prefetch(prefix: str = "") -> Any:

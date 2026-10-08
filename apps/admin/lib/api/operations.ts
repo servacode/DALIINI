@@ -276,6 +276,20 @@ export const WRITES = {
   userBlock: (apis: AdminApis, b: Body) => apis.users.adminUserBlock({ userId: String(b.id) }),
   userUnblock: (apis: AdminApis, b: Body) =>
     apis.users.adminUserUnblock({ userId: String(b.id) }),
+  // The console never sets a password; it starts the person's own recovery (DECISION-104).
+  // Nothing comes back that could let an operator finish it on their behalf.
+  userRecovery: (apis: AdminApis, b: Body) =>
+    apis.users.adminUserRecoverySend({ userId: String(b.id) }),
+  userSessionsRevoke: (apis: AdminApis, b: Body) =>
+    apis.users.adminUserSessionsRevoke({ userId: String(b.id) }),
+  userCreate: (apis: AdminApis, b: Body) =>
+    apis.users.adminUserCreate({
+      adminUserCreateRequest: {
+        name: String(b.name ?? ""),
+        phone: String(b.phone ?? ""),
+        provinceId: String(b.provinceId ?? ""),
+      },
+    }),
   userRoles: (apis: AdminApis, b: Body) =>
     apis.users.adminUserRolesReplace({
       userId: String(b.id),

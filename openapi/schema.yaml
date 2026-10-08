@@ -6232,6 +6232,55 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Authenticated, but the caller lacks the required permission
             or membership.
+    post:
+      operationId: adminUserCreate
+      description: 'For appointing an operator without a shell on the server. No password
+        is set: the account is opened without a usable one and the person chooses
+        their own through recovery, which `adminUserRecoverySend` starts.'
+      summary: Open an account from the console
+      tags:
+      - Admin Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminUserCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminUserCreateRequest'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUser'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/admin/users/{user_id}/:
     get:
       operationId: adminUserRetrieve
@@ -6357,6 +6406,59 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/admin/users/{user_id}/recovery/:
+    post:
+      operationId: adminUserRecoverySend
+      description: 'The console never sets a password. This starts the ordinary recovery
+        flow: the code goes to the account''s own number, and the person chooses their
+        own password. Neither the code nor the challenge id is returned, so an operator
+        cannot complete someone else''s recovery.'
+      summary: Send this account a password-recovery code
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Users
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserRecoverySent'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
   /api/v1/admin/users/{user_id}/roles/:
     put:
       operationId: adminUserRolesReplace
@@ -6396,6 +6498,51 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Request validation failed; `code` is VALIDATION_ERROR and `details`
             is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+  /api/v1/admin/users/{user_id}/sessions/revoke/:
+    post:
+      operationId: adminUserSessionsRevoke
+      description: For a phone that was lost or stolen. The account stays active —
+        blocking would also shut its owner out of their own facilities, which is the
+        wrong answer to a lost phone. The devices' push tokens stop with the sessions.
+      summary: Sign every device of this account out
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Users
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserDetail'
+          description: ''
         '401':
           content:
             application/json:
@@ -13340,6 +13487,17 @@ components:
           type: string
           format: uuid
           nullable: true
+        provinceName:
+          type: string
+          nullable: true
+        phoneVerifiedAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastLoginAt:
+          type: string
+          format: date-time
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -13352,10 +13510,36 @@ components:
       - active
       - createdAt
       - id
+      - lastLoginAt
+      - name
+      - phone
+      - phoneVerifiedAt
+      - provinceId
+      - provinceName
+      - updatedAt
+    AdminUserCreateRequest:
+      type: object
+      description: |-
+        What is needed to open an account from the console, and nothing more.
+
+        No password: the console never sets one. The account is opened without a usable
+        password and the person chooses their own through the ordinary recovery flow, which
+        `adminUserRecoverySend` starts for them. An operator who could set a password could
+        sign in as that person, and the audit trail would say the person did it.
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        phone:
+          type: string
+          maxLength: 20
+        provinceId:
+          type: string
+          format: uuid
+      required:
       - name
       - phone
       - provinceId
-      - updatedAt
     AdminUserDetail:
       type: object
       properties:
@@ -13372,6 +13556,17 @@ components:
           type: string
           format: uuid
           nullable: true
+        provinceName:
+          type: string
+          nullable: true
+        phoneVerifiedAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastLoginAt:
+          type: string
+          format: date-time
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -13384,15 +13579,45 @@ components:
           type: array
           items:
             type: integer
+        facilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminUserFacility'
+        sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminUserSession'
       required:
       - active
       - createdAt
+      - facilities
       - id
+      - lastLoginAt
       - name
       - phone
+      - phoneVerifiedAt
       - provinceId
+      - provinceName
       - roleIds
+      - sessions
       - updatedAt
+    AdminUserFacility:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nameAr:
+          type: string
+        role:
+          type: string
+        status:
+          type: string
+      required:
+      - id
+      - nameAr
+      - role
+      - status
     AdminUserList:
       type: object
       description: The two fields every cursor page adds beside its `items`.
@@ -13413,6 +13638,21 @@ components:
       - hasMore
       - items
       - nextCursor
+    AdminUserRecoverySent:
+      type: object
+      description: |-
+        The code is on its way. Neither the code nor the challenge id is returned.
+
+        The operator must not be able to complete someone else's recovery, so nothing here
+        helps them: the person answers on their own phone.
+      properties:
+        sent:
+          type: boolean
+        phone:
+          type: string
+      required:
+      - phone
+      - sent
     AdminUserRolesRequest:
       type: object
       properties:
@@ -13422,6 +13662,31 @@ components:
             type: integer
       required:
       - roleIds
+    AdminUserSession:
+      type: object
+      description: A signed-in device. No secret of any kind is in it.
+      properties:
+        id:
+          type: string
+          format: uuid
+        platform:
+          type: string
+        deviceName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastSeenAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - createdAt
+      - deviceName
+      - id
+      - lastSeenAt
+      - platform
     AdminVerificationRequirement:
       type: object
       properties:

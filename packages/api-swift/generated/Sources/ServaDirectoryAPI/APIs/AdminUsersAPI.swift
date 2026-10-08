@@ -253,6 +253,45 @@ open class AdminUsersAPI {
     }
 
     /**
+     Open an account from the console
+     
+     - parameter adminUserCreateRequest: (body)  
+     - returns: AdminUser
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminUserCreate(adminUserCreateRequest: AdminUserCreateRequest) async throws -> AdminUser {
+        return try await adminUserCreateWithRequestBuilder(adminUserCreateRequest: adminUserCreateRequest).execute().body
+    }
+
+    /**
+     Open an account from the console
+     - POST /api/v1/admin/users/
+     - For appointing an operator without a shell on the server. No password is set: the account is opened without a usable one and the person chooses their own through recovery, which `adminUserRecoverySend` starts.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter adminUserCreateRequest: (body)  
+     - returns: RequestBuilder<AdminUser> 
+     */
+    open class func adminUserCreateWithRequestBuilder(adminUserCreateRequest: AdminUserCreateRequest) -> RequestBuilder<AdminUser> {
+        let localVariablePath = "/api/v1/admin/users/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminUserCreateRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminUser>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Clear an operator's authenticator after they lost it
      
      - parameter userId: (path)  
@@ -290,6 +329,48 @@ open class AdminUsersAPI {
         let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
 
         let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Send this account a password-recovery code
+     
+     - parameter userId: (path)  
+     - returns: AdminUserRecoverySent
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminUserRecoverySend(userId: UUID) async throws -> AdminUserRecoverySent {
+        return try await adminUserRecoverySendWithRequestBuilder(userId: userId).execute().body
+    }
+
+    /**
+     Send this account a password-recovery code
+     - POST /api/v1/admin/users/{user_id}/recovery/
+     - The console never sets a password. This starts the ordinary recovery flow: the code goes to the account's own number, and the person chooses their own password. Neither the code nor the challenge id is returned, so an operator cannot complete someone else's recovery.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter userId: (path)  
+     - returns: RequestBuilder<AdminUserRecoverySent> 
+     */
+    open class func adminUserRecoverySendWithRequestBuilder(userId: UUID) -> RequestBuilder<AdminUserRecoverySent> {
+        var localVariablePath = "/api/v1/admin/users/{user_id}/recovery/"
+        let userIdPreEscape = "\(APIHelper.mapValueToPathItem(userId))"
+        let userIdPostEscape = userIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{user_id}", with: userIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminUserRecoverySent>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
 
         return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
     }
@@ -377,6 +458,48 @@ open class AdminUsersAPI {
         let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
 
         return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Sign every device of this account out
+     
+     - parameter userId: (path)  
+     - returns: AdminUserDetail
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminUserSessionsRevoke(userId: UUID) async throws -> AdminUserDetail {
+        return try await adminUserSessionsRevokeWithRequestBuilder(userId: userId).execute().body
+    }
+
+    /**
+     Sign every device of this account out
+     - POST /api/v1/admin/users/{user_id}/sessions/revoke/
+     - For a phone that was lost or stolen. The account stays active — blocking would also shut its owner out of their own facilities, which is the wrong answer to a lost phone. The devices' push tokens stop with the sessions.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter userId: (path)  
+     - returns: RequestBuilder<AdminUserDetail> 
+     */
+    open class func adminUserSessionsRevokeWithRequestBuilder(userId: UUID) -> RequestBuilder<AdminUserDetail> {
+        var localVariablePath = "/api/v1/admin/users/{user_id}/sessions/revoke/"
+        let userIdPreEscape = "\(APIHelper.mapValueToPathItem(userId))"
+        let userIdPostEscape = userIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{user_id}", with: userIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminUserDetail>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
     }
 
     /**

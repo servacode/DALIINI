@@ -20,8 +20,10 @@ import com.servacode.directory.api.multiplatform.models.AdminRole
 import com.servacode.directory.api.multiplatform.models.AdminRoleCreateRequest
 import com.servacode.directory.api.multiplatform.models.AdminRoleList
 import com.servacode.directory.api.multiplatform.models.AdminUser
+import com.servacode.directory.api.multiplatform.models.AdminUserCreateRequest
 import com.servacode.directory.api.multiplatform.models.AdminUserDetail
 import com.servacode.directory.api.multiplatform.models.AdminUserList
+import com.servacode.directory.api.multiplatform.models.AdminUserRecoverySent
 import com.servacode.directory.api.multiplatform.models.AdminUserRolesRequest
 import com.servacode.directory.api.multiplatform.models.ApiError
 import com.servacode.directory.api.multiplatform.models.PatchedAdminRoleUpdateRequest
@@ -248,6 +250,39 @@ open class AdminUsersApi : ApiClient {
 
 
     /**
+     * Open an account from the console
+     * For appointing an operator without a shell on the server. No password is set: the account is opened without a usable one and the person chooses their own through recovery, which &#x60;adminUserRecoverySend&#x60; starts.
+     * @param adminUserCreateRequest 
+     * @return AdminUser
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun adminUserCreate(adminUserCreateRequest: AdminUserCreateRequest): HttpResponse<AdminUser> {
+
+        val localVariableAuthNames = listOf<String>("bearerAccessToken")
+
+        val localVariableBody = adminUserCreateRequest
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.POST,
+            "/api/v1/admin/users/",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+        )
+
+        return jsonRequest(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames
+        ).wrap()
+    }
+
+
+
+    /**
      * Clear an operator&#39;s authenticator after they lost it
      * They set up a new one at their next console sign-in. Their recovery codes are cleared too. Audited.
      * @param userId 
@@ -266,6 +301,39 @@ open class AdminUsersApi : ApiClient {
         val localVariableConfig = RequestConfig<kotlin.Any?>(
             RequestMethod.POST,
             "/api/v1/admin/users/{user_id}/mfa/reset/".replace("{" + "user_id" + "}", "$userId"),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+        )
+
+        return request(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames
+        ).wrap()
+    }
+
+
+    /**
+     * Send this account a password-recovery code
+     * The console never sets a password. This starts the ordinary recovery flow: the code goes to the account&#39;s own number, and the person chooses their own password. Neither the code nor the challenge id is returned, so an operator cannot complete someone else&#39;s recovery.
+     * @param userId 
+     * @return AdminUserRecoverySent
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun adminUserRecoverySend(userId: kotlin.String): HttpResponse<AdminUserRecoverySent> {
+
+        val localVariableAuthNames = listOf<String>("bearerAccessToken")
+
+        val localVariableBody = 
+            io.ktor.client.utils.EmptyContent
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.POST,
+            "/api/v1/admin/users/{user_id}/recovery/".replace("{" + "user_id" + "}", "$userId"),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,
@@ -343,6 +411,39 @@ open class AdminUsersApi : ApiClient {
         ).wrap()
     }
 
+
+
+    /**
+     * Sign every device of this account out
+     * For a phone that was lost or stolen. The account stays active — blocking would also shut its owner out of their own facilities, which is the wrong answer to a lost phone. The devices&#39; push tokens stop with the sessions.
+     * @param userId 
+     * @return AdminUserDetail
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun adminUserSessionsRevoke(userId: kotlin.String): HttpResponse<AdminUserDetail> {
+
+        val localVariableAuthNames = listOf<String>("bearerAccessToken")
+
+        val localVariableBody = 
+            io.ktor.client.utils.EmptyContent
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.POST,
+            "/api/v1/admin/users/{user_id}/sessions/revoke/".replace("{" + "user_id" + "}", "$userId"),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+        )
+
+        return request(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames
+        ).wrap()
+    }
 
 
     /**

@@ -17,15 +17,21 @@ public struct AdminUser: Codable, JSONEncodable, Hashable {
     public var phone: String
     public var active: Bool
     public var provinceId: UUID?
+    public var provinceName: String?
+    public var phoneVerifiedAt: Date?
+    public var lastLoginAt: Date?
     public var createdAt: Date?
     public var updatedAt: Date?
 
-    public init(id: UUID, name: String, phone: String, active: Bool, provinceId: UUID?, createdAt: Date?, updatedAt: Date?) {
+    public init(id: UUID, name: String, phone: String, active: Bool, provinceId: UUID?, provinceName: String?, phoneVerifiedAt: Date?, lastLoginAt: Date?, createdAt: Date?, updatedAt: Date?) {
         self.id = id
         self.name = name
         self.phone = phone
         self.active = active
         self.provinceId = provinceId
+        self.provinceName = provinceName
+        self.phoneVerifiedAt = phoneVerifiedAt
+        self.lastLoginAt = lastLoginAt
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -36,6 +42,9 @@ public struct AdminUser: Codable, JSONEncodable, Hashable {
         case phone
         case active
         case provinceId
+        case provinceName
+        case phoneVerifiedAt
+        case lastLoginAt
         case createdAt
         case updatedAt
     }
@@ -49,6 +58,9 @@ public struct AdminUser: Codable, JSONEncodable, Hashable {
         try container.encode(phone, forKey: .phone)
         try container.encode(active, forKey: .active)
         try container.encode(provinceId, forKey: .provinceId)
+        try container.encode(provinceName, forKey: .provinceName)
+        try container.encode(phoneVerifiedAt, forKey: .phoneVerifiedAt)
+        try container.encode(lastLoginAt, forKey: .lastLoginAt)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(updatedAt, forKey: .updatedAt)
     }

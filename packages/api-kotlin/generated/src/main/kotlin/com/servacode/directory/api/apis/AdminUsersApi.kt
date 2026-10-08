@@ -12,8 +12,10 @@ import com.servacode.directory.api.models.AdminRole
 import com.servacode.directory.api.models.AdminRoleCreateRequest
 import com.servacode.directory.api.models.AdminRoleList
 import com.servacode.directory.api.models.AdminUser
+import com.servacode.directory.api.models.AdminUserCreateRequest
 import com.servacode.directory.api.models.AdminUserDetail
 import com.servacode.directory.api.models.AdminUserList
+import com.servacode.directory.api.models.AdminUserRecoverySent
 import com.servacode.directory.api.models.AdminUserRolesRequest
 import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.PatchedAdminRoleUpdateRequest
@@ -116,6 +118,22 @@ interface AdminUsersApi {
     suspend fun adminUserBlock(@Path("user_id") userId: java.util.UUID): Response<AdminUser>
 
     /**
+     * POST api/v1/admin/users/
+     * Open an account from the console
+     * For appointing an operator without a shell on the server. No password is set: the account is opened without a usable one and the person chooses their own through recovery, which &#x60;adminUserRecoverySend&#x60; starts.
+     * Responses:
+     *  - 201: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param adminUserCreateRequest 
+     * @return [AdminUser]
+     */
+    @POST("api/v1/admin/users/")
+    suspend fun adminUserCreate(@Body adminUserCreateRequest: AdminUserCreateRequest): Response<AdminUser>
+
+    /**
      * POST api/v1/admin/users/{user_id}/mfa/reset/
      * Clear an operator&#39;s authenticator after they lost it
      * They set up a new one at their next console sign-in. Their recovery codes are cleared too. Audited.
@@ -130,6 +148,23 @@ interface AdminUsersApi {
      */
     @POST("api/v1/admin/users/{user_id}/mfa/reset/")
     suspend fun adminUserMfaReset(@Path("user_id") userId: java.util.UUID): Response<Unit>
+
+    /**
+     * POST api/v1/admin/users/{user_id}/recovery/
+     * Send this account a password-recovery code
+     * The console never sets a password. This starts the ordinary recovery flow: the code goes to the account&#39;s own number, and the person chooses their own password. Neither the code nor the challenge id is returned, so an operator cannot complete someone else&#39;s recovery.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param userId 
+     * @return [AdminUserRecoverySent]
+     */
+    @POST("api/v1/admin/users/{user_id}/recovery/")
+    suspend fun adminUserRecoverySend(@Path("user_id") userId: java.util.UUID): Response<AdminUserRecoverySent>
 
     /**
      * GET api/v1/admin/users/{user_id}/
@@ -164,6 +199,22 @@ interface AdminUsersApi {
      */
     @PUT("api/v1/admin/users/{user_id}/roles/")
     suspend fun adminUserRolesReplace(@Path("user_id") userId: java.util.UUID, @Body adminUserRolesRequest: AdminUserRolesRequest): Response<Unit>
+
+    /**
+     * POST api/v1/admin/users/{user_id}/sessions/revoke/
+     * Sign every device of this account out
+     * For a phone that was lost or stolen. The account stays active — blocking would also shut its owner out of their own facilities, which is the wrong answer to a lost phone. The devices&#39; push tokens stop with the sessions.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param userId 
+     * @return [AdminUserDetail]
+     */
+    @POST("api/v1/admin/users/{user_id}/sessions/revoke/")
+    suspend fun adminUserSessionsRevoke(@Path("user_id") userId: java.util.UUID): Response<AdminUserDetail>
 
     /**
      * POST api/v1/admin/users/{user_id}/unblock/

@@ -8,6 +8,9 @@ Name | Type | Description | Notes
 **phone** | **String** |  | 
 **active** | **Bool** |  | 
 **provinceId** | **UUID** |  | 
+**provinceName** | **String** |  | 
+**phoneVerifiedAt** | **Date** |  | 
+**lastLoginAt** | **Date** |  | 
 **createdAt** | **Date** |  | 
 **updatedAt** | **Date** |  | 
 

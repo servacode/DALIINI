@@ -28,6 +28,9 @@ import kotlinx.serialization.Contextual
  * @param phone 
  * @param active 
  * @param provinceId 
+ * @param provinceName 
+ * @param phoneVerifiedAt 
+ * @param lastLoginAt 
  * @param createdAt 
  * @param updatedAt 
  */
@@ -49,6 +52,15 @@ data class AdminUser (
 
     @Contextual @SerialName(value = "provinceId")
     val provinceId: java.util.UUID?,
+
+    @SerialName(value = "provinceName")
+    val provinceName: kotlin.String?,
+
+    @Contextual @SerialName(value = "phoneVerifiedAt")
+    val phoneVerifiedAt: java.time.OffsetDateTime?,
+
+    @Contextual @SerialName(value = "lastLoginAt")
+    val lastLoginAt: java.time.OffsetDateTime?,
 
     @Contextual @SerialName(value = "createdAt")
     val createdAt: java.time.OffsetDateTime?,

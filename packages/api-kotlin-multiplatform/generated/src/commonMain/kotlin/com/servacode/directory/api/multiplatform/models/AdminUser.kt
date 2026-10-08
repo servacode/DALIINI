@@ -28,6 +28,9 @@ import kotlinx.serialization.encoding.*
  * @param phone 
  * @param active 
  * @param provinceId 
+ * @param provinceName 
+ * @param phoneVerifiedAt 
+ * @param lastLoginAt 
  * @param createdAt 
  * @param updatedAt 
  */
@@ -44,6 +47,12 @@ data class AdminUser (
     @SerialName(value = "active") @Required val active: kotlin.Boolean,
 
     @SerialName(value = "provinceId") @Required val provinceId: kotlin.String?,
+
+    @SerialName(value = "provinceName") @Required val provinceName: kotlin.String?,
+
+    @SerialName(value = "phoneVerifiedAt") @Required val phoneVerifiedAt: kotlin.time.Instant?,
+
+    @SerialName(value = "lastLoginAt") @Required val lastLoginAt: kotlin.time.Instant?,
 
     @SerialName(value = "createdAt") @Required val createdAt: kotlin.time.Instant?,
 

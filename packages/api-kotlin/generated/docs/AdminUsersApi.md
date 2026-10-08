@@ -10,9 +10,12 @@ All URIs are relative to *http://localhost*
 | [**adminRoleUpdate**](AdminUsersApi.md#adminRoleUpdate) | **PATCH** api/v1/admin/roles/{role_id}/ | Rename a role or change the permissions it carries |
 | [**adminRolesList**](AdminUsersApi.md#adminRolesList) | **GET** api/v1/admin/roles/ | List admin roles, their permission codes and how many hold each |
 | [**adminUserBlock**](AdminUsersApi.md#adminUserBlock) | **POST** api/v1/admin/users/{user_id}/block/ | Block a user account |
+| [**adminUserCreate**](AdminUsersApi.md#adminUserCreate) | **POST** api/v1/admin/users/ | Open an account from the console |
 | [**adminUserMfaReset**](AdminUsersApi.md#adminUserMfaReset) | **POST** api/v1/admin/users/{user_id}/mfa/reset/ | Clear an operator&#39;s authenticator after they lost it |
+| [**adminUserRecoverySend**](AdminUsersApi.md#adminUserRecoverySend) | **POST** api/v1/admin/users/{user_id}/recovery/ | Send this account a password-recovery code |
 | [**adminUserRetrieve**](AdminUsersApi.md#adminUserRetrieve) | **GET** api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned |
 | [**adminUserRolesReplace**](AdminUsersApi.md#adminUserRolesReplace) | **PUT** api/v1/admin/users/{user_id}/roles/ | Replace the admin roles of a user |
+| [**adminUserSessionsRevoke**](AdminUsersApi.md#adminUserSessionsRevoke) | **POST** api/v1/admin/users/{user_id}/sessions/revoke/ | Sign every device of this account out |
 | [**adminUserUnblock**](AdminUsersApi.md#adminUserUnblock) | **POST** api/v1/admin/users/{user_id}/unblock/ | Unblock a user account |
 | [**adminUsersList**](AdminUsersApi.md#adminUsersList) | **GET** api/v1/admin/users/ | Search user accounts |
 
@@ -264,6 +267,48 @@ Configure bearerAccessToken:
  - **Accept**: application/json
 
 
+Open an account from the console
+
+For appointing an operator without a shell on the server. No password is set: the account is opened without a usable one and the person chooses their own through recovery, which &#x60;adminUserRecoverySend&#x60; starts.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminUsersApi::class.java)
+val adminUserCreateRequest : AdminUserCreateRequest =  // AdminUserCreateRequest | 
+
+launch(Dispatchers.IO) {
+    val result : AdminUser = webService.adminUserCreate(adminUserCreateRequest)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **adminUserCreateRequest** | [**AdminUserCreateRequest**](AdminUserCreateRequest.md)|  | |
+
+### Return type
+
+[**AdminUser**](AdminUser.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
 Clear an operator&#39;s authenticator after they lost it
 
 They set up a new one at their next console sign-in. Their recovery codes are cleared too. Audited.
@@ -293,6 +338,48 @@ launch(Dispatchers.IO) {
 ### Return type
 
 null (empty response body)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Send this account a password-recovery code
+
+The console never sets a password. This starts the ordinary recovery flow: the code goes to the account&#39;s own number, and the person chooses their own password. Neither the code nor the challenge id is returned, so an operator cannot complete someone else&#39;s recovery.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminUsersApi::class.java)
+val userId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+
+launch(Dispatchers.IO) {
+    val result : AdminUserRecoverySent = webService.adminUserRecoverySend(userId)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **userId** | **java.util.UUID**|  | |
+
+### Return type
+
+[**AdminUserRecoverySent**](AdminUserRecoverySent.md)
 
 ### Authorization
 
@@ -387,6 +474,48 @@ Configure bearerAccessToken:
 ### HTTP request headers
 
  - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+Sign every device of this account out
+
+For a phone that was lost or stolen. The account stays active — blocking would also shut its owner out of their own facilities, which is the wrong answer to a lost phone. The devices&#39; push tokens stop with the sessions.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminUsersApi::class.java)
+val userId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+
+launch(Dispatchers.IO) {
+    val result : AdminUserDetail = webService.adminUserSessionsRevoke(userId)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **userId** | **java.util.UUID**|  | |
+
+### Return type
+
+[**AdminUserDetail**](AdminUserDetail.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 

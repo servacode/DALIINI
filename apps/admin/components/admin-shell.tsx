@@ -93,13 +93,29 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
           { href: "/facilities/map", label: "الخريطة", permission: "admin.facilities.read" },
         ],
       },
+      // Three sections, not one drawer. Managing an account, deciding what a role may do,
+      // and announcing something to every phone in a province are three different jobs done
+      // by different people on different days; filed together, each one was a click deeper
+      // than it should be and none of them had a name of its own in the sidebar.
       {
-        key: "users",
-        label: "المستخدمون والصلاحيات",
+        key: "accounts",
+        label: "الحسابات",
         icon: "users",
+        pages: [{ href: "/users", label: "الحسابات", permission: "admin.users.read" }],
+      },
+      {
+        key: "roles",
+        label: "الأدوار والصلاحيات",
+        icon: "shield",
         pages: [
-          { href: "/users", label: "المستخدمون", permission: "admin.users.read" },
           { href: "/users/roles", label: "الأدوار والصلاحيات", permission: "admin.roles.read" },
+        ],
+      },
+      {
+        key: "broadcast",
+        label: "الإشعارات",
+        icon: "bell",
+        pages: [
           { href: "/users/broadcast", label: "إرسال إشعار", permission: "admin.notifications.send" },
         ],
       },

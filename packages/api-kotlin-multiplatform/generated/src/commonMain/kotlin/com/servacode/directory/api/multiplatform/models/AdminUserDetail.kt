@@ -15,6 +15,8 @@
 
 package com.servacode.directory.api.multiplatform.models
 
+import com.servacode.directory.api.multiplatform.models.AdminUserFacility
+import com.servacode.directory.api.multiplatform.models.AdminUserSession
 
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
@@ -28,9 +30,14 @@ import kotlinx.serialization.encoding.*
  * @param phone 
  * @param active 
  * @param provinceId 
+ * @param provinceName 
+ * @param phoneVerifiedAt 
+ * @param lastLoginAt 
  * @param createdAt 
  * @param updatedAt 
  * @param roleIds 
+ * @param facilities 
+ * @param sessions 
  */
 @Serializable
 
@@ -46,11 +53,21 @@ data class AdminUserDetail (
 
     @SerialName(value = "provinceId") @Required val provinceId: kotlin.String?,
 
+    @SerialName(value = "provinceName") @Required val provinceName: kotlin.String?,
+
+    @SerialName(value = "phoneVerifiedAt") @Required val phoneVerifiedAt: kotlin.time.Instant?,
+
+    @SerialName(value = "lastLoginAt") @Required val lastLoginAt: kotlin.time.Instant?,
+
     @SerialName(value = "createdAt") @Required val createdAt: kotlin.time.Instant?,
 
     @SerialName(value = "updatedAt") @Required val updatedAt: kotlin.time.Instant?,
 
-    @SerialName(value = "roleIds") @Required val roleIds: kotlin.collections.List<kotlin.Int>
+    @SerialName(value = "roleIds") @Required val roleIds: kotlin.collections.List<kotlin.Int>,
+
+    @SerialName(value = "facilities") @Required val facilities: kotlin.collections.List<AdminUserFacility>,
+
+    @SerialName(value = "sessions") @Required val sessions: kotlin.collections.List<AdminUserSession>
 
 ) {
 

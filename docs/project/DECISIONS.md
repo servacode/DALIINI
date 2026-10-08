@@ -2697,3 +2697,56 @@ Requires an ADR and a security regression suite. Until then the mixin stays pres
 `launch_v1` seeds no `VerificationRequirement`, deliberately. Before owner onboarding is opened to the public in production, the pharmacy requirements must be decided, configured through the Admin and qualified: which documents are required, how many files each accepts, and whether a licence document replaces or accompanies the storefront and business-card proofs the specification sketches.
 
 This is a **Production Launch Gate**, not a development blocker. Backend and Admin work proceed without it.
+
+## DECISION-104 — The console never holds anyone's password; it starts their recovery
+
+**Date:** 2026-10-08 · **Owner's decision (option «أ» of three offered).**
+
+**Why:** an operator needed a way to help someone who cannot sign in, and the console had
+none. The obvious answer — let the operator set a password — was offered and refused.
+
+**Why it was refused:** an operator who sets someone's password can sign in as them, manage
+their facilities and rate on their behalf, and **every line the audit writes afterwards names
+the wrong human**. The audit trail is the one thing a dispute is settled with, and that would
+make it untrustworthy for exactly the accounts an operator had touched.
+
+**Decision:**
+
+* **`adminUserRecoverySend`**: the operator starts the ordinary recovery flow. The code goes
+  to the account's own number over the same channel the app uses, with the same expiry, the
+  same attempt limit and the same per-number rate limit. **Neither the code nor the challenge
+  id is returned**, so the operator cannot finish it — the person chooses their own password
+  on their own phone. Audited as `user.recovery_sent`.
+* **`adminUserCreate`**: an account can be opened from the console, which is how an operator
+  is appointed on a running platform. `grant_operator` on the server could already do it, so
+  in practice appointing someone needed a shell on the production host and happened once, at
+  setup. The account is opened **with no usable password**, and the person sets one through
+  the recovery above. The number is canonicalised and refused if it already has an account.
+* **`adminUserSessionsRevoke`**: signs every device out while leaving the account active, with
+  its push tokens. This is the answer to a lost or stolen phone; blocking would also shut the
+  owner out of their own facilities, which is the wrong answer to that question.
+
+**What the account page now shows**, because a decision taken on half the facts is a worse
+decision: the province (it was already in the response and the console threw it away), whether
+the number was ever proved, the last sign-in, **the facilities the account owns or manages**,
+and the devices signed in now. The block dialog counts the facilities in its own warning.
+
+**The session payload carries no secret** — not the refresh digest, not the previous one — and
+a test asserts the exact set of fields.
+
+**The seeds were wrong and are fixed with it.** `seed_e2e_fixtures` and
+`seed_e2e_mobile_fixtures` opened accounts with no province and an unproved number, which
+registration cannot do. A fixture in a state the product cannot produce sends whoever reads
+the console hunting a defect that is only in the fixture — it did exactly that here.
+
+## DECISION-105 — The console's sidebar names accounts, roles and announcements separately
+
+**Date:** 2026-10-08 · **Owner's decision.**
+
+Managing an account, deciding what a role may do, and announcing something to every phone in
+a province are three different jobs, done by different people on different days. They were one
+sidebar entry, «المستخدمون والصلاحيات», with three pages inside it: each was a click deeper
+than it should be and none had a name of its own to navigate to.
+
+They are now three sections under the home entry — **الحسابات**, **الأدوار والصلاحيات**,
+**الإشعارات** — each with its own icon. Nothing about the pages' permissions changed.

@@ -51,6 +51,8 @@ BODYLESS_MUTATIONS = {
     ("/api/v1/owner/claims/{claim_id}/submit/", "post"),
     ("/api/v1/account/mfa/setup/", "post"),
     ("/api/v1/admin/users/{user_id}/mfa/reset/", "post"),
+    ("/api/v1/admin/users/{user_id}/recovery/", "post"),
+    ("/api/v1/admin/users/{user_id}/sessions/revoke/", "post"),
 }
 
 # Endpoints that legitimately answer 204 with no body.

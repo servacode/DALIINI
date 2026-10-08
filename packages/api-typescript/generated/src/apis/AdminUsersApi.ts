@@ -20,8 +20,10 @@ import type {
   AdminRoleCreateRequest,
   AdminRoleList,
   AdminUser,
+  AdminUserCreateRequest,
   AdminUserDetail,
   AdminUserList,
+  AdminUserRecoverySent,
   AdminUserRolesRequest,
   ApiError,
   PatchedAdminRoleUpdateRequest,
@@ -37,10 +39,14 @@ import {
     AdminRoleListToJSON,
     AdminUserFromJSON,
     AdminUserToJSON,
+    AdminUserCreateRequestFromJSON,
+    AdminUserCreateRequestToJSON,
     AdminUserDetailFromJSON,
     AdminUserDetailToJSON,
     AdminUserListFromJSON,
     AdminUserListToJSON,
+    AdminUserRecoverySentFromJSON,
+    AdminUserRecoverySentToJSON,
     AdminUserRolesRequestFromJSON,
     AdminUserRolesRequestToJSON,
     ApiErrorFromJSON,
@@ -66,7 +72,15 @@ export interface AdminUserBlockRequest {
     userId: string;
 }
 
+export interface AdminUserCreateOperationRequest {
+    adminUserCreateRequest: AdminUserCreateRequest;
+}
+
 export interface AdminUserMfaResetRequest {
+    userId: string;
+}
+
+export interface AdminUserRecoverySendRequest {
     userId: string;
 }
 
@@ -77,6 +91,10 @@ export interface AdminUserRetrieveRequest {
 export interface AdminUserRolesReplaceRequest {
     userId: string;
     adminUserRolesRequest: AdminUserRolesRequest;
+}
+
+export interface AdminUserSessionsRevokeRequest {
+    userId: string;
 }
 
 export interface AdminUserUnblockRequest {
@@ -366,6 +384,55 @@ export class AdminUsersApi extends runtime.BaseAPI {
     }
 
     /**
+     * For appointing an operator without a shell on the server. No password is set: the account is opened without a usable one and the person chooses their own through recovery, which `adminUserRecoverySend` starts.
+     * Open an account from the console
+     */
+    async adminUserCreateRaw(requestParameters: AdminUserCreateOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminUser>> {
+        if (requestParameters['adminUserCreateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'adminUserCreateRequest',
+                'Required parameter "adminUserCreateRequest" was null or undefined when calling adminUserCreate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/users/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminUserCreateRequestToJSON(requestParameters['adminUserCreateRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminUserFromJSON(jsonValue));
+    }
+
+    /**
+     * For appointing an operator without a shell on the server. No password is set: the account is opened without a usable one and the person chooses their own through recovery, which `adminUserRecoverySend` starts.
+     * Open an account from the console
+     */
+    async adminUserCreate(requestParameters: AdminUserCreateOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminUser> {
+        const response = await this.adminUserCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * They set up a new one at their next console sign-in. Their recovery codes are cleared too. Audited.
      * Clear an operator\'s authenticator after they lost it
      */
@@ -409,6 +476,53 @@ export class AdminUsersApi extends runtime.BaseAPI {
      */
     async adminUserMfaReset(requestParameters: AdminUserMfaResetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.adminUserMfaResetRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * The console never sets a password. This starts the ordinary recovery flow: the code goes to the account\'s own number, and the person chooses their own password. Neither the code nor the challenge id is returned, so an operator cannot complete someone else\'s recovery.
+     * Send this account a password-recovery code
+     */
+    async adminUserRecoverySendRaw(requestParameters: AdminUserRecoverySendRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminUserRecoverySent>> {
+        if (requestParameters['userId'] == null) {
+            throw new runtime.RequiredError(
+                'userId',
+                'Required parameter "userId" was null or undefined when calling adminUserRecoverySend().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/users/{user_id}/recovery/`;
+        urlPath = urlPath.replace(`{${"user_id"}}`, encodeURIComponent(String(requestParameters['userId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminUserRecoverySentFromJSON(jsonValue));
+    }
+
+    /**
+     * The console never sets a password. This starts the ordinary recovery flow: the code goes to the account\'s own number, and the person chooses their own password. Neither the code nor the challenge id is returned, so an operator cannot complete someone else\'s recovery.
+     * Send this account a password-recovery code
+     */
+    async adminUserRecoverySend(requestParameters: AdminUserRecoverySendRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminUserRecoverySent> {
+        const response = await this.adminUserRecoverySendRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
@@ -510,6 +624,53 @@ export class AdminUsersApi extends runtime.BaseAPI {
      */
     async adminUserRolesReplace(requestParameters: AdminUserRolesReplaceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.adminUserRolesReplaceRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * For a phone that was lost or stolen. The account stays active — blocking would also shut its owner out of their own facilities, which is the wrong answer to a lost phone. The devices\' push tokens stop with the sessions.
+     * Sign every device of this account out
+     */
+    async adminUserSessionsRevokeRaw(requestParameters: AdminUserSessionsRevokeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminUserDetail>> {
+        if (requestParameters['userId'] == null) {
+            throw new runtime.RequiredError(
+                'userId',
+                'Required parameter "userId" was null or undefined when calling adminUserSessionsRevoke().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/users/{user_id}/sessions/revoke/`;
+        urlPath = urlPath.replace(`{${"user_id"}}`, encodeURIComponent(String(requestParameters['userId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminUserDetailFromJSON(jsonValue));
+    }
+
+    /**
+     * For a phone that was lost or stolen. The account stays active — blocking would also shut its owner out of their own facilities, which is the wrong answer to a lost phone. The devices\' push tokens stop with the sessions.
+     * Sign every device of this account out
+     */
+    async adminUserSessionsRevoke(requestParameters: AdminUserSessionsRevokeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminUserDetail> {
+        const response = await this.adminUserSessionsRevokeRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

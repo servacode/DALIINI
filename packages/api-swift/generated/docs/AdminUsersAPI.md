@@ -10,9 +10,12 @@ Method | HTTP request | Description
 [**adminRoleUpdate**](AdminUsersAPI.md#adminroleupdate) | **PATCH** /api/v1/admin/roles/{role_id}/ | Rename a role or change the permissions it carries
 [**adminRolesList**](AdminUsersAPI.md#adminroleslist) | **GET** /api/v1/admin/roles/ | List admin roles, their permission codes and how many hold each
 [**adminUserBlock**](AdminUsersAPI.md#adminuserblock) | **POST** /api/v1/admin/users/{user_id}/block/ | Block a user account
+[**adminUserCreate**](AdminUsersAPI.md#adminusercreate) | **POST** /api/v1/admin/users/ | Open an account from the console
 [**adminUserMfaReset**](AdminUsersAPI.md#adminusermfareset) | **POST** /api/v1/admin/users/{user_id}/mfa/reset/ | Clear an operator&#39;s authenticator after they lost it
+[**adminUserRecoverySend**](AdminUsersAPI.md#adminuserrecoverysend) | **POST** /api/v1/admin/users/{user_id}/recovery/ | Send this account a password-recovery code
 [**adminUserRetrieve**](AdminUsersAPI.md#adminuserretrieve) | **GET** /api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned
 [**adminUserRolesReplace**](AdminUsersAPI.md#adminuserrolesreplace) | **PUT** /api/v1/admin/users/{user_id}/roles/ | Replace the admin roles of a user
+[**adminUserSessionsRevoke**](AdminUsersAPI.md#adminusersessionsrevoke) | **POST** /api/v1/admin/users/{user_id}/sessions/revoke/ | Sign every device of this account out
 [**adminUserUnblock**](AdminUsersAPI.md#adminuserunblock) | **POST** /api/v1/admin/users/{user_id}/unblock/ | Unblock a user account
 [**adminUsersList**](AdminUsersAPI.md#adminuserslist) | **GET** /api/v1/admin/users/ | Search user accounts
 
@@ -309,6 +312,56 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **adminUserCreate**
+```swift
+    open class func adminUserCreate(adminUserCreateRequest: AdminUserCreateRequest, completion: @escaping (_ data: AdminUser?, _ error: Error?) -> Void)
+```
+
+Open an account from the console
+
+For appointing an operator without a shell on the server. No password is set: the account is opened without a usable one and the person chooses their own through recovery, which `adminUserRecoverySend` starts.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let adminUserCreateRequest = AdminUserCreateRequest(name: "name_example", phone: "phone_example", provinceId: 123) // AdminUserCreateRequest | 
+
+// Open an account from the console
+AdminUsersAPI.adminUserCreate(adminUserCreateRequest: adminUserCreateRequest) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **adminUserCreateRequest** | [**AdminUserCreateRequest**](AdminUserCreateRequest.md) |  | 
+
+### Return type
+
+[**AdminUser**](AdminUser.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **adminUserMfaReset**
 ```swift
     open class func adminUserMfaReset(userId: UUID, completion: @escaping (_ data: Void?, _ error: Error?) -> Void)
@@ -347,6 +400,56 @@ Name | Type | Description  | Notes
 ### Return type
 
 Void (empty response body)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminUserRecoverySend**
+```swift
+    open class func adminUserRecoverySend(userId: UUID, completion: @escaping (_ data: AdminUserRecoverySent?, _ error: Error?) -> Void)
+```
+
+Send this account a password-recovery code
+
+The console never sets a password. This starts the ordinary recovery flow: the code goes to the account's own number, and the person chooses their own password. Neither the code nor the challenge id is returned, so an operator cannot complete someone else's recovery.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let userId = 987 // UUID | 
+
+// Send this account a password-recovery code
+AdminUsersAPI.adminUserRecoverySend(userId: userId) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **userId** | **UUID** |  | 
+
+### Return type
+
+[**AdminUserRecoverySent**](AdminUserRecoverySent.md)
 
 ### Authorization
 
@@ -455,6 +558,56 @@ Void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminUserSessionsRevoke**
+```swift
+    open class func adminUserSessionsRevoke(userId: UUID, completion: @escaping (_ data: AdminUserDetail?, _ error: Error?) -> Void)
+```
+
+Sign every device of this account out
+
+For a phone that was lost or stolen. The account stays active — blocking would also shut its owner out of their own facilities, which is the wrong answer to a lost phone. The devices' push tokens stop with the sessions.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let userId = 987 // UUID | 
+
+// Sign every device of this account out
+AdminUsersAPI.adminUserSessionsRevoke(userId: userId) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **userId** | **UUID** |  | 
+
+### Return type
+
+[**AdminUserDetail**](AdminUserDetail.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

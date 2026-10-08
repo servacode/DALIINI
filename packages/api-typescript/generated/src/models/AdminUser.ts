@@ -51,6 +51,24 @@ export interface AdminUser {
     provinceId: string | null;
     /**
      * 
+     * @type {string}
+     * @memberof AdminUser
+     */
+    provinceName: string | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof AdminUser
+     */
+    phoneVerifiedAt: Date | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof AdminUser
+     */
+    lastLoginAt: Date | null;
+    /**
+     * 
      * @type {Date}
      * @memberof AdminUser
      */
@@ -72,6 +90,9 @@ export function instanceOfAdminUser(value: object): value is AdminUser {
     if (!('phone' in value) || value['phone'] === undefined) return false;
     if (!('active' in value) || value['active'] === undefined) return false;
     if (!('provinceId' in value) || value['provinceId'] === undefined) return false;
+    if (!('provinceName' in value) || value['provinceName'] === undefined) return false;
+    if (!('phoneVerifiedAt' in value) || value['phoneVerifiedAt'] === undefined) return false;
+    if (!('lastLoginAt' in value) || value['lastLoginAt'] === undefined) return false;
     if (!('createdAt' in value) || value['createdAt'] === undefined) return false;
     if (!('updatedAt' in value) || value['updatedAt'] === undefined) return false;
     return true;
@@ -92,6 +113,9 @@ export function AdminUserFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'phone': json['phone'],
         'active': json['active'],
         'provinceId': json['provinceId'],
+        'provinceName': json['provinceName'],
+        'phoneVerifiedAt': (json['phoneVerifiedAt'] == null ? null : new Date(json['phoneVerifiedAt'])),
+        'lastLoginAt': (json['lastLoginAt'] == null ? null : new Date(json['lastLoginAt'])),
         'createdAt': (json['createdAt'] == null ? null : new Date(json['createdAt'])),
         'updatedAt': (json['updatedAt'] == null ? null : new Date(json['updatedAt'])),
     };
@@ -113,6 +137,9 @@ export function AdminUserToJSONTyped(value?: AdminUser | null, ignoreDiscriminat
         'phone': value['phone'],
         'active': value['active'],
         'provinceId': value['provinceId'],
+        'provinceName': value['provinceName'],
+        'phoneVerifiedAt': ((value['phoneVerifiedAt'] as any).toISOString()),
+        'lastLoginAt': ((value['lastLoginAt'] as any).toISOString()),
         'createdAt': ((value['createdAt'] as any).toISOString()),
         'updatedAt': ((value['updatedAt'] as any).toISOString()),
     };

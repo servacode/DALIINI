@@ -35,13 +35,60 @@ class AdminUserSerializer(serializers.Serializer[Any]):
     phone = serializers.CharField()
     active = serializers.BooleanField()
     provinceId = serializers.UUIDField(allow_null=True)
+    provinceName = serializers.CharField(allow_null=True)
+    phoneVerifiedAt = serializers.DateTimeField(allow_null=True)
+    lastLoginAt = serializers.DateTimeField(allow_null=True)
     createdAt = serializers.DateTimeField(allow_null=True)
     updatedAt = serializers.DateTimeField(allow_null=True)
+
+
+class AdminUserFacilitySerializer(serializers.Serializer[Any]):
+    id = serializers.UUIDField()
+    nameAr = serializers.CharField()
+    role = serializers.CharField()
+    status = serializers.CharField()
+
+
+class AdminUserSessionSerializer(serializers.Serializer[Any]):
+    """A signed-in device. No secret of any kind is in it."""
+
+    id = serializers.UUIDField()
+    platform = serializers.CharField(allow_blank=True)
+    deviceName = serializers.CharField(allow_blank=True)
+    createdAt = serializers.DateTimeField(allow_null=True)
+    lastSeenAt = serializers.DateTimeField(allow_null=True)
 
 
 class AdminUserDetailSerializer(AdminUserSerializer):
     # `AdminRole` is keyed by an integer, as `AdminRoleSerializer.id` says; this said UUID.
     roleIds = serializers.ListField(child=serializers.IntegerField())
+    facilities = AdminUserFacilitySerializer(many=True)
+    sessions = AdminUserSessionSerializer(many=True)
+
+
+class AdminUserCreateRequestSerializer(serializers.Serializer[Any]):
+    """What is needed to open an account from the console, and nothing more.
+
+    No password: the console never sets one. The account is opened without a usable
+    password and the person chooses their own through the ordinary recovery flow, which
+    `adminUserRecoverySend` starts for them. An operator who could set a password could
+    sign in as that person, and the audit trail would say the person did it.
+    """
+
+    name = serializers.CharField(max_length=120)
+    phone = serializers.CharField(max_length=20)
+    provinceId = serializers.UUIDField()
+
+
+class AdminUserRecoverySentSerializer(serializers.Serializer[Any]):
+    """The code is on its way. Neither the code nor the challenge id is returned.
+
+    The operator must not be able to complete someone else's recovery, so nothing here
+    helps them: the person answers on their own phone.
+    """
+
+    sent = serializers.BooleanField()
+    phone = serializers.CharField()
 
 
 class AdminUserListSerializer(CursorEnvelope):

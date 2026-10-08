@@ -17,19 +17,29 @@ public struct AdminUserDetail: Codable, JSONEncodable, Hashable {
     public var phone: String
     public var active: Bool
     public var provinceId: UUID?
+    public var provinceName: String?
+    public var phoneVerifiedAt: Date?
+    public var lastLoginAt: Date?
     public var createdAt: Date?
     public var updatedAt: Date?
     public var roleIds: [Int]
+    public var facilities: [AdminUserFacility]
+    public var sessions: [AdminUserSession]
 
-    public init(id: UUID, name: String, phone: String, active: Bool, provinceId: UUID?, createdAt: Date?, updatedAt: Date?, roleIds: [Int]) {
+    public init(id: UUID, name: String, phone: String, active: Bool, provinceId: UUID?, provinceName: String?, phoneVerifiedAt: Date?, lastLoginAt: Date?, createdAt: Date?, updatedAt: Date?, roleIds: [Int], facilities: [AdminUserFacility], sessions: [AdminUserSession]) {
         self.id = id
         self.name = name
         self.phone = phone
         self.active = active
         self.provinceId = provinceId
+        self.provinceName = provinceName
+        self.phoneVerifiedAt = phoneVerifiedAt
+        self.lastLoginAt = lastLoginAt
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.roleIds = roleIds
+        self.facilities = facilities
+        self.sessions = sessions
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
@@ -38,9 +48,14 @@ public struct AdminUserDetail: Codable, JSONEncodable, Hashable {
         case phone
         case active
         case provinceId
+        case provinceName
+        case phoneVerifiedAt
+        case lastLoginAt
         case createdAt
         case updatedAt
         case roleIds
+        case facilities
+        case sessions
     }
 
     // Encodable protocol methods
@@ -52,9 +67,14 @@ public struct AdminUserDetail: Codable, JSONEncodable, Hashable {
         try container.encode(phone, forKey: .phone)
         try container.encode(active, forKey: .active)
         try container.encode(provinceId, forKey: .provinceId)
+        try container.encode(provinceName, forKey: .provinceName)
+        try container.encode(phoneVerifiedAt, forKey: .phoneVerifiedAt)
+        try container.encode(lastLoginAt, forKey: .lastLoginAt)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(updatedAt, forKey: .updatedAt)
         try container.encode(roleIds, forKey: .roleIds)
+        try container.encode(facilities, forKey: .facilities)
+        try container.encode(sessions, forKey: .sessions)
     }
 }
 
