@@ -3,6 +3,7 @@ package com.servacode.directory.feature.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.servacode.directory.core.model.LegalPageKey
+import com.servacode.directory.core.model.SupportContact
 import com.servacode.directory.core.model.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -18,6 +19,11 @@ class LegalViewModel @Inject constructor(
     private val _pages = MutableStateFlow<LegalListState>(LegalListState.Loading)
     val pages: StateFlow<LegalListState> = _pages.asStateFlow()
 
+    // The support row is an extra, never a reason for the screen to fail: unreadable or not
+    // configured, it is simply not shown.
+    private val _support = MutableStateFlow<SupportContact?>(null)
+    val support: StateFlow<SupportContact?> = _support.asStateFlow()
+
     private val _page = MutableStateFlow<LegalPageState>(LegalPageState.Loading)
     val page: StateFlow<LegalPageState> = _page.asStateFlow()
 
@@ -26,6 +32,7 @@ class LegalViewModel @Inject constructor(
     }
 
     fun refresh() {
+        viewModelScope.launch { _support.value = legal.support() }
         viewModelScope.launch {
             _pages.value = LegalListState.Loading
             _pages.value = legal.pages().fold(

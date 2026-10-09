@@ -44,6 +44,7 @@
     <string name="settings_system_settings_hint">الموقع والإشعارات والتخزين</string>
 
     <string name="help_title">المساعدة والمعلومات</string>
+    <string name="help_whatsapp">راسلنا على واتساب</string>
     <string name="help_error">تعذر تحميل المحتوى</string>
     <string name="help_empty">لا يوجد محتوى منشور</string>
     <string name="help_empty_body">سيظهر هنا ما تنشره المنصة.</string>

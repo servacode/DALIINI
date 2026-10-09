@@ -11,6 +11,17 @@ enum class EmergencyScope { NATIONAL, PROVINCE }
 
 /** One number to call in an emergency: ambulance, fire, police, the province's hospital line. */
 @Serializable
+/**
+ * How people reach the team (DECISION-102): the WhatsApp number answered by hand, a link that
+ * opens a chat with it, and an email address. Each is null when the server has none configured,
+ * and the app then offers nothing rather than an empty row.
+ */
+data class SupportContact(
+    val whatsapp: String?,
+    val whatsappLink: String?,
+    val email: String?,
+)
+
 data class EmergencyNumber(
     val nameAr: String,
     val number: String,

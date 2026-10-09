@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -33,8 +34,9 @@ import com.servacode.directory.core.model.LegalPageKey
 /**
  * The help and information section: everything the platform publishes about itself.
  *
- * The list comes from the backend, so a page that has not been published simply is not offered —
- * which is why there is no "contact us" here until someone configures one.
+ * The list comes from the backend, so a page that has not been published simply is not offered.
+ * Above it, when the server has a support number configured, one row opens a WhatsApp chat with
+ * the team (DECISION-102) — the way most people here would ask for help, one press away.
  */
 @Composable
 fun HelpScreen(
@@ -44,6 +46,8 @@ fun HelpScreen(
     viewModel: LegalViewModel = hiltViewModel(),
 ) {
     val state by viewModel.pages.collectAsStateWithLifecycle()
+    val support by viewModel.support.collectAsStateWithLifecycle()
+    val links = LocalUriHandler.current
 
     DirectoryPage(
         topBar = { DirectoryTopBar(title = HelpCopy.TITLE, onBack = onBack) },
@@ -73,6 +77,16 @@ fun HelpScreen(
                         .padding(horizontal = Space.screen),
                     verticalArrangement = Arrangement.spacedBy(Space.base),
                 ) {
+                    support?.whatsappLink?.let { link ->
+                        DirectoryMenuGroup {
+                            DirectoryMenuRow(
+                                title = HelpCopy.WHATSAPP,
+                                subtitle = support?.whatsapp,
+                                icon = DirectoryIcons.whatsapp,
+                                onClick = { runCatching { links.openUri(link) } },
+                            )
+                        }
+                    }
                     DirectoryMenuGroup {
                         value.pages.forEachIndexed { index, page ->
                             if (index > 0) DirectoryMenuDivider()
@@ -157,6 +171,7 @@ private fun LegalPageKey.icon(): DirectoryGlyph = when (this) {
 /** The words of the help section, provisional until product copy is approved. */
 object HelpCopy {
     val TITLE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.help_title)
+    val WHATSAPP: String @Composable @ReadOnlyComposable get() = stringResource(R.string.help_whatsapp)
     val ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.help_error)
     val EMPTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.help_empty)
     val EMPTY_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.help_empty_body)

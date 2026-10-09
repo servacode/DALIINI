@@ -36,6 +36,7 @@ import com.servacode.directory.core.model.HomeSnapshot
 import com.servacode.directory.core.model.InboxPage
 import com.servacode.directory.core.model.LegalPage
 import com.servacode.directory.core.model.LegalPageKey
+import com.servacode.directory.core.model.SupportContact
 import com.servacode.directory.core.model.Page
 import com.servacode.directory.core.model.Province
 import com.servacode.directory.core.model.PublicMapFacility
@@ -267,6 +268,15 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
 
     override suspend fun legalPage(key: LegalPageKey): LegalPage =
         call { content.publicLegalDocumentRetrieve(key.name) }.toDomain()
+
+    override suspend fun supportContact(): SupportContact =
+        call { content.publicSupportContact() }.let {
+            SupportContact(
+                whatsapp = it.whatsapp,
+                whatsappLink = it.whatsappLink?.toString(),
+                email = it.email,
+            )
+        }
 
     override suspend fun changePassword(currentPassword: String, newPassword: String) {
         callForNoContent {

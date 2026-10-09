@@ -2,6 +2,7 @@ package com.servacode.directory.feature.settings
 
 import com.servacode.directory.core.model.LegalPage
 import com.servacode.directory.core.model.LegalPageKey
+import com.servacode.directory.core.model.SupportContact
 import com.servacode.directory.core.network.PublicApiBoundary
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -30,6 +31,14 @@ class LegalRepository @Inject constructor(
     suspend fun page(key: LegalPageKey): Result<LegalPage> {
         read[key]?.let { return Result.success(it) }
         return runCatching { api.legalPage(key) }.onSuccess { read[key] = it }
+    }
+
+    private var support: SupportContact? = null
+
+    /** How people reach the team, or null when it could not be read: the row is then left out. */
+    suspend fun support(): SupportContact? {
+        support?.let { return it }
+        return runCatching { api.supportContact() }.getOrNull()?.also { support = it }
     }
 
     /** What was read before, for a screen that opens with no connection. */

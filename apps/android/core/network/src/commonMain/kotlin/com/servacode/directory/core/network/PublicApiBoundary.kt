@@ -9,6 +9,7 @@ import com.servacode.directory.core.model.AccountProfile
 import com.servacode.directory.core.model.InboxPage
 import com.servacode.directory.core.model.LegalPage
 import com.servacode.directory.core.model.LegalPageKey
+import com.servacode.directory.core.model.SupportContact
 import com.servacode.directory.core.model.ResolvedPlace
 import com.servacode.directory.core.model.Category
 import com.servacode.directory.core.model.CategoryTags
@@ -183,6 +184,9 @@ interface PublicApiBoundary {
     /** The published pages, titles and versions only. */
     suspend fun legalPages(): List<LegalPage>
     suspend fun legalPage(key: LegalPageKey): LegalPage
+
+    /** How people reach the team; one source the site reads too (DECISION-102). */
+    suspend fun supportContact(): SupportContact
 
     /** Replaces the password and ends every session, this one included. */
     suspend fun changePassword(currentPassword: String, newPassword: String)

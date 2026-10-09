@@ -2,6 +2,7 @@ package com.servacode.directory.core.testing
 
 import com.servacode.directory.core.model.AppRelease
 import com.servacode.directory.core.model.NotificationSwitches
+import com.servacode.directory.core.model.SupportContact
 import com.servacode.directory.core.model.EmergencyNumber
 import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.core.model.FacilityReportReason
@@ -293,6 +294,7 @@ class ScriptedPublicApi : PublicApiBoundary {
     var favoritesAnswer: (String?) -> Page<FacilitySummary> = { throw offline }
     var inboxAnswer: (String?) -> InboxPage = { throw offline }
     var legalPagesAnswer: () -> List<LegalPage> = { throw offline }
+    var supportAnswer: () -> SupportContact = { SupportContact(null, null, null) }
     var legalPageAnswer: (LegalPageKey) -> LegalPage = { throw offline }
 
     /** What the fake has been told to save, so a test can assert the round trip. */
@@ -361,6 +363,8 @@ class ScriptedPublicApi : PublicApiBoundary {
     }
 
     override suspend fun legalPages(): List<LegalPage> = legalPagesAnswer().also { calls += "legal" }
+
+    override suspend fun supportContact(): SupportContact = supportAnswer().also { calls += "support" }
 
     override suspend fun legalPage(key: LegalPageKey): LegalPage =
         legalPageAnswer(key).also { calls += "legal:$key" }
