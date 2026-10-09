@@ -360,6 +360,42 @@ def create_console_account(*, request: Any, name: str, phone: str, province_id: 
     return user
 
 
+def delete_account_on_request(*, request: Any, user: User) -> None:
+    """Delete an account because its owner asked, by the site's page or by email (DECISION-111).
+
+    Google Play requires an account to be deletable from outside the app, and the site's page
+    tells people to write in. Before this an operator who received that message had no way to
+    act on it short of a shell on the server. The rules are the app's own: an account that is
+    the only owner of a live facility is refused, with the reason the operator can pass on.
+    """
+    from rest_framework.exceptions import ValidationError as DrfValidationError
+
+    from accounts.models import AccountDeletionRequest
+    from accounts.services import request_account_deletion
+    from core.exceptions import DomainError
+
+    try:
+        with transaction.atomic():
+            request_account_deletion(
+                user=user,
+                request_id=_request_id(request),
+                channel=AccountDeletionRequest.Channel.WEB,
+                actor=request.user,
+            )
+    except DrfValidationError as exc:
+        detail = getattr(exc, "detail", {})
+        if isinstance(detail, dict) and "ownedFacilities" in detail:
+            raise DomainError(
+                "ACCOUNT_OWNS_FACILITIES",
+                message=(
+                    "هذا الحساب هو المالك الوحيد لمنشأة فعّالة. انقل ملكيتها لشخص آخر أو أغلقها "
+                    "أولاً، ثم احذف الحساب."
+                ),
+                status_code=409,
+            ) from exc
+        raise
+
+
 def send_recovery_code(*, request: Any, user: User) -> str:
     """Start the ordinary recovery flow for someone who cannot start it themselves.
 

@@ -211,6 +211,22 @@ export async function getSlides(provinceId?: string): Promise<Slide[]> {
   return answered?.items ?? [];
 }
 
+export type SupportContact = {
+  whatsapp: string | null;
+  whatsappLink: string | null;
+  email: string | null;
+};
+
+/**
+ * How people reach the team, from the one place the site and the app both read it
+ * (DECISION-102). Nothing configured, or the API unreachable, is the same answer: no number,
+ * so no page ever shows an empty or broken one.
+ */
+export async function getSupportContact(): Promise<SupportContact> {
+  const answered = await getJson<SupportContact>("public/support/");
+  return answered ?? { whatsapp: null, whatsappLink: null, email: null };
+}
+
 export async function getProvinces(): Promise<Province[] | null> {
   return (await getJson<{ items: Province[] }>("public/provinces/"))?.items ?? null;
 }

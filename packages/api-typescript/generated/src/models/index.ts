@@ -300,6 +300,7 @@ export * from './PublicLocationResolve';
 export * from './PublicPlace';
 export * from './PublicProvince';
 export * from './PublicProvinceList';
+export * from './PublicSupport';
 export * from './PushPlatformEnum';
 export * from './PushToken';
 export * from './PushTokenRegister';

@@ -173,6 +173,7 @@ All URIs are relative to *http://localhost*
 | *AdminUsersApi* | [**adminRolesList**](docs/AdminUsersApi.md#adminroleslist) | **GET** api/v1/admin/roles/ | List admin roles, their permission codes and how many hold each |
 | *AdminUsersApi* | [**adminUserBlock**](docs/AdminUsersApi.md#adminuserblock) | **POST** api/v1/admin/users/{user_id}/block/ | Block a user account |
 | *AdminUsersApi* | [**adminUserCreate**](docs/AdminUsersApi.md#adminusercreate) | **POST** api/v1/admin/users/ | Open an account from the console |
+| *AdminUsersApi* | [**adminUserDelete**](docs/AdminUsersApi.md#adminuserdelete) | **POST** api/v1/admin/users/{user_id}/delete/ | Delete an account at its owner's request |
 | *AdminUsersApi* | [**adminUserMfaReset**](docs/AdminUsersApi.md#adminusermfareset) | **POST** api/v1/admin/users/{user_id}/mfa/reset/ | Clear an operator's authenticator after they lost it |
 | *AdminUsersApi* | [**adminUserRecoverySend**](docs/AdminUsersApi.md#adminuserrecoverysend) | **POST** api/v1/admin/users/{user_id}/recovery/ | Send this account a password-recovery code |
 | *AdminUsersApi* | [**adminUserRetrieve**](docs/AdminUsersApi.md#adminuserretrieve) | **GET** api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned |
@@ -207,6 +208,7 @@ All URIs are relative to *http://localhost*
 | *ContentApi* | [**publicFaqList**](docs/ContentApi.md#publicfaqlist) | **GET** api/v1/content/faq/ | List the published questions and answers, in order |
 | *ContentApi* | [**publicLegalDocumentRetrieve**](docs/ContentApi.md#publiclegaldocumentretrieve) | **GET** api/v1/public/legal/{key}/ | Retrieve one published page |
 | *ContentApi* | [**publicLegalDocumentsList**](docs/ContentApi.md#publiclegaldocumentslist) | **GET** api/v1/public/legal/ | List the published pages |
+| *ContentApi* | [**publicSupportContact**](docs/ContentApi.md#publicsupportcontact) | **GET** api/v1/public/support/ | How to reach the team |
 | *DutyApi* | [**ownerFacilityDutyCreate**](docs/DutyApi.md#ownerfacilitydutycreate) | **POST** api/v1/owner/facilities/{facility_id}/duty/ | Schedule a duty shift |
 | *DutyApi* | [**ownerFacilityDutyDelete**](docs/DutyApi.md#ownerfacilitydutydelete) | **DELETE** api/v1/owner/facilities/{facility_id}/duty/{shift_id}/ | Remove a duty shift |
 | *DutyApi* | [**ownerFacilityDutyList**](docs/DutyApi.md#ownerfacilitydutylist) | **GET** api/v1/owner/facilities/{facility_id}/duty/ | List duty shifts of a facility |
@@ -559,6 +561,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.PublicPlace](docs/PublicPlace.md)
  - [com.servacode.directory.api.models.PublicProvince](docs/PublicProvince.md)
  - [com.servacode.directory.api.models.PublicProvinceList](docs/PublicProvinceList.md)
+ - [com.servacode.directory.api.models.PublicSupport](docs/PublicSupport.md)
  - [com.servacode.directory.api.models.PushPlatformEnum](docs/PushPlatformEnum.md)
  - [com.servacode.directory.api.models.PushToken](docs/PushToken.md)
  - [com.servacode.directory.api.models.PushTokenRegister](docs/PushTokenRegister.md)

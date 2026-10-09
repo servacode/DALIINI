@@ -154,6 +154,7 @@ Class | Method | HTTP request | Description
 *AdminUsersAPI* | [**adminRolesList**](docs/AdminUsersAPI.md#adminroleslist) | **GET** /api/v1/admin/roles/ | List admin roles, their permission codes and how many hold each
 *AdminUsersAPI* | [**adminUserBlock**](docs/AdminUsersAPI.md#adminuserblock) | **POST** /api/v1/admin/users/{user_id}/block/ | Block a user account
 *AdminUsersAPI* | [**adminUserCreate**](docs/AdminUsersAPI.md#adminusercreate) | **POST** /api/v1/admin/users/ | Open an account from the console
+*AdminUsersAPI* | [**adminUserDelete**](docs/AdminUsersAPI.md#adminuserdelete) | **POST** /api/v1/admin/users/{user_id}/delete/ | Delete an account at its owner&#39;s request
 *AdminUsersAPI* | [**adminUserMfaReset**](docs/AdminUsersAPI.md#adminusermfareset) | **POST** /api/v1/admin/users/{user_id}/mfa/reset/ | Clear an operator&#39;s authenticator after they lost it
 *AdminUsersAPI* | [**adminUserRecoverySend**](docs/AdminUsersAPI.md#adminuserrecoverysend) | **POST** /api/v1/admin/users/{user_id}/recovery/ | Send this account a password-recovery code
 *AdminUsersAPI* | [**adminUserRetrieve**](docs/AdminUsersAPI.md#adminuserretrieve) | **GET** /api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned
@@ -188,6 +189,7 @@ Class | Method | HTTP request | Description
 *ContentAPI* | [**publicFaqList**](docs/ContentAPI.md#publicfaqlist) | **GET** /api/v1/content/faq/ | List the published questions and answers, in order
 *ContentAPI* | [**publicLegalDocumentRetrieve**](docs/ContentAPI.md#publiclegaldocumentretrieve) | **GET** /api/v1/public/legal/{key}/ | Retrieve one published page
 *ContentAPI* | [**publicLegalDocumentsList**](docs/ContentAPI.md#publiclegaldocumentslist) | **GET** /api/v1/public/legal/ | List the published pages
+*ContentAPI* | [**publicSupportContact**](docs/ContentAPI.md#publicsupportcontact) | **GET** /api/v1/public/support/ | How to reach the team
 *DutyAPI* | [**ownerFacilityDutyCreate**](docs/DutyAPI.md#ownerfacilitydutycreate) | **POST** /api/v1/owner/facilities/{facility_id}/duty/ | Schedule a duty shift
 *DutyAPI* | [**ownerFacilityDutyDelete**](docs/DutyAPI.md#ownerfacilitydutydelete) | **DELETE** /api/v1/owner/facilities/{facility_id}/duty/{shift_id}/ | Remove a duty shift
 *DutyAPI* | [**ownerFacilityDutyList**](docs/DutyAPI.md#ownerfacilitydutylist) | **GET** /api/v1/owner/facilities/{facility_id}/duty/ | List duty shifts of a facility
@@ -539,6 +541,7 @@ Class | Method | HTTP request | Description
  - [PublicPlace](docs/PublicPlace.md)
  - [PublicProvince](docs/PublicProvince.md)
  - [PublicProvinceList](docs/PublicProvinceList.md)
+ - [PublicSupport](docs/PublicSupport.md)
  - [PushPlatformEnum](docs/PushPlatformEnum.md)
  - [PushToken](docs/PushToken.md)
  - [PushTokenRegister](docs/PushTokenRegister.md)

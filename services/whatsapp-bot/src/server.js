@@ -2,12 +2,13 @@ import { createServer } from "node:http";
 import { timingSafeEqual } from "node:crypto";
 import pino from "pino";
 
-import { codeMessage } from "./message.js";
+import { codeMessage, welcomeMessage } from "./message.js";
 import { SendPacer, toWhatsAppId } from "./queue.js";
 import { WhatsAppSession } from "./session.js";
 
 /*
- * The bot's whole surface: one route that sends a code, and one that says whether it can.
+ * The bot's whole surface: one route that sends a code or the welcome, and one that says
+ * whether it can. It sends only messages whose words it holds itself (DECISION-101).
  *
  * It is not on the internet. It listens on a private network and the backend is the only thing
  * that calls it, with a shared secret — a service that sends WhatsApp messages to any number on
@@ -71,13 +72,19 @@ async function handleSend(request, response) {
   }
 
   const jid = toWhatsAppId(body?.phone);
+  const kind = String(body?.kind ?? "code");
   const code = String(body?.code ?? "");
   if (!jid) {
     return reply(response, 400, { reason: "invalid_number" });
   }
+  // Two kinds only, each with words this service holds. Anything else is refused rather than
+  // guessed at: what this route will send is the list below and nothing more.
+  if (kind !== "code" && kind !== "welcome") {
+    return reply(response, 400, { reason: "invalid_kind" });
+  }
   // Told apart from the number on purpose: the backend treats invalid_number as a verdict on
   // the recipient and never asks again, and a code we malformed ourselves is not that.
-  if (!/^\d{4,8}$/.test(code)) {
+  if (kind === "code" && !/^\d{4,8}$/.test(code)) {
     return reply(response, 400, { reason: "invalid_code" });
   }
 
@@ -105,7 +112,7 @@ async function handleSend(request, response) {
     // The pacing gap, waited out here rather than by the caller, so the backend's own request
     // simply takes a moment longer and nothing has to queue on its side.
     if (verdict.waitMs) await sleep(verdict.waitMs);
-    await session.sendText(jid, codeMessage(code));
+    await session.sendText(jid, kind === "welcome" ? welcomeMessage() : codeMessage(code));
     pacer.record(body.phone);
     return reply(response, 200, { sent: true });
   } catch (error) {

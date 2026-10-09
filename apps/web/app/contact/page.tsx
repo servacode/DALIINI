@@ -3,8 +3,9 @@ import Link from "next/link";
 import { ContactForm } from "../../components/contact-form";
 import { ContentBody } from "../../components/content";
 import { EmailLink } from "../../components/email-link";
+import { SupportWhatsApp } from "../../components/support-whatsapp";
 import { Illustration } from "../../components/ui";
-import { getContentPage, getFacility, isUuid } from "../../lib/api";
+import { getContentPage, getFacility, getSupportContact, isUuid } from "../../lib/api";
 import { absoluteUrl, contactEndpoint, publicConfig } from "../../lib/config";
 import { parseContactKind, type ContactKind } from "../../lib/contact";
 import { pageMetadata } from "../../lib/seo";
@@ -47,9 +48,10 @@ export default async function ContactPage({ searchParams }: Props) {
   const rawFacility = one(params.facility);
   const facilityId = rawFacility && isUuid(rawFacility) ? rawFacility : undefined;
   const kind: ContactKind = parseContactKind(one(params.kind)) ?? (facilityId ? "CORRECTION" : "GENERAL");
-  const [intro, draft] = await Promise.all([
+  const [intro, draft, contact] = await Promise.all([
     getContentPage("contact"),
     facilityId ? correctionDraft(facilityId) : Promise.resolve(""),
+    getSupportContact(),
   ]);
   const endpoint = contactEndpoint();
   const email = publicConfig.supportEmail.includes("@") ? publicConfig.supportEmail : null;
@@ -59,6 +61,8 @@ export default async function ContactPage({ searchParams }: Props) {
       <h1>تواصل معنا</h1>
       <p className="page-intro">اكتب لنا سؤالك أو اقتراحك، أو صحّح معلومة عن منشأة. يقرأ فريقنا كل رسالة.</p>
       {intro ? <div className="contact-intro"><ContentBody body={intro.bodyAr} /></div> : null}
+      {/* A chat is quicker than a form for most people, so it is offered first. */}
+      <SupportWhatsApp contact={contact} />
 
       {endpoint ? (
         <>

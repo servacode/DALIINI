@@ -16,6 +16,7 @@ import com.servacode.directory.api.models.EmergencyNumberList
 import com.servacode.directory.api.models.FaqList
 import com.servacode.directory.api.models.LegalDocument
 import com.servacode.directory.api.models.LegalDocumentList
+import com.servacode.directory.api.models.PublicSupport
 
 interface ContentApi {
 
@@ -121,5 +122,17 @@ interface ContentApi {
      */
     @GET("api/v1/public/legal/")
     suspend fun publicLegalDocumentsList(): Response<LegalDocumentList>
+
+    /**
+     * GET api/v1/public/support/
+     * How to reach the team
+     * The WhatsApp number the team answers on, a link that opens a chat with it, and an email address. Null where not configured: a client shows nothing rather than an empty field.
+     * Responses:
+     *  - 200: 
+     *
+     * @return [PublicSupport]
+     */
+    @GET("api/v1/public/support/")
+    suspend fun publicSupportContact(): Response<PublicSupport>
 
 }

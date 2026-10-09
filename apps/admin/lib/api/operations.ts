@@ -281,6 +281,8 @@ export const WRITES = {
   // Nothing comes back that could let an operator finish it on their behalf.
   userRecovery: (apis: AdminApis, b: Body) =>
     apis.users.adminUserRecoverySend({ userId: String(b.id) }),
+  // Deletion at the owner's request, from outside the app (DECISION-111).
+  userDelete: (apis: AdminApis, b: Body) => apis.users.adminUserDelete({ userId: String(b.id) }),
   userCreate: (apis: AdminApis, b: Body) =>
     apis.users.adminUserCreate({
       adminUserCreateRequest: {

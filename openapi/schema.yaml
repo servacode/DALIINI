@@ -6384,6 +6384,56 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/admin/users/{user_id}/delete/:
+    post:
+      operationId: adminUserDelete
+      description: 'For a request made through the site''s deletion page or by email:
+        Google Play requires an account to be deletable from outside the app. The
+        same rules and anonymisation as the app''s own deletion; the sole owner of
+        a live facility is refused with 409 and the reason. Recorded under the operator''s
+        name.'
+      summary: Delete an account at its owner's request
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Users
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
   /api/v1/admin/users/{user_id}/mfa/reset/:
     post:
       operationId: adminUserMfaReset
@@ -10196,6 +10246,22 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Request validation failed; `code` is VALIDATION_ERROR and `details`
             is populated.
+  /api/v1/public/support/:
+    get:
+      operationId: publicSupportContact
+      description: 'The WhatsApp number the team answers on, a link that opens a chat
+        with it, and an email address. Null where not configured: a client shows nothing
+        rather than an empty field.'
+      summary: How to reach the team
+      tags:
+      - Content
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicSupport'
+          description: ''
 components:
   schemas:
     Accepted:
@@ -16979,6 +17045,27 @@ components:
             $ref: '#/components/schemas/PublicProvince'
       required:
       - items
+    PublicSupport:
+      type: object
+      description: How to reach the team. Each field is null when it is not configured.
+      properties:
+        whatsapp:
+          type: string
+          nullable: true
+          description: 'The support number, canonical: +9639XXXXXXXX.'
+        whatsappLink:
+          type: string
+          format: uri
+          nullable: true
+          description: A wa.me link that opens a chat with that number.
+        email:
+          type: string
+          format: email
+          nullable: true
+      required:
+      - email
+      - whatsapp
+      - whatsappLink
     PushPlatformEnum:
       enum:
       - ANDROID

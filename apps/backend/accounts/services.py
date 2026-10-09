@@ -252,6 +252,15 @@ def _welcome(user: User) -> None:
     """
     from notifications.services import notify
 
+    from .tasks import WELCOME_DELAY_SECONDS, send_whatsapp_welcome
+
+    # And on WhatsApp, after the code's one-minute gap has passed, once the account is committed
+    # (DECISION-101). Queued, so a WhatsApp failure can never fail a registration.
+    user_id = str(user.pk)
+    transaction.on_commit(
+        lambda: send_whatsapp_welcome.apply_async(args=[user_id], countdown=WELCOME_DELAY_SECONDS)
+    )
+
     notify(
         user=user,
         type=WELCOME_TYPE,
@@ -452,7 +461,19 @@ def _identity_digest(phone: str) -> str:
 
 
 @transaction.atomic
-def request_account_deletion(*, user: User, request_id: str = "") -> AccountDeletionRequest:
+def request_account_deletion(
+    *,
+    user: User,
+    request_id: str = "",
+    channel: str = AccountDeletionRequest.Channel.IN_APP,
+    actor: Any = None,
+) -> AccountDeletionRequest:
+    """Delete an account at its owner's request: from the app, or by an operator (DECISION-111).
+
+    The same rules either way — the sole owner of a live facility is refused — and the same
+    anonymisation. What differs is who is recorded as having done it: the person themselves in
+    the app, or the operator who acted on their request from the site's deletion page.
+    """
     locked = User.objects.select_for_update().get(pk=user.pk)
     sole_owned = []
     owner_links = FacilityMembership.objects.select_related("facility").filter(
@@ -479,7 +500,7 @@ def request_account_deletion(*, user: User, request_id: str = "") -> AccountDele
     deletion = AccountDeletionRequest.objects.create(
         user=locked,
         identity_digest=_identity_digest(locked.phone),
-        channel=AccountDeletionRequest.Channel.IN_APP,
+        channel=channel,
         status=AccountDeletionRequest.Status.COMPLETED,
         verified_at=timezone.now(),
         completed_at=timezone.now(),
@@ -509,7 +530,7 @@ def request_account_deletion(*, user: User, request_id: str = "") -> AccountDele
         # once the anonymisation has committed.
         transaction.on_commit(lambda: delete_profile_image(avatar_key))
     record_audit(
-        actor=locked,
+        actor=actor or locked,
         action="account.deleted",
         target=deletion,
         before_snapshot=before,

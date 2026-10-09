@@ -282,4 +282,38 @@ open class ContentAPI {
 
         return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false)
     }
+
+    /**
+     How to reach the team
+     
+     - returns: PublicSupport
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func publicSupportContact() async throws -> PublicSupport {
+        return try await publicSupportContactWithRequestBuilder().execute().body
+    }
+
+    /**
+     How to reach the team
+     - GET /api/v1/public/support/
+     - The WhatsApp number the team answers on, a link that opens a chat with it, and an email address. Null where not configured: a client shows nothing rather than an empty field.
+     - returns: RequestBuilder<PublicSupport> 
+     */
+    open class func publicSupportContactWithRequestBuilder() -> RequestBuilder<PublicSupport> {
+        let localVariablePath = "/api/v1/public/support/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<PublicSupport>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false)
+    }
 }

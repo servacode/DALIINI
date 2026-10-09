@@ -292,6 +292,48 @@ open class AdminUsersAPI {
     }
 
     /**
+     Delete an account at its owner's request
+     
+     - parameter userId: (path)  
+     - returns: Void
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminUserDelete(userId: UUID) async throws {
+        return try await adminUserDeleteWithRequestBuilder(userId: userId).execute().body
+    }
+
+    /**
+     Delete an account at its owner's request
+     - POST /api/v1/admin/users/{user_id}/delete/
+     - For a request made through the site's deletion page or by email: Google Play requires an account to be deletable from outside the app. The same rules and anonymisation as the app's own deletion; the sole owner of a live facility is refused with 409 and the reason. Recorded under the operator's name.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter userId: (path)  
+     - returns: RequestBuilder<Void> 
+     */
+    open class func adminUserDeleteWithRequestBuilder(userId: UUID) -> RequestBuilder<Void> {
+        var localVariablePath = "/api/v1/admin/users/{user_id}/delete/"
+        let userIdPreEscape = "\(APIHelper.mapValueToPathItem(userId))"
+        let userIdPostEscape = userIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{user_id}", with: userIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Clear an operator's authenticator after they lost it
      
      - parameter userId: (path)  

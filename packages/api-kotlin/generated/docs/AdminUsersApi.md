@@ -11,6 +11,7 @@ All URIs are relative to *http://localhost*
 | [**adminRolesList**](AdminUsersApi.md#adminRolesList) | **GET** api/v1/admin/roles/ | List admin roles, their permission codes and how many hold each |
 | [**adminUserBlock**](AdminUsersApi.md#adminUserBlock) | **POST** api/v1/admin/users/{user_id}/block/ | Block a user account |
 | [**adminUserCreate**](AdminUsersApi.md#adminUserCreate) | **POST** api/v1/admin/users/ | Open an account from the console |
+| [**adminUserDelete**](AdminUsersApi.md#adminUserDelete) | **POST** api/v1/admin/users/{user_id}/delete/ | Delete an account at its owner&#39;s request |
 | [**adminUserMfaReset**](AdminUsersApi.md#adminUserMfaReset) | **POST** api/v1/admin/users/{user_id}/mfa/reset/ | Clear an operator&#39;s authenticator after they lost it |
 | [**adminUserRecoverySend**](AdminUsersApi.md#adminUserRecoverySend) | **POST** api/v1/admin/users/{user_id}/recovery/ | Send this account a password-recovery code |
 | [**adminUserRetrieve**](AdminUsersApi.md#adminUserRetrieve) | **GET** api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned |
@@ -305,6 +306,48 @@ Configure bearerAccessToken:
 ### HTTP request headers
 
  - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+Delete an account at its owner&#39;s request
+
+For a request made through the site&#39;s deletion page or by email: Google Play requires an account to be deletable from outside the app. The same rules and anonymisation as the app&#39;s own deletion; the sole owner of a live facility is refused with 409 and the reason. Recorded under the operator&#39;s name.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminUsersApi::class.java)
+val userId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+
+launch(Dispatchers.IO) {
+    webService.adminUserDelete(userId)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **userId** | **java.util.UUID**|  | |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 

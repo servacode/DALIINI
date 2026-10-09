@@ -27,6 +27,13 @@ WHATSAPP_TEMPLATE_LANGUAGE = env("WHATSAPP_TEMPLATE_LANGUAGE", "ar")
 # WhatsApp session and listens on a private network; the token is what stops anything else on
 # that network using it to send messages.
 WHATSAPP_BOT_URL = env("WHATSAPP_BOT_URL", "")
+
+# Where people reach the team (DECISION-102): the WhatsApp number the owner answers by hand —
+# the same number the bot sends codes from — and an email address. Configuration, never a
+# constant: this repository is public. Empty means «not set», and every client then shows no
+# number at all rather than an empty field.
+SUPPORT_WHATSAPP = env("SUPPORT_WHATSAPP", "")
+SUPPORT_EMAIL = env("SUPPORT_EMAIL", "")
 # The map host's services on the stack's network, for the system page (DECISION-082). Empty: the
 # map is not served by this deployment, and the page says so.
 MAP_TILES_INTERNAL_URL = env("MAP_TILES_INTERNAL_URL", "")

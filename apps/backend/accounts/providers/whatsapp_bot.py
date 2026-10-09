@@ -60,10 +60,21 @@ class WhatsAppBotOtpSender:
         self.token = str(getattr(settings, "WHATSAPP_BOT_TOKEN", "") or "")
 
     def send(self, message: OtpMessage) -> None:
+        self._post({"phone": message.phone, "code": message.code})
+
+    def send_welcome(self, phone: str) -> None:
+        """The platform's first word to a new account (DECISION-101).
+
+        Only the kind is sent: the words live in the bot, which delivers nothing else, so a
+        leaked secret cannot turn it into something that sends arbitrary text.
+        """
+        self._post({"phone": phone, "kind": "welcome"})
+
+    def _post(self, payload: dict[str, str]) -> None:
         if not (self.base_url and self.token):
             raise TransientOtpError("WhatsApp bot is not configured")
 
-        body = json.dumps({"phone": message.phone, "code": message.code}).encode("utf-8")
+        body = json.dumps(payload).encode("utf-8")
         headers = {
             # A shared secret, because the bot sends WhatsApp messages to anyone who asks it to.
             "Authorization": f"Bearer {self.token}",

@@ -111,6 +111,7 @@ urlpatterns = [
     path("admin/users/<uuid:user_id>/unblock/", views_users.UserUnblockView.as_view()),
     path("admin/users/<uuid:user_id>/mfa/reset/", AdminUserMfaResetView.as_view()),
     path("admin/users/<uuid:user_id>/recovery/", views_users.UserRecoveryView.as_view()),
+    path("admin/users/<uuid:user_id>/delete/", views_users.UserDeleteView.as_view()),
     path("admin/permissions/", views_roles.PermissionListView.as_view()),
     path("admin/roles/", views_roles.RoleListView.as_view()),
     path("admin/roles/<int:role_id>/", views_roles.RoleDetailView.as_view()),

@@ -24,6 +24,7 @@ import type {
   FaqList,
   LegalDocument,
   LegalDocumentList,
+  PublicSupport,
 } from '../models/index';
 import {
     ApiErrorFromJSON,
@@ -44,6 +45,8 @@ import {
     LegalDocumentToJSON,
     LegalDocumentListFromJSON,
     LegalDocumentListToJSON,
+    PublicSupportFromJSON,
+    PublicSupportToJSON,
 } from '../models/index';
 
 export interface PublicAppReleaseRetrieveRequest {
@@ -327,6 +330,37 @@ export class ContentApi extends runtime.BaseAPI {
      */
     async publicLegalDocumentsList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<LegalDocumentList> {
         const response = await this.publicLegalDocumentsListRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * The WhatsApp number the team answers on, a link that opens a chat with it, and an email address. Null where not configured: a client shows nothing rather than an empty field.
+     * How to reach the team
+     */
+    async publicSupportContactRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PublicSupport>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/api/v1/public/support/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PublicSupportFromJSON(jsonValue));
+    }
+
+    /**
+     * The WhatsApp number the team answers on, a link that opens a chat with it, and an email address. Null where not configured: a client shows nothing rather than an empty field.
+     * How to reach the team
+     */
+    async publicSupportContact(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PublicSupport> {
+        const response = await this.publicSupportContactRaw(initOverrides);
         return await response.value();
     }
 

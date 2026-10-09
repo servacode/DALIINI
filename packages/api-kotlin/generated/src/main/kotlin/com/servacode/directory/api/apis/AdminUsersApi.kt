@@ -135,6 +135,23 @@ interface AdminUsersApi {
     suspend fun adminUserCreate(@Body adminUserCreateRequest: AdminUserCreateRequest): Response<AdminUserCreated>
 
     /**
+     * POST api/v1/admin/users/{user_id}/delete/
+     * Delete an account at its owner&#39;s request
+     * For a request made through the site&#39;s deletion page or by email: Google Play requires an account to be deletable from outside the app. The same rules and anonymisation as the app&#39;s own deletion; the sole owner of a live facility is refused with 409 and the reason. Recorded under the operator&#39;s name.
+     * Responses:
+     *  - 204: No response body
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param userId 
+     * @return [Unit]
+     */
+    @POST("api/v1/admin/users/{user_id}/delete/")
+    suspend fun adminUserDelete(@Path("user_id") userId: java.util.UUID): Response<Unit>
+
+    /**
      * POST api/v1/admin/users/{user_id}/mfa/reset/
      * Clear an operator&#39;s authenticator after they lost it
      * They set up a new one at their next console sign-in. Their recovery codes are cleared too. Audited.

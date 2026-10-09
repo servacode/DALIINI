@@ -28,6 +28,22 @@ def otp_digest(*, challenge_id: UUID, code: str) -> str:
     return hmac.new(key, message, hashlib.sha256).hexdigest()
 
 
+def deliver_welcome(phone: str) -> bool:
+    """Send the WhatsApp welcome where this deployment's channel can (DECISION-101).
+
+    Only the bot can: the official Cloud API sends a business-initiated message only from an
+    approved template, and there is none for this yet; the development sender sends nothing.
+    Returns whether a send was attempted, so the caller can tell «not this channel» from «sent».
+    Raises as `send` does, so the task retries a transient failure.
+    """
+    sender = get_otp_sender()
+    welcome = getattr(sender, "send_welcome", None)
+    if welcome is None:
+        return False
+    welcome(phone)
+    return True
+
+
 def deliver_otp(*, phone: str, code: str) -> OtpDelivery:
     """Hand the code to whichever sender this deployment is configured for.
 

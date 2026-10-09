@@ -284,6 +284,38 @@ open class AdminUsersApi : ApiClient {
 
 
     /**
+     * Delete an account at its owner&#39;s request
+     * For a request made through the site&#39;s deletion page or by email: Google Play requires an account to be deletable from outside the app. The same rules and anonymisation as the app&#39;s own deletion; the sole owner of a live facility is refused with 409 and the reason. Recorded under the operator&#39;s name.
+     * @param userId 
+     * @return void
+     */
+    open suspend fun adminUserDelete(userId: kotlin.String): HttpResponse<Unit> {
+
+        val localVariableAuthNames = listOf<String>("bearerAccessToken")
+
+        val localVariableBody = 
+            io.ktor.client.utils.EmptyContent
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.POST,
+            "/api/v1/admin/users/{user_id}/delete/".replace("{" + "user_id" + "}", "$userId"),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+        )
+
+        return request(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames
+        ).wrap()
+    }
+
+
+    /**
      * Clear an operator&#39;s authenticator after they lost it
      * They set up a new one at their next console sign-in. Their recovery codes are cleared too. Audited.
      * @param userId 

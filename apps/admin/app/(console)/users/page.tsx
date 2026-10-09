@@ -56,7 +56,7 @@ type Facility = Readonly<{
 
 type Province = Readonly<{ id: string; nameAr: string }>;
 
-type Action = "block" | "unblock" | "recovery" | "mfa";
+type Action = "block" | "unblock" | "recovery" | "mfa" | "delete";
 
 /** Which accounts the list shows. One choice, so it is one row of chips, not three menus. */
 type Show = "" | "owners" | "users" | "blocked";
@@ -475,6 +475,18 @@ function AccountCard({
                 رفع الحظر
               </button>
             )}
+            {/* Deletion at the owner's request (Google Play requires it from outside the app):
+                rare and final, so a small button that opens a plain warning. */}
+            <button
+              type="button"
+              className="profile-act-icon"
+              data-testid={`delete-${user.id}`}
+              title="حذف الحساب بطلب صاحبه"
+              aria-label={`حذف حساب ${user.name} بطلب صاحبه`}
+              onClick={() => onAction("delete", user)}
+            >
+              <Icon name="trash" width={16} height={16} />
+            </button>
             {/* Only an operator ever sets up an authenticator, so only their card carries the
                 small button that clears one. */}
             {user.hasTwoFactor ? (
@@ -581,6 +593,17 @@ function AccountDialogs({
             `أُرسل رمز الاستعادة إلى ${user?.phone ?? "رقم الحساب"}. يختار صاحب الحساب كلمته بنفسه.`,
           )
         }
+        onCancel={onCancel}
+      />
+      <ConfirmDialog
+        open={dialog?.action === "delete"}
+        title={`حذف حساب ${user?.name ?? ""}`}
+        body="لطلب حذف وصلك من صاحب الحساب نفسه، عبر صفحة حذف الحساب أو البريد. يُمسح الاسم والرقم والعنوان والصورة والمحفوظات والإشعارات، وتخرج كل أجهزته، ولا يمكن التراجع. التقييمات تبقى بلا اسم لأنها جزء من تقييم المنشأة. تحقق من هوية صاحب الطلب قبل التأكيد."
+        confirmLabel="حذف الحساب نهائياً"
+        destructive
+        pending={mutation.pending}
+        error={mutation.error}
+        onConfirm={() => run("userDelete", "حُذف الحساب وسُجّل الحذف في سجل التدقيق باسمك.")}
         onCancel={onCancel}
       />
       <ConfirmDialog

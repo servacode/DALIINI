@@ -11,6 +11,7 @@ Method | HTTP request | Description
 [**adminRolesList**](AdminUsersAPI.md#adminroleslist) | **GET** /api/v1/admin/roles/ | List admin roles, their permission codes and how many hold each
 [**adminUserBlock**](AdminUsersAPI.md#adminuserblock) | **POST** /api/v1/admin/users/{user_id}/block/ | Block a user account
 [**adminUserCreate**](AdminUsersAPI.md#adminusercreate) | **POST** /api/v1/admin/users/ | Open an account from the console
+[**adminUserDelete**](AdminUsersAPI.md#adminuserdelete) | **POST** /api/v1/admin/users/{user_id}/delete/ | Delete an account at its owner&#39;s request
 [**adminUserMfaReset**](AdminUsersAPI.md#adminusermfareset) | **POST** /api/v1/admin/users/{user_id}/mfa/reset/ | Clear an operator&#39;s authenticator after they lost it
 [**adminUserRecoverySend**](AdminUsersAPI.md#adminuserrecoverysend) | **POST** /api/v1/admin/users/{user_id}/recovery/ | Send this account a password-recovery code
 [**adminUserRetrieve**](AdminUsersAPI.md#adminuserretrieve) | **GET** /api/v1/admin/users/{user_id}/ | Retrieve one user with the roles assigned
@@ -357,6 +358,56 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminUserDelete**
+```swift
+    open class func adminUserDelete(userId: UUID, completion: @escaping (_ data: Void?, _ error: Error?) -> Void)
+```
+
+Delete an account at its owner's request
+
+For a request made through the site's deletion page or by email: Google Play requires an account to be deletable from outside the app. The same rules and anonymisation as the app's own deletion; the sole owner of a live facility is refused with 409 and the reason. Recorded under the operator's name.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let userId = 987 // UUID | 
+
+// Delete an account at its owner's request
+AdminUsersAPI.adminUserDelete(userId: userId) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **userId** | **UUID** |  | 
+
+### Return type
+
+Void (empty response body)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

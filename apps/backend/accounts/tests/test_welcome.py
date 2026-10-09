@@ -6,6 +6,7 @@ raises the chance of the number being blocked, which stops registration for ever
 """
 
 from collections.abc import Iterator
+from typing import Any
 
 import pytest
 from django.core.cache import cache
@@ -124,3 +125,79 @@ def test_an_invitation_reaches_a_reader_who_muted_application_status(
     assert push_wanted(user, "facility.invitation.received") is True
     # The rest of that family still obeys the switch.
     assert push_wanted(user, "facility.application.approved") is False
+
+
+# ----------------------------------------------------------------- the WhatsApp welcome
+
+
+@pytest.mark.django_db
+def test_registration_queues_the_whatsapp_welcome_after_the_codes_gap(
+    client: APIClient, province: Province, django_capture_on_commit_callbacks: Any
+) -> None:
+    """Queued once the account is committed, after the bot's per-number gap has passed."""
+    from unittest import mock
+
+    from accounts.tasks import WELCOME_DELAY_SECONDS
+
+    with mock.patch("accounts.tasks.send_whatsapp_welcome.apply_async") as queued:
+        with django_capture_on_commit_callbacks(execute=True):
+            assert register(client, province).status_code == 201
+
+    user = User.objects.get(phone=PHONE)
+    queued.assert_called_once_with(args=[str(user.pk)], countdown=WELCOME_DELAY_SECONDS)
+    assert WELCOME_DELAY_SECONDS > 60
+
+
+@pytest.mark.django_db
+def test_the_bot_is_asked_for_the_welcome_by_kind_never_by_text(province: Province) -> None:
+    """The words live in the bot; the backend names the kind, so the bot sends nothing else."""
+    import json
+    from unittest import mock
+
+    from django.test import override_settings
+
+    from accounts.providers.whatsapp_bot import WhatsAppBotOtpSender
+    from accounts.tasks import send_whatsapp_welcome
+
+    user = User.objects.create_user(phone="+963900555777", name="جديد", province=province)
+    sent: list[dict[str, str]] = []
+
+    def opener(url: str, body: bytes, headers: dict[str, str]) -> tuple[int, bytes]:
+        sent.append(json.loads(body))
+        return 200, b'{"sent": true}'
+
+    with override_settings(WHATSAPP_BOT_URL="http://bot:8085", WHATSAPP_BOT_TOKEN="t"):
+        with mock.patch(
+            "accounts.otp.get_otp_sender", return_value=WhatsAppBotOtpSender(opener=opener)
+        ):
+            outcome = send_whatsapp_welcome.apply(args=[str(user.pk)]).get()
+
+    assert outcome == "sent"
+    assert sent == [{"phone": "+963900555777", "kind": "welcome"}]
+
+
+@pytest.mark.django_db
+def test_a_number_without_whatsapp_is_let_go_quietly(province: Province) -> None:
+    from unittest import mock
+
+    from accounts.providers.base import InvalidRecipient
+    from accounts.tasks import send_whatsapp_welcome
+
+    user = User.objects.create_user(phone="+963900555778", name="جديد", province=province)
+    sender = mock.Mock()
+    sender.send_welcome.side_effect = InvalidRecipient("no whatsapp")
+
+    with mock.patch("accounts.otp.get_otp_sender", return_value=sender):
+        outcome = send_whatsapp_welcome.apply(args=[str(user.pk)]).get()
+
+    assert outcome == "not_on_whatsapp"
+
+
+@pytest.mark.django_db
+def test_a_channel_with_no_welcome_sends_nothing(province: Province) -> None:
+    """The development sender, and the Cloud API until it has an approved template."""
+    from accounts.tasks import send_whatsapp_welcome
+
+    user = User.objects.create_user(phone="+963900555779", name="جديد", province=province)
+
+    assert send_whatsapp_welcome.apply(args=[str(user.pk)]).get() == "not_this_channel"

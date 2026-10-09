@@ -24,6 +24,7 @@ import com.servacode.directory.api.multiplatform.models.EmergencyNumberList
 import com.servacode.directory.api.multiplatform.models.FaqList
 import com.servacode.directory.api.multiplatform.models.LegalDocument
 import com.servacode.directory.api.multiplatform.models.LegalDocumentList
+import com.servacode.directory.api.multiplatform.models.PublicSupport
 
 import com.servacode.directory.api.multiplatform.infrastructure.*
 import io.ktor.client.HttpClient
@@ -283,6 +284,38 @@ open class ContentApi : ApiClient {
         val localVariableConfig = RequestConfig<kotlin.Any?>(
             RequestMethod.GET,
             "/api/v1/public/legal/",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = false,
+        )
+
+        return request(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames
+        ).wrap()
+    }
+
+
+    /**
+     * How to reach the team
+     * The WhatsApp number the team answers on, a link that opens a chat with it, and an email address. Null where not configured: a client shows nothing rather than an empty field.
+     * @return PublicSupport
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun publicSupportContact(): HttpResponse<PublicSupport> {
+
+        val localVariableAuthNames = listOf<String>()
+
+        val localVariableBody = 
+            io.ktor.client.utils.EmptyContent
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.GET,
+            "/api/v1/public/support/",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = false,

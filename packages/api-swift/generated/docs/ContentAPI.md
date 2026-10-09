@@ -11,6 +11,7 @@ Method | HTTP request | Description
 [**publicFaqList**](ContentAPI.md#publicfaqlist) | **GET** /api/v1/content/faq/ | List the published questions and answers, in order
 [**publicLegalDocumentRetrieve**](ContentAPI.md#publiclegaldocumentretrieve) | **GET** /api/v1/public/legal/{key}/ | Retrieve one published page
 [**publicLegalDocumentsList**](ContentAPI.md#publiclegaldocumentslist) | **GET** /api/v1/public/legal/ | List the published pages
+[**publicSupportContact**](ContentAPI.md#publicsupportcontact) | **GET** /api/v1/public/support/ | How to reach the team
 
 
 # **publicAppReleaseRetrieve**
@@ -343,6 +344,52 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**LegalDocumentList**](LegalDocumentList.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **publicSupportContact**
+```swift
+    open class func publicSupportContact(completion: @escaping (_ data: PublicSupport?, _ error: Error?) -> Void)
+```
+
+How to reach the team
+
+The WhatsApp number the team answers on, a link that opens a chat with it, and an email address. Null where not configured: a client shows nothing rather than an empty field.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+
+// How to reach the team
+ContentAPI.publicSupportContact() { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**PublicSupport**](PublicSupport.md)
 
 ### Authorization
 

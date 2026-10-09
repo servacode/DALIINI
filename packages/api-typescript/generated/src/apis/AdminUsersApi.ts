@@ -79,6 +79,10 @@ export interface AdminUserCreateOperationRequest {
     adminUserCreateRequest: AdminUserCreateRequest;
 }
 
+export interface AdminUserDeleteRequest {
+    userId: string;
+}
+
 export interface AdminUserMfaResetRequest {
     userId: string;
 }
@@ -431,6 +435,52 @@ export class AdminUsersApi extends runtime.BaseAPI {
     async adminUserCreate(requestParameters: AdminUserCreateOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminUserCreated> {
         const response = await this.adminUserCreateRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     * For a request made through the site\'s deletion page or by email: Google Play requires an account to be deletable from outside the app. The same rules and anonymisation as the app\'s own deletion; the sole owner of a live facility is refused with 409 and the reason. Recorded under the operator\'s name.
+     * Delete an account at its owner\'s request
+     */
+    async adminUserDeleteRaw(requestParameters: AdminUserDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['userId'] == null) {
+            throw new runtime.RequiredError(
+                'userId',
+                'Required parameter "userId" was null or undefined when calling adminUserDelete().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/users/{user_id}/delete/`;
+        urlPath = urlPath.replace(`{${"user_id"}}`, encodeURIComponent(String(requestParameters['userId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * For a request made through the site\'s deletion page or by email: Google Play requires an account to be deletable from outside the app. The same rules and anonymisation as the app\'s own deletion; the sole owner of a live facility is refused with 409 and the reason. Recorded under the operator\'s name.
+     * Delete an account at its owner\'s request
+     */
+    async adminUserDelete(requestParameters: AdminUserDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.adminUserDeleteRaw(requestParameters, initOverrides);
     }
 
     /**

@@ -1,8 +1,11 @@
 import uuid
+from typing import Any
 
+from django.conf import settings
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import serializers
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
@@ -93,6 +96,60 @@ class PublicLegalDocumentsView(APIView):
             "key"
         )
         return Response({"items": [legal_summary(row) for row in published]})
+
+
+class PublicSupportSerializer(serializers.Serializer[Any]):
+    """How to reach the team. Each field is null when it is not configured."""
+
+    whatsapp = serializers.CharField(
+        allow_null=True, help_text="The support number, canonical: +9639XXXXXXXX."
+    )
+    whatsappLink = serializers.URLField(
+        allow_null=True, help_text="A wa.me link that opens a chat with that number."
+    )
+    email = serializers.EmailField(allow_null=True)
+
+
+class PublicSupportView(APIView):
+    """Where people reach the team, for the site and the app alike (DECISION-102).
+
+    One source for both: the number is set once on the server and every client reads it, so
+    the site and the app can never show two different numbers.
+    """
+
+    authentication_classes = []
+    permission_classes = []
+
+    @extend_schema(
+        operation_id="publicSupportContact",
+        tags=["Content"],
+        summary="How to reach the team",
+        description=(
+            "The WhatsApp number the team answers on, a link that opens a chat with it, and an "
+            "email address. Null where not configured: a client shows nothing rather than an "
+            "empty field."
+        ),
+        responses={200: PublicSupportSerializer},
+    )
+    def get(self, request: Request) -> Response:
+        return Response(support_contact())
+
+
+def support_contact() -> dict[str, Any]:
+    """The configured support contact, the number canonicalised; a malformed one is left out."""
+    raw = str(getattr(settings, "SUPPORT_WHATSAPP", "") or "").strip()
+    number: str | None = None
+    if raw:
+        try:
+            number = normalize_syrian_phone(raw)
+        except ValueError:
+            number = None
+    email = str(getattr(settings, "SUPPORT_EMAIL", "") or "").strip() or None
+    return {
+        "whatsapp": number,
+        "whatsappLink": f"https://wa.me/{number.lstrip('+')}" if number else None,
+        "email": email,
+    }
 
 
 class PublicLegalDocumentView(APIView):

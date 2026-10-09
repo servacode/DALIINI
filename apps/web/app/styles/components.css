@@ -1723,3 +1723,31 @@ tr:last-child td { border-bottom: 0; }
 .facility-extra-report:hover { color: var(--sd-semantic-feedback-danger); }
 
 .facility-extra span { overflow: hidden; text-overflow: ellipsis; }
+
+/* «Write to us on WhatsApp» (DECISION-102): the support number, one press from a chat. */
+.support-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sd-spacing-sm);
+  width: fit-content;
+  padding: var(--sd-spacing-sm) var(--sd-spacing-md);
+  border-radius: var(--sd-radius-large);
+  background: #25d366;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: var(--shadow-low);
+  transition: filter var(--quick) var(--ease);
+}
+
+.support-whatsapp:hover { filter: brightness(1.06); }
+
+.support-whatsapp > span { display: grid; line-height: 1.3; }
+
+.support-whatsapp .ltr { font-size: var(--sd-typography-roles-label-medium-size); opacity: 0.92; }
+
+.support-whatsapp-compact {
+  margin-block-start: var(--sd-spacing-sm);
+  padding: 6px var(--sd-spacing-sm);
+  border-radius: var(--sd-radius-pill);
+  font-size: var(--sd-typography-roles-label-medium-size);
+}

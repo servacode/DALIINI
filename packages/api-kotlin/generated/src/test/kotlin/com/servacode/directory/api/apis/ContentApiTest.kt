@@ -28,6 +28,7 @@ import com.servacode.directory.api.models.EmergencyNumberList
 import com.servacode.directory.api.models.FaqList
 import com.servacode.directory.api.models.LegalDocument
 import com.servacode.directory.api.models.LegalDocumentList
+import com.servacode.directory.api.models.PublicSupport
 
 class ContentApiTest : ShouldSpec() {
     init {
@@ -85,6 +86,13 @@ class ContentApiTest : ShouldSpec() {
         should("test publicLegalDocumentsList") {
             // uncomment below to test publicLegalDocumentsList
             //val result : LegalDocumentList = apiInstance.publicLegalDocumentsList()
+            //result shouldBe ("TODO")
+        }
+
+        // to test publicSupportContact
+        should("test publicSupportContact") {
+            // uncomment below to test publicSupportContact
+            //val result : PublicSupport = apiInstance.publicSupportContact()
             //result shouldBe ("TODO")
         }
 

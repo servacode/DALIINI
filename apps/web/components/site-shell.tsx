@@ -1,7 +1,8 @@
 import brandSymbol from "@servacode/design-tokens/brand/symbol-128.webp";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { getProvinces } from "../lib/api";
+import { getProvinces, getSupportContact } from "../lib/api";
+import { SupportWhatsApp } from "./support-whatsapp";
 import { SiteHeader } from "./site-header";
 
 /**
@@ -52,10 +53,10 @@ function BrandLink({ label }: { label: string }) {
 }
 
 export async function SiteShell({ children }: { children: ReactNode }) {
-  const provinces = (await getProvinces()) ?? [];
+  const [provinces, contact] = await Promise.all([getProvinces(), getSupportContact()]);
   return (
     <>
-      <SiteHeader provinces={provinces} />
+      <SiteHeader provinces={provinces ?? []} />
       <main>{children}</main>
       <footer className="site-footer">
         <div className="shell footer">
@@ -63,6 +64,7 @@ export async function SiteShell({ children }: { children: ReactNode }) {
             <div className="footer-brand">
               <BrandLink label="دليني — الصفحة الرئيسية" />
               <p>دليل محلي لتقديم معلومات واضحة وقابلة للتحقق عن المنشآت والخدمات.</p>
+              <SupportWhatsApp contact={contact} compact />
             </div>
             <div className="footer-groups">
               {SECTIONS.map((section) => (

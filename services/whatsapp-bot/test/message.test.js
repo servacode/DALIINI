@@ -26,3 +26,11 @@ test("the message carries the code on a line of its own and no link", () => {
   assert.doesNotMatch(text, /https?:\/\//);
   assert.match(text, new RegExp(`صالح ${CODE_MINUTES} دقائق`));
 });
+
+test("the welcome carries the support line, no link and no name", async () => {
+  const { welcomeMessage } = await import("../src/message.js");
+  const text = welcomeMessage();
+  assert.match(text, /أهلاً بك في دليني/);
+  assert.match(text, /راسلنا هنا/);
+  assert.doesNotMatch(text, /https?:\/\//);
+});

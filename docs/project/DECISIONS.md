@@ -2948,3 +2948,29 @@ the console section by section».
   sharing the link, reporting a mistake — are a labelled row on the card itself. Hours and the
   report still open over the list, because they hold more than a card has room for. The rules
   for the removed button and its menu are deleted with it.
+
+## DECISION-111 — Deletion at the owner's request from the console; one support contact for every client; the WhatsApp welcome sent
+
+**Date:** 2026-10-09. Closes three items left open in phase 9.1 and 9.2.
+
+* **Deleting an account at its owner's request** (`adminUserDelete`). Google Play requires an
+  account to be deletable from outside the app, and the site's deletion page tells people to
+  write in; until now an operator who received that message had no way to act on it. It reuses
+  the app's own deletion — same anonymisation, same refusal for the sole owner of a live
+  facility (409, with the reason the operator passes on) — recorded with channel `WEB` and under
+  the **operator's** name, not the person's. A deleted account leaves the accounts list; the audit
+  keeps the record. On the card it is a small trash button behind a plain warning.
+* **One support contact** (`/public/support/`): the WhatsApp number, its `wa.me` link and an
+  email, from `SUPPORT_WHATSAPP` and `SUPPORT_EMAIL` on the server — never committed, the
+  repository being public. Malformed or unset, it is null and every client shows nothing rather
+  than a broken number. The site shows «راسلنا على واتساب» on the support and contact pages and
+  in the footer. The app reads the same endpoint (its help screen comes with the next Android
+  build).
+* **The WhatsApp welcome is sent.** After a completed registration, once the account is
+  committed, a background task asks the bot for the welcome **by kind** — the words live in the
+  bot, which now delivers exactly two kinds of message and refuses any other, so a leaked secret
+  cannot make it send arbitrary text. The welcome carries no name (a name is text a stranger
+  typed) and carries the support line. It waits ninety seconds, because the bot refuses a second
+  message to one number within a minute; a refusal is retried twice. A number without WhatsApp is
+  let go. The Cloud API sends no welcome until it has an approved template; the development
+  sender sends nothing. Registration can never fail because of any of it.

@@ -55,6 +55,10 @@ x-backend-env: &backend-env
   FCM_PROJECT_ID: ${FCM_PROJECT_ID:-}
   FCM_SERVICE_ACCOUNT_JSON: ${FCM_SERVICE_ACCOUNT_JSON:-}
   SENTRY_DSN: ${SENTRY_DSN:-}
+  # Where people reach the team (DECISION-102), read by the site and the app from
+  # /public/support/. Empty shows no number anywhere rather than a broken one.
+  SUPPORT_WHATSAPP: ${SUPPORT_WHATSAPP:-}
+  SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
   SENTRY_ENVIRONMENT: ${ENVIRONMENT:-production}
   WEB_SERVER_API_KEY: ${WEB_SERVER_API_KEY:?}
   THROTTLE_WEB_SERVER: 6000/minute

@@ -408,3 +408,58 @@ def test_a_card_shows_the_place_by_its_first_photograph(
     )
 
     assert row["facilities"][0]["imageUrl"].endswith("facilities/x/first.jpg")
+
+
+# ----------------------------------------------------------------- deletion on request
+
+
+@pytest.mark.django_db
+def test_an_operator_deletes_an_account_on_its_owners_request(
+    admin_api: Any, province: Province
+) -> None:
+    """Google Play requires deletion from outside the app; this is the console's half of it."""
+    from accounts.models import AccountDeletionRequest
+
+    person = _person(province)
+    client = admin_api(*MANAGE)
+
+    response = client.post(f"/api/v1/admin/users/{person.pk}/delete/")
+
+    assert response.status_code == 204
+    person.refresh_from_db()
+    assert person.is_active is False
+    assert person.name == "Deleted user"
+    deletion = AccountDeletionRequest.objects.get(user=person)
+    assert deletion.channel == AccountDeletionRequest.Channel.WEB
+    event = AuditEvent.objects.get(action="account.deleted")
+    # Recorded under the operator who acted, not the person who asked.
+    assert event.actor_id == client.user.pk
+    listed = {item["id"] for item in client.get("/api/v1/admin/users/").json()["items"]}
+    assert str(person.pk) not in listed
+
+
+@pytest.mark.django_db
+def test_the_sole_owner_of_a_live_facility_is_refused_with_the_reason(
+    admin_api: Any, facility: Facility
+) -> None:
+    person = _person(facility.province)
+    FacilityMembership.objects.create(
+        user=person, facility=facility, role=FacilityMembership.Role.OWNER
+    )
+    client = admin_api(*MANAGE)
+
+    response = client.post(f"/api/v1/admin/users/{person.pk}/delete/")
+
+    assert response.status_code == 409
+    assert response.json()["code"] == "ACCOUNT_OWNS_FACILITIES"
+    assert "المالك الوحيد" in response.json()["message"]
+    person.refresh_from_db()
+    assert person.is_active is True
+
+
+@pytest.mark.django_db
+def test_deleting_an_account_needs_more_than_read(admin_api: Any, province: Province) -> None:
+    person = _person(province)
+    client = admin_api(READ)
+
+    assert client.post(f"/api/v1/admin/users/{person.pk}/delete/").status_code == 403

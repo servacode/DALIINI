@@ -11,6 +11,7 @@ All URIs are relative to *http://localhost*
 | [**publicFaqList**](ContentApi.md#publicFaqList) | **GET** api/v1/content/faq/ | List the published questions and answers, in order |
 | [**publicLegalDocumentRetrieve**](ContentApi.md#publicLegalDocumentRetrieve) | **GET** api/v1/public/legal/{key}/ | Retrieve one published page |
 | [**publicLegalDocumentsList**](ContentApi.md#publicLegalDocumentsList) | **GET** api/v1/public/legal/ | List the published pages |
+| [**publicSupportContact**](ContentApi.md#publicSupportContact) | **GET** api/v1/public/support/ | How to reach the team |
 
 
 
@@ -273,6 +274,42 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**LegalDocumentList**](LegalDocumentList.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+How to reach the team
+
+The WhatsApp number the team answers on, a link that opens a chat with it, and an email address. Null where not configured: a client shows nothing rather than an empty field.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+val webService = apiClient.createWebservice(ContentApi::class.java)
+
+launch(Dispatchers.IO) {
+    val result : PublicSupport = webService.publicSupportContact()
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**PublicSupport**](PublicSupport.md)
 
 ### Authorization
 

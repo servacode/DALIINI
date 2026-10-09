@@ -15,7 +15,7 @@ from rest_framework.response import Response
 from accounts.authentication import AuthenticatedRequest
 from accounts.models import AdminRole, User, UserAdminRole
 from core.exceptions import DomainError
-from core.openapi import NOT_FOUND_404, VALIDATION_400, protected
+from core.openapi import CONFLICT_409, NOT_FOUND_404, VALIDATION_400, protected
 from core.pagination import QueryOrderedCursorPage, page_parameters
 from facilities.models import FacilityMembership
 
@@ -35,6 +35,7 @@ from .serializers import (
 )
 from .services import (
     create_console_account,
+    delete_account_on_request,
     replace_user_roles,
     send_recovery_code,
     set_user_blocked,
@@ -96,7 +97,11 @@ class UserListView(AdminView):
         ordering = request.query_params.get("ordering") or "-createdAt"
         if ordering not in USER_ORDERINGS:
             raise ValidationError({"ordering": f"Use one of {', '.join(USER_ORDERINGS)}."})
-        qs = User.objects.order_by(*USER_ORDERINGS[ordering])
+        # An account deleted at its owner's request is anonymised and has nothing left to
+        # manage; the audit keeps the record of it (DECISION-111).
+        qs = User.objects.exclude(
+            accountdeletionrequest__status="COMPLETED"
+        ).order_by(*USER_ORDERINGS[ordering])
         if value := request.query_params.get("id"):
             try:
                 qs = qs.filter(pk=UUID(value))
@@ -214,6 +219,28 @@ class UserRecoveryView(AdminView):
         user = get_object_or_404(User, pk=user_id)
         phone = send_recovery_code(request=request, user=user)
         return Response({"sent": True, "phone": phone})
+
+
+class UserDeleteView(AdminView):
+    required_permission = "admin.users.manage"
+
+    @extend_schema(
+        operation_id="adminUserDelete",
+        tags=["Admin Users"],
+        summary="Delete an account at its owner's request",
+        description=(
+            "For a request made through the site's deletion page or by email: Google Play "
+            "requires an account to be deletable from outside the app. The same rules and "
+            "anonymisation as the app's own deletion; the sole owner of a live facility is "
+            "refused with 409 and the reason. Recorded under the operator's name."
+        ),
+        request=None,
+        responses={204: None, 409: CONFLICT_409, **protected(), 404: NOT_FOUND_404},
+    )
+    def post(self, request: AuthenticatedRequest, user_id: UUID) -> Response:
+        user = get_object_or_404(User, pk=user_id)
+        delete_account_on_request(request=request, user=user)
+        return Response(status=204)
 
 
 class UserBlockView(AdminView):
