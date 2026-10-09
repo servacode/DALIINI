@@ -55,7 +55,20 @@ data class OnboardingForm(
     /** Optional. Blank clears it on the backend. */
     val whatsapp: String = "",
     val addressAr: String = "",
-)
+) {
+    /** The details a draft's creation does not carry: only its name and category go with it. */
+    val hasDetails: Boolean
+        get() = listOf(descriptionAr, phone, whatsapp, addressAr).any { it.isNotBlank() }
+
+    fun toPatch(): OwnerFacilityPatch = OwnerFacilityPatch(
+        nameAr = nameAr.trim(),
+        nameEn = nameEn.trim(),
+        descriptionAr = descriptionAr.trim(),
+        phone = phone.trim(),
+        whatsapp = whatsapp.trim(),
+        addressAr = addressAr.trim(),
+    )
+}
 
 sealed interface OnboardingUiState {
     data object Loading : OnboardingUiState
@@ -177,7 +190,7 @@ class OnboardingViewModel @Inject constructor(
         val categoryId = current.form.categoryId ?: return
         if (current.form.nameAr.isBlank()) return
         val result = if (current.draft == null) {
-            save.create(
+            val created = save.create(
                 OwnerFacilityDraftInput(
                     provinceId = current.config.province.id,
                     categoryId = categoryId,
@@ -185,18 +198,18 @@ class OnboardingViewModel @Inject constructor(
                     nameEn = current.form.nameEn.trim().ifBlank { null },
                 )
             )
+            // Creating a draft takes only its name and category. Everything else typed before
+            // the first «التالي» — description, phone, WhatsApp, address — went nowhere, because
+            // autosave starts only once a draft exists: a pharmacy reached review with no phone.
+            // So the rest follows at once, in the same save.
+            val draft = created.getOrNull()
+            if (draft != null && current.form.hasDetails) {
+                save.patch(draft.summary.id, current.form.toPatch())
+            } else {
+                created
+            }
         } else {
-            save.patch(
-                current.draft.summary.id,
-                OwnerFacilityPatch(
-                    nameAr = current.form.nameAr.trim(),
-                    nameEn = current.form.nameEn.trim(),
-                    descriptionAr = current.form.descriptionAr.trim(),
-                    phone = current.form.phone.trim(),
-                    whatsapp = current.form.whatsapp.trim(),
-                    addressAr = current.form.addressAr.trim(),
-                ),
-            )
+            save.patch(current.draft.summary.id, current.form.toPatch())
         }
         result.onSuccess { draft ->
             mutate {
