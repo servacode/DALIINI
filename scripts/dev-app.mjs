@@ -42,8 +42,11 @@ const apps = {
       NEXT_PUBLIC_API_ORIGIN: API,
       NEXT_PUBLIC_MEDIA_ORIGIN: MEDIA,
       NEXT_PUBLIC_ROOT_DOMAIN: "localhost",
-      // No map by default: the local style exists only once scripts/local-map.sh has put it in
-      // the media store. After that, NEXT_PUBLIC_MAP_STYLE_URL=$MEDIA/directory-public/map/style.json.
+      // The local map, once `scripts/local-map.sh <archive.pmtiles>` has put it in the media
+      // store; its glyphs and icons come from the owner's RahalGo map host, which the site's
+      // policy must allow or every label and icon request is refused.
+      NEXT_PUBLIC_MAP_STYLE_URL: `${MEDIA}/directory-public/map/style.json`,
+      NEXT_PUBLIC_MAP_ORIGINS: "https://maps.rahalgo.com",
     },
   },
 };
