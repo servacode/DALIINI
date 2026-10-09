@@ -13,6 +13,11 @@
 export MSYS_NO_PATHCONV=1
 
 ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
+# On Windows (Git Bash), path translation is off (above), so a `/d/…` root reached Docker as is
+# and Docker read it as `D:\d\…` — "the system cannot find the path specified" before any test
+# ran. `cygpath -m` gives `D:/…`, which bash and Docker both read the same way. On a Unix
+# machine there is no cygpath and nothing to translate.
+if command -v cygpath >/dev/null 2>&1; then ROOT="$(cygpath -m "$ROOT")"; fi
 COMPOSE_FILE_DEV="$ROOT/infrastructure/docker/compose.yml"
 COMPOSE_FILE_E2E="$ROOT/infrastructure/docker/compose.e2e.yml"
 

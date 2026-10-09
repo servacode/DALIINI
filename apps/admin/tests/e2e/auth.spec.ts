@@ -166,7 +166,9 @@ test.describe("with an established session", () => {
   test("a full operator sees every section", async ({ page }) => {
     await openConsole(page);
 
-    await expect(page.getByTestId("admin-nav").locator("a")).toHaveCount(11);
+    // Fourteen since accounts, roles and announcements became three sections and the map one
+    // of its own (DECISION-105, DECISION-109).
+    await expect(page.getByTestId("admin-nav").locator("a")).toHaveCount(14);
   });
 
   test("a mutation has no GET form at all", async ({ page }) => {

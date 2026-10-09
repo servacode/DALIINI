@@ -30,8 +30,9 @@ test.describe("review golden path", () => {
 
     await expect(page.getByTestId("data-table")).toContainText("e2e-صيدلية قيد المراجعة");
 
+    // The filter applies the moment it is chosen: there is no button to press (DECISION-110).
     await page.getByTestId("filter-status").selectOption("APPROVED");
-    await page.getByTestId("filter-bar").getByRole("button", { name: "تطبيق" }).click();
+    await expect(page).toHaveURL(/status=APPROVED/);
 
     await expect(page.getByTestId("empty-state")).toBeVisible();
   });
@@ -107,20 +108,23 @@ test.describe("approval", () => {
 
 test.describe("facility lifecycle", () => {
   test("suspending and reactivating both land in the audit trail", async ({ page }) => {
+    // Everything on the facility's own card (DECISION-109): searched for, suspended with a
+    // reason, reactivated — and the card's tag says so each time.
     await openConsole(page);
     await page.goto("/facilities");
-    await page.getByTestId("filter-q").fill("e2e-صيدلية فعّالة");
-    await page.getByTestId("filter-bar").getByRole("button", { name: "تطبيق" }).click();
-    await page.getByTestId("data-table").getByRole("link", { name: "فتح" }).first().click();
+    await page.getByTestId("facilities-search").fill("e2e-صيدلية فعّالة");
+    await expect(page).toHaveURL(/q=/);
+    const card = page.locator(".profile").filter({ hasText: "e2e-صيدلية فعّالة" }).first();
+    await expect(card).toBeVisible();
 
-    await page.getByTestId("suspend").click();
-    await page.getByTestId("action-reason").fill("إيقاف اختباري");
+    await card.locator("[data-testid^='suspend-']").click();
+    await page.getByTestId("decision-reason").fill("إيقاف اختباري");
     await page.getByTestId("confirm-accept").click();
-    await expect(page.getByTestId("status-badge").first()).toContainText("موقوفة");
+    await expect(card.locator(".profile-tag")).toContainText("موقوفة");
 
-    await page.getByTestId("reactivate").click();
+    await card.locator("[data-testid^='reactivate-']").click();
     await page.getByTestId("confirm-accept").click();
-    await expect(page.getByTestId("status-badge").first()).toContainText("فعّالة");
+    await expect(card.locator(".profile-tag")).toContainText("فعّالة");
 
     const audit = await readOperation<{ items: { action: string }[] }>(page, "audit", {
       resource: "Facility",
@@ -133,19 +137,21 @@ test.describe("facility lifecycle", () => {
 
 test.describe("user lifecycle", () => {
   test("blocking and unblocking are recorded", async ({ page }) => {
+    // On the account's own card (DECISION-106): the band turns to «محظور» and back.
     await openConsole(page);
     await page.goto("/users");
-    await page.getByTestId("filter-q").fill("مالك الاختبار");
-    await page.getByTestId("filter-bar").getByRole("button", { name: "تطبيق" }).click();
-    await page.getByTestId("data-table").getByRole("link").first().click();
+    await page.getByTestId("accounts-search").fill("مالك الاختبار");
+    await expect(page).toHaveURL(/q=/);
+    const card = page.locator(".profile").filter({ hasText: "مالك الاختبار" }).first();
+    await expect(card).toBeVisible();
 
-    await page.getByTestId("block").click();
+    await card.locator("[data-testid^='block-']").click();
     await page.getByTestId("confirm-accept").click();
-    await expect(page.getByTestId("status-badge").first()).toContainText("محظور");
+    await expect(card.locator(".profile-tag")).toContainText("محظور");
 
-    await page.getByTestId("unblock").click();
+    await card.locator("[data-testid^='unblock-']").click();
     await page.getByTestId("confirm-accept").click();
-    await expect(page.getByTestId("status-badge").first()).toContainText("فعّال");
+    await expect(card.locator(".profile-tag")).not.toContainText("محظور");
 
     const audit = await readOperation<{ items: { action: string }[] }>(page, "audit", {
       resource: "User",
@@ -156,30 +162,39 @@ test.describe("user lifecycle", () => {
   });
 });
 
-test.describe("tables", () => {
-  test("a header asks the backend for its order, and a hidden column stays hidden", async ({
-    page,
-  }) => {
+test.describe("lists", () => {
+  test("the order asked for is the order the backend returns", async ({ page }) => {
+    // Facilities are cards now (DECISION-109): the order is chosen in the toolbar, and what
+    // proves it is the server's own order, not the address bar.
     await openConsole(page);
     await page.goto("/facilities");
-    await expect(page.getByTestId("data-table")).toBeVisible();
+    await expect(page.locator(".profile").first()).toBeVisible();
 
-    await page.getByTestId("sort-updatedAt").click();
-    await expect(page).toHaveURL(/ordering=-updatedAt/);
-    await expect(page.getByTestId("sort-updatedAt").locator("xpath=..")).toHaveAttribute(
-      "aria-sort",
-      "descending",
-    );
+    await page.getByRole("combobox", { name: "الترتيب" }).selectOption("qualityScore");
+    await expect(page).toHaveURL(/ordering=qualityScore/);
+    const listed = await readOperation<{ items: { nameAr: string }[] }>(page, "facilities", {
+      ordering: "qualityScore",
+    });
+    await expect(page.locator(".profile-name").first()).toHaveText(listed.items[0]!.nameAr);
+  });
 
-    await page.getByTestId("table-columns").click();
-    await page.getByTestId("column-category").uncheck();
+  test("a hidden column stays hidden", async ({ page }) => {
+    await openConsole(page);
+    // The provinces table always has rows; the review queue can be empty on a fresh stack.
+    await page.goto("/provinces");
+    await expect(page.getByTestId("data-table").first()).toBeVisible();
+
+    await page.getByTestId("table-columns").first().click();
+    await page.getByTestId("column-code").first().uncheck();
     await page.reload();
-    await expect(page.getByTestId("data-table")).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "التصنيف" })).toHaveCount(0);
-    await expect(page.getByTestId("sort-updatedAt").locator("xpath=..")).toHaveAttribute(
-      "aria-sort",
-      "descending",
-    );
+    await expect(page.getByTestId("data-table").first()).toBeVisible();
+    await expect(
+      page.getByTestId("data-table").first().getByRole("columnheader", { name: "الرمز" }),
+    ).toHaveCount(0);
+
+    // Put back, so the next run starts from the default.
+    await page.getByTestId("table-columns").first().click();
+    await page.getByTestId("column-code").first().check();
   });
 });
 
@@ -222,7 +237,7 @@ test.describe("roles", () => {
     await page.getByTestId("area-reviews").getByRole("button", { name: "اختيار الكل" }).click();
     await page.getByTestId("save-role").click();
     const row = page.getByTestId("data-table").getByRole("row").filter({ hasText: name });
-    await expect(row).toContainText("٥ من");
+    await expect(row).toContainText("5 من");
 
     const roles = await readOperation<{ items: { code: string; name: string; permissions: string[] }[] }>(
       page,
@@ -292,11 +307,17 @@ test.describe("Cycle J", () => {
     await page.getByTestId("save-switch").click();
     await expect(page.getByTestId("toast")).toBeVisible();
 
-    const restored = await readPublic<{ items: { nameAr: string }[] }>(
-      page,
-      `/api/v1/public/provinces/${raqqaId}/categories/`,
-    );
-    expect(restored.items.map((item) => item.nameAr)).toEqual(["صيدليات"]);
+    // The first save's toast can still be on screen, so it proves nothing about the second:
+    // what the public API serves does.
+    await expect
+      .poll(async () => {
+        const restored = await readPublic<{ items: { nameAr: string }[] }>(
+          page,
+          `/api/v1/public/provinces/${raqqaId}/categories/`,
+        );
+        return restored.items.map((item) => item.nameAr);
+      })
+      .toEqual(["صيدليات"]);
   });
 
   test("duty is refused for a category that is not a pharmacy", async ({ page }) => {

@@ -132,6 +132,7 @@ export default function ProvincesPage() {
       ) : null}
       {provinces.data ? (
         <DataTable
+          id="provinces"
           caption="المحافظات"
           columns={columns}
           rows={provinces.data.items}
