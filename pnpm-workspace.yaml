@@ -3,3 +3,13 @@ packages:
   - 'apps/web'
   - 'packages/design-tokens'
   - 'packages/api-typescript'
+
+# Overrides live here: pnpm 10 no longer reads the `pnpm` field of package.json, and said so on
+# every command while the one override there was silently ignored (DECISION-112).
+overrides:
+  # A smaller, maintained glob for the Next ESLint plugin.
+  "@next/eslint-plugin-next>fast-glob": "npm:tinyglobby@0.2.17"
+  # High-severity advisories the nightly scan found: GHSA-68fv-2mgg-jv7q (event-loop denial of
+  # service) and GHSA-wq5f-xc86-pv6w (librsvg, through Next's image optimiser).
+  source-map-js: ">=1.2.2"
+  sharp: ">=0.35.5"

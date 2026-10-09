@@ -2974,3 +2974,21 @@ the console section by section».
   message to one number within a minute; a refusal is retried twice. A number without WhatsApp is
   let go. The Cloud API sends no welcome until it has an approved template; the development
   sender sends nothing. Registration can never fail because of any of it.
+
+## DECISION-112 — Three high-severity advisories closed; the package overrides finally applied
+
+**Date:** 2026-10-09. Found by reading why the scheduled **Security** workflow had failed on
+6, 7 and 8 October; nothing else had noticed, because the full CI runs on pull requests and this
+branch had none.
+
+* `pnpm audit --audit-level high` reported three high advisories published against our tree:
+  **Next.js** server-side request forgery through image handling (GHSA-cjq9-62q9-8jv4, fixed in
+  16.3.8), **sharp**'s librsvg (GHSA-wq5f-xc86-pv6w, 0.35.5), and **source-map-js**
+  (GHSA-68fv-2mgg-jv7q, 1.2.2). Both apps are on Next 16.3.8; the other two are forced by
+  override. The audit now finds no known vulnerability at any level.
+* **The overrides were not being applied at all.** pnpm 10 no longer reads the `pnpm` field of
+  `package.json` — it said so on every command — so the one override there, the Next ESLint
+  plugin's glob, had been silently ignored. Overrides now live in `pnpm-workspace.yaml`, where
+  pnpm reads them, and the `pnpm` field is gone.
+* After the change: types, lint and unit tests on both apps, both production builds, the site's
+  thirteen end-to-end tests and the console's suite, run against the patched builds.
