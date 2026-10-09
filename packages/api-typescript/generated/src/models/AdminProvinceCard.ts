@@ -14,67 +14,88 @@
 
 import { mapValues } from '../runtime';
 /**
- * 
+ * A province with what its card counts (DECISION-113).
  * @export
- * @interface AdminProvince
+ * @interface AdminProvinceCard
  */
-export interface AdminProvince {
+export interface AdminProvinceCard {
     /**
      * 
      * @type {string}
-     * @memberof AdminProvince
+     * @memberof AdminProvinceCard
      */
     id: string;
     /**
      * 
      * @type {string}
-     * @memberof AdminProvince
+     * @memberof AdminProvinceCard
      */
     code: string;
     /**
      * 
      * @type {string}
-     * @memberof AdminProvince
+     * @memberof AdminProvinceCard
      */
     nameAr: string;
     /**
      * 
      * @type {string}
-     * @memberof AdminProvince
+     * @memberof AdminProvinceCard
      */
     nameEn: string;
     /**
      * 
      * @type {boolean}
-     * @memberof AdminProvince
+     * @memberof AdminProvinceCard
      */
     active: boolean;
     /**
      * 
      * @type {number}
-     * @memberof AdminProvince
+     * @memberof AdminProvinceCard
      */
     sortOrder: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AdminProvinceCard
+     */
+    activeFacilityCount: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AdminProvinceCard
+     */
+    cityCount: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AdminProvinceCard
+     */
+    activeCityCount: number;
 }
 
 /**
- * Check if a given object implements the AdminProvince interface.
+ * Check if a given object implements the AdminProvinceCard interface.
  */
-export function instanceOfAdminProvince(value: object): value is AdminProvince {
+export function instanceOfAdminProvinceCard(value: object): value is AdminProvinceCard {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('code' in value) || value['code'] === undefined) return false;
     if (!('nameAr' in value) || value['nameAr'] === undefined) return false;
     if (!('nameEn' in value) || value['nameEn'] === undefined) return false;
     if (!('active' in value) || value['active'] === undefined) return false;
     if (!('sortOrder' in value) || value['sortOrder'] === undefined) return false;
+    if (!('activeFacilityCount' in value) || value['activeFacilityCount'] === undefined) return false;
+    if (!('cityCount' in value) || value['cityCount'] === undefined) return false;
+    if (!('activeCityCount' in value) || value['activeCityCount'] === undefined) return false;
     return true;
 }
 
-export function AdminProvinceFromJSON(json: any): AdminProvince {
-    return AdminProvinceFromJSONTyped(json, false);
+export function AdminProvinceCardFromJSON(json: any): AdminProvinceCard {
+    return AdminProvinceCardFromJSONTyped(json, false);
 }
 
-export function AdminProvinceFromJSONTyped(json: any, ignoreDiscriminator: boolean): AdminProvince {
+export function AdminProvinceCardFromJSONTyped(json: any, ignoreDiscriminator: boolean): AdminProvinceCard {
     if (json == null) {
         return json;
     }
@@ -86,14 +107,17 @@ export function AdminProvinceFromJSONTyped(json: any, ignoreDiscriminator: boole
         'nameEn': json['nameEn'],
         'active': json['active'],
         'sortOrder': json['sortOrder'],
+        'activeFacilityCount': json['activeFacilityCount'],
+        'cityCount': json['cityCount'],
+        'activeCityCount': json['activeCityCount'],
     };
 }
 
-export function AdminProvinceToJSON(json: any): AdminProvince {
-    return AdminProvinceToJSONTyped(json, false);
+export function AdminProvinceCardToJSON(json: any): AdminProvinceCard {
+    return AdminProvinceCardToJSONTyped(json, false);
 }
 
-export function AdminProvinceToJSONTyped(value?: AdminProvince | null, ignoreDiscriminator: boolean = false): any {
+export function AdminProvinceCardToJSONTyped(value?: AdminProvinceCard | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
@@ -106,6 +130,9 @@ export function AdminProvinceToJSONTyped(value?: AdminProvince | null, ignoreDis
         'nameEn': value['nameEn'],
         'active': value['active'],
         'sortOrder': value['sortOrder'],
+        'activeFacilityCount': value['activeFacilityCount'],
+        'cityCount': value['cityCount'],
+        'activeCityCount': value['activeCityCount'],
     };
 }
 

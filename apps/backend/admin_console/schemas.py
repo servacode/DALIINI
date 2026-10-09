@@ -401,6 +401,31 @@ class AdminCategoryListSerializer(serializers.Serializer[Any]):
     items = AdminCategorySerializer(many=True)
 
 
+class AdminCategorySwitchSerializer(serializers.Serializer[Any]):
+    """One province's switches for a category, as the category card shows them."""
+
+    provinceId = serializers.UUIDField()
+    provinceNameAr = serializers.CharField()
+    publicEnabled = serializers.BooleanField()
+    ownerRegistrationEnabled = serializers.BooleanField()
+
+
+class AdminCategoryCardSerializer(AdminCategorySerializer):
+    """A category with what its card and its settings window show (DECISION-113).
+
+    Its capability flags and its province switches as they are now, so the window opens on
+    the current values instead of blank ones; and how many facilities it holds.
+    """
+
+    capabilities = serializers.DictField(child=serializers.BooleanField())
+    switches = AdminCategorySwitchSerializer(many=True)
+    facilityCount = serializers.IntegerField()
+
+
+class AdminCategoryCardListSerializer(serializers.Serializer[Any]):
+    items = AdminCategoryCardSerializer(many=True)
+
+
 class AdminCapabilitiesRequestSerializer(serializers.Serializer[Any]):
     """Capability flags. Omitting one leaves it as it is.
 
@@ -525,8 +550,16 @@ class AdminProvinceSerializer(serializers.Serializer[Any]):
     sortOrder = serializers.IntegerField(source="sort_order")
 
 
+class AdminProvinceCardSerializer(AdminProvinceSerializer):
+    """A province with what its card counts (DECISION-113)."""
+
+    activeFacilityCount = serializers.IntegerField(source="active_facility_count")
+    cityCount = serializers.IntegerField(source="city_count")
+    activeCityCount = serializers.IntegerField(source="active_city_count")
+
+
 class AdminProvinceListSerializer(serializers.Serializer[Any]):
-    items = AdminProvinceSerializer(many=True)
+    items = AdminProvinceCardSerializer(many=True)
 
 
 class AdminProvinceUpdateRequestSerializer(serializers.Serializer[Any]):

@@ -18,11 +18,11 @@ import type {
   AdminCapabilities,
   AdminCapabilitiesRequest,
   AdminCategory,
+  AdminCategoryCardList,
   AdminCategoryCreateRequest,
   AdminCategoryGroup,
   AdminCategoryGroupList,
   AdminCategoryGroupRequest,
-  AdminCategoryList,
   AdminCategoryProvinceRequest,
   AdminCategoryUpdateRequest,
   AdminId,
@@ -42,6 +42,8 @@ import {
     AdminCapabilitiesRequestToJSON,
     AdminCategoryFromJSON,
     AdminCategoryToJSON,
+    AdminCategoryCardListFromJSON,
+    AdminCategoryCardListToJSON,
     AdminCategoryCreateRequestFromJSON,
     AdminCategoryCreateRequestToJSON,
     AdminCategoryGroupFromJSON,
@@ -50,8 +52,6 @@ import {
     AdminCategoryGroupListToJSON,
     AdminCategoryGroupRequestFromJSON,
     AdminCategoryGroupRequestToJSON,
-    AdminCategoryListFromJSON,
-    AdminCategoryListToJSON,
     AdminCategoryProvinceRequestFromJSON,
     AdminCategoryProvinceRequestToJSON,
     AdminCategoryUpdateRequestFromJSON,
@@ -146,9 +146,10 @@ export interface AdminSpecialtyUpdateRequest {
 export class AdminTaxonomyApi extends runtime.BaseAPI {
 
     /**
+     * Each category with its capability flags, its province switches and how many facilities it holds: everything its card and settings window show, in one query count whatever the number of categories.
      * List categories
      */
-    async adminCategoriesListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminCategoryList>> {
+    async adminCategoriesListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminCategoryCardList>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -171,13 +172,14 @@ export class AdminTaxonomyApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => AdminCategoryListFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminCategoryCardListFromJSON(jsonValue));
     }
 
     /**
+     * Each category with its capability flags, its province switches and how many facilities it holds: everything its card and settings window show, in one query count whatever the number of categories.
      * List categories
      */
-    async adminCategoriesList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminCategoryList> {
+    async adminCategoriesList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminCategoryCardList> {
         const response = await this.adminCategoriesListRaw(initOverrides);
         return await response.value();
     }

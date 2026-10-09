@@ -3,24 +3,23 @@
 import { useCallback, useState } from "react";
 
 import { useCan } from "../../../../components/admin-shell";
-import { Icons } from "../../../../components/icons";
+import { Icon, Icons } from "../../../../components/icons";
 import {
-  type Column,
   ConfirmDialog,
-  DataTable,
   EmptyState,
   ErrorState,
   LoadingState,
   PageHeader,
-  Panel,
-  TermBadge,
   Toast,
 } from "../../../../components/ui";
-import { CharCount } from "../../../../components/ui/extra";
+import { CharCount, FormDialog, ItemCard } from "../../../../components/ui/extra";
 import { NUMBER_KINDS } from "../../../../lib/client/content";
 import { useMutation } from "../../../../lib/client/use-mutation";
 import { useResource } from "../../../../lib/client/use-resource";
 import { fieldErrorsFor } from "../../../../lib/errors/messages";
+import { LOCALE } from "../../../../lib/locale";
+
+const NUMBER = new Intl.NumberFormat(LOCALE);
 
 type EmergencyNumber = Readonly<{
   id: string;
@@ -203,91 +202,21 @@ export default function EmergencyNumbersPage() {
     numbers.reload();
   }
 
-  const columns: readonly Column<EmergencyNumber>[] = [
-    {
-      key: "label",
-      header: "الجهة",
-      width: "26%",
-      render: (row) => (
-        <span className="cell-stack">
-          <strong>{row.labelAr}</strong>
-          <span className="muted">{NUMBER_KINDS[row.kind] ?? row.kind}</span>
-        </span>
-      ),
-    },
-    {
-      key: "phone",
-      header: "الرقم",
-      ltr: true,
-      width: "16%",
-      render: (row) => <span className="phone-number">{row.phone}</span>,
-    },
-    {
-      key: "status",
-      header: "الحالة",
-      width: "22%",
-      render: (row) => (
-        <span className="button-row">
-          <TermBadge group="numberState" value={row.active ? "PUBLIC" : "HIDDEN"} />
-          {row.adminNote.trim() ? <TermBadge group="numberState" value="NEEDS_CHECK" /> : null}
-        </span>
-      ),
-    },
-    {
-      key: "note",
-      header: "ملاحظة للمشغلين",
-      render: (row) =>
-        row.adminNote.trim() ? (
-          <span className="note-text">{row.adminNote}</span>
-        ) : (
-          <span className="muted">—</span>
-        ),
-    },
-    {
-      key: "actions",
-      header: "",
-      width: "1%",
-      render: (row) =>
-        canManage ? (
-          <div className="button-row">
-            <button
-              type="button"
-              className="button-ghost"
-              data-testid={`edit-number-${row.id}`}
-              onClick={() => edit(row)}
-            >
-              تعديل
-            </button>
-            <button
-              type="button"
-              className="button-ghost"
-              data-tone="danger"
-              data-testid={`delete-number-${row.id}`}
-              onClick={() => {
-                mutation.reset();
-                setRemoving(row);
-              }}
-            >
-              حذف
-            </button>
-          </div>
-        ) : null,
-    },
-  ];
-
   return (
     <div className="stack">
       <PageHeader
+        eyebrow="المحتوى"
         title="أرقام الطوارئ"
         description="أرقام الإسعاف والإطفاء والشرطة وغيرها، على مستوى البلد أو لمحافظة بعينها."
         actions={
           canManage ? (
             <button
               type="button"
-              className="button-primary"
+              className="page-hero-action"
               data-testid="new-number"
               onClick={() => edit(null)}
             >
+              <Icon name="plus" />
               رقم جديد
             </button>
           ) : null
@@ -298,53 +227,10 @@ export default function EmergencyNumbersPage() {
       {numbers.error ? <ErrorState error={numbers.error} onRetry={numbers.reload} /> : null}
 
       {flagged.length > 0 ? (
-        <section className="verify-banner" data-testid="verify-banner" aria-labelledby="verify-title">
-          <header className="verify-head">
-            <span className="verify-icon" aria-hidden="true">
-              <Icons.alert />
-            </span>
-            <div>
-              <h2 id="verify-title">أرقام تحتاج تحققاً قبل الإطلاق</h2>
-              <p>
-                اتصل بكل رقم وتأكد أنه يعمل وأنه للجهة المكتوبة، ثم أكّد صحته لتُزال الملاحظة.
-                الملاحظة للمشغلين فقط ولا تظهر للعامة.
-              </p>
-            </div>
-          </header>
-          <ul className="verify-list">
-            {flagged.map((item) => (
-              <li key={item.id} className="verify-item" data-testid={`verify-${item.id}`}>
-                <div className="verify-text">
-                  <p className="verify-title">
-                    <strong>{item.labelAr}</strong>
-                    <span className="phone-number cell-ltr">{item.phone}</span>
-                    <span className="muted">{scopeOf(item)}</span>
-                  </p>
-                  <p className="verify-note">{item.adminNote}</p>
-                </div>
-                {canManage ? (
-                  <div className="button-row">
-                    <button
-                      type="button"
-                      className="button-primary"
-                      data-testid={`confirm-number-${item.id}`}
-                      onClick={() => {
-                        mutation.reset();
-                        setVerifying(item);
-                      }}
-                    >
-                      <Icons.check />
-                      تأكيد صحة الرقم
-                    </button>
-                    <button type="button" className="button-ghost" onClick={() => edit(item)}>
-                      تصحيح الرقم
-                    </button>
-                  </div>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        </section>
+        <p className="notice notice-warning" data-testid="verify-banner">
+          <Icons.alert />
+          {`${NUMBER.format(flagged.length)} من الأرقام تحتاج تحققاً قبل الإطلاق: اتصل بكل رقم وتأكد أنه للجهة المكتوبة، ثم اضغط «تأكيد صحة الرقم» على بطاقته.`}
+        </p>
       ) : null}
 
       {numbers.data && items.length === 0 ? (
@@ -355,27 +241,120 @@ export default function EmergencyNumbersPage() {
       ) : null}
 
       {groups.map((group) => (
-        <Panel key={group.key} title={group.title} description={group.description} flush>
-          <DataTable
-            caption={group.title}
-            columns={columns}
-            rows={group.rows}
-            rowKey={(row) => row.id}
-          />
-        </Panel>
+        <section key={group.key} className="card-section" aria-labelledby={`group-${group.key}`}>
+          <header className="card-section-head">
+            <h2 id={`group-${group.key}`}>{group.title}</h2>
+            <span>{group.description}</span>
+          </header>
+          <ul className="profile-grid">
+            {group.rows.map((row, index) => {
+              const unchecked = Boolean(row.adminNote.trim());
+              return (
+                <ItemCard
+                  key={row.id}
+                  index={index}
+                  icon="emergency"
+                  glyph={<span dir="ltr">{row.phone}</span>}
+                  tone={!row.active ? "neutral" : unchecked ? "gold" : "danger"}
+                  muted={!row.active}
+                  title={row.labelAr}
+                  subtitle={`${NUMBER_KINDS[row.kind] ?? row.kind} · ${scopeOf(row)}`}
+                  state={
+                    !row.active
+                      ? { label: "مخفي" }
+                      : unchecked
+                        ? { label: "يحتاج تحققاً", tone: "warning" }
+                        : { label: "ظاهر للعامة", tone: "positive" }
+                  }
+                  testId={`number-${row.id}`}
+                  actions={
+                    canManage ? (
+                      <>
+                        {unchecked ? (
+                          <button
+                            type="button"
+                            className="profile-act-main"
+                            data-testid={`confirm-number-${row.id}`}
+                            onClick={() => {
+                              mutation.reset();
+                              setVerifying(row);
+                            }}
+                          >
+                            <Icon name="check" width={16} height={16} />
+                            تأكيد صحة الرقم
+                          </button>
+                        ) : null}
+                        <button
+                          type="button"
+                          className={unchecked ? "profile-act-quiet" : "profile-act-main"}
+                          data-testid={`edit-number-${row.id}`}
+                          onClick={() => edit(row)}
+                        >
+                          {unchecked ? null : <Icon name="edit" width={16} height={16} />}
+                          تعديل
+                        </button>
+                        <button
+                          type="button"
+                          className="profile-act-icon"
+                          aria-label="حذف الرقم"
+                          title="حذف الرقم"
+                          data-testid={`delete-number-${row.id}`}
+                          onClick={() => {
+                            mutation.reset();
+                            setRemoving(row);
+                          }}
+                        >
+                          <Icon name="trash" width={16} height={16} />
+                        </button>
+                      </>
+                    ) : null
+                  }
+                >
+                  <p className={unchecked ? "number-note" : "item-card-quiet item-card-clamp"}>
+                    {unchecked ? row.adminNote : "لا ملاحظات: الرقم مؤكَّد."}
+                  </p>
+                </ItemCard>
+              );
+            })}
+          </ul>
+        </section>
       ))}
 
-      <ConfirmDialog
+      <FormDialog
         open={draft !== null}
+        icon="emergency"
         title={draft?.id ? "تعديل الرقم" : "رقم جديد"}
-        confirmLabel={draft?.id ? "حفظ" : "إضافة الرقم"}
-        pending={mutation.pending}
-        error={mutation.error}
-        onConfirm={save}
-        onCancel={() => setDraft(null)}
+        description="رقم وطني يظهر في كل المحافظات، أو رقم لمحافظة بعينها."
+        onClose={() => setDraft(null)}
+        locked={mutation.pending}
+        testId="number-dialog"
+        footer={
+          <div className="button-row">
+            <button
+              type="button"
+              className="button-ghost"
+              disabled={mutation.pending}
+              onClick={() => setDraft(null)}
+            >
+              إلغاء
+            </button>
+            <button
+              type="button"
+              className="button-primary"
+              data-testid="save-number"
+              disabled={mutation.pending}
+              onClick={save}
+            >
+              {mutation.pending ? "جارٍ الحفظ…" : draft?.id ? "حفظ" : "إضافة الرقم"}
+            </button>
+          </div>
+        }
       >
         {draft ? (
-          <>
+          <div className="stack">
+            {mutation.error && Object.keys(server).length === 0 ? (
+              <ErrorState error={mutation.error} />
+            ) : null}
             <label className="field">
               <span>اسم الجهة</span>
               <input
@@ -468,9 +447,9 @@ export default function EmergencyNumbersPage() {
                 onChange={(event) => setDraft({ ...draft, active: event.target.checked })}
               />
             </label>
-          </>
+          </div>
         ) : null}
-      </ConfirmDialog>
+      </FormDialog>
 
       <ConfirmDialog
         open={verifying !== null}

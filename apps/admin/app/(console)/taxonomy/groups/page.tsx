@@ -3,20 +3,13 @@
 import { useState } from "react";
 
 import { useCan } from "../../../../components/admin-shell";
-import {
-  type Column,
-  ConfirmDialog,
-  DataTable,
-  ErrorState,
-  FormSection,
-  LoadingState,
-  PageHeader,
-  StatusBadge,
-  Toast,
-} from "../../../../components/ui";
+import { type IconName, Icon, Icons } from "../../../../components/icons";
+import { ErrorState, LoadingState, PageHeader, Toast } from "../../../../components/ui";
+import { FormDialog, ItemCard, ItemChips } from "../../../../components/ui/extra";
 import { useMutation } from "../../../../lib/client/use-mutation";
 import { useResource } from "../../../../lib/client/use-resource";
 import { fieldErrorsFor } from "../../../../lib/errors/messages";
+import { LOCALE } from "../../../../lib/locale";
 
 type Group = Readonly<{
   id: string;
@@ -28,249 +21,295 @@ type Group = Readonly<{
   iconKey?: string;
 }>;
 
+type Category = Readonly<{ id: string; groupId: string; nameAr: string; active: boolean }>;
+
+/** A group being added (no id) or edited. */
+type Draft = Readonly<{
+  id: string | null;
+  code: string;
+  nameAr: string;
+  nameEn: string;
+  iconKey: string;
+  sortOrder: string;
+}>;
+
+/** The icons a group can wear: the shared set's drawings that read as a field of work. */
+const GROUP_ICONS: readonly IconName[] = [
+  "heart",
+  "pharmacy",
+  "clinic",
+  "lab",
+  "emergency",
+  "building",
+  "shield",
+  "star",
+  "tag",
+  "grid",
+];
+
+const NUMBER = new Intl.NumberFormat(LOCALE);
+
+function iconOf(key: string | undefined): IconName {
+  return key && key in Icons ? (key as IconName) : "grid";
+}
+
 /**
- * Category groups: the first step of Cycle J.
+ * Category groups: the first step of Cycle J, each a card with the categories under it.
  *
- * `code` is set once. The edit row does not offer it, and the backend refuses it outright
- * rather than ignoring it, so a rename that looks like it worked cannot happen.
+ * `code` is set once. The edit window does not offer it, and the backend refuses it outright
+ * rather than ignoring it, so a rename that looks like it worked cannot happen. The icon is
+ * chosen by picture from the platform's own set, not typed as a word the apps may not know.
  */
 export default function TaxonomyGroupsPage() {
   const groups = useResource<{ items: Group[] }>("categoryGroups");
+  const categories = useResource<{ items: Category[] }>("categories");
   const mutation = useMutation();
   const canManage = useCan("admin.taxonomy.manage");
 
-  const [draft, setDraft] = useState({ code: "", nameAr: "", nameEn: "", sortOrder: "0" });
+  const [draft, setDraft] = useState<Draft | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [editing, setEditing] = useState<{
-    id: string;
-    nameAr: string;
-    nameEn: string;
-    iconKey: string;
-    sortOrder: string;
-  } | null>(null);
   const errors = fieldErrorsFor(mutation.error);
 
-  async function create(): Promise<void> {
-    const ok = await mutation.run("categoryGroupCreate", {
-      code: draft.code.trim(),
-      nameAr: draft.nameAr.trim(),
-      nameEn: draft.nameEn.trim(),
-      sortOrder: Number(draft.sortOrder) || 0,
-    });
-    if (!ok) return;
-    setDraft({ code: "", nameAr: "", nameEn: "", sortOrder: "0" });
-    setToast("تمت إضافة المجموعة.");
-    groups.reload();
+  function open(group: Group | null): void {
+    mutation.reset();
+    setDraft(
+      group
+        ? {
+            id: group.id,
+            code: group.code,
+            nameAr: group.nameAr,
+            nameEn: group.nameEn ?? "",
+            iconKey: group.iconKey ?? "",
+            sortOrder: String(group.sortOrder),
+          }
+        : { id: null, code: "", nameAr: "", nameEn: "", iconKey: "", sortOrder: "0" },
+    );
   }
 
-  async function saveEdit(): Promise<void> {
-    if (!editing) return;
-    const ok = await mutation.run("categoryGroupUpdate", {
-      id: editing.id,
-      nameAr: editing.nameAr.trim(),
-      nameEn: editing.nameEn.trim(),
-      iconKey: editing.iconKey.trim(),
-      sortOrder: Number(editing.sortOrder) || 0,
-    });
+  async function save(): Promise<void> {
+    if (!draft) return;
+    const ok =
+      draft.id === null
+        ? await mutation.run("categoryGroupCreate", {
+            code: draft.code.trim(),
+            nameAr: draft.nameAr.trim(),
+            nameEn: draft.nameEn.trim(),
+            sortOrder: Number(draft.sortOrder) || 0,
+          })
+        : await mutation.run("categoryGroupUpdate", {
+            id: draft.id,
+            nameAr: draft.nameAr.trim(),
+            nameEn: draft.nameEn.trim(),
+            iconKey: draft.iconKey.trim(),
+            sortOrder: Number(draft.sortOrder) || 0,
+          });
     if (!ok) return;
-    setEditing(null);
-    setToast("تم حفظ المجموعة.");
+    setToast(draft.id === null ? "تمت إضافة المجموعة." : "تم حفظ المجموعة.");
+    setDraft(null);
     groups.reload();
   }
 
   async function toggle(group: Group): Promise<void> {
-    const ok = await mutation.run("categoryGroupUpdate", {
-      id: group.id,
-      active: !group.active,
-    });
+    const ok = await mutation.run("categoryGroupUpdate", { id: group.id, active: !group.active });
     if (!ok) return;
     setToast(group.active ? "تم تعطيل المجموعة." : "تم تفعيل المجموعة.");
     groups.reload();
   }
 
-  const columns: readonly Column<Group>[] = [
-    { key: "nameAr", header: "الاسم", sortValue: (row) => row.nameAr, render: (row) => row.nameAr },
-    { key: "code", header: "الرمز", ltr: true, render: (row) => <code>{row.code}</code> },
-    {
-      key: "sortOrder",
-      header: "الترتيب",
-      ltr: true,
-      sortValue: (row) => row.sortOrder,
-      render: (row) => row.sortOrder,
-    },
-    {
-      key: "active",
-      header: "الحالة",
-      render: (row) => (
-        <StatusBadge tone={row.active ? "positive" : "neutral"}>
-          {row.active ? "مفعّلة" : "معطّلة"}
-        </StatusBadge>
-      ),
-    },
-    {
-      key: "actions",
-      header: "",
-      width: "1%",
-      render: (row) =>
-        canManage ? (
+  const members = (group: Group) =>
+    (categories.data?.items ?? []).filter((category) => category.groupId === group.id);
+
+  return (
+    <div className="stack">
+      <PageHeader
+        eyebrow="الدليل"
+        title="مجموعات التصنيفات"
+        description="البنية العليا للتصنيفات: كل تصنيف ينتمي إلى مجموعة واحدة."
+        actions={
+          canManage ? (
+            <button
+              type="button"
+              className="page-hero-action"
+              data-testid="new-group"
+              onClick={() => open(null)}
+            >
+              <Icon name="plus" />
+              مجموعة جديدة
+            </button>
+          ) : null
+        }
+      />
+      {groups.loading ? <LoadingState /> : null}
+      {groups.error ? <ErrorState error={groups.error} onRetry={groups.reload} /> : null}
+      {mutation.error && draft === null ? <ErrorState error={mutation.error} /> : null}
+
+      {groups.data ? (
+        <ul className="profile-grid" data-testid="groups">
+          {groups.data.items.map((group, index) => {
+            const inside = members(group);
+            return (
+              <ItemCard
+                key={group.id}
+                index={index}
+                icon={iconOf(group.iconKey)}
+                tone={group.active ? "brand" : "neutral"}
+                muted={!group.active}
+                title={group.nameAr}
+                subtitle={group.nameEn || "بلا اسم إنكليزي"}
+                state={group.active ? { label: "مفعّلة", tone: "positive" } : { label: "معطّلة" }}
+                facts={[
+                  { label: "التصنيفات", value: NUMBER.format(inside.length) },
+                  {
+                    label: "المفعّل منها",
+                    value: NUMBER.format(inside.filter((category) => category.active).length),
+                  },
+                  { label: "الترتيب", value: NUMBER.format(group.sortOrder) },
+                ]}
+                testId={`group-${group.code}`}
+                actions={
+                  canManage ? (
+                    <>
+                      <button
+                        type="button"
+                        className="profile-act-main"
+                        data-testid={`edit-group-${group.code}`}
+                        onClick={() => open(group)}
+                      >
+                        <Icon name="edit" width={16} height={16} />
+                        تعديل
+                      </button>
+                      <button
+                        type="button"
+                        className={group.active ? "profile-act-danger" : "profile-act-quiet"}
+                        disabled={mutation.pending}
+                        data-testid={`toggle-group-${group.code}`}
+                        onClick={() => toggle(group)}
+                      >
+                        {group.active ? "تعطيل" : "تفعيل"}
+                      </button>
+                    </>
+                  ) : null
+                }
+              >
+                <ItemChips
+                  items={inside.map((category) => category.nameAr)}
+                  max={4}
+                  empty="لا تصنيفات فيها بعد."
+                />
+              </ItemCard>
+            );
+          })}
+        </ul>
+      ) : null}
+
+      <FormDialog
+        open={draft !== null}
+        icon={iconOf(draft?.iconKey)}
+        title={draft?.id === null ? "مجموعة جديدة" : "تعديل المجموعة"}
+        description={
+          draft?.id === null
+            ? "الرمز يُحدَّد مرة واحدة ولا يمكن تغييره لاحقاً."
+            : "الرمز ثابت. الاسم والأيقونة والترتيب تظهر فوراً في التطبيقات."
+        }
+        onClose={() => setDraft(null)}
+        locked={mutation.pending}
+        testId="group-dialog"
+        footer={
           <div className="button-row">
             <button
               type="button"
               className="button-ghost"
-              data-testid={`edit-group-${row.code}`}
-              onClick={() => {
-                mutation.reset();
-                setEditing({
-                  id: row.id,
-                  nameAr: row.nameAr,
-                  nameEn: row.nameEn ?? "",
-                  iconKey: row.iconKey ?? "",
-                  sortOrder: String(row.sortOrder),
-                });
-              }}
-            >
-              تعديل
-            </button>
-            <button
-              type="button"
-              className="button-ghost"
               disabled={mutation.pending}
-              data-testid={`toggle-group-${row.code}`}
-              onClick={() => toggle(row)}
+              onClick={() => setDraft(null)}
             >
-              {row.active ? "تعطيل" : "تفعيل"}
+              إلغاء
             </button>
-          </div>
-        ) : null,
-    },
-  ];
-
-  return (
-    <div className="stack">
-      <PageHeader title="مجموعات التصنيفات" description="البنية العليا للتصنيفات." />
-      {groups.loading ? <LoadingState /> : null}
-      {groups.error ? <ErrorState error={groups.error} onRetry={groups.reload} /> : null}
-      {mutation.error ? <ErrorState error={mutation.error} /> : null}
-      {groups.data ? (
-        <DataTable
-          caption="مجموعات التصنيفات"
-          columns={columns}
-          rows={groups.data.items}
-          rowKey={(row) => row.id}
-        />
-      ) : null}
-
-      {canManage ? (
-        <FormSection
-          title="إضافة مجموعة"
-          description="الرمز يُحدَّد مرة واحدة ولا يمكن تغييره لاحقاً."
-          footer={
             <button
               type="button"
               className="button-primary"
-              disabled={mutation.pending}
-              data-testid="create-group"
-              onClick={create}
+              data-testid={draft?.id === null ? "create-group" : "save-group"}
+              disabled={
+                mutation.pending ||
+                !draft?.nameAr.trim() ||
+                (draft.id === null && !draft.code.trim())
+              }
+              onClick={save}
             >
-              {mutation.pending ? "جارٍ الحفظ…" : "إضافة"}
+              {mutation.pending ? "جارٍ الحفظ…" : draft?.id === null ? "إضافة المجموعة" : "حفظ"}
             </button>
-          }
-        >
-          <label className="field">
-            <span>الرمز</span>
-            <input
-              dir="ltr"
-              value={draft.code}
-              data-testid="group-code"
-              aria-invalid={Boolean(errors.code)}
-              onChange={(event) => setDraft({ ...draft, code: event.target.value })}
-            />
-            {errors.code ? <span className="field-error">{errors.code}</span> : null}
-          </label>
-          <label className="field">
-            <span>الاسم بالعربية</span>
-            <input
-              value={draft.nameAr}
-              data-testid="group-name-ar"
-              aria-invalid={Boolean(errors.nameAr)}
-              onChange={(event) => setDraft({ ...draft, nameAr: event.target.value })}
-            />
-            {errors.nameAr ? <span className="field-error">{errors.nameAr}</span> : null}
-          </label>
-          <label className="field">
-            <span>الاسم بالإنجليزية</span>
-            <input
-              dir="ltr"
-              value={draft.nameEn}
-              onChange={(event) => setDraft({ ...draft, nameEn: event.target.value })}
-            />
-          </label>
-          <label className="field">
-            <span>الترتيب</span>
-            <input
-              type="number"
-              dir="ltr"
-              value={draft.sortOrder}
-              onChange={(event) => setDraft({ ...draft, sortOrder: event.target.value })}
-            />
-          </label>
-        </FormSection>
-      ) : null}
-
-      <ConfirmDialog
-        open={editing !== null}
-        title="تعديل المجموعة"
-        body="الرمز ثابت ولا يتغير. الاسم والأيقونة والترتيب تظهر فوراً في التطبيقات."
-        confirmLabel="حفظ"
-        pending={mutation.pending}
-        error={mutation.error}
-        onConfirm={saveEdit}
-        onCancel={() => setEditing(null)}
+          </div>
+        }
       >
-        {editing ? (
-          <>
+        {draft ? (
+          <div className="stack">
+            {mutation.error && Object.keys(errors).length === 0 ? (
+              <ErrorState error={mutation.error} />
+            ) : null}
             <label className="field">
               <span>الاسم بالعربية</span>
               <input
-                value={editing.nameAr}
-                data-testid="edit-group-name-ar"
+                value={draft.nameAr}
+                placeholder="مثال: الصحة"
+                data-testid={draft.id === null ? "group-name-ar" : "edit-group-name-ar"}
                 aria-invalid={Boolean(errors.nameAr)}
-                onChange={(event) => setEditing({ ...editing, nameAr: event.target.value })}
+                onChange={(event) => setDraft({ ...draft, nameAr: event.target.value })}
               />
               {errors.nameAr ? <span className="field-error">{errors.nameAr}</span> : null}
             </label>
-            <label className="field">
-              <span>الاسم بالإنجليزية</span>
-              <input
-                dir="ltr"
-                value={editing.nameEn}
-                onChange={(event) => setEditing({ ...editing, nameEn: event.target.value })}
-              />
-            </label>
-            <label className="field">
-              <span>مفتاح الأيقونة</span>
-              <input
-                dir="ltr"
-                value={editing.iconKey}
-                data-testid="edit-group-icon"
-                aria-invalid={Boolean(errors.iconKey)}
-                onChange={(event) => setEditing({ ...editing, iconKey: event.target.value })}
-              />
-              <span className="field-hint">اسم الأيقونة كما تعرفه التطبيقات، مثل pharmacy.</span>
-              {errors.iconKey ? <span className="field-error">{errors.iconKey}</span> : null}
-            </label>
-            <label className="field">
-              <span>الترتيب</span>
-              <input
-                type="number"
-                dir="ltr"
-                value={editing.sortOrder}
-                onChange={(event) => setEditing({ ...editing, sortOrder: event.target.value })}
-              />
-            </label>
-          </>
+            {draft.id === null ? (
+              <label className="field">
+                <span>الرمز</span>
+                <input
+                  dir="ltr"
+                  value={draft.code}
+                  placeholder="health"
+                  data-testid="group-code"
+                  aria-invalid={Boolean(errors.code)}
+                  onChange={(event) => setDraft({ ...draft, code: event.target.value })}
+                />
+                {errors.code ? <span className="field-error">{errors.code}</span> : null}
+              </label>
+            ) : null}
+            <div className="form-grid-2">
+              <label className="field">
+                <span>الاسم بالإنكليزية</span>
+                <input
+                  dir="ltr"
+                  value={draft.nameEn}
+                  onChange={(event) => setDraft({ ...draft, nameEn: event.target.value })}
+                />
+              </label>
+              <label className="field">
+                <span>الترتيب</span>
+                <input
+                  type="number"
+                  dir="ltr"
+                  value={draft.sortOrder}
+                  onChange={(event) => setDraft({ ...draft, sortOrder: event.target.value })}
+                />
+              </label>
+            </div>
+            {draft.id !== null ? (
+              <fieldset className="icon-picker" data-testid="edit-group-icon">
+                <legend>الأيقونة</legend>
+                {GROUP_ICONS.map((name) => (
+                  <button
+                    key={name}
+                    type="button"
+                    aria-pressed={draft.iconKey === name}
+                    aria-label={name}
+                    data-testid={`group-icon-${name}`}
+                    onClick={() => setDraft({ ...draft, iconKey: name })}
+                  >
+                    <Icon name={name} width={22} height={22} />
+                  </button>
+                ))}
+                {errors.iconKey ? <span className="field-error">{errors.iconKey}</span> : null}
+              </fieldset>
+            ) : null}
+          </div>
         ) : null}
-      </ConfirmDialog>
+      </FormDialog>
 
       <Toast message={toast} onDismiss={() => setToast(null)} />
     </div>

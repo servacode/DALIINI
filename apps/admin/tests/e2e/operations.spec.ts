@@ -28,10 +28,11 @@ test.describe("review golden path", () => {
     await openConsole(page);
     await page.goto("/reviews");
 
-    await expect(page.getByTestId("data-table")).toContainText("e2e-صيدلية قيد المراجعة");
+    await expect(page.getByTestId("reviews")).toContainText("e2e-صيدلية قيد المراجعة");
 
-    // The filter applies the moment it is chosen: there is no button to press (DECISION-110).
-    await page.getByTestId("filter-status").selectOption("APPROVED");
+    // The filter applies the moment it is chosen: there is no button to press (DECISION-110),
+    // and the status is a chip on the toolbar (DECISION-113).
+    await page.getByTestId("filter-status-APPROVED").click();
     await expect(page).toHaveURL(/status=APPROVED/);
 
     await expect(page.getByTestId("empty-state")).toBeVisible();
@@ -180,21 +181,20 @@ test.describe("lists", () => {
 
   test("a hidden column stays hidden", async ({ page }) => {
     await openConsole(page);
-    // The provinces table always has rows; the review queue can be empty on a fresh stack.
-    await page.goto("/provinces");
-    await expect(page.getByTestId("data-table").first()).toBeVisible();
+    // The audit trail is a log and stays a table (DECISION-113); it always has rows, since
+    // signing in is itself audited.
+    await page.goto("/audit");
+    await expect(page.getByTestId("data-table")).toBeVisible();
 
-    await page.getByTestId("table-columns").first().click();
-    await page.getByTestId("column-code").first().uncheck();
+    await page.getByTestId("table-columns").click();
+    await page.getByTestId("column-target").uncheck();
     await page.reload();
-    await expect(page.getByTestId("data-table").first()).toBeVisible();
-    await expect(
-      page.getByTestId("data-table").first().getByRole("columnheader", { name: "الرمز" }),
-    ).toHaveCount(0);
+    await expect(page.getByTestId("data-table")).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "العنصر" })).toHaveCount(0);
 
     // Put back, so the next run starts from the default.
-    await page.getByTestId("table-columns").first().click();
-    await page.getByTestId("column-code").first().check();
+    await page.getByTestId("table-columns").click();
+    await page.getByTestId("column-target").check();
   });
 });
 
@@ -236,8 +236,8 @@ test.describe("roles", () => {
     await page.getByTestId("role-name").fill(name);
     await page.getByTestId("area-reviews").getByRole("button", { name: "اختيار الكل" }).click();
     await page.getByTestId("save-role").click();
-    const row = page.getByTestId("data-table").getByRole("row").filter({ hasText: name });
-    await expect(row).toContainText("5 من");
+    const card = page.getByTestId("roles").locator(".item-card").filter({ hasText: name });
+    await expect(card).toContainText("5 من");
 
     const roles = await readOperation<{ items: { code: string; name: string; permissions: string[] }[] }>(
       page,
@@ -248,7 +248,7 @@ test.describe("roles", () => {
 
     await page.getByTestId(`delete-role-${created.code}`).click();
     await page.getByTestId("confirm-accept").click();
-    await expect(row).toHaveCount(0);
+    await expect(card).toHaveCount(0);
 
     const audit = await readOperation<{ items: { action: string }[] }>(page, "audit", {
       resource: "AdminRole",
@@ -339,10 +339,10 @@ test.describe("Cycle J", () => {
     await page.getByTestId("category-group").selectOption({ label: "الصحة" });
     await page.getByTestId("category-code").fill("e2e-optics");
     await page.getByTestId("category-name-ar").fill("e2e-بصريات");
-    await page.getByTestId("confirm-accept").click();
+    await page.getByTestId("save-category").click();
 
     await expect(page.getByTestId("toast")).toBeVisible();
-    await expect(page.getByTestId("data-table")).toContainText("e2e-بصريات");
+    await expect(page.getByTestId("categories")).toContainText("e2e-بصريات");
 
     const raqqa = await readPublic<{ items: { id: string; code: string }[] }>(
       page,
@@ -403,14 +403,18 @@ test.describe("verification policy", () => {
     await page.getByTestId("requirement-category").selectOption({ label: "صيدليات" });
     await page.getByTestId("requirement-label").fill("e2e-صورة الواجهة");
     await page.getByTestId("requirement-max").fill("3");
-    await page.getByTestId("confirm-accept").click();
+    await page.getByTestId("save-requirement").click();
 
     await expect(page.getByTestId("toast")).toBeVisible();
-    await expect(page.getByTestId("data-table")).toContainText("e2e-صورة الواجهة");
+    await expect(page.getByTestId("requirements")).toContainText("e2e-صورة الواجهة");
 
-    const rows = page.getByTestId("data-table").locator("tbody tr");
-    const id = await rows
+    // The one just made is the switched-on card with that name.
+    const id = await page
+      .getByTestId("requirements")
+      .locator(".item-card")
       .filter({ hasText: "e2e-صورة الواجهة" })
+      .filter({ has: page.getByRole("button", { name: "تعطيل" }) })
+      .first()
       .locator("[data-testid^='toggle-requirement-']")
       .getAttribute("data-testid");
     expect(id).toBeTruthy();
@@ -487,10 +491,10 @@ test.describe("advertisements", () => {
     await page.getByTestId("ad-title").fill("e2e-إعلان");
     await page.getByTestId("ad-starts").fill("2026-10-01T10:00");
     await page.getByTestId("ad-ends").fill("2026-09-01T10:00");
-    await page.getByTestId("confirm-accept").click();
+    await page.getByTestId("save-ad").click();
 
     await expect(page.getByTestId("error-state").first()).toBeVisible();
-    await expect(page.getByTestId("confirm-dialog")).toBeVisible();
+    await expect(page.getByTestId("ad-dialog")).toBeVisible();
   });
 
   test("a valid advertisement can be created, edited and activated", async ({ page }) => {
@@ -502,13 +506,13 @@ test.describe("advertisements", () => {
     await page.getByTestId("ad-title").fill("e2e-إعلان");
     await page.getByTestId("ad-starts").fill("2026-09-01T10:00");
     await page.getByTestId("ad-ends").fill("2026-10-01T10:00");
-    await page.getByTestId("confirm-accept").click();
+    await page.getByTestId("save-ad").click();
 
     await expect(page.getByTestId("toast")).toContainText("تمت إضافة الإعلان");
-    await expect(page.getByTestId("data-table")).toContainText("e2e-إعلان");
+    await expect(page.getByTestId("ads")).toContainText("e2e-إعلان");
 
-    const row = page.getByTestId("data-table").locator("tbody tr").filter({ hasText: "e2e-إعلان" });
-    await row.locator("[data-testid^='toggle-ad-']").click();
+    const card = page.getByTestId("ads").locator(".item-card").filter({ hasText: "e2e-إعلان" });
+    await card.first().locator("[data-testid^='toggle-ad-']").click();
     await expect(page.getByTestId("toast")).toContainText("تم تفعيل الإعلان");
   });
 });

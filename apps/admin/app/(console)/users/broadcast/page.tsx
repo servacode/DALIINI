@@ -3,22 +3,25 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
-import { Icons } from "../../../../components/icons";
+import { Icon, Icons } from "../../../../components/icons";
 import {
-  type Column,
   ConfirmDialog,
-  DataTable,
   EmptyState,
   ErrorState,
   LoadingState,
   PageHeader,
   Pagination,
-  Panel,
   StatusBadge,
   Toast,
-  formatDateTime,
 } from "../../../../components/ui";
-import { CharCount, NotificationPreview, Segmented } from "../../../../components/ui/extra";
+import {
+  CharCount,
+  FormDialog,
+  ItemCard,
+  NotificationPreview,
+  Segmented,
+  relativeTime,
+} from "../../../../components/ui/extra";
 import { write } from "../../../../lib/client/api";
 import { useResource } from "../../../../lib/client/use-resource";
 import {
@@ -99,6 +102,7 @@ export default function BroadcastPage() {
   const [titleAr, setTitleAr] = useState("");
   const [bodyAr, setBodyAr] = useState("");
   const [confirming, setConfirming] = useState(false);
+  const [composing, setComposing] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const dismissToast = useCallback(() => setToast(null), []);
 
@@ -129,6 +133,7 @@ export default function BroadcastPage() {
       return;
     }
     setConfirming(false);
+    setComposing(false);
     setTitleAr("");
     setBodyAr("");
     setToast(`أُرسل الإشعار. عدد المستلمين: ${NUMBER.format(result.data.recipientCount)}.`);
@@ -136,148 +141,62 @@ export default function BroadcastPage() {
     history.reload();
   }
 
-  const columns: readonly Column<Broadcast>[] = [
-    {
-      key: "createdAt",
-      header: "أُرسل في",
-      ltr: true,
-      render: (row) => formatDateTime(row.createdAt),
-    },
-    {
-      key: "message",
-      header: "الإشعار",
-      render: (row) => (
-        <span className="cell-stack">
-          <strong>{row.titleAr}</strong>
-          <span className="muted text-clamp-2">{row.bodyAr}</span>
-        </span>
-      ),
-    },
-    {
-      key: "scope",
-      header: "إلى",
-      render: (row) => scopeOf(row.audience, provinceName(row.provinceId)),
-    },
-    {
-      key: "recipients",
-      header: "المستلمون",
-      render: (row) => <strong className="tabular">{NUMBER.format(row.recipientCount)}</strong>,
-    },
-    {
-      key: "actor",
-      header: "المرسِل",
-      render: (row) => row.actorName ?? <span className="muted">—</span>,
-    },
-  ];
+  const items = history.data?.items ?? [];
 
   return (
     <div className="stack">
       <PageHeader
-        title="إرسال إشعار"
+        eyebrow="إدارة المستخدمين"
+        title="الإشعارات"
         description="إشعار واحد يصل إلى هواتف كثيرة وإلى صندوق الإشعارات في التطبيق. لا يمكن سحبه بعد الإرسال."
+        actions={
+          <button
+            type="button"
+            className="page-hero-action"
+            data-testid="broadcast-new"
+            onClick={() => {
+              setSendError(null);
+              setComposing(true);
+            }}
+          >
+            <Icon name="plus" />
+            إشعار جديد
+          </button>
+        }
       />
 
-      <div className="grid-main-aside broadcast-layout">
-        <Panel title="الإشعار" testId="broadcast-form">
-          <Segmented
-            label="إلى من"
-            name="audience"
-            value={audience}
-            options={AUDIENCES}
-            onChange={setAudience}
-          />
-          <label className="field">
-            <span>المحافظة</span>
-            <select
-              value={provinceId}
-              data-testid="broadcast-province"
-              onChange={(event) => setProvinceId(event.target.value)}
+      {history.loading ? <LoadingState /> : null}
+      {history.error ? <ErrorState error={history.error} onRetry={history.reload} /> : null}
+      {history.data && items.length === 0 ? (
+        <EmptyState
+          title="لم يُرسل أي إشعار بعد"
+          hint="اضغط «إشعار جديد» لكتابة أول إشعار ومعاينته قبل إرساله."
+          illustration="empty"
+        />
+      ) : null}
+      {items.length > 0 ? (
+        <ul className="profile-grid" data-testid="broadcast-history">
+          {items.map((row, index) => (
+            <ItemCard
+              key={row.id}
+              index={index}
+              icon="bell"
+              tone={row.audience === "OWNERS" ? "gold" : "brand"}
+              title={row.titleAr}
+              subtitle={scopeOf(row.audience, provinceName(row.provinceId))}
+              state={{ label: "أُرسل", tone: "positive" }}
+              facts={[
+                { label: "المستلمون", value: NUMBER.format(row.recipientCount) },
+                { label: "أُرسل", value: relativeTime(row.createdAt) },
+                { label: "المرسِل", value: row.actorName ?? "—" },
+              ]}
+              testId={`broadcast-${row.id}`}
             >
-              <option value="">كل المحافظات</option>
-              {provinceItems.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.nameAr}
-                </option>
-              ))}
-            </select>
-            <span className="field-hint">
-              {audience === "OWNERS"
-                ? "أصحاب المنشآت الموجودة في هذه المحافظة فقط."
-                : "المستخدمون الذين اختاروا هذه المحافظة في التطبيق فقط."}
-            </span>
-          </label>
-          <label className="field">
-            <span className="field-label-row">
-              العنوان
-              <CharCount value={titleAr.trim()} max={TITLE_MAX} />
-            </span>
-            <input
-              value={titleAr}
-              placeholder="مثال: صيدليات مناوبة جديدة في حلب"
-              data-testid="broadcast-title"
-              aria-invalid={titleLength > TITLE_MAX || Boolean(server.titleAr)}
-              onChange={(event) => setTitleAr(event.target.value)}
-            />
-            {titleLength > TITLE_MAX ? (
-              <span className="field-error">{`العنوان ${NUMBER.format(TITLE_MAX)} حرفاً على الأكثر.`}</span>
-            ) : null}
-          </label>
-          <label className="field">
-            <span className="field-label-row">
-              النص
-              <CharCount value={bodyAr.trim()} max={BODY_MAX} />
-            </span>
-            <textarea
-              rows={4}
-              value={bodyAr}
-              placeholder="جملة أو جملتان تقولان ما الجديد وماذا يفعل القارئ."
-              data-testid="broadcast-body"
-              aria-invalid={bodyLength > BODY_MAX || Boolean(server.bodyAr)}
-              onChange={(event) => setBodyAr(event.target.value)}
-            />
-            {bodyLength > BODY_MAX ? (
-              <span className="field-error">{`النص ${NUMBER.format(BODY_MAX)} حرف على الأكثر.`}</span>
-            ) : null}
-          </label>
-          {sendError && !confirming ? <ErrorState error={broadcastError(sendError)} /> : null}
-          <div className="broadcast-send">
-            <p className="muted">
-              يصل إلى: <strong>{scope}</strong>
-            </p>
-            <button
-              type="button"
-              className="button-primary"
-              disabled={!ready || sending}
-              data-testid="broadcast-send"
-              onClick={() => {
-                setSendError(null);
-                setConfirming(true);
-              }}
-            >
-              <Icons.bell />
-              إرسال الإشعار
-            </button>
-          </div>
-        </Panel>
-
-        <Panel title="المعاينة">
-          <NotificationPreview title={titleAr} body={bodyAr} />
-        </Panel>
-      </div>
-
-      <Panel title="الإشعارات المرسلة" description="الأحدث أولاً." flush testId="broadcast-history">
-        {history.loading ? <LoadingState /> : null}
-        {history.error ? <ErrorState error={history.error} onRetry={history.reload} /> : null}
-        {history.data ? (
-          <DataTable
-            caption="الإشعارات المرسلة"
-            columns={columns}
-            rows={history.data.items}
-            rowKey={(row) => row.id}
-            empty={<EmptyState title="لم يُرسل أي إشعار بعد" illustration="empty" />}
-          />
-        ) : null}
-      </Panel>
+              <p className="template-body">{row.bodyAr}</p>
+            </ItemCard>
+          ))}
+        </ul>
+      ) : null}
       {history.data ? (
         <Pagination
           hasMore={history.data.hasMore}
@@ -287,6 +206,116 @@ export default function BroadcastPage() {
           onNext={() => setCursor(history.data?.nextCursor ?? undefined)}
         />
       ) : null}
+
+      <FormDialog
+        open={composing}
+        wide
+        icon="bell"
+        title="إشعار جديد"
+        description="اكتبه، وانظر كيف يظهر على الهاتف، ثم أرسله."
+        onClose={() => setComposing(false)}
+        locked={confirming || sending}
+        testId="broadcast-form"
+        footer={
+          <div className="broadcast-send">
+            <p className="muted">
+              يصل إلى: <strong>{scope}</strong>
+            </p>
+            <div className="button-row">
+              <button
+                type="button"
+                className="button-ghost"
+                disabled={sending}
+                onClick={() => setComposing(false)}
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                className="button-primary"
+                disabled={!ready || sending}
+                data-testid="broadcast-send"
+                onClick={() => {
+                  setSendError(null);
+                  setConfirming(true);
+                }}
+              >
+                <Icons.bell />
+                إرسال الإشعار
+              </button>
+            </div>
+          </div>
+        }
+      >
+        <div className="broadcast-compose">
+          <div className="stack">
+            <Segmented
+              label="إلى من"
+              name="audience"
+              value={audience}
+              options={AUDIENCES}
+              onChange={setAudience}
+            />
+            <label className="field">
+              <span>المحافظة</span>
+              <select
+                value={provinceId}
+                data-testid="broadcast-province"
+                onChange={(event) => setProvinceId(event.target.value)}
+              >
+                <option value="">كل المحافظات</option>
+                {provinceItems.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.nameAr}
+                  </option>
+                ))}
+              </select>
+              <span className="field-hint">
+                {audience === "OWNERS"
+                  ? "أصحاب المنشآت الموجودة في هذه المحافظة فقط."
+                  : "المستخدمون الذين اختاروا هذه المحافظة في التطبيق فقط."}
+              </span>
+            </label>
+            <label className="field">
+              <span className="field-label-row">
+                العنوان
+                <CharCount value={titleAr.trim()} max={TITLE_MAX} />
+              </span>
+              <input
+                value={titleAr}
+                placeholder="مثال: صيدليات مناوبة جديدة في حلب"
+                data-testid="broadcast-title"
+                aria-invalid={titleLength > TITLE_MAX || Boolean(server.titleAr)}
+                onChange={(event) => setTitleAr(event.target.value)}
+              />
+              {titleLength > TITLE_MAX ? (
+                <span className="field-error">{`العنوان ${NUMBER.format(TITLE_MAX)} حرفاً على الأكثر.`}</span>
+              ) : null}
+            </label>
+            <label className="field">
+              <span className="field-label-row">
+                النص
+                <CharCount value={bodyAr.trim()} max={BODY_MAX} />
+              </span>
+              <textarea
+                rows={4}
+                value={bodyAr}
+                placeholder="جملة أو جملتان تقولان ما الجديد وماذا يفعل القارئ."
+                data-testid="broadcast-body"
+                aria-invalid={bodyLength > BODY_MAX || Boolean(server.bodyAr)}
+                onChange={(event) => setBodyAr(event.target.value)}
+              />
+              {bodyLength > BODY_MAX ? (
+                <span className="field-error">{`النص ${NUMBER.format(BODY_MAX)} حرف على الأكثر.`}</span>
+              ) : null}
+            </label>
+            {sendError && !confirming ? <ErrorState error={broadcastError(sendError)} /> : null}
+          </div>
+          <div className="broadcast-preview">
+            <NotificationPreview title={titleAr} body={bodyAr} />
+          </div>
+        </div>
+      </FormDialog>
 
       <ConfirmDialog
         open={confirming}

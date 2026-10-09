@@ -22,11 +22,11 @@ import com.servacode.directory.api.apis.AdminTaxonomyApi
 import com.servacode.directory.api.models.AdminCapabilities
 import com.servacode.directory.api.models.AdminCapabilitiesRequest
 import com.servacode.directory.api.models.AdminCategory
+import com.servacode.directory.api.models.AdminCategoryCardList
 import com.servacode.directory.api.models.AdminCategoryCreateRequest
 import com.servacode.directory.api.models.AdminCategoryGroup
 import com.servacode.directory.api.models.AdminCategoryGroupList
 import com.servacode.directory.api.models.AdminCategoryGroupRequest
-import com.servacode.directory.api.models.AdminCategoryList
 import com.servacode.directory.api.models.AdminCategoryProvinceRequest
 import com.servacode.directory.api.models.AdminCategoryUpdateRequest
 import com.servacode.directory.api.models.AdminId
@@ -47,7 +47,7 @@ class AdminTaxonomyApiTest : ShouldSpec() {
         // to test adminCategoriesList
         should("test adminCategoriesList") {
             // uncomment below to test adminCategoriesList
-            //val result : AdminCategoryList = apiInstance.adminCategoriesList()
+            //val result : AdminCategoryCardList = apiInstance.adminCategoriesList()
             //result shouldBe ("TODO")
         }
 

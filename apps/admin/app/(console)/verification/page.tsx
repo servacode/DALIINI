@@ -3,18 +3,13 @@
 import { useState } from "react";
 
 import { useCan } from "../../../components/admin-shell";
-import {
-  ConfirmDialog,
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  PageHeader,
-  StatusBadge,
-  Toast,
-} from "../../../components/ui";
+import { Icon } from "../../../components/icons";
+import { EmptyState, ErrorState, LoadingState, PageHeader, Toast } from "../../../components/ui";
+import { FilterChips, FormDialog, ItemCard } from "../../../components/ui/extra";
 import { useMutation } from "../../../lib/client/use-mutation";
 import { useResource } from "../../../lib/client/use-resource";
 import { fieldErrorsFor } from "../../../lib/errors/messages";
+import { LOCALE } from "../../../lib/locale";
 
 type Requirement = Readonly<{
   id: number;
@@ -29,6 +24,15 @@ type Requirement = Readonly<{
 }>;
 
 type Category = Readonly<{ id: string; nameAr: string }>;
+
+const SHOW = [
+  { value: "", label: "الكل" },
+  { value: "on", label: "المفعّلة" },
+  { value: "off", label: "المعطّلة" },
+] as const;
+type Show = (typeof SHOW)[number]["value"];
+
+const NUMBER = new Intl.NumberFormat(LOCALE);
 
 /**
  * Verification policy, as something an operator configures.
@@ -47,6 +51,7 @@ export default function VerificationPage() {
   const canManage = useCan("admin.verification.manage");
 
   const [creating, setCreating] = useState(false);
+  const [show, setShow] = useState<Show>("");
   const [draft, setDraft] = useState({
     categoryId: "",
     labelAr: "",
@@ -95,22 +100,29 @@ export default function VerificationPage() {
     requirements.reload();
   }
 
+  const items = requirements.data?.items ?? [];
+  const shown = items.filter((requirement) =>
+    show === "on" ? requirement.active : show === "off" ? !requirement.active : true,
+  );
+
   return (
     <div className="stack">
       <PageHeader
+        eyebrow="الدليل"
         title="متطلبات التحقق"
-        description="سياسة الأدلة المطلوبة لكل تصنيف."
+        description="سياسة الأدلة المطلوبة لكل تصنيف: ما يرفعه المالك ليُقبل طلبه."
         actions={
           canManage ? (
             <button
               type="button"
-              className="button-primary"
+              className="page-hero-action"
               data-testid="new-requirement"
               onClick={() => {
                 mutation.reset();
                 setCreating(true);
               }}
             >
+              <Icon name="plus" />
               متطلب جديد
             </button>
           ) : null
@@ -122,144 +134,183 @@ export default function VerificationPage() {
         تشغيلياً، لأنه يمنع إرسال الطلبات والموافقة عليها.
       </p>
 
+      {items.length > 0 ? (
+        <div className="live-toolbar">
+          <FilterChips label="عرض" value={show} options={SHOW} onChange={setShow} />
+        </div>
+      ) : null}
+
       {requirements.loading ? <LoadingState /> : null}
       {requirements.error ? (
         <ErrorState error={requirements.error} onRetry={requirements.reload} />
       ) : null}
-      {mutation.error ? <ErrorState error={mutation.error} /> : null}
+      {mutation.error && !creating ? <ErrorState error={mutation.error} /> : null}
 
       {requirements.data ? (
-        requirements.data.items.length === 0 ? (
-          <EmptyState title="لا متطلبات مُهيّأة بعد" hint="هذه هي حالة الإطلاق المقصودة. أضف متطلباً عندما تُعتمد السياسة." />
+        items.length === 0 ? (
+          <EmptyState
+            title="لا متطلبات مُهيّأة بعد"
+            hint="هذه هي حالة الإطلاق المقصودة. أضف متطلباً عندما تُعتمد السياسة."
+          />
+        ) : shown.length === 0 ? (
+          <EmptyState title="لا متطلبات في هذا العرض." illustration="noResults" />
         ) : (
-          <div className="table-wrap">
-            <table className="data-table" data-testid="data-table">
-              <caption className="sr-only">متطلبات التحقق</caption>
-              <thead>
-                <tr>
-                  <th scope="col">المتطلب</th>
-                  <th scope="col">التصنيف</th>
-                  <th scope="col">إلزامي</th>
-                  <th scope="col">عدد الملفات</th>
-                  <th scope="col">الحالة</th>
-                  <th scope="col" />
-                </tr>
-              </thead>
-              <tbody>
-                {requirements.data.items.map((requirement) => (
-                  <tr key={requirement.id}>
-                    <td>{requirement.labelAr}</td>
-                    <td>{categoryName(requirement.categoryId)}</td>
-                    <td>
-                      <StatusBadge tone={requirement.required ? "warning" : "neutral"}>
-                        {requirement.required ? "إلزامي" : "اختياري"}
-                      </StatusBadge>
-                    </td>
-                    <td className="cell-ltr">
-                      {requirement.minFiles}–{requirement.maxFiles}
-                    </td>
-                    <td>
-                      <StatusBadge tone={requirement.active ? "positive" : "neutral"}>
-                        {requirement.active ? "مفعّل" : "معطّل"}
-                      </StatusBadge>
-                    </td>
-                    <td>
-                      {canManage ? (
-                        <div className="button-row">
-                          <button
-                            type="button"
-                            className="button-ghost"
-                            data-testid={`toggle-required-${requirement.id}`}
-                            onClick={() => toggleRequired(requirement)}
-                          >
-                            {requirement.required ? "اجعله اختيارياً" : "اجعله إلزامياً"}
-                          </button>
-                          <button
-                            type="button"
-                            className="button-ghost"
-                            data-testid={`toggle-requirement-${requirement.id}`}
-                            onClick={() => toggle(requirement)}
-                          >
-                            {requirement.active ? "تعطيل" : "تفعيل"}
-                          </button>
-                        </div>
-                      ) : null}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ul className="profile-grid" data-testid="requirements">
+            {shown.map((requirement, index) => (
+              <ItemCard
+                key={requirement.id}
+                index={index}
+                icon="verified"
+                tone={!requirement.active ? "neutral" : requirement.required ? "gold" : "info"}
+                muted={!requirement.active}
+                title={requirement.labelAr}
+                subtitle={categoryName(requirement.categoryId)}
+                state={
+                  !requirement.active
+                    ? { label: "معطّل" }
+                    : requirement.required
+                      ? { label: "إلزامي", tone: "warning" }
+                      : { label: "اختياري", tone: "info" }
+                }
+                facts={[
+                  { label: "أقل عدد ملفات", value: NUMBER.format(requirement.minFiles) },
+                  { label: "أعلى عدد ملفات", value: NUMBER.format(requirement.maxFiles) },
+                  { label: "الترتيب", value: NUMBER.format(requirement.sortOrder) },
+                ]}
+                testId={`requirement-${requirement.id}`}
+                actions={
+                  canManage ? (
+                    <>
+                      <button
+                        type="button"
+                        className="profile-act-quiet"
+                        disabled={mutation.pending}
+                        data-testid={`toggle-required-${requirement.id}`}
+                        onClick={() => toggleRequired(requirement)}
+                      >
+                        {requirement.required ? "اجعله اختيارياً" : "اجعله إلزامياً"}
+                      </button>
+                      <button
+                        type="button"
+                        className={requirement.active ? "profile-act-danger" : "profile-act-main"}
+                        disabled={mutation.pending}
+                        data-testid={`toggle-requirement-${requirement.id}`}
+                        onClick={() => toggle(requirement)}
+                      >
+                        {requirement.active ? "تعطيل" : "تفعيل"}
+                      </button>
+                    </>
+                  ) : null
+                }
+              >
+                <p className="item-card-quiet">
+                  {requirement.required
+                    ? "لا يُرسَل الطلب ولا يُقبل دون هذا الدليل."
+                    : "يُطلب من المالك ولا يمنع إرسال الطلب."}
+                </p>
+              </ItemCard>
+            ))}
+          </ul>
         )
       ) : null}
 
-      <ConfirmDialog
+      <FormDialog
         open={creating}
+        icon="verified"
         title="متطلب تحقق جديد"
-        body="سيُطبَّق على كل طلب جديد في التصنيف المحدد. لا يمكن نقله لتصنيف آخر لاحقاً."
-        confirmLabel="إضافة"
-        pending={mutation.pending}
-        error={mutation.error}
-        onConfirm={create}
-        onCancel={() => setCreating(false)}
+        description="يُطبَّق على كل طلب جديد في التصنيف المحدد، ولا يُنقل لتصنيف آخر لاحقاً."
+        onClose={() => setCreating(false)}
+        locked={mutation.pending}
+        testId="requirement-dialog"
+        footer={
+          <div className="button-row">
+            <button
+              type="button"
+              className="button-ghost"
+              disabled={mutation.pending}
+              onClick={() => setCreating(false)}
+            >
+              إلغاء
+            </button>
+            <button
+              type="button"
+              className="button-primary"
+              data-testid="save-requirement"
+              disabled={mutation.pending || !draft.categoryId || !draft.labelAr.trim()}
+              onClick={create}
+            >
+              {mutation.pending ? "جارٍ الإضافة…" : "إضافة المتطلب"}
+            </button>
+          </div>
+        }
       >
-        <label className="field">
-          <span>التصنيف</span>
-          <select
-            value={draft.categoryId}
-            data-testid="requirement-category"
-            onChange={(event) => setDraft({ ...draft, categoryId: event.target.value })}
-          >
-            <option value="">اختر تصنيفاً</option>
-            {(categories.data?.items ?? []).map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.nameAr}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="field">
-          <span>وصف المتطلب</span>
-          <input
-            value={draft.labelAr}
-            data-testid="requirement-label"
-            aria-invalid={Boolean(errors.labelAr)}
-            onChange={(event) => setDraft({ ...draft, labelAr: event.target.value })}
-          />
-          {errors.labelAr ? <span className="field-error">{errors.labelAr}</span> : null}
-        </label>
-        <label className="switch-row">
-          <span>إلزامي</span>
-          <input
-            type="checkbox"
-            data-testid="requirement-required"
-            checked={draft.required}
-            onChange={(event) => setDraft({ ...draft, required: event.target.checked })}
-          />
-        </label>
-        <label className="field">
-          <span>أقل عدد ملفات</span>
-          <input
-            type="number"
-            dir="ltr"
-            value={draft.minFiles}
-            data-testid="requirement-min"
-            onChange={(event) => setDraft({ ...draft, minFiles: event.target.value })}
-          />
-        </label>
-        <label className="field">
-          <span>أعلى عدد ملفات</span>
-          <input
-            type="number"
-            dir="ltr"
-            value={draft.maxFiles}
-            data-testid="requirement-max"
-            aria-invalid={Boolean(errors.maxFiles)}
-            onChange={(event) => setDraft({ ...draft, maxFiles: event.target.value })}
-          />
-          {errors.maxFiles ? <span className="field-error">{errors.maxFiles}</span> : null}
-        </label>
-      </ConfirmDialog>
+        <div className="stack">
+          {mutation.error && Object.keys(errors).length === 0 ? (
+            <ErrorState error={mutation.error} />
+          ) : null}
+          <label className="field">
+            <span>التصنيف</span>
+            <select
+              value={draft.categoryId}
+              data-testid="requirement-category"
+              onChange={(event) => setDraft({ ...draft, categoryId: event.target.value })}
+            >
+              <option value="">اختر تصنيفاً</option>
+              {(categories.data?.items ?? []).map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.nameAr}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="field">
+            <span>وصف المتطلب</span>
+            <input
+              value={draft.labelAr}
+              placeholder="مثال: ترخيص مزاولة المهنة"
+              data-testid="requirement-label"
+              aria-invalid={Boolean(errors.labelAr)}
+              onChange={(event) => setDraft({ ...draft, labelAr: event.target.value })}
+            />
+            {errors.labelAr ? <span className="field-error">{errors.labelAr}</span> : null}
+          </label>
+          <label className="switch-row">
+            <span>إلزامي</span>
+            <input
+              type="checkbox"
+              data-testid="requirement-required"
+              checked={draft.required}
+              onChange={(event) => setDraft({ ...draft, required: event.target.checked })}
+            />
+          </label>
+          <div className="form-grid-2">
+            <label className="field">
+              <span>أقل عدد ملفات</span>
+              <input
+                type="number"
+                dir="ltr"
+                min={0}
+                value={draft.minFiles}
+                data-testid="requirement-min"
+                onChange={(event) => setDraft({ ...draft, minFiles: event.target.value })}
+              />
+            </label>
+            <label className="field">
+              <span>أعلى عدد ملفات</span>
+              <input
+                type="number"
+                dir="ltr"
+                min={1}
+                value={draft.maxFiles}
+                data-testid="requirement-max"
+                aria-invalid={Boolean(errors.maxFiles)}
+                onChange={(event) => setDraft({ ...draft, maxFiles: event.target.value })}
+              />
+              {errors.maxFiles ? <span className="field-error">{errors.maxFiles}</span> : null}
+            </label>
+          </div>
+        </div>
+      </FormDialog>
 
       <Toast message={toast} onDismiss={() => setToast(null)} />
     </div>

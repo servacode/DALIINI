@@ -15,7 +15,7 @@
 
 package com.servacode.directory.api.models
 
-import com.servacode.directory.api.models.AdminCategory
+import com.servacode.directory.api.models.AdminCategoryCard
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -28,10 +28,10 @@ import kotlinx.serialization.Contextual
  */
 @Serializable
 
-data class AdminCategoryList (
+data class AdminCategoryCardList (
 
     @SerialName(value = "items")
-    val items: kotlin.collections.List<AdminCategory>
+    val items: kotlin.collections.List<AdminCategoryCard>
 
 ) {
 

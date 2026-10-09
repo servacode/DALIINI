@@ -97,7 +97,9 @@ export function LineChart({
   const x = (i: number) =>
     n <= 1 ? pad.end + plotW / 2 : pad.end + plotW - (i / (n - 1)) * plotW;
   const y = (value: number) => pad.top + plotH - (value / top) * plotH;
-  const labelEvery = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(plotW / 70))));
+  // A day's label («9 تشرين الأول») is about ninety pixels wide; a label every seventy let the
+  // last two run into each other.
+  const labelEvery = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(plotW / 96))));
 
   function pick(clientX: number, rect: DOMRect): void {
     if (n === 0) return;
@@ -140,7 +142,7 @@ export function LineChart({
             {days.map((day, i) =>
               // Every few days, and always the last one; a regular label too close to the last
               // is dropped so the two never overlap.
-              (i % labelEvery === 0 && n - 1 - i >= labelEvery / 2) || i === n - 1 ? (
+              (i % labelEvery === 0 && n - 1 - i >= labelEvery) || i === n - 1 ? (
                 <text
                   key={day}
                   className="chart-axis"

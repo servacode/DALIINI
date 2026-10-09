@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 
 import { useCan } from "../../../../components/admin-shell";
+import { Icon } from "../../../../components/icons";
 import {
   type Column,
   ConfirmDialog,
@@ -143,6 +144,7 @@ export default function TaxonomyTagsPage() {
   return (
     <div className="stack">
       <PageHeader
+        eyebrow="الدليل"
         title="التخصصات والخدمات"
         description="ما يختاره المالك لمنشأته، وما يصفّي به الزائر قائمة التصنيف."
       />
@@ -163,10 +165,12 @@ export default function TaxonomyTagsPage() {
           <EmptyState title="لا تصنيفات بعد" hint="أنشئ تصنيفاً أولاً من صفحة التصنيفات." />
         ) : (
           <>
-            <div className="filter-bar">
-              <label className="filter-field">
+            <div className="live-toolbar">
+              <label className="toolbar-label">
+                <Icon name="tag" />
                 <span>التصنيف</span>
                 <select
+                  className="toolbar-select"
                   value={category?.id ?? ""}
                   data-testid="tags-category"
                   onChange={(event) => setFilters({ category: event.target.value })}
@@ -182,7 +186,7 @@ export default function TaxonomyTagsPage() {
             </div>
 
             {category ? (
-              <>
+              <div className="tag-columns">
                 <TagPanel
                   key={`specialty-${category.id}`}
                   kind="specialty"
@@ -197,7 +201,7 @@ export default function TaxonomyTagsPage() {
                   canManage={canManage}
                   onDone={setToast}
                 />
-              </>
+              </div>
             ) : (
               <EmptyState title="اختر تصنيفاً" hint="التصنيف المطلوب غير موجود في القائمة." />
             )}

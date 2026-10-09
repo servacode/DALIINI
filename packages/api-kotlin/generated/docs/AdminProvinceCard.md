@@ -1,5 +1,5 @@
 
-# AdminProvince
+# AdminProvinceCard
 
 ## Properties
 | Name | Type | Description | Notes |
@@ -10,6 +10,9 @@
 | **nameEn** | **kotlin.String** |  |  |
 | **active** | **kotlin.Boolean** |  |  |
 | **sortOrder** | **kotlin.Int** |  |  |
+| **activeFacilityCount** | **kotlin.Int** |  |  |
+| **cityCount** | **kotlin.Int** |  |  |
+| **activeCityCount** | **kotlin.Int** |  |  |
 
 
 

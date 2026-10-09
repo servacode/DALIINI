@@ -638,20 +638,29 @@ export type ProfileDate = Readonly<{
   value: string;
 }>;
 
-/** «منذ 3 ساعات», «أمس», «قبل 5 أيام» — Arabic, and never a bare timestamp on a card. */
+/** «منذ 3 ساعات», «أمس», «منذ 5 أيام» — Arabic, and never a bare timestamp on a card. */
 export function relativeTime(value: string): string {
   const then = new Date(value).getTime();
   if (Number.isNaN(then)) return "";
   const minutes = Math.max(0, Math.round((Date.now() - then) / 60000));
-  if (minutes < 60) return `منذ ${NUMERALS.format(minutes)} دقيقة`;
+  if (minutes < 1) return "الآن";
+  if (minutes < 60) return `منذ ${counted(minutes, "دقيقة", "دقيقتين", "دقائق")}`;
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `منذ ${NUMERALS.format(hours)} ساعة`;
+  if (hours < 24) return `منذ ${counted(hours, "ساعة", "ساعتين", "ساعات")}`;
   const days = Math.round(hours / 24);
   if (days === 1) return "أمس";
-  if (days < 30) return `منذ ${NUMERALS.format(days)} يوم`;
+  if (days < 30) return `منذ ${counted(days, "يوم", "يومين", "أيام", "يوماً")}`;
   const months = Math.round(days / 30);
-  if (months < 12) return `منذ ${NUMERALS.format(months)} شهر`;
-  return `منذ ${NUMERALS.format(Math.round(months / 12))} سنة`;
+  if (months < 12) return `منذ ${counted(months, "شهر", "شهرين", "أشهر", "شهراً")}`;
+  return `منذ ${counted(Math.round(months / 12), "سنة", "سنتين", "سنوات", "سنة")}`;
+}
+
+/** «دقيقة», «دقيقتين», «3 دقائق», «11 دقيقة»: the noun Arabic puts after each count. */
+function counted(n: number, one: string, two: string, few: string, many: string = one): string {
+  if (n === 1) return one;
+  if (n === 2) return two;
+  if (n <= 10) return `${NUMERALS.format(n)} ${few}`;
+  return `${NUMERALS.format(n)} ${many}`;
 }
 
 const NUMERALS = new Intl.NumberFormat(LOCALE);
@@ -853,5 +862,144 @@ export function FormDialog({
         {footer ? <div className="form-dialog-foot">{footer}</div> : null}
       </div>
     </div>
+  );
+}
+
+// --------------------------------------------------------------------------------------
+// Item card (DECISION-113)
+// --------------------------------------------------------------------------------------
+
+/**
+ * Everything the console lists that is not a person or a facility — a role, a category, a
+ * province, an advertisement, an emergency number, a page — as a card in the identity cards'
+ * language, lighter: a tinted head with the record's icon, name and state; up to three facts;
+ * whatever the record needs said about itself; and its actions at the foot.
+ *
+ * The same rule as the identity card: one shape, always. A fact with no value says so in quiet
+ * words rather than leaving a gap, so a row of cards lines up.
+ */
+export function ItemCard({
+  icon,
+  glyph,
+  title,
+  subtitle,
+  state,
+  tone = "neutral",
+  facts,
+  children,
+  actions,
+  cover,
+  index = 0,
+  muted,
+  focused,
+  testId,
+}: {
+  icon: IconName;
+  /** Big text in place of the icon: an emergency number, a province's initial. */
+  glyph?: ReactNode;
+  title: ReactNode;
+  subtitle?: ReactNode;
+  state?: Readonly<{ label: string; tone?: ItemTone }>;
+  /** The head's tint: what kind of record this is, before a word is read. */
+  tone?: ItemTone;
+  facts?: readonly ItemFact[];
+  children?: ReactNode;
+  actions?: ReactNode;
+  /** A picture across the head: an advertisement's own image. */
+  cover?: string | null;
+  index?: number;
+  /** Switched off: the card steps back. */
+  muted?: boolean;
+  focused?: boolean;
+  testId?: string;
+}) {
+  // A picture that will not load is dropped, not shown as a broken image.
+  const [failed, setFailed] = useState<string | null>(null);
+  const shownCover = cover && cover !== failed ? cover : null;
+  const classes = ["item-card", muted ? "item-card-muted" : "", focused ? "profile-focus" : ""]
+    .filter(Boolean)
+    .join(" ");
+  return (
+    <li
+      className={classes}
+      data-tone={tone}
+      data-testid={testId}
+      style={{ "--i": Math.min(index, 12) } as CSSProperties}
+    >
+      {shownCover ? (
+        <div className="item-card-cover">
+          {/* eslint-disable-next-line @next/next/no-img-element -- public media, no loader */}
+          <img src={shownCover} alt="" loading="lazy" onError={() => setFailed(shownCover)} />
+        </div>
+      ) : cover !== undefined ? (
+        <div className="item-card-cover item-card-cover-empty" aria-hidden="true">
+          <Icon name="image" width={28} height={28} />
+          <span>لا صورة</span>
+        </div>
+      ) : null}
+      <div className="item-card-head">
+        <span className="item-card-icon" aria-hidden={glyph ? undefined : true}>
+          {glyph ?? <Icon name={icon} width={22} height={22} />}
+        </span>
+        <span className="item-card-title">
+          <strong>{title}</strong>
+          {subtitle ? <span>{subtitle}</span> : null}
+        </span>
+        {state ? (
+          <span className="item-card-state" data-tone={state.tone ?? "neutral"}>
+            {state.label}
+          </span>
+        ) : null}
+      </div>
+      {facts && facts.length > 0 ? (
+        <div className="item-card-facts" data-count={facts.length}>
+          {facts.map((fact) => (
+            <span key={fact.label} className="item-card-fact">
+              <strong dir={fact.ltr ? "ltr" : undefined}>{fact.value}</strong>
+              <span>{fact.label}</span>
+            </span>
+          ))}
+        </div>
+      ) : null}
+      {children ? <div className="item-card-body">{children}</div> : null}
+      {actions ? <div className="profile-actions item-card-actions">{actions}</div> : null}
+    </li>
+  );
+}
+
+export type ItemTone = "neutral" | "brand" | "gold" | "info" | "danger" | "positive" | "warning";
+
+export type ItemFact = Readonly<{
+  label: string;
+  value: ReactNode;
+  /** A number or code read left to right. */
+  ltr?: boolean;
+}>;
+
+/** A share of a whole as a slim bar with its words: «5 من 32 صلاحية». */
+export function ItemMeter({ value, total, label }: { value: number; total: number; label: string }) {
+  const ratio = total > 0 ? Math.min(1, value / total) : 0;
+  return (
+    <div className="item-meter">
+      <span className="item-meter-track" aria-hidden="true">
+        <span style={{ inlineSize: `${Math.round(ratio * 100)}%` }} />
+      </span>
+      <span className="item-meter-label">{label}</span>
+    </div>
+  );
+}
+
+/** A few words as chips, the rest counted: «المراجعات · المنشآت · و3 غيرها». */
+export function ItemChips({ items, max = 4, empty }: { items: readonly string[]; max?: number; empty?: string }) {
+  if (items.length === 0) return empty ? <p className="item-card-quiet">{empty}</p> : null;
+  const shown = items.slice(0, max);
+  const rest = items.length - shown.length;
+  return (
+    <ul className="item-chips">
+      {shown.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+      {rest > 0 ? <li className="item-chips-more">{`و${NUMBER.format(rest)} غيرها`}</li> : null}
+    </ul>
   );
 }

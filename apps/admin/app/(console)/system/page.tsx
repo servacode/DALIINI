@@ -38,7 +38,7 @@ type SystemStatus = Readonly<{
 /** What each check is called, and what it is for, in the operator's words. */
 const CHECKS: Record<string, { label: string; detail: string; icon: IconName }> = {
   database: { label: "قاعدة البيانات", detail: "كل بيانات المنصة.", icon: "server" },
-  redis: { label: "Redis", detail: "الطابور والتخزين المؤقت والتحديثات الفورية.", icon: "layers" },
+  redis: { label: "الذاكرة السريعة", detail: "الطابور والتخزين المؤقت والتحديثات الفورية.", icon: "layers" },
   worker: { label: "عامل المهام", detail: "يرسل الإشعارات وينفّذ المهام الخلفية.", icon: "tool" },
   scheduler: { label: "المجدول", detail: "التذكيرات والتنظيف الليلي.", icon: "calendar" },
   storage: { label: "مساحة الملفات", detail: "الصور ووثائق التحقق.", icon: "image" },
@@ -136,7 +136,10 @@ export default function SystemPage() {
             <KeyValueList
               items={[
                 { label: "إصدار الواجهة البرمجية", value: data.apiVersion, ltr: true },
-                { label: "البيئة", value: data.environment, ltr: true },
+                {
+                  label: "البيئة",
+                  value: ENVIRONMENTS[data.environment] ?? data.environment,
+                },
                 {
                   label: "بصمة العقد",
                   value: <code>{data.schemaHash.slice(0, 16)}…</code>,
@@ -152,12 +155,28 @@ export default function SystemPage() {
   );
 }
 
+/** Where this console runs, in words. */
+const ENVIRONMENTS: Readonly<Record<string, string>> = {
+  development: "بيئة التطوير",
+  staging: "بيئة التجربة",
+  production: "التشغيل الفعلي",
+  test: "بيئة الاختبار",
+};
+
+const SECONDS = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 1 });
+
 function HealthCard({ check }: { check: HealthCheck }) {
   const meta = CHECKS[check.key] ?? { label: check.key, detail: "", icon: "info" as IconName };
   const state = STATUS[check.status];
   const facts: { label: string; value: string }[] = [];
   if (check.latencyMs !== null) {
-    facts.push({ label: "زمن الاستجابة", value: `${NUMBER.format(check.latencyMs)} م.ث` });
+    facts.push({
+      label: "زمن الاستجابة",
+      value:
+        check.latencyMs >= 1000
+          ? `${SECONDS.format(check.latencyMs / 1000)} ثانية`
+          : `${NUMBER.format(check.latencyMs)} ميلي ثانية`,
+    });
   }
   for (const metric of check.metrics) {
     facts.push({ label: METRICS[metric.key] ?? metric.key, value: NUMBER.format(metric.value) });

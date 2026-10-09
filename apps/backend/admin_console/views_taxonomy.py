@@ -4,6 +4,7 @@ from typing import Any
 from uuid import UUID
 
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db.models import Count, Prefetch
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import (
     extend_schema,
@@ -35,6 +36,8 @@ from .permissions import HasAdminPermission
 from .schemas import (
     AdminCapabilitiesRequestSerializer,
     AdminCapabilitiesSerializer,
+    AdminCategoryCardListSerializer,
+    AdminCategoryCardSerializer,
     AdminCategoryCreateRequestSerializer,
     AdminCategoryGroupListSerializer,
     AdminCategoryGroupRequestSerializer,
@@ -103,16 +106,73 @@ class CategoryGroupListView(TaxonomyView):
     model = CategoryGroup
 
 
-@extend_schema_view(
-    get=extend_schema(
+# The flags a category card shows, in the wire's names (the request serializer's own).
+CAPABILITY_FIELDS = {
+    str(field.source): name
+    for name, field in AdminCapabilitiesRequestSerializer().fields.items()
+}
+
+
+class CategoryListView(AdminView):
+    required_permission = "admin.taxonomy.read"
+
+    @extend_schema(
         operation_id="adminCategoriesList",
         tags=["Admin Taxonomy"],
         summary="List categories",
-        responses={200: AdminCategoryListSerializer, **protected()},
+        description=(
+            "Each category with its capability flags, its province switches and how many "
+            "facilities it holds: everything its card and settings window show, in one query "
+            "count whatever the number of categories."
+        ),
+        responses={200: AdminCategoryCardListSerializer, **protected()},
     )
-)
-class CategoryListView(TaxonomyView):
-    model = Category
+    def get(self, request: AuthenticatedRequest) -> Response:
+        rows = (
+            Category.objects.select_related("capabilities")
+            .prefetch_related(
+                Prefetch(
+                    "province_switches",
+                    queryset=CategoryProvince.objects.select_related("province").order_by(
+                        "province__sort_order", "province__name_ar"
+                    ),
+                )
+            )
+            .annotate(facility_count=Count("facilities"))
+            .order_by("sort_order", "name_ar")
+        )
+        items = []
+        for category in rows:
+            flags = getattr(category, "capabilities", None)
+            items.append(
+                {
+                    "id": category.pk,
+                    "group_id": category.group_id,
+                    "code": category.code,
+                    "slug": category.slug,
+                    "name_ar": category.name_ar,
+                    "name_en": category.name_en,
+                    "icon_key": category.icon_key,
+                    "specialization": category.specialization,
+                    "active": category.active,
+                    "sort_order": category.sort_order,
+                    "capabilities": {
+                        wire: bool(getattr(flags, column)) if flags else False
+                        for column, wire in CAPABILITY_FIELDS.items()
+                    },
+                    "switches": [
+                        {
+                            "provinceId": switch.province_id,
+                            "provinceNameAr": switch.province.name_ar,
+                            "publicEnabled": switch.public_enabled,
+                            "ownerRegistrationEnabled": switch.owner_registration_enabled,
+                        }
+                        for switch in category.province_switches.all()
+                    ],
+                    "facilityCount": category.facility_count,
+                }
+            )
+        return Response({"items": AdminCategoryCardSerializer(items, many=True).data})
 
 
 class CategoryGroupCreateView(AdminView):

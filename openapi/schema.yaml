@@ -2095,6 +2095,9 @@ paths:
   /api/v1/admin/categories/:
     get:
       operationId: adminCategoriesList
+      description: 'Each category with its capability flags, its province switches
+        and how many facilities it holds: everything its card and settings window
+        show, in one query count whatever the number of categories.'
       summary: List categories
       tags:
       - Admin Taxonomy
@@ -2105,7 +2108,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AdminCategoryList'
+                $ref: '#/components/schemas/AdminCategoryCardList'
           description: ''
         '401':
           content:
@@ -11265,6 +11268,69 @@ components:
       - slug
       - sortOrder
       - specialization
+    AdminCategoryCard:
+      type: object
+      description: |-
+        A category with what its card and its settings window show (DECISION-113).
+
+        Its capability flags and its province switches as they are now, so the window opens on
+        the current values instead of blank ones; and how many facilities it holds.
+      properties:
+        id:
+          type: string
+          format: uuid
+        groupId:
+          type: string
+          format: uuid
+        code:
+          type: string
+        slug:
+          type: string
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+        iconKey:
+          type: string
+        specialization:
+          type: string
+        active:
+          type: boolean
+        sortOrder:
+          type: integer
+        capabilities:
+          type: object
+          additionalProperties:
+            type: boolean
+        switches:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminCategorySwitch'
+        facilityCount:
+          type: integer
+      required:
+      - active
+      - capabilities
+      - code
+      - facilityCount
+      - groupId
+      - iconKey
+      - id
+      - nameAr
+      - nameEn
+      - slug
+      - sortOrder
+      - specialization
+      - switches
+    AdminCategoryCardList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminCategoryCard'
+      required:
+      - items
     AdminCategoryCreateRequest:
       type: object
       properties:
@@ -11351,15 +11417,6 @@ components:
           type: boolean
         sortOrder:
           type: integer
-    AdminCategoryList:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/AdminCategory'
-      required:
-      - items
     AdminCategoryProvinceRequest:
       type: object
       properties:
@@ -11374,6 +11431,25 @@ components:
           type: integer
       required:
       - provinceId
+    AdminCategorySwitch:
+      type: object
+      description: One province's switches for a category, as the category card shows
+        them.
+      properties:
+        provinceId:
+          type: string
+          format: uuid
+        provinceNameAr:
+          type: string
+        publicEnabled:
+          type: boolean
+        ownerRegistrationEnabled:
+          type: boolean
+      required:
+      - ownerRegistrationEnabled
+      - provinceId
+      - provinceNameAr
+      - publicEnabled
     AdminCategoryUpdateRequest:
       type: object
       description: |-
@@ -12618,8 +12694,9 @@ components:
             $ref: '#/components/schemas/AdminPermission'
       required:
       - items
-    AdminProvince:
+    AdminProvinceCard:
       type: object
+      description: A province with what its card counts (DECISION-113).
       properties:
         id:
           type: string
@@ -12634,8 +12711,17 @@ components:
           type: boolean
         sortOrder:
           type: integer
+        activeFacilityCount:
+          type: integer
+        cityCount:
+          type: integer
+        activeCityCount:
+          type: integer
       required:
       - active
+      - activeCityCount
+      - activeFacilityCount
+      - cityCount
       - code
       - id
       - nameAr
@@ -12647,7 +12733,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/AdminProvince'
+            $ref: '#/components/schemas/AdminProvinceCard'
       required:
       - items
     AdminProvinceReadiness:

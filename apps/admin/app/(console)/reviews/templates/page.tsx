@@ -4,18 +4,16 @@ import { useCallback, useState } from "react";
 
 import { useCan } from "../../../../components/admin-shell";
 import type { RejectionTemplate } from "../../../../components/rejection-template-picker";
+import { Icon } from "../../../../components/icons";
 import {
-  type Column,
   ConfirmDialog,
-  DataTable,
   EmptyState,
   ErrorState,
   LoadingState,
   PageHeader,
-  TermBadge,
   Toast,
 } from "../../../../components/ui";
-import { CharCount } from "../../../../components/ui/extra";
+import { CharCount, ItemCard } from "../../../../components/ui/extra";
 import { useMutation } from "../../../../lib/client/use-mutation";
 import { useResource } from "../../../../lib/client/use-resource";
 import { fieldErrorsFor } from "../../../../lib/errors/messages";
@@ -107,90 +105,29 @@ export default function RejectionTemplatesPage() {
     templates.reload();
   }
 
-  const columns: readonly Column<RejectionTemplate>[] = [
-    {
-      key: "order",
-      header: "الترتيب",
-      ltr: true,
-      width: "1%",
-      render: (row) => NUMBER.format(row.sortOrder),
-    },
-    {
-      key: "template",
-      header: "القالب",
-      render: (row) => (
-        <span className="cell-stack">
-          <strong>{row.titleAr}</strong>
-          <span className="muted text-clamp-2">{row.bodyAr}</span>
-        </span>
-      ),
-    },
-    {
-      key: "active",
-      header: "الحالة",
-      render: (row) => <TermBadge group="switch" value={row.active ? "ON" : "OFF"} />,
-    },
-    {
-      key: "actions",
-      header: "",
-      width: "1%",
-      render: (row) =>
-        canManage ? (
-          <div className="button-row">
-            <button
-              type="button"
-              className="button-ghost"
-              data-testid={`edit-template-${row.id}`}
-              onClick={() => {
-                mutation.reset();
-                setProblem(null);
-                setDraft({
-                  id: row.id,
-                  titleAr: row.titleAr,
-                  bodyAr: row.bodyAr,
-                  sortOrder: String(row.sortOrder),
-                  active: row.active,
-                });
-              }}
-            >
-              تعديل
-            </button>
-            <button
-              type="button"
-              className="button-ghost"
-              disabled={mutation.pending}
-              data-testid={`toggle-template-${row.id}`}
-              onClick={() => toggle(row)}
-            >
-              {row.active ? "تعطيل" : "تفعيل"}
-            </button>
-            <button
-              type="button"
-              className="button-ghost"
-              data-tone="danger"
-              data-testid={`delete-template-${row.id}`}
-              onClick={() => {
-                mutation.reset();
-                setRemoving(row);
-              }}
-            >
-              حذف
-            </button>
-          </div>
-        ) : null,
-    },
-  ];
+  function edit(row: RejectionTemplate): void {
+    mutation.reset();
+    setProblem(null);
+    setDraft({
+      id: row.id,
+      titleAr: row.titleAr,
+      bodyAr: row.bodyAr,
+      sortOrder: String(row.sortOrder),
+      active: row.active,
+    });
+  }
 
   return (
     <div className="stack">
       <PageHeader
+        eyebrow="المراجعات والبلاغات"
         title="قوالب أسباب الرفض"
         description="نصوص جاهزة يختار منها المراجع عند رفض طلب، ثم يعدّلها إن لزم."
         actions={
           canManage ? (
             <button
               type="button"
-              className="button-primary"
+              className="page-hero-action"
               data-testid="new-template"
               onClick={() => {
                 mutation.reset();
@@ -203,6 +140,7 @@ export default function RejectionTemplatesPage() {
                 });
               }}
             >
+              <Icon name="plus" />
               قالب جديد
             </button>
           ) : null
@@ -212,19 +150,72 @@ export default function RejectionTemplatesPage() {
       {templates.loading ? <LoadingState /> : null}
       {templates.error ? <ErrorState error={templates.error} onRetry={templates.reload} /> : null}
       {mutation.error && !draft && !removing ? <ErrorState error={mutation.error} /> : null}
-      {templates.data ? (
-        <DataTable
-          caption="قوالب أسباب الرفض"
-          columns={columns}
-          rows={items}
-          rowKey={(row) => row.id}
-          empty={
-            <EmptyState
-              title="لا قوالب بعد"
-              hint="أضف أسباب الرفض الأكثر تكراراً ليختار منها المراجعون."
-            />
-          }
+      {templates.data && items.length === 0 ? (
+        <EmptyState
+          title="لا قوالب بعد"
+          hint="أضف أسباب الرفض الأكثر تكراراً ليختار منها المراجعون."
         />
+      ) : null}
+      {items.length > 0 ? (
+        <ul className="profile-grid" data-testid="templates">
+          {items.map((row, index) => (
+            <ItemCard
+              key={row.id}
+              index={index}
+              icon="edit"
+              glyph={NUMBER.format(index + 1)}
+              tone={row.active ? "info" : "neutral"}
+              muted={!row.active}
+              title={row.titleAr}
+              subtitle={`الترتيب ${NUMBER.format(row.sortOrder)}`}
+              state={
+                row.active
+                  ? { label: "يظهر للمراجعين", tone: "positive" }
+                  : { label: "معطّل" }
+              }
+              testId={`template-${row.id}`}
+              actions={
+                canManage ? (
+                  <>
+                    <button
+                      type="button"
+                      className="profile-act-main"
+                      data-testid={`edit-template-${row.id}`}
+                      onClick={() => edit(row)}
+                    >
+                      <Icon name="edit" width={16} height={16} />
+                      تعديل
+                    </button>
+                    <button
+                      type="button"
+                      className="profile-act-quiet"
+                      disabled={mutation.pending}
+                      data-testid={`toggle-template-${row.id}`}
+                      onClick={() => toggle(row)}
+                    >
+                      {row.active ? "تعطيل" : "تفعيل"}
+                    </button>
+                    <button
+                      type="button"
+                      className="profile-act-icon"
+                      aria-label="حذف القالب"
+                      title="حذف القالب"
+                      data-testid={`delete-template-${row.id}`}
+                      onClick={() => {
+                        mutation.reset();
+                        setRemoving(row);
+                      }}
+                    >
+                      <Icon name="trash" width={16} height={16} />
+                    </button>
+                  </>
+                ) : null
+              }
+            >
+              <p className="template-body">{row.bodyAr}</p>
+            </ItemCard>
+          ))}
+        </ul>
       ) : null}
 
       <ConfirmDialog

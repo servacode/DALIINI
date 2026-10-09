@@ -4,19 +4,17 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { useCan } from "../../../components/admin-shell";
-import { Icons } from "../../../components/icons";
-import { type Period, PeriodPicker, lastDays, periodLabel } from "../../../components/period-picker";
+import { Icon, Icons } from "../../../components/icons";
+import { type Period, PeriodPicker, lastDays } from "../../../components/period-picker";
 import {
   ConfirmDialog,
   EmptyState,
   ErrorState,
   LoadingState,
   PageHeader,
-  StatusBadge,
   Toast,
-  formatDateTime,
 } from "../../../components/ui";
-import { SlidePreview } from "../../../components/ui/extra";
+import { FormDialog, ItemCard, SlidePreview } from "../../../components/ui/extra";
 import { damascusDay } from "../../../lib/client/calendar";
 import { uploadAdImage } from "../../../lib/client/files";
 import { useMutation } from "../../../lib/client/use-mutation";
@@ -58,19 +56,38 @@ function count(value: number | undefined): string {
   return value === undefined ? "—" : NUMBER.format(value);
 }
 
-/**
- * The period the numbers cover, as the backend read it. The generated client turns its date
- * fields into `Date`s, so they arrive as UTC midnight (`2026-09-04T00:00:00.000Z`); the day is
- * the first ten characters either way.
- */
-function covered(stats: AdStats): Period {
-  return { from: stats.fromDate.slice(0, 10), to: stats.toDate.slice(0, 10) };
-}
-
 /** No views means no rate, not a rate of zero. */
 function rate(value: number | null | undefined): string {
   return value == null ? "—" : PERCENT.format(value);
 }
+
+/** Whether a slide is on screen now, as its card's corner says it. */
+function showingState(
+  ad: Advertisement,
+  now: number,
+): { label: string; tone?: "positive" | "info" | "danger" } {
+  if (!ad.enabled) return { label: "متوقف" };
+  if (ad.endsAt && new Date(ad.endsAt).getTime() < now) return { label: "انتهى", tone: "danger" };
+  if (ad.startsAt && new Date(ad.startsAt).getTime() > now) return { label: "مجدول", tone: "info" };
+  return { label: "يُعرض الآن", tone: "positive" };
+}
+
+/** «من 1 تشرين الأول إلى 9 تشرين الأول», or that it has no dates at all. */
+function schedule(ad: Advertisement): string {
+  if (!ad.startsAt && !ad.endsAt) return "بلا مواعيد: يُعرض ما دام مفعّلاً";
+  const day = (value: string) => SHORT_DATE.format(new Date(value));
+  if (ad.startsAt && ad.endsAt) return `من ${day(ad.startsAt)} إلى ${day(ad.endsAt)}`;
+  if (ad.startsAt) return `يبدأ ${day(ad.startsAt)}`;
+  return `ينتهي ${day(ad.endsAt!)}`;
+}
+
+const SHORT_DATE = new Intl.DateTimeFormat(LOCALE, {
+  day: "numeric",
+  month: "long",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZone: "Asia/Damascus",
+});
 
 const SCOPES = [
   ["GLOBAL", "كل المحافظات"],
@@ -188,6 +205,17 @@ export default function AdsPage() {
     [],
   );
   const [removing, setRemoving] = useState<Advertisement | null>(null);
+  const [now] = useState(() => Date.now());
+
+  const provinceName = (id: string | null) =>
+    provinces.data?.items.find((province) => province.id === id)?.nameAr;
+  const categoryName = (id: string | null) =>
+    categories.data?.items.find((category) => category.id === id)?.nameAr;
+  function audience(ad: Advertisement): string {
+    if (ad.targetScope === "PROVINCE") return `محافظة ${provinceName(ad.provinceId) ?? "محددة"}`;
+    if (ad.targetScope === "CATEGORY") return `تصنيف ${categoryName(ad.categoryId) ?? "محدد"}`;
+    return "كل المحافظات";
+  }
   const [toast, setToast] = useState<string | null>(null);
   const errors = fieldErrorsFor(mutation.error);
 
@@ -310,16 +338,18 @@ export default function AdsPage() {
   return (
     <div className="stack">
       <PageHeader
+        eyebrow="الدليل"
         title="الإعلانات"
-        description="إعلانات الطرف الأول: المحتوى والاستهداف والجدولة."
+        description="شرائح الإعلانات في التطبيق: صورتها، ولمن تظهر، ومتى، وكم شوهدت."
         actions={
           canManage ? (
             <button
               type="button"
-              className="button-primary"
+              className="page-hero-action"
               data-testid="new-ad"
               onClick={() => openEditor({ ...BLANK })}
             >
+              <Icon name="plus" />
               إعلان جديد
             </button>
           ) : null
@@ -337,115 +367,142 @@ export default function AdsPage() {
           <>
             <PeriodPicker value={period} today={today} onChange={setPeriod} />
             {stats.error ? <ErrorState error={stats.error} onRetry={stats.reload} /> : null}
-            <div className="table-wrap">
-              <table className="data-table" data-testid="data-table">
-                <caption className="sr-only">
-                  الإعلانات
-                  {stats.data
-                    ? `، وأرقامها للفترة ${periodLabel(covered(stats.data))}`
-                    : null}
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">العنوان</th>
-                    <th scope="col">الاستهداف</th>
-                    <th scope="col">من</th>
-                    <th scope="col">إلى</th>
-                    <th scope="col">الحالة</th>
-                    <th scope="col">المشاهدات</th>
-                    <th scope="col">النقرات</th>
-                    <th scope="col">نسبة النقر</th>
-                    <th scope="col" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {ads.data.items.map((ad) => (
-                    <tr key={ad.id}>
-                      <td>{ad.titleAr || "—"}</td>
-                      <td>{SCOPES.find(([value]) => value === ad.targetScope)?.[1]}</td>
-                      <td className="cell-ltr">{formatDateTime(ad.startsAt)}</td>
-                      <td className="cell-ltr">{formatDateTime(ad.endsAt)}</td>
-                      <td>
-                        <StatusBadge tone={ad.enabled ? "positive" : "neutral"}>
-                          {ad.enabled ? "فعّال" : "متوقف"}
-                        </StatusBadge>
-                      </td>
-                      <td className="cell-ltr" data-testid={`ad-impressions-${ad.id}`}>
-                        {count(statOf.get(ad.id)?.impressions)}
-                      </td>
-                      <td className="cell-ltr">{count(statOf.get(ad.id)?.clicks)}</td>
-                      <td className="cell-ltr">{rate(statOf.get(ad.id)?.clickRate)}</td>
-                      <td>
-                        {canManage ? (
-                          <div className="button-row">
-                            <button
-                              type="button"
-                              className="button-ghost"
-                              data-testid={`edit-ad-${ad.id}`}
-                              onClick={() =>
-                                openEditor(
-                                  {
-                                    ...BLANK,
-                                    id: ad.id,
-                                    titleAr: ad.titleAr,
-                                    targetScope: ad.targetScope,
-                                    provinceId: ad.provinceId ?? "",
-                                    categoryId: ad.categoryId ?? "",
-                                    startsAt: toLocalInput(ad.startsAt),
-                                    endsAt: toLocalInput(ad.endsAt),
-                                    enabled: ad.enabled,
-                                    sortOrder: String(ad.sortOrder),
-                                    slideDurationMs: String(ad.slideDurationMs),
-                                  },
-                                  ad.imageUrl,
-                                )
-                              }
-                            >
-                              تعديل
-                            </button>
-                            <button
-                              type="button"
-                              className="button-ghost"
-                              data-testid={`toggle-ad-${ad.id}`}
-                              onClick={() => toggle(ad)}
-                            >
-                              {ad.enabled ? "إيقاف" : "تفعيل"}
-                            </button>
-                            <button
-                              type="button"
-                              className="button-ghost"
-                              data-tone="danger"
-                              data-testid={`delete-ad-${ad.id}`}
-                              onClick={() => {
-                                mutation.reset();
-                                setRemoving(ad);
-                              }}
-                            >
-                              حذف
-                            </button>
-                          </div>
-                        ) : null}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ul className="profile-grid" data-testid="ads">
+              {ads.data.items.map((ad, index) => {
+                const stat = statOf.get(ad.id);
+                const showing = showingState(ad, now);
+                return (
+                  <ItemCard
+                    key={ad.id}
+                    index={index}
+                    icon="megaphone"
+                    cover={ad.imageUrl}
+                    tone={ad.enabled ? "brand" : "neutral"}
+                    muted={!ad.enabled}
+                    title={ad.titleAr || "إعلان بلا عنوان"}
+                    subtitle={audience(ad)}
+                    state={showing}
+                    facts={[
+                      {
+                        label: "المشاهدات",
+                        value: (
+                          <span data-testid={`ad-impressions-${ad.id}`}>
+                            {count(stat?.impressions)}
+                          </span>
+                        ),
+                      },
+                      { label: "النقرات", value: count(stat?.clicks) },
+                      { label: "نسبة النقر", value: rate(stat?.clickRate) },
+                    ]}
+                    testId={`ad-${ad.id}`}
+                    actions={
+                      canManage ? (
+                        <>
+                          <button
+                            type="button"
+                            className="profile-act-main"
+                            data-testid={`edit-ad-${ad.id}`}
+                            onClick={() =>
+                              openEditor(
+                                {
+                                  ...BLANK,
+                                  id: ad.id,
+                                  titleAr: ad.titleAr,
+                                  targetScope: ad.targetScope,
+                                  provinceId: ad.provinceId ?? "",
+                                  categoryId: ad.categoryId ?? "",
+                                  startsAt: toLocalInput(ad.startsAt),
+                                  endsAt: toLocalInput(ad.endsAt),
+                                  enabled: ad.enabled,
+                                  sortOrder: String(ad.sortOrder),
+                                  slideDurationMs: String(ad.slideDurationMs),
+                                },
+                                ad.imageUrl,
+                              )
+                            }
+                          >
+                            <Icon name="edit" width={16} height={16} />
+                            تعديل
+                          </button>
+                          <button
+                            type="button"
+                            className="profile-act-quiet"
+                            data-testid={`toggle-ad-${ad.id}`}
+                            disabled={mutation.pending}
+                            onClick={() => toggle(ad)}
+                          >
+                            {ad.enabled ? "إيقاف" : "تفعيل"}
+                          </button>
+                          <button
+                            type="button"
+                            className="profile-act-icon"
+                            aria-label="حذف الإعلان"
+                            title="حذف الإعلان"
+                            data-testid={`delete-ad-${ad.id}`}
+                            onClick={() => {
+                              mutation.reset();
+                              setRemoving(ad);
+                            }}
+                          >
+                            <Icon name="trash" width={16} height={16} />
+                          </button>
+                        </>
+                      ) : null
+                    }
+                  >
+                    <p className="ad-schedule">
+                      <Icon name="calendar" width={15} height={15} />
+                      {schedule(ad)}
+                    </p>
+                    <p className="item-card-quiet">
+                      {`يُعرض ${NUMBER.format(ad.slideDurationMs / 1000)} ثوانٍ · الترتيب ${NUMBER.format(ad.sortOrder)}`}
+                    </p>
+                  </ItemCard>
+                );
+              })}
+            </ul>
           </>
         )
       ) : null}
 
-      <ConfirmDialog
+      <FormDialog
         open={draft !== null}
+        wide
+        icon="megaphone"
         title={draft?.id ? "تعديل الإعلان" : "إعلان جديد"}
-        confirmLabel={draft?.id ? "حفظ" : "إضافة"}
-        pending={mutation.pending}
-        error={mutation.error}
-        onConfirm={save}
-        onCancel={closeEditor}
+        description="صورة أفقية، ولمن تظهر، ومتى تبدأ وتنتهي."
+        onClose={closeEditor}
+        locked={mutation.pending}
+        testId="ad-dialog"
+        footer={
+          <div className="button-row">
+            <button
+              type="button"
+              className="button-ghost"
+              disabled={mutation.pending}
+              onClick={closeEditor}
+            >
+              إلغاء
+            </button>
+            <button
+              type="button"
+              className="button-primary"
+              data-testid="save-ad"
+              disabled={mutation.pending}
+              onClick={save}
+            >
+              {mutation.pending ? "جارٍ الحفظ…" : draft?.id ? "حفظ" : "إضافة الإعلان"}
+            </button>
+          </div>
+        }
       >
         {draft ? (
-          <>
+          <div className="ad-editor">
+            {mutation.error ? (
+              <div className="ad-editor-error">
+                <ErrorState error={mutation.error} />
+              </div>
+            ) : null}
             <div className="field ad-image-field">
               <span className="field-label-row">
                 معاينة
@@ -503,133 +560,135 @@ export default function AdsPage() {
               ) : null}
               <input type="hidden" name="imageKey" value={image.key} data-testid="ad-image" />
             </div>
-            <label className="field">
-              <span>العنوان</span>
-              <input
-                value={draft.titleAr}
-                data-testid="ad-title"
-                onChange={(event) => setDraft({ ...draft, titleAr: event.target.value })}
-              />
-            </label>
-            <label className="field">
-              <span>نطاق الاستهداف</span>
-              <select
-                value={draft.targetScope}
-                data-testid="ad-scope"
-                onChange={(event) => setDraft({ ...draft, targetScope: event.target.value })}
-              >
-                {SCOPES.map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {draft.targetScope === "PROVINCE" ? (
+            <div className="stack ad-editor-fields">
               <label className="field">
-                <span>المحافظة</span>
+                <span>العنوان</span>
+                <input
+                  value={draft.titleAr}
+                  data-testid="ad-title"
+                  onChange={(event) => setDraft({ ...draft, titleAr: event.target.value })}
+                />
+              </label>
+              <label className="field">
+                <span>نطاق الاستهداف</span>
                 <select
-                  value={draft.provinceId}
-                  data-testid="ad-province"
-                  onChange={(event) => setDraft({ ...draft, provinceId: event.target.value })}
+                  value={draft.targetScope}
+                  data-testid="ad-scope"
+                  onChange={(event) => setDraft({ ...draft, targetScope: event.target.value })}
                 >
-                  <option value="">اختر محافظة</option>
-                  {(provinces.data?.items ?? []).map((province) => (
-                    <option key={province.id} value={province.id}>
-                      {province.nameAr}
+                  {SCOPES.map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
                     </option>
                   ))}
                 </select>
               </label>
-            ) : null}
-            {draft.targetScope === "CATEGORY" ? (
+              {draft.targetScope === "PROVINCE" ? (
+                <label className="field">
+                  <span>المحافظة</span>
+                  <select
+                    value={draft.provinceId}
+                    data-testid="ad-province"
+                    onChange={(event) => setDraft({ ...draft, provinceId: event.target.value })}
+                  >
+                    <option value="">اختر محافظة</option>
+                    {(provinces.data?.items ?? []).map((province) => (
+                      <option key={province.id} value={province.id}>
+                        {province.nameAr}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+              {draft.targetScope === "CATEGORY" ? (
+                <label className="field">
+                  <span>التصنيف</span>
+                  <select
+                    value={draft.categoryId}
+                    data-testid="ad-category"
+                    onChange={(event) => setDraft({ ...draft, categoryId: event.target.value })}
+                  >
+                    <option value="">اختر تصنيفاً</option>
+                    {(categories.data?.items ?? []).map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.nameAr}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
               <label className="field">
-                <span>التصنيف</span>
-                <select
-                  value={draft.categoryId}
-                  data-testid="ad-category"
-                  onChange={(event) => setDraft({ ...draft, categoryId: event.target.value })}
-                >
-                  <option value="">اختر تصنيفاً</option>
-                  {(categories.data?.items ?? []).map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.nameAr}
-                    </option>
-                  ))}
-                </select>
+                <span>يبدأ في</span>
+                <input
+                  type="datetime-local"
+                  dir="ltr"
+                  value={draft.startsAt}
+                  data-testid="ad-starts"
+                  onChange={(event) => setDraft({ ...draft, startsAt: event.target.value })}
+                />
               </label>
-            ) : null}
-            <label className="field">
-              <span>يبدأ في</span>
-              <input
-                type="datetime-local"
-                dir="ltr"
-                value={draft.startsAt}
-                data-testid="ad-starts"
-                onChange={(event) => setDraft({ ...draft, startsAt: event.target.value })}
-              />
-            </label>
-            <label className="field">
-              <span>ينتهي في</span>
-              <input
-                type="datetime-local"
-                dir="ltr"
-                value={draft.endsAt}
-                data-testid="ad-ends"
-                aria-invalid={Boolean(errors.ends_at || errors.endsAt)}
-                onChange={(event) => setDraft({ ...draft, endsAt: event.target.value })}
-              />
-              {errors.ends_at || errors.endsAt ? (
-                <span className="field-error">{errors.ends_at ?? errors.endsAt}</span>
-              ) : null}
-            </label>
-            <label className="field">
-              <span>الترتيب</span>
-              <input
-                type="number"
-                dir="ltr"
-                min={0}
-                value={draft.sortOrder}
-                data-testid="ad-sort"
-                aria-invalid={Boolean(errors.sortOrder)}
-                onChange={(event) => setDraft({ ...draft, sortOrder: event.target.value })}
-              />
-              <span className="field-hint">الأصغر يظهر أولاً في الشريط.</span>
-              {errors.sortOrder ? <span className="field-error">{errors.sortOrder}</span> : null}
-            </label>
-            <label className="field">
-              <span>مدة العرض (ثوانٍ)</span>
-              <input
-                type="number"
-                dir="ltr"
-                min={1}
-                step={0.5}
-                value={String(Number(draft.slideDurationMs) / 1000 || "")}
-                data-testid="ad-duration"
-                aria-invalid={Boolean(errors.slideDurationMs)}
-                onChange={(event) =>
-                  setDraft({
-                    ...draft,
-                    slideDurationMs: String(Math.round(Number(event.target.value) * 1000)),
-                  })
-                }
-              />
-              {errors.slideDurationMs ? (
-                <span className="field-error">{errors.slideDurationMs}</span>
-              ) : null}
-            </label>
-            <label className="switch-row">
-              <span>مفعّل</span>
-              <input
-                type="checkbox"
-                data-testid="ad-enabled"
-                checked={draft.enabled}
-                onChange={(event) => setDraft({ ...draft, enabled: event.target.checked })}
-              />
-            </label>
-          </>
+              <label className="field">
+                <span>ينتهي في</span>
+                <input
+                  type="datetime-local"
+                  dir="ltr"
+                  value={draft.endsAt}
+                  data-testid="ad-ends"
+                  aria-invalid={Boolean(errors.ends_at || errors.endsAt)}
+                  onChange={(event) => setDraft({ ...draft, endsAt: event.target.value })}
+                />
+                {errors.ends_at || errors.endsAt ? (
+                  <span className="field-error">{errors.ends_at ?? errors.endsAt}</span>
+                ) : null}
+              </label>
+              <label className="field">
+                <span>الترتيب</span>
+                <input
+                  type="number"
+                  dir="ltr"
+                  min={0}
+                  value={draft.sortOrder}
+                  data-testid="ad-sort"
+                  aria-invalid={Boolean(errors.sortOrder)}
+                  onChange={(event) => setDraft({ ...draft, sortOrder: event.target.value })}
+                />
+                <span className="field-hint">الأصغر يظهر أولاً في الشريط.</span>
+                {errors.sortOrder ? <span className="field-error">{errors.sortOrder}</span> : null}
+              </label>
+              <label className="field">
+                <span>مدة العرض (ثوانٍ)</span>
+                <input
+                  type="number"
+                  dir="ltr"
+                  min={1}
+                  step={0.5}
+                  value={String(Number(draft.slideDurationMs) / 1000 || "")}
+                  data-testid="ad-duration"
+                  aria-invalid={Boolean(errors.slideDurationMs)}
+                  onChange={(event) =>
+                    setDraft({
+                      ...draft,
+                      slideDurationMs: String(Math.round(Number(event.target.value) * 1000)),
+                    })
+                  }
+                />
+                {errors.slideDurationMs ? (
+                  <span className="field-error">{errors.slideDurationMs}</span>
+                ) : null}
+              </label>
+              <label className="switch-row">
+                <span>مفعّل</span>
+                <input
+                  type="checkbox"
+                  data-testid="ad-enabled"
+                  checked={draft.enabled}
+                  onChange={(event) => setDraft({ ...draft, enabled: event.target.checked })}
+                />
+              </label>
+            </div>
+          </div>
         ) : null}
-      </ConfirmDialog>
+      </FormDialog>
 
       <ConfirmDialog
         open={removing !== null}

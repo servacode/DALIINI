@@ -2992,3 +2992,50 @@ branch had none.
   pnpm reads them, and the `pnpm` field is gone.
 * After the change: types, lint and unit tests on both apps, both production builds, the site's
   thirteen end-to-end tests and the console's suite, run against the patched builds.
+
+## DECISION-113 — The whole console in the cards' language: one item card, windows for every form, Arabic everywhere
+
+**Date:** 2026-10-09. Asked by the owner: «جهز تصميم لوحة الادمن كاملة قسم قسم».
+
+The accounts and facilities pages had set the language (DECISION-106 to 110); every other
+section still listed its records in tables and edited them in forms laid under the list. Now:
+
+* **One item card** (`ItemCard` in `components/ui/extra.tsx`) for everything that is not a
+  person or a facility: a tinted head with the record's icon (or a glyph — an emergency number,
+  a province's initial), its name and its state in the corner; up to three facts; what the
+  record needs said about itself; and its actions at the foot. Same grid as the identity cards,
+  three across. `ItemMeter` and `ItemChips` are its two helpers. Roles, categories, groups,
+  verification requirements, provinces, advertisements (wearing their own picture), emergency
+  numbers, content pages, review requests, reports, rejection templates and sent notifications
+  are all cards now.
+* **Every add and edit is a window** (`FormDialog`): a role's permissions two areas across, a
+  category's capabilities beside its province switches, an advertisement's slide beside its
+  fields, a province's cities and its launch checklist, a new notification beside its phone
+  preview, a group's icon chosen by picture instead of typed.
+* **The filters apply themselves everywhere**: chips for states and periods, selects on the
+  toolbar, search as you type. The review queue's and audit trail's date boxes became period
+  chips; the browser's own «mm/dd/yyyy» is gone from the filters.
+* **Two real faults fixed on the way.** The category window opened with every capability
+  unticked and no province chosen whatever the category had, so saving it unseen could switch
+  things off; the list now carries each category's flags and switches (and its facility count)
+  and the window opens on them. The settings page compared the type with `boolean` while the
+  backend writes `BOOLEAN`, so maintenance mode showed as a text box reading «false»; it is a
+  switch again, every setting has an Arabic name, a sentence and a unit, and «save» lights up
+  only when something changed.
+* **Arabic where English leaked.** The audit trail and the dashboard read actions out as
+  sentences («أُوقفت منشأة») with the stable code kept small beside them, because the code is
+  what an export and a support request quote; targets are named («طلب مراجعة», not
+  `FacilityApplication`). Product events read as what people did. «Redis», «development» and
+  «م.ث» on the system page, and «(Sentry)» in the setup warnings, are words now. «منذ 5 يوم»
+  became «منذ 5 أيام»: the relative time follows Arabic's counted nouns.
+* **Smaller things:** a contact message has «رد على واتساب», since support answers there by
+  hand (DECISION-102); the chart's day labels no longer run into each other; bars grow from the
+  right; the broadcast section is called «الإشعارات», as the sidebar says.
+* **Kept as tables, on purpose:** the audit trail (a log is read as rows; it keeps the column
+  chooser), the specialties and services (an ordered list with up and down arrows), the team's
+  analytics and the duty import's preview. A card would make each of them harder to scan.
+
+Contract: `adminCategoriesList` items gain `capabilities`, `switches` and `facilityCount`;
+`adminProvincesList` items gain `activeFacilityCount`, `cityCount` and `activeCityCount`. Both
+lists cost the same number of queries whatever their length, and a test holds it. The clients
+were regenerated.

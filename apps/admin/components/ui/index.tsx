@@ -14,6 +14,7 @@ import {
   messageFor,
   requestIdFor,
 } from "../../lib/errors/messages";
+import { actionLabel } from "../../lib/client/audit-terms";
 import { LOCALE, withoutDirectionMarks } from "../../lib/locale";
 
 /**
@@ -741,7 +742,7 @@ export function AuditTimeline({ entries }: { entries: readonly AuditEntry[] }) {
           <time dateTime={entry.createdAt} className="cell-ltr">
             {formatDateTime(entry.createdAt)}
           </time>
-          <strong>{entry.action}</strong>
+          <strong title={entry.action}>{actionLabel(entry.action)}</strong>
           {entry.requestId ? (
             <span className="muted request-id cell-ltr">{entry.requestId}</span>
           ) : null}

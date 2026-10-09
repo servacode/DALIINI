@@ -5,18 +5,15 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { useCan } from "../../../../components/admin-shell";
+import { type IconName, Icon } from "../../../../components/icons";
 import {
-  type Column,
   ConfirmDialog,
-  DataTable,
   EmptyState,
   ErrorState,
   LoadingState,
   PageHeader,
-  formatDateTime,
-  TermBadge,
 } from "../../../../components/ui";
-import { CharCount } from "../../../../components/ui/extra";
+import { CharCount, ItemCard, relativeTime } from "../../../../components/ui/extra";
 import { PAGE_KINDS, SLUG_PATTERN } from "../../../../lib/client/content";
 import { useMutation } from "../../../../lib/client/use-mutation";
 import { useResource } from "../../../../lib/client/use-resource";
@@ -37,6 +34,13 @@ type ContentPage = Readonly<{
 }>;
 
 const NUMBER = new Intl.NumberFormat(LOCALE);
+
+/** What each kind of page wears on its card. */
+const KIND_ICONS: Readonly<Record<string, IconName>> = {
+  LEGAL: "shield",
+  FAQ: "info",
+  PAGE: "layers",
+};
 
 const BLANK = { slug: "", titleAr: "", kind: "PAGE", bodyAr: "" };
 
@@ -92,87 +96,17 @@ export default function ContentPagesPage() {
     router.push(`/content/pages/${encodeURIComponent(slug)}`);
   }
 
-  const columns: readonly Column<ContentPage>[] = [
-    {
-      key: "title",
-      header: "الصفحة",
-      required: true,
-      sortValue: (row) => row.titleAr,
-      render: (row) => (
-        <div className="cell-stack">
-          <Link href={`/content/pages/${encodeURIComponent(row.slug)}`}>{row.titleAr}</Link>
-          <span className="muted cell-ltr">/{row.slug}</span>
-        </div>
-      ),
-    },
-    {
-      key: "kind",
-      header: "النوع",
-      render: (row) => (
-        <span className="cell-stack">
-          <span>{PAGE_KINDS[row.kind] ?? row.kind}</span>
-          {row.builtIn ? <span className="muted">صفحة أساسية</span> : null}
-        </span>
-      ),
-    },
-    {
-      key: "status",
-      header: "الحالة",
-      render: (row) => (
-        <span className="button-row">
-          <TermBadge group="pageState" value={row.published ? "PUBLISHED" : "UNPUBLISHED"} />
-          {row.hasUnpublishedChanges ? <TermBadge group="pageState" value="CHANGES" /> : null}
-        </span>
-      ),
-    },
-    {
-      key: "version",
-      header: "الإصدار",
-      render: (row) => (
-        <span className="cell-stack">
-          <span>{`الإصدار ${NUMBER.format(row.version)}`}</span>
-          <span className="muted">
-            {row.publishedVersion === null
-              ? "لم يُنشر أي إصدار"
-              : `المنشور: ${NUMBER.format(row.publishedVersion)}`}
-          </span>
-        </span>
-      ),
-    },
-    {
-      key: "updatedAt",
-      header: "آخر تعديل",
-      ltr: true,
-      sortValue: (row) => row.updatedAt,
-      sortFirst: "desc",
-      render: (row) => formatDateTime(row.updatedAt),
-    },
-    {
-      key: "actions",
-      header: "",
-      width: "1%",
-      render: (row) => (
-        <Link
-          className="button-ghost"
-          href={`/content/pages/${encodeURIComponent(row.slug)}`}
-          data-testid={`edit-page-${row.slug}`}
-        >
-          {canManage ? "تحرير" : "عرض"}
-        </Link>
-      ),
-    },
-  ];
-
   return (
     <div className="stack">
       <PageHeader
+        eyebrow="المحتوى"
         title="الصفحات"
         description="نصوص المنصة: الشروط والخصوصية والأسئلة الشائعة وكل صفحة تضيفها."
         actions={
           canManage ? (
             <button
               type="button"
-              className="button-primary"
+              className="page-hero-action"
               data-testid="new-page"
               onClick={() => {
                 mutation.reset();
@@ -180,6 +114,7 @@ export default function ContentPagesPage() {
                 setDraft({ ...BLANK });
               }}
             >
+              <Icon name="plus" />
               صفحة جديدة
             </button>
           ) : null
@@ -188,14 +123,56 @@ export default function ContentPagesPage() {
 
       {pages.loading ? <LoadingState /> : null}
       {pages.error ? <ErrorState error={pages.error} onRetry={pages.reload} /> : null}
-      {pages.data ? (
-        <DataTable
-          caption="الصفحات"
-          columns={columns}
-          rows={pages.data.items}
-          rowKey={(row) => row.slug}
-          empty={<EmptyState title="لا صفحات بعد" />}
-        />
+      {pages.data && pages.data.items.length === 0 ? <EmptyState title="لا صفحات بعد" /> : null}
+      {pages.data && pages.data.items.length > 0 ? (
+        <ul className="profile-grid" data-testid="pages">
+          {pages.data.items.map((row, index) => {
+            const href = `/content/pages/${encodeURIComponent(row.slug)}`;
+            return (
+              <ItemCard
+                key={row.slug}
+                index={index}
+                icon={KIND_ICONS[row.kind] ?? "layers"}
+                tone={
+                  !row.published ? "neutral" : row.hasUnpublishedChanges ? "gold" : "brand"
+                }
+                title={row.titleAr}
+                subtitle={<span dir="ltr">/{row.slug}</span>}
+                state={
+                  !row.published
+                    ? { label: "غير منشورة" }
+                    : row.hasUnpublishedChanges
+                      ? { label: "تعديلات تنتظر النشر", tone: "warning" }
+                      : { label: "منشورة", tone: "positive" }
+                }
+                facts={[
+                  { label: "الإصدار الحالي", value: NUMBER.format(row.version) },
+                  {
+                    label: "المنشور للعامة",
+                    value:
+                      row.publishedVersion === null ? "لا شيء" : NUMBER.format(row.publishedVersion),
+                  },
+                  { label: "آخر تعديل", value: relativeTime(row.updatedAt) },
+                ]}
+                testId={`page-${row.slug}`}
+                actions={
+                  <Link
+                    className="profile-act-main"
+                    href={href}
+                    data-testid={`edit-page-${row.slug}`}
+                  >
+                    <Icon name={canManage ? "edit" : "eye"} width={16} height={16} />
+                    {canManage ? "تحرير الصفحة" : "عرض الصفحة"}
+                  </Link>
+                }
+              >
+                <p className="item-card-quiet">
+                  {`${PAGE_KINDS[row.kind] ?? row.kind}${row.builtIn ? " · صفحة أساسية يربطها التطبيق، تُخفى ولا تُحذف" : ""}`}
+                </p>
+              </ItemCard>
+            );
+          })}
+        </ul>
       ) : null}
 
       <ConfirmDialog

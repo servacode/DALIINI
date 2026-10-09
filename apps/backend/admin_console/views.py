@@ -279,7 +279,7 @@ def system_warnings() -> list[str]:
     if str(getattr(settings, "OTP_PROVIDER", "")).lower() in {"development", "test"}:
         warnings.append("رموز الدخول في وضع التطوير: لن تصل رسائل التحقق إلى الهواتف.")
     if not getattr(settings, "SENTRY_DSN", ""):
-        warnings.append("تتبع الأخطاء (Sentry) غير مفعّل.")
+        warnings.append("تتبع الأخطاء غير مفعّل.")
     signals = {signal.name: signal for signal in ServiceSignal.objects.all()}
     now = timezone.now()
     for label, check in (

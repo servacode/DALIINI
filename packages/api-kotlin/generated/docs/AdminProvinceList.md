@@ -4,7 +4,7 @@
 ## Properties
 | Name | Type | Description | Notes |
 | ------------ | ------------- | ------------- | ------------- |
-| **items** | [**kotlin.collections.List&lt;AdminProvince&gt;**](AdminProvince.md) |  |  |
+| **items** | [**kotlin.collections.List&lt;AdminProvinceCard&gt;**](AdminProvinceCard.md) |  |  |
 
 
 

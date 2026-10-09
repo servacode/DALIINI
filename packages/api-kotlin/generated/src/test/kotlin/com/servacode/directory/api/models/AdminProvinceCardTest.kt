@@ -18,12 +18,12 @@ package com.servacode.directory.api.models
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
-import com.servacode.directory.api.models.AdminProvince
+import com.servacode.directory.api.models.AdminProvinceCard
 
-class AdminProvinceTest : ShouldSpec() {
+class AdminProvinceCardTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of AdminProvince
-        //val modelInstance = AdminProvince()
+        // uncomment below to create an instance of AdminProvinceCard
+        //val modelInstance = AdminProvinceCard()
 
         // to test the property `id`
         should("test id") {
@@ -59,6 +59,24 @@ class AdminProvinceTest : ShouldSpec() {
         should("test sortOrder") {
             // uncomment below to test the property
             //modelInstance.sortOrder shouldBe ("TODO")
+        }
+
+        // to test the property `activeFacilityCount`
+        should("test activeFacilityCount") {
+            // uncomment below to test the property
+            //modelInstance.activeFacilityCount shouldBe ("TODO")
+        }
+
+        // to test the property `cityCount`
+        should("test cityCount") {
+            // uncomment below to test the property
+            //modelInstance.cityCount shouldBe ("TODO")
+        }
+
+        // to test the property `activeCityCount`
+        should("test activeCityCount") {
+            // uncomment below to test the property
+            //modelInstance.activeCityCount shouldBe ("TODO")
         }
 
     }

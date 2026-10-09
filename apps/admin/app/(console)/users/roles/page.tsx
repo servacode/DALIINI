@@ -4,17 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { useCan } from "../../../../components/admin-shell";
-import {
-  type Column,
-  ConfirmDialog,
-  DataTable,
-  ErrorState,
-  LoadingState,
-  PageHeader,
-  StatusBadge,
-  Toast,
-} from "../../../../components/ui";
-import { SidePanel } from "../../../../components/ui/extra";
+import { Icon } from "../../../../components/icons";
+import { ConfirmDialog, ErrorState, LoadingState, PageHeader, Toast } from "../../../../components/ui";
+import { FormDialog, ItemCard, ItemChips, ItemMeter } from "../../../../components/ui/extra";
 import { type PermissionArea, areasFor, permissionLabel } from "../../../../lib/client/permissions";
 import { useMutation } from "../../../../lib/client/use-mutation";
 import { useResource } from "../../../../lib/client/use-resource";
@@ -99,93 +91,21 @@ export default function RolesPage() {
     roles.reload();
   }
 
-  const columns: readonly Column<Role>[] = [
-    {
-      key: "name",
-      header: "الدور",
-      sortValue: (row) => row.name,
-      render: (row) => (
-        <span className="stack-tight">
-          <strong>{row.name}</strong>
-          {row.locked ? <StatusBadge tone="brand">دور المنصة</StatusBadge> : null}
-        </span>
-      ),
-    },
-    {
-      key: "permissions",
-      header: "الصلاحيات",
-      sortValue: (row) => (row.locked ? Number.MAX_SAFE_INTEGER : row.permissions.length),
-      render: (row) =>
-        row.locked ? (
-          <span className="muted">كل الصلاحيات</span>
-        ) : (
-          <span className="tabular">
-            {NUMBER.format(row.permissions.length)}
-            {total ? <span className="muted"> من {NUMBER.format(total)}</span> : null}
-          </span>
-        ),
-    },
-    {
-      key: "holders",
-      header: "الحاملون",
-      sortValue: (row) => row.holderCount,
-      render: (row) =>
-        row.holderCount > 0 ? (
-          <Link className="tabular" href={`/users?role=${encodeURIComponent(row.code)}`}>
-            {NUMBER.format(row.holderCount)}
-          </Link>
-        ) : (
-          <span className="tabular muted">{NUMBER.format(0)}</span>
-        ),
-    },
-    {
-      key: "actions",
-      header: "",
-      width: "1%",
-      render: (row) =>
-        row.locked ? null : (
-          <div className="button-row">
-            <button
-              type="button"
-              className="button-ghost"
-              data-testid={`edit-role-${row.code}`}
-              onClick={() => open(row)}
-            >
-              {canManage ? "تعديل" : "عرض"}
-            </button>
-            {canManage ? (
-              <button
-                type="button"
-                className="button-ghost"
-                data-testid={`delete-role-${row.code}`}
-                disabled={row.holderCount > 0}
-                title={row.holderCount > 0 ? "لا يُحذف دور يحمله أحد." : undefined}
-                onClick={() => {
-                  mutation.reset();
-                  setDeleting(row);
-                }}
-              >
-                حذف
-              </button>
-            ) : null}
-          </div>
-        ),
-    },
-  ];
-
   return (
     <div className="stack">
       <PageHeader
+        eyebrow="إدارة المشغّلين"
         title="الأدوار والصلاحيات"
         description="لكل دور اسم ومجموعة صلاحيات. يصل التغيير إلى كل من يحمل الدور في طلبه التالي."
         actions={
           canManage ? (
             <button
               type="button"
-              className="button-primary"
+              className="page-hero-action"
               data-testid="new-role"
               onClick={() => open(null)}
             >
+              <Icon name="plus" />
               دور جديد
             </button>
           ) : undefined
@@ -194,17 +114,30 @@ export default function RolesPage() {
       {roles.loading || catalogue.loading ? <LoadingState /> : null}
       {roles.error ? <ErrorState error={roles.error} onRetry={roles.reload} /> : null}
       {catalogue.error ? <ErrorState error={catalogue.error} onRetry={catalogue.reload} /> : null}
-      {roles.data ? (
-        <DataTable
-          caption="الأدوار"
-          columns={columns}
-          rows={roles.data.items}
-          rowKey={(row) => String(row.id)}
-        />
+      {roles.data && catalogue.data ? (
+        <ul className="profile-grid" data-testid="roles">
+          {roles.data.items.map((role, index) => (
+            <RoleCard
+              key={role.id}
+              role={role}
+              index={index}
+              areas={areas}
+              total={total}
+              canManage={canManage}
+              onEdit={() => open(role)}
+              onDelete={() => {
+                mutation.reset();
+                setDeleting(role);
+              }}
+            />
+          ))}
+        </ul>
       ) : null}
 
-      <SidePanel
+      <FormDialog
         open={draft !== null}
+        wide
+        icon="shield"
         title={draft?.id === null ? "دور جديد" : viewing ? (draft?.name ?? "") : "تعديل الدور"}
         description={
           draft
@@ -215,22 +148,17 @@ export default function RolesPage() {
         locked={mutation.pending}
         testId="role-sheet"
         footer={
-          viewing ? null : (
-            <div className="stack">
+          viewing ? (
+            <button type="button" className="button-ghost" onClick={() => setDraft(null)}>
+              إغلاق
+            </button>
+          ) : (
+            <>
               {/* Beside the button, so a refusal is seen however far down the list the edit was. */}
               {mutation.error && Object.keys(errors).length === 0 ? (
                 <ErrorState error={mutation.error} />
               ) : null}
               <div className="button-row">
-                <button
-                  type="button"
-                  className="button-primary"
-                  disabled={mutation.pending || !draft?.name.trim()}
-                  data-testid="save-role"
-                  onClick={save}
-                >
-                  {mutation.pending ? "جارٍ الحفظ…" : "حفظ"}
-                </button>
                 <button
                   type="button"
                   className="button-ghost"
@@ -239,8 +167,17 @@ export default function RolesPage() {
                 >
                   إلغاء
                 </button>
+                <button
+                  type="button"
+                  className="button-primary"
+                  disabled={mutation.pending || !draft?.name.trim()}
+                  data-testid="save-role"
+                  onClick={save}
+                >
+                  {mutation.pending ? "جارٍ الحفظ…" : draft?.id === null ? "إضافة الدور" : "حفظ"}
+                </button>
               </div>
-            </div>
+            </>
           )
         }
       >
@@ -252,6 +189,7 @@ export default function RolesPage() {
                 <input
                   value={draft.name}
                   maxLength={120}
+                  placeholder="مثال: مراجع الطلبات"
                   data-testid="role-name"
                   aria-invalid={Boolean(errors.name)}
                   onChange={(event) => setDraft({ ...draft, name: event.target.value })}
@@ -260,18 +198,20 @@ export default function RolesPage() {
               </label>
             )}
             {errors.permissions ? <p className="field-error">{errors.permissions}</p> : null}
-            {areas.map((area) => (
-              <AreaSection
-                key={area.key}
-                area={area}
-                chosen={draft.permissions}
-                readOnly={viewing}
-                onToggle={toggle}
-              />
-            ))}
+            <div className="permission-grid">
+              {areas.map((area) => (
+                <AreaSection
+                  key={area.key}
+                  area={area}
+                  chosen={draft.permissions}
+                  readOnly={viewing}
+                  onToggle={toggle}
+                />
+              ))}
+            </div>
           </div>
         ) : null}
-      </SidePanel>
+      </FormDialog>
 
       <ConfirmDialog
         open={deleting !== null}
@@ -287,6 +227,115 @@ export default function RolesPage() {
 
       <Toast message={toast} onDismiss={() => setToast(null)} />
     </div>
+  );
+}
+
+function RoleCard({
+  role,
+  index,
+  areas,
+  total,
+  canManage,
+  onEdit,
+  onDelete,
+}: {
+  role: Role;
+  index: number;
+  areas: readonly PermissionArea[];
+  total: number;
+  canManage: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const held = new Set(role.permissions);
+  const covered = areas
+    .filter((area) => area.permissions.some((permission) => held.has(permission.code)))
+    .map((area) => area.label);
+  const share = total ? Math.round((role.permissions.length / total) * 100) : 0;
+  return (
+    <ItemCard
+      index={index}
+      icon="shield"
+      tone={role.locked ? "brand" : role.holderCount > 0 ? "positive" : "neutral"}
+      title={role.name}
+      subtitle={
+        role.locked
+          ? "دور مالك المنصة"
+          : role.holderCount > 0
+            ? `يحمله ${NUMBER.format(role.holderCount)} من المشغّلين`
+            : "لا يحمله أحد بعد"
+      }
+      state={
+        role.locked
+          ? { label: "دور المنصة", tone: "brand" }
+          : role.holderCount > 0
+            ? { label: "مُسنَد", tone: "positive" }
+            : { label: "غير مُسنَد" }
+      }
+      facts={[
+        {
+          label: "الصلاحيات",
+          value: role.locked
+            ? "كلها"
+            : `${NUMBER.format(role.permissions.length)} من ${NUMBER.format(total)}`,
+        },
+        {
+          label: "الحاملون",
+          value:
+            role.holderCount > 0 ? (
+              <Link href={`/users?role=${encodeURIComponent(role.code)}`}>
+                {NUMBER.format(role.holderCount)}
+              </Link>
+            ) : (
+              NUMBER.format(0)
+            ),
+        },
+      ]}
+      testId={`role-${role.code}`}
+      actions={
+        role.locked ? (
+          <span className="item-card-quiet">يملك كل الصلاحيات دائماً، ولا يُعدَّل.</span>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="profile-act-main"
+              data-testid={`edit-role-${role.code}`}
+              onClick={onEdit}
+            >
+              <Icon name={canManage ? "edit" : "eye"} width={16} height={16} />
+              {canManage ? "تعديل الصلاحيات" : "عرض الصلاحيات"}
+            </button>
+            {canManage ? (
+              <button
+                type="button"
+                className="profile-act-icon"
+                aria-label="حذف الدور"
+                data-testid={`delete-role-${role.code}`}
+                disabled={role.holderCount > 0}
+                title={role.holderCount > 0 ? "لا يُحذف دور يحمله أحد." : "حذف الدور"}
+                onClick={onDelete}
+              >
+                <Icon name="trash" width={16} height={16} />
+              </button>
+            ) : null}
+          </>
+        )
+      }
+    >
+      <ItemMeter
+        value={role.locked ? total : role.permissions.length}
+        total={total}
+        label={
+          role.locked ? "كل صلاحيات المنصة" : `${NUMBER.format(share)}٪ من صلاحيات المنصة`
+        }
+      />
+      <ItemChips
+        items={role.locked ? areas.map((area) => area.label) : covered}
+        max={3}
+        empty="لا صلاحيات بعد."
+      />
+    </ItemCard>
   );
 }
 
@@ -315,10 +364,7 @@ function AreaSection({
       </legend>
       {area.permissions.map((permission) => (
         <label key={permission.code} className="switch-row">
-          <span>
-            {permissionLabel(permission.code, permission.label)}
-            <code className="permission-code">{permission.code}</code>
-          </span>
+          <span>{permissionLabel(permission.code, permission.label)}</span>
           <input
             type="checkbox"
             data-testid={`perm-${permission.code}`}

@@ -15,7 +15,7 @@
 
 package com.servacode.directory.api.multiplatform.models
 
-import com.servacode.directory.api.multiplatform.models.AdminCategory
+import com.servacode.directory.api.multiplatform.models.AdminCategoryCard
 
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
@@ -28,9 +28,9 @@ import kotlinx.serialization.encoding.*
  */
 @Serializable
 
-data class AdminCategoryList (
+data class AdminCategoryCardList (
 
-    @SerialName(value = "items") @Required val items: kotlin.collections.List<AdminCategory>
+    @SerialName(value = "items") @Required val items: kotlin.collections.List<AdminCategoryCard>
 
 ) {
 

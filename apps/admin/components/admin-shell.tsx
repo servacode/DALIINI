@@ -127,7 +127,7 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
         label: "الإشعارات",
         icon: "bell",
         pages: [
-          { href: "/users/broadcast", label: "إرسال إشعار", permission: "admin.notifications.send" },
+          { href: "/users/broadcast", label: "الإشعارات", permission: "admin.notifications.send" },
         ],
       },
     ],

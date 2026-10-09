@@ -467,7 +467,7 @@ def check_errors() -> Check:
     if _development():
         return Check("errors", "off", "تتبع الأخطاء غير مفعّل في بيئة التطوير.")
     return Check(
-        "errors", "warning", "تتبع الأخطاء (Sentry) غير مفعّل: لن نعرف بالأعطال إلا من الناس."
+        "errors", "warning", "تتبع الأخطاء غير مفعّل: لن نعرف بالأعطال إلا من الناس."
     )
 
 

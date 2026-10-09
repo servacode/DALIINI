@@ -3,12 +3,10 @@
 import { useState } from "react";
 
 import { useIdentity } from "../../../components/admin-shell";
-import { LineChart } from "../../../components/charts";
+import { BarChart, LineChart } from "../../../components/charts";
 import { ExportButton } from "../../../components/export-button";
 import { type Period, PeriodPicker, lastDays, periodLabel } from "../../../components/period-picker";
 import {
-  type Column,
-  DataTable,
   ErrorState,
   LoadingState,
   PageHeader,
@@ -51,6 +49,28 @@ type Day = Readonly<{
 }>;
 
 const NUMBER = new Intl.NumberFormat(LOCALE);
+
+/** What each product event means, in words (DECISION-113); the code stays in the export. */
+const EVENT_LABELS: Readonly<Record<string, string>> = {
+  ad_click: "نقر على إعلان",
+  ad_impression: "مشاهدة إعلان",
+  app_open: "فتح التطبيق",
+  application_status_view: "متابعة حالة طلب",
+  category_open: "فتح تصنيف",
+  directions_start: "بدء الاتجاهات إلى منشأة",
+  facility_view: "فتح صفحة منشأة",
+  home_view: "فتح الرئيسية",
+  location_permission_result: "الرد على إذن الموقع",
+  map_open: "فتح الخريطة",
+  marker_open: "فتح منشأة من الخريطة",
+  owner_draft_create: "بدء تسجيل منشأة",
+  owner_submit: "إرسال منشأة للمراجعة",
+  phone_tap: "اتصال بمنشأة",
+  province_selected: "اختيار محافظة",
+  rating_submit: "إرسال تقييم",
+  search_submitted: "بحث",
+  search_zero_results: "بحث بلا نتائج",
+};
 const DECIMAL = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 1 });
 
 /** A period as the backend echoes it: `to` is the exclusive next midnight. */
@@ -99,24 +119,6 @@ export default function AnalyticsPage() {
   const line = (key: Exclude<keyof Day, "date">) => days.map((day) => day[key]);
   const { permissions } = useIdentity();
   const data = analytics.data;
-
-  const columns: readonly Column<{ name: string; count: number }>[] = [
-    {
-      key: "name",
-      header: "الحدث",
-      ltr: true,
-      sortValue: (row) => row.name,
-      render: (row) => <code>{row.name}</code>,
-    },
-    {
-      key: "count",
-      header: "العدد",
-      ltr: true,
-      sortValue: (row) => row.count,
-      sortFirst: "desc",
-      render: (row) => NUMBER.format(row.count),
-    },
-  ];
 
   const hours = (value: number | null) => (value === null ? "—" : `${DECIMAL.format(value)} س`);
   const exports = EXPORTS.filter((item) => permissions.includes(item.permission));
@@ -248,13 +250,22 @@ export default function AnalyticsPage() {
             </div>
           </Panel>
 
-          <Panel title="أحداث المنتج" description="العدد الإجمالي لكل حدث منذ البداية." flush>
-            <DataTable
-              caption="أحداث المنتج"
-              columns={columns}
-              rows={data.events}
-              rowKey={(row) => row.name}
-            />
+          <Panel title="ما يفعله الناس في التطبيق" description="العدد الإجمالي لكل حدث منذ البداية.">
+            {data.events.length === 0 ? (
+              <p className="muted">لم يُسجَّل أي حدث بعد.</p>
+            ) : (
+              <BarChart
+                caption="أحداث المنتج"
+                bars={[...data.events]
+                  .sort((x, y) => y.count - x.count)
+                  .map((event) => ({
+                    key: event.name,
+                    label: EVENT_LABELS[event.name] ?? event.name,
+                    value: event.count,
+                    color: "var(--ad-brand)",
+                  }))}
+              />
+            )}
           </Panel>
         </>
       ) : null}

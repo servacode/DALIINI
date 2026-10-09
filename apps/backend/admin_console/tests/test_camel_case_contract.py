@@ -94,6 +94,9 @@ def test_category_list_is_camel_case(admin_client: APIClient, facility: Facility
         "specialization",
         "active",
         "sortOrder",
+        "capabilities",
+        "switches",
+        "facilityCount",
     }
 
 
@@ -109,7 +112,17 @@ def test_category_group_list_is_camel_case(admin_client: APIClient, facility: Fa
 def test_province_list_is_camel_case(admin_client: APIClient, facility: Facility) -> None:
     body = admin_client.get("/api/v1/admin/provinces/").json()
 
-    assert _keys(body["items"]) == {"id", "code", "nameAr", "nameEn", "active", "sortOrder"}
+    assert _keys(body["items"]) == {
+        "id",
+        "code",
+        "nameAr",
+        "nameEn",
+        "active",
+        "sortOrder",
+        "activeFacilityCount",
+        "cityCount",
+        "activeCityCount",
+    }
 
 
 @pytest.mark.django_db

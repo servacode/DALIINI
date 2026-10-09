@@ -18,13 +18,13 @@ package com.servacode.directory.api.models
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
-import com.servacode.directory.api.models.AdminCategoryList
-import com.servacode.directory.api.models.AdminCategory
+import com.servacode.directory.api.models.AdminCategoryCardList
+import com.servacode.directory.api.models.AdminCategoryCard
 
-class AdminCategoryListTest : ShouldSpec() {
+class AdminCategoryCardListTest : ShouldSpec() {
     init {
-        // uncomment below to create an instance of AdminCategoryList
-        //val modelInstance = AdminCategoryList()
+        // uncomment below to create an instance of AdminCategoryCardList
+        //val modelInstance = AdminCategoryCardList()
 
         // to test the property `items`
         should("test items") {

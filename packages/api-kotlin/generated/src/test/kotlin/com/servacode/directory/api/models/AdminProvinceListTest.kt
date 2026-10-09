@@ -19,7 +19,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.models.AdminProvinceList
-import com.servacode.directory.api.models.AdminProvince
+import com.servacode.directory.api.models.AdminProvinceCard
 
 class AdminProvinceListTest : ShouldSpec() {
     init {

@@ -10,11 +10,11 @@ import kotlinx.serialization.Serializable
 import com.servacode.directory.api.models.AdminCapabilities
 import com.servacode.directory.api.models.AdminCapabilitiesRequest
 import com.servacode.directory.api.models.AdminCategory
+import com.servacode.directory.api.models.AdminCategoryCardList
 import com.servacode.directory.api.models.AdminCategoryCreateRequest
 import com.servacode.directory.api.models.AdminCategoryGroup
 import com.servacode.directory.api.models.AdminCategoryGroupList
 import com.servacode.directory.api.models.AdminCategoryGroupRequest
-import com.servacode.directory.api.models.AdminCategoryList
 import com.servacode.directory.api.models.AdminCategoryProvinceRequest
 import com.servacode.directory.api.models.AdminCategoryUpdateRequest
 import com.servacode.directory.api.models.AdminId
@@ -31,16 +31,16 @@ interface AdminTaxonomyApi {
     /**
      * GET api/v1/admin/categories/
      * List categories
-     * 
+     * Each category with its capability flags, its province switches and how many facilities it holds: everything its card and settings window show, in one query count whatever the number of categories.
      * Responses:
      *  - 200: 
      *  - 401: No valid access token was supplied.
      *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *
-     * @return [AdminCategoryList]
+     * @return [AdminCategoryCardList]
      */
     @GET("api/v1/admin/categories/")
-    suspend fun adminCategoriesList(): Response<AdminCategoryList>
+    suspend fun adminCategoriesList(): Response<AdminCategoryCardList>
 
     /**
      * PUT api/v1/admin/categories/{category_id}/capabilities/

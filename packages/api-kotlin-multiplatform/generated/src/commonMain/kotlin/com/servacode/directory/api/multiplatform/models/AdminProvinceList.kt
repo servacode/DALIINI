@@ -15,7 +15,7 @@
 
 package com.servacode.directory.api.multiplatform.models
 
-import com.servacode.directory.api.multiplatform.models.AdminProvince
+import com.servacode.directory.api.multiplatform.models.AdminProvinceCard
 
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
@@ -30,7 +30,7 @@ import kotlinx.serialization.encoding.*
 
 data class AdminProvinceList (
 
-    @SerialName(value = "items") @Required val items: kotlin.collections.List<AdminProvince>
+    @SerialName(value = "items") @Required val items: kotlin.collections.List<AdminProvinceCard>
 
 ) {
 

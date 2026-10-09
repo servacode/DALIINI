@@ -3,6 +3,7 @@
 from typing import Any
 from uuid import UUID
 
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import (
     extend_schema,
@@ -12,14 +13,15 @@ from rest_framework.response import Response
 from accounts.authentication import AuthenticatedRequest
 from audit.services import record_audit
 from core.openapi import NOT_FOUND_404, VALIDATION_400, protected
+from facilities.models import Facility
 from locations.models import City, Province
 
 from .schemas import (
     AdminCityAdminListSerializer,
     AdminCityAdminSerializer,
     AdminCityUpdateRequestSerializer,
+    AdminProvinceCardSerializer,
     AdminProvinceListSerializer,
-    AdminProvinceSerializer,
     AdminProvinceUpdatedSerializer,
     AdminProvinceUpdateRequestSerializer,
 )
@@ -39,16 +41,33 @@ class ProvinceListView(AdminView):
         responses={200: AdminProvinceListSerializer, **protected()},
     )
     def get(self, request: AuthenticatedRequest) -> Response:
-        return Response(
-            {
-                "items": AdminProvinceSerializer(
-                    Province.objects.order_by("sort_order", "name_ar").values(
-                        "id", "code", "name_ar", "name_en", "active", "sort_order"
-                    ),
-                    many=True,
-                ).data
-            }
+        # Counted apart and joined in Python: two counts over two relations in one query
+        # would multiply each other.
+        rows = Province.objects.order_by("sort_order", "name_ar").annotate(
+            city_count=Count("cities"),
+            active_city_count=Count("cities", filter=Q(cities__active=True)),
         )
+        facilities = dict(
+            Facility.objects.filter(status=Facility.Status.ACTIVE)
+            .values_list("province_id")
+            .annotate(n=Count("id"))
+            .values_list("province_id", "n")
+        )
+        items = [
+            {
+                "id": row.pk,
+                "code": row.code,
+                "name_ar": row.name_ar,
+                "name_en": row.name_en,
+                "active": row.active,
+                "sort_order": row.sort_order,
+                "city_count": row.city_count,
+                "active_city_count": row.active_city_count,
+                "active_facility_count": facilities.get(row.pk, 0),
+            }
+            for row in rows
+        ]
+        return Response({"items": AdminProvinceCardSerializer(items, many=True).data})
 
 
 class ProvinceDetailView(AdminView):

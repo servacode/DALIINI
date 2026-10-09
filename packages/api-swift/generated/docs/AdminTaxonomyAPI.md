@@ -24,10 +24,12 @@ Method | HTTP request | Description
 
 # **adminCategoriesList**
 ```swift
-    open class func adminCategoriesList(completion: @escaping (_ data: AdminCategoryList?, _ error: Error?) -> Void)
+    open class func adminCategoriesList(completion: @escaping (_ data: AdminCategoryCardList?, _ error: Error?) -> Void)
 ```
 
 List categories
+
+Each category with its capability flags, its province switches and how many facilities it holds: everything its card and settings window show, in one query count whatever the number of categories.
 
 ### Example
 ```swift
@@ -53,7 +55,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**AdminCategoryList**](AdminCategoryList.md)
+[**AdminCategoryCardList**](AdminCategoryCardList.md)
 
 ### Authorization
 

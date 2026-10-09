@@ -1,0 +1,10 @@
+
+# AdminCategoryCardList
+
+## Properties
+| Name | Type | Description | Notes |
+| ------------ | ------------- | ------------- | ------------- |
+| **items** | [**kotlin.collections.List&lt;AdminCategoryCard&gt;**](AdminCategoryCard.md) |  |  |
+
+
+

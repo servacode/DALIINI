@@ -12,7 +12,8 @@ import {
   StatusBadge,
   Toast,
 } from "../../../../components/ui";
-import { CharCount } from "../../../../components/ui/extra";
+import { Icon } from "../../../../components/icons";
+import { CharCount, FormDialog } from "../../../../components/ui/extra";
 import { useMutation } from "../../../../lib/client/use-mutation";
 import { useResource } from "../../../../lib/client/use-resource";
 import { type ApiErrorBody, fieldErrorsFor } from "../../../../lib/errors/messages";
@@ -164,17 +165,19 @@ export default function FaqPage() {
   return (
     <div className="stack">
       <PageHeader
+        eyebrow="المحتوى"
         title="الأسئلة الشائعة"
         description="الأسئلة وأجوبتها كما تظهر في قسم المساعدة في التطبيق."
         actions={
           canManage ? (
             <button
               type="button"
-              className="button-primary"
+              className="page-hero-action"
               data-testid="new-faq"
               disabled={editing === "new"}
               onClick={() => start(null)}
             >
+              <Icon name="plus" />
               سؤال جديد
             </button>
           ) : null
@@ -195,20 +198,14 @@ export default function FaqPage() {
               ) : null}
             </div>
           </header>
-          {editing === "new" ? <div className="faq-new">{editor}</div> : null}
-          {items.length === 0 && editing !== "new" ? (
+          {items.length === 0 ? (
             <EmptyState
               title="لا أسئلة بعد"
               hint="أضف أول سؤال، وانشره حين يكون جاهزاً."
             />
           ) : (
             <ol className="faq-list" data-testid="faq-list">
-              {items.map((entry, index) =>
-                editing === entry.id ? (
-                  <li key={entry.id} className="faq-item" data-editing="true">
-                    {editor}
-                  </li>
-                ) : (
+              {items.map((entry, index) => (
                   <li
                     key={entry.id}
                     className="faq-item"
@@ -294,12 +291,24 @@ export default function FaqPage() {
                       ) : null}
                     </div>
                   </li>
-                ),
-              )}
+                ))}
             </ol>
           )}
         </section>
       ) : null}
+
+      <FormDialog
+        open={editor !== null}
+        wide
+        icon="info"
+        title={editing === "new" ? "سؤال جديد" : "تعديل السؤال"}
+        description="يظهر السؤال وجوابه في قسم المساعدة في التطبيق والموقع متى نُشر."
+        onClose={stop}
+        locked={mutation.pending}
+        testId="faq-dialog"
+      >
+        {editor}
+      </FormDialog>
 
       <ConfirmDialog
         open={removing !== null}

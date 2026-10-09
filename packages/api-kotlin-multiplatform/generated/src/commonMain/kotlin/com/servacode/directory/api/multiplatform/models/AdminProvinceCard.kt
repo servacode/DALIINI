@@ -21,7 +21,7 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- * 
+ * A province with what its card counts (DECISION-113).
  *
  * @param id 
  * @param code 
@@ -29,10 +29,13 @@ import kotlinx.serialization.encoding.*
  * @param nameEn 
  * @param active 
  * @param sortOrder 
+ * @param activeFacilityCount 
+ * @param cityCount 
+ * @param activeCityCount 
  */
 @Serializable
 
-data class AdminProvince (
+data class AdminProvinceCard (
 
     @SerialName(value = "id") @Required val id: kotlin.String,
 
@@ -44,7 +47,13 @@ data class AdminProvince (
 
     @SerialName(value = "active") @Required val active: kotlin.Boolean,
 
-    @SerialName(value = "sortOrder") @Required val sortOrder: kotlin.Int
+    @SerialName(value = "sortOrder") @Required val sortOrder: kotlin.Int,
+
+    @SerialName(value = "activeFacilityCount") @Required val activeFacilityCount: kotlin.Int,
+
+    @SerialName(value = "cityCount") @Required val cityCount: kotlin.Int,
+
+    @SerialName(value = "activeCityCount") @Required val activeCityCount: kotlin.Int
 
 ) {
 

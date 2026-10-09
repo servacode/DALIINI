@@ -5,23 +5,19 @@ import { useState } from "react";
 
 import { useCan } from "../../../components/admin-shell";
 import { ExportButton } from "../../../components/export-button";
+import { Icon } from "../../../components/icons";
 import {
-  type Column,
   ConfirmDialog,
-  DataTable,
   EmptyState,
   ErrorState,
-  FilterBar,
   LoadingState,
   PageHeader,
-  StatusBadge,
-  Toast,
-  formatDateTime,
-  termsFor,
-  labelsFor,
   Pagination,
-  pageSummary,
+  Toast,
+  labelsFor,
+  termsFor,
 } from "../../../components/ui";
+import { FilterChips, ItemCard, relativeTime } from "../../../components/ui/extra";
 import { useMutation } from "../../../lib/client/use-mutation";
 import { useCursorPage } from "../../../lib/client/use-cursor-page";
 import { useUrlFilters } from "../../../lib/client/use-url-filters";
@@ -118,117 +114,38 @@ export default function ReportsPage() {
 
   const allChosen = selectable.length > 0 && chosen.length === selectable.length;
 
-  const columns: readonly Column<Report>[] = [
-    ...(canManage && selectable.length > 0
-      ? [
-          {
-            key: "select",
-            width: "1%",
-            header: (
-              <input
-                type="checkbox"
-                aria-label="اختيار كل البلاغات المفتوحة"
-                data-testid="select-all"
-                checked={allChosen}
-                onChange={() => setSelected(allChosen ? [] : selectable.map((row) => row.id))}
-              />
-            ),
-            render: (row: Report) =>
-              row.status === "OPEN" ? (
-                <input
-                  type="checkbox"
-                  aria-label={`اختيار بلاغ ${row.facilityNameAr}`}
-                  data-testid={`select-${row.id}`}
-                  checked={selected.includes(row.id)}
-                  onChange={() => toggle(row.id)}
-                />
-              ) : null,
-          } as Column<Report>,
-        ]
-      : []),
-    {
-      key: "facility",
-      header: "المنشأة",
-      render: (row) => <Link href={`/facilities/${row.facilityId}`}>{row.facilityNameAr}</Link>,
-    },
-    { key: "reason", header: "السبب", render: (row) => REASONS[row.reason] ?? row.reason },
-    {
-      key: "note",
-      header: "الملاحظة",
-      render: (row) => (row.note ? row.note : <span className="muted">—</span>),
-    },
-    {
-      key: "status",
-      header: "الحالة",
-      render: (row) => (
-        <StatusBadge tone={STATUS[row.status]?.tone ?? "neutral"}>
-          {STATUS[row.status]?.label ?? row.status}
-        </StatusBadge>
-      ),
-    },
-    {
-      key: "createdAt",
-      header: "تاريخ البلاغ",
-      ltr: true,
-      render: (row) => formatDateTime(row.createdAt),
-    },
-    {
-      key: "actions",
-      header: "",
-      width: "1%",
-      render: (row) =>
-        canManage && row.status === "OPEN" ? (
-          <div className="button-row">
-            <button
-              type="button"
-              className="button-ghost"
-              data-testid={`resolve-${row.id}`}
-              onClick={() => {
-                mutation.reset();
-                setActing({ report: row, kind: "resolve" });
-              }}
-            >
-              معالجة
-            </button>
-            <button
-              type="button"
-              className="button-ghost"
-              data-tone="danger"
-              data-testid={`dismiss-${row.id}`}
-              onClick={() => {
-                mutation.reset();
-                setActing({ report: row, kind: "dismiss" });
-              }}
-            >
-              رفض
-            </button>
-          </div>
-        ) : null,
-    },
-  ];
-
   return (
     <div className="stack">
       <PageHeader
+        eyebrow="المراجعات والبلاغات"
         title="البلاغات"
-        description="ما أبلغ عنه المستخدمون من أخطاء في بيانات المنشآت."
+        description="ما أبلغ عنه المستخدمون من أخطاء في بيانات المنشآت: صحّح المنشأة ثم علّم البلاغ، أو ارفضه بسبب."
         actions={<ExportButton name="reports" params={filters} />}
       />
-      <FilterBar
-        fields={[
-          {
-            name: "status",
-            label: "الحالة",
-            type: "select",
-            options: Object.entries(STATUS).map(([value, meta]) => ({
-              value,
-              label: meta.label,
-            })),
-          },
-        ]}
-        values={filters}
-        onApply={setFilters}
-      />
+      <div className="live-toolbar">
+        <FilterChips
+          label="الحالة"
+          value={filters.status}
+          options={Object.entries(STATUS).map(([value, meta]) => ({ value, label: meta.label }))}
+          testId="filter-status"
+          onChange={(status) => {
+            setSelected([]);
+            setFilters({ ...filters, status });
+          }}
+        />
+        {canManage && selectable.length > 0 ? (
+          <label className="toolbar-check">
+            <input
+              type="checkbox"
+              aria-label="اختيار كل البلاغات المفتوحة"
+              data-testid="select-all"
+              checked={allChosen}
+              onChange={() => setSelected(allChosen ? [] : selectable.map((row) => row.id))}
+            />
+            اختيار كل المفتوحة
+          </label>
+        ) : null}
+      </div>
       {chosen.length > 0 ? (
         <div className="bulk-bar" data-testid="bulk-bar">
           <span>
@@ -266,21 +183,95 @@ export default function ReportsPage() {
       ) : null}
       {reports.loading ? <LoadingState /> : null}
       {reports.error ? <ErrorState error={reports.error} onRetry={reports.reload} /> : null}
-      {reports.data ? (
-        <DataTable
-          id="reports"
-          caption="البلاغات"
-          columns={columns}
-          rows={reports.data.items}
-          rowKey={(row) => row.id}
-          summary={pageSummary(reports.data.items.length, reports.data.hasMore)}
-          empty={
-            <EmptyState
-              title="لا بلاغات"
-              hint={filters.status === "OPEN" ? "لا يوجد ما ينتظر المعالجة." : undefined}
-            />
-          }
+      {reports.data && rows.length === 0 ? (
+        <EmptyState
+          title="لا بلاغات"
+          hint={filters.status === "OPEN" ? "لا يوجد ما ينتظر المعالجة." : undefined}
+          illustration={filters.status === "OPEN" ? "success" : "empty"}
         />
+      ) : null}
+      {rows.length > 0 ? (
+        <ul className="profile-grid" data-testid="reports">
+          {rows.map((row, index) => {
+            const open = row.status === "OPEN";
+            return (
+              <ItemCard
+                key={row.id}
+                index={index}
+                icon="flag"
+                tone={open ? "gold" : row.status === "RESOLVED" ? "brand" : "neutral"}
+                focused={selected.includes(row.id)}
+                title={
+                  <Link
+                    className="item-card-link"
+                    href={`/facilities?id=${encodeURIComponent(row.facilityId)}`}
+                  >
+                    {row.facilityNameAr}
+                  </Link>
+                }
+                subtitle={REASONS[row.reason] ?? row.reason}
+                state={{
+                  label: STATUS[row.status]?.label ?? row.status,
+                  tone: open ? "warning" : row.status === "RESOLVED" ? "positive" : undefined,
+                }}
+                facts={[
+                  { label: "وصل", value: relativeTime(row.createdAt) },
+                  { label: "من", value: row.reporterId ? "مستخدم مسجّل" : "زائر" },
+                  {
+                    label: "الحسم",
+                    value: row.resolvedAt ? relativeTime(row.resolvedAt) : "لم يُحسم",
+                  },
+                ]}
+                testId={`report-${row.id}`}
+                actions={
+                  canManage && open ? (
+                    <>
+                      <button
+                        type="button"
+                        className="profile-act-main"
+                        data-testid={`resolve-${row.id}`}
+                        onClick={() => {
+                          mutation.reset();
+                          setActing({ report: row, kind: "resolve" });
+                        }}
+                      >
+                        <Icon name="check" width={16} height={16} />
+                        عولج
+                      </button>
+                      <button
+                        type="button"
+                        className="profile-act-danger"
+                        data-testid={`dismiss-${row.id}`}
+                        onClick={() => {
+                          mutation.reset();
+                          setActing({ report: row, kind: "dismiss" });
+                        }}
+                      >
+                        رفض
+                      </button>
+                    </>
+                  ) : null
+                }
+              >
+                <p className={row.note ? "item-card-clamp" : "item-card-quiet item-card-clamp"}>
+                  {row.note || "لم يكتب المُبلِّغ ملاحظة."}
+                </p>
+                {canManage && open ? (
+                  <label className="item-card-select">
+                    <input
+                      type="checkbox"
+                      aria-label={`اختيار بلاغ ${row.facilityNameAr}`}
+                      data-testid={`select-${row.id}`}
+                      checked={selected.includes(row.id)}
+                      onChange={() => toggle(row.id)}
+                    />
+                    ضمن المختار
+                  </label>
+                ) : null}
+              </ItemCard>
+            );
+          })}
+        </ul>
       ) : null}
       {reports.pagination ? <Pagination {...reports.pagination} /> : null}
 

@@ -8,7 +8,6 @@ import {
   ConfirmDialog,
   EmptyState,
   ErrorState,
-  FilterBar,
   LoadingState,
   PageHeader,
   Pagination,
@@ -16,7 +15,8 @@ import {
   Toast,
   formatDateTime,
 } from "../../../../components/ui";
-import { CharCount } from "../../../../components/ui/extra";
+import { Icon } from "../../../../components/icons";
+import { CharCount, FilterChips } from "../../../../components/ui/extra";
 import { MESSAGE_KINDS } from "../../../../lib/client/content";
 import { useMutation } from "../../../../lib/client/use-mutation";
 import { useResource } from "../../../../lib/client/use-resource";
@@ -36,6 +36,25 @@ type Message = Readonly<{
 type MessagePage = Readonly<{ items: Message[]; nextCursor: string | null; hasMore: boolean }>;
 
 const NOTE_MAX = 500;
+
+const STATUS = [
+  { value: "open", label: "بانتظار المعالجة" },
+  { value: "handled", label: "تمت معالجتها" },
+] as const;
+
+/**
+ * A chat with the sender on WhatsApp, where the platform's support already answers by hand
+ * (DECISION-102): a Syrian number written locally (09…) or internationally (+963…), or none.
+ */
+function whatsappLink(phone: string): string | null {
+  const digits = phone.replace(/[^0-9]/g, "");
+  const international = digits.startsWith("963")
+    ? digits
+    : digits.startsWith("09")
+      ? `963${digits.slice(1)}`
+      : null;
+  return international && international.length >= 11 ? `https://wa.me/${international}` : null;
+}
 
 /**
  * What people wrote through the contact form, newest first.
@@ -69,33 +88,39 @@ export default function ContactMessagesPage() {
   return (
     <div className="stack">
       <PageHeader
+        eyebrow="المحتوى"
         title="رسائل التواصل"
         description="ما يصل من نموذج «تواصل معنا» في الموقع والتطبيق."
       />
-      <FilterBar
-        fields={[
-          {
-            name: "status",
-            label: "الحالة",
-            type: "select",
-            options: [
-              { value: "open", label: "بانتظار المعالجة" },
-              { value: "handled", label: "تمت معالجتها" },
-            ],
-          },
-          {
-            name: "kind",
-            label: "الموضوع",
-            type: "select",
-            options: Object.entries(MESSAGE_KINDS).map(([value, label]) => ({ value, label })),
-          },
-        ]}
-        values={filters}
-        onApply={(next) => {
-          setFilters(next);
-          setCursor(undefined);
-        }}
-      />
+      <div className="live-toolbar">
+        <FilterChips
+          label="الحالة"
+          value={filters.status as "open" | "handled"}
+          options={STATUS}
+          testId="messages-status"
+          onChange={(status) => {
+            setFilters({ ...filters, status });
+            setCursor(undefined);
+          }}
+        />
+        <select
+          className="toolbar-select"
+          aria-label="الموضوع"
+          value={filters.kind}
+          data-testid="messages-kind"
+          onChange={(event) => {
+            setFilters({ ...filters, kind: event.target.value });
+            setCursor(undefined);
+          }}
+        >
+          <option value="">كل المواضيع</option>
+          {Object.entries(MESSAGE_KINDS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {messages.loading ? <LoadingState /> : null}
       {messages.error ? <ErrorState error={messages.error} onRetry={messages.reload} /> : null}
@@ -124,7 +149,9 @@ export default function ContactMessagesPage() {
                       {item.phone}
                     </a>
                   ) : null}
-                  {item.userId ? <Link href={`/users/${item.userId}`}>حساب مسجّل</Link> : null}
+                  {item.userId ? (
+                    <Link href={`/users?id=${encodeURIComponent(item.userId)}`}>حساب مسجّل</Link>
+                  ) : null}
                   <time className="muted cell-ltr" dateTime={item.createdAt}>
                     {formatDateTime(item.createdAt)}
                   </time>
@@ -139,6 +166,17 @@ export default function ContactMessagesPage() {
                   ) : (
                     <TermBadge group="contactState" value="PENDING" />
                   )}
+                  {item.phone && whatsappLink(item.phone) ? (
+                    <a
+                      className="button-ghost message-whatsapp"
+                      href={whatsappLink(item.phone)!}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <Icon name="whatsapp" />
+                      رد على واتساب
+                    </a>
+                  ) : null}
                   {canManage && !item.handled ? (
                     <button
                       type="button"

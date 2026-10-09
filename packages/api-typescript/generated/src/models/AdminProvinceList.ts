@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { AdminProvince } from './AdminProvince';
+import type { AdminProvinceCard } from './AdminProvinceCard';
 import {
-    AdminProvinceFromJSON,
-    AdminProvinceFromJSONTyped,
-    AdminProvinceToJSON,
-    AdminProvinceToJSONTyped,
-} from './AdminProvince';
+    AdminProvinceCardFromJSON,
+    AdminProvinceCardFromJSONTyped,
+    AdminProvinceCardToJSON,
+    AdminProvinceCardToJSONTyped,
+} from './AdminProvinceCard';
 
 /**
  * 
@@ -29,10 +29,10 @@ import {
 export interface AdminProvinceList {
     /**
      * 
-     * @type {Array<AdminProvince>}
+     * @type {Array<AdminProvinceCard>}
      * @memberof AdminProvinceList
      */
-    items: Array<AdminProvince>;
+    items: Array<AdminProvinceCard>;
 }
 
 /**
@@ -53,7 +53,7 @@ export function AdminProvinceListFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
         
-        'items': ((json['items'] as Array<any>).map(AdminProvinceFromJSON)),
+        'items': ((json['items'] as Array<any>).map(AdminProvinceCardFromJSON)),
     };
 }
 
@@ -68,7 +68,7 @@ export function AdminProvinceListToJSONTyped(value?: AdminProvinceList | null, i
 
     return {
         
-        'items': ((value['items'] as Array<any>).map(AdminProvinceToJSON)),
+        'items': ((value['items'] as Array<any>).map(AdminProvinceCardToJSON)),
     };
 }
 

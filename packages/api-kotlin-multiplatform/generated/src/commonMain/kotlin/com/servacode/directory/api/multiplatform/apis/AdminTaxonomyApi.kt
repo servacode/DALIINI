@@ -18,11 +18,11 @@ package com.servacode.directory.api.multiplatform.apis
 import com.servacode.directory.api.multiplatform.models.AdminCapabilities
 import com.servacode.directory.api.multiplatform.models.AdminCapabilitiesRequest
 import com.servacode.directory.api.multiplatform.models.AdminCategory
+import com.servacode.directory.api.multiplatform.models.AdminCategoryCardList
 import com.servacode.directory.api.multiplatform.models.AdminCategoryCreateRequest
 import com.servacode.directory.api.multiplatform.models.AdminCategoryGroup
 import com.servacode.directory.api.multiplatform.models.AdminCategoryGroupList
 import com.servacode.directory.api.multiplatform.models.AdminCategoryGroupRequest
-import com.servacode.directory.api.multiplatform.models.AdminCategoryList
 import com.servacode.directory.api.multiplatform.models.AdminCategoryProvinceRequest
 import com.servacode.directory.api.multiplatform.models.AdminCategoryUpdateRequest
 import com.servacode.directory.api.multiplatform.models.AdminId
@@ -62,11 +62,11 @@ open class AdminTaxonomyApi : ApiClient {
 
     /**
      * List categories
-     * 
-     * @return AdminCategoryList
+     * Each category with its capability flags, its province switches and how many facilities it holds: everything its card and settings window show, in one query count whatever the number of categories.
+     * @return AdminCategoryCardList
      */
     @Suppress("UNCHECKED_CAST")
-    open suspend fun adminCategoriesList(): HttpResponse<AdminCategoryList> {
+    open suspend fun adminCategoriesList(): HttpResponse<AdminCategoryCardList> {
 
         val localVariableAuthNames = listOf<String>("bearerAccessToken")
 

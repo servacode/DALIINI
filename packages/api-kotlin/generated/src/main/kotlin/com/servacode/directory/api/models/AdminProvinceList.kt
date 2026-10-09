@@ -15,7 +15,7 @@
 
 package com.servacode.directory.api.models
 
-import com.servacode.directory.api.models.AdminProvince
+import com.servacode.directory.api.models.AdminProvinceCard
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -31,7 +31,7 @@ import kotlinx.serialization.Contextual
 data class AdminProvinceList (
 
     @SerialName(value = "items")
-    val items: kotlin.collections.List<AdminProvince>
+    val items: kotlin.collections.List<AdminProvinceCard>
 
 ) {
 

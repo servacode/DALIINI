@@ -15,22 +15,23 @@ open class AdminTaxonomyAPI {
     /**
      List categories
      
-     - returns: AdminCategoryList
+     - returns: AdminCategoryCardList
      */
     @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    open class func adminCategoriesList() async throws -> AdminCategoryList {
+    open class func adminCategoriesList() async throws -> AdminCategoryCardList {
         return try await adminCategoriesListWithRequestBuilder().execute().body
     }
 
     /**
      List categories
      - GET /api/v1/admin/categories/
+     - Each category with its capability flags, its province switches and how many facilities it holds: everything its card and settings window show, in one query count whatever the number of categories.
      - Bearer Token:
        - type: http
        - name: bearerAccessToken
-     - returns: RequestBuilder<AdminCategoryList> 
+     - returns: RequestBuilder<AdminCategoryCardList> 
      */
-    open class func adminCategoriesListWithRequestBuilder() -> RequestBuilder<AdminCategoryList> {
+    open class func adminCategoriesListWithRequestBuilder() -> RequestBuilder<AdminCategoryCardList> {
         let localVariablePath = "/api/v1/admin/categories/"
         let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
         let localVariableParameters: [String: Any]? = nil
@@ -43,7 +44,7 @@ open class AdminTaxonomyAPI {
 
         let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
 
-        let localVariableRequestBuilder: RequestBuilder<AdminCategoryList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+        let localVariableRequestBuilder: RequestBuilder<AdminCategoryCardList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
 
         return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
     }

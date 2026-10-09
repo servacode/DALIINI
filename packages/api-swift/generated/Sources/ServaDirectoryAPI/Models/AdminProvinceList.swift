@@ -12,9 +12,9 @@ import AnyCodable
 
 public struct AdminProvinceList: Codable, JSONEncodable, Hashable {
 
-    public var items: [AdminProvince]
+    public var items: [AdminProvinceCard]
 
-    public init(items: [AdminProvince]) {
+    public init(items: [AdminProvinceCard]) {
         self.items = items
     }
 

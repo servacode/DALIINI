@@ -25,6 +25,8 @@ All URIs are relative to *http://localhost*
 
 List categories
 
+Each category with its capability flags, its province switches and how many facilities it holds: everything its card and settings window show, in one query count whatever the number of categories.
+
 ### Example
 ```kotlin
 // Import classes:
@@ -37,7 +39,7 @@ apiClient.setBearerToken("TOKEN")
 val webService = apiClient.createWebservice(AdminTaxonomyApi::class.java)
 
 launch(Dispatchers.IO) {
-    val result : AdminCategoryList = webService.adminCategoriesList()
+    val result : AdminCategoryCardList = webService.adminCategoriesList()
 }
 ```
 
@@ -46,7 +48,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**AdminCategoryList**](AdminCategoryList.md)
+[**AdminCategoryCardList**](AdminCategoryCardList.md)
 
 ### Authorization
 
