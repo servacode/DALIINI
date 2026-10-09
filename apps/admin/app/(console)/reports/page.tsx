@@ -96,7 +96,7 @@ export default function ReportsPage() {
     if (!bulk || chosen.length === 0) return;
     // Some may have been decided by somebody else between the list and the button. The
     // backend says so per id rather than failing the batch, and the toast says so too —
-    // «حُسم ١٢» when two of fourteen were already closed is the truth, not a rounding.
+    // «حُسم 12» when two of fourteen were already closed is the truth, not a rounding.
     const answer = await mutation.runFor<{ decided?: number }>("reportsBulkDecide", {
       ids: chosen,
       action: bulk,

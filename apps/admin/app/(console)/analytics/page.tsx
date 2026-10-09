@@ -262,7 +262,7 @@ export default function AnalyticsPage() {
       {exports.length > 0 ? (
         <Panel
           title="تصدير البيانات"
-          description="ملفات CSV تُفتح في إكسل والعربية سليمة، بكل الصفوف حتى ٥٠٬٠٠٠ صف ودون فلترة."
+          description="ملفات CSV تُفتح في إكسل والعربية سليمة، بكل الصفوف حتى 50,000 صف ودون فلترة."
           testId="exports"
         >
           <ul className="export-list">

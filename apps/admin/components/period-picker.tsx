@@ -18,9 +18,9 @@ export type Period = Readonly<{ from: string; to: string }>;
 const MAX_DAYS = 366;
 
 const PRESETS = [
-  [7, "٧ أيام"],
-  [30, "٣٠ يوماً"],
-  [90, "٩٠ يوماً"],
+  [7, "7 أيام"],
+  [30, "30 يوماً"],
+  [90, "90 يوماً"],
 ] as const;
 
 /** The last `days` days, ending today. */
@@ -28,7 +28,7 @@ export function lastDays(days: number, today: string): Period {
   return { from: addDays(today, -(days - 1)), to: today };
 }
 
-/** «٢٩ آب – ٢٧ أيلول» */
+/** «29 آب – 27 أيلول» */
 export function periodLabel(period: Period): string {
   return `${formatDayMonth(period.from)} – ${formatDayMonth(period.to)}`;
 }
@@ -64,6 +64,13 @@ export function PeriodPicker({
     }
     setProblem(null);
     onChange(next);
+  }
+
+  // A range applies itself once both ends are chosen (DECISION-107): there is no button to
+  // press. Half a range is held as a draft, and a range that is not a range says why.
+  function choose(next: { from: string; to: string }): void {
+    setDraft(next);
+    if (next.from && next.to) apply(next);
   }
 
   return (
@@ -104,7 +111,7 @@ export function PeriodPicker({
             value={draft.from}
             max={draft.to || today}
             data-testid="period-from"
-            onChange={(event) => setDraft({ ...draft, from: event.target.value })}
+            onChange={(event) => choose({ ...draft, from: event.target.value })}
           />
         </label>
         <label className="filter-field">
@@ -116,12 +123,9 @@ export function PeriodPicker({
             min={draft.from || undefined}
             max={today}
             data-testid="period-to"
-            onChange={(event) => setDraft({ ...draft, to: event.target.value })}
+            onChange={(event) => choose({ ...draft, to: event.target.value })}
           />
         </label>
-        <button type="submit" className="button-primary">
-          تطبيق
-        </button>
       </form>
       {problem ? (
         <p className="field-error period-error" role="alert">

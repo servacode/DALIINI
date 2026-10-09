@@ -661,7 +661,8 @@ tr:last-child td { border-bottom: 0; }
   grid-template-columns: 64px minmax(0, 1fr);
   grid-template-areas:
     "thumb main"
-    "ways ways";
+    "ways ways"
+    "extras extras";
   align-content: start;
   gap: var(--sd-spacing-md);
   width: 100%;
@@ -688,7 +689,8 @@ tr:last-child td { border-bottom: 0; }
   grid-template-areas:
     "photo"
     "main"
-    "ways";
+    "ways"
+    "extras";
   padding-block-start: 0;
   overflow: hidden;
 }
@@ -831,50 +833,12 @@ tr:last-child td { border-bottom: 0; }
 
 .way-whatsapp:hover { filter: brightness(1.06); }
 
-/* Carries `way-button` for its shape, and only what differs is said here: it is pushed to the
-   end of the row, and it is a button element rather than a link. */
-.facility-more {
-  margin-inline-start: auto;
-  border: 1px solid var(--sd-semantic-stroke-subtle);
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.facility-more:hover {
-  border-color: var(--sd-semantic-stroke-strong);
-  color: var(--sd-semantic-action-primary);
-}
 
 /* The card's menu: four plain rows, the last one red because it reports a fault. */
-.card-menu {
-  display: grid;
-  gap: var(--sd-spacing-2xs);
-}
 
-.card-menu > button,
-.card-menu > a {
-  display: flex;
-  align-items: center;
-  gap: var(--sd-spacing-md);
-  min-height: 48px;
-  padding-inline: var(--sd-spacing-md);
-  border: 0;
-  border-radius: var(--sd-radius-medium);
-  background: none;
-  color: var(--sd-semantic-content-primary);
-  font: inherit;
-  text-align: start;
-  text-decoration: none;
-  cursor: pointer;
-}
 
-.card-menu > button:hover,
-.card-menu > a:hover { background: var(--sd-semantic-surface-hover); }
 
-.card-menu svg { color: var(--sd-semantic-action-primary); }
 
-.card-menu .danger,
-.card-menu .danger svg { color: var(--sd-semantic-feedback-danger); }
 
 /*
  * Reporting is red, and outlined rather than filled: red says what the button is for, and the
@@ -1715,3 +1679,47 @@ tr:last-child td { border-bottom: 0; }
 }
 
 .roster-row .meta { align-items: center; }
+
+/* The card's three quieter actions, labelled and in plain sight (no «more» button): the
+   week's hours, the link to share, a report of something wrong. One row under the ways,
+   split by a hairline, quieter than the call and WhatsApp above them. */
+.facility-extras {
+  grid-area: extras;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sd-spacing-xs);
+  padding-block-start: var(--sd-spacing-sm);
+  border-block-start: 1px solid var(--sd-semantic-stroke-subtle);
+}
+
+.facility-extra {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding-inline: var(--sd-spacing-sm);
+  border: 0;
+  border-radius: var(--sd-radius-medium);
+  background: none;
+  color: var(--sd-semantic-content-secondary);
+  font: inherit;
+  font-size: var(--sd-typography-roles-label-medium-size);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--quick) var(--ease), color var(--quick) var(--ease);
+}
+
+.facility-extra:hover {
+  background: var(--sd-semantic-surface-hover);
+  color: var(--sd-semantic-action-primary);
+}
+
+.facility-extra:focus-visible {
+  outline: 2px solid var(--sd-semantic-action-primary);
+  outline-offset: 2px;
+}
+
+.facility-extra-report:hover { color: var(--sd-semantic-feedback-danger); }
+
+.facility-extra span { overflow: hidden; text-overflow: ellipsis; }

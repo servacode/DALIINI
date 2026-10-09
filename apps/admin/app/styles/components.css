@@ -1520,7 +1520,7 @@ a.bar-row:hover .bar-label { color: var(--ad-brand); }
  * the picture is laid across the card's. Shared, so the next section opens the same way. */
 .page-hero {
   position: relative;
-  padding: var(--ad-space-8) var(--ad-space-8) calc(var(--ad-space-8) + 28px);
+  padding: var(--ad-space-8);
   border-radius: var(--ad-radius-xl);
   color: #fff;
   background:
@@ -1756,3 +1756,32 @@ a.bar-row:hover .bar-label { color: var(--ad-brand); }
   border: 1px solid var(--ad-stroke); background: var(--ad-surface); color: var(--ad-text-secondary);
 }
 .profile-actions > a.profile-act-link:hover { border-color: var(--ad-stroke-strong); color: var(--ad-text); }
+
+/* Room under the band for the toolbar laid across its edge — only when there is one. */
+.page-hero:has(+ .live-toolbar) { padding-block-end: calc(var(--ad-space-8) + 28px); }
+
+/* Every other section's header, in the same band (DECISION-110), smaller: these pages are
+   worked in, and a tall band would push the work down the screen. */
+.page-hero.page-hero-compact {
+  padding: var(--ad-space-6) var(--ad-space-6);
+  align-items: center;
+}
+.page-hero.page-hero-compact h1 { font-size: 24px; }
+.page-hero.page-hero-compact p { font-size: var(--ad-text-sm); }
+.page-hero .back-link {
+  display: inline-flex; align-items: center; gap: 6px; width: fit-content;
+  color: rgba(255, 255, 255, 0.85); font-size: var(--ad-text-sm); text-decoration: none;
+}
+.page-hero .back-link:hover { color: #fff; }
+/* Buttons that sit on the band keep their meaning and gain the contrast the band needs. */
+.page-hero .header-actions { display: flex; flex-wrap: wrap; gap: var(--ad-space-2); flex: 0 0 auto; }
+.page-hero .button-primary { background: #fff; color: var(--ad-brand-strong); border-color: #fff; }
+.page-hero .button-primary:hover:not(:disabled) { background: #F4FAF6; }
+.page-hero .button-ghost {
+  background: rgba(255, 255, 255, 0.12); color: #fff; border-color: rgba(255, 255, 255, 0.35);
+}
+.page-hero .button-ghost:hover:not(:disabled) { background: rgba(255, 255, 255, 0.2); }
+.page-hero .button-danger { background: #fff; color: var(--ad-danger); border-color: #fff; }
+.page-hero .muted { color: rgba(255, 255, 255, 0.75); }
+.page-hero.page-heading p { color: inherit; margin: 0; }
+.page-hero.page-heading h1 { margin: 0; }

@@ -22,7 +22,7 @@ export async function POST(request: Request): Promise<Response> {
   if (rejection) return refuseOrigin(rejection, "/api/admin/duty/import");
 
   const raw = await readBounded(request, MAX_ROSTER_BYTES + 64 * 1024);
-  if (raw === null) return refused(413, "الملف أكبر من ١ ميغابايت. قسّمه إلى ملفات أصغر.", "FILE_TOO_LARGE");
+  if (raw === null) return refused(413, "الملف أكبر من 1 ميغابايت. قسّمه إلى ملفات أصغر.", "FILE_TOO_LARGE");
 
   let form: FormData;
   try {

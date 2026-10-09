@@ -121,7 +121,7 @@ export default function DashboardPage() {
               label="حسابات فعّالة"
               value={dashboard.data.activeUsers}
               icon="userCheck"
-              hint={`${dashboard.data.newUsers7d} حساباً جديداً خلال ٧ أيام`}
+              hint={`${dashboard.data.newUsers7d} حساباً جديداً خلال 7 أيام`}
             />
           </div>
 

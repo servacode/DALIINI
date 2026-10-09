@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -175,21 +175,53 @@ describe("ErrorState", () => {
 });
 
 describe("FilterBar", () => {
-  it("lifts values on submit, not on every keystroke", () => {
+  it("applies typing after a pause, not on every keystroke, and Enter at once", () => {
+    vi.useFakeTimers();
+    try {
+      const onApply = vi.fn();
+      render(
+        <FilterBar
+          fields={[{ name: "q", label: "بحث" }]}
+          values={{ q: "" }}
+          onApply={onApply}
+        />,
+      );
+
+      fireEvent.change(screen.getByTestId("filter-q"), { target: { value: "صيدلية" } });
+      expect(onApply).not.toHaveBeenCalled();
+      act(() => {
+        vi.advanceTimersByTime(450);
+      });
+      expect(onApply).toHaveBeenCalledWith({ q: "صيدلية" });
+
+      onApply.mockClear();
+      fireEvent.submit(screen.getByTestId("filter-bar"));
+      expect(onApply).toHaveBeenCalledWith({ q: "صيدلية" });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("applies a choice the moment it is made, with no apply button", () => {
     const onApply = vi.fn();
     render(
       <FilterBar
-        fields={[{ name: "q", label: "بحث" }]}
-        values={{ q: "" }}
+        fields={[
+          {
+            name: "status",
+            label: "الحالة",
+            type: "select",
+            options: [{ value: "ACTIVE", label: "فعّالة" }],
+          },
+        ]}
+        values={{ status: "" }}
         onApply={onApply}
       />,
     );
 
-    fireEvent.change(screen.getByTestId("filter-q"), { target: { value: "صيدلية" } });
-    expect(onApply).not.toHaveBeenCalled();
-
-    fireEvent.submit(screen.getByTestId("filter-bar"));
-    expect(onApply).toHaveBeenCalledWith({ q: "صيدلية" });
+    fireEvent.change(screen.getByTestId("filter-status"), { target: { value: "ACTIVE" } });
+    expect(onApply).toHaveBeenCalledWith({ status: "ACTIVE" });
+    expect(screen.queryByRole("button", { name: "تطبيق" })).toBeNull();
   });
 
   it("offers a clear action only while a filter is active", () => {

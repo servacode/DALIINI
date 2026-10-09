@@ -17,7 +17,7 @@ export const LOCALE = "ar-SY-u-nu-latn";
  * A formatted date without the right-to-left marks the Arabic date patterns put between its
  * parts.
  *
- * With Arabic-Indic digits those marks keep «٨/١٠/٢٦» in order. With Latin digits they do the
+ * With Arabic-Indic digits those marks keep «8/10/26» in order. With Latin digits they do the
  * opposite: each mark breaks the run of numbers, so a right-to-left page drew «8/10/26» as
  * «26/10/8». Without them, day, month and year form one left-to-right run, which is how a date
  * in Latin digits is read everywhere else.

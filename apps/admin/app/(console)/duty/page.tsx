@@ -73,8 +73,8 @@ const STATUS: Record<string, { label: string; tone: Tone }> = {
 
 /** Ready-made times, the two an operator types most. The end rolls to the next morning. */
 const PRESETS = [
-  { key: "night", label: "ليلية ٢٢:٠٠–٠٨:٠٠", start: "22:00", end: "08:00" },
-  { key: "full", label: "٢٤ ساعة ٠٨:٠٠–٠٨:٠٠", start: "08:00", end: "08:00" },
+  { key: "night", label: "ليلية 22:00–08:00", start: "22:00", end: "08:00" },
+  { key: "full", label: "24 ساعة 08:00–08:00", start: "08:00", end: "08:00" },
 ] as const;
 
 /**
@@ -96,7 +96,7 @@ function dutyError(error: ApiErrorBody | null): ApiErrorBody | null {
   return message ? { ...error, message } : error;
 }
 
-/** «يوم واحد», «يومان», «٣ أيام», «١١ يوماً» */
+/** «يوم واحد», «يومان», «3 أيام», «11 يوماً» */
 function daysCount(count: number): string {
   if (count === 1) return "يوم واحد";
   if (count === 2) return "يومان";
@@ -104,7 +104,7 @@ function daysCount(count: number): string {
   return `${NUMBER.format(count)} يوماً`;
 }
 
-/** «مناوبة واحدة», «مناوبتان», «٣ مناوبات», «١١ مناوبة» */
+/** «مناوبة واحدة», «مناوبتان», «3 مناوبات», «11 مناوبة» */
 function shiftsCount(count: number): string {
   if (count === 1) return "مناوبة واحدة";
   if (count === 2) return "مناوبتان";
@@ -112,7 +112,7 @@ function shiftsCount(count: number): string {
   return `${NUMBER.format(count)} مناوبة`;
 }
 
-/** «من ٢٢:٠٠ السبت، ٢٦ أيلول إلى ٠٨:٠٠ الأحد، ٢٧ أيلول» */
+/** «من 22:00 السبت، 26 أيلول إلى 08:00 الأحد، 27 أيلول» */
 function fullRange(startsAt: string, endsAt: string): string {
   const startDay = damascusDay(startsAt);
   const endDay = damascusDay(endsAt);

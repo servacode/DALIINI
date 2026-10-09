@@ -38,7 +38,7 @@ const NUMBER = new Intl.NumberFormat(LOCALE);
 const DECIMAL = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 1 });
 const PERCENT = new Intl.NumberFormat(LOCALE, { style: "percent", maximumFractionDigits: 0 });
 
-/** Hours when under two days, days after that: «٥٫٢ س», «٣٫١ يوم». */
+/** Hours when under two days, days after that: «5٫2 س», «3٫1 يوم». */
 function duration(hours: number | null): string {
   if (hours === null) return "—";
   return hours < 48 ? `${DECIMAL.format(hours)} س` : `${DECIMAL.format(hours / 24)} يوم`;

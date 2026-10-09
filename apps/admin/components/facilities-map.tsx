@@ -108,7 +108,7 @@ export function FacilitiesMap({ styleUrl }: { styleUrl: string }) {
           <div className="map-summary" data-testid="map-summary">
             <span>
               على الخريطة: <b className="tabular">{NUMBER.format(points.length)}</b>
-              {data.data.truncated ? " (أول ٥٬٠٠٠ فقط، ضيّق الفلاتر لترى البقية)" : null}
+              {data.data.truncated ? " (أول 5,000 فقط، ضيّق الفلاتر لترى البقية)" : null}
             </span>
             <ul className="map-legend">
               {[...counts.entries()].map(([status, count]) => (

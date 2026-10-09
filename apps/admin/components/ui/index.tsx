@@ -61,16 +61,19 @@ export function PageHeader({
   eyebrow?: string;
   back?: { href: string; label: string };
 }) {
+  // Every section opens on the same emerald band the accounts and facilities do (DECISION-110),
+  // in a compact form: one component, so a section that has not been rebuilt yet still looks
+  // like part of the same console.
   return (
-    <header className="page-heading">
-      <div className="page-heading-text">
+    <header className="page-hero page-hero-compact page-heading">
+      <div className="page-hero-text page-heading-text">
         {back ? (
           <Link href={back.href} className="back-link">
             <Icons.arrowBack />
             {back.label}
           </Link>
         ) : null}
-        {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
+        {eyebrow ? <span className="page-hero-eyebrow">{eyebrow}</span> : null}
         <h1>{title}</h1>
         {description ? <p>{description}</p> : null}
       </div>
@@ -299,10 +302,13 @@ export function FilterBar({
   fields,
   values,
   onApply,
+  delay = 400,
 }: {
   fields: readonly FilterField[];
   values: Record<string, string>;
   onApply: (next: Record<string, string>) => void;
+  /** How long typing waits for a pause before it asks the server. */
+  delay?: number;
 }) {
   // The draft follows `values` when they change from outside (a link to the same list with
   // other filters, the back button), adjusted during render rather than in an effect, so the
@@ -315,12 +321,35 @@ export function FilterBar({
   }
   // Only this bar's own fields: an ordering chosen from a table header is not a filter to clear.
   const active = fields.some((field) => values[field.name]);
+  const apply = useEffectEvent((next: Record<string, string>) => onApply(next));
+
+  // Filters apply themselves (DECISION-107): a choice the moment it is made, typing after a
+  // pause, so the list never waits for a button the operator has to remember to press. The
+  // pause is the only delay, and it exists so a name is one request rather than one per letter.
+  const typed = JSON.stringify(
+    fields.filter((field) => !field.type).map((field) => draft[field.name] ?? ""),
+  );
+  const applied = JSON.stringify(
+    fields.filter((field) => !field.type).map((field) => values[field.name] ?? ""),
+  );
+  useEffect(() => {
+    if (typed === applied) return;
+    const timer = window.setTimeout(() => apply(draft), delay);
+    return () => window.clearTimeout(timer);
+  }, [typed, applied, draft, delay]);
+
+  const choose = (name: string, value: string) => {
+    const next = { ...draft, [name]: value };
+    setDraft(next);
+    onApply(next);
+  };
 
   return (
     <form
       className="filter-bar"
       data-testid="filter-bar"
       onSubmit={(event) => {
+        // Enter in a text box applies at once rather than waiting out the pause.
         event.preventDefault();
         onApply(draft);
       }}
@@ -333,9 +362,7 @@ export function FilterBar({
               name={field.name}
               value={draft[field.name] ?? ""}
               data-testid={`filter-${field.name}`}
-              onChange={(event) =>
-                setDraft({ ...draft, [field.name]: event.target.value })
-              }
+              onChange={(event) => choose(field.name, event.target.value)}
             >
               <option value="">الكل</option>
               {(field.options ?? []).map((option) => (
@@ -351,9 +378,7 @@ export function FilterBar({
               dir="ltr"
               value={draft[field.name] ?? ""}
               data-testid={`filter-${field.name}`}
-              onChange={(event) =>
-                setDraft({ ...draft, [field.name]: event.target.value })
-              }
+              onChange={(event) => choose(field.name, event.target.value)}
             />
           ) : (
             <input
@@ -362,18 +387,13 @@ export function FilterBar({
               value={draft[field.name] ?? ""}
               placeholder={field.placeholder}
               data-testid={`filter-${field.name}`}
-              onChange={(event) =>
-                setDraft({ ...draft, [field.name]: event.target.value })
-              }
+              onChange={(event) => setDraft({ ...draft, [field.name]: event.target.value })}
             />
           )}
         </label>
       ))}
-      <div className="filter-actions">
-        <button type="submit" className="button-primary">
-          تطبيق
-        </button>
-        {active ? (
+      {active ? (
+        <div className="filter-actions">
           <button
             type="button"
             className="button-ghost"
@@ -386,8 +406,8 @@ export function FilterBar({
           >
             مسح
           </button>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </form>
   );
 }

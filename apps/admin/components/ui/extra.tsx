@@ -298,7 +298,7 @@ export function NotificationPreview({ title, body }: { title: string; body: stri
     <figure className="notification-preview" data-testid="notification-preview">
       <div className="phone-frame">
         <div className="phone-status" aria-hidden="true">
-          <span>٩:٤١</span>
+          <span>9:41</span>
         </div>
         <div className="notification-card">
           <div className="notification-head">
@@ -638,7 +638,7 @@ export type ProfileDate = Readonly<{
   value: string;
 }>;
 
-/** «منذ ٣ ساعات», «أمس», «قبل ٥ أيام» — Arabic, and never a bare timestamp on a card. */
+/** «منذ 3 ساعات», «أمس», «قبل 5 أيام» — Arabic, and never a bare timestamp on a card. */
 export function relativeTime(value: string): string {
   const then = new Date(value).getTime();
   if (Number.isNaN(then)) return "";

@@ -71,7 +71,7 @@ const REPORT_REASONS = [
 type Hint = "copied" | "failed" | null;
 type Sending = "idle" | "sending" | "sent" | "throttled" | "failed";
 /* What is open over the card: its short menu, or one of the two things the menu leads to. */
-type Panel = "menu" | "hours" | "report" | null;
+type Panel = "hours" | "report" | null;
 
 function Card({ f }: { f: CompactFacility }) {
   const [panel, setPanel] = useState<Panel>(null);
@@ -207,17 +207,38 @@ function Card({ f }: { f: CompactFacility }) {
             <Icon name="directions" size={17} />
           </a>
         ) : null}
-        {/* Labelled, not a bare icon. Three things live behind it — the hours, the link, a
-            report of something wrong — and none of them is guessable from a drawing. */}
+      </div>
+
+      {/*
+        * The three quieter things, on the card and labelled, rather than behind a «more»
+        * button (the owner's decision): nothing a reader might want is hidden behind a word
+        * they have to guess at. The hours and the report still open over the list, because
+        * they hold more than a card has room for.
+        */}
+      <div className="facility-extras">
         <button
           type="button"
-          className="way-button facility-more"
+          className="facility-extra"
           aria-haspopup="dialog"
-          onClick={() => setPanel("menu")}
-          aria-label={`المزيد عن ${f.nameAr}: الدوام، المشاركة، الإبلاغ`}
+          data-testid="card-hours"
+          onClick={openHours}
         >
-          <Icon name="menu" size={17} />
-          <span>المزيد</span>
+          <Icon name="clock" size={15} />
+          <span>الدوام</span>
+        </button>
+        <button type="button" className="facility-extra" data-testid="card-share" onClick={() => void share()}>
+          <Icon name="share" size={15} />
+          <span>مشاركة</span>
+        </button>
+        <button
+          type="button"
+          className="facility-extra facility-extra-report"
+          aria-haspopup="dialog"
+          data-testid="card-report"
+          onClick={() => setPanel("report")}
+        >
+          <Icon name="flag" size={15} />
+          <span>إبلاغ عن خطأ</span>
         </button>
       </div>
 
@@ -225,35 +246,6 @@ function Card({ f }: { f: CompactFacility }) {
         <p className="facility-hint" role="status">
           {hint === "copied" ? "نُسخ الرابط." : "تعذّر نسخ الرابط."}
         </p>
-      ) : null}
-
-      {panel === "menu" ? (
-        <CardDialog title={f.nameAr} onClose={() => setPanel(null)}>
-          <div className="card-menu">
-            <button type="button" onClick={openHours}>
-              <Icon name="clock" />
-              أوقات الدوام
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setPanel(null);
-                void share();
-              }}
-            >
-              <Icon name="share" />
-              مشاركة الرابط
-            </button>
-            <Link href={page}>
-              <Icon name="externalLink" />
-              صفحة المنشأة
-            </Link>
-            <button type="button" className="danger" onClick={() => setPanel("report")}>
-              <Icon name="flag" />
-              الإبلاغ عن خطأ
-            </button>
-          </div>
-        </CardDialog>
       ) : null}
 
       {panel === "hours" ? (

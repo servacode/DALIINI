@@ -41,7 +41,7 @@ const NUMBER = new Intl.NumberFormat(LOCALE);
 const BLANK = { slug: "", titleAr: "", kind: "PAGE", bodyAr: "" };
 
 const MESSAGES = {
-  titleAr: "اكتب عنوان الصفحة، ١٨٠ حرفاً على الأكثر.",
+  titleAr: "اكتب عنوان الصفحة، 180 حرفاً على الأكثر.",
   slug: "المعرّف أحرف إنجليزية وأرقام وشرطات، لا يبدأ بشرطة ولا ينتهي بها.",
   bodyAr: "اكتب نص الصفحة.",
 };

@@ -2925,3 +2925,26 @@ the card itself and for a card that keeps one shape; the button did neither. Now
 * `/facilities/<id>`, `/facilities/<id>/edit` and `/facilities/new` redirect to the list — that
   card outlined, its edit window open, or the add window — so links already written keep
   working. The list answers an `id` filter for it.
+
+## DECISION-110 — Every console section in the new style at once; no «apply» anywhere; the site's card without «more»
+
+**Date:** 2026-10-09 · **Owner's instruction:** «now you know the design — go through the rest of
+the console section by section».
+
+* **The shared page header is the emerald band**, in a compact form, so all twenty-eight
+  sections open the way accounts and facilities do — one component changed, not twenty-eight
+  pages. Buttons on the band keep their meaning and gain the contrast it needs (primary white,
+  ghost translucent, danger white with red).
+* **The shared filter bar applies itself** — a choice the moment it is made, typing after a
+  pause, Enter at once — and its «تطبيق» button is gone; «مسح» stays while a filter is active.
+  **The period picker** applies a custom range once both ends are chosen. A walk of every
+  section in a browser now finds no «تطبيق» button anywhere.
+* **Latin digits everywhere in the console**: twenty files still had Arabic-Indic digits typed
+  into labels and messages («خلال ٢٤ ساعة», «٧ أيام», «حتى ٢ ميغابايت»); they are Latin now.
+* **The walk**, every section in a real browser, records no console error, no failed request,
+  no horizontal overflow and no Arabic-Indic digit on any of the twenty-eight. The design-system
+  page shows a loading and an error state on purpose; they are its samples.
+* **The site's facility card has no «المزيد».** The three things behind it — the week's hours,
+  sharing the link, reporting a mistake — are a labelled row on the card itself. Hours and the
+  report still open over the list, because they hold more than a card has room for. The rules
+  for the removed button and its menu are deleted with it.

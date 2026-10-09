@@ -231,11 +231,11 @@ export function MfaSetupPanel({ onDone }: { onDone: () => void }) {
         {/* eslint-disable-next-line @next/next/no-img-element -- a data URI, nothing to optimise */}
         <img src={setup.qrSvgDataUri} alt="رمز QR لإضافة الحساب إلى تطبيق المصادقة" width={200} height={200} />
         <div className="stack">
-          <p>١. امسح الرمز بتطبيق المصادقة، أو أدخل هذا المفتاح يدوياً:</p>
+          <p>1. امسح الرمز بتطبيق المصادقة، أو أدخل هذا المفتاح يدوياً:</p>
           <code className="mfa-secret" dir="ltr" data-testid="mfa-secret">
             {setup.secret.replace(/(.{4})/g, "$1 ").trim()}
           </code>
-          <p>٢. أدخل الرمز الذي يظهر في التطبيق لتأكيد الإعداد.</p>
+          <p>2. أدخل الرمز الذي يظهر في التطبيق لتأكيد الإعداد.</p>
           <CodeField value={code} onChange={setCode} />
         </div>
       </div>

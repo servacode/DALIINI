@@ -52,7 +52,7 @@ const SPECIALIZATIONS: Readonly<Record<string, { one: string; all: string }>> = 
   NURSING_CENTER: { one: "مركز تمريض", all: "مراكز التمريض" },
 };
 
-/** «منشأة واحدة», «منشأتان», «٣ منشآت», «١١ منشأة» */
+/** «منشأة واحدة», «منشأتان», «3 منشآت», «11 منشأة» */
 function facilitiesCount(count: number): string {
   if (count === 0) return "غير مستخدم";
   if (count === 1) return "منشأة واحدة";
@@ -576,7 +576,7 @@ function TagFields({
           onChange={(event) => onChange({ ...draft, nameAr: event.target.value })}
         />
         {nameError ? (
-          <span className="field-error">اكتب اسماً غير مكرر في هذا النطاق، ١٢٠ حرفاً على الأكثر.</span>
+          <span className="field-error">اكتب اسماً غير مكرر في هذا النطاق، 120 حرفاً على الأكثر.</span>
         ) : missing ? (
           <span className="field-hint">الاسم مطلوب.</span>
         ) : null}

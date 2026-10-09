@@ -140,9 +140,9 @@ const MAX_SIDE = 4096;
 
 const IMAGE_MESSAGES = {
   format: "الصورة يجب أن تكون بصيغة JPEG أو PNG أو WebP.",
-  tooLarge: "حجم الصورة أكبر من ٢ ميغابايت. صغّرها ثم أعد المحاولة.",
+  tooLarge: "حجم الصورة أكبر من 2 ميغابايت. صغّرها ثم أعد المحاولة.",
   unreadable: "تعذّرت قراءة الملف كصورة. اختر صورة أخرى.",
-  dimensions: "طول كل ضلع في الصورة يجب أن يكون بين ١٠٠ و٤٠٩٦ بكسل.",
+  dimensions: "طول كل ضلع في الصورة يجب أن يكون بين 100 و4096 بكسل.",
   required: "اختر صورة الإعلان.",
   uploading: "انتظر حتى يكتمل رفع الصورة.",
 };
@@ -486,7 +486,7 @@ export default function AdsPage() {
                 </span>
               </label>
               <span className="field-hint" id="ad-image-hint">
-                صورة أفقية بنسبة ١٦:٩ (مثلاً ١٦٠٠×٩٠٠)، بصيغة JPEG أو PNG أو WebP، حتى ٢ ميغابايت.
+                صورة أفقية بنسبة 16:9 (مثلاً 1600×900)، بصيغة JPEG أو PNG أو WebP، حتى 2 ميغابايت.
               </span>
               {image.error ? (
                 <span className="field-error" role="alert" data-testid="ad-image-error">

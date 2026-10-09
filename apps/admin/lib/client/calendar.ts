@@ -133,17 +133,17 @@ const CLOCK = new Intl.DateTimeFormat(LOCALE, {
   timeZone: DAMASCUS,
 });
 
-/** «السبت، ٢٦ أيلول» */
+/** «السبت، 26 أيلول» */
 export function formatDayLabel(day: string): string {
   return DAY_LABEL.format(new Date(utcOf(day)));
 }
 
-/** «٢٦ أيلول» */
+/** «26 أيلول» */
 export function formatDayMonth(day: string): string {
   return DAY_MONTH.format(new Date(utcOf(day)));
 }
 
-/** «٢٦» */
+/** «26» */
 export function formatDayNumber(day: string): string {
   return DAY_NUMBER.format(new Date(utcOf(day)));
 }
@@ -153,7 +153,7 @@ export function formatMonth(day: string): string {
   return MONTH.format(new Date(utcOf(day)));
 }
 
-/** «٢٢:٠٠», on the Damascus clock. */
+/** «22:00», on the Damascus clock. */
 export function formatClock(instant: Instant): string {
   return CLOCK.format(new Date(instant));
 }

@@ -38,7 +38,7 @@ const NUMBER = new Intl.NumberFormat(LOCALE);
 const QUESTION_MAX = 300;
 const ANSWER_MAX = 4000;
 
-/** «سؤال واحد», «سؤالان», «٣ أسئلة», «١١ سؤالاً» */
+/** «سؤال واحد», «سؤالان», «3 أسئلة», «11 سؤالاً» */
 function questionsCount(count: number): string {
   if (count === 1) return "سؤال واحد";
   if (count === 2) return "سؤالان";

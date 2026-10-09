@@ -48,7 +48,7 @@ const TYPE: readonly (readonly [string, string, number, number])[] = [
   ["عنوان الصفحة", "لوحة المتابعة", 24, 700],
   ["عنوان قسم", "آخر الإجراءات", 16, 700],
   ["نص أساسي", "تظهر المنشأة للعامة بعد قبول الطلب.", 14, 400],
-  ["نص صغير", "آخر تحديث قبل ٣ أيام", 12, 400],
+  ["نص صغير", "آخر تحديث قبل 3 أيام", 12, 400],
   ["رقم بارز", "1,248", 30, 800],
 ];
 
@@ -254,15 +254,15 @@ export default function DesignPage() {
         description="مقارنة بالفترة السابقة، وعدّاد الأحرف، والاختيار المقسّم، وقائمة الشروط، واللوحة الجانبية، والمعاينات."
       >
         <div className="kpi-grid">
-          <StatCard label="عمليات البحث" value="١٢٬٨٤٠" icon="search" trend={<Trend current={12840} previous={10450} />} />
+          <StatCard label="عمليات البحث" value="12,840" icon="search" trend={<Trend current={12840} previous={10450} />} />
           <StatCard
             label="بحث بلا نتائج"
-            value="٩١٢"
+            value="912"
             icon="inbox"
             tone="warning"
             trend={<Trend current={912} previous={780} lowerIsBetter />}
           />
-          <StatCard label="طلبات الاتجاهات" value="٤٬١٢٠" icon="directions" trend={<Trend current={4120} previous={0} />} />
+          <StatCard label="طلبات الاتجاهات" value="4,120" icon="directions" trend={<Trend current={4120} previous={0} />} />
         </div>
         <div className="grid-2">
           <div className="stack">

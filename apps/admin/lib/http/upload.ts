@@ -20,10 +20,10 @@ export const MAX_UPLOAD_BODY_BYTES = MAX_AD_IMAGE_BYTES + 64 * 1024;
 export const UPLOAD_MESSAGES = {
   missing: "اختر صورة لرفعها.",
   empty: "الملف فارغ. اختر صورة أخرى.",
-  tooLarge: "حجم الصورة أكبر من ٢ ميغابايت. صغّرها ثم أعد المحاولة.",
+  tooLarge: "حجم الصورة أكبر من 2 ميغابايت. صغّرها ثم أعد المحاولة.",
   format: "الصورة يجب أن تكون بصيغة JPEG أو PNG أو WebP.",
   invalid: "تعذّرت قراءة الملف كصورة. اختر صورة أخرى.",
-  dimensions: "طول كل ضلع في الصورة يجب أن يكون بين ١٠٠ و٤٠٩٦ بكسل.",
+  dimensions: "طول كل ضلع في الصورة يجب أن يكون بين 100 و4096 بكسل.",
 } as const;
 
 export type UploadRefusal = Readonly<{ status: number; body: ApiErrorBody }>;
