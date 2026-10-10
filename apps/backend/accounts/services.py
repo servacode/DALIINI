@@ -57,13 +57,19 @@ def _session_payload(user: User, session: UserSession, raw_refresh: str) -> dict
 
 
 def create_session(*, user: User, platform: str, device_name: str) -> dict[str, Any]:
+    now = timezone.now()
     session = UserSession.objects.create(
         user=user,
         refresh_digest="pending-" + secrets.token_hex(32),
         platform=platform[:32],
         device_name=device_name[:120],
-        expires_at=timezone.now() + REFRESH_TTL,
+        expires_at=now + REFRESH_TTL,
     )
+    # Every sign-in opens a session, so this is where "last sign-in" is true. The console's
+    # account card reads it; without this it said «لم يدخل بعد» of everyone. An update, not a
+    # save, so the account's own updated_at stays about the account.
+    User.objects.filter(pk=user.pk).update(last_login=now)
+    user.last_login = now
     raw = _new_refresh_for(session)
     session.refresh_digest = _refresh_digest(raw)
     session.save(update_fields=["refresh_digest"])
