@@ -706,10 +706,22 @@ private fun noticeText(message: OnboardingMessage): String = when (message.notic
         stringResource(R.string.onboarding_notice_submit_failed, message.reason())
 }
 
-/** The error's own sentence, or the one for an error nobody named. */
+/** The Arabic block of Unicode: a reason written in it was written for the reader. */
+private val ARABIC = 0x0600..0x06FF
+
+/**
+ * The error's own sentence, or the one for an error nobody named.
+ *
+ * A refused photo comes back with the backend's reason in Arabic («تعذّرت قراءة الملف كصورة»,
+ * «حجم الصورة أكبر من…»); that says more than «تحقق من البيانات المدخلة», so it is used.
+ */
 @Composable
-private fun OnboardingMessage.reason(): String =
-    appErrorText(error ?: AppError(AppError.Kind.UNEXPECTED))
+private fun OnboardingMessage.reason(): String {
+    val said = error?.fieldErrors?.values?.flatten()?.firstOrNull { reason ->
+        reason.any { it.code in ARABIC }
+    }
+    return said ?: appErrorText(error ?: AppError(AppError.Kind.UNEXPECTED))
+}
 
 /**
  * The words of the owner's registration, read from the module's own resources.

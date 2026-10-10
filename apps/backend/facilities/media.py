@@ -14,15 +14,21 @@ MAX_IMAGE_PIXELS = 25_000_000
 MAX_DIMENSION = 10_000
 JPEG_QUALITY = 88
 
+# Said to the owner or the operator who picked the file, so in their language: these reach
+# the app and the console as the reason a photo was refused.
+TOO_LARGE = "حجم الصورة أكبر من 10 ميغابايت. صغّرها ثم أعد المحاولة."
+TOO_BIG_SIDES = "أبعاد الصورة أكبر من المسموح. اختر صورة أصغر."
+NOT_AN_IMAGE = "تعذّرت قراءة الملف كصورة. اختر صورة أخرى."
+
 
 def _read_upload(upload: IO[bytes]) -> bytes:
     if getattr(upload, "size", 0) > MAX_UPLOAD_BYTES:
-        raise ValidationError("Image exceeds the upload byte limit.")
+        raise ValidationError(TOO_LARGE)
     data = upload.read(MAX_UPLOAD_BYTES + 1)
     if len(data) > MAX_UPLOAD_BYTES:
-        raise ValidationError("Image exceeds the upload byte limit.")
+        raise ValidationError(TOO_LARGE)
     if not data:
-        raise ValidationError("Image is empty.")
+        raise ValidationError("الملف فارغ. اختر صورة أخرى.")
     return data
 
 
@@ -32,18 +38,18 @@ def safe_reencode_image(upload: IO[bytes]) -> tuple[bytes, int, int]:
         with Image.open(BytesIO(raw)) as image:
             width, height = image.size
             if width <= 0 or height <= 0:
-                raise ValidationError("Image dimensions are invalid.")
+                raise ValidationError(NOT_AN_IMAGE)
             if width > MAX_DIMENSION or height > MAX_DIMENSION:
-                raise ValidationError("Image dimensions exceed the allowed limit.")
+                raise ValidationError(TOO_BIG_SIDES)
             if width * height > MAX_IMAGE_PIXELS:
-                raise ValidationError("Image pixel count exceeds the allowed limit.")
+                raise ValidationError(TOO_BIG_SIDES)
             image.load()
             safe = image.convert("RGB")
             output = BytesIO()
             safe.save(output, format="JPEG", quality=JPEG_QUALITY, optimize=True)
             return output.getvalue(), width, height
     except (UnidentifiedImageError, OSError) as exc:
-        raise ValidationError("Uploaded file is not a valid image.") from exc
+        raise ValidationError(NOT_AN_IMAGE) from exc
 
 
 def save_public_image(
