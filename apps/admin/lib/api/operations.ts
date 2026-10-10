@@ -81,6 +81,11 @@ export const READS = {
     apis.facilities.adminFacilityTimelineRetrieve({ facilityId: p.id! }),
   facility: (apis: AdminApis, p: Params) =>
     apis.facilities.adminFacilityRetrieve({ facilityId: p.id! }),
+  // A facility's week and photos, set from its edit window (DECISION-115).
+  facilityHours: (apis: AdminApis, p: Params) =>
+    apis.facilities.adminFacilityHoursList({ facilityId: p.id! }),
+  facilityImages: (apis: AdminApis, p: Params) =>
+    apis.facilities.adminFacilityImagesList({ facilityId: p.id! }),
 
   users: (apis: AdminApis, p: Params) =>
     apis.users.adminUsersList(
@@ -217,6 +222,16 @@ export const WRITES = {
   // null, and the id of an update travels beside the fields rather than among them.
   facilityCreate: (apis: AdminApis, b: Body) =>
     apis.facilities.adminFacilityCreate({ adminFacilityCreate: b as never }),
+  facilityHoursReplace: (apis: AdminApis, b: Body) =>
+    apis.facilities.adminFacilityHoursReplace({
+      facilityId: String(b.id),
+      businessHourInput: (b.items ?? []) as never,
+    }),
+  facilityImageDelete: (apis: AdminApis, b: Body) =>
+    apis.facilities.adminFacilityImageDelete({
+      facilityId: String(b.facilityId),
+      imageId: String(b.imageId),
+    }),
   facilityUpdate: (apis: AdminApis, b: Body) => {
     const { id, ...fields } = b;
     return apis.facilities.adminFacilityUpdate({

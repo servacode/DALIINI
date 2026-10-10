@@ -2044,3 +2044,20 @@ a.bar-row:hover .bar-label { color: var(--ad-brand); }
 .item-card-cover-empty { display: grid; place-items: center; align-content: center; gap: 6px; color: var(--ad-text-muted); font-size: 12px; }
 .data-table .audit-code, .audit-code { justify-self: start; display: inline; border: 0; padding: 0; background: none; box-shadow: none; }
 .form-dialog-foot .broadcast-send { border: 0; padding: 0; margin: 0; }
+
+/* A facility's week, set from the console (DECISION-115): a row a day, one or two periods. */
+.hours-editor { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.hours-day { display: grid; grid-template-columns: 5.5em 1fr auto; align-items: center; gap: var(--ad-space-2); padding: 6px 0; border-block-end: 1px solid var(--ad-stroke-subtle); }
+.hours-day:last-child { border-block-end: 0; }
+.hours-day-name { font-weight: 700; font-size: 13px; }
+.hours-day[data-closed] .hours-day-name { color: var(--ad-text-muted); }
+.hours-spans { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.hours-span { display: inline-flex; align-items: center; gap: 4px; padding: 2px 4px; border-radius: 10px; background: var(--ad-surface-subtle); }
+.hours-span input { min-height: 32px; padding: 0 6px; border: 1px solid var(--ad-stroke); border-radius: 8px; background: var(--ad-surface); font: inherit; font-variant-numeric: tabular-nums; }
+.photo-grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); margin: 0; padding: 0; list-style: none; }
+.photo-grid li { position: relative; aspect-ratio: 16 / 10; border-radius: 12px; overflow: hidden; background: var(--ad-surface-subtle); }
+.photo-grid img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-badge { position: absolute; inset-block-start: 6px; inset-inline-start: 6px; padding: 2px 8px; border-radius: var(--ad-radius-pill); background: var(--ad-brand); color: #fff; font-size: 11px; font-weight: 700; }
+.photo-remove { position: absolute; inset-block-start: 6px; inset-inline-end: 6px; display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.92); color: var(--ad-danger); cursor: pointer; }
+.settings-block { min-width: 0; }
+.hours-day { grid-template-columns: 5.5em minmax(0, 1fr) auto; }

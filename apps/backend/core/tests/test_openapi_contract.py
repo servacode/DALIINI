@@ -62,6 +62,7 @@ NO_CONTENT_OPERATIONS = {
     ("/api/v1/account/push-token/", "put"),
     ("/api/v1/account/push-token/unregister/", "post"),
     ("/api/v1/admin/ads/{advertisement_id}/", "delete"),
+    ("/api/v1/admin/facilities/{facility_id}/images/{image_id}/", "delete"),
     ("/api/v1/admin/content/faq/{entry_id}/", "delete"),
     ("/api/v1/admin/content/pages/{slug}/", "delete"),
     ("/api/v1/admin/duty/{shift_id}/", "delete"),

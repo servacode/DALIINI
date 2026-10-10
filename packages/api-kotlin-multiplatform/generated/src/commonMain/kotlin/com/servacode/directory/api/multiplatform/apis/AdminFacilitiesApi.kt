@@ -23,6 +23,10 @@ import com.servacode.directory.api.multiplatform.models.AdminFacilityList
 import com.servacode.directory.api.multiplatform.models.AdminFacilityMap
 import com.servacode.directory.api.multiplatform.models.AdminTimeline
 import com.servacode.directory.api.multiplatform.models.ApiError
+import com.servacode.directory.api.multiplatform.models.BusinessHourInput
+import com.servacode.directory.api.multiplatform.models.BusinessHoursList
+import com.servacode.directory.api.multiplatform.models.OwnerFacilityImage
+import com.servacode.directory.api.multiplatform.models.OwnerFacilityImageList
 import com.servacode.directory.api.multiplatform.models.PatchedAdminFacilityWrite
 
 import com.servacode.directory.api.multiplatform.infrastructure.*
@@ -262,6 +266,183 @@ open class AdminFacilitiesApi : ApiClient {
         ).wrap()
     }
 
+
+
+    /**
+     * A facility&#39;s weekly opening hours
+     * 
+     * @param facilityId 
+     * @return BusinessHoursList
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun adminFacilityHoursList(facilityId: kotlin.String): HttpResponse<BusinessHoursList> {
+
+        val localVariableAuthNames = listOf<String>("bearerAccessToken")
+
+        val localVariableBody = 
+            io.ktor.client.utils.EmptyContent
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.GET,
+            "/api/v1/admin/facilities/{facility_id}/hours/".replace("{" + "facility_id" + "}", "$facilityId"),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+        )
+
+        return request(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames
+        ).wrap()
+    }
+
+
+    /**
+     * Replace a facility&#39;s weekly opening hours
+     * The whole week in one call, as the owner&#39;s own route: overnight spans are allowed and same-day overlaps refused. Requires &#x60;admin.facilities.edit&#x60;.
+     * @param facilityId 
+     * @param businessHourInput 
+     * @return BusinessHoursList
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun adminFacilityHoursReplace(facilityId: kotlin.String, businessHourInput: kotlin.collections.List<BusinessHourInput>): HttpResponse<BusinessHoursList> {
+
+        val localVariableAuthNames = listOf<String>("bearerAccessToken")
+
+        val localVariableBody = AdminFacilityHoursReplaceRequest(businessHourInput)
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.PUT,
+            "/api/v1/admin/facilities/{facility_id}/hours/".replace("{" + "facility_id" + "}", "$facilityId"),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+        )
+
+        return jsonRequest(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames
+        ).wrap()
+    }
+
+    @Serializable(AdminFacilityHoursReplaceRequest.Companion::class)
+    private class AdminFacilityHoursReplaceRequest(val value: List<BusinessHourInput>) {
+        companion object : KSerializer<AdminFacilityHoursReplaceRequest> {
+            private val serializer: KSerializer<List<BusinessHourInput>> = serializer<List<BusinessHourInput>>()
+            override val descriptor = serializer.descriptor
+            override fun serialize(encoder: Encoder, value: AdminFacilityHoursReplaceRequest) = serializer.serialize(encoder, value.value)
+            override fun deserialize(decoder: Decoder) = AdminFacilityHoursReplaceRequest(serializer.deserialize(decoder))
+        }
+    }
+
+    /**
+     * Add a public photo to a facility
+     * Multipart, through the same pipeline as the owner&#39;s upload: the file is decoded, bounded, re-encoded to JPEG, stripped and stored under a random key. Requires &#x60;admin.facilities.edit&#x60;.
+     * @param facilityId 
+     * @param file 
+     * @return OwnerFacilityImage
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun adminFacilityImageCreate(facilityId: kotlin.String, file: io.ktor.client.request.forms.FormPart<io.ktor.client.request.forms.InputProvider>): HttpResponse<OwnerFacilityImage> {
+
+        val localVariableAuthNames = listOf<String>("bearerAccessToken")
+
+        val localVariableBody = 
+            formData {
+                file?.apply { append(file) }
+            }
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.POST,
+            "/api/v1/admin/facilities/{facility_id}/images/".replace("{" + "facility_id" + "}", "$facilityId"),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+        )
+
+        return multipartFormRequest(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames
+        ).wrap()
+    }
+
+
+    /**
+     * Remove a public photo from a facility
+     * Requires &#x60;admin.facilities.edit&#x60;. The stored file goes once the row does.
+     * @param facilityId 
+     * @param imageId 
+     * @return void
+     */
+    open suspend fun adminFacilityImageDelete(facilityId: kotlin.String, imageId: kotlin.String): HttpResponse<Unit> {
+
+        val localVariableAuthNames = listOf<String>("bearerAccessToken")
+
+        val localVariableBody = 
+            io.ktor.client.utils.EmptyContent
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.DELETE,
+            "/api/v1/admin/facilities/{facility_id}/images/{image_id}/".replace("{" + "facility_id" + "}", "$facilityId").replace("{" + "image_id" + "}", "$imageId"),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+        )
+
+        return request(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames
+        ).wrap()
+    }
+
+
+    /**
+     * A facility&#39;s public photos
+     * 
+     * @param facilityId 
+     * @return OwnerFacilityImageList
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun adminFacilityImagesList(facilityId: kotlin.String): HttpResponse<OwnerFacilityImageList> {
+
+        val localVariableAuthNames = listOf<String>("bearerAccessToken")
+
+        val localVariableBody = 
+            io.ktor.client.utils.EmptyContent
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.GET,
+            "/api/v1/admin/facilities/{facility_id}/images/".replace("{" + "facility_id" + "}", "$facilityId"),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+        )
+
+        return request(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames
+        ).wrap()
+    }
 
 
     /**

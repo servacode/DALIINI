@@ -14,6 +14,7 @@ import {
 } from "../../../components/ui";
 import { relativeTime } from "../../../components/ui/extra";
 import { useMutation } from "../../../lib/client/use-mutation";
+import { fieldErrorsFor } from "../../../lib/errors/messages";
 import { useResource } from "../../../lib/client/use-resource";
 
 type Setting = Readonly<{
@@ -246,6 +247,9 @@ export default function SettingsPage() {
 
   const [drafts, setDrafts] = useState<Record<string, string | boolean | number>>({});
   const [toast, setToast] = useState<string | null>(null);
+  // The setting whose save was refused, so the reason sits under that card, not atop the page.
+  const [failedKey, setFailedKey] = useState<string | null>(null);
+  const fieldError = fieldErrorsFor(mutation.error).value;
 
   function stored(setting: Setting): string | boolean | number {
     const kind = kindOf(setting);
@@ -259,6 +263,7 @@ export default function SettingsPage() {
   }
 
   async function save(setting: Setting): Promise<void> {
+    setFailedKey(setting.key);
     const ok = await mutation.run("settingWrite", {
       key: setting.key,
       type: setting.valueType,
@@ -281,7 +286,7 @@ export default function SettingsPage() {
       />
       {settings.loading ? <LoadingState /> : null}
       {settings.error ? <ErrorState error={settings.error} onRetry={settings.reload} /> : null}
-      {mutation.error ? <ErrorState error={mutation.error} /> : null}
+      {mutation.error && !fieldError ? <ErrorState error={mutation.error} /> : null}
 
       {settings.data && items.length === 0 ? <EmptyState title="لا إعدادات مُهيّأة" /> : null}
 
@@ -346,6 +351,7 @@ export default function SettingsPage() {
                         <input
                           type="text"
                           className="setting-text-input"
+                          dir={/whatsapp|email/i.test(setting.key) ? "ltr" : undefined}
                           disabled={!canManage}
                           data-testid={`setting-${setting.key}`}
                           value={String(value)}
@@ -355,6 +361,11 @@ export default function SettingsPage() {
                         />
                       )}
                     </div>
+                    {fieldError && failedKey === setting.key ? (
+                      <span className="field-error" role="alert">
+                        {fieldError}
+                      </span>
+                    ) : null}
                     <div className="setting-foot">
                       <span className="muted">{`آخر تغيير ${relativeTime(setting.updatedAt)}`}</span>
                       {canManage ? (

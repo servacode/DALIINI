@@ -4538,6 +4538,273 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/admin/facilities/{facility_id}/hours/:
+    get:
+      operationId: adminFacilityHoursList
+      summary: A facility's weekly opening hours
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Facilities
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessHoursList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+    put:
+      operationId: adminFacilityHoursReplace
+      description: 'The whole week in one call, as the owner''s own route: overnight
+        spans are allowed and same-day overlaps refused. Requires `admin.facilities.edit`.'
+      summary: Replace a facility's weekly opening hours
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Facilities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/BusinessHourInput'
+          application/x-www-form-urlencoded:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/BusinessHourInput'
+          multipart/form-data:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/BusinessHourInput'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessHoursList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/admin/facilities/{facility_id}/images/:
+    get:
+      operationId: adminFacilityImagesList
+      summary: A facility's public photos
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Facilities
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerFacilityImageList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+    post:
+      operationId: adminFacilityImageCreate
+      description: 'Multipart, through the same pipeline as the owner''s upload: the
+        file is decoded, bounded, re-encoded to JPEG, stripped and stored under a
+        random key. Requires `admin.facilities.edit`.'
+      summary: Add a public photo to a facility
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Facilities
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PublicImageUpload'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerFacilityImage'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
+  /api/v1/admin/facilities/{facility_id}/images/{image_id}/:
+    delete:
+      operationId: adminFacilityImageDelete
+      description: Requires `admin.facilities.edit`. The stored file goes once the
+        row does.
+      summary: Remove a public photo from a facility
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: image_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Facilities
+      security:
+      - bearerAccessToken: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
   /api/v1/admin/facilities/{facility_id}/reactivate/:
     post:
       operationId: adminFacilityReactivate

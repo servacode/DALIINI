@@ -27,6 +27,10 @@ import com.servacode.directory.api.models.AdminFacilityList
 import com.servacode.directory.api.models.AdminFacilityMap
 import com.servacode.directory.api.models.AdminTimeline
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.BusinessHourInput
+import com.servacode.directory.api.models.BusinessHoursList
+import com.servacode.directory.api.models.OwnerFacilityImage
+import com.servacode.directory.api.models.OwnerFacilityImageList
 import com.servacode.directory.api.models.PatchedAdminFacilityWrite
 
 class AdminFacilitiesApiTest : ShouldSpec() {
@@ -78,6 +82,48 @@ class AdminFacilitiesApiTest : ShouldSpec() {
             // uncomment below to test adminFacilityCreate
             //val adminFacilityCreate : AdminFacilityCreate =  // AdminFacilityCreate | 
             //val result : AdminFacilityDetail = apiInstance.adminFacilityCreate(adminFacilityCreate)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminFacilityHoursList
+        should("test adminFacilityHoursList") {
+            // uncomment below to test adminFacilityHoursList
+            //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : BusinessHoursList = apiInstance.adminFacilityHoursList(facilityId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminFacilityHoursReplace
+        should("test adminFacilityHoursReplace") {
+            // uncomment below to test adminFacilityHoursReplace
+            //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val businessHourInput : kotlin.collections.List<BusinessHourInput> =  // kotlin.collections.List<BusinessHourInput> | 
+            //val result : BusinessHoursList = apiInstance.adminFacilityHoursReplace(facilityId, businessHourInput)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminFacilityImageCreate
+        should("test adminFacilityImageCreate") {
+            // uncomment below to test adminFacilityImageCreate
+            //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val file : java.io.File = BINARY_DATA_HERE // java.io.File | 
+            //val result : OwnerFacilityImage = apiInstance.adminFacilityImageCreate(facilityId, file)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminFacilityImageDelete
+        should("test adminFacilityImageDelete") {
+            // uncomment below to test adminFacilityImageDelete
+            //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val imageId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //apiInstance.adminFacilityImageDelete(facilityId, imageId)
+        }
+
+        // to test adminFacilityImagesList
+        should("test adminFacilityImagesList") {
+            // uncomment below to test adminFacilityImagesList
+            //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val result : OwnerFacilityImageList = apiInstance.adminFacilityImagesList(facilityId)
             //result shouldBe ("TODO")
         }
 

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useCan } from "../../../components/admin-shell";
 import { ExportButton } from "../../../components/export-button";
 import { type EditableFacility, FacilityForm } from "../../../components/facility-form";
+import { FacilityMedia } from "../../../components/facility-media";
 import { Icon, type IconName } from "../../../components/icons";
 import {
   ConfirmDialog,
@@ -161,6 +162,7 @@ export function FacilitiesView({ mapStyleUrl }: { mapStyleUrl: string }) {
   const [decision, setDecision] = useState<{ kind: Decision; row: FacilityRow } | null>(null);
   const [reason, setReason] = useState("");
   const [history, setHistory] = useState<FacilityRow | null>(null);
+  const [media, setMedia] = useState<FacilityRow | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const linked = filters.id || null;
 
@@ -297,6 +299,7 @@ export function FacilitiesView({ mapStyleUrl }: { mapStyleUrl: string }) {
                 setDecision({ kind, row });
               }}
               onHistory={() => setHistory(row)}
+              onMedia={() => setMedia(row)}
             />
           ))}
         </ul>
@@ -342,11 +345,38 @@ export function FacilitiesView({ mapStyleUrl }: { mapStyleUrl: string }) {
             onCancel={closeForm}
             onSaved={() => {
               closeForm();
-              setToast("أُضيفت المنشأة.");
+              setToast("أُضيفت المنشأة. أضف دوامها وصورها من زر الساعة على بطاقتها.");
               facilities.reload();
             }}
           />
         ) : null}
+      </FormDialog>
+
+      <FormDialog
+        open={media !== null}
+        wide
+        icon="clock"
+        title={media ? `دوام ${media.nameAr} وصورها` : ""}
+        description="ما يراه الناس: متى تفتح، وكيف تبدو."
+        onClose={() => {
+          setMedia(null);
+          facilities.reload();
+        }}
+        testId="facility-media"
+        footer={
+          <button
+            type="button"
+            className="button-primary"
+            onClick={() => {
+              setMedia(null);
+              facilities.reload();
+            }}
+          >
+            إغلاق
+          </button>
+        }
+      >
+        {media ? <FacilityMedia facilityId={media.id} canEdit={canEdit} /> : null}
       </FormDialog>
 
       <FormDialog
@@ -412,6 +442,7 @@ function FacilityCard({
   onEdit,
   onDecide,
   onHistory,
+  onMedia,
 }: {
   row: FacilityRow;
   index: number;
@@ -421,6 +452,7 @@ function FacilityCard({
   onEdit: () => void;
   onDecide: (kind: Decision) => void;
   onHistory: () => void;
+  onMedia: () => void;
 }) {
   const status = STATUS[row.status];
   const kind =
@@ -512,6 +544,16 @@ function FacilityCard({
               تفعيل
             </button>
           ) : null}
+          <button
+            type="button"
+            className="profile-act-icon"
+            title="الدوام والصور"
+            aria-label={`دوام ${row.nameAr} وصورها`}
+            data-testid={`media-${row.id}`}
+            onClick={onMedia}
+          >
+            <Icon name="clock" width={16} height={16} />
+          </button>
           <button
             type="button"
             className="profile-act-icon"

@@ -8,6 +8,11 @@ All URIs are relative to *http://localhost*
 | [**adminFacilitiesMap**](AdminFacilitiesApi.md#adminFacilitiesMap) | **GET** api/v1/admin/facilities/map/ | Located facilities as map points, with the same filters as the list |
 | [**adminFacilityClose**](AdminFacilitiesApi.md#adminFacilityClose) | **POST** api/v1/admin/facilities/{facility_id}/close/ | Close a facility |
 | [**adminFacilityCreate**](AdminFacilitiesApi.md#adminFacilityCreate) | **POST** api/v1/admin/facilities/ | Add a facility to the directory |
+| [**adminFacilityHoursList**](AdminFacilitiesApi.md#adminFacilityHoursList) | **GET** api/v1/admin/facilities/{facility_id}/hours/ | A facility&#39;s weekly opening hours |
+| [**adminFacilityHoursReplace**](AdminFacilitiesApi.md#adminFacilityHoursReplace) | **PUT** api/v1/admin/facilities/{facility_id}/hours/ | Replace a facility&#39;s weekly opening hours |
+| [**adminFacilityImageCreate**](AdminFacilitiesApi.md#adminFacilityImageCreate) | **POST** api/v1/admin/facilities/{facility_id}/images/ | Add a public photo to a facility |
+| [**adminFacilityImageDelete**](AdminFacilitiesApi.md#adminFacilityImageDelete) | **DELETE** api/v1/admin/facilities/{facility_id}/images/{image_id}/ | Remove a public photo from a facility |
+| [**adminFacilityImagesList**](AdminFacilitiesApi.md#adminFacilityImagesList) | **GET** api/v1/admin/facilities/{facility_id}/images/ | A facility&#39;s public photos |
 | [**adminFacilityReactivate**](AdminFacilitiesApi.md#adminFacilityReactivate) | **POST** api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility |
 | [**adminFacilityRetrieve**](AdminFacilitiesApi.md#adminFacilityRetrieve) | **GET** api/v1/admin/facilities/{facility_id}/ | Retrieve one facility |
 | [**adminFacilitySuspend**](AdminFacilitiesApi.md#adminFacilitySuspend) | **POST** api/v1/admin/facilities/{facility_id}/suspend/ | Suspend a facility |
@@ -209,6 +214,218 @@ Configure bearerAccessToken:
 ### HTTP request headers
 
  - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+A facility&#39;s weekly opening hours
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminFacilitiesApi::class.java)
+val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+
+launch(Dispatchers.IO) {
+    val result : BusinessHoursList = webService.adminFacilityHoursList(facilityId)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **facilityId** | **java.util.UUID**|  | |
+
+### Return type
+
+[**BusinessHoursList**](BusinessHoursList.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Replace a facility&#39;s weekly opening hours
+
+The whole week in one call, as the owner&#39;s own route: overnight spans are allowed and same-day overlaps refused. Requires &#x60;admin.facilities.edit&#x60;.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminFacilitiesApi::class.java)
+val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+val businessHourInput : kotlin.collections.List<BusinessHourInput> =  // kotlin.collections.List<BusinessHourInput> | 
+
+launch(Dispatchers.IO) {
+    val result : BusinessHoursList = webService.adminFacilityHoursReplace(facilityId, businessHourInput)
+}
+```
+
+### Parameters
+| **facilityId** | **java.util.UUID**|  | |
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **businessHourInput** | [**kotlin.collections.List&lt;BusinessHourInput&gt;**](BusinessHourInput.md)|  | |
+
+### Return type
+
+[**BusinessHoursList**](BusinessHoursList.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+Add a public photo to a facility
+
+Multipart, through the same pipeline as the owner&#39;s upload: the file is decoded, bounded, re-encoded to JPEG, stripped and stored under a random key. Requires &#x60;admin.facilities.edit&#x60;.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminFacilitiesApi::class.java)
+val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+val file : java.io.File = BINARY_DATA_HERE // java.io.File | 
+
+launch(Dispatchers.IO) {
+    val result : OwnerFacilityImage = webService.adminFacilityImageCreate(facilityId, file)
+}
+```
+
+### Parameters
+| **facilityId** | **java.util.UUID**|  | |
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **file** | **java.io.File**|  | |
+
+### Return type
+
+[**OwnerFacilityImage**](OwnerFacilityImage.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
+
+
+Remove a public photo from a facility
+
+Requires &#x60;admin.facilities.edit&#x60;. The stored file goes once the row does.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminFacilitiesApi::class.java)
+val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+val imageId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+
+launch(Dispatchers.IO) {
+    webService.adminFacilityImageDelete(facilityId, imageId)
+}
+```
+
+### Parameters
+| **facilityId** | **java.util.UUID**|  | |
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **imageId** | **java.util.UUID**|  | |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+A facility&#39;s public photos
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminFacilitiesApi::class.java)
+val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+
+launch(Dispatchers.IO) {
+    val result : OwnerFacilityImageList = webService.adminFacilityImagesList(facilityId)
+}
+```
+
+### Parameters
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **facilityId** | **java.util.UUID**|  | |
+
+### Return type
+
+[**OwnerFacilityImageList**](OwnerFacilityImageList.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 

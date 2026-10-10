@@ -23,6 +23,10 @@ import type {
   AdminFacilityMap,
   AdminTimeline,
   ApiError,
+  BusinessHourInput,
+  BusinessHoursList,
+  OwnerFacilityImage,
+  OwnerFacilityImageList,
   PatchedAdminFacilityWrite,
 } from '../models/index';
 import {
@@ -42,6 +46,14 @@ import {
     AdminTimelineToJSON,
     ApiErrorFromJSON,
     ApiErrorToJSON,
+    BusinessHourInputFromJSON,
+    BusinessHourInputToJSON,
+    BusinessHoursListFromJSON,
+    BusinessHoursListToJSON,
+    OwnerFacilityImageFromJSON,
+    OwnerFacilityImageToJSON,
+    OwnerFacilityImageListFromJSON,
+    OwnerFacilityImageListToJSON,
     PatchedAdminFacilityWriteFromJSON,
     PatchedAdminFacilityWriteToJSON,
 } from '../models/index';
@@ -75,6 +87,29 @@ export interface AdminFacilityCloseRequest {
 
 export interface AdminFacilityCreateRequest {
     adminFacilityCreate: AdminFacilityCreate;
+}
+
+export interface AdminFacilityHoursListRequest {
+    facilityId: string;
+}
+
+export interface AdminFacilityHoursReplaceRequest {
+    facilityId: string;
+    businessHourInput: Array<BusinessHourInput>;
+}
+
+export interface AdminFacilityImageCreateRequest {
+    facilityId: string;
+    file: Blob;
+}
+
+export interface AdminFacilityImageDeleteRequest {
+    facilityId: string;
+    imageId: string;
+}
+
+export interface AdminFacilityImagesListRequest {
+    facilityId: string;
 }
 
 export interface AdminFacilityReactivateRequest {
@@ -341,6 +376,282 @@ export class AdminFacilitiesApi extends runtime.BaseAPI {
      */
     async adminFacilityCreate(requestParameters: AdminFacilityCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacilityDetail> {
         const response = await this.adminFacilityCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * A facility\'s weekly opening hours
+     */
+    async adminFacilityHoursListRaw(requestParameters: AdminFacilityHoursListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BusinessHoursList>> {
+        if (requestParameters['facilityId'] == null) {
+            throw new runtime.RequiredError(
+                'facilityId',
+                'Required parameter "facilityId" was null or undefined when calling adminFacilityHoursList().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/facilities/{facility_id}/hours/`;
+        urlPath = urlPath.replace(`{${"facility_id"}}`, encodeURIComponent(String(requestParameters['facilityId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BusinessHoursListFromJSON(jsonValue));
+    }
+
+    /**
+     * A facility\'s weekly opening hours
+     */
+    async adminFacilityHoursList(requestParameters: AdminFacilityHoursListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BusinessHoursList> {
+        const response = await this.adminFacilityHoursListRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * The whole week in one call, as the owner\'s own route: overnight spans are allowed and same-day overlaps refused. Requires `admin.facilities.edit`.
+     * Replace a facility\'s weekly opening hours
+     */
+    async adminFacilityHoursReplaceRaw(requestParameters: AdminFacilityHoursReplaceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BusinessHoursList>> {
+        if (requestParameters['facilityId'] == null) {
+            throw new runtime.RequiredError(
+                'facilityId',
+                'Required parameter "facilityId" was null or undefined when calling adminFacilityHoursReplace().'
+            );
+        }
+
+        if (requestParameters['businessHourInput'] == null) {
+            throw new runtime.RequiredError(
+                'businessHourInput',
+                'Required parameter "businessHourInput" was null or undefined when calling adminFacilityHoursReplace().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/facilities/{facility_id}/hours/`;
+        urlPath = urlPath.replace(`{${"facility_id"}}`, encodeURIComponent(String(requestParameters['facilityId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: requestParameters['businessHourInput']!.map(BusinessHourInputToJSON),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BusinessHoursListFromJSON(jsonValue));
+    }
+
+    /**
+     * The whole week in one call, as the owner\'s own route: overnight spans are allowed and same-day overlaps refused. Requires `admin.facilities.edit`.
+     * Replace a facility\'s weekly opening hours
+     */
+    async adminFacilityHoursReplace(requestParameters: AdminFacilityHoursReplaceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BusinessHoursList> {
+        const response = await this.adminFacilityHoursReplaceRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Multipart, through the same pipeline as the owner\'s upload: the file is decoded, bounded, re-encoded to JPEG, stripped and stored under a random key. Requires `admin.facilities.edit`.
+     * Add a public photo to a facility
+     */
+    async adminFacilityImageCreateRaw(requestParameters: AdminFacilityImageCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OwnerFacilityImage>> {
+        if (requestParameters['facilityId'] == null) {
+            throw new runtime.RequiredError(
+                'facilityId',
+                'Required parameter "facilityId" was null or undefined when calling adminFacilityImageCreate().'
+            );
+        }
+
+        if (requestParameters['file'] == null) {
+            throw new runtime.RequiredError(
+                'file',
+                'Required parameter "file" was null or undefined when calling adminFacilityImageCreate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters['file'] != null) {
+            formParams.append('file', requestParameters['file'] as any);
+        }
+
+
+        let urlPath = `/api/v1/admin/facilities/{facility_id}/images/`;
+        urlPath = urlPath.replace(`{${"facility_id"}}`, encodeURIComponent(String(requestParameters['facilityId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => OwnerFacilityImageFromJSON(jsonValue));
+    }
+
+    /**
+     * Multipart, through the same pipeline as the owner\'s upload: the file is decoded, bounded, re-encoded to JPEG, stripped and stored under a random key. Requires `admin.facilities.edit`.
+     * Add a public photo to a facility
+     */
+    async adminFacilityImageCreate(requestParameters: AdminFacilityImageCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OwnerFacilityImage> {
+        const response = await this.adminFacilityImageCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Requires `admin.facilities.edit`. The stored file goes once the row does.
+     * Remove a public photo from a facility
+     */
+    async adminFacilityImageDeleteRaw(requestParameters: AdminFacilityImageDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['facilityId'] == null) {
+            throw new runtime.RequiredError(
+                'facilityId',
+                'Required parameter "facilityId" was null or undefined when calling adminFacilityImageDelete().'
+            );
+        }
+
+        if (requestParameters['imageId'] == null) {
+            throw new runtime.RequiredError(
+                'imageId',
+                'Required parameter "imageId" was null or undefined when calling adminFacilityImageDelete().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/facilities/{facility_id}/images/{image_id}/`;
+        urlPath = urlPath.replace(`{${"facility_id"}}`, encodeURIComponent(String(requestParameters['facilityId'])));
+        urlPath = urlPath.replace(`{${"image_id"}}`, encodeURIComponent(String(requestParameters['imageId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Requires `admin.facilities.edit`. The stored file goes once the row does.
+     * Remove a public photo from a facility
+     */
+    async adminFacilityImageDelete(requestParameters: AdminFacilityImageDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.adminFacilityImageDeleteRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * A facility\'s public photos
+     */
+    async adminFacilityImagesListRaw(requestParameters: AdminFacilityImagesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OwnerFacilityImageList>> {
+        if (requestParameters['facilityId'] == null) {
+            throw new runtime.RequiredError(
+                'facilityId',
+                'Required parameter "facilityId" was null or undefined when calling adminFacilityImagesList().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/facilities/{facility_id}/images/`;
+        urlPath = urlPath.replace(`{${"facility_id"}}`, encodeURIComponent(String(requestParameters['facilityId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => OwnerFacilityImageListFromJSON(jsonValue));
+    }
+
+    /**
+     * A facility\'s public photos
+     */
+    async adminFacilityImagesList(requestParameters: AdminFacilityImagesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OwnerFacilityImageList> {
+        const response = await this.adminFacilityImagesListRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

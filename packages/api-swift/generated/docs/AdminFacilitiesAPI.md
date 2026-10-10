@@ -8,6 +8,11 @@ Method | HTTP request | Description
 [**adminFacilitiesMap**](AdminFacilitiesAPI.md#adminfacilitiesmap) | **GET** /api/v1/admin/facilities/map/ | Located facilities as map points, with the same filters as the list
 [**adminFacilityClose**](AdminFacilitiesAPI.md#adminfacilityclose) | **POST** /api/v1/admin/facilities/{facility_id}/close/ | Close a facility
 [**adminFacilityCreate**](AdminFacilitiesAPI.md#adminfacilitycreate) | **POST** /api/v1/admin/facilities/ | Add a facility to the directory
+[**adminFacilityHoursList**](AdminFacilitiesAPI.md#adminfacilityhourslist) | **GET** /api/v1/admin/facilities/{facility_id}/hours/ | A facility&#39;s weekly opening hours
+[**adminFacilityHoursReplace**](AdminFacilitiesAPI.md#adminfacilityhoursreplace) | **PUT** /api/v1/admin/facilities/{facility_id}/hours/ | Replace a facility&#39;s weekly opening hours
+[**adminFacilityImageCreate**](AdminFacilitiesAPI.md#adminfacilityimagecreate) | **POST** /api/v1/admin/facilities/{facility_id}/images/ | Add a public photo to a facility
+[**adminFacilityImageDelete**](AdminFacilitiesAPI.md#adminfacilityimagedelete) | **DELETE** /api/v1/admin/facilities/{facility_id}/images/{image_id}/ | Remove a public photo from a facility
+[**adminFacilityImagesList**](AdminFacilitiesAPI.md#adminfacilityimageslist) | **GET** /api/v1/admin/facilities/{facility_id}/images/ | A facility&#39;s public photos
 [**adminFacilityReactivate**](AdminFacilitiesAPI.md#adminfacilityreactivate) | **POST** /api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility
 [**adminFacilityRetrieve**](AdminFacilitiesAPI.md#adminfacilityretrieve) | **GET** /api/v1/admin/facilities/{facility_id}/ | Retrieve one facility
 [**adminFacilitySuspend**](AdminFacilitiesAPI.md#adminfacilitysuspend) | **POST** /api/v1/admin/facilities/{facility_id}/suspend/ | Suspend a facility
@@ -239,6 +244,258 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminFacilityHoursList**
+```swift
+    open class func adminFacilityHoursList(facilityId: UUID, completion: @escaping (_ data: BusinessHoursList?, _ error: Error?) -> Void)
+```
+
+A facility's weekly opening hours
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let facilityId = 987 // UUID | 
+
+// A facility's weekly opening hours
+AdminFacilitiesAPI.adminFacilityHoursList(facilityId: facilityId) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **facilityId** | **UUID** |  | 
+
+### Return type
+
+[**BusinessHoursList**](BusinessHoursList.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminFacilityHoursReplace**
+```swift
+    open class func adminFacilityHoursReplace(facilityId: UUID, businessHourInput: [BusinessHourInput], completion: @escaping (_ data: BusinessHoursList?, _ error: Error?) -> Void)
+```
+
+Replace a facility's weekly opening hours
+
+The whole week in one call, as the owner's own route: overnight spans are allowed and same-day overlaps refused. Requires `admin.facilities.edit`.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let facilityId = 987 // UUID | 
+let businessHourInput = [BusinessHourInput(weekday: 123, opensAt: "opensAt_example", closesAt: "closesAt_example", sequence: 123)] // [BusinessHourInput] | 
+
+// Replace a facility's weekly opening hours
+AdminFacilitiesAPI.adminFacilityHoursReplace(facilityId: facilityId, businessHourInput: businessHourInput) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **facilityId** | **UUID** |  | 
+ **businessHourInput** | [**[BusinessHourInput]**](BusinessHourInput.md) |  | 
+
+### Return type
+
+[**BusinessHoursList**](BusinessHoursList.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminFacilityImageCreate**
+```swift
+    open class func adminFacilityImageCreate(facilityId: UUID, file: URL, completion: @escaping (_ data: OwnerFacilityImage?, _ error: Error?) -> Void)
+```
+
+Add a public photo to a facility
+
+Multipart, through the same pipeline as the owner's upload: the file is decoded, bounded, re-encoded to JPEG, stripped and stored under a random key. Requires `admin.facilities.edit`.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let facilityId = 987 // UUID | 
+let file = URL(string: "https://example.com")! // URL | 
+
+// Add a public photo to a facility
+AdminFacilitiesAPI.adminFacilityImageCreate(facilityId: facilityId, file: file) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **facilityId** | **UUID** |  | 
+ **file** | **URL** |  | 
+
+### Return type
+
+[**OwnerFacilityImage**](OwnerFacilityImage.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminFacilityImageDelete**
+```swift
+    open class func adminFacilityImageDelete(facilityId: UUID, imageId: UUID, completion: @escaping (_ data: Void?, _ error: Error?) -> Void)
+```
+
+Remove a public photo from a facility
+
+Requires `admin.facilities.edit`. The stored file goes once the row does.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let facilityId = 987 // UUID | 
+let imageId = 987 // UUID | 
+
+// Remove a public photo from a facility
+AdminFacilitiesAPI.adminFacilityImageDelete(facilityId: facilityId, imageId: imageId) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **facilityId** | **UUID** |  | 
+ **imageId** | **UUID** |  | 
+
+### Return type
+
+Void (empty response body)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminFacilityImagesList**
+```swift
+    open class func adminFacilityImagesList(facilityId: UUID, completion: @escaping (_ data: OwnerFacilityImageList?, _ error: Error?) -> Void)
+```
+
+A facility's public photos
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let facilityId = 987 // UUID | 
+
+// A facility's public photos
+AdminFacilitiesAPI.adminFacilityImagesList(facilityId: facilityId) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **facilityId** | **UUID** |  | 
+
+### Return type
+
+[**OwnerFacilityImageList**](OwnerFacilityImageList.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

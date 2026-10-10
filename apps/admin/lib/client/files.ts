@@ -53,6 +53,28 @@ export async function uploadAdImage(file: File): Promise<Result<AdImage>> {
   }
 }
 
+export type FacilityPhoto = Readonly<{ id: string; url: string; sortOrder: number }>;
+
+/** Add one public photo to a facility (DECISION-115); the route checks it before Django does. */
+export async function uploadFacilityImage(
+  facilityId: string,
+  file: File,
+): Promise<Result<FacilityPhoto>> {
+  const form = new FormData();
+  form.append("file", file);
+  try {
+    const response = await fetch(`/api/admin/facilities/${encodeURIComponent(facilityId)}/images`, {
+      method: "POST",
+      credentials: "same-origin",
+      body: form,
+    });
+    if (response.ok) return { ok: true, data: (await response.json()) as FacilityPhoto };
+    return { ok: false, status: response.status, error: await failure(response) };
+  } catch {
+    return { ok: false, status: 0, error: NETWORK_FAILURE };
+  }
+}
+
 /**
  * Send a duty roster to be previewed (`apply` false) or written. The answer is the row-by-row
  * report either way; nothing is written unless every row is sound.

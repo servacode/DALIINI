@@ -15,7 +15,13 @@ import com.servacode.directory.api.models.AdminFacilityList
 import com.servacode.directory.api.models.AdminFacilityMap
 import com.servacode.directory.api.models.AdminTimeline
 import com.servacode.directory.api.models.ApiError
+import com.servacode.directory.api.models.BusinessHourInput
+import com.servacode.directory.api.models.BusinessHoursList
+import com.servacode.directory.api.models.OwnerFacilityImage
+import com.servacode.directory.api.models.OwnerFacilityImageList
 import com.servacode.directory.api.models.PatchedAdminFacilityWrite
+
+import okhttp3.MultipartBody
 
 interface AdminFacilitiesApi {
 
@@ -122,6 +128,94 @@ interface AdminFacilitiesApi {
      */
     @POST("api/v1/admin/facilities/")
     suspend fun adminFacilityCreate(@Body adminFacilityCreate: AdminFacilityCreate): Response<AdminFacilityDetail>
+
+    /**
+     * GET api/v1/admin/facilities/{facility_id}/hours/
+     * A facility&#39;s weekly opening hours
+     * 
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param facilityId 
+     * @return [BusinessHoursList]
+     */
+    @GET("api/v1/admin/facilities/{facility_id}/hours/")
+    suspend fun adminFacilityHoursList(@Path("facility_id") facilityId: java.util.UUID): Response<BusinessHoursList>
+
+    /**
+     * PUT api/v1/admin/facilities/{facility_id}/hours/
+     * Replace a facility&#39;s weekly opening hours
+     * The whole week in one call, as the owner&#39;s own route: overnight spans are allowed and same-day overlaps refused. Requires &#x60;admin.facilities.edit&#x60;.
+     * Responses:
+     *  - 200: 
+     *  - 400: A domain rule rejected the request; `code` names the rule.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param facilityId 
+     * @param businessHourInput 
+     * @return [BusinessHoursList]
+     */
+    @PUT("api/v1/admin/facilities/{facility_id}/hours/")
+    suspend fun adminFacilityHoursReplace(@Path("facility_id") facilityId: java.util.UUID, @Body businessHourInput: kotlin.collections.List<BusinessHourInput>): Response<BusinessHoursList>
+
+    /**
+     * POST api/v1/admin/facilities/{facility_id}/images/
+     * Add a public photo to a facility
+     * Multipart, through the same pipeline as the owner&#39;s upload: the file is decoded, bounded, re-encoded to JPEG, stripped and stored under a random key. Requires &#x60;admin.facilities.edit&#x60;.
+     * Responses:
+     *  - 201: 
+     *  - 400: A domain rule rejected the request; `code` names the rule.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param facilityId 
+     * @param file 
+     * @return [OwnerFacilityImage]
+     */
+    @Multipart
+    @POST("api/v1/admin/facilities/{facility_id}/images/")
+    suspend fun adminFacilityImageCreate(@Path("facility_id") facilityId: java.util.UUID, @Part file: MultipartBody.Part): Response<OwnerFacilityImage>
+
+    /**
+     * DELETE api/v1/admin/facilities/{facility_id}/images/{image_id}/
+     * Remove a public photo from a facility
+     * Requires &#x60;admin.facilities.edit&#x60;. The stored file goes once the row does.
+     * Responses:
+     *  - 204: No response body
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param facilityId 
+     * @param imageId 
+     * @return [Unit]
+     */
+    @DELETE("api/v1/admin/facilities/{facility_id}/images/{image_id}/")
+    suspend fun adminFacilityImageDelete(@Path("facility_id") facilityId: java.util.UUID, @Path("image_id") imageId: java.util.UUID): Response<Unit>
+
+    /**
+     * GET api/v1/admin/facilities/{facility_id}/images/
+     * A facility&#39;s public photos
+     * 
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *
+     * @param facilityId 
+     * @return [OwnerFacilityImageList]
+     */
+    @GET("api/v1/admin/facilities/{facility_id}/images/")
+    suspend fun adminFacilityImagesList(@Path("facility_id") facilityId: java.util.UUID): Response<OwnerFacilityImageList>
 
     /**
      * POST api/v1/admin/facilities/{facility_id}/reactivate/

@@ -3066,3 +3066,23 @@ public. It worked end to end, and it found these:
   with a sentence saying so. The existing environment values seed the setting.
 * The trial pharmacy and its owner's account were removed afterwards; the admin is the only
   account again.
+
+## DECISION-115 — The console sets a facility's hours and photos
+
+**Date:** 2026-10-10. Found in phase 1 of the launch readiness run.
+
+The directory opens empty and the first facilities are the operator's to add. The console could
+create a facility with its name, contacts and pin — but not its week or its picture, and the
+backend had no route for either outside the owner's own. A pharmacy the platform added itself
+could therefore never be «مفتوح الآن», never pass the «مفتوح الآن» filter, and always wore a
+placeholder.
+
+* `GET/PUT /admin/facilities/{id}/hours/`, `GET/POST /admin/facilities/{id}/images/` and
+  `DELETE /admin/facilities/{id}/images/{image_id}/`: the owner's own operations behind
+  `admin.facilities.edit` — the same weekly-schedule validation (overnight spans, no same-day
+  overlap), the same image pipeline (decoded, bounded, re-encoded, stripped, random key), the
+  same capability checks and the same audit actions, with the operator as the actor.
+* In the console, a clock button on each facility card opens «الدوام والصور»: a row a day,
+  closed or one or two periods, and the photos with the first marked as the card's.
+* The settings page names a refusal under the field it concerns, with the server's sentence,
+  and shows the support number left to right.

@@ -244,6 +244,228 @@ open class AdminFacilitiesAPI {
     }
 
     /**
+     A facility's weekly opening hours
+     
+     - parameter facilityId: (path)  
+     - returns: BusinessHoursList
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminFacilityHoursList(facilityId: UUID) async throws -> BusinessHoursList {
+        return try await adminFacilityHoursListWithRequestBuilder(facilityId: facilityId).execute().body
+    }
+
+    /**
+     A facility's weekly opening hours
+     - GET /api/v1/admin/facilities/{facility_id}/hours/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter facilityId: (path)  
+     - returns: RequestBuilder<BusinessHoursList> 
+     */
+    open class func adminFacilityHoursListWithRequestBuilder(facilityId: UUID) -> RequestBuilder<BusinessHoursList> {
+        var localVariablePath = "/api/v1/admin/facilities/{facility_id}/hours/"
+        let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
+        let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{facility_id}", with: facilityIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<BusinessHoursList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Replace a facility's weekly opening hours
+     
+     - parameter facilityId: (path)  
+     - parameter businessHourInput: (body)  
+     - returns: BusinessHoursList
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminFacilityHoursReplace(facilityId: UUID, businessHourInput: [BusinessHourInput]) async throws -> BusinessHoursList {
+        return try await adminFacilityHoursReplaceWithRequestBuilder(facilityId: facilityId, businessHourInput: businessHourInput).execute().body
+    }
+
+    /**
+     Replace a facility's weekly opening hours
+     - PUT /api/v1/admin/facilities/{facility_id}/hours/
+     - The whole week in one call, as the owner's own route: overnight spans are allowed and same-day overlaps refused. Requires `admin.facilities.edit`.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter facilityId: (path)  
+     - parameter businessHourInput: (body)  
+     - returns: RequestBuilder<BusinessHoursList> 
+     */
+    open class func adminFacilityHoursReplaceWithRequestBuilder(facilityId: UUID, businessHourInput: [BusinessHourInput]) -> RequestBuilder<BusinessHoursList> {
+        var localVariablePath = "/api/v1/admin/facilities/{facility_id}/hours/"
+        let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
+        let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{facility_id}", with: facilityIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: businessHourInput)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<BusinessHoursList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Add a public photo to a facility
+     
+     - parameter facilityId: (path)  
+     - parameter file: (form)  
+     - returns: OwnerFacilityImage
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminFacilityImageCreate(facilityId: UUID, file: URL) async throws -> OwnerFacilityImage {
+        return try await adminFacilityImageCreateWithRequestBuilder(facilityId: facilityId, file: file).execute().body
+    }
+
+    /**
+     Add a public photo to a facility
+     - POST /api/v1/admin/facilities/{facility_id}/images/
+     - Multipart, through the same pipeline as the owner's upload: the file is decoded, bounded, re-encoded to JPEG, stripped and stored under a random key. Requires `admin.facilities.edit`.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter facilityId: (path)  
+     - parameter file: (form)  
+     - returns: RequestBuilder<OwnerFacilityImage> 
+     */
+    open class func adminFacilityImageCreateWithRequestBuilder(facilityId: UUID, file: URL) -> RequestBuilder<OwnerFacilityImage> {
+        var localVariablePath = "/api/v1/admin/facilities/{facility_id}/images/"
+        let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
+        let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{facility_id}", with: facilityIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableFormParams: [String: Any?] = [
+            "file": file.encodeToJSON(),
+        ]
+
+        let localVariableNonNullParameters = APIHelper.rejectNil(localVariableFormParams)
+        let localVariableParameters = APIHelper.convertBoolToString(localVariableNonNullParameters)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "multipart/form-data",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<OwnerFacilityImage>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     Remove a public photo from a facility
+     
+     - parameter facilityId: (path)  
+     - parameter imageId: (path)  
+     - returns: Void
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminFacilityImageDelete(facilityId: UUID, imageId: UUID) async throws {
+        return try await adminFacilityImageDeleteWithRequestBuilder(facilityId: facilityId, imageId: imageId).execute().body
+    }
+
+    /**
+     Remove a public photo from a facility
+     - DELETE /api/v1/admin/facilities/{facility_id}/images/{image_id}/
+     - Requires `admin.facilities.edit`. The stored file goes once the row does.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter facilityId: (path)  
+     - parameter imageId: (path)  
+     - returns: RequestBuilder<Void> 
+     */
+    open class func adminFacilityImageDeleteWithRequestBuilder(facilityId: UUID, imageId: UUID) -> RequestBuilder<Void> {
+        var localVariablePath = "/api/v1/admin/facilities/{facility_id}/images/{image_id}/"
+        let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
+        let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{facility_id}", with: facilityIdPostEscape, options: .literal, range: nil)
+        let imageIdPreEscape = "\(APIHelper.mapValueToPathItem(imageId))"
+        let imageIdPostEscape = imageIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{image_id}", with: imageIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<Void>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getNonDecodableBuilder()
+
+        return localVariableRequestBuilder.init(method: "DELETE", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     A facility's public photos
+     
+     - parameter facilityId: (path)  
+     - returns: OwnerFacilityImageList
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminFacilityImagesList(facilityId: UUID) async throws -> OwnerFacilityImageList {
+        return try await adminFacilityImagesListWithRequestBuilder(facilityId: facilityId).execute().body
+    }
+
+    /**
+     A facility's public photos
+     - GET /api/v1/admin/facilities/{facility_id}/images/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter facilityId: (path)  
+     - returns: RequestBuilder<OwnerFacilityImageList> 
+     */
+    open class func adminFacilityImagesListWithRequestBuilder(facilityId: UUID) -> RequestBuilder<OwnerFacilityImageList> {
+        var localVariablePath = "/api/v1/admin/facilities/{facility_id}/images/"
+        let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
+        let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{facility_id}", with: facilityIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<OwnerFacilityImageList>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Reactivate a suspended facility
      
      - parameter facilityId: (path)  

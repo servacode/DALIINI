@@ -13,6 +13,7 @@ from . import (
     views_duty_import,
     views_facilities,
     views_facility_lifecycle,
+    views_facility_media,
     views_provinces,
     views_reports,
     views_reviews,
@@ -93,6 +94,18 @@ urlpatterns = [
     path("admin/facilities/", views_facilities.FacilityListView.as_view()),
     path("admin/facilities/map/", views_facilities.FacilityMapView.as_view()),
     path("admin/facilities/<uuid:facility_id>/", views_facilities.FacilityDetailView.as_view()),
+    path(
+        "admin/facilities/<uuid:facility_id>/hours/",
+        views_facility_media.AdminFacilityHoursView.as_view(),
+    ),
+    path(
+        "admin/facilities/<uuid:facility_id>/images/",
+        views_facility_media.AdminFacilityImagesView.as_view(),
+    ),
+    path(
+        "admin/facilities/<uuid:facility_id>/images/<uuid:image_id>/",
+        views_facility_media.AdminFacilityImageDeleteView.as_view(),
+    ),
     path(
         "admin/facilities/<uuid:facility_id>/suspend/",
         views_facility_lifecycle.FacilitySuspendView.as_view(),

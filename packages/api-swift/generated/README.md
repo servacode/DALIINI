@@ -96,6 +96,11 @@ Class | Method | HTTP request | Description
 *AdminFacilitiesAPI* | [**adminFacilitiesMap**](docs/AdminFacilitiesAPI.md#adminfacilitiesmap) | **GET** /api/v1/admin/facilities/map/ | Located facilities as map points, with the same filters as the list
 *AdminFacilitiesAPI* | [**adminFacilityClose**](docs/AdminFacilitiesAPI.md#adminfacilityclose) | **POST** /api/v1/admin/facilities/{facility_id}/close/ | Close a facility
 *AdminFacilitiesAPI* | [**adminFacilityCreate**](docs/AdminFacilitiesAPI.md#adminfacilitycreate) | **POST** /api/v1/admin/facilities/ | Add a facility to the directory
+*AdminFacilitiesAPI* | [**adminFacilityHoursList**](docs/AdminFacilitiesAPI.md#adminfacilityhourslist) | **GET** /api/v1/admin/facilities/{facility_id}/hours/ | A facility&#39;s weekly opening hours
+*AdminFacilitiesAPI* | [**adminFacilityHoursReplace**](docs/AdminFacilitiesAPI.md#adminfacilityhoursreplace) | **PUT** /api/v1/admin/facilities/{facility_id}/hours/ | Replace a facility&#39;s weekly opening hours
+*AdminFacilitiesAPI* | [**adminFacilityImageCreate**](docs/AdminFacilitiesAPI.md#adminfacilityimagecreate) | **POST** /api/v1/admin/facilities/{facility_id}/images/ | Add a public photo to a facility
+*AdminFacilitiesAPI* | [**adminFacilityImageDelete**](docs/AdminFacilitiesAPI.md#adminfacilityimagedelete) | **DELETE** /api/v1/admin/facilities/{facility_id}/images/{image_id}/ | Remove a public photo from a facility
+*AdminFacilitiesAPI* | [**adminFacilityImagesList**](docs/AdminFacilitiesAPI.md#adminfacilityimageslist) | **GET** /api/v1/admin/facilities/{facility_id}/images/ | A facility&#39;s public photos
 *AdminFacilitiesAPI* | [**adminFacilityReactivate**](docs/AdminFacilitiesAPI.md#adminfacilityreactivate) | **POST** /api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility
 *AdminFacilitiesAPI* | [**adminFacilityRetrieve**](docs/AdminFacilitiesAPI.md#adminfacilityretrieve) | **GET** /api/v1/admin/facilities/{facility_id}/ | Retrieve one facility
 *AdminFacilitiesAPI* | [**adminFacilitySuspend**](docs/AdminFacilitiesAPI.md#adminfacilitysuspend) | **POST** /api/v1/admin/facilities/{facility_id}/suspend/ | Suspend a facility
