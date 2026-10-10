@@ -1,6 +1,7 @@
 package com.servacode.directory.feature.duty
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -98,7 +99,9 @@ fun DutyRosterScreen(
                         )
                     }
                 } else {
-                    value.days.filter { it.facilities.isNotEmpty() }.forEach { day ->
+                    // Every day of a week, the empty ones too: a Wednesday left out of the list
+                    // read as nothing at all, when it is the one day nobody is on duty.
+                    value.days.filter { it.facilities.isNotEmpty() || value.days.size > 1 }.forEach { day ->
                         // A heading per day when the week is shown; one day needs none.
                         if (value.days.size > 1) {
                             item(key = "day-" + day.date) {
@@ -113,12 +116,35 @@ fun DutyRosterScreen(
                                 )
                             }
                         }
+                        if (day.facilities.isEmpty()) {
+                            item(key = "none-" + day.date) {
+                                Text(
+                                    text = RosterCopy.NO_DUTY_DAY,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.xs),
+                                )
+                            }
+                        }
                         items(day.facilities, key = { day.date + "-" + it.id }) { facility ->
-                            FacilityCard(
-                                facility = facility,
-                                onClick = { onFacility(facility.id) },
-                                modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.xs),
-                            )
+                            Column {
+                                FacilityCard(
+                                    facility = facility,
+                                    onClick = { onFacility(facility.id) },
+                                    modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.xs),
+                                )
+                                val spans = RosterSpans.forFacility(day.shifts, facility.id, day.date)
+                                if (spans.isNotEmpty()) {
+                                    Text(
+                                        text = RosterCopy.spans(spans),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier
+                                            .padding(horizontal = Space.screen)
+                                            .padding(bottom = Space.sm),
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -131,6 +157,19 @@ object RosterCopy {
     val TITLE: String @Composable get() = stringResource(Res.string.roster_title)
     val ERROR: String @Composable get() = stringResource(Res.string.roster_error)
     val EMPTY: String @Composable get() = stringResource(Res.string.roster_empty)
+    val NO_DUTY_DAY: String @Composable get() = stringResource(Res.string.roster_no_duty_day)
+
+    /** «منذ اليوم السابق حتى 08:00، ومن 22:00 إلى 08:00 من اليوم التالي», as the site says it. */
+    @Composable
+    fun spans(spans: List<RosterSpan>): String = spans.map { span ->
+        val from = span.from
+        when {
+            from == null && span.nextDay -> stringResource(Res.string.roster_span_all_day)
+            from == null -> stringResource(Res.string.roster_span_since, span.to)
+            span.nextDay -> stringResource(Res.string.roster_span_overnight, from, span.to)
+            else -> stringResource(Res.string.roster_span_same, from, span.to)
+        }
+    }.joinToString(stringResource(Res.string.roster_span_joiner))
     val PROVINCE: String @Composable get() = stringResource(Res.string.roster_province)
     val PROVINCE_ACTION: String @Composable get() = stringResource(Res.string.roster_province_action)
 

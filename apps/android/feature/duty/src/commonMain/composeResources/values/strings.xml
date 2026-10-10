@@ -29,6 +29,12 @@
     <string name="roster_week">الأسبوع</string>
     <string name="roster_error">تعذر تحميل المناوبات</string>
     <string name="roster_empty">لا توجد مناوبات مسجلة لهذه الفترة</string>
+    <string name="roster_no_duty_day">لا صيدلية مناوبة مسجّلة لهذا اليوم.</string>
+    <string name="roster_span_same">من %1$s إلى %2$s</string>
+    <string name="roster_span_overnight">من %1$s إلى %2$s من اليوم التالي</string>
+    <string name="roster_span_since">منذ اليوم السابق حتى %1$s</string>
+    <string name="roster_span_all_day">طوال اليوم</string>
+    <string name="roster_span_joiner">، و</string>
     <string name="roster_province">اختر محافظتك لعرض المناوبات</string>
     <string name="roster_province_action">اختيار المحافظة</string>
     <!-- A day's name above its list when the week is shown, as "الثلاثاء 29/09". -->
