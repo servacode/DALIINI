@@ -7,6 +7,8 @@
 <resources>
     <string name="home_you_are_in">أنت الآن في</string>
     <string name="home_notifications">الإشعارات</string>
+    <string name="home_duty">الصيدليات المناوبة</string>
+    <string name="home_duty_hint">من يناوب الآن، واليوم وغدًا وهذا الأسبوع</string>
     <string name="home_emergency">أرقام الطوارئ</string>
     <string name="home_emergency_hint">الأرقام الرسمية التي قد تحتاجها فورًا</string>
     <string name="home_recent">شوهدت مؤخراً</string>

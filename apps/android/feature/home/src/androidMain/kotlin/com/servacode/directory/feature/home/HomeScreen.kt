@@ -107,6 +107,7 @@ fun HomeScreen(
     onNotifications: () -> Unit,
     bottomBar: @Composable () -> Unit = {},
     onEmergencyNumbers: () -> Unit = {},
+    onDutyRoster: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
     extras: HomeExtrasViewModel = hiltViewModel(),
 ) {
@@ -193,6 +194,12 @@ fun HomeScreen(
                                 modifier = Modifier.padding(horizontal = Space.base),
                             )
                         }
+                    }
+                    // Who is on duty tonight is what most people open a directory of pharmacies
+                    // for; the roster had a screen and no way into it but a link from the site
+                    // (found in the launch readiness run).
+                    item(key = "duty") {
+                        DutyShortcut(onDutyRoster, Modifier.padding(horizontal = Space.base))
                     }
                     item(key = "emergency") {
                         EmergencyShortcut(onEmergencyNumbers, Modifier.padding(horizontal = Space.base))
@@ -791,6 +798,42 @@ private fun EmergencyShortcut(onOpen: () -> Unit, modifier: Modifier = Modifier)
             )
         }
         DirectoryIcon(DirectoryIcons.chevron, null, size = IconSize.small, tint = danger.content)
+    }
+}
+
+/** The duty roster, in the brand's own colours: today, tomorrow and the week. */
+@Composable
+private fun DutyShortcut(onOpen: () -> Unit, modifier: Modifier = Modifier) {
+    val container = MaterialTheme.colorScheme.primaryContainer
+    val content = MaterialTheme.colorScheme.onPrimaryContainer
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(Radius.large))
+            .background(container)
+            .clickable(role = Role.Button, onClick = onOpen)
+            .heightIn(min = Sizes.touchTarget * 1.4f)
+            .padding(horizontal = Space.base, vertical = Space.md),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Space.md),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(Sizes.touchTarget)
+                .clip(CircleShape)
+                .background(content.copy(alpha = EMERGENCY_DISC_ALPHA)),
+            contentAlignment = Alignment.Center,
+        ) {
+            DirectoryIcon(DirectoryIcons.moon, null, tint = content)
+        }
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(Space.xs),
+        ) {
+            Text(text = HomeCopy.DUTY, style = MaterialTheme.typography.titleMedium, color = content)
+            Text(text = HomeCopy.DUTY_HINT, style = MaterialTheme.typography.bodySmall, color = content)
+        }
+        DirectoryIcon(DirectoryIcons.chevron, null, size = IconSize.small, tint = content)
     }
 }
 

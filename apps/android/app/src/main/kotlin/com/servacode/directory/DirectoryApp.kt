@@ -208,6 +208,7 @@ fun DirectoryApp(
                 onNotifications = { navController.navigate(DirectoryRoute.Notifications) },
                 bottomBar = { DirectoryTabs(DirectoryTab.HOME, navController) },
                 onEmergencyNumbers = { navController.navigate(DirectoryRoute.EmergencyNumbers) },
+                onDutyRoster = { navController.navigate(DirectoryRoute.DutyNow) { launchSingleTop = true } },
             )
         }
         composable<DirectoryRoute.ProvincePicker> {
