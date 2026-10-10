@@ -117,6 +117,7 @@ fun LegalPageScreen(
     viewModel: LegalViewModel = hiltViewModel(),
 ) {
     val state by viewModel.page.collectAsStateWithLifecycle()
+    val faq by viewModel.faq.collectAsStateWithLifecycle()
     androidx.compose.runtime.LaunchedEffect(key) { viewModel.open(key) }
 
     DirectoryPage(
@@ -142,12 +143,30 @@ fun LegalPageScreen(
                     .padding(horizontal = Space.screen)
                     .verticalScroll(rememberScrollState()),
             ) {
-                Text(
-                    text = value.page.bodyAr.orEmpty(),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(vertical = Space.base),
-                )
+                if (key == LegalPageKey.FAQ && faq.isNotEmpty()) {
+                    // The same questions the site's /faq shows, written in the console.
+                    faq.forEach { entry ->
+                        Text(
+                            text = entry.question,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(top = Space.base),
+                        )
+                        Text(
+                            text = entry.answer,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = Space.xs, bottom = Space.base),
+                        )
+                    }
+                } else {
+                    Text(
+                        text = value.page.bodyAr.orEmpty(),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(vertical = Space.base),
+                    )
+                }
                 Text(
                     text = HelpCopy.pageVersion(value.page.version),
                     style = MaterialTheme.typography.bodySmall,

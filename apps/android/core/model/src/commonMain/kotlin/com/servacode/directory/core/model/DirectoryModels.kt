@@ -552,6 +552,12 @@ data class LegalPage(
 @Serializable
 enum class LegalPageKey { ABOUT, PRIVACY, TERMS, INSTRUCTIONS, FAQ, CONTACT }
 
+/** One question the team publishes from the console, with its answer, in their order. */
+data class FaqEntry(
+    val question: String,
+    val answer: String,
+)
+
 /**
  * Why someone reports a facility's public details. The backend's `FacilityReportReasonEnum`,
  * in the order the sheet offers them.

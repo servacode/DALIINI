@@ -1,5 +1,6 @@
 package com.servacode.directory.feature.settings
 
+import com.servacode.directory.core.model.FaqEntry
 import com.servacode.directory.core.model.LegalPage
 import com.servacode.directory.core.model.LegalPageKey
 import com.servacode.directory.core.model.SupportContact
@@ -31,6 +32,14 @@ class LegalRepository @Inject constructor(
     suspend fun page(key: LegalPageKey): Result<LegalPage> {
         read[key]?.let { return Result.success(it) }
         return runCatching { api.legalPage(key) }.onSuccess { read[key] = it }
+    }
+
+    private var questions: List<FaqEntry>? = null
+
+    /** The questions the console publishes; the FAQ page shows them in place of its own text. */
+    suspend fun faq(): Result<List<FaqEntry>> {
+        questions?.let { return Result.success(it) }
+        return runCatching { api.faq() }.onSuccess { questions = it }
     }
 
     private var support: SupportContact? = null

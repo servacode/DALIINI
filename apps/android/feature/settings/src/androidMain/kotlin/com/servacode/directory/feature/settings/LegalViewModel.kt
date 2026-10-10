@@ -2,6 +2,7 @@ package com.servacode.directory.feature.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.servacode.directory.core.model.FaqEntry
 import com.servacode.directory.core.model.LegalPageKey
 import com.servacode.directory.core.model.SupportContact
 import com.servacode.directory.core.model.toAppError
@@ -27,6 +28,10 @@ class LegalViewModel @Inject constructor(
     private val _page = MutableStateFlow<LegalPageState>(LegalPageState.Loading)
     val page: StateFlow<LegalPageState> = _page.asStateFlow()
 
+    // The console's questions, for the FAQ page. Empty, or unreadable, the page's own text shows.
+    private val _faq = MutableStateFlow<List<FaqEntry>>(emptyList())
+    val faq: StateFlow<List<FaqEntry>> = _faq.asStateFlow()
+
     init {
         refresh()
     }
@@ -44,6 +49,9 @@ class LegalViewModel @Inject constructor(
 
     /** Opens one page. What was read before shows at once; the fetch only confirms it. */
     fun open(key: LegalPageKey) {
+        if (key == LegalPageKey.FAQ) {
+            viewModelScope.launch { _faq.value = legal.faq().getOrDefault(emptyList()) }
+        }
         legal.cached(key)?.let { _page.value = LegalPageState.Content(it) }
         viewModelScope.launch {
             _page.value = legal.page(key).fold(

@@ -24,6 +24,7 @@ import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.core.model.EmergencyNumber
 import com.servacode.directory.core.model.FacilityDetail
 import com.servacode.directory.core.model.FacilityReportReason
+import com.servacode.directory.core.model.FaqEntry
 import com.servacode.directory.core.model.FacilitySummary
 import com.servacode.directory.core.model.HomeAd
 import com.servacode.directory.core.model.HomeSnapshot
@@ -268,6 +269,11 @@ class KtorPublicApi(private val clients: TransportClients) : PublicApiBoundary {
 
     override suspend fun legalPage(key: LegalPageKey): LegalPage =
         call { content.publicLegalDocumentRetrieve(key.name) }.toDomain()
+
+    override suspend fun faq(): List<FaqEntry> =
+        call { content.publicFaqList() }.items
+            .sortedBy { it.sortOrder }
+            .map { FaqEntry(question = it.questionAr, answer = it.answerAr) }
 
     override suspend fun supportContact(): SupportContact =
         call { content.publicSupportContact() }.let {

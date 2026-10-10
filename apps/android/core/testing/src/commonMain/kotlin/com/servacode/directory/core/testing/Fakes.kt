@@ -6,6 +6,7 @@ import com.servacode.directory.core.model.SupportContact
 import com.servacode.directory.core.model.EmergencyNumber
 import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.core.model.FacilityReportReason
+import com.servacode.directory.core.model.FaqEntry
 import com.servacode.directory.core.database.PublicCache
 import com.servacode.directory.core.datastore.DirectoryPreferences
 import com.servacode.directory.core.datastore.DirectoryPreferencesStore
@@ -295,6 +296,7 @@ class ScriptedPublicApi : PublicApiBoundary {
     var inboxAnswer: (String?) -> InboxPage = { throw offline }
     var legalPagesAnswer: () -> List<LegalPage> = { throw offline }
     var supportAnswer: () -> SupportContact = { SupportContact(null, null, null) }
+    var faqAnswer: () -> List<FaqEntry> = { emptyList() }
     var legalPageAnswer: (LegalPageKey) -> LegalPage = { throw offline }
 
     /** What the fake has been told to save, so a test can assert the round trip. */
@@ -365,6 +367,7 @@ class ScriptedPublicApi : PublicApiBoundary {
     override suspend fun legalPages(): List<LegalPage> = legalPagesAnswer().also { calls += "legal" }
 
     override suspend fun supportContact(): SupportContact = supportAnswer().also { calls += "support" }
+    override suspend fun faq(): List<FaqEntry> = faqAnswer().also { calls += "faq" }
 
     override suspend fun legalPage(key: LegalPageKey): LegalPage =
         legalPageAnswer(key).also { calls += "legal:$key" }

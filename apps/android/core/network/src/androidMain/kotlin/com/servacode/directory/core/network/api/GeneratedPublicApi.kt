@@ -9,6 +9,7 @@ import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.api.apis.PublicFacilitiesApi
 import com.servacode.directory.api.models.FacilityReportRequest
 import com.servacode.directory.core.model.FacilityReportReason
+import com.servacode.directory.core.model.FaqEntry
 import com.servacode.directory.api.apis.AccountApi
 import com.servacode.directory.api.apis.ContentApi
 import com.servacode.directory.api.apis.AdsApi
@@ -268,6 +269,11 @@ class GeneratedPublicApi(anonymous: GeneratedClient, authorized: GeneratedClient
 
     override suspend fun legalPage(key: LegalPageKey): LegalPage =
         call { content.publicLegalDocumentRetrieve(key.name) }.toDomain()
+
+    override suspend fun faq(): List<FaqEntry> =
+        call { content.publicFaqList() }.items
+            .sortedBy { it.sortOrder }
+            .map { FaqEntry(question = it.questionAr, answer = it.answerAr) }
 
     override suspend fun supportContact(): SupportContact =
         call { content.publicSupportContact() }.let {

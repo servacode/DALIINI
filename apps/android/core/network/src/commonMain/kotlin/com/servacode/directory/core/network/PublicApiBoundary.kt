@@ -5,6 +5,7 @@ import com.servacode.directory.core.model.NotificationSwitches
 import com.servacode.directory.core.model.EmergencyNumber
 import com.servacode.directory.core.model.DutyDay
 import com.servacode.directory.core.model.FacilityReportReason
+import com.servacode.directory.core.model.FaqEntry
 import com.servacode.directory.core.model.AccountProfile
 import com.servacode.directory.core.model.InboxPage
 import com.servacode.directory.core.model.LegalPage
@@ -184,6 +185,9 @@ interface PublicApiBoundary {
     /** The published pages, titles and versions only. */
     suspend fun legalPages(): List<LegalPage>
     suspend fun legalPage(key: LegalPageKey): LegalPage
+
+    /** The questions the console publishes, the same list the site's /faq shows. */
+    suspend fun faq(): List<FaqEntry>
 
     /** How people reach the team; one source the site reads too (DECISION-102). */
     suspend fun supportContact(): SupportContact
