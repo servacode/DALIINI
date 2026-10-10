@@ -656,7 +656,7 @@ export function relativeTime(value: string): string {
 }
 
 /** «دقيقة», «دقيقتين», «3 دقائق», «11 دقيقة»: the noun Arabic puts after each count. */
-function counted(n: number, one: string, two: string, few: string, many: string = one): string {
+export function counted(n: number, one: string, two: string, few: string, many: string = one): string {
   if (n === 1) return one;
   if (n === 2) return two;
   if (n <= 10) return `${NUMERALS.format(n)} ${few}`;

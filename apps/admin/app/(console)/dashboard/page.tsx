@@ -8,6 +8,7 @@ import { BarChart, LineChart } from "../../../components/charts";
 import { AlertsPanel, TaskCenter } from "../../../components/smart";
 import { addDays, damascusDay } from "../../../lib/client/calendar";
 import { useResource } from "../../../lib/client/use-resource";
+import { counted } from "../../../components/ui/extra";
 import {
   AuditTimeline,
   ErrorState,
@@ -121,7 +122,7 @@ export default function DashboardPage() {
               label="حسابات فعّالة"
               value={dashboard.data.activeUsers}
               icon="userCheck"
-              hint={`${dashboard.data.newUsers7d} حساباً جديداً خلال 7 أيام`}
+              hint={`${newAccounts(dashboard.data.newUsers7d)} خلال 7 أيام`}
             />
           </div>
 
@@ -176,4 +177,10 @@ export default function DashboardPage() {
       ) : null}
     </div>
   );
+}
+
+/** «حساب جديد», «حسابان جديدان», «4 حسابات جديدة», «12 حساباً جديداً»; none is «لا حسابات جديدة». */
+function newAccounts(n: number): string {
+  if (n === 0) return "لا حسابات جديدة";
+  return counted(n, "حساب جديد", "حسابان جديدان", "حسابات جديدة", "حساباً جديداً");
 }

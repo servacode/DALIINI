@@ -383,11 +383,15 @@ function AccountCard({
 }) {
   const owner = user.facilityCount > 0;
   const kind = !user.active ? "blocked" : owner ? "owner" : "plain";
+  // No live session is not «never signed in»: someone who signed out has none either, and
+  // the card said «لم يدخل بعد» beside their own «آخر دخول».
   const activity = user.lastSeenAt
     ? user.recentlyActive
       ? "نشط الآن"
       : `آخر ظهور ${relativeTime(user.lastSeenAt)}`
-    : "لم يدخل بعد";
+    : user.lastLoginAt
+      ? `آخر دخول ${relativeTime(user.lastLoginAt)}`
+      : "لم يدخل بعد";
   return (
     <ProfileCard
       testId={`account-${user.id}`}
