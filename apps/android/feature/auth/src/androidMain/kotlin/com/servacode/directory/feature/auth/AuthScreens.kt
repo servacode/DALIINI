@@ -328,14 +328,15 @@ fun RegisterScreen(
                     value = password,
                     onValueChange = { password = it },
                     label = AuthCopy.PASSWORD,
-                    error = fieldError(state.failure, "password"),
+                    error = passwordError(state.failure),
                 )
+                PasswordRule()
                 ConfirmationField(
                     value = confirmation,
                     password = password,
                     onValueChange = { confirmation = it },
                 )
-                FailureText(state.failure)
+                if (passwordError(state.failure) == null) FailureText(state.failure)
                 DirectoryPrimaryButton(
                     text = AuthCopy.CREATE_ACCOUNT,
                     onClick = { viewModel.complete(name, password) },
@@ -431,14 +432,15 @@ fun RecoveryScreen(
                     value = password,
                     onValueChange = { password = it },
                     label = AuthCopy.NEW_PASSWORD,
-                    error = fieldError(state.failure, "password"),
+                    error = passwordError(state.failure),
                 )
+                PasswordRule()
                 ConfirmationField(
                     value = confirmation,
                     password = password,
                     onValueChange = { confirmation = it },
                 )
-                FailureText(state.failure)
+                if (passwordError(state.failure) == null) FailureText(state.failure)
                 DirectoryPrimaryButton(
                     text = AuthCopy.RESET_PASSWORD,
                     onClick = { viewModel.reset(password) },
@@ -541,6 +543,21 @@ private fun PhoneField(
 private fun fieldError(failure: FormFailure?, vararg fields: String): String? =
     if (failure != null && fields.any { it in failure.fields }) AuthCopy.FIELD_ERROR else null
 
+/** What the backend's validators ask of a password (Django's four), said before it is refused. */
+@Composable
+private fun PasswordRule() {
+    Text(
+        text = AuthCopy.PASSWORD_RULE,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
+@Composable
+private fun passwordError(failure: FormFailure?): String? =
+    if (failure != null && "password" in failure.fields) AuthCopy.PASSWORD_REFUSED else null
+
 @Composable
 private fun FailureText(failure: FormFailure?) {
     failure?.let { ErrorText(appErrorText(it.error)) }
@@ -592,4 +609,6 @@ object AuthCopy {
     val CODE_WRONG: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_code_wrong)
     val CODE_EXPIRED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_code_expired)
     val RESEND: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_resend)
+    val PASSWORD_RULE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_password_rule)
+    val PASSWORD_REFUSED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_password_refused)
 }

@@ -64,6 +64,7 @@
     <string name="security_new_password">كلمة المرور الجديدة</string>
     <string name="security_confirm_password">تأكيد كلمة المرور</string>
     <string name="security_mismatch">كلمتا المرور غير متطابقتين</string>
+    <string name="security_password_rule">8 أحرف على الأقل، لا أرقام فقط، ولا كلمة شائعة أو قريبة من اسمك.</string>
     <string name="security_sessions_note">بعد التغيير ستُنهى جميع الجلسات، بما فيها هذا الجهاز، وستحتاج إلى تسجيل الدخول
         بكلمة المرور الجديدة.</string>
     <string name="phone_change_title">تغيير رقم الهاتف</string>

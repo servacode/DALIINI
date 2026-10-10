@@ -226,6 +226,12 @@ fun PasswordChangeScreen(
                 onValueChange = viewModel::updateNext,
                 label = SecurityCopy.NEW_PASSWORD,
             )
+            // The backend's rule, said before it refuses rather than after.
+            Text(
+                text = SecurityCopy.PASSWORD_RULE,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             DirectoryPasswordField(
                 value = state.confirmation,
                 onValueChange = viewModel::updateConfirmation,
@@ -273,5 +279,6 @@ object SecurityCopy {
     val CONFIRM_PASSWORD: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.security_confirm_password)
     val MISMATCH: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_mismatch)
+    val PASSWORD_RULE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_password_rule)
     val SESSIONS_NOTE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_sessions_note)
 }
