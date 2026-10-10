@@ -37,6 +37,9 @@
         مغلقة، يجب نقل الملكية أو إغلاقها أولًا.</string>
     <string name="account_delete_confirm">تأكيد الحذف</string>
     <string name="account_delete_failed">تعذر طلب حذف الحساب. تحقق من ملكية المنشآت ثم أعد المحاولة.</string>
+    <string name="account_sole_owner_title">لا يمكن حذف الحساب الآن</string>
+    <string name="account_sole_owner_body">أنت المالك الوحيد لمنشأة أو أكثر ما زالت تعمل في الدليل. تواصل مع الدعم لنقل ملكيتها أو إغلاقها، ثم احذف حسابك.</string>
+    <string name="account_sole_owner_facilities">منشآتي</string>
     <string name="saved_favorites">المفضلة</string>
     <string name="saved_favorites_error">تعذر تحميل المفضلة</string>
     <string name="saved_favorites_empty">لا توجد منشآت محفوظة</string>

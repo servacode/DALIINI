@@ -241,7 +241,8 @@ fun AccountScreen(
                         trailing = false,
                     )
                 }
-                (deletion as? DeletionUiState.Error)?.let { failure ->
+                // Sole ownership has its own dialog below; this line is for every other failure.
+                (deletion as? DeletionUiState.Error)?.takeUnless { it.soleOwner() }?.let { failure ->
                     Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
                         Text(
                             text = AccountCopy.DELETE_FAILED,
@@ -271,6 +272,22 @@ fun AccountScreen(
             },
             onDismiss = { confirmSignOut = false },
             destructive = true,
+        )
+    }
+    // Refused because the account is the only owner of a facility still open. It was a line of
+    // text under the menu, half behind the bottom bar, that named neither the facilities nor
+    // what to do about them.
+    var soleOwnerSeen by remember(deletion) { mutableStateOf(false) }
+    if ((deletion as? DeletionUiState.Error)?.soleOwner() == true && !soleOwnerSeen) {
+        DirectoryConfirmDialog(
+            title = AccountCopy.SOLE_OWNER_TITLE,
+            body = AccountCopy.SOLE_OWNER_BODY,
+            confirm = AccountCopy.SOLE_OWNER_FACILITIES,
+            onConfirm = {
+                soleOwnerSeen = true
+                onFacilities()
+            },
+            onDismiss = { soleOwnerSeen = true },
         )
     }
     if (confirmDelete) {
@@ -371,4 +388,13 @@ object AccountCopy {
     val DELETE_BODY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_delete_body)
     val DELETE_CONFIRM: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_delete_confirm)
     val DELETE_FAILED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.account_delete_failed)
+    val SOLE_OWNER_TITLE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.account_sole_owner_title)
+    val SOLE_OWNER_BODY: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.account_sole_owner_body)
+    val SOLE_OWNER_FACILITIES: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.account_sole_owner_facilities)
 }
+
+/** The backend's refusal for an account that is the only owner of a facility still open. */
+private fun DeletionUiState.Error.soleOwner(): Boolean = "ownedFacilities" in error.fieldErrors
