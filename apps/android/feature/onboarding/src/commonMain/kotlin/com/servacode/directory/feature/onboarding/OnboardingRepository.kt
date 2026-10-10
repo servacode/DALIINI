@@ -36,6 +36,9 @@ class OnboardingRepository @Inject constructor(
     suspend fun uploadImage(id: String, payload: OwnerUploadPayload): Result<OwnerFacilityImage> =
         runCatching { api.uploadImage(id, payload) }
 
+    suspend fun deleteImage(id: String, imageId: String): Result<Unit> =
+        runCatching { api.deleteImage(id, imageId) }
+
     suspend fun uploadEvidence(
         id: String,
         requirementId: String,

@@ -7,6 +7,7 @@
     <string name="owner_manage">إدارة</string>
     <string name="owner_duty">المناوبة</string>
     <string name="owner_edit">تعديل البيانات</string>
+    <string name="owner_rejection_reason">سبب الرفض — عدّل ثم أعد الإرسال:</string>
     <string name="owner_retry">إعادة المحاولة</string>
 
     <!-- The statistics card. %1$d is the backend's window in days (30). -->

@@ -93,7 +93,7 @@
     <string name="ds_owner_action_review_rejection">راجِع سبب الرفض وعدّل الطلب</string>
     <string name="ds_owner_action_complete_and_submit">أكمِل البيانات وأرسلها للمراجعة</string>
     <string name="ds_owner_action_reverify_and_submit">حدّث البيانات وأرسلها لإعادة التحقق</string>
-    <string name="ds_owner_action_wait_for_review">بانتطار المراجعة</string>
+    <string name="ds_owner_action_wait_for_review">بانتظار المراجعة</string>
     <string name="ds_owner_action_contact_support">تواصل مع الدعم</string>
     <string name="ds_owner_action_unknown">يلزم إجراء، راجِع تفاصيل المنشأة</string>
     <string name="ds_owner_role_owner">مالك</string>

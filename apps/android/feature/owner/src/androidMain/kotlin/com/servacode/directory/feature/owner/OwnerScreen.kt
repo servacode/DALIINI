@@ -349,6 +349,20 @@ fun ManageFacilityScreen(
                         value.facility.pendingChange?.let { change ->
                             PendingChangeNotice(change)
                         }
+                        // The list said «راجِع سبب الرفض» and this page, where it is fixed, did
+                        // not say what the reason was: it lived in the inbox alone.
+                        value.facility.application?.rejectionReason?.takeIf { it.isNotBlank() }?.let { reason ->
+                            Text(
+                                text = OwnerCopy.REJECTION,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                            Text(
+                                text = reason,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
                         value.failure?.let {
                             Text(
                                 text = appErrorText(it),
@@ -888,6 +902,7 @@ object OwnerCopy {
     val MANAGE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_manage)
     val DUTY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_duty)
     val EDIT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_edit)
+    val REJECTION: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_rejection_reason)
     val INSIGHTS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_insights)
     val HOURS_CONFIRM_TITLE: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.owner_hours_confirm_title)

@@ -18,6 +18,7 @@ import com.servacode.directory.core.model.DirectoryRoute
 import com.servacode.directory.core.model.OwnerCategoryConfig
 import com.servacode.directory.core.model.OwnerConfig
 import com.servacode.directory.core.model.OwnerFacilityDetail
+import com.servacode.directory.core.model.OwnerFacilityImage
 import com.servacode.directory.core.model.toAppError
 import com.servacode.directory.core.network.OwnerFacilityDraftInput
 import com.servacode.directory.core.network.PushAvailability
@@ -65,6 +66,8 @@ sealed interface OnboardingUiState {
         val pendingPoint: MapPoint? = null,
         /** «التالي» was pressed with no name; the field says so until one is typed. */
         val nameMissing: Boolean = false,
+        /** The public photos already on the facility, shown on the photos step. */
+        val images: List<OwnerFacilityImage> = emptyList(),
     ) : OnboardingUiState
     data object Error : OnboardingUiState
 }
@@ -271,6 +274,7 @@ class OnboardingViewModel @Inject constructor(
         viewModelScope.launch {
             save.hours(id, rows).onSuccess {
                 mutate { it.copy(step = OnboardingStep.PUBLIC_IMAGES, message = null) }
+                refreshImages(id)
             }.onFailure { failure ->
                 mutate {
                     it.copy(
@@ -302,6 +306,7 @@ class OnboardingViewModel @Inject constructor(
                 save.evidence(id, requirementId, payload).map { Unit }
             }
             result.onSuccess {
+                if (requirementId == null) refreshImages(id)
                 load.facility(id).onSuccess { updated ->
                     mutate {
                         it.copy(
@@ -326,10 +331,35 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
+    /**
+     * The photos as the backend holds them. The step said «تم رفع الملف» and showed nothing, so
+     * the owner could not tell which went up, nor take one back.
+     */
+    private suspend fun refreshImages(id: String) {
+        load.images(id).onSuccess { images -> mutate { it.copy(images = images) } }
+    }
+
+    fun deleteImage(imageId: String) {
+        val content = _state.value as? OnboardingUiState.Content ?: return
+        val id = content.draft?.summary?.id ?: return
+        viewModelScope.launch {
+            save.deleteImage(id, imageId).onSuccess { refreshImages(id) }.onFailure { failure ->
+                mutate {
+                    it.copy(message = OnboardingMessage(OnboardingNotice.UPLOAD_FAILED, failure.toAppError()))
+                }
+            }
+        }
+    }
+
     // Straight to the documents: the specialised-fields step had nothing on it but a sentence.
     // Specialties and services are chosen on the facility's own page once it exists.
+    fun nextFromMap() = mutate {
+        it.copy(step = OnboardingStep.HOURS, message = null)
+    }
+
     fun nextFromImages() = mutate {
-        it.copy(step = OnboardingStep.VERIFICATION_EVIDENCE)
+        // The photos step's «تم رفع الملف» is about the photos; it does not follow to the next.
+        it.copy(step = OnboardingStep.VERIFICATION_EVIDENCE, message = null)
     }
 
     fun nextFromSpecializedFields() = mutate {

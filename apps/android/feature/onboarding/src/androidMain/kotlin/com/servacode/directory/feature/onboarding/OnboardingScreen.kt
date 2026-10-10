@@ -9,6 +9,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,6 +43,7 @@ import com.servacode.directory.core.designsystem.DirectoryActionBar
 import com.servacode.directory.core.designsystem.DirectoryCard
 import com.servacode.directory.core.designsystem.DirectoryEmptyState
 import com.servacode.directory.core.designsystem.DirectoryIllustrations
+import com.servacode.directory.core.designsystem.DirectoryImage
 import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryIcon
 import com.servacode.directory.core.designsystem.DirectoryIcons
@@ -65,6 +68,7 @@ import com.servacode.directory.core.designsystem.StepIndicator
 import com.servacode.directory.core.maps.MapPoint
 import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.BusinessHour
+import com.servacode.directory.core.model.OwnerFacilityImage
 import com.servacode.directory.core.model.OwnerFacilityStatus
 import com.servacode.directory.core.network.NotificationPermissionPolicy
 
@@ -122,6 +126,7 @@ fun OnboardingScreen(
                 StepAction(
                     value = content,
                     onSaveBasic = viewModel::saveBasicAndContinue,
+                    onMapDone = viewModel::nextFromMap,
                     onImagesDone = viewModel::nextFromImages,
                     onSpecializedDone = viewModel::nextFromSpecializedFields,
                     onReview = viewModel::review,
@@ -199,6 +204,8 @@ fun OnboardingScreen(
                             onSave = viewModel::saveHours,
                         )
                         OnboardingStep.PUBLIC_IMAGES -> PublicImagesStep(
+                            images = value.images,
+                            onDelete = viewModel::deleteImage,
                             onPick = {
                                 imagePicker.launch(
                                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
@@ -332,13 +339,35 @@ private fun MapPointStep(
 }
 
 @Composable
-private fun PublicImagesStep(onPick: () -> Unit) {
+private fun PublicImagesStep(
+    images: List<OwnerFacilityImage>,
+    onDelete: (String) -> Unit,
+    onPick: () -> Unit,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
         Text(
             text = OnboardingCopy.IMAGES_NOTE,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        // What is already up, two to a row, each with its way back out.
+        images.chunked(2).forEach { pair ->
+            Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                pair.forEach { image ->
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(Space.xs),
+                    ) {
+                        DirectoryImage(
+                            url = image.url,
+                            modifier = Modifier.fillMaxWidth().aspectRatio(4f / 3f),
+                        )
+                        DirectoryTextButton(OnboardingCopy.IMAGE_DELETE, onClick = { onDelete(image.id) })
+                    }
+                }
+                if (pair.size == 1) Spacer(Modifier.weight(1f))
+            }
+        }
         DirectorySecondaryButton(
             text = OnboardingCopy.IMAGES_PICK,
             onClick = onPick,
@@ -499,6 +528,7 @@ private fun StatusStep(value: OnboardingUiState.Content) {
 private fun StepAction(
     value: OnboardingUiState.Content,
     onSaveBasic: () -> Unit,
+    onMapDone: () -> Unit,
     onImagesDone: () -> Unit,
     onSpecializedDone: () -> Unit,
     onReview: () -> Unit,
@@ -508,7 +538,13 @@ private fun StepAction(
     val action = when (value.step) {
         OnboardingStep.PROVINCE_CATEGORY -> null
         OnboardingStep.BASIC_INFO -> OnboardingCopy.NEXT to onSaveBasic
-        OnboardingStep.MAP_POINT -> null
+        // Saving a new point moves on by itself. A point saved before — an owner back to fix
+        // something — had no way past this step at all: the screen was a dead end.
+        OnboardingStep.MAP_POINT -> if (value.draft?.latitude != null && value.pendingPoint == null) {
+            OnboardingCopy.NEXT to onMapDone
+        } else {
+            null
+        }
         OnboardingStep.HOURS -> null
         OnboardingStep.PUBLIC_IMAGES -> OnboardingCopy.NEXT to onImagesDone
         OnboardingStep.SPECIALIZED_FIELDS -> OnboardingCopy.NEXT to onSpecializedDone
@@ -739,6 +775,8 @@ object OnboardingCopy {
         @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_images_note)
     val IMAGES_PICK: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_images_pick)
+    val IMAGE_DELETE: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_image_delete)
     val SPECIALIZED_NOTE: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_specialized_note)
     val EVIDENCE_NOTE: String

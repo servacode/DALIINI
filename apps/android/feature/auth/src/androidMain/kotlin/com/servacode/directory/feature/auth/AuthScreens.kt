@@ -616,7 +616,8 @@ object AuthCopy {
     val CODE_WRONG: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_code_wrong)
     val CODE_EXPIRED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_code_expired)
     val RESEND: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_resend)
-    val WRONG_CREDENTIALS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_wrong_credentials)
+    val WRONG_CREDENTIALS: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_wrong_credentials)
     val PASSWORD_RULE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_password_rule)
     val PASSWORD_REFUSED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_password_refused)
 }

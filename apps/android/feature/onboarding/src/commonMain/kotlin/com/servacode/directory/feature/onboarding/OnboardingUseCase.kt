@@ -23,6 +23,7 @@ class SaveOnboardingUseCase @Inject constructor(
         repository.location(id, latitude, longitude)
     suspend fun hours(id: String, rows: List<BusinessHour>) = repository.hours(id, rows)
     suspend fun image(id: String, payload: OwnerUploadPayload) = repository.uploadImage(id, payload)
+    suspend fun deleteImage(id: String, imageId: String) = repository.deleteImage(id, imageId)
     suspend fun evidence(id: String, requirementId: String, payload: OwnerUploadPayload) =
         repository.uploadEvidence(id, requirementId, payload)
     suspend fun submit(id: String) = repository.submit(id)
