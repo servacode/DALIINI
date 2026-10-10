@@ -82,6 +82,8 @@ import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.designsystem.StarPicker
 import com.servacode.directory.core.model.BusinessHour
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * Screen 08. What the facility is, then what can be done about it, then the rest.
@@ -105,12 +107,16 @@ fun FacilityScreen(
     val report by reportViewModel.state.collectAsStateWithLifecycle()
     var reporting by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
+    val snackbarScope = rememberCoroutineScope()
     val thanks = FacilityCopy.REPORT_THANKS
     LaunchedEffect(report.sent) {
         if (report.sent) {
             reporting = false
+            // On a scope of its own: clearing `sent` restarts this effect, and a snackbar shown
+            // inside it was cancelled the moment it appeared — the report went through and the
+            // thanks never showed (found in the launch readiness run).
+            snackbarScope.launch { snackbar.showSnackbar(thanks) }
             reportViewModel.consumeSent()
-            snackbar.showSnackbar(thanks)
         }
     }
     // Screen 10 lives here rather than on a route of its own: the pictures belong to the
@@ -315,7 +321,11 @@ private fun FacilityBody(
         }
         if (detail.hours.isNotEmpty()) {
             DirectorySection(FacilityCopy.HOURS) {
-                detail.hours.forEach { hour -> HourRow(hour) }
+                // Saturday first, as the week reads in Syria and in the console; the wire counts
+                // from Monday.
+                detail.hours
+                    .sortedWith(compareBy({ (it.weekday + 2) % 7 }, { it.opensAt }))
+                    .forEach { hour -> HourRow(hour) }
             }
         }
         detail.descriptionAr?.let { about ->

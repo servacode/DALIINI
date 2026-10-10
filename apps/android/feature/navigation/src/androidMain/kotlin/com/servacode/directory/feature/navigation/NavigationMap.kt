@@ -129,6 +129,16 @@ private fun RouteMap(
         destination?.let { map.showDestination(it, destinationName) }
     }
 
+    // Until a route or a position arrives there is nothing else to frame, and a camera left
+    // where the style starts showed the whole world with the pin a dot on it — what a reader
+    // saw whenever the routing service was down (found in the launch readiness run).
+    LaunchedEffect(controller, destination, route == null, location == null) {
+        val map = controller ?: return@LaunchedEffect
+        val target = destination ?: return@LaunchedEffect
+        if (route != null || location != null) return@LaunchedEffect
+        map.moveCamera(MapCamera(center = target, zoom = OVERVIEW_ZOOM), animated = false)
+    }
+
     // Registered once per map: a press that lands on one of the other ways takes it, and a
     // press anywhere else is left to the map.
     LaunchedEffect(controller) {
