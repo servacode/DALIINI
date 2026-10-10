@@ -519,4 +519,15 @@ class AdminAppReleaseRequestSerializer(serializers.Serializer[Any]):
                     ]
                 }
             )
+        # A minimum blocks every build below it on a screen with nothing to tap but this
+        # link. Without one, the blocked had no way forward at all.
+        if attrs["minimumVersionCode"] > 0 and not attrs["storeUrl"].strip():
+            raise serializers.ValidationError(
+                {
+                    "storeUrl": [
+                        "اكتب رابط المتجر قبل فرض حد أدنى للإصدار: بدونه تبقى النسخ القديمة "
+                        "على شاشة «حدّث التطبيق» بلا زر يوصل إلى التحديث."
+                    ]
+                }
+            )
         return attrs

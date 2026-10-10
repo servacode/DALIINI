@@ -32,6 +32,9 @@ def client_with(*permissions: str) -> APIClient:
     return client
 
 
+STORE = "https://play.example.test/app"
+
+
 def test_a_platform_nobody_has_set_reads_as_zeros() -> None:
     response = client_with("admin.settings.read").get(URL)
 
@@ -67,7 +70,7 @@ def test_a_second_write_updates_the_same_row_rather_than_adding_one() -> None:
     body: dict[str, Any] = {
         "minimumVersionCode": 1,
         "latestVersionCode": 2,
-        "storeUrl": "",
+        "storeUrl": STORE,
         "noticeAr": "",
     }
 
@@ -113,12 +116,12 @@ def test_the_change_is_audited_with_what_it_was_and_what_it_became() -> None:
     client = client_with("admin.settings.read", "admin.settings.manage")
     client.put(
         URL,
-        {"minimumVersionCode": 3, "latestVersionCode": 9, "storeUrl": "", "noticeAr": ""},
+        {"minimumVersionCode": 3, "latestVersionCode": 9, "storeUrl": STORE, "noticeAr": ""},
         format="json",
     )
     client.put(
         URL,
-        {"minimumVersionCode": 8, "latestVersionCode": 9, "storeUrl": "", "noticeAr": ""},
+        {"minimumVersionCode": 8, "latestVersionCode": 9, "storeUrl": STORE, "noticeAr": ""},
         format="json",
     )
 
@@ -133,7 +136,7 @@ def test_the_change_is_audited_with_what_it_was_and_what_it_became() -> None:
 
 def test_each_platform_is_its_own_row() -> None:
     client = client_with("admin.settings.read", "admin.settings.manage")
-    body = {"minimumVersionCode": 5, "latestVersionCode": 5, "storeUrl": "", "noticeAr": ""}
+    body = {"minimumVersionCode": 5, "latestVersionCode": 5, "storeUrl": STORE, "noticeAr": ""}
 
     client.put(URL, body, format="json")
     client.put(
@@ -148,3 +151,18 @@ def test_each_platform_is_its_own_row() -> None:
 
 def test_an_unknown_platform_is_refused() -> None:
     assert client_with("admin.settings.read").get(f"{URL}?platform=SYMBIAN").status_code == 400
+
+
+def test_a_minimum_without_a_store_link_is_refused() -> None:
+    """The blocking screen's only way forward is the link; a minimum without it strands people."""
+    client = client_with("admin.settings.read", "admin.settings.manage")
+
+    response = client.put(
+        URL,
+        {"minimumVersionCode": 5, "latestVersionCode": 5, "storeUrl": "  ", "noticeAr": ""},
+        format="json",
+    )
+
+    assert response.status_code == 400
+    assert "storeUrl" in response.data["details"]
+    assert not AppRelease.objects.filter(minimum_version_code=5).exists()
