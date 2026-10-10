@@ -5202,6 +5202,59 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Rate limit exceeded for this endpoint; see the `Retry-After`
             header.
+  /api/v1/admin/notifications/broadcast/audience/:
+    get:
+      operationId: adminNotificationBroadcastAudience
+      description: |-
+        How many accounts a broadcast would reach, asked before it is sent.
+
+        A broadcast to a province nobody chose said «أُرسل» to nobody at all; the console now shows the
+        count in its confirmation and warns when it is zero.
+      summary: How many accounts a broadcast would reach
+      parameters:
+      - in: query
+        name: audience
+        schema:
+          type: string
+          enum:
+          - ALL
+          - OWNERS
+        required: true
+      - in: query
+        name: provinceId
+        schema:
+          type: string
+      tags:
+      - Admin Notifications
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminBroadcastAudience'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Request validation failed; `code` is VALIDATION_ERROR and `details`
+            is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/admin/notifications/broadcasts/:
     get:
       operationId: adminNotificationBroadcastsList
@@ -11567,6 +11620,14 @@ components:
       - provinceId
       - recipientCount
       - titleAr
+    AdminBroadcastAudience:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Active accounts the broadcast would reach.
+      required:
+      - count
     AdminBroadcastPage:
       type: object
       properties:

@@ -108,6 +108,7 @@ Class | Method | HTTP request | Description
 *AdminFacilitiesAPI* | [**adminFacilityTimelineRetrieve**](docs/AdminFacilitiesAPI.md#adminfacilitytimelineretrieve) | **GET** /api/v1/admin/facilities/{facility_id}/timeline/ | Everything that happened to a facility, newest first
 *AdminFacilitiesAPI* | [**adminFacilityUpdate**](docs/AdminFacilitiesAPI.md#adminfacilityupdate) | **PATCH** /api/v1/admin/facilities/{facility_id}/ | Correct a facility&#39;s details
 *AdminNotificationsAPI* | [**adminNotificationBroadcast**](docs/AdminNotificationsAPI.md#adminnotificationbroadcast) | **POST** /api/v1/admin/notifications/broadcast/ | Send a notification to many users
+*AdminNotificationsAPI* | [**adminNotificationBroadcastAudience**](docs/AdminNotificationsAPI.md#adminnotificationbroadcastaudience) | **GET** /api/v1/admin/notifications/broadcast/audience/ | How many accounts a broadcast would reach
 *AdminNotificationsAPI* | [**adminNotificationBroadcastsList**](docs/AdminNotificationsAPI.md#adminnotificationbroadcastslist) | **GET** /api/v1/admin/notifications/broadcasts/ | Broadcast history, newest first
 *AdminProvincesAPI* | [**adminProvinceCitiesList**](docs/AdminProvincesAPI.md#adminprovincecitieslist) | **GET** /api/v1/admin/provinces/{province_id}/cities/ | List every city of a province, active or not
 *AdminProvincesAPI* | [**adminProvinceCityUpdate**](docs/AdminProvincesAPI.md#adminprovincecityupdate) | **PUT** /api/v1/admin/provinces/{province_id}/cities/{city_id}/ | Activate or deactivate a city
@@ -279,6 +280,7 @@ Class | Method | HTTP request | Description
  - [AdminAuditList](docs/AdminAuditList.md)
  - [AdminAuditTrailEntry](docs/AdminAuditTrailEntry.md)
  - [AdminBroadcast](docs/AdminBroadcast.md)
+ - [AdminBroadcastAudience](docs/AdminBroadcastAudience.md)
  - [AdminBroadcastPage](docs/AdminBroadcastPage.md)
  - [AdminBroadcastRequest](docs/AdminBroadcastRequest.md)
  - [AdminCapabilities](docs/AdminCapabilities.md)

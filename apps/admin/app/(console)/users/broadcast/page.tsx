@@ -15,6 +15,7 @@ import {
   Toast,
 } from "../../../../components/ui";
 import {
+  counted,
   CharCount,
   FormDialog,
   ItemCard,
@@ -338,10 +339,33 @@ export default function BroadcastPage() {
           </StatusBadge>
           <StatusBadge tone="neutral">{provinceName(provinceId || null) ?? "كل المحافظات"}</StatusBadge>
         </div>
+        {confirming ? <AudienceCount audience={audience} provinceId={provinceId} /> : null}
         <NotificationPreview title={titleAr} body={bodyAr} />
       </ConfirmDialog>
 
       <Toast message={toast} onDismiss={dismissToast} />
     </div>
+  );
+}
+
+/**
+ * How many the broadcast reaches, before it goes. Sent to a province nobody chose, it said
+ * «أُرسل الإشعار» to no one; the count is shown, and none is said plainly.
+ */
+function AudienceCount({ audience, provinceId }: { audience: Audience; provinceId: string }) {
+  const count = useResource<{ count: number }>("broadcastAudience", { audience, provinceId });
+  if (!count.data) return null;
+  const n = count.data.count;
+  if (n === 0) {
+    return (
+      <p className="field-error" role="alert" data-testid="broadcast-nobody">
+        لا يوجد أي حساب في هذا الجمهور: لن يصل الإشعار إلى أحد.
+      </p>
+    );
+  }
+  return (
+    <p className="field-hint" data-testid="broadcast-count">
+      {`يصل إلى ${counted(n, "حساب واحد", "حسابين", "حسابات", "حساباً")}.`}
+    </p>
   );
 }

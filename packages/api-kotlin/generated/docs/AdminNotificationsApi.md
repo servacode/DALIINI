@@ -5,6 +5,7 @@ All URIs are relative to *http://localhost*
 | Method | HTTP request | Description |
 | ------------- | ------------- | ------------- |
 | [**adminNotificationBroadcast**](AdminNotificationsApi.md#adminNotificationBroadcast) | **POST** api/v1/admin/notifications/broadcast/ | Send a notification to many users |
+| [**adminNotificationBroadcastAudience**](AdminNotificationsApi.md#adminNotificationBroadcastAudience) | **GET** api/v1/admin/notifications/broadcast/audience/ | How many accounts a broadcast would reach |
 | [**adminNotificationBroadcastsList**](AdminNotificationsApi.md#adminNotificationBroadcastsList) | **GET** api/v1/admin/notifications/broadcasts/ | Broadcast history, newest first |
 
 
@@ -48,6 +49,50 @@ Configure bearerAccessToken:
 ### HTTP request headers
 
  - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
+ - **Accept**: application/json
+
+
+How many accounts a broadcast would reach
+
+How many accounts a broadcast would reach, asked before it is sent.  A broadcast to a province nobody chose said «أُرسل» to nobody at all; the console now shows the count in its confirmation and warns when it is zero.
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminNotificationsApi::class.java)
+val audience : kotlin.String = audience_example // kotlin.String | 
+val provinceId : kotlin.String = provinceId_example // kotlin.String | 
+
+launch(Dispatchers.IO) {
+    val result : AdminBroadcastAudience = webService.adminNotificationBroadcastAudience(audience, provinceId)
+}
+```
+
+### Parameters
+| **audience** | **kotlin.String**|  | [enum: ALL, OWNERS] |
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **provinceId** | **kotlin.String**|  | [optional] |
+
+### Return type
+
+[**AdminBroadcastAudience**](AdminBroadcastAudience.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 

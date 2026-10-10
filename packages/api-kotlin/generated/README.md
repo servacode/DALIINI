@@ -127,6 +127,7 @@ All URIs are relative to *http://localhost*
 | *AdminFacilitiesApi* | [**adminFacilityTimelineRetrieve**](docs/AdminFacilitiesApi.md#adminfacilitytimelineretrieve) | **GET** api/v1/admin/facilities/{facility_id}/timeline/ | Everything that happened to a facility, newest first |
 | *AdminFacilitiesApi* | [**adminFacilityUpdate**](docs/AdminFacilitiesApi.md#adminfacilityupdate) | **PATCH** api/v1/admin/facilities/{facility_id}/ | Correct a facility's details |
 | *AdminNotificationsApi* | [**adminNotificationBroadcast**](docs/AdminNotificationsApi.md#adminnotificationbroadcast) | **POST** api/v1/admin/notifications/broadcast/ | Send a notification to many users |
+| *AdminNotificationsApi* | [**adminNotificationBroadcastAudience**](docs/AdminNotificationsApi.md#adminnotificationbroadcastaudience) | **GET** api/v1/admin/notifications/broadcast/audience/ | How many accounts a broadcast would reach |
 | *AdminNotificationsApi* | [**adminNotificationBroadcastsList**](docs/AdminNotificationsApi.md#adminnotificationbroadcastslist) | **GET** api/v1/admin/notifications/broadcasts/ | Broadcast history, newest first |
 | *AdminProvincesApi* | [**adminProvinceCitiesList**](docs/AdminProvincesApi.md#adminprovincecitieslist) | **GET** api/v1/admin/provinces/{province_id}/cities/ | List every city of a province, active or not |
 | *AdminProvincesApi* | [**adminProvinceCityUpdate**](docs/AdminProvincesApi.md#adminprovincecityupdate) | **PUT** api/v1/admin/provinces/{province_id}/cities/{city_id}/ | Activate or deactivate a city |
@@ -299,6 +300,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminAuditList](docs/AdminAuditList.md)
  - [com.servacode.directory.api.models.AdminAuditTrailEntry](docs/AdminAuditTrailEntry.md)
  - [com.servacode.directory.api.models.AdminBroadcast](docs/AdminBroadcast.md)
+ - [com.servacode.directory.api.models.AdminBroadcastAudience](docs/AdminBroadcastAudience.md)
  - [com.servacode.directory.api.models.AdminBroadcastPage](docs/AdminBroadcastPage.md)
  - [com.servacode.directory.api.models.AdminBroadcastRequest](docs/AdminBroadcastRequest.md)
  - [com.servacode.directory.api.models.AdminCapabilities](docs/AdminCapabilities.md)

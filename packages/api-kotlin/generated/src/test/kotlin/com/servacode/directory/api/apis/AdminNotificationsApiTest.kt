@@ -20,6 +20,7 @@ import io.kotlintest.specs.ShouldSpec
 
 import com.servacode.directory.api.apis.AdminNotificationsApi
 import com.servacode.directory.api.models.AdminBroadcast
+import com.servacode.directory.api.models.AdminBroadcastAudience
 import com.servacode.directory.api.models.AdminBroadcastPage
 import com.servacode.directory.api.models.AdminBroadcastRequest
 import com.servacode.directory.api.models.ApiError
@@ -34,6 +35,15 @@ class AdminNotificationsApiTest : ShouldSpec() {
             // uncomment below to test adminNotificationBroadcast
             //val adminBroadcastRequest : AdminBroadcastRequest =  // AdminBroadcastRequest | 
             //val result : AdminBroadcast = apiInstance.adminNotificationBroadcast(adminBroadcastRequest)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminNotificationBroadcastAudience
+        should("test adminNotificationBroadcastAudience") {
+            // uncomment below to test adminNotificationBroadcastAudience
+            //val audience : kotlin.String = audience_example // kotlin.String | 
+            //val provinceId : kotlin.String = provinceId_example // kotlin.String | 
+            //val result : AdminBroadcastAudience = apiInstance.adminNotificationBroadcastAudience(audience, provinceId)
             //result shouldBe ("TODO")
         }
 

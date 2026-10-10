@@ -59,6 +59,37 @@ def _cell(value: Any) -> str:
     return text
 
 
+# The files are opened by the platform's own staff, in Excel, in Arabic: the columns are named
+# and the codes said in their words. The audit keeps its action codes, which are what support
+# searches for.
+FACILITY_STATUS_AR = {
+    "DRAFT": "مسودة",
+    "SUBMITTED": "قيد المراجعة",
+    "ACTIVE": "فعّالة",
+    "REVERIFICATION_REQUIRED": "تحتاج إعادة تحقق",
+    "SUSPENDED": "موقوفة",
+    "CLOSED": "مغلقة نهائياً",
+}
+QUALITY_ISSUE_AR = {
+    "NO_PHOTOS": "بلا صور",
+    "NO_HOURS": "بلا أوقات دوام",
+    "NO_LOCATION": "بلا موقع",
+    "NO_PHONE": "بلا هاتف",
+    "STALE": "لم تُحدَّث منذ 90 يوماً",
+    "OPEN_REPORTS": "عليها بلاغات",
+    "NOT_VERIFIED_RECENTLY": "لم يُتحقق منها مؤخراً",
+}
+REPORT_REASON_AR = {
+    "WRONG_INFO": "معلومات خاطئة",
+    "CLOSED_PERMANENTLY": "مغلقة نهائياً",
+    "WRONG_LOCATION": "الموقع خاطئ",
+    "WRONG_HOURS": "أوقات الدوام خاطئة",
+    "NOT_ON_DUTY": "ليست مناوبة",
+    "OTHER": "أخرى",
+}
+REPORT_STATUS_AR = {"OPEN": "مفتوح", "RESOLVED": "عولج", "DISMISSED": "مرفوض"}
+
+
 def _stream(header: list[str], rows: Iterable[list[Any]]) -> Iterator[str]:
     writer = csv.writer(_Echo())
     yield BOM + writer.writerow(header)
@@ -136,20 +167,20 @@ class FacilitiesCsvView(CsvExportView):
     def get(self, request: Any) -> Any:
         queryset = filtered_facilities(request.query_params)
         header = [
-            "id",
-            "nameAr",
-            "nameEn",
-            "status",
-            "categoryNameAr",
-            "provinceNameAr",
-            "phone",
-            "latitude",
-            "longitude",
-            "qualityScore",
-            "qualityIssues",
-            "lastVerifiedAt",
-            "hoursConfirmedAt",
-            "updatedAt",
+            "المعرّف",
+            "الاسم",
+            "الاسم بالإنكليزية",
+            "الحالة",
+            "التصنيف",
+            "المحافظة",
+            "الهاتف",
+            "خط العرض",
+            "خط الطول",
+            "اكتمال البيانات",
+            "ما ينقصها",
+            "آخر تحقق",
+            "آخر تأكيد للدوام",
+            "آخر تحديث",
         ]
 
         def rows() -> Iterator[list[Any]]:
@@ -159,14 +190,14 @@ class FacilitiesCsvView(CsvExportView):
                     item.pk,
                     item.name_ar,
                     item.name_en,
-                    item.status,
+                    FACILITY_STATUS_AR.get(item.status, item.status),
                     item.category.name_ar,
                     item.province.name_ar,
                     item.phone,
                     item.location.y if item.location else None,
                     item.location.x if item.location else None,
                     quality["qualityScore"],
-                    " ".join(quality["qualityIssues"]),
+                    "، ".join(QUALITY_ISSUE_AR.get(i, i) for i in quality["qualityIssues"]),
                     item.last_verified_at,
                     item.hours_confirmed_at,
                     item.updated_at,
@@ -192,15 +223,15 @@ class ReportsCsvView(CsvExportView):
     def get(self, request: Any) -> Any:
         queryset = filtered_reports(request.query_params)
         header = [
-            "id",
-            "facilityId",
-            "facilityNameAr",
-            "reason",
-            "note",
-            "status",
-            "createdAt",
-            "resolvedById",
-            "resolvedAt",
+            "المعرّف",
+            "معرّف المنشأة",
+            "المنشأة",
+            "السبب",
+            "الملاحظة",
+            "الحالة",
+            "تاريخ البلاغ",
+            "معرّف من حسمه",
+            "تاريخ الحسم",
         ]
 
         def rows() -> Iterator[list[Any]]:
@@ -209,9 +240,9 @@ class ReportsCsvView(CsvExportView):
                     item.pk,
                     item.facility_id,
                     item.facility.name_ar,
-                    item.reason,
+                    REPORT_REASON_AR.get(item.reason, item.reason),
                     item.note,
-                    item.status,
+                    REPORT_STATUS_AR.get(item.status, item.status),
                     item.created_at,
                     item.resolved_by_id,
                     item.resolved_at,
@@ -254,15 +285,15 @@ class AuditCsvView(CsvExportView):
             "metadata",
         )
         header = [
-            "id",
-            "createdAt",
-            "actorId",
-            "actorName",
-            "action",
-            "targetType",
-            "targetId",
-            "requestId",
-            "metadata",
+            "المعرّف",
+            "الوقت",
+            "معرّف المنفّذ",
+            "المنفّذ",
+            "الإجراء",
+            "نوع العنصر",
+            "معرّف العنصر",
+            "معرّف الطلب",
+            "التفاصيل",
         ]
 
         def rows() -> Iterator[list[Any]]:

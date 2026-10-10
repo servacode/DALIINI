@@ -233,7 +233,9 @@ export default function ProvincesPage() {
         error={mutation.error}
         onConfirm={submit}
         onCancel={() => setPending(null)}
-      />
+      >
+        {pending && !pending.active ? <ActivationWarning province={pending} /> : null}
+      </ConfirmDialog>
 
       <Toast message={toast} onDismiss={() => setToast(null)} />
     </div>
@@ -386,6 +388,30 @@ function ReadinessChecklist({ province }: { province: Province }) {
           </div>
         </>
       ) : null}
+    </div>
+  );
+}
+
+/**
+ * Before a province goes public, what its own readiness check still misses. Damascus could be
+ * switched on with no facility in it, and the public would have met an empty directory.
+ */
+function ActivationWarning({ province }: { province: Province }) {
+  const readiness = useResource<Readiness>("provinceReadiness", { id: province.id });
+  const missing = (readiness.data?.items ?? []).filter(
+    (item) => !item.ok && item.code !== "PROVINCE_ACTIVE",
+  );
+  if (readiness.loading) return <LoadingState label="جارٍ فحص الجاهزية…" />;
+  if (!readiness.data || missing.length === 0) return null;
+  return (
+    <div className="field-error" role="alert" data-testid="activation-warning">
+      <strong>{province.nameAr} غير جاهزة بعد:</strong>
+      <ul>
+        {missing.map((item) => (
+          <li key={item.code}>{READINESS[item.code]?.title ?? item.detailAr}</li>
+        ))}
+      </ul>
+      سيرى الناس محافظة ناقصة إن فعّلتها الآن.
     </div>
   );
 }

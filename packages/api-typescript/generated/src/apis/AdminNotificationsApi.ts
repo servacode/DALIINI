@@ -16,6 +16,7 @@
 import * as runtime from '../runtime';
 import type {
   AdminBroadcast,
+  AdminBroadcastAudience,
   AdminBroadcastPage,
   AdminBroadcastRequest,
   ApiError,
@@ -23,6 +24,8 @@ import type {
 import {
     AdminBroadcastFromJSON,
     AdminBroadcastToJSON,
+    AdminBroadcastAudienceFromJSON,
+    AdminBroadcastAudienceToJSON,
     AdminBroadcastPageFromJSON,
     AdminBroadcastPageToJSON,
     AdminBroadcastRequestFromJSON,
@@ -33,6 +36,11 @@ import {
 
 export interface AdminNotificationBroadcastRequest {
     adminBroadcastRequest: AdminBroadcastRequest;
+}
+
+export interface AdminNotificationBroadcastAudienceRequest {
+    audience: AdminNotificationBroadcastAudienceAudienceEnum;
+    provinceId?: string;
 }
 
 export interface AdminNotificationBroadcastsListRequest {
@@ -95,6 +103,60 @@ export class AdminNotificationsApi extends runtime.BaseAPI {
     }
 
     /**
+     * How many accounts a broadcast would reach, asked before it is sent.  A broadcast to a province nobody chose said «أُرسل» to nobody at all; the console now shows the count in its confirmation and warns when it is zero.
+     * How many accounts a broadcast would reach
+     */
+    async adminNotificationBroadcastAudienceRaw(requestParameters: AdminNotificationBroadcastAudienceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminBroadcastAudience>> {
+        if (requestParameters['audience'] == null) {
+            throw new runtime.RequiredError(
+                'audience',
+                'Required parameter "audience" was null or undefined when calling adminNotificationBroadcastAudience().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['audience'] != null) {
+            queryParameters['audience'] = requestParameters['audience'];
+        }
+
+        if (requestParameters['provinceId'] != null) {
+            queryParameters['provinceId'] = requestParameters['provinceId'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/notifications/broadcast/audience/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminBroadcastAudienceFromJSON(jsonValue));
+    }
+
+    /**
+     * How many accounts a broadcast would reach, asked before it is sent.  A broadcast to a province nobody chose said «أُرسل» to nobody at all; the console now shows the count in its confirmation and warns when it is zero.
+     * How many accounts a broadcast would reach
+     */
+    async adminNotificationBroadcastAudience(requestParameters: AdminNotificationBroadcastAudienceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminBroadcastAudience> {
+        const response = await this.adminNotificationBroadcastAudienceRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Broadcast history, newest first
      */
     async adminNotificationBroadcastsListRaw(requestParameters: AdminNotificationBroadcastsListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminBroadcastPage>> {
@@ -140,3 +202,12 @@ export class AdminNotificationsApi extends runtime.BaseAPI {
     }
 
 }
+
+/**
+ * @export
+ */
+export const AdminNotificationBroadcastAudienceAudienceEnum = {
+    All: 'ALL',
+    Owners: 'OWNERS'
+} as const;
+export type AdminNotificationBroadcastAudienceAudienceEnum = typeof AdminNotificationBroadcastAudienceAudienceEnum[keyof typeof AdminNotificationBroadcastAudienceAudienceEnum];

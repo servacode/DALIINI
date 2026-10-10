@@ -30,6 +30,7 @@ export * from './AdminAuditEntry';
 export * from './AdminAuditList';
 export * from './AdminAuditTrailEntry';
 export * from './AdminBroadcast';
+export * from './AdminBroadcastAudience';
 export * from './AdminBroadcastPage';
 export * from './AdminBroadcastRequest';
 export * from './AdminCapabilities';

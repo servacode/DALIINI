@@ -624,7 +624,7 @@ def test_csv_exports_have_bom_arabic_filters_and_permissions(
     assert response["Content-Type"].startswith("text/csv")
     assert "attachment" in response["Content-Disposition"]
     text = _csv(response)
-    assert text.startswith("﻿id,nameAr")
+    assert text.startswith("﻿المعرّف,الاسم")
     assert facility.name_ar in text
 
     _report(facility, note="=HYPERLINK(1)")

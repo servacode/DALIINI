@@ -8,6 +8,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 import com.servacode.directory.api.models.AdminBroadcast
+import com.servacode.directory.api.models.AdminBroadcastAudience
 import com.servacode.directory.api.models.AdminBroadcastPage
 import com.servacode.directory.api.models.AdminBroadcastRequest
 import com.servacode.directory.api.models.ApiError
@@ -29,6 +30,32 @@ interface AdminNotificationsApi {
      */
     @POST("api/v1/admin/notifications/broadcast/")
     suspend fun adminNotificationBroadcast(@Body adminBroadcastRequest: AdminBroadcastRequest): Response<AdminBroadcast>
+
+
+    /**
+    * enum for parameter audience
+    */
+    enum class AudienceAdminNotificationBroadcastAudience(val value: kotlin.String) {
+        @SerialName(value = "ALL") ALL("ALL"),
+        @SerialName(value = "OWNERS") OWNERS("OWNERS")
+    }
+
+    /**
+     * GET api/v1/admin/notifications/broadcast/audience/
+     * How many accounts a broadcast would reach
+     * How many accounts a broadcast would reach, asked before it is sent.  A broadcast to a province nobody chose said «أُرسل» to nobody at all; the console now shows the count in its confirmation and warns when it is zero.
+     * Responses:
+     *  - 200: 
+     *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @param audience 
+     * @param provinceId  (optional)
+     * @return [AdminBroadcastAudience]
+     */
+    @GET("api/v1/admin/notifications/broadcast/audience/")
+    suspend fun adminNotificationBroadcastAudience(@Query("audience") audience: AudienceAdminNotificationBroadcastAudience, @Query("provinceId") provinceId: kotlin.String? = null): Response<AdminBroadcastAudience>
 
     /**
      * GET api/v1/admin/notifications/broadcasts/

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { useCan } from "../../../components/admin-shell";
 import {
+  ConfirmDialog,
   EmptyState,
   ErrorState,
   LoadingState,
@@ -250,6 +251,9 @@ export default function SettingsPage() {
   const [toast, setToast] = useState<string | null>(null);
   // The setting whose save was refused, so the reason sits under that card, not atop the page.
   const [failedKey, setFailedKey] = useState<string | null>(null);
+  // Switching maintenance on takes the app and the site off the air for everyone; it is asked
+  // once more before it is saved, unlike every other setting.
+  const [confirmMaintenance, setConfirmMaintenance] = useState<Setting | null>(null);
   const fieldError = fieldErrorsFor(mutation.error).value;
 
   function stored(setting: Setting): string | boolean | number {
@@ -375,7 +379,11 @@ export default function SettingsPage() {
                           className={dirty ? "button-primary" : "button-ghost"}
                           disabled={mutation.pending || !dirty}
                           data-testid={`save-${setting.key}`}
-                          onClick={() => save(setting)}
+                          onClick={() =>
+                            setting.key === "maintenance.enabled" && current(setting) === true
+                              ? setConfirmMaintenance(setting)
+                              : save(setting)
+                          }
                         >
                           {dirty ? "حفظ التغيير" : "محفوظ"}
                         </button>
@@ -392,6 +400,20 @@ export default function SettingsPage() {
       {/* Part of this screen, not a screen of its own: when the operator may not read the
           settings at all, the page says so once and this says nothing. Two identical
           permission notices stacked is a worse answer than one. */}
+      <ConfirmDialog
+        open={confirmMaintenance !== null}
+        title="تشغيل وضع الصيانة"
+        body="يتوقف التطبيق والموقع لكل الناس ويعرضان شاشة الصيانة حتى تطفئه من هنا. لوحة التحكم تبقى تعمل."
+        confirmLabel="تشغيل الصيانة"
+        destructive
+        pending={mutation.pending}
+        onConfirm={async () => {
+          if (confirmMaintenance) await save(confirmMaintenance);
+          setConfirmMaintenance(null);
+        }}
+        onCancel={() => setConfirmMaintenance(null)}
+      />
+
       {settings.error ? null : <AppReleasePanel canManage={canManage} />}
       {settings.error ? null : <WhatsAppLinkPanel canManage={canManage} />}
 

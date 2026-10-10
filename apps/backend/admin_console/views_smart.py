@@ -33,7 +33,7 @@ from core.pagination import CursorPage
 from facilities.models import Facility, FacilityApplication, FacilityReport, RejectionTemplate
 from locations.models import Province
 from notifications.models import Broadcast
-from notifications.services import send_broadcast
+from notifications.services import broadcast_recipients, send_broadcast
 
 from .insights import province_readiness, smart_alerts, staff_performance, tasks_center
 from .permissions import HasAdminPermission, IsAdminOperator
@@ -43,6 +43,7 @@ from .schemas_smart import (
     AdminAlertListSerializer,
     AdminAppReleaseRequestSerializer,
     AdminAppReleaseSerializer,
+    AdminBroadcastAudienceSerializer,
     AdminBroadcastPageSerializer,
     AdminBroadcastRequestSerializer,
     AdminBroadcastSerializer,
@@ -592,6 +593,40 @@ def _broadcast_payload(broadcast: Broadcast) -> dict[str, Any]:
 
 class BroadcastCursorPage(CursorPage):
     ordering = ("-created_at", "id")
+
+
+class BroadcastAudienceView(AdminView):
+    """How many accounts a broadcast would reach, asked before it is sent.
+
+    A broadcast to a province nobody chose said «أُرسل» to nobody at all; the console now shows the
+    count in its confirmation and warns when it is zero.
+    """
+
+    required_permission = "admin.notifications.send"
+
+    @extend_schema(
+        operation_id="adminNotificationBroadcastAudience",
+        tags=["Admin Notifications"],
+        summary="How many accounts a broadcast would reach",
+        parameters=[
+            OpenApiParameter("audience", str, required=True, enum=["ALL", "OWNERS"]),
+            OpenApiParameter("provinceId", str, required=False),
+        ],
+        responses={200: AdminBroadcastAudienceSerializer, 400: VALIDATION_400, **protected()},
+    )
+    def get(self, request: Any) -> Response:
+        audience = request.query_params.get("audience", "")
+        if audience not in Broadcast.Audience.values:
+            raise ValidationError({"audience": ["Unknown audience."]})
+        province = None
+        if request.query_params.get("provinceId"):
+            province = Province.objects.filter(pk=request.query_params["provinceId"]).first()
+            if province is None:
+                raise ValidationError({"provinceId": ["Unknown province."]})
+        count = broadcast_recipients(
+            audience=audience, province_id=province.pk if province else None
+        ).count()
+        return Response({"count": count})
 
 
 class BroadcastSendView(AdminView):

@@ -531,3 +531,7 @@ class AdminAppReleaseRequestSerializer(serializers.Serializer[Any]):
                 }
             )
         return attrs
+
+
+class AdminBroadcastAudienceSerializer(serializers.Serializer[Any]):
+    count = serializers.IntegerField(help_text="Active accounts the broadcast would reach.")

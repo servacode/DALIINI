@@ -52,6 +52,59 @@ open class AdminNotificationsAPI {
     }
 
     /**
+     * enum for parameter audience
+     */
+    public enum Audience_adminNotificationBroadcastAudience: String, CaseIterable {
+        case all = "ALL"
+        case owners = "OWNERS"
+    }
+
+    /**
+     How many accounts a broadcast would reach
+     
+     - parameter audience: (query)  
+     - parameter provinceId: (query)  (optional)
+     - returns: AdminBroadcastAudience
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminNotificationBroadcastAudience(audience: Audience_adminNotificationBroadcastAudience, provinceId: String? = nil) async throws -> AdminBroadcastAudience {
+        return try await adminNotificationBroadcastAudienceWithRequestBuilder(audience: audience, provinceId: provinceId).execute().body
+    }
+
+    /**
+     How many accounts a broadcast would reach
+     - GET /api/v1/admin/notifications/broadcast/audience/
+     - How many accounts a broadcast would reach, asked before it is sent.  A broadcast to a province nobody chose said «أُرسل» to nobody at all; the console now shows the count in its confirmation and warns when it is zero.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter audience: (query)  
+     - parameter provinceId: (query)  (optional)
+     - returns: RequestBuilder<AdminBroadcastAudience> 
+     */
+    open class func adminNotificationBroadcastAudienceWithRequestBuilder(audience: Audience_adminNotificationBroadcastAudience, provinceId: String? = nil) -> RequestBuilder<AdminBroadcastAudience> {
+        let localVariablePath = "/api/v1/admin/notifications/broadcast/audience/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        var localVariableUrlComponents = URLComponents(string: localVariableURLString)
+        localVariableUrlComponents?.queryItems = APIHelper.mapValuesToQueryItems([
+            "audience": (wrappedValue: audience.encodeToJSON(), isExplode: true),
+            "provinceId": (wrappedValue: provinceId?.encodeToJSON(), isExplode: true),
+        ])
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminBroadcastAudience>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Broadcast history, newest first
      
      - parameter cursor: (query)  (optional)

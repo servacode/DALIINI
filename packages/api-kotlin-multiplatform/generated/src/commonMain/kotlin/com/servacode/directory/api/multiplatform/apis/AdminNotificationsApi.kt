@@ -16,6 +16,7 @@
 package com.servacode.directory.api.multiplatform.apis
 
 import com.servacode.directory.api.multiplatform.models.AdminBroadcast
+import com.servacode.directory.api.multiplatform.models.AdminBroadcastAudience
 import com.servacode.directory.api.multiplatform.models.AdminBroadcastPage
 import com.servacode.directory.api.multiplatform.models.AdminBroadcastRequest
 import com.servacode.directory.api.multiplatform.models.ApiError
@@ -76,6 +77,57 @@ open class AdminNotificationsApi : ApiClient {
         ).wrap()
     }
 
+
+
+
+    /**
+     * enum for parameter audience
+     */
+    @Serializable
+    enum class AudienceAdminNotificationBroadcastAudience(val value: kotlin.String) {
+        
+        @SerialName(value = "ALL")
+        ALL("ALL"),
+        
+        @SerialName(value = "OWNERS")
+        OWNERS("OWNERS")
+        
+    }
+
+    /**
+     * How many accounts a broadcast would reach
+     * How many accounts a broadcast would reach, asked before it is sent.  A broadcast to a province nobody chose said «أُرسل» to nobody at all; the console now shows the count in its confirmation and warns when it is zero.
+     * @param audience 
+     * @param provinceId  (optional)
+     * @return AdminBroadcastAudience
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun adminNotificationBroadcastAudience(audience: AudienceAdminNotificationBroadcastAudience, provinceId: kotlin.String? = null): HttpResponse<AdminBroadcastAudience> {
+
+        val localVariableAuthNames = listOf<String>("bearerAccessToken")
+
+        val localVariableBody = 
+            io.ktor.client.utils.EmptyContent
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        audience?.apply { localVariableQuery["audience"] = listOf("${ audience.value }") }
+        provinceId?.apply { localVariableQuery["provinceId"] = listOf("$provinceId") }
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.GET,
+            "/api/v1/admin/notifications/broadcast/audience/",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+        )
+
+        return request(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames
+        ).wrap()
+    }
 
 
     /**

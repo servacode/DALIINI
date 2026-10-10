@@ -159,6 +159,12 @@ export const READS = {
     apis.content.adminContactMessagesList(
       filled(p, ["status", "kind", "cursor", "limit"]) as never,
     ),
+  // How many a broadcast would reach, shown before it is sent.
+  broadcastAudience: (apis: AdminApis, p: Params) =>
+    apis.notifications.adminNotificationBroadcastAudience({
+      audience: (p.audience === "OWNERS" ? "OWNERS" : "ALL") as never,
+      provinceId: p.provinceId || undefined,
+    }),
   broadcasts: (apis: AdminApis, p: Params) =>
     apis.notifications.adminNotificationBroadcastsList(filled(p, ["cursor", "limit"]) as never),
   rejectionTemplates: (apis: AdminApis, p: Params) =>
