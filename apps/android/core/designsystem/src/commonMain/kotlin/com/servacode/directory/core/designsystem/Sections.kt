@@ -82,7 +82,7 @@ fun DirectoryMenuSection(
 fun DirectoryBrandHeader(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = BrandColors.softer,
+        color = BrandColors.softerNow,
         shape = RoundedCornerShape(bottomStart = Radius.xl, bottomEnd = Radius.xl),
     ) {
         Column(

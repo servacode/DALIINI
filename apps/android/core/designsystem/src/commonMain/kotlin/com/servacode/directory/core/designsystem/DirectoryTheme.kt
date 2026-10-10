@@ -11,6 +11,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
@@ -254,6 +255,19 @@ object BrandColors {
     val markDeep = color(DirectoryTokens.ColorsPrimaryDeep)
     val soft = color(DirectoryTokens.SemanticSurfaceBrandSoft)
     val softer = color(DirectoryTokens.ColorsPrimarySofter)
+
+    /**
+     * [soft] and [softer] in the theme in use. The light values are paper-pale greens; under the
+     * dark theme they would be bright slabs that the theme's light words vanish into.
+     */
+    val softNow: Color
+        @Composable @ReadOnlyComposable
+        get() = if (LocalDirectoryDark.current) darkSoft else soft
+    val softerNow: Color
+        @Composable @ReadOnlyComposable
+        get() = if (LocalDirectoryDark.current) darkSofter else softer
+    private val darkSoft = color(DirectoryTokens.ColorsDarkPrimarySoft)
+    private val darkSofter = color(DirectoryTokens.ColorsDarkPrimarySofter)
     val canvas = color(DirectoryTokens.SemanticSurfaceCanvas)
     val contentPrimary = color(DirectoryTokens.SemanticContentPrimary)
     val contentSecondary = color(DirectoryTokens.SemanticContentSecondary)

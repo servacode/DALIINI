@@ -42,8 +42,10 @@ fun TownIllustration(
     height: Dp = 240.dp,
     mark: Dp = 108.dp,
 ) {
+    val soft = BrandColors.softNow
+    val softer = BrandColors.softerNow
     Box(modifier.fillMaxWidth().height(height), contentAlignment = Alignment.Center) {
-        Canvas(Modifier.fillMaxSize()) { drawTown() }
+        Canvas(Modifier.fillMaxSize()) { drawTown(soft, softer) }
         BrandSymbol(size = mark)
     }
 }
@@ -51,16 +53,18 @@ fun TownIllustration(
 /** The same ground and buildings without the pin, for a screen that draws its own subject. */
 @Composable
 fun TownBackdrop(modifier: Modifier = Modifier, height: Dp = 200.dp) {
+    val soft = BrandColors.softNow
+    val softer = BrandColors.softerNow
     Box(modifier.fillMaxWidth().height(height)) {
-        Canvas(Modifier.fillMaxSize()) { drawTown() }
+        Canvas(Modifier.fillMaxSize()) { drawTown(soft, softer) }
     }
 }
 
-private fun DrawScope.drawTown() {
+private fun DrawScope.drawTown(soft: Color, softer: Color) {
     val ground = Offset(size.width / 2, size.height * 0.72f)
     // The soft ground the town stands on.
     drawOval(
-        color = BrandColors.softer,
+        color = softer,
         topLeft = Offset(size.width * 0.06f, size.height * 0.28f),
         size = Size(size.width * 0.88f, size.height * 0.62f),
     )
@@ -68,12 +72,12 @@ private fun DrawScope.drawTown() {
     val unit = size.width * 0.072f
     // Buildings: rounded blocks of two soft tones, tallest towards the middle.
     val blocks = listOf(
-        Triple(-3.1f, 2.6f, BrandColors.soft),
-        Triple(-2.1f, 3.9f, BrandColors.softer),
-        Triple(-1.1f, 3.2f, BrandColors.soft),
-        Triple(1.1f, 4.2f, BrandColors.soft),
-        Triple(2.2f, 2.9f, BrandColors.softer),
-        Triple(3.2f, 3.5f, BrandColors.soft),
+        Triple(-3.1f, 2.6f, soft),
+        Triple(-2.1f, 3.9f, softer),
+        Triple(-1.1f, 3.2f, soft),
+        Triple(1.1f, 4.2f, soft),
+        Triple(2.2f, 2.9f, softer),
+        Triple(3.2f, 3.5f, soft),
     )
     blocks.forEach { (offset, tall, colour) ->
         val width = unit * 0.9f
@@ -103,7 +107,7 @@ private fun DrawScope.drawTown() {
     }
     // The ground line, as a single soft stroke.
     drawLine(
-        color = BrandColors.soft,
+        color = soft,
         start = Offset(size.width * 0.12f, base),
         end = Offset(size.width * 0.88f, base),
         strokeWidth = 2.dp.toPx(),
@@ -120,10 +124,11 @@ fun LocationIllustration(
     height: Dp = 200.dp,
     mark: Dp = 96.dp,
 ) {
+    val softer = BrandColors.softerNow
     Box(modifier.fillMaxWidth().height(height), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
             val centre = Offset(size.width / 2, size.height / 2)
-            drawCircle(BrandColors.softer, size.minDimension * 0.42f, centre)
+            drawCircle(softer, size.minDimension * 0.42f, centre)
             listOf(0.30f to 1f, 0.42f to 0.55f, 0.54f to 0.3f).forEach { (fraction, alpha) ->
                 drawCircle(
                     color = BrandColors.mark,
