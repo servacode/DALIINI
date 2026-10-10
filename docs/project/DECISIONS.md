@@ -3115,3 +3115,18 @@ dedicated emulator and the console; every result is in `LAUNCH-READINESS-RESULTS
 * **Open, for a decision:** there is no way to transfer a facility's ownership anywhere, though
   two messages point to one; the site keeps serving its last pages during maintenance; the duty
   roster is not kept for offline use.
+
+## DECISION-118 — The owner's answers to the readiness report
+
+**Date:** 2026-10-10. The questions in section 5 of the final report, answered.
+
+* **The site shows maintenance.** `apps/web/proxy.ts` asks `GET /api/v1/platform/status/` on each
+  page request (remembered 15 seconds) and answers with `/maintenance` while it is on; an
+  unreadable status is not maintenance.
+* **The privacy and terms pages are approved.** Version 3 drops the draft note (0008).
+* **No document is asked of any category** for now: verification requirements stay empty.
+* **Emergency numbers:** 110 ambulance, 112 police, 113 fire — checked against public listings
+  (travel advisories and emergency-number references); to be confirmed with an official source
+  when one is at hand.
+* **The test admin account is replaced** by a real one with two-step sign-in before launch.
+* **A pass on the owner's phone** follows, after the remaining items.
