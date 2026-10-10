@@ -55,6 +55,28 @@ class HomePlaceTest {
         assertEquals("الرقة — المشلب", preferences.values.first().placeLabel)
     }
 
+    @Test fun `a first start in a served province selects it, so Home is not empty`() = runTest {
+        api.placeAnswer = { _, _ ->
+            ResolvedPlace(province = raqqa, label = "الرقة", resolvedBy = PlaceResolution.BOUNDARY)
+        }
+        val preferences = FakePreferences()
+
+        repository(preferences, FakeLocation(fix(35.95, 39.00))).place()
+
+        assertEquals("province-raqqa", preferences.values.first().selectedProvinceId)
+    }
+
+    @Test fun `a province the reader chose is not replaced by where they are`() = runTest {
+        api.placeAnswer = { _, _ ->
+            ResolvedPlace(province = raqqa, label = "الرقة", resolvedBy = PlaceResolution.BOUNDARY)
+        }
+        val preferences = FakePreferences(selectedProvinceId = "province-damascus")
+
+        repository(preferences, FakeLocation(fix(35.95, 39.00))).place()
+
+        assertEquals("province-damascus", preferences.values.first().selectedProvinceId)
+    }
+
     @Test fun `without a position the last resolved place still names the header`() = runTest {
         val preferences = FakePreferences(placeLabel = "الرقة — المشلب", placeProvinceId = "province-raqqa")
 

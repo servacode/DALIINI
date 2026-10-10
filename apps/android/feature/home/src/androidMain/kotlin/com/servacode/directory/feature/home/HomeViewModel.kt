@@ -141,6 +141,8 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _hasLocation.value = loadHome.hasLocation()
             _place.value = runCatching { loadHome.place() }.getOrNull() ?: _place.value
+            // A first start: the place just named the province the list was waiting for.
+            if (_state.value == HomeUiState.ProvinceRequired && _place.value?.provinceId != null) refresh()
             // Only for someone who has signed in. A visitor has no inbox, so asking costs a
             // request that can only answer 401 — and a badge they could never open.
             _unread.value = if (session.state.value == SessionState.SIGNED_IN) {

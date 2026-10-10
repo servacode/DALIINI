@@ -75,6 +75,7 @@ class HomeRepository @Inject constructor(
             resolvedFrom = fix
             val provinceId = resolved.province?.id
             preferences.rememberPlace(label, provinceId)
+            adopt(provinceId)
             emit(HomePlace(label = label, provinceId = provinceId, fromLocation = true))
         }
     }
@@ -97,13 +98,25 @@ class HomeRepository @Inject constructor(
             if (label != null) {
                 val provinceId = resolved.province?.id
                 preferences.rememberPlace(label, provinceId)
+                adopt(provinceId)
                 return HomePlace(label = label, provinceId = provinceId, fromLocation = true)
             }
         }
         if (stored.placeLabel != null) {
+            adopt(stored.placeProvinceId)
             return HomePlace(label = stored.placeLabel, provinceId = stored.placeProvinceId)
         }
         return HomePlace(label = null, provinceId = stored.selectedProvinceId)
+    }
+
+    /**
+     * The province the reader is in becomes the list's province when they never chose one, so
+     * the header's "you are in Raqqa" is never above a page asking them to pick Raqqa. A choice
+     * they made themselves is never overwritten by where they happen to be.
+     */
+    private suspend fun adopt(provinceId: String?) {
+        if (provinceId == null) return
+        if (preferences.values.first().selectedProvinceId == null) preferences.selectProvince(provinceId)
     }
 
     /**
