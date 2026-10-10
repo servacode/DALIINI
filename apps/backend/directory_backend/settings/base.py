@@ -150,6 +150,8 @@ REST_FRAMEWORK = {
         "otp_start": "5/hour",
         "otp_verify": "10/hour",
         "login": "10/minute",
+        # Per account number, across every caller address (accounts/throttles.py).
+        "login_phone_hour": env("THROTTLE_LOGIN_PHONE_HOUR", "30/hour"),
         "recovery": "5/hour",
         # Per destination number, across every caller address: the sending account's budget.
         "otp_phone_hour": env("THROTTLE_OTP_PHONE_HOUR", "5/hour"),

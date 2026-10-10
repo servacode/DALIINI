@@ -59,6 +59,17 @@ class OtpPhoneDayThrottle(PhoneOnlyThrottle):
     scope = "otp_phone_day"
 
 
+class LoginPhoneHourThrottle(PhoneOnlyThrottle):
+    """Sign-ins against one number, from every address together.
+
+    The per-address limit stops one caller guessing; it did nothing about many addresses
+    taking turns at the same account's password. Recovery keeps its own budget, so a number
+    run out of tries here can still be recovered.
+    """
+
+    scope = "login_phone_hour"
+
+
 #: Every view that sends a code carries these, in addition to its own per-address limit.
 OTP_SEND_THROTTLES = [OtpPhoneHourThrottle, OtpPhoneDayThrottle]
 

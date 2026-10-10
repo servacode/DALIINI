@@ -48,3 +48,19 @@ def test_a_wrong_password_learns_nothing_more(blocked: User) -> None:
 
     assert status == 401
     assert body["code"] != "ACCOUNT_BLOCKED"
+
+
+@pytest.mark.django_db
+def test_many_addresses_taking_turns_at_one_number_are_stopped(blocked: User) -> None:
+    """The per-address limit alone let a crowd of addresses guess one account's password."""
+    codes = []
+    for attempt in range(31):
+        response = APIClient(REMOTE_ADDR=f"10.0.{attempt // 250}.{attempt % 250 + 1}").post(
+            LOGIN,
+            {"phone": PHONE, "password": "Wrong2026x", "platform": "ANDROID", "deviceName": "t"},
+            format="json",
+        )
+        codes.append(response.status_code)
+
+    assert 429 not in codes[:30]
+    assert codes[30] == 429

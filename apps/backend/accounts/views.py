@@ -67,6 +67,7 @@ from .services import (
 )
 from .throttles import (
     OTP_SEND_THROTTLES,
+    LoginPhoneHourThrottle,
     LoginThrottle,
     OtpStartThrottle,
     OtpVerifyThrottle,
@@ -181,7 +182,7 @@ class RegisterCompleteView(APIView):
 
 
 class LoginView(APIView):
-    throttle_classes = [LoginThrottle]
+    throttle_classes = [LoginThrottle, LoginPhoneHourThrottle]
     permission_classes = [AllowAny]
     authentication_classes = []
 
