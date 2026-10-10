@@ -14,9 +14,11 @@ from rest_framework.views import APIView
 
 from core.openapi import (
     CONFLICT_409,
+    FORBIDDEN_403,
     OTP_UNAVAILABLE_503,
     OTP_UNDELIVERABLE_422,
     THROTTLED_429,
+    UNAUTHENTICATED_401,
     VALIDATION_400,
     protected,
 )
@@ -188,7 +190,14 @@ class LoginView(APIView):
         tags=["Auth"],
         summary="Exchange phone and password for session credentials",
         request=LoginSerializer,
-        responses={200: SessionCredentialsSerializer, 400: VALIDATION_400, 429: THROTTLED_429},
+        responses={
+            200: SessionCredentialsSerializer,
+            400: VALIDATION_400,
+            401: UNAUTHENTICATED_401,
+            # ACCOUNT_BLOCKED, and only to the account's own password.
+            403: FORBIDDEN_403,
+            429: THROTTLED_429,
+        },
     )
     def post(self, request: Request) -> Response:
         serializer = LoginSerializer(data=request.data)

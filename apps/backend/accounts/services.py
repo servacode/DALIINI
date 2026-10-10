@@ -290,8 +290,26 @@ def _welcome(user: User) -> None:
 def login(*, phone: str, password: str, platform: str, device_name: str) -> dict[str, Any]:
     user = authenticate(phone=phone, password=password)
     if user is None or not user.is_active:
+        _refuse_if_blocked(phone=phone, password=password)
         raise AuthenticationFailed("Invalid credentials.")
     return create_session(user=user, platform=platform, device_name=device_name)
+
+
+def _refuse_if_blocked(*, phone: str, password: str) -> None:
+    """Say «blocked» to the one person who can prove the account is theirs.
+
+    A blocked account answered «wrong number or password», so its owner tried recovery after
+    recovery for a password that was right all along. Only the right password learns that the
+    account is blocked: a stranger guessing still gets the same refusal as any wrong guess. A
+    deleted account cannot reach here — its number is replaced and its password unusable.
+    """
+    held = User.objects.filter(phone=phone, is_active=False).first()
+    if held is not None and held.check_password(password):
+        raise DomainError(
+            "ACCOUNT_BLOCKED",
+            message="هذا الحساب موقوف. تواصل مع الدعم لمعرفة السبب.",
+            status_code=403,
+        )
 
 
 def rotate_refresh(*, raw_refresh: str) -> dict[str, Any]:

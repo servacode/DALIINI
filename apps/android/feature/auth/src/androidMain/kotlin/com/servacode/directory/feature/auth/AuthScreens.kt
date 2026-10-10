@@ -121,10 +121,11 @@ fun LoginScreen(
         )
         // On this screen a refusal can only be the number and password: "or the session ended",
         // true elsewhere, here only leaves the reader wondering which session.
-        if (state.failure?.error?.kind == AppError.Kind.UNAUTHENTICATED) {
-            ErrorText(AuthCopy.WRONG_CREDENTIALS)
-        } else {
-            FailureText(state.failure)
+        when {
+            // The right password on a blocked account: the backend says so to its owner alone.
+            state.failure?.code == BLOCKED -> ErrorText(AuthCopy.ACCOUNT_BLOCKED)
+            state.failure?.error?.kind == AppError.Kind.UNAUTHENTICATED -> ErrorText(AuthCopy.WRONG_CREDENTIALS)
+            else -> FailureText(state.failure)
         }
         DirectoryPrimaryButton(
             text = AuthCopy.SIGN_IN,
@@ -584,6 +585,9 @@ private fun ErrorText(message: String) {
 /** The backend's code for a number that already has an account (`accounts/services.py`). */
 private const val TAKEN = "PHONE_ALREADY_REGISTERED"
 
+/** The backend's code for a blocked account signed into with its own password. */
+private const val BLOCKED = "ACCOUNT_BLOCKED"
+
 /** The words of the account screens, provisional until product copy is approved. */
 object AuthCopy {
     val SIGN_IN: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_sign_in)
@@ -618,6 +622,8 @@ object AuthCopy {
     val RESEND: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_resend)
     val WRONG_CREDENTIALS: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_wrong_credentials)
+    val ACCOUNT_BLOCKED: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_account_blocked)
     val PASSWORD_RULE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_password_rule)
     val PASSWORD_REFUSED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_password_refused)
 }

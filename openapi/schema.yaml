@@ -7112,6 +7112,19 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: Request validation failed; `code` is VALIDATION_ERROR and `details`
             is populated.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
         '429':
           content:
             application/json:

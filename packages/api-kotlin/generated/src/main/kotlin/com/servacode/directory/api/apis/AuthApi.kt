@@ -29,6 +29,8 @@ interface AuthApi {
      * Responses:
      *  - 200: 
      *  - 400: Request validation failed; `code` is VALIDATION_ERROR and `details` is populated.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
      *  - 429: Rate limit exceeded for this endpoint; see the `Retry-After` header.
      *
      * @param login 
