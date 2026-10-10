@@ -22,7 +22,7 @@
     <string name="ds_pick_datetime">%1$s: اختر التاريخ والوقت</string>
 
     <!-- What the app is working from when the network is gone. -->
-    <string name="ds_offline">غير متصل — تعرض بيانات محفوظة قد لا تكون محدثة</string>
+    <string name="ds_offline">تعذّر التحديث — هذه بيانات محفوظة قد لا تكون محدثة</string>
 
     <!-- The home advertisement slider, as a screen reader says it. -->
     <string name="ds_ad_label">إعلان</string>
