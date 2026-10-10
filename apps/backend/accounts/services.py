@@ -151,23 +151,32 @@ def hand_over_console_code(phone: str) -> OTPChallenge | None:
         return waiting
 
 
-@transaction.atomic
 def verify_challenge(*, challenge_id: UUID, code: str, purpose: str) -> OTPChallenge:
-    challenge = OTPChallenge.objects.select_for_update().filter(pk=challenge_id).first()
-    if challenge is None or challenge.purpose != purpose:
-        raise ValidationError({"challengeId": "Invalid or expired challenge."})
-    now = timezone.now()
-    if challenge.consumed_at or challenge.expires_at <= now:
-        raise ValidationError({"challengeId": "Invalid or expired challenge."})
-    if challenge.attempt_count >= challenge.max_attempts:
-        raise ValidationError({"challengeId": "Invalid or expired challenge."})
-    expected = otp_digest(challenge_id=challenge.pk, code=code)
-    if not hmac.compare_digest(challenge.otp_digest, expected):
-        challenge.attempt_count += 1
-        challenge.save(update_fields=["attempt_count"])
+    """Prove a code, counting every wrong one against the challenge.
+
+    The wrong attempt is committed before the refusal is raised: raised inside the same
+    transaction, the refusal would roll the count back with it, and a challenge would take
+    guesses without end. So this must not be called inside another transaction either.
+    """
+    with transaction.atomic():
+        challenge = OTPChallenge.objects.select_for_update().filter(pk=challenge_id).first()
+        if challenge is None or challenge.purpose != purpose:
+            raise ValidationError({"challengeId": "Invalid or expired challenge."})
+        now = timezone.now()
+        if challenge.consumed_at or challenge.expires_at <= now:
+            raise ValidationError({"challengeId": "Invalid or expired challenge."})
+        if challenge.attempt_count >= challenge.max_attempts:
+            raise ValidationError({"challengeId": "Invalid or expired challenge."})
+        expected = otp_digest(challenge_id=challenge.pk, code=code)
+        wrong = not hmac.compare_digest(challenge.otp_digest, expected)
+        if wrong:
+            challenge.attempt_count += 1
+            challenge.save(update_fields=["attempt_count"])
+        else:
+            challenge.verified_at = now
+            challenge.save(update_fields=["verified_at"])
+    if wrong:
         raise ValidationError({"code": "Invalid verification code."})
-    challenge.verified_at = now
-    challenge.save(update_fields=["verified_at"])
     return challenge
 
 
@@ -422,7 +431,6 @@ def start_phone_change(*, user: User, phone: str) -> OTPChallenge:
     )
 
 
-@transaction.atomic
 def complete_phone_change(*, user: User, challenge_id: UUID, code: str) -> User:
     """Move the account to the number whose code has just been proved.
 
@@ -438,20 +446,22 @@ def complete_phone_change(*, user: User, challenge_id: UUID, code: str) -> User:
     # A verified code is only good for the account it was started for.
     if challenge.metadata.get("userId") != str(user.pk):
         raise ValidationError({"challengeId": "Invalid or expired challenge."})
-    locked = User.objects.select_for_update().get(pk=user.pk)
-    if User.objects.filter(phone=challenge.phone).exclude(pk=locked.pk).exists():
-        raise ValidationError({"phone": "This number belongs to another account."})
-    now = timezone.now()
-    locked.phone = challenge.phone
-    locked.phone_verified_at = now
-    locked.updated_at = now
-    locked.save(update_fields=["phone", "phone_verified_at", "updated_at"])
-    challenge.consumed_at = now
-    challenge.save(update_fields=["consumed_at"])
-    revoke_all_sessions(user=locked)
-    # The number itself is not recorded: an audit trail of who moved to which number is a
-    # directory of people, and this one only needs to know that it happened.
-    record_audit(actor=locked, action="account.phone.changed", target=locked)
+    # The code is proved outside this transaction, so a wrong one stays counted.
+    with transaction.atomic():
+        locked = User.objects.select_for_update().get(pk=user.pk)
+        if User.objects.filter(phone=challenge.phone).exclude(pk=locked.pk).exists():
+            raise ValidationError({"phone": "This number belongs to another account."})
+        now = timezone.now()
+        locked.phone = challenge.phone
+        locked.phone_verified_at = now
+        locked.updated_at = now
+        locked.save(update_fields=["phone", "phone_verified_at", "updated_at"])
+        challenge.consumed_at = now
+        challenge.save(update_fields=["consumed_at"])
+        revoke_all_sessions(user=locked)
+        # The number itself is not recorded: an audit trail of who moved to which number is
+        # a directory of people, and this one only needs to know that it happened.
+        record_audit(actor=locked, action="account.phone.changed", target=locked)
     return locked
 
 
