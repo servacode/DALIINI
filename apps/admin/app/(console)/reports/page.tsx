@@ -17,7 +17,7 @@ import {
   labelsFor,
   termsFor,
 } from "../../../components/ui";
-import { FilterChips, ItemCard, relativeTime } from "../../../components/ui/extra";
+import { counted, FilterChips, ItemCard, relativeTime } from "../../../components/ui/extra";
 import { useMutation } from "../../../lib/client/use-mutation";
 import { useCursorPage } from "../../../lib/client/use-cursor-page";
 import { useUrlFilters } from "../../../lib/client/use-url-filters";
@@ -106,8 +106,8 @@ export default function ReportsPage() {
     setSelected([]);
     setToast(
       skipped > 0
-        ? `حُسم ${decided} بلاغًا، و${skipped} لم يعد مفتوحًا.`
-        : `حُسم ${decided} بلاغًا.`,
+        ? `حُسم ${reports_(decided)}، وسبق حسم ${reports_(skipped)}.`
+        : `حُسم ${reports_(decided)}.`,
     );
     reports.reload();
   }
@@ -149,7 +149,7 @@ export default function ReportsPage() {
       {chosen.length > 0 ? (
         <div className="bulk-bar" data-testid="bulk-bar">
           <span>
-            <strong>{chosen.length}</strong> بلاغًا مختارًا
+            <strong>{reports_(chosen.length)}</strong> في الاختيار
           </span>
           <div className="button-row">
             <button
@@ -306,8 +306,8 @@ export default function ReportsPage() {
         title={bulk === "resolve" ? "معالجة المختار" : "رفض المختار"}
         body={
           bulk === "resolve"
-            ? `سيُعلَّم ${chosen.length} بلاغًا كمُعالَج. الملاحظة نفسها تُسجَّل على كلٍّ منها.`
-            : `سيُغلق ${chosen.length} بلاغًا دون تغيير. اكتب السبب ليبقى في سجل التدقيق.`
+            ? `سيُعلَّم ${reports_(chosen.length)} كمُعالَج. الملاحظة نفسها تُسجَّل على كلٍّ منها.`
+            : `سيُغلق ${reports_(chosen.length)} دون تغيير. اكتب السبب ليبقى في سجل التدقيق.`
         }
         confirmLabel={bulk === "resolve" ? "تأكيد المعالجة" : "تأكيد الرفض"}
         destructive={bulk === "dismiss"}
@@ -330,4 +330,9 @@ export default function ReportsPage() {
       <Toast message={toast} onDismiss={() => setToast(null)} />
     </div>
   );
+}
+
+/** «بلاغ واحد», «بلاغان», «3 بلاغات», «11 بلاغًا»: the count with the noun Arabic puts after it. */
+function reports_(n: number): string {
+  return counted(n, "بلاغ واحد", "بلاغان", "بلاغات", "بلاغًا");
 }

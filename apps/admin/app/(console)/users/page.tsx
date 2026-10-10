@@ -15,6 +15,7 @@ import {
   Toast,
 } from "../../../components/ui";
 import {
+  counted,
   FilterChips,
   FormDialog,
   PageHero,
@@ -56,7 +57,9 @@ type Facility = Readonly<{
 
 type Province = Readonly<{ id: string; nameAr: string }>;
 
-type Action = "block" | "unblock" | "recovery" | "mfa" | "delete";
+type Action = "block" | "unblock" | "recovery" | "mfa" | "delete" | "roles";
+
+type Role = Readonly<{ id: number; code: string; name: string; permissions: readonly string[] }>;
 
 /** Which accounts the list shows. One choice, so it is one row of chips, not three menus. */
 type Show = "" | "owners" | "users" | "blocked";
@@ -115,6 +118,7 @@ export default function UsersPage() {
   };
   const users = useCursorPage<AdminUser>("users", query);
   const canManageUsers = useCan("admin.users.manage");
+  const canManageRoles = useCan("admin.roles.manage");
   const provinces = useResource<{ items: Province[] }>(
     "provinces",
     {},
@@ -227,6 +231,7 @@ export default function UsersPage() {
               user={user}
               focused={linked === user.id}
               canManageUsers={canManageUsers}
+              canManageRoles={canManageRoles}
               onAction={ask}
             />
           ))}
@@ -234,6 +239,18 @@ export default function UsersPage() {
       ) : null}
 
       {users.pagination ? <Pagination {...users.pagination} /> : null}
+
+      {dialog?.action === "roles" ? (
+        <RolesDialog
+          user={dialog.user}
+          onDone={(message) => {
+            setDialog(null);
+            setToast(message);
+            users.reload();
+          }}
+          onCancel={() => setDialog(null)}
+        />
+      ) : null}
 
       <AccountDialogs
         dialog={dialog}
@@ -373,12 +390,14 @@ function AccountCard({
   index,
   focused,
   canManageUsers,
+  canManageRoles,
   onAction,
 }: {
   user: AdminUser;
   index: number;
   focused: boolean;
   canManageUsers: boolean;
+  canManageRoles: boolean;
   onAction: (action: Action, user: AdminUser) => void;
 }) {
   const owner = user.facilityCount > 0;
@@ -505,6 +524,16 @@ function AccountCard({
                 <Icon name="shield" width={16} height={16} />
               </button>
             ) : null}
+            {canManageRoles ? (
+              <button
+                type="button"
+                className="profile-act-main"
+                data-testid={`roles-${user.id}`}
+                onClick={() => onAction("roles", user)}
+              >
+                الأدوار
+              </button>
+            ) : null}
           </>
         ) : null
       }
@@ -622,5 +651,97 @@ function AccountDialogs({
         onCancel={onCancel}
       />
     </>
+  );
+}
+
+/**
+ * Which console roles an account holds. The card redesign dropped this with the details it
+ * used to open, and nothing else gave anyone a role: a reviewer could be described in «الأدوار
+ * والصلاحيات» but never made.
+ */
+function RolesDialog({
+  user,
+  onDone,
+  onCancel,
+}: {
+  user: AdminUser;
+  onDone: (message: string) => void;
+  onCancel: () => void;
+}) {
+  const detail = useResource<{ roleIds: readonly number[] }>("user", { id: user.id });
+  const roles = useResource<{ items: Role[] }>("roles");
+  const mutation = useMutation();
+  const [picked, setPicked] = useState<string[] | null>(null);
+  const selected = picked ?? (detail.data?.roleIds ?? []).map(String);
+  const loading = detail.loading || roles.loading;
+  const failed = detail.error ?? roles.error;
+
+  return (
+    <FormDialog
+      open
+      icon="shield"
+      title={`أدوار ${user.name}`}
+      description="ما يستطيع هذا الحساب فعله داخل اللوحة. حساب بلا دور لا يرى اللوحة أصلاً."
+      onClose={onCancel}
+      locked={mutation.pending}
+      testId="roles-dialog"
+      footer={
+        <>
+          <button
+            type="button"
+            className="button-primary"
+            data-testid="save-roles"
+            disabled={mutation.pending || picked === null}
+            onClick={async () => {
+              if (await mutation.run("userRoles", { id: user.id, roleIds: selected })) {
+                onDone("حُفظت الأدوار وسُجّلت في سجل التدقيق.");
+              }
+            }}
+          >
+            {mutation.pending ? "جارٍ الحفظ…" : "حفظ الأدوار"}
+          </button>
+          <button
+            type="button"
+            className="button-ghost"
+            disabled={mutation.pending}
+            onClick={onCancel}
+          >
+            إلغاء
+          </button>
+        </>
+      }
+    >
+      {loading ? <LoadingState /> : null}
+      {failed ? (
+        <ErrorState error={failed} onRetry={detail.error ? detail.reload : roles.reload} />
+      ) : null}
+      {!loading && !failed && roles.data ? (
+        <div>
+          {roles.data.items.map((role) => (
+            <label key={role.id} className="switch-row">
+              <span>
+                <strong>{role.name}</strong>{" "}
+                <span className="muted">
+                  ({counted(role.permissions.length, "صلاحية واحدة", "صلاحيتان", "صلاحيات", "صلاحية")})
+                </span>
+              </span>
+              <input
+                type="checkbox"
+                data-testid={`role-${role.code}`}
+                checked={selected.includes(String(role.id))}
+                onChange={(event) =>
+                  setPicked(
+                    event.target.checked
+                      ? [...selected, String(role.id)]
+                      : selected.filter((id) => id !== String(role.id)),
+                  )
+                }
+              />
+            </label>
+          ))}
+        </div>
+      ) : null}
+      <FieldError id="roles-error" message={mutation.error?.message} />
+    </FormDialog>
   );
 }

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useCan } from "../../../../components/admin-shell";
 import { Icon } from "../../../../components/icons";
 import { ConfirmDialog, ErrorState, LoadingState, PageHeader, Toast } from "../../../../components/ui";
-import { FormDialog, ItemCard, ItemChips, ItemMeter } from "../../../../components/ui/extra";
+import { counted, FormDialog, ItemCard, ItemChips, ItemMeter } from "../../../../components/ui/extra";
 import { type PermissionArea, areasFor, permissionLabel } from "../../../../lib/client/permissions";
 import { useMutation } from "../../../../lib/client/use-mutation";
 import { useResource } from "../../../../lib/client/use-resource";
@@ -141,7 +141,7 @@ export default function RolesPage() {
         title={draft?.id === null ? "دور جديد" : viewing ? (draft?.name ?? "") : "تعديل الدور"}
         description={
           draft
-            ? `${NUMBER.format(draft.permissions.size)} صلاحية من ${NUMBER.format(total)}`
+            ? `${counted(draft.permissions.size, "صلاحية واحدة", "صلاحيتان", "صلاحيات", "صلاحية")} من ${NUMBER.format(total)}`
             : undefined
         }
         onClose={() => setDraft(null)}

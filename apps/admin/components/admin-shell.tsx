@@ -198,6 +198,21 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
   },
 ];
 
+/**
+ * The first page these permissions open, in the rail's own order. A reviewer signed in to the
+ * home page, which they may not read, and met a wall of «لا تملك الصلاحية»; the home page now
+ * sends whoever cannot read it here.
+ */
+export function firstAllowedPage(permissions: readonly string[]): string | null {
+  for (const group of NAVIGATION) {
+    for (const section of group.sections) {
+      const page = section.pages.find((candidate) => permissions.includes(candidate.permission));
+      if (page) return page.href;
+    }
+  }
+  return null;
+}
+
 const ALL_SECTIONS = NAVIGATION.flatMap((group) => group.sections);
 
 /** The section and page a path belongs to, so a detail page still lights its section and tab. */

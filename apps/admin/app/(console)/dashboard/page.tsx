@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-import { useCan } from "../../../components/admin-shell";
+import { firstAllowedPage, useCan, useIdentity } from "../../../components/admin-shell";
 import { BarChart, LineChart } from "../../../components/charts";
 import { AlertsPanel, TaskCenter } from "../../../components/smart";
 import { addDays, damascusDay } from "../../../lib/client/calendar";
@@ -58,7 +59,19 @@ const TONE_COLORS: Record<Tone, string> = {
 type Day = Readonly<{ date: string; searches: number; facilityViews: number; newUsers: number }>;
 
 export default function DashboardPage() {
-  const dashboard = useResource<Dashboard>("dashboard", {}, { refreshMs: 60_000 });
+  const { permissions } = useIdentity();
+  const canReadDashboard = permissions.includes("admin.dashboard.read");
+  const router = useRouter();
+  useEffect(() => {
+    if (canReadDashboard) return;
+    const elsewhere = firstAllowedPage(permissions);
+    if (elsewhere && elsewhere !== "/dashboard") router.replace(elsewhere);
+  }, [canReadDashboard, permissions, router]);
+  const dashboard = useResource<Dashboard>(
+    "dashboard",
+    {},
+    { refreshMs: 60_000, enabled: canReadDashboard },
+  );
   // Two weeks of use, for whoever may read the analytics; the rest of the page does not need it.
   const canReadAnalytics = useCan("admin.analytics.read");
   const [fortnight] = useState(() => {

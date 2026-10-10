@@ -57,13 +57,18 @@ const AUDIENCES = [
 ] as const satisfies readonly { value: Audience; label: string; hint: string }[];
 
 /** Who a broadcast reaches, in words, for the confirmation and the history. */
-function scopeOf(audience: Audience, provinceName: string | null): string {
+function scopeOf(
+  audience: Audience,
+  provinceName: string | null,
+  // After «إلى» Arabic takes the genitive: «إلى المستخدمين», not «إلى المستخدمون».
+  afterPreposition = false,
+): string {
   if (audience === "OWNERS") {
-    return provinceName
-      ? `أصحاب المنشآت ومديروها في ${provinceName}`
-      : "كل أصحاب المنشآت ومديريها";
+    if (!provinceName) return "كل أصحاب المنشآت ومديريها";
+    return `أصحاب المنشآت و${afterPreposition ? "مديريها" : "مديروها"} في ${provinceName}`;
   }
-  return provinceName ? `المستخدمون الذين اختاروا ${provinceName}` : "كل المستخدمين";
+  if (!provinceName) return "كل المستخدمين";
+  return `${afterPreposition ? "المستخدمين" : "المستخدمون"} الذين اختاروا ${provinceName}`;
 }
 
 /**
@@ -115,7 +120,7 @@ export default function BroadcastPage() {
   const ready =
     titleLength > 0 && bodyLength > 0 && titleLength <= TITLE_MAX && bodyLength <= BODY_MAX;
   const server = fieldErrorsFor(sendError);
-  const scope = scopeOf(audience, provinceName(provinceId || null));
+  const scope = scopeOf(audience, provinceName(provinceId || null), true);
 
   async function send(): Promise<void> {
     setSending(true);
