@@ -10,6 +10,7 @@ from rest_framework.test import APIClient
 from content_services.models import LegalDocument
 
 second = importlib.import_module("content_services.migrations.0007_legal_drafts_v2")
+approved = importlib.import_module("content_services.migrations.0008_legal_pages_approved")
 first = importlib.import_module("content_services.migrations.0003_seed_legal_documents")
 LIST = "/api/v1/public/legal/"
 
@@ -22,7 +23,8 @@ def _active(key: str) -> LegalDocument:
 def test_the_pages_describe_the_app_as_it_is_now() -> None:
     privacy = APIClient().get(f"{LIST}PRIVACY/").json()
 
-    assert privacy["version"] == 2
+    # Version 3: the owner approved the second draft, which dropped its draft note (0008).
+    assert privacy["version"] == 3
     # The route's ends go to the platform's own engine, and a trip reads the location only
     # under its visible notice.
     assert "محرك المسارات" in privacy["bodyAr"]
@@ -30,7 +32,10 @@ def test_the_pages_describe_the_app_as_it_is_now() -> None:
     assert "١٨٠ يوماً" in privacy["bodyAr"]
     assert "OpenStreetMap" in APIClient().get(f"{LIST}TERMS/").json()["bodyAr"]
     for key in second.PAGES:
-        assert _active(key).body_ar == second.PAGES[key]
+        expected = second.PAGES[key]
+        if key in approved.KEYS:
+            expected = expected.replace(approved.DRAFT_NOTE, "").rstrip()
+        assert _active(key).body_ar == expected
         assert not LegalDocument.objects.get(key=key, version=1).active
     # The about page was not rewritten.
     assert _active("ABOUT").version == 1
@@ -58,6 +63,7 @@ def test_an_operator_s_own_words_are_never_replaced() -> None:
 
 @pytest.mark.django_db
 def test_reversing_brings_the_first_draft_back() -> None:
+    approved.unapprove(apps, None)
     second.unpublish(apps, None)
 
     for key in second.PAGES:
