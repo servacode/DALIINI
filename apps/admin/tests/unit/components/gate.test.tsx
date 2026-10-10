@@ -257,9 +257,26 @@ describe("DiffViewer", () => {
   it("shows only what changed", () => {
     render(<DiffViewer before={{ active: false, name: "x" }} after={{ active: true, name: "x" }} />);
 
+    // Field names read in Arabic (DECISION-113); the stored key stays on the row's hover.
     const text = screen.getByTestId("diff-viewer").textContent ?? "";
-    expect(text).toContain("active");
-    expect(text).not.toContain("name");
+    expect(text).toContain("مفعّل");
+    expect(text).not.toContain("الاسم");
+  });
+
+  it("reads stored states and empty lists as words, and lets the screen name its ids", () => {
+    render(
+      <DiffViewer
+        before={{}}
+        after={{ status: "DRAFT", imageIds: [], categoryId: "c-1" }}
+        resolve={(key, value) => (key === "categoryId" && value === "c-1" ? "صيدليات" : undefined)}
+      />,
+    );
+
+    const text = screen.getByTestId("diff-viewer").textContent ?? "";
+    expect(text).toContain("مسودة");
+    expect(text).toContain("لا شيء");
+    expect(text).toContain("صيدليات");
+    expect(text).not.toContain("DRAFT");
   });
 
   it("says so when nothing changed", () => {

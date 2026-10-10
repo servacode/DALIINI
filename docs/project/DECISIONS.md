@@ -3039,3 +3039,30 @@ Contract: `adminCategoriesList` items gain `capabilities`, `switches` and `facil
 `adminProvincesList` items gain `activeFacilityCount`, `cityCount` and `activeCityCount`. Both
 lists cost the same number of queries whatever their length, and a test holds it. The clients
 were regenerated.
+
+## DECISION-114 — What the first operating cycle on a real phone found, fixed
+
+**Date:** 2026-10-10. The owner asked for a full cycle on their phone: an account made with an
+invented number, a pharmacy registered by its owner, approved from the console, seen by the
+public. It worked end to end, and it found these:
+
+* **An owner's phone, address and description were lost.** Creating a draft carries only its
+  name and category, and autosave starts only once a draft exists, so whatever was typed before
+  the first «التالي» went nowhere; the pharmacy was approved with no phone. The rest of the form
+  now follows the creation in the same save, and a test holds it.
+* **The map was blank on the phone.** The local style serves its tiles from `127.0.0.1`; the
+  local build's cleartext list knew only `localhost`. Both are allowed (local build only).
+* **The owner flow spoke in numbers and placeholders.** The chosen point read as fourteen digits
+  after the point, now as a sentence; the time boxes said «HH:mm», now «مثال 09:00»; the
+  specialised-fields step held nothing but a sentence and is skipped (specialties are chosen on
+  the facility's own page); the documents step says when a category asks for none; a photo no
+  longer moves the owner past the photos step.
+* **The request page in the console read as storage.** Field names are Arabic, stored states
+  are words («مسودة», not `DRAFT`), empty lists say «لا شيء», and the category and province
+  are named instead of shown as ids. The same viewer serves the audit trail.
+* **The support number is set from the console** (Settings → «الدعم والتواصل»). It was only a
+  server environment variable, so the app hid «راسلنا على واتساب» until a deploy. The setting
+  wins; empty falls back to the environment; a number that is not a Syrian mobile is refused
+  with a sentence saying so. The existing environment values seed the setting.
+* The trial pharmacy and its owner's account were removed afterwards; the admin is the only
+  account again.

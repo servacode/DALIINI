@@ -28,6 +28,7 @@ from rest_framework.views import APIView
 from accounts.authentication import AuthenticatedRequest
 from accounts.mfa import status as mfa_status
 from accounts.models import User
+from accounts.phone import normalize_syrian_phone
 from accounts.rbac import admin_permissions_for
 from analytics.models import ProductAnalyticsEvent
 from audit.models import AuditEvent
@@ -38,6 +39,7 @@ from facilities.models import Facility, FacilityApplication, FacilityReport
 from pharmacy_duty.models import DutyShift
 from platform_settings.maintenance import get_maintenance_state
 from platform_settings.models import PlatformSetting
+from platform_settings.operations import SUPPORT_WHATSAPP_KEY
 from platform_settings.operations import TYPED_SETTINGS as TYPED_SETTING_DEFAULTS
 
 from .permissions import HasAdminPermission, IsAdminOperator
@@ -525,13 +527,23 @@ class SettingsView(AdminView):
         typed = TYPED_SETTING_DEFAULTS.get(key)
         if typed is not None and request.data.get("type", typed[0]) != typed[0]:
             raise ValidationError({"type": f"{key} must be {typed[0]}."})
+        value = request.data.get("value")
+        if key == SUPPORT_WHATSAPP_KEY and isinstance(value, str) and value.strip():
+            # Shown to everyone as a chat link, so a number that is not one is refused here
+            # rather than silently hidden from the app and the site.
+            try:
+                value = normalize_syrian_phone(value)
+            except ValueError as exc:
+                raise ValidationError(
+                    {"value": "اكتب رقم واتساب سورياً صحيحاً، مثل 0933123456."}
+                ) from exc
         setting, _ = PlatformSetting.objects.get_or_create(
             key=key,
             defaults={"value_type": request.data.get("type", "JSON"), "value": None},
         )
         before = {"type": setting.value_type, "value": setting.value}
         setting.value_type = request.data.get("type", setting.value_type)
-        setting.value = request.data.get("value")
+        setting.value = value
         setting.updated_by = request.user
         try:
             setting.full_clean()

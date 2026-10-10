@@ -669,9 +669,12 @@ export function ConfirmDialog({
 export function DiffViewer({
   before,
   after,
+  resolve,
 }: {
   before: Record<string, unknown> | null | undefined;
   after: Record<string, unknown> | null | undefined;
+  /** A name for an id the screen can look up: a category, a province. */
+  resolve?: (key: string, value: unknown) => string | undefined;
 }) {
   const keys = Array.from(
     new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})]),
@@ -686,14 +689,14 @@ export function DiffViewer({
     <dl className="diff" data-testid="diff-viewer">
       {changed.map((key) => (
         <div key={key} className="diff-row">
-          <dt>{key}</dt>
+          <dt title={key}>{FIELD_LABELS[key] ?? key}</dt>
           <dd>
             <span className="diff-before" dir={isPoint(before?.[key]) ? "ltr" : undefined}>
-              {format(before?.[key])}
+              {resolve?.(key, before?.[key]) ?? format(before?.[key])}
             </span>
             <span aria-hidden="true">←</span>
             <span className="diff-after" dir={isPoint(after?.[key]) ? "ltr" : undefined}>
-              {format(after?.[key])}
+              {resolve?.(key, after?.[key]) ?? format(after?.[key])}
             </span>
           </dd>
         </div>
@@ -702,11 +705,78 @@ export function DiffViewer({
   );
 }
 
+/**
+ * What a snapshot's fields are called (DECISION-113). The stored key stays the record — it is on
+ * the row's hover — but an operator reads «الهاتف», not `phone`.
+ */
+const FIELD_LABELS: Readonly<Record<string, string>> = {
+  nameAr: "الاسم",
+  nameEn: "الاسم بالإنكليزية",
+  descriptionAr: "الوصف",
+  descriptionEn: "الوصف بالإنكليزية",
+  phone: "الهاتف",
+  whatsapp: "واتساب",
+  addressAr: "العنوان",
+  addressEn: "العنوان بالإنكليزية",
+  categoryId: "التصنيف",
+  provinceId: "المحافظة",
+  cityId: "المدينة",
+  neighborhoodId: "الحي",
+  location: "الموقع",
+  hasLocation: "الموقع محدَّد",
+  imageIds: "الصور",
+  specialtyIds: "التخصصات",
+  serviceTagIds: "الخدمات",
+  status: "الحالة",
+  active: "مفعّل",
+  enabled: "مفعّل",
+  required: "إلزامي",
+  sortOrder: "الترتيب",
+  titleAr: "العنوان",
+  bodyAr: "النص",
+  labelAr: "الاسم",
+  targetScope: "الاستهداف",
+  actionType: "نوع الإجراء",
+  imageKey: "الصورة",
+  startsAt: "يبدأ",
+  endsAt: "ينتهي",
+  slideDurationMs: "مدة العرض",
+  permissions: "الصلاحيات",
+  name: "الاسم",
+  value: "القيمة",
+  adminNote: "ملاحظة للمشغلين",
+  kind: "النوع",
+  note: "الملاحظة",
+  reason: "السبب",
+};
+
+/** Stored states read as words. */
+const VALUE_LABELS: Readonly<Record<string, string>> = {
+  DRAFT: "مسودة",
+  SUBMITTED: "قيد المراجعة",
+  ACTIVE: "فعّالة",
+  SUSPENDED: "موقوفة",
+  CLOSED: "مغلقة",
+  APPROVED: "مقبول",
+  REJECTED: "مرفوض",
+  OPEN: "مفتوح",
+  RESOLVED: "عولج",
+  DISMISSED: "رُفض",
+  GLOBAL: "كل المحافظات",
+  PROVINCE: "محافظة محددة",
+  CATEGORY: "تصنيف محدد",
+  NONE: "لا شيء",
+};
+
 function format(value: unknown): string {
-  if (value === null || value === undefined) return "—";
+  if (value === null || value === undefined || value === "") return "—";
   if (typeof value === "boolean") return value ? "نعم" : "لا";
   if (isPoint(value)) return `${value.latitude.toFixed(5)}, ${value.longitude.toFixed(5)}`;
+  if (Array.isArray(value)) {
+    return value.length === 0 ? "لا شيء" : `${new Intl.NumberFormat(LOCALE).format(value.length)} عنصر`;
+  }
   if (typeof value === "object") return JSON.stringify(value);
+  if (typeof value === "string" && VALUE_LABELS[value]) return VALUE_LABELS[value];
   return String(value);
 }
 

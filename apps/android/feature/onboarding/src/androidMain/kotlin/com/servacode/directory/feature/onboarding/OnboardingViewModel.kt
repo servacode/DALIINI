@@ -296,9 +296,9 @@ class OnboardingViewModel @Inject constructor(
                         it.copy(
                             draft = updated,
                             message = OnboardingMessage(OnboardingNotice.FILE_UPLOADED),
-                            step = if (requirementId == null) {
-                                OnboardingStep.SPECIALIZED_FIELDS
-                            } else it.step,
+                            // A photo keeps the owner on the photos step, so a second one can
+                            // follow; «التالي» moves on.
+                            step = it.step,
                         )
                     }
                 }
@@ -315,8 +315,10 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
+    // Straight to the documents: the specialised-fields step had nothing on it but a sentence.
+    // Specialties and services are chosen on the facility's own page once it exists.
     fun nextFromImages() = mutate {
-        it.copy(step = OnboardingStep.SPECIALIZED_FIELDS)
+        it.copy(step = OnboardingStep.VERIFICATION_EVIDENCE)
     }
 
     fun nextFromSpecializedFields() = mutate {

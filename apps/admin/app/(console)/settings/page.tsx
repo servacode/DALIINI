@@ -50,6 +50,16 @@ const KNOWN: Record<string, { label: string; hint?: string; group: Group; unit?:
     group: "operations",
     unit: "ساعة",
   },
+  "support.whatsapp": {
+    label: "رقم واتساب الدعم",
+    hint: "يظهر في التطبيق والموقع زرَّ «راسلنا على واتساب». مثل 0933123456، أو فارغاً لإخفائه.",
+    group: "support",
+  },
+  "support.email": {
+    label: "بريد الدعم",
+    hint: "يظهر في صفحتي الدعم والتواصل بالموقع. اختياري.",
+    group: "support",
+  },
   "readiness.minActiveFacilities": {
     label: "أقل عدد منشآت لفتح محافظة",
     hint: "من شروط جاهزية المحافظة للإطلاق: عدد المنشآت الفعّالة فيها.",
@@ -58,9 +68,14 @@ const KNOWN: Record<string, { label: string; hint?: string; group: Group; unit?:
   },
 };
 
-type Group = "maintenance" | "operations" | "other";
+type Group = "support" | "maintenance" | "operations" | "other";
 
 const GROUPS: readonly { key: Group; title: string; description: string }[] = [
+  {
+    key: "support",
+    title: "الدعم والتواصل",
+    description: "كيف يصل الناس إلى فريق المنصة.",
+  },
   {
     key: "maintenance",
     title: "الصيانة",

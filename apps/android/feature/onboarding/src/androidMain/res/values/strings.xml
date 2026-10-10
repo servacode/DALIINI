@@ -32,8 +32,8 @@
     <string name="onboarding_hours_note">يمكن إضافة أكثر من فترة في اليوم. إذا كان وقت الإغلاق قبل وقت الفتح فالفترة
         تمتد بعد منتصف الليل.</string>
     <string name="onboarding_hours_save">حفظ الساعات والمتابعة</string>
-    <string name="onboarding_opens_at">يفتح HH:mm</string>
-    <string name="onboarding_closes_at">يغلق HH:mm</string>
+    <string name="onboarding_opens_at">يفتح (مثال 09:00)</string>
+    <string name="onboarding_closes_at">يغلق (مثال 17:00)</string>
     <string name="onboarding_span_add">إضافة فترة</string>
     <string name="onboarding_span_remove">حذف الفترة</string>
     <string name="onboarding_images_note">هذه الصور تظهر للجميع في صفحة المنشأة.</string>
@@ -41,6 +41,7 @@
     <string name="onboarding_specialized_note">الحقول المتخصصة تُعرض حسب إمكانيات التصنيف.</string>
     <string name="onboarding_evidence_note">الإثباتات خاصة بالمراجعة ولا تظهر في صفحة المنشأة.</string>
     <string name="onboarding_evidence_upload">رفع ملف</string>
+    <string name="onboarding_evidence_none">لا يطلب هذا التصنيف أي وثيقة الآن. اضغط «مراجعة الطلب» للمتابعة.</string>
     <string name="onboarding_required">مطلوب</string>
     <string name="onboarding_optional">اختياري</string>
     <string name="onboarding_review_note">الإرسال يعيد التحقق من سياسة التسجيل والإثباتات الحالية.</string>
@@ -51,9 +52,10 @@
     <string name="onboarding_submit">إرسال للمراجعة</string>
     <string name="onboarding_back_to_facilities">العودة إلى منشآتي</string>
 
-    <!-- A point on the map, as coordinates: saved, or only marked so far. -->
-    <string name="onboarding_saved_point">الموقع المحفوظ: %1$s، %2$s</string>
-    <string name="onboarding_marked_point">النقطة المختارة: %1$s، %2$s</string>
+    <!-- A point on the map: saved, or only marked so far. In words, not coordinates: fourteen
+         digits after the point told an owner nothing (found in the first operating cycle). -->
+    <string name="onboarding_saved_point">حُفظ موقع المنشأة على الخريطة</string>
+    <string name="onboarding_marked_point">حُددت النقطة. اضغط «حفظ هذا الموقع» لاعتمادها.</string>
 
     <!-- Where the owner is in the form. -->
     <string name="onboarding_step_province_category">المحافظة والتصنيف</string>

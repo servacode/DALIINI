@@ -22,6 +22,7 @@ import {
   labelsFor,
 } from "../../../../components/ui";
 import { useMutation } from "../../../../lib/client/use-mutation";
+import { useLookups } from "../../../../lib/client/use-lookups";
 import { useResource } from "../../../../lib/client/use-resource";
 import { fieldErrorsFor } from "../../../../lib/errors/messages";
 
@@ -73,6 +74,14 @@ const STATUS = termsFor("applicationStatus");
 export default function ReviewDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const detail = useResource<Detail>("review", { id });
+  const lookups = useLookups();
+  // The snapshot holds ids; the operator reads names.
+  const nameOf = (key: string, value: unknown): string | undefined => {
+    if (typeof value !== "string" || !value) return undefined;
+    if (key === "categoryId") return lookups.categoryName(value);
+    if (key === "provinceId") return lookups.provinceName(value);
+    return undefined;
+  };
   const decision = useMutation();
   const canDecide = useCan("admin.reviews.decide");
   const canReadEvidence = useCan("admin.evidence.read");
@@ -291,10 +300,10 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
                     : "الفرق بين آخر نسخة معتمدة وما أرسله المالك."
                 }
               >
-                <DiffViewer before={detail.data.previous} after={detail.data.snapshot} />
+                <DiffViewer before={detail.data.previous} after={detail.data.snapshot} resolve={nameOf} />
               </Panel>
               <Panel title="لقطة الطلب" description="البيانات كما أُرسلت للمراجعة.">
-                <DiffViewer before={{}} after={detail.data.snapshot} />
+                <DiffViewer before={{}} after={detail.data.snapshot} resolve={nameOf} />
               </Panel>
             </div>
           ) : (
@@ -308,7 +317,7 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
                     : "التعديل كما طلبه المالك."
               }
             >
-              <DiffViewer before={{}} after={detail.data.snapshot} />
+              <DiffViewer before={{}} after={detail.data.snapshot} resolve={nameOf} />
             </Panel>
           )}
 

@@ -354,7 +354,16 @@ private fun EvidenceStep(value: OnboardingUiState.Content, onUpload: (String) ->
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        value.selectedCategory?.verificationRequirements?.forEach { requirement ->
+        val requirements = value.selectedCategory?.verificationRequirements.orEmpty()
+        if (requirements.isEmpty()) {
+            // Said in words, not left as an empty page that looks broken.
+            Text(
+                text = stringResource(R.string.onboarding_evidence_none),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+        requirements.forEach { requirement ->
             DirectoryCard {
                 Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
                     Row(
@@ -749,11 +758,11 @@ object OnboardingCopy {
 
     @Composable
     @ReadOnlyComposable
-    fun saved(point: MapPoint): String =
-        stringResource(R.string.onboarding_saved_point, point.latitude, point.longitude)
+    @Suppress("UNUSED_PARAMETER")
+    fun saved(point: MapPoint): String = stringResource(R.string.onboarding_saved_point)
 
     @Composable
     @ReadOnlyComposable
-    fun marked(point: MapPoint): String =
-        stringResource(R.string.onboarding_marked_point, point.latitude, point.longitude)
+    @Suppress("UNUSED_PARAMETER")
+    fun marked(point: MapPoint): String = stringResource(R.string.onboarding_marked_point)
 }

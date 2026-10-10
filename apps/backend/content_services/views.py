@@ -15,6 +15,11 @@ from rest_framework.views import APIView
 from accounts.phone import normalize_syrian_phone
 from core.openapi import NOT_FOUND_404, THROTTLED_429, VALIDATION_400
 from core.throttles import ContactThrottle
+from platform_settings.operations import (
+    SUPPORT_EMAIL_KEY,
+    SUPPORT_WHATSAPP_KEY,
+    get_text_setting,
+)
 
 from .content_schemas import (
     AppReleaseSerializer,
@@ -136,15 +141,24 @@ class PublicSupportView(APIView):
 
 
 def support_contact() -> dict[str, Any]:
-    """The configured support contact, the number canonicalised; a malformed one is left out."""
-    raw = str(getattr(settings, "SUPPORT_WHATSAPP", "") or "").strip()
+    """The configured support contact, the number canonicalised; a malformed one is left out.
+
+    The console's setting first (DECISION-114), the server's environment when it is empty.
+    """
+    raw = get_text_setting(SUPPORT_WHATSAPP_KEY) or str(
+        getattr(settings, "SUPPORT_WHATSAPP", "") or ""
+    ).strip()
     number: str | None = None
     if raw:
         try:
             number = normalize_syrian_phone(raw)
         except ValueError:
             number = None
-    email = str(getattr(settings, "SUPPORT_EMAIL", "") or "").strip() or None
+    email = (
+        get_text_setting(SUPPORT_EMAIL_KEY)
+        or str(getattr(settings, "SUPPORT_EMAIL", "") or "").strip()
+        or None
+    )
     return {
         "whatsapp": number,
         "whatsappLink": f"https://wa.me/{number.lstrip('+')}" if number else None,

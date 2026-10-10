@@ -22,8 +22,29 @@ OPERATIONS_DEFAULTS: dict[str, tuple[str, Any]] = {
     READINESS_MIN_FACILITIES_KEY: (PlatformSetting.ValueType.INTEGER, 5),
 }
 
+SUPPORT_WHATSAPP_KEY = "support.whatsapp"
+SUPPORT_EMAIL_KEY = "support.email"
+
+# How people reach the team (DECISION-102), set from the console rather than only from the
+# server's environment: the number belongs to whoever runs the platform, and changing it should
+# not need a deploy. Empty falls back to the environment's SUPPORT_WHATSAPP / SUPPORT_EMAIL.
+SUPPORT_DEFAULTS: dict[str, tuple[str, Any]] = {
+    SUPPORT_WHATSAPP_KEY: (PlatformSetting.ValueType.STRING, ""),
+    SUPPORT_EMAIL_KEY: (PlatformSetting.ValueType.STRING, ""),
+}
+
 # Every key the platform knows, with the type it must keep.
-TYPED_SETTINGS: dict[str, tuple[str, Any]] = {**MAINTENANCE_DEFAULTS, **OPERATIONS_DEFAULTS}
+TYPED_SETTINGS: dict[str, tuple[str, Any]] = {
+    **MAINTENANCE_DEFAULTS,
+    **OPERATIONS_DEFAULTS,
+    **SUPPORT_DEFAULTS,
+}
+
+
+def get_text_setting(key: str) -> str:
+    """The stored text, stripped; empty when unset or not text."""
+    value = PlatformSetting.objects.filter(key=key).values_list("value", flat=True).first()
+    return value.strip() if isinstance(value, str) else ""
 
 
 def get_int_setting(key: str) -> int:
