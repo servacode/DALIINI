@@ -310,6 +310,10 @@ fun RegisterScreen(
                 failure = state.failure,
                 busy = state.busy,
                 onVerify = { viewModel.verify(code) },
+                onResend = {
+                    code = ""
+                    viewModel.start(phone)
+                },
             )
             // The number is proved; now the person.
             ChallengeStep.PASSWORD -> {
@@ -417,6 +421,10 @@ fun RecoveryScreen(
                 failure = state.failure,
                 busy = state.busy,
                 onVerify = { viewModel.verify(code) },
+                onResend = {
+                    code = ""
+                    viewModel.start(phone)
+                },
             )
             ChallengeStep.PASSWORD -> {
                 DirectoryPasswordField(
@@ -464,7 +472,16 @@ private fun CodeStep(
     failure: FormFailure?,
     busy: Boolean,
     onVerify: () -> Unit,
+    onResend: () -> Unit,
 ) {
+    // Named rather than "check this field": a wrong code and one that can no longer be used
+    // ask for different things — typing again, or a new code.
+    val codeError = when {
+        failure == null -> null
+        "challengeId" in failure.fields -> AuthCopy.CODE_EXPIRED
+        "code" in failure.fields -> AuthCopy.CODE_WRONG
+        else -> null
+    }
     Text(
         text = AuthCopy.CODE_SENT,
         style = MaterialTheme.typography.bodyMedium,
@@ -480,9 +497,9 @@ private fun CodeStep(
         label = AuthCopy.CODE,
         leadingIcon = DirectoryIcons.verified,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-        error = fieldError(failure, "code", "challengeId"),
+        error = codeError,
     )
-    FailureText(failure)
+    if (codeError == null) FailureText(failure)
     DirectoryPrimaryButton(
         text = AuthCopy.VERIFY,
         onClick = onVerify,
@@ -490,6 +507,9 @@ private fun CodeStep(
         enabled = code.isNotBlank(),
         loading = busy,
     )
+    // A code lives a few minutes and closes after a few wrong tries; without this the only way
+    // on was to leave the screen and type the number again.
+    DirectoryTextButton(AuthCopy.RESEND, onResend, enabled = !busy)
 }
 
 @Composable
@@ -569,4 +589,7 @@ object AuthCopy {
     val FORGOT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_forgot)
     val RECOVERED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_recovered)
     val FIELD_ERROR: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_field_error)
+    val CODE_WRONG: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_code_wrong)
+    val CODE_EXPIRED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_code_expired)
+    val RESEND: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_resend)
 }

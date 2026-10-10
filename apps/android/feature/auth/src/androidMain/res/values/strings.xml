@@ -26,4 +26,7 @@
     <string name="auth_forgot">نسيت كلمة المرور؟</string>
     <string name="auth_recovered">تم تغيير كلمة المرور. سجّل الدخول بها الآن.</string>
     <string name="auth_field_error">تحقق من هذا الحقل</string>
+    <string name="auth_code_wrong">الرمز غير صحيح.</string>
+    <string name="auth_code_expired">انتهت صلاحية هذا الرمز. اطلب رمزاً جديداً.</string>
+    <string name="auth_resend">أرسل رمزاً جديداً</string>
 </resources>
