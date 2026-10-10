@@ -58,6 +58,9 @@ fun MaintenanceScreen(
         Text(
             text = stringResource(Res.string.ds_maintenance_title),
             style = MaterialTheme.typography.titleLarge,
+            // Named, not inherited: there is no Surface above this screen, so the inherited
+            // colour was black — and black on the dark theme's background is unreadable.
+            color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
             modifier = Modifier.semantics { heading() },
         )
