@@ -25,6 +25,13 @@ class HoursFormTest {
         assertEquals(listOf(BusinessHour(4, "20:00", "02:00", 0)), HoursForm.toHours(days))
     }
 
+    @Test fun `the editor lists the week from Saturday, every day once`() {
+        assertEquals(5, HoursForm.DISPLAY_ORDER.first())
+        assertEquals(4, HoursForm.DISPLAY_ORDER.last())
+        assertEquals((0 until HoursForm.DAYS).toSet(), HoursForm.DISPLAY_ORDER.toSet())
+        assertEquals(HoursForm.DAYS, HoursForm.DISPLAY_ORDER.size)
+    }
+
     @Test fun `reading back orders each day's spans by sequence and trims seconds`() {
         val days = HoursForm.fromHours(
             listOf(

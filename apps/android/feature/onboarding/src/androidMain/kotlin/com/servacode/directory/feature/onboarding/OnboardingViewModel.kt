@@ -63,6 +63,8 @@ sealed interface OnboardingUiState {
         val pickerReady: Boolean = false,
         /** The point the owner marked and has not saved yet. */
         val pendingPoint: MapPoint? = null,
+        /** «التالي» was pressed with no name; the field says so until one is typed. */
+        val nameMissing: Boolean = false,
     ) : OnboardingUiState
     data object Error : OnboardingUiState
 }
@@ -135,7 +137,10 @@ class OnboardingViewModel @Inject constructor(
         )
     }
 
-    fun updateNameAr(value: String) = updateForm { copy(nameAr = value) }
+    fun updateNameAr(value: String) {
+        mutate { it.copy(nameMissing = false) }
+        updateForm { copy(nameAr = value) }
+    }
     fun updateNameEn(value: String) = updateForm { copy(nameEn = value) }
     fun updateDescriptionAr(value: String) = updateForm { copy(descriptionAr = value) }
     fun updatePhone(value: String) = updateForm { copy(phone = value) }
@@ -157,6 +162,12 @@ class OnboardingViewModel @Inject constructor(
     }
 
     fun saveBasicAndContinue() {
+        // A nameless facility cannot be saved; «التالي» used to do nothing at all, silently.
+        val current = _state.value as? OnboardingUiState.Content
+        if (current != null && current.form.nameAr.isBlank()) {
+            mutate { it.copy(nameMissing = true) }
+            return
+        }
         viewModelScope.launch { saveCore(advance = true) }
     }
 

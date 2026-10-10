@@ -20,6 +20,7 @@
     <string name="onboarding_description">الوصف</string>
     <string name="onboarding_phone">الهاتف</string>
     <string name="onboarding_phone_invalid">رقم الهاتف غير صالح.</string>
+    <string name="onboarding_name_required">اكتب اسم المنشأة أولاً.</string>
     <string name="onboarding_whatsapp">واتساب - اختياري</string>
     <string name="onboarding_whatsapp_hint">09XXXXXXXX</string>
     <string name="onboarding_whatsapp_invalid">أدخل رقم جوال سوري صالحاً، مثل 0933123456، أو اترك الحقل فارغاً.</string>

@@ -251,7 +251,12 @@ private fun CategoryStep(value: OnboardingUiState.Content, onSelect: (String) ->
 @Composable
 private fun BasicInfoStep(value: OnboardingUiState.Content, viewModel: OnboardingViewModel) {
     Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
-        DirectoryTextField(value.form.nameAr, viewModel::updateNameAr, OnboardingCopy.NAME_AR)
+        DirectoryTextField(
+            value = value.form.nameAr,
+            onValueChange = viewModel::updateNameAr,
+            label = OnboardingCopy.NAME_AR,
+            error = if (value.nameMissing) OnboardingCopy.NAME_REQUIRED else null,
+        )
         DirectoryTextField(value.form.nameEn, viewModel::updateNameEn, OnboardingCopy.NAME_EN)
         DirectoryTextField(
             value = value.form.descriptionAr,
@@ -536,7 +541,8 @@ private fun HoursEditor(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        days.forEachIndexed { weekday, spans ->
+        HoursForm.DISPLAY_ORDER.forEach { weekday ->
+            val spans = days[weekday]
             DirectoryCard {
                 Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
                     DirectorySwitchRow(
@@ -693,6 +699,8 @@ object OnboardingCopy {
         @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_config_error_body)
     val NAME_AR: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_name_ar)
+    val NAME_REQUIRED: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_name_required)
     val NAME_EN: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_name_en)
     val DESCRIPTION: String

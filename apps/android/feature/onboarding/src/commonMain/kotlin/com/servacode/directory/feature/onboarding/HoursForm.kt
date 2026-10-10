@@ -15,6 +15,12 @@ data class HourSpan(val opensAt: String, val closesAt: String)
 object HoursForm {
     const val DAYS = 7
 
+    /**
+     * The order the editor lists the days in: the Syrian week, Saturday first — as the console's
+     * editor and the facility page list them. Weekday 0 is Monday, the backend's numbering.
+     */
+    val DISPLAY_ORDER: List<Int> = listOf(5, 6, 0, 1, 2, 3, 4)
+
     fun fromHours(hours: List<BusinessHour>): List<List<HourSpan>> = (0 until DAYS).map { weekday ->
         hours.filter { it.weekday == weekday }
             .sortedBy { it.sequence }

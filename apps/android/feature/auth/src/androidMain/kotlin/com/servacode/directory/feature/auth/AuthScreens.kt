@@ -121,7 +121,7 @@ fun LoginScreen(
         )
         // On this screen a refusal can only be the number and password: "or the session ended",
         // true elsewhere, here only leaves the reader wondering which session.
-        if (state.failure?.error.kind == AppError.Kind.UNAUTHENTICATED) {
+        if (state.failure?.error?.kind == AppError.Kind.UNAUTHENTICATED) {
             ErrorText(AuthCopy.WRONG_CREDENTIALS)
         } else {
             FailureText(state.failure)
