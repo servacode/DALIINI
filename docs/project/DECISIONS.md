@@ -3086,3 +3086,32 @@ placeholder.
   closed or one or two periods, and the photos with the first marked as the card's.
 * The settings page names a refusal under the field it concerns, with the server's sentence,
   and shows the support number left to right.
+
+## DECISION-117 — What the launch readiness run found in phases 2–6, and the rules it left
+
+**Date:** 2026-10-10. The full operating cycle of `LAUNCH-READINESS-PLAN.md`, run on a
+dedicated emulator and the console; every result is in `LAUNCH-READINESS-RESULTS.md`.
+
+* **A wrong code counts.** `verify_challenge` raised its refusal inside the transaction that
+  had just counted the attempt, so the count rolled back with it and no code challenge ever
+  closed. The attempt is committed before the refusal; the phone change proves its code before
+  opening its own transaction.
+* **Sign-in is limited per number too** (`login_phone_hour`, 30 an hour by default,
+  `THROTTLE_LOGIN_PHONE_HOUR`), across every address, besides the per-address limit. Recovery
+  keeps its own budget.
+* **A blocked account is told so — by its own password only.** 403 `ACCOUNT_BLOCKED` when the
+  password is the account's; any other guess gets the same 401 as before.
+* **Who did it is shown.** The audit list carries `actorName`; the console shows «المنفّذ».
+* **A minimum app version needs its store link.** The blocking screen's only way forward is the
+  link; a minimum above zero without one is refused.
+* **Restored:** giving an account its console roles, lost with the card redesign
+  (DECISION-113). Someone who may not read the dashboard lands on the first page they may.
+* **The owner's flow** shows the photos already up (with delete), names a missing name, keeps a
+  way past a saved location, lists the week from Saturday and writes the rejection reason on
+  the facility's page. **The duty week** lists every day, an empty one said as empty, and each
+  pharmacy's hours that day.
+* **Arabic for every refusal a person reads:** codes, passwords, phone change, photos, the
+  sole-owner account deletion (a dialog that says where to go), counts and cases.
+* **Open, for a decision:** there is no way to transfer a facility's ownership anywhere, though
+  two messages point to one; the site keeps serving its last pages during maintenance; the duty
+  roster is not kept for offline use.
