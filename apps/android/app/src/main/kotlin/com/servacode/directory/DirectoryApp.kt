@@ -337,6 +337,8 @@ fun DirectoryApp(
                     // The root of a tab has nothing behind it.
                     onBack = null,
                     bottomBar = { DirectoryTabs(DirectoryTab.ACCOUNT, navController) },
+                    onHelp = { navController.navigate(DirectoryRoute.Help) },
+                    onSettings = { navController.navigate(DirectoryRoute.Settings) },
                 )
                 return@composable
             }

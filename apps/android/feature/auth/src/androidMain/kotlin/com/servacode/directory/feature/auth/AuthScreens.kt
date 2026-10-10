@@ -73,6 +73,13 @@ fun LoginScreen(
     onBack: (() -> Unit)? = null,
     /** The app's own bar, where this page is a tab rather than a screen on top of one. */
     bottomBar: @Composable () -> Unit = {},
+    /**
+     * Where this page is the account tab, the way to help and settings without an account: the
+     * privacy policy, the terms, the support chat and the theme were otherwise out of a
+     * visitor's reach (found in the launch readiness run).
+     */
+    onHelp: (() -> Unit)? = null,
+    onSettings: (() -> Unit)? = null,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -91,6 +98,16 @@ fun LoginScreen(
             // not — both are "I cannot sign in from here".
             DirectoryTextButton(AuthCopy.FORGOT, onRecovery)
             CreateAccountLine(onRegister = onRegister)
+            if (onHelp != null || onSettings != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    onHelp?.let { DirectoryTextButton(AuthCopy.HELP, it) }
+                    onSettings?.let { DirectoryTextButton(AuthCopy.SETTINGS, it) }
+                }
+            }
         },
     ) {
         PhoneField(phone, state.failure, filled = true) { phone = it }
@@ -530,6 +547,8 @@ object AuthCopy {
     const val APP_NAME = DirectoryBrand.NAME
     val WELCOME: String @Composable get() = DirectoryWords.TAGLINE
     val NO_ACCOUNT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_no_account)
+    val HELP: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_help)
+    val SETTINGS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_settings)
     val CREATE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_create)
     val CREATE_ACCOUNT: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_create_account)
     val RECOVERY: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_recovery)

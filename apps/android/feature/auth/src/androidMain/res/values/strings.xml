@@ -5,6 +5,8 @@
     <string name="auth_sign_in">تسجيل الدخول</string>
     <string name="auth_back">رجوع</string>
     <string name="auth_no_account">ليس لديك حساب؟</string>
+    <string name="auth_help">المساعدة والمعلومات</string>
+    <string name="auth_settings">الإعدادات</string>
     <string name="auth_create">إنشاء حساب جديد</string>
     <string name="auth_create_account">إنشاء حساب</string>
     <string name="auth_recovery">استعادة كلمة المرور</string>
