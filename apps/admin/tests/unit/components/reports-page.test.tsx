@@ -122,7 +122,8 @@ describe("deciding many reports at once", () => {
     fireEvent.click(screen.getByTestId("select-r-1"));
 
     const bar = await screen.findByTestId("bulk-bar");
-    expect(bar.textContent).toContain("1");
+    // Arabic says one and two in words: «بلاغ واحد», «بلاغان».
+    expect(bar.textContent).toContain("بلاغ واحد");
   });
 
   it("selects every open report, and only those", async () => {
@@ -133,7 +134,7 @@ describe("deciding many reports at once", () => {
     fireEvent.click(screen.getByTestId("select-all"));
 
     const bar = await screen.findByTestId("bulk-bar");
-    expect(bar.textContent).toContain("2");
+    expect(bar.textContent).toContain("بلاغان");
   });
 
   it("sends the ticked ids, the action and the note in one call", async () => {
@@ -168,8 +169,8 @@ describe("deciding many reports at once", () => {
     fireEvent.click(screen.getByTestId("bulk-dismiss"));
     fireEvent.click(screen.getByText("تأكيد الرفض"));
 
-    const toast = await screen.findByText(/لم يعد مفتوحًا/);
-    expect(toast.textContent).toContain("1");
+    const toast = await screen.findByText(/سبق حسم/);
+    expect(toast.textContent).toContain("حُسم بلاغ واحد، وسبق حسم بلاغ واحد");
   });
 
   it("offers nothing at all to an operator who may not decide", async () => {
