@@ -153,6 +153,7 @@ export * from './AdminVerificationRequirement';
 export * from './AdminVerificationRequirementList';
 export * from './AdminVerificationRequirementRequest';
 export * from './AdminVerificationRequirementUpdateRequest';
+export * from './AdminWhatsAppState';
 export * from './AdvertisementAction';
 export * from './AdvertisementActionTypeEnum';
 export * from './AdvertisementTargetScopeEnum';

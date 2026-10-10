@@ -20,6 +20,7 @@ import com.servacode.directory.api.multiplatform.models.AdminAppReleaseRequest
 import com.servacode.directory.api.multiplatform.models.AdminSettingList
 import com.servacode.directory.api.multiplatform.models.AdminSettingWriteRequest
 import com.servacode.directory.api.multiplatform.models.AdminSettingWritten
+import com.servacode.directory.api.multiplatform.models.AdminWhatsAppState
 import com.servacode.directory.api.multiplatform.models.ApiError
 
 import com.servacode.directory.api.multiplatform.infrastructure.*
@@ -198,6 +199,70 @@ open class AdminSettingsApi : ApiClient {
         val localVariableConfig = RequestConfig<kotlin.Any?>(
             RequestMethod.GET,
             "/api/v1/admin/settings/",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+        )
+
+        return request(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames
+        ).wrap()
+    }
+
+
+    /**
+     * Forget the linked WhatsApp account and start a fresh pairing
+     * The bot logs its account out (it leaves the phone&#39;s linked devices), forgets it and offers a new QR code. Codes cannot be sent until it is scanned.
+     * @return AdminWhatsAppState
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun adminWhatsAppRelink(): HttpResponse<AdminWhatsAppState> {
+
+        val localVariableAuthNames = listOf<String>("bearerAccessToken")
+
+        val localVariableBody = 
+            io.ktor.client.utils.EmptyContent
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.POST,
+            "/api/v1/admin/whatsapp/relink/",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+        )
+
+        return request(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames
+        ).wrap()
+    }
+
+
+    /**
+     * The WhatsApp bot&#39;s link: state, number, or the QR code to scan
+     * The bot&#39;s link, for the console&#39;s «ربط واتساب» card.
+     * @return AdminWhatsAppState
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun adminWhatsAppRetrieve(): HttpResponse<AdminWhatsAppState> {
+
+        val localVariableAuthNames = listOf<String>("bearerAccessToken")
+
+        val localVariableBody = 
+            io.ktor.client.utils.EmptyContent
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.GET,
+            "/api/v1/admin/whatsapp/",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = true,

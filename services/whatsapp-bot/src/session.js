@@ -1,3 +1,5 @@
+import { rm } from "node:fs/promises";
+
 import { Boom } from "@hapi/boom";
 // Named, including the socket factory: Baileys is CommonJS, so its default export is the whole
 // module object rather than the factory, and `import makeWASocket from …` yields an object.
@@ -21,6 +23,11 @@ import pino from "pino";
  * are dead — the account was unlinked, or banned — and reconnecting in a loop only hammers it.
  * The socket then stays down and `status()` says so, which is what makes the backend fail
  * loudly instead of accepting registrations it cannot complete.
+ *
+ * Pairing is done from the console (DECISION-116): while no account is linked the session keeps
+ * the latest QR code WhatsApp offers, and `pairing()` hands it to the backend, which draws it for
+ * the platform's owner to scan. `relink()` forgets the account and starts a fresh pairing — the
+ * way back from `loggedOut`, and the way to move the bot to another number.
  */
 
 const logger = pino({ level: process.env.LOG_LEVEL ?? "warn" });
@@ -35,9 +42,17 @@ export class WhatsAppSession {
     /** Set when the credentials are dead: no amount of reconnecting will help. */
     this.loggedOut = false;
     this.lastDisconnect = null;
+    /** The QR code WhatsApp offers right now, while nothing is linked. Never logged. */
+    this.qr = null;
+    this.qrAt = null;
+    /** The linked account's number, digits only, once connected. */
+    this.linkedNumber = null;
+    /** Which socket is current: events from one replaced by `relink()` are ignored. */
+    this.generation = 0;
   }
 
   async start() {
+    const generation = ++this.generation;
     const { state, saveCreds } = await useMultiFileAuthState(this.authDir);
     const { version } = await fetchLatestBaileysVersion();
 
@@ -55,16 +70,27 @@ export class WhatsAppSession {
     });
 
     this.socket.ev.on("creds.update", saveCreds);
-    this.socket.ev.on("connection.update", (update) => this.#onUpdate(update));
+    this.socket.ev.on("connection.update", (update) => {
+      if (generation === this.generation) this.#onUpdate(update);
+    });
     return this;
   }
 
   #onUpdate({ connection, lastDisconnect, qr }) {
-    if (qr && this.onQr) this.onQr(qr);
+    if (qr) {
+      this.qr = qr;
+      this.qrAt = Date.now();
+      if (this.onQr) this.onQr(qr);
+    }
 
     if (connection === "open") {
       this.connected = true;
       this.loggedOut = false;
+      this.qr = null;
+      this.qrAt = null;
+      // «9639xxxxxxxx:12@s.whatsapp.net» — the number is what comes before the device and host.
+      const id = String(this.socket?.user?.id ?? "");
+      this.linkedNumber = id.split(/[:@]/)[0] || null;
       logger.warn("whatsapp.connected");
       return;
     }
@@ -72,6 +98,7 @@ export class WhatsAppSession {
     if (connection !== "close") return;
 
     this.connected = false;
+    this.qr = null;
     const status = new Boom(lastDisconnect?.error)?.output?.statusCode;
     this.lastDisconnect = status ?? null;
 
@@ -95,6 +122,42 @@ export class WhatsAppSession {
       loggedOut: this.loggedOut,
       lastDisconnect: this.lastDisconnect,
     };
+  }
+
+  /**
+   * What the console's link card shows: whether an account is linked and which number, or the
+   * QR code to scan. Only behind the shared secret — the code is an invitation to take the bot.
+   */
+  pairing() {
+    return {
+      connected: this.connected,
+      loggedOut: this.loggedOut,
+      linkedNumber: this.connected ? this.linkedNumber : null,
+      qr: this.connected ? null : this.qr,
+      qrAgeMs: this.qrAt ? Date.now() - this.qrAt : null,
+    };
+  }
+
+  /**
+   * Forget the linked account and start a fresh pairing.
+   *
+   * WhatsApp is told first when it can be (the device disappears from the phone's «linked
+   * devices»), then the credentials on disk are removed and a new socket asks for a QR code.
+   */
+  async relink() {
+    const old = this.socket;
+    this.generation += 1;
+    if (old && this.connected) {
+      await old.logout().catch(() => undefined);
+    }
+    old?.end?.(undefined);
+    this.connected = false;
+    this.loggedOut = false;
+    this.linkedNumber = null;
+    this.qr = null;
+    this.qrAt = null;
+    await rm(this.authDir, { recursive: true, force: true });
+    await this.start();
   }
 
   /**

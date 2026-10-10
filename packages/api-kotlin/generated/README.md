@@ -149,6 +149,8 @@ All URIs are relative to *http://localhost*
 | *AdminSettingsApi* | [**adminAppReleaseUpdate**](docs/AdminSettingsApi.md#adminappreleaseupdate) | **PUT** api/v1/admin/app-release/ | Set what a mobile build must be |
 | *AdminSettingsApi* | [**adminSettingWrite**](docs/AdminSettingsApi.md#adminsettingwrite) | **PUT** api/v1/admin/settings/ | Create or update a typed platform setting |
 | *AdminSettingsApi* | [**adminSettingsList**](docs/AdminSettingsApi.md#adminsettingslist) | **GET** api/v1/admin/settings/ | List typed platform settings |
+| *AdminSettingsApi* | [**adminWhatsAppRelink**](docs/AdminSettingsApi.md#adminwhatsapprelink) | **POST** api/v1/admin/whatsapp/relink/ | Forget the linked WhatsApp account and start a fresh pairing |
+| *AdminSettingsApi* | [**adminWhatsAppRetrieve**](docs/AdminSettingsApi.md#adminwhatsappretrieve) | **GET** api/v1/admin/whatsapp/ | The WhatsApp bot's link: state, number, or the QR code to scan |
 | *AdminSystemApi* | [**adminAlertsList**](docs/AdminSystemApi.md#adminalertslist) | **GET** api/v1/admin/alerts/ | Smart alerts: problems worth acting on now |
 | *AdminSystemApi* | [**adminDashboardRetrieve**](docs/AdminSystemApi.md#admindashboardretrieve) | **GET** api/v1/admin/dashboard/ | Operational counters for the review desk |
 | *AdminSystemApi* | [**adminMeRetrieve**](docs/AdminSystemApi.md#adminmeretrieve) | **GET** api/v1/admin/me/ | The current operator and the permissions they hold |
@@ -419,6 +421,7 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminVerificationRequirementList](docs/AdminVerificationRequirementList.md)
  - [com.servacode.directory.api.models.AdminVerificationRequirementRequest](docs/AdminVerificationRequirementRequest.md)
  - [com.servacode.directory.api.models.AdminVerificationRequirementUpdateRequest](docs/AdminVerificationRequirementUpdateRequest.md)
+ - [com.servacode.directory.api.models.AdminWhatsAppState](docs/AdminWhatsAppState.md)
  - [com.servacode.directory.api.models.AdvertisementAction](docs/AdvertisementAction.md)
  - [com.servacode.directory.api.models.AdvertisementActionTypeEnum](docs/AdvertisementActionTypeEnum.md)
  - [com.servacode.directory.api.models.AdvertisementTargetScopeEnum](docs/AdvertisementTargetScopeEnum.md)

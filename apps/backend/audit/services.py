@@ -48,8 +48,10 @@ def record_audit(
     return AuditEvent.objects.create(
         actor=actor,
         action=action,
-        target_type=target.__class__.__name__,
-        target_id=str(target.pk),
+        # None for an action on the platform itself rather than on one record (relinking the
+        # WhatsApp bot, say): there is nothing to name but the action.
+        target_type="" if target is None else target.__class__.__name__,
+        target_id="" if target is None else str(target.pk),
         before_snapshot=_redact(before_snapshot or {}),
         after_snapshot=_redact(after_snapshot or {}),
         request_id=request_id or "",

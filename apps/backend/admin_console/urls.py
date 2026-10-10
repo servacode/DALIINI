@@ -22,6 +22,7 @@ from . import (
     views_tags,
     views_taxonomy,
     views_users,
+    views_whatsapp,
 )
 
 urlpatterns = [
@@ -93,6 +94,8 @@ urlpatterns = [
     path("admin/evidence/<uuid:evidence_id>/content/", views_reviews.EvidenceContentView.as_view()),
     path("admin/facilities/", views_facilities.FacilityListView.as_view()),
     path("admin/facilities/map/", views_facilities.FacilityMapView.as_view()),
+    path("admin/whatsapp/", views_whatsapp.AdminWhatsAppView.as_view()),
+    path("admin/whatsapp/relink/", views_whatsapp.AdminWhatsAppRelinkView.as_view()),
     path("admin/facilities/<uuid:facility_id>/", views_facilities.FacilityDetailView.as_view()),
     path(
         "admin/facilities/<uuid:facility_id>/hours/",

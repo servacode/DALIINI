@@ -20,6 +20,7 @@ import type {
   AdminSettingList,
   AdminSettingWriteRequest,
   AdminSettingWritten,
+  AdminWhatsAppState,
   ApiError,
 } from '../models/index';
 import {
@@ -33,6 +34,8 @@ import {
     AdminSettingWriteRequestToJSON,
     AdminSettingWrittenFromJSON,
     AdminSettingWrittenToJSON,
+    AdminWhatsAppStateFromJSON,
+    AdminWhatsAppStateToJSON,
     ApiErrorFromJSON,
     ApiErrorToJSON,
 } from '../models/index';
@@ -234,6 +237,84 @@ export class AdminSettingsApi extends runtime.BaseAPI {
      */
     async adminSettingsList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminSettingList> {
         const response = await this.adminSettingsListRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * The bot logs its account out (it leaves the phone\'s linked devices), forgets it and offers a new QR code. Codes cannot be sent until it is scanned.
+     * Forget the linked WhatsApp account and start a fresh pairing
+     */
+    async adminWhatsAppRelinkRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminWhatsAppState>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/whatsapp/relink/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminWhatsAppStateFromJSON(jsonValue));
+    }
+
+    /**
+     * The bot logs its account out (it leaves the phone\'s linked devices), forgets it and offers a new QR code. Codes cannot be sent until it is scanned.
+     * Forget the linked WhatsApp account and start a fresh pairing
+     */
+    async adminWhatsAppRelink(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminWhatsAppState> {
+        const response = await this.adminWhatsAppRelinkRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * The bot\'s link, for the console\'s «ربط واتساب» card.
+     * The WhatsApp bot\'s link: state, number, or the QR code to scan
+     */
+    async adminWhatsAppRetrieveRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminWhatsAppState>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/whatsapp/`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminWhatsAppStateFromJSON(jsonValue));
+    }
+
+    /**
+     * The bot\'s link, for the console\'s «ربط واتساب» card.
+     * The WhatsApp bot\'s link: state, number, or the QR code to scan
+     */
+    async adminWhatsAppRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminWhatsAppState> {
+        const response = await this.adminWhatsAppRetrieveRaw(initOverrides);
         return await response.value();
     }
 

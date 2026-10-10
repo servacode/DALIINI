@@ -3130,3 +3130,27 @@ dedicated emulator and the console; every result is in `LAUNCH-READINESS-RESULTS
   when one is at hand.
 * **The test admin account is replaced** by a real one with two-step sign-in before launch.
 * **A pass on the owner's phone** follows, after the remaining items.
+
+## DECISION-116 — The WhatsApp bot is linked from the console
+
+**Date:** 2026-10-10. Finished after the readiness run (the work began before it).
+
+The bot sends the sign-up and recovery codes from a WhatsApp account it holds as a linked
+device. Linking it meant reading a QR code off the bot's container log on the server: work for
+whoever runs the server, and a step the platform's owner could not take alone.
+
+* **The bot** keeps the latest QR code WhatsApp offers while nothing is linked, and the linked
+  number once connected. `GET /pairing` and `POST /pairing/relink` sit behind the shared
+  secret, never on the public health check; relink logs the account out, forgets it and starts a
+  fresh pairing — the way back from an unlinked account and the way to another number.
+* **The backend** asks the bot on the private network: `GET /api/v1/admin/whatsapp/` (state, the
+  linked number, or the code drawn as SVG — the code never leaves as text) and
+  `POST /api/v1/admin/whatsapp/relink/` (audited as `whatsapp.relinked`), both behind
+  `admin.settings.manage`. Audit events may now name no target, for actions on the platform
+  itself.
+* **The console's settings** show «ربط واتساب»: the code to scan with the steps, read every five
+  seconds so it turns to «مربوط» on its own; the number once linked; «ربط رقم آخر» behind a
+  confirmation; and plain words when the bot is not configured, not answering, or the code
+  provider is not yet `whatsapp_bot`.
+* Tried end to end locally: a real code from WhatsApp, through the bot and the backend, drawn.
+  The scan itself is done at launch, on the phone that will send.

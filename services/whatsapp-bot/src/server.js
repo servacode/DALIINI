@@ -7,8 +7,9 @@ import { SendPacer, toWhatsAppId } from "./queue.js";
 import { WhatsAppSession } from "./session.js";
 
 /*
- * The bot's whole surface: one route that sends a code or the welcome, and one that says
- * whether it can. It sends only messages whose words it holds itself (DECISION-101).
+ * The bot's whole surface: one route that sends a code or the welcome, one that says whether it
+ * can, and two for linking it from the console — the QR code to scan, and a fresh pairing
+ * (DECISION-116). It sends only messages whose words it holds itself (DECISION-101).
  *
  * It is not on the internet. It listens on a private network and the backend is the only thing
  * that calls it, with a shared secret — a service that sends WhatsApp messages to any number on
@@ -133,6 +134,20 @@ createServer(async (request, response) => {
 
   if (request.method === "POST" && request.url === "/send") {
     return handleSend(request, response);
+  }
+
+  if (request.method === "GET" && request.url === "/pairing") {
+    return reply(response, 200, session.pairing());
+  }
+
+  if (request.method === "POST" && request.url === "/pairing/relink") {
+    try {
+      await session.relink();
+      return reply(response, 202, { started: true });
+    } catch (error) {
+      logger.error({ err: error?.message }, "whatsapp.relink_failed");
+      return reply(response, 502, { reason: "relink_failed" });
+    }
   }
 
   return reply(response, 404, { reason: "not_found" });

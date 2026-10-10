@@ -107,6 +107,8 @@ export const READS = {
   // What a mobile build must be. Its own entry rather than part of `settings`, because it is
   // a different endpoint with a different shape — and the one that can stop every phone.
   appRelease: (apis: AdminApis) => apis.settings.adminAppReleaseRetrieve({}),
+  // The WhatsApp bot's link: its state, number, or the code to scan (DECISION-116).
+  whatsapp: (apis: AdminApis) => apis.settings.adminWhatsAppRetrieve(),
 
   audit: (apis: AdminApis, p: Params) =>
     apis.audit.adminAuditList(
@@ -395,6 +397,7 @@ export const WRITES = {
     }),
   // Up to a hundred at once, in one transaction. The response says what happened to each id,
   // because some may have been decided by somebody else between the list and the button.
+  whatsappRelink: (apis: AdminApis) => apis.settings.adminWhatsAppRelink(),
   appReleaseUpdate: (apis: AdminApis, b: Body) =>
     apis.settings.adminAppReleaseUpdate({
       adminAppReleaseRequest: {

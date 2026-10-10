@@ -8,6 +8,8 @@ Method | HTTP request | Description
 [**adminAppReleaseUpdate**](AdminSettingsAPI.md#adminappreleaseupdate) | **PUT** /api/v1/admin/app-release/ | Set what a mobile build must be
 [**adminSettingWrite**](AdminSettingsAPI.md#adminsettingwrite) | **PUT** /api/v1/admin/settings/ | Create or update a typed platform setting
 [**adminSettingsList**](AdminSettingsAPI.md#adminsettingslist) | **GET** /api/v1/admin/settings/ | List typed platform settings
+[**adminWhatsAppRelink**](AdminSettingsAPI.md#adminwhatsapprelink) | **POST** /api/v1/admin/whatsapp/relink/ | Forget the linked WhatsApp account and start a fresh pairing
+[**adminWhatsAppRetrieve**](AdminSettingsAPI.md#adminwhatsappretrieve) | **GET** /api/v1/admin/whatsapp/ | The WhatsApp bot&#39;s link: state, number, or the QR code to scan
 
 
 # **adminAppReleaseRetrieve**
@@ -194,6 +196,98 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**AdminSettingList**](AdminSettingList.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminWhatsAppRelink**
+```swift
+    open class func adminWhatsAppRelink(completion: @escaping (_ data: AdminWhatsAppState?, _ error: Error?) -> Void)
+```
+
+Forget the linked WhatsApp account and start a fresh pairing
+
+The bot logs its account out (it leaves the phone's linked devices), forgets it and offers a new QR code. Codes cannot be sent until it is scanned.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+
+// Forget the linked WhatsApp account and start a fresh pairing
+AdminSettingsAPI.adminWhatsAppRelink() { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**AdminWhatsAppState**](AdminWhatsAppState.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminWhatsAppRetrieve**
+```swift
+    open class func adminWhatsAppRetrieve(completion: @escaping (_ data: AdminWhatsAppState?, _ error: Error?) -> Void)
+```
+
+The WhatsApp bot's link: state, number, or the QR code to scan
+
+The bot's link, for the console's «ربط واتساب» card.
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+
+// The WhatsApp bot's link: state, number, or the QR code to scan
+AdminSettingsAPI.adminWhatsAppRetrieve() { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**AdminWhatsAppState**](AdminWhatsAppState.md)
 
 ### Authorization
 

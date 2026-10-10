@@ -24,6 +24,7 @@ import com.servacode.directory.api.models.AdminAppReleaseRequest
 import com.servacode.directory.api.models.AdminSettingList
 import com.servacode.directory.api.models.AdminSettingWriteRequest
 import com.servacode.directory.api.models.AdminSettingWritten
+import com.servacode.directory.api.models.AdminWhatsAppState
 import com.servacode.directory.api.models.ApiError
 
 class AdminSettingsApiTest : ShouldSpec() {
@@ -60,6 +61,20 @@ class AdminSettingsApiTest : ShouldSpec() {
         should("test adminSettingsList") {
             // uncomment below to test adminSettingsList
             //val result : AdminSettingList = apiInstance.adminSettingsList()
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminWhatsAppRelink
+        should("test adminWhatsAppRelink") {
+            // uncomment below to test adminWhatsAppRelink
+            //val result : AdminWhatsAppState = apiInstance.adminWhatsAppRelink()
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminWhatsAppRetrieve
+        should("test adminWhatsAppRetrieve") {
+            // uncomment below to test adminWhatsAppRetrieve
+            //val result : AdminWhatsAppState = apiInstance.adminWhatsAppRetrieve()
             //result shouldBe ("TODO")
         }
 

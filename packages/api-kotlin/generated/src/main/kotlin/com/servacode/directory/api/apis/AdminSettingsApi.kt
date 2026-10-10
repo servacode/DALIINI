@@ -12,6 +12,7 @@ import com.servacode.directory.api.models.AdminAppReleaseRequest
 import com.servacode.directory.api.models.AdminSettingList
 import com.servacode.directory.api.models.AdminSettingWriteRequest
 import com.servacode.directory.api.models.AdminSettingWritten
+import com.servacode.directory.api.models.AdminWhatsAppState
 import com.servacode.directory.api.models.ApiError
 
 interface AdminSettingsApi {
@@ -95,5 +96,34 @@ interface AdminSettingsApi {
      */
     @GET("api/v1/admin/settings/")
     suspend fun adminSettingsList(): Response<AdminSettingList>
+
+    /**
+     * POST api/v1/admin/whatsapp/relink/
+     * Forget the linked WhatsApp account and start a fresh pairing
+     * The bot logs its account out (it leaves the phone&#39;s linked devices), forgets it and offers a new QR code. Codes cannot be sent until it is scanned.
+     * Responses:
+     *  - 202: 
+     *  - 400: A domain rule rejected the request; `code` names the rule.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @return [AdminWhatsAppState]
+     */
+    @POST("api/v1/admin/whatsapp/relink/")
+    suspend fun adminWhatsAppRelink(): Response<AdminWhatsAppState>
+
+    /**
+     * GET api/v1/admin/whatsapp/
+     * The WhatsApp bot&#39;s link: state, number, or the QR code to scan
+     * The bot&#39;s link, for the console&#39;s «ربط واتساب» card.
+     * Responses:
+     *  - 200: 
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *
+     * @return [AdminWhatsAppState]
+     */
+    @GET("api/v1/admin/whatsapp/")
+    suspend fun adminWhatsAppRetrieve(): Response<AdminWhatsAppState>
 
 }

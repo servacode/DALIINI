@@ -13,6 +13,7 @@ import {
   formatDateTime,
 } from "../../../components/ui";
 import { relativeTime } from "../../../components/ui/extra";
+import { WhatsAppLinkPanel } from "../../../components/whatsapp-link";
 import { useMutation } from "../../../lib/client/use-mutation";
 import { fieldErrorsFor } from "../../../lib/errors/messages";
 import { useResource } from "../../../lib/client/use-resource";
@@ -392,6 +393,7 @@ export default function SettingsPage() {
           settings at all, the page says so once and this says nothing. Two identical
           permission notices stacked is a worse answer than one. */}
       {settings.error ? null : <AppReleasePanel canManage={canManage} />}
+      {settings.error ? null : <WhatsAppLinkPanel canManage={canManage} />}
 
       <Toast message={toast} onDismiss={() => setToast(null)} />
     </div>

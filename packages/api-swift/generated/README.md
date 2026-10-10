@@ -130,6 +130,8 @@ Class | Method | HTTP request | Description
 *AdminSettingsAPI* | [**adminAppReleaseUpdate**](docs/AdminSettingsAPI.md#adminappreleaseupdate) | **PUT** /api/v1/admin/app-release/ | Set what a mobile build must be
 *AdminSettingsAPI* | [**adminSettingWrite**](docs/AdminSettingsAPI.md#adminsettingwrite) | **PUT** /api/v1/admin/settings/ | Create or update a typed platform setting
 *AdminSettingsAPI* | [**adminSettingsList**](docs/AdminSettingsAPI.md#adminsettingslist) | **GET** /api/v1/admin/settings/ | List typed platform settings
+*AdminSettingsAPI* | [**adminWhatsAppRelink**](docs/AdminSettingsAPI.md#adminwhatsapprelink) | **POST** /api/v1/admin/whatsapp/relink/ | Forget the linked WhatsApp account and start a fresh pairing
+*AdminSettingsAPI* | [**adminWhatsAppRetrieve**](docs/AdminSettingsAPI.md#adminwhatsappretrieve) | **GET** /api/v1/admin/whatsapp/ | The WhatsApp bot&#39;s link: state, number, or the QR code to scan
 *AdminSystemAPI* | [**adminAlertsList**](docs/AdminSystemAPI.md#adminalertslist) | **GET** /api/v1/admin/alerts/ | Smart alerts: problems worth acting on now
 *AdminSystemAPI* | [**adminDashboardRetrieve**](docs/AdminSystemAPI.md#admindashboardretrieve) | **GET** /api/v1/admin/dashboard/ | Operational counters for the review desk
 *AdminSystemAPI* | [**adminMeRetrieve**](docs/AdminSystemAPI.md#adminmeretrieve) | **GET** /api/v1/admin/me/ | The current operator and the permissions they hold
@@ -399,6 +401,7 @@ Class | Method | HTTP request | Description
  - [AdminVerificationRequirementList](docs/AdminVerificationRequirementList.md)
  - [AdminVerificationRequirementRequest](docs/AdminVerificationRequirementRequest.md)
  - [AdminVerificationRequirementUpdateRequest](docs/AdminVerificationRequirementUpdateRequest.md)
+ - [AdminWhatsAppState](docs/AdminWhatsAppState.md)
  - [AdvertisementAction](docs/AdvertisementAction.md)
  - [AdvertisementActionTypeEnum](docs/AdvertisementActionTypeEnum.md)
  - [AdvertisementTargetScopeEnum](docs/AdvertisementTargetScopeEnum.md)

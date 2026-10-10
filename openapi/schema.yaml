@@ -7037,6 +7037,71 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/admin/whatsapp/:
+    get:
+      operationId: adminWhatsAppRetrieve
+      description: The bot's link, for the console's «ربط واتساب» card.
+      summary: 'The WhatsApp bot''s link: state, number, or the QR code to scan'
+      tags:
+      - Admin Settings
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminWhatsAppState'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+  /api/v1/admin/whatsapp/relink/:
+    post:
+      operationId: adminWhatsAppRelink
+      description: The bot logs its account out (it leaves the phone's linked devices),
+        forgets it and offers a new QR code. Codes cannot be sent until it is scanned.
+      summary: Forget the linked WhatsApp account and start a fresh pairing
+      tags:
+      - Admin Settings
+      security:
+      - bearerAccessToken: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminWhatsAppState'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
   /api/v1/analytics/events/:
     post:
       operationId: analyticsEventCreate
@@ -14300,6 +14365,38 @@ components:
           type: integer
         sortOrder:
           type: integer
+    AdminWhatsAppState:
+      type: object
+      properties:
+        provider:
+          type: string
+          description: The code provider in use, e.g. whatsapp_bot.
+        configured:
+          type: boolean
+          description: The bot's address and secret are set.
+        reachable:
+          type: boolean
+          description: The bot answered.
+        connected:
+          type: boolean
+        loggedOut:
+          type: boolean
+          description: 'WhatsApp dropped the link: pair again.'
+        linkedNumber:
+          type: string
+          nullable: true
+        qrSvgDataUri:
+          type: string
+          nullable: true
+          description: The code to scan, drawn as SVG; null once linked.
+      required:
+      - configured
+      - connected
+      - linkedNumber
+      - loggedOut
+      - provider
+      - qrSvgDataUri
+      - reachable
     AdvertisementAction:
       type: object
       properties:

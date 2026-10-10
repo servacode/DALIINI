@@ -188,4 +188,78 @@ open class AdminSettingsAPI {
 
         return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
     }
+
+    /**
+     Forget the linked WhatsApp account and start a fresh pairing
+     
+     - returns: AdminWhatsAppState
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminWhatsAppRelink() async throws -> AdminWhatsAppState {
+        return try await adminWhatsAppRelinkWithRequestBuilder().execute().body
+    }
+
+    /**
+     Forget the linked WhatsApp account and start a fresh pairing
+     - POST /api/v1/admin/whatsapp/relink/
+     - The bot logs its account out (it leaves the phone's linked devices), forgets it and offers a new QR code. Codes cannot be sent until it is scanned.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<AdminWhatsAppState> 
+     */
+    open class func adminWhatsAppRelinkWithRequestBuilder() -> RequestBuilder<AdminWhatsAppState> {
+        let localVariablePath = "/api/v1/admin/whatsapp/relink/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminWhatsAppState>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
+     The WhatsApp bot's link: state, number, or the QR code to scan
+     
+     - returns: AdminWhatsAppState
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminWhatsAppRetrieve() async throws -> AdminWhatsAppState {
+        return try await adminWhatsAppRetrieveWithRequestBuilder().execute().body
+    }
+
+    /**
+     The WhatsApp bot's link: state, number, or the QR code to scan
+     - GET /api/v1/admin/whatsapp/
+     - The bot's link, for the console's «ربط واتساب» card.
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - returns: RequestBuilder<AdminWhatsAppState> 
+     */
+    open class func adminWhatsAppRetrieveWithRequestBuilder() -> RequestBuilder<AdminWhatsAppState> {
+        let localVariablePath = "/api/v1/admin/whatsapp/"
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters: [String: Any]? = nil
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            :
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminWhatsAppState>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
 }
