@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -461,6 +462,19 @@ private fun ReviewStep(value: OnboardingUiState.Content) {
                         MetaRow(DirectoryIcons.pin, OnboardingCopy.saved(MapPoint(latitude, longitude)))
                     }
                 }
+                // Everything that goes out with the request, so it is read before it is sent;
+                // the page showed the name, the category and the pin, and nothing else.
+                val missing = OnboardingCopy.NOT_ADDED
+                val draft = value.draft
+                MetaRow(DirectoryIcons.phone, draft?.phone?.takeIf { it.isNotBlank() } ?: missing)
+                MetaRow(DirectoryIcons.whatsapp, draft?.whatsapp?.takeIf { it.isNotBlank() } ?: missing)
+                MetaRow(DirectoryIcons.info, draft?.addressAr?.takeIf { it.isNotBlank() } ?: missing)
+                val days = draft?.hours.orEmpty().map { it.weekday }.distinct().size
+                MetaRow(DirectoryIcons.clock, if (days == 0) missing else OnboardingCopy.openDays(days))
+                MetaRow(
+                    DirectoryIcons.image,
+                    if (value.images.isEmpty()) missing else OnboardingCopy.photos(value.images.size),
+                )
             }
         }
         Text(
@@ -789,6 +803,15 @@ object OnboardingCopy {
         @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_images_pick)
     val IMAGE_DELETE: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_image_delete)
+    val NOT_ADDED: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_review_not_added)
+
+    @Composable
+    fun openDays(count: Int): String =
+        pluralStringResource(R.plurals.onboarding_review_open_days, count, count)
+
+    @Composable
+    fun photos(count: Int): String = pluralStringResource(R.plurals.onboarding_review_photos, count, count)
     val SPECIALIZED_NOTE: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.onboarding_specialized_note)
     val EVIDENCE_NOTE: String

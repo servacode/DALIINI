@@ -77,8 +77,8 @@
     <string name="owner_invitation_declined">رُفضت</string>
     <string name="owner_invitation_revoked">أُلغيت</string>
     <string name="owner_invitation_expired">انتهت مدتها</string>
-    <string name="owner_pending_change">تعديلاتك على %1$s بانتظار المراجعة. يرى الناس القيم المنشورة حاليًا حتى
-        تُعتمد، وما تراه هنا هو ما اقترحته.</string>
+    <string name="owner_pending_change">التعديلات المقترحة على %1$s بانتظار المراجعة.
+        يرى الناس القيم المنشورة حاليًا حتى تُعتمد، وما تراه هنا هو المقترح.</string>
     <string name="owner_field_name_ar">الاسم بالعربية</string>
     <string name="owner_field_name_en">الاسم بالإنجليزية</string>
     <string name="owner_field_address_ar">العنوان بالعربية</string>

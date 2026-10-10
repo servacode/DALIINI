@@ -5,6 +5,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.plus
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 /** Whether an emergency number is the country's or the province's. */
 enum class EmergencyScope { NATIONAL, PROVINCE }
@@ -30,6 +31,7 @@ data class EmergencyNumber(
 )
 
 /** One day of the public duty roster: who is on duty, and when each shift runs. */
+@Serializable
 data class DutyDay(
     /** "YYYY-MM-DD", the day as the backend numbered it. */
     val date: String,
@@ -38,6 +40,7 @@ data class DutyDay(
 )
 
 /** When one facility's duty runs, on the day it is listed under. */
+@Serializable
 data class DutyWindow(val facilityId: String, val startsAtEpochMillis: Long, val endsAtEpochMillis: Long)
 
 /** The owner's confirmation that the opening hours are still right, as the backend recorded it. */
@@ -208,3 +211,20 @@ data class AppRelease(
     fun supersedes(versionCode: Int): Boolean =
         !blocks(versionCode) && versionCode < latestVersionCode
 }
+
+/**
+ * The last roster read for one range, kept so the duty pharmacies can still be shown without a
+ * connection — at night, on a weak network, is when they are looked for. It belongs to the
+ * province and the first day it was read for; a kept roster for another is never shown.
+ */
+@Serializable
+data class KeptRoster(val provinceId: String, val from: String, val days: List<DutyDay>) {
+    fun encode(): String = KEPT_JSON.encodeToString(serializer(), this)
+
+    companion object {
+        fun decode(raw: String?): KeptRoster? =
+            raw?.let { runCatching { KEPT_JSON.decodeFromString(serializer(), it) }.getOrNull() }
+    }
+}
+
+private val KEPT_JSON = Json { ignoreUnknownKeys = true }

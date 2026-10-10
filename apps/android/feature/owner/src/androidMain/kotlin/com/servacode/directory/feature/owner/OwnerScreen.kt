@@ -305,6 +305,19 @@ fun ManageFacilityScreen(
     var removing by remember { mutableStateOf<String?>(null) }
     val invited = (state as? ManageFacilityUiState.Content)?.invited
     LaunchedEffect(invited) { if (invited != null) invitePhone = "" }
+    // A closure added shows in the list above; the form empties for the next one, as the
+    // invitation's does — it kept the last dates and reason, as if not yet sent.
+    val closureCount = (state as? ManageFacilityUiState.Content)?.closures?.size
+    var seenClosures by remember { mutableStateOf<Int?>(null) }
+    LaunchedEffect(closureCount) {
+        val before = seenClosures
+        if (closureCount != null && before != null && closureCount > before) {
+            closureStart = null
+            closureEnd = null
+            closureReason = ""
+        }
+        seenClosures = closureCount
+    }
 
     DirectoryPage(
         topBar = { DirectoryTopBar(title = OwnerCopy.MANAGE_TITLE, onBack = onBack) },

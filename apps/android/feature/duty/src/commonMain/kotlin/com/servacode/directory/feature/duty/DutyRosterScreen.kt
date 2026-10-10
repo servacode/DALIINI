@@ -23,10 +23,12 @@ import com.servacode.directory.core.designsystem.DirectoryErrorState
 import com.servacode.directory.core.designsystem.DirectoryFilterChip
 import com.servacode.directory.core.designsystem.DirectoryIllustrations
 import com.servacode.directory.core.designsystem.DirectoryLoading
+import com.servacode.directory.core.designsystem.DirectoryOfflineNotice
 import com.servacode.directory.core.designsystem.DirectoryPage
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.FacilityCard
 import com.servacode.directory.core.designsystem.Space
+import com.servacode.directory.core.model.DamascusTime
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
@@ -99,6 +101,14 @@ fun DutyRosterScreen(
                         )
                     }
                 } else {
+                    if (value.kept) {
+                        item(key = "kept") {
+                            DirectoryOfflineNotice(
+                                modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.xs),
+                                onRetry = viewModel::refresh,
+                            )
+                        }
+                    }
                     // Every day of a week, the empty ones too: a Wednesday left out of the list
                     // read as nothing at all, when it is the one day nobody is on duty.
                     value.days.filter { it.facilities.isNotEmpty() || value.days.size > 1 }.forEach { day ->
@@ -132,6 +142,8 @@ fun DutyRosterScreen(
                                     facility = facility,
                                     onClick = { onFacility(facility.id) },
                                     modifier = Modifier.padding(horizontal = Space.screen, vertical = Space.xs),
+                                    // Today's own status, under today only; other days have their hours.
+                                    showStatusNow = day.date == RosterCopy.today(),
                                 )
                                 val spans = RosterSpans.forFacility(day.shifts, facility.id, day.date)
                                 if (spans.isNotEmpty()) {
@@ -158,6 +170,9 @@ object RosterCopy {
     val ERROR: String @Composable get() = stringResource(Res.string.roster_error)
     val EMPTY: String @Composable get() = stringResource(Res.string.roster_empty)
     val NO_DUTY_DAY: String @Composable get() = stringResource(Res.string.roster_no_duty_day)
+
+    /** Today in Damascus, as the roster numbers its days. */
+    fun today(): String = DamascusTime.now().date.toString()
 
     /** «منذ اليوم السابق حتى 08:00، ومن 22:00 إلى 08:00 من اليوم التالي», as the site says it. */
     @Composable

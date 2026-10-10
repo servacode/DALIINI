@@ -14,7 +14,8 @@ import kotlinx.coroutines.launch
 sealed interface DutyRosterUiState {
     data object Loading : DutyRosterUiState
     data object ProvinceRequired : DutyRosterUiState
-    data class Content(val days: List<DutyDay>) : DutyRosterUiState {
+    /** [kept]: the roster could not be read now, and these are the days read before. */
+    data class Content(val days: List<DutyDay>, val kept: Boolean = false) : DutyRosterUiState {
         val isEmpty: Boolean get() = days.all { it.facilities.isEmpty() }
     }
     data class Error(val error: AppError) : DutyRosterUiState
@@ -48,7 +49,7 @@ open class DutyRosterViewModel(
             _state.value = when (val result = repository.load(_range.value)) {
                 null -> DutyRosterUiState.ProvinceRequired
                 else -> result.fold(
-                    onSuccess = { DutyRosterUiState.Content(it) },
+                    onSuccess = { DutyRosterUiState.Content(it.days, it.kept) },
                     onFailure = { DutyRosterUiState.Error(it.toAppError()) },
                 )
             }

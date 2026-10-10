@@ -200,6 +200,11 @@ fun FacilityCard(
     facility: FacilitySummary,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * False on a card listed under another day than today (the duty week): «مفتوح الآن» and
+     * «مناوبة اليوم» are about this moment, and under Thursday they read as Thursday's.
+     */
+    showStatusNow: Boolean = true,
 ) {
     DirectoryCard(modifier = modifier, onClick = onClick) {
         Row(
@@ -207,13 +212,13 @@ fun FacilityCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Space.md),
         ) {
-            FacilityRowContent(facility)
+            FacilityRowContent(facility, showStatusNow)
         }
     }
 }
 
 @Composable
-private fun RowScope.FacilityRowContent(facility: FacilitySummary) {
+private fun RowScope.FacilityRowContent(facility: FacilitySummary, showStatusNow: Boolean = true) {
     // First child, so it sits on the right in Arabic without the layout naming a side.
     FacilityThumbnail(facility.imageUrl, Modifier.size(Sizes.thumbnail))
     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
@@ -241,7 +246,7 @@ private fun RowScope.FacilityRowContent(facility: FacilitySummary) {
             DistanceLabel(facility.distanceMeters)
             RatingBadge(facility.ratingAverage, facility.ratingCount)
         }
-        StatusBadges(facility)
+        if (showStatusNow) StatusBadges(facility)
         OpenDetailsButton(Modifier.align(Alignment.End))
     }
 }

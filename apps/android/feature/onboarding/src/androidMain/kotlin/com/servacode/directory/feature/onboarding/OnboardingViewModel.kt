@@ -366,7 +366,12 @@ class OnboardingViewModel @Inject constructor(
         it.copy(step = OnboardingStep.VERIFICATION_EVIDENCE)
     }
 
-    fun review() = mutate { it.copy(step = OnboardingStep.REVIEW) }
+    fun review() {
+        mutate { it.copy(step = OnboardingStep.REVIEW) }
+        // The review counts the photos; an owner who came back to the request has none read yet.
+        val id = (_state.value as? OnboardingUiState.Content)?.draft?.summary?.id ?: return
+        viewModelScope.launch { refreshImages(id) }
+    }
 
     fun submit() {
         val content = _state.value as? OnboardingUiState.Content ?: return

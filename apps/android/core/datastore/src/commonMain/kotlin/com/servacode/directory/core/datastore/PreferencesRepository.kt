@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.servacode.directory.core.inject.Inject
 import com.servacode.directory.core.inject.Singleton
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 /**
@@ -87,6 +88,13 @@ class PreferencesRepository @Inject constructor(
         store.edit { it[DATA_SAVER_SUGGESTED] = true }
     }
 
+    override suspend fun keptRoster(range: String): String? =
+        store.data.first()[stringPreferencesKey(ROSTER_PREFIX + range)]
+
+    override suspend fun keepRoster(range: String, json: String) {
+        store.edit { it[stringPreferencesKey(ROSTER_PREFIX + range)] = json }
+    }
+
     override suspend fun setUpdateOffered(versionCode: Int) {
         store.edit { it[UPDATE_OFFERED] = versionCode }
     }
@@ -106,5 +114,6 @@ class PreferencesRepository @Inject constructor(
         val DATA_SAVER = booleanPreferencesKey("data_saver")
         val DATA_SAVER_SUGGESTED = booleanPreferencesKey("data_saver_suggested")
         val UPDATE_OFFERED = intPreferencesKey("update_offered_version_code")
+        const val ROSTER_PREFIX = "kept_roster_"
     }
 }

@@ -25,7 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class OwnerPresenceViewModel @Inject constructor(
     private val facilities: LoadOwnerFacilitiesUseCase,
-    session: SessionCoordinator,
+    private val session: SessionCoordinator,
 ) : ViewModel() {
     private val _ownsFacility = MutableStateFlow(false)
     val ownsFacility: StateFlow<Boolean> = _ownsFacility.asStateFlow()
@@ -36,6 +36,17 @@ class OwnerPresenceViewModel @Inject constructor(
                 _ownsFacility.value = state == SessionState.SIGNED_IN &&
                     facilities().getOrDefault(emptyList()).isNotEmpty()
             }
+        }
+    }
+
+    /**
+     * Asked again each time a tab is shown: accepting an invitation, or an approval, gives the
+     * account a facility without the session changing, and the tab waited for the next sign-in.
+     */
+    fun refresh() {
+        if (session.state.value != SessionState.SIGNED_IN) return
+        viewModelScope.launch {
+            facilities().onSuccess { _ownsFacility.value = it.isNotEmpty() }
         }
     }
 }

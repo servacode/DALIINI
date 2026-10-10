@@ -145,6 +145,12 @@ class FakePreferences(
         state.value = state.value.copy(dataSaverSuggested = true)
     }
 
+    val rosters = mutableMapOf<String, String>()
+    override suspend fun keptRoster(range: String): String? = rosters[range]
+    override suspend fun keepRoster(range: String, json: String) {
+        rosters[range] = json
+    }
+
     override suspend fun setUpdateOffered(versionCode: Int) {
         state.value = state.value.copy(updateOfferedVersionCode = versionCode)
     }

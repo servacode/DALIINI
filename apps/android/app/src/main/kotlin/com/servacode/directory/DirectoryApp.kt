@@ -585,6 +585,7 @@ private fun DirectoryTabs(
     presence: OwnerPresenceViewModel = hiltViewModel(),
 ) {
     val ownsFacility by presence.ownsFacility.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) { presence.refresh() }
     DirectoryBottomBar(
         listOfNotNull(
             DirectoryDestination(

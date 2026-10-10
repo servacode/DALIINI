@@ -40,6 +40,23 @@
     <string name="onboarding_images_note">هذه الصور تظهر للجميع في صفحة المنشأة.</string>
     <string name="onboarding_images_pick">اختيار صورة</string>
     <string name="onboarding_image_delete">حذف الصورة</string>
+    <string name="onboarding_review_not_added">لم يُضف</string>
+    <plurals name="onboarding_review_open_days">
+        <item quantity="zero">لا أيام دوام</item>
+        <item quantity="one">يوم دوام واحد</item>
+        <item quantity="two">يوما دوام</item>
+        <item quantity="few">%d أيام دوام</item>
+        <item quantity="many">%d يوماً دوام</item>
+        <item quantity="other">%d يوم دوام</item>
+    </plurals>
+    <plurals name="onboarding_review_photos">
+        <item quantity="zero">لا صور</item>
+        <item quantity="one">صورة واحدة</item>
+        <item quantity="two">صورتان</item>
+        <item quantity="few">%d صور</item>
+        <item quantity="many">%d صورة</item>
+        <item quantity="other">%d صورة</item>
+    </plurals>
     <string name="onboarding_specialized_note">الحقول المتخصصة تُعرض حسب إمكانيات التصنيف.</string>
     <string name="onboarding_evidence_note">الإثباتات خاصة بالمراجعة ولا تظهر في صفحة المنشأة.</string>
     <string name="onboarding_evidence_upload">رفع ملف</string>

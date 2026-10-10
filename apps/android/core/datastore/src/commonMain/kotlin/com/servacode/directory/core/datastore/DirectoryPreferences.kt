@@ -94,6 +94,10 @@ interface DirectoryPreferencesStore {
     /** The data-saver suggestion has been shown, whatever the answer. */
     suspend fun setDataSaverSuggested()
 
+    /** The last duty roster read for [range] (TODAY, TOMORROW, WEEK), as [KeptRoster] JSON. */
+    suspend fun keptRoster(range: String): String?
+    suspend fun keepRoster(range: String, json: String)
+
     /** The offer of build [versionCode] has been answered, whichever way. */
     suspend fun setUpdateOffered(versionCode: Int)
 }
