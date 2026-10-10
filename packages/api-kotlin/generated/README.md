@@ -120,6 +120,7 @@ All URIs are relative to *http://localhost*
 | *AdminFacilitiesApi* | [**adminFacilityImageCreate**](docs/AdminFacilitiesApi.md#adminfacilityimagecreate) | **POST** api/v1/admin/facilities/{facility_id}/images/ | Add a public photo to a facility |
 | *AdminFacilitiesApi* | [**adminFacilityImageDelete**](docs/AdminFacilitiesApi.md#adminfacilityimagedelete) | **DELETE** api/v1/admin/facilities/{facility_id}/images/{image_id}/ | Remove a public photo from a facility |
 | *AdminFacilitiesApi* | [**adminFacilityImagesList**](docs/AdminFacilitiesApi.md#adminfacilityimageslist) | **GET** api/v1/admin/facilities/{facility_id}/images/ | A facility's public photos |
+| *AdminFacilitiesApi* | [**adminFacilityOwnerTransfer**](docs/AdminFacilitiesApi.md#adminfacilityownertransfer) | **POST** api/v1/admin/facilities/{facility_id}/owner/ | Move a facility to another owner |
 | *AdminFacilitiesApi* | [**adminFacilityReactivate**](docs/AdminFacilitiesApi.md#adminfacilityreactivate) | **POST** api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility |
 | *AdminFacilitiesApi* | [**adminFacilityRetrieve**](docs/AdminFacilitiesApi.md#adminfacilityretrieve) | **GET** api/v1/admin/facilities/{facility_id}/ | Retrieve one facility |
 | *AdminFacilitiesApi* | [**adminFacilitySuspend**](docs/AdminFacilitiesApi.md#adminfacilitysuspend) | **POST** api/v1/admin/facilities/{facility_id}/suspend/ | Suspend a facility |
@@ -341,6 +342,8 @@ All URIs are relative to *http://localhost*
  - [com.servacode.directory.api.models.AdminFacilityDetail](docs/AdminFacilityDetail.md)
  - [com.servacode.directory.api.models.AdminFacilityList](docs/AdminFacilityList.md)
  - [com.servacode.directory.api.models.AdminFacilityMap](docs/AdminFacilityMap.md)
+ - [com.servacode.directory.api.models.AdminFacilityOwner](docs/AdminFacilityOwner.md)
+ - [com.servacode.directory.api.models.AdminFacilityOwnerRequest](docs/AdminFacilityOwnerRequest.md)
  - [com.servacode.directory.api.models.AdminFacilityPoint](docs/AdminFacilityPoint.md)
  - [com.servacode.directory.api.models.AdminFacilityReport](docs/AdminFacilityReport.md)
  - [com.servacode.directory.api.models.AdminFacilityReportList](docs/AdminFacilityReportList.md)

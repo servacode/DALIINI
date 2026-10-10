@@ -13,6 +13,7 @@ All URIs are relative to *http://localhost*
 | [**adminFacilityImageCreate**](AdminFacilitiesApi.md#adminFacilityImageCreate) | **POST** api/v1/admin/facilities/{facility_id}/images/ | Add a public photo to a facility |
 | [**adminFacilityImageDelete**](AdminFacilitiesApi.md#adminFacilityImageDelete) | **DELETE** api/v1/admin/facilities/{facility_id}/images/{image_id}/ | Remove a public photo from a facility |
 | [**adminFacilityImagesList**](AdminFacilitiesApi.md#adminFacilityImagesList) | **GET** api/v1/admin/facilities/{facility_id}/images/ | A facility&#39;s public photos |
+| [**adminFacilityOwnerTransfer**](AdminFacilitiesApi.md#adminFacilityOwnerTransfer) | **POST** api/v1/admin/facilities/{facility_id}/owner/ | Move a facility to another owner |
 | [**adminFacilityReactivate**](AdminFacilitiesApi.md#adminFacilityReactivate) | **POST** api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility |
 | [**adminFacilityRetrieve**](AdminFacilitiesApi.md#adminFacilityRetrieve) | **GET** api/v1/admin/facilities/{facility_id}/ | Retrieve one facility |
 | [**adminFacilitySuspend**](AdminFacilitiesApi.md#adminFacilitySuspend) | **POST** api/v1/admin/facilities/{facility_id}/suspend/ | Suspend a facility |
@@ -426,6 +427,48 @@ Configure bearerAccessToken:
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+Move a facility to another owner
+
+### Example
+```kotlin
+// Import classes:
+//import com.servacode.directory.api.*
+//import com.servacode.directory.api.infrastructure.*
+//import com.servacode.directory.api.models.*
+
+val apiClient = ApiClient()
+apiClient.setBearerToken("TOKEN")
+val webService = apiClient.createWebservice(AdminFacilitiesApi::class.java)
+val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+val adminFacilityOwnerRequest : AdminFacilityOwnerRequest =  // AdminFacilityOwnerRequest | 
+
+launch(Dispatchers.IO) {
+    val result : AdminFacilityOwner = webService.adminFacilityOwnerTransfer(facilityId, adminFacilityOwnerRequest)
+}
+```
+
+### Parameters
+| **facilityId** | **java.util.UUID**|  | |
+| Name | Type | Description  | Notes |
+| ------------- | ------------- | ------------- | ------------- |
+| **adminFacilityOwnerRequest** | [**AdminFacilityOwnerRequest**](AdminFacilityOwnerRequest.md)|  | |
+
+### Return type
+
+[**AdminFacilityOwner**](AdminFacilityOwner.md)
+
+### Authorization
+
+
+Configure bearerAccessToken:
+    ApiClient().setBearerToken("TOKEN")
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
  - **Accept**: application/json
 
 

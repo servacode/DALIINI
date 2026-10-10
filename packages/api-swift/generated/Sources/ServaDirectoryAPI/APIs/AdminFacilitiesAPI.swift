@@ -466,6 +466,49 @@ open class AdminFacilitiesAPI {
     }
 
     /**
+     Move a facility to another owner
+     
+     - parameter facilityId: (path)  
+     - parameter adminFacilityOwnerRequest: (body)  
+     - returns: AdminFacilityOwner
+     */
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    open class func adminFacilityOwnerTransfer(facilityId: UUID, adminFacilityOwnerRequest: AdminFacilityOwnerRequest) async throws -> AdminFacilityOwner {
+        return try await adminFacilityOwnerTransferWithRequestBuilder(facilityId: facilityId, adminFacilityOwnerRequest: adminFacilityOwnerRequest).execute().body
+    }
+
+    /**
+     Move a facility to another owner
+     - POST /api/v1/admin/facilities/{facility_id}/owner/
+     - Bearer Token:
+       - type: http
+       - name: bearerAccessToken
+     - parameter facilityId: (path)  
+     - parameter adminFacilityOwnerRequest: (body)  
+     - returns: RequestBuilder<AdminFacilityOwner> 
+     */
+    open class func adminFacilityOwnerTransferWithRequestBuilder(facilityId: UUID, adminFacilityOwnerRequest: AdminFacilityOwnerRequest) -> RequestBuilder<AdminFacilityOwner> {
+        var localVariablePath = "/api/v1/admin/facilities/{facility_id}/owner/"
+        let facilityIdPreEscape = "\(APIHelper.mapValueToPathItem(facilityId))"
+        let facilityIdPostEscape = facilityIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        localVariablePath = localVariablePath.replacingOccurrences(of: "{facility_id}", with: facilityIdPostEscape, options: .literal, range: nil)
+        let localVariableURLString = ServaDirectoryAPIAPI.basePath + localVariablePath
+        let localVariableParameters = JSONEncodingHelper.encodingParameters(forEncodableObject: adminFacilityOwnerRequest)
+
+        let localVariableUrlComponents = URLComponents(string: localVariableURLString)
+
+        let localVariableNillableHeaders: [String: Any?] = [
+            "Content-Type": "application/json",
+        ]
+
+        let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
+
+        let localVariableRequestBuilder: RequestBuilder<AdminFacilityOwner>.Type = ServaDirectoryAPIAPI.requestBuilderFactory.getBuilder()
+
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true)
+    }
+
+    /**
      Reactivate a suspended facility
      
      - parameter facilityId: (path)  

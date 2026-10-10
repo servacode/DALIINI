@@ -73,6 +73,8 @@ export * from './AdminFacilityCreateStatusEnum';
 export * from './AdminFacilityDetail';
 export * from './AdminFacilityList';
 export * from './AdminFacilityMap';
+export * from './AdminFacilityOwner';
+export * from './AdminFacilityOwnerRequest';
 export * from './AdminFacilityPoint';
 export * from './AdminFacilityReport';
 export * from './AdminFacilityReportList';

@@ -21,6 +21,8 @@ import com.servacode.directory.api.multiplatform.models.AdminFacilityCreate
 import com.servacode.directory.api.multiplatform.models.AdminFacilityDetail
 import com.servacode.directory.api.multiplatform.models.AdminFacilityList
 import com.servacode.directory.api.multiplatform.models.AdminFacilityMap
+import com.servacode.directory.api.multiplatform.models.AdminFacilityOwner
+import com.servacode.directory.api.multiplatform.models.AdminFacilityOwnerRequest
 import com.servacode.directory.api.multiplatform.models.AdminTimeline
 import com.servacode.directory.api.multiplatform.models.ApiError
 import com.servacode.directory.api.multiplatform.models.BusinessHourInput
@@ -443,6 +445,40 @@ open class AdminFacilitiesApi : ApiClient {
             localVariableAuthNames
         ).wrap()
     }
+
+
+    /**
+     * Move a facility to another owner
+     * 
+     * @param facilityId 
+     * @param adminFacilityOwnerRequest 
+     * @return AdminFacilityOwner
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun adminFacilityOwnerTransfer(facilityId: kotlin.String, adminFacilityOwnerRequest: AdminFacilityOwnerRequest): HttpResponse<AdminFacilityOwner> {
+
+        val localVariableAuthNames = listOf<String>("bearerAccessToken")
+
+        val localVariableBody = adminFacilityOwnerRequest
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.POST,
+            "/api/v1/admin/facilities/{facility_id}/owner/".replace("{" + "facility_id" + "}", "$facilityId"),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+        )
+
+        return jsonRequest(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames
+        ).wrap()
+    }
+
 
 
     /**

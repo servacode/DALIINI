@@ -13,6 +13,7 @@ Method | HTTP request | Description
 [**adminFacilityImageCreate**](AdminFacilitiesAPI.md#adminfacilityimagecreate) | **POST** /api/v1/admin/facilities/{facility_id}/images/ | Add a public photo to a facility
 [**adminFacilityImageDelete**](AdminFacilitiesAPI.md#adminfacilityimagedelete) | **DELETE** /api/v1/admin/facilities/{facility_id}/images/{image_id}/ | Remove a public photo from a facility
 [**adminFacilityImagesList**](AdminFacilitiesAPI.md#adminfacilityimageslist) | **GET** /api/v1/admin/facilities/{facility_id}/images/ | A facility&#39;s public photos
+[**adminFacilityOwnerTransfer**](AdminFacilitiesAPI.md#adminfacilityownertransfer) | **POST** /api/v1/admin/facilities/{facility_id}/owner/ | Move a facility to another owner
 [**adminFacilityReactivate**](AdminFacilitiesAPI.md#adminfacilityreactivate) | **POST** /api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility
 [**adminFacilityRetrieve**](AdminFacilitiesAPI.md#adminfacilityretrieve) | **GET** /api/v1/admin/facilities/{facility_id}/ | Retrieve one facility
 [**adminFacilitySuspend**](AdminFacilitiesAPI.md#adminfacilitysuspend) | **POST** /api/v1/admin/facilities/{facility_id}/suspend/ | Suspend a facility
@@ -496,6 +497,56 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **adminFacilityOwnerTransfer**
+```swift
+    open class func adminFacilityOwnerTransfer(facilityId: UUID, adminFacilityOwnerRequest: AdminFacilityOwnerRequest, completion: @escaping (_ data: AdminFacilityOwner?, _ error: Error?) -> Void)
+```
+
+Move a facility to another owner
+
+### Example
+```swift
+// The following code samples are still beta. For any issue, please report via http://github.com/OpenAPITools/openapi-generator/issues/new
+import ServaDirectoryAPI
+
+let facilityId = 987 // UUID | 
+let adminFacilityOwnerRequest = AdminFacilityOwnerRequest(phone: "phone_example", keepPreviousAsManager: false) // AdminFacilityOwnerRequest | 
+
+// Move a facility to another owner
+AdminFacilitiesAPI.adminFacilityOwnerTransfer(facilityId: facilityId, adminFacilityOwnerRequest: adminFacilityOwnerRequest) { (response, error) in
+    guard error == nil else {
+        print(error)
+        return
+    }
+
+    if (response) {
+        dump(response)
+    }
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **facilityId** | **UUID** |  | 
+ **adminFacilityOwnerRequest** | [**AdminFacilityOwnerRequest**](AdminFacilityOwnerRequest.md) |  | 
+
+### Return type
+
+[**AdminFacilityOwner**](AdminFacilityOwner.md)
+
+### Authorization
+
+[bearerAccessToken](../README.md#bearerAccessToken)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, application/x-www-form-urlencoded, multipart/form-data
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

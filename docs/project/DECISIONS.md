@@ -3154,3 +3154,19 @@ whoever runs the server, and a step the platform's owner could not take alone.
   provider is not yet `whatsapp_bot`.
 * Tried end to end locally: a real code from WhatsApp, through the bot and the backend, drawn.
   The scan itself is done at launch, on the phone that will send.
+
+## DECISION-119 — A facility's ownership moves from the console
+
+**Date:** 2026-10-10. The first gap the readiness report left open.
+
+Nothing anywhere could change who owns a facility: a pharmacy sold to someone else could only be
+closed, and its only owner could never delete their account, though two refusals said «transfer
+the ownership».
+
+* `POST /api/v1/admin/facilities/{id}/owner/` (`admin.facilities.manage`): the new owner by the
+  number of an existing, active account — the platform holds no one's number without their own
+  sign-up. The previous owners leave, or stay as managers when the operator says so. A closed
+  facility does not move; the owner already is refused.
+* Both sides are told in their inbox; the change is audited with who owned it before.
+* In the console, «نقل الملكية» on each facility's card, with the number and «إبقاء المالك الحالي
+  مديراً فيها». The operator checks both sides before pressing it: the transfer is on their word.

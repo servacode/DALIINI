@@ -25,6 +25,8 @@ import com.servacode.directory.api.models.AdminFacilityCreate
 import com.servacode.directory.api.models.AdminFacilityDetail
 import com.servacode.directory.api.models.AdminFacilityList
 import com.servacode.directory.api.models.AdminFacilityMap
+import com.servacode.directory.api.models.AdminFacilityOwner
+import com.servacode.directory.api.models.AdminFacilityOwnerRequest
 import com.servacode.directory.api.models.AdminTimeline
 import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.BusinessHourInput
@@ -124,6 +126,15 @@ class AdminFacilitiesApiTest : ShouldSpec() {
             // uncomment below to test adminFacilityImagesList
             //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
             //val result : OwnerFacilityImageList = apiInstance.adminFacilityImagesList(facilityId)
+            //result shouldBe ("TODO")
+        }
+
+        // to test adminFacilityOwnerTransfer
+        should("test adminFacilityOwnerTransfer") {
+            // uncomment below to test adminFacilityOwnerTransfer
+            //val facilityId : java.util.UUID = 38400000-8cf0-11bd-b23e-10b96e4ef00d // java.util.UUID | 
+            //val adminFacilityOwnerRequest : AdminFacilityOwnerRequest =  // AdminFacilityOwnerRequest | 
+            //val result : AdminFacilityOwner = apiInstance.adminFacilityOwnerTransfer(facilityId, adminFacilityOwnerRequest)
             //result shouldBe ("TODO")
         }
 

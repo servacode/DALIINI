@@ -101,6 +101,7 @@ Class | Method | HTTP request | Description
 *AdminFacilitiesAPI* | [**adminFacilityImageCreate**](docs/AdminFacilitiesAPI.md#adminfacilityimagecreate) | **POST** /api/v1/admin/facilities/{facility_id}/images/ | Add a public photo to a facility
 *AdminFacilitiesAPI* | [**adminFacilityImageDelete**](docs/AdminFacilitiesAPI.md#adminfacilityimagedelete) | **DELETE** /api/v1/admin/facilities/{facility_id}/images/{image_id}/ | Remove a public photo from a facility
 *AdminFacilitiesAPI* | [**adminFacilityImagesList**](docs/AdminFacilitiesAPI.md#adminfacilityimageslist) | **GET** /api/v1/admin/facilities/{facility_id}/images/ | A facility&#39;s public photos
+*AdminFacilitiesAPI* | [**adminFacilityOwnerTransfer**](docs/AdminFacilitiesAPI.md#adminfacilityownertransfer) | **POST** /api/v1/admin/facilities/{facility_id}/owner/ | Move a facility to another owner
 *AdminFacilitiesAPI* | [**adminFacilityReactivate**](docs/AdminFacilitiesAPI.md#adminfacilityreactivate) | **POST** /api/v1/admin/facilities/{facility_id}/reactivate/ | Reactivate a suspended facility
 *AdminFacilitiesAPI* | [**adminFacilityRetrieve**](docs/AdminFacilitiesAPI.md#adminfacilityretrieve) | **GET** /api/v1/admin/facilities/{facility_id}/ | Retrieve one facility
 *AdminFacilitiesAPI* | [**adminFacilitySuspend**](docs/AdminFacilitiesAPI.md#adminfacilitysuspend) | **POST** /api/v1/admin/facilities/{facility_id}/suspend/ | Suspend a facility
@@ -321,6 +322,8 @@ Class | Method | HTTP request | Description
  - [AdminFacilityDetail](docs/AdminFacilityDetail.md)
  - [AdminFacilityList](docs/AdminFacilityList.md)
  - [AdminFacilityMap](docs/AdminFacilityMap.md)
+ - [AdminFacilityOwner](docs/AdminFacilityOwner.md)
+ - [AdminFacilityOwnerRequest](docs/AdminFacilityOwnerRequest.md)
  - [AdminFacilityPoint](docs/AdminFacilityPoint.md)
  - [AdminFacilityReport](docs/AdminFacilityReport.md)
  - [AdminFacilityReportList](docs/AdminFacilityReportList.md)

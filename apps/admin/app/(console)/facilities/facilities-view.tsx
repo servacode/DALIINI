@@ -163,6 +163,7 @@ export function FacilitiesView({ mapStyleUrl }: { mapStyleUrl: string }) {
   const [reason, setReason] = useState("");
   const [history, setHistory] = useState<FacilityRow | null>(null);
   const [media, setMedia] = useState<FacilityRow | null>(null);
+  const [owning, setOwning] = useState<FacilityRow | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const linked = filters.id || null;
 
@@ -300,6 +301,7 @@ export function FacilitiesView({ mapStyleUrl }: { mapStyleUrl: string }) {
               }}
               onHistory={() => setHistory(row)}
               onMedia={() => setMedia(row)}
+              onOwner={() => setOwning(row)}
             />
           ))}
         </ul>
@@ -379,6 +381,18 @@ export function FacilitiesView({ mapStyleUrl }: { mapStyleUrl: string }) {
         {media ? <FacilityMedia facilityId={media.id} canEdit={canEdit} /> : null}
       </FormDialog>
 
+      {owning ? (
+        <OwnerTransferDialog
+          facility={owning}
+          onDone={(message) => {
+            setOwning(null);
+            setToast(message);
+            facilities.reload();
+          }}
+          onCancel={() => setOwning(null)}
+        />
+      ) : null}
+
       <FormDialog
         open={history !== null}
         icon="history"
@@ -443,6 +457,7 @@ function FacilityCard({
   onDecide,
   onHistory,
   onMedia,
+  onOwner,
 }: {
   row: FacilityRow;
   index: number;
@@ -453,6 +468,7 @@ function FacilityCard({
   onDecide: (kind: Decision) => void;
   onHistory: () => void;
   onMedia: () => void;
+  onOwner: () => void;
 }) {
   const status = STATUS[row.status];
   const kind =
@@ -554,6 +570,18 @@ function FacilityCard({
           >
             <Icon name="clock" width={16} height={16} />
           </button>
+          {canManage && row.status !== "CLOSED" ? (
+            <button
+              type="button"
+              className="profile-act-icon"
+              title="نقل الملكية"
+              aria-label={`نقل ملكية ${row.nameAr}`}
+              data-testid={`owner-${row.id}`}
+              onClick={onOwner}
+            >
+              <Icon name="user" width={16} height={16} />
+            </button>
+          ) : null}
           <button
             type="button"
             className="profile-act-icon"
@@ -648,5 +676,86 @@ function FacilityTimeline({ facilityId }: { facilityId: string }) {
         </li>
       ))}
     </ol>
+  );
+}
+
+/**
+ * «نقل الملكية»: the facility to another account, on the word of both sides (DECISION-119).
+ * Nothing could change an owner before — a sold pharmacy could only be closed.
+ */
+function OwnerTransferDialog({
+  facility,
+  onDone,
+  onCancel,
+}: {
+  facility: FacilityRow;
+  onDone: (message: string) => void;
+  onCancel: () => void;
+}) {
+  const mutation = useMutation();
+  const [phone, setPhone] = useState("");
+  const [keep, setKeep] = useState(false);
+  return (
+    <FormDialog
+      open
+      icon="user"
+      title={`نقل ملكية ${facility.nameAr}`}
+      description="تحقق من المالك الحالي والجديد قبل النقل. يجب أن يكون للمالك الجديد حساب في التطبيق."
+      onClose={onCancel}
+      locked={mutation.pending}
+      testId="owner-transfer"
+      footer={
+        <>
+          <button
+            type="button"
+            className="button-primary"
+            data-testid="owner-transfer-confirm"
+            disabled={mutation.pending || !phone.trim()}
+            onClick={async () => {
+              const done = await mutation.runFor<{ ownerName: string }>(
+                "facilityOwnerTransfer",
+                { id: facility.id, phone: phone.trim(), keepPreviousAsManager: keep },
+              );
+              if (done) {
+                onDone(`نُقلت ملكية ${facility.nameAr} إلى ${done.ownerName}، وأُبلغ الطرفان.`);
+              }
+            }}
+          >
+            {mutation.pending ? "جارٍ النقل…" : "نقل الملكية"}
+          </button>
+          <button
+            type="button"
+            className="button-ghost"
+            disabled={mutation.pending}
+            onClick={onCancel}
+          >
+            إلغاء
+          </button>
+        </>
+      }
+    >
+      <label className="field">
+        <span>رقم جوال المالك الجديد</span>
+        <input
+          type="tel"
+          dir="ltr"
+          inputMode="tel"
+          placeholder="09XXXXXXXX"
+          data-testid="owner-transfer-phone"
+          value={phone}
+          onChange={(event) => setPhone(event.target.value)}
+        />
+      </label>
+      <label className="switch-row">
+        <span>إبقاء المالك الحالي مديراً فيها</span>
+        <input
+          type="checkbox"
+          data-testid="owner-transfer-keep"
+          checked={keep}
+          onChange={(event) => setKeep(event.target.checked)}
+        />
+      </label>
+      {mutation.error ? <ErrorState error={mutation.error} /> : null}
+    </FormDialog>
   );
 }

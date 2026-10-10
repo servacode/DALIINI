@@ -4805,6 +4805,73 @@ paths:
                 $ref: '#/components/schemas/ApiError'
           description: The addressed resource does not exist or is not visible to
             the caller.
+  /api/v1/admin/facilities/{facility_id}/owner/:
+    post:
+      operationId: adminFacilityOwnerTransfer
+      summary: Move a facility to another owner
+      parameters:
+      - in: path
+        name: facility_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - Admin Facilities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminFacilityOwnerRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminFacilityOwnerRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminFacilityOwnerRequest'
+        required: true
+      security:
+      - bearerAccessToken: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminFacilityOwner'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: A domain rule rejected the request; `code` names the rule.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No valid access token was supplied.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but the caller lacks the required permission
+            or membership.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The addressed resource does not exist or is not visible to
+            the caller.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: The request conflicts with the current state or with a domain
+            rule.
   /api/v1/admin/facilities/{facility_id}/reactivate/:
     post:
       operationId: adminFacilityReactivate
@@ -12708,6 +12775,37 @@ components:
       - items
       - truncated
       - withoutLocation
+    AdminFacilityOwner:
+      type: object
+      properties:
+        facilityId:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        ownerName:
+          type: string
+        ownerPhone:
+          type: string
+      required:
+      - facilityId
+      - ownerId
+      - ownerName
+      - ownerPhone
+    AdminFacilityOwnerRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+          description: The new owner's account number.
+          maxLength: 20
+        keepPreviousAsManager:
+          type: boolean
+          default: false
+          description: The previous owners stay, as managers, instead of leaving.
+      required:
+      - phone
     AdminFacilityPoint:
       type: object
       properties:

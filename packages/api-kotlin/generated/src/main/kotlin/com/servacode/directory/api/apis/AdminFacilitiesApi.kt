@@ -13,6 +13,8 @@ import com.servacode.directory.api.models.AdminFacilityCreate
 import com.servacode.directory.api.models.AdminFacilityDetail
 import com.servacode.directory.api.models.AdminFacilityList
 import com.servacode.directory.api.models.AdminFacilityMap
+import com.servacode.directory.api.models.AdminFacilityOwner
+import com.servacode.directory.api.models.AdminFacilityOwnerRequest
 import com.servacode.directory.api.models.AdminTimeline
 import com.servacode.directory.api.models.ApiError
 import com.servacode.directory.api.models.BusinessHourInput
@@ -216,6 +218,25 @@ interface AdminFacilitiesApi {
      */
     @GET("api/v1/admin/facilities/{facility_id}/images/")
     suspend fun adminFacilityImagesList(@Path("facility_id") facilityId: java.util.UUID): Response<OwnerFacilityImageList>
+
+    /**
+     * POST api/v1/admin/facilities/{facility_id}/owner/
+     * Move a facility to another owner
+     * 
+     * Responses:
+     *  - 200: 
+     *  - 400: A domain rule rejected the request; `code` names the rule.
+     *  - 401: No valid access token was supplied.
+     *  - 403: Authenticated, but the caller lacks the required permission or membership.
+     *  - 404: The addressed resource does not exist or is not visible to the caller.
+     *  - 409: The request conflicts with the current state or with a domain rule.
+     *
+     * @param facilityId 
+     * @param adminFacilityOwnerRequest 
+     * @return [AdminFacilityOwner]
+     */
+    @POST("api/v1/admin/facilities/{facility_id}/owner/")
+    suspend fun adminFacilityOwnerTransfer(@Path("facility_id") facilityId: java.util.UUID, @Body adminFacilityOwnerRequest: AdminFacilityOwnerRequest): Response<AdminFacilityOwner>
 
     /**
      * POST api/v1/admin/facilities/{facility_id}/reactivate/

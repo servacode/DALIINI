@@ -398,6 +398,14 @@ export const WRITES = {
   // Up to a hundred at once, in one transaction. The response says what happened to each id,
   // because some may have been decided by somebody else between the list and the button.
   whatsappRelink: (apis: AdminApis) => apis.settings.adminWhatsAppRelink(),
+  facilityOwnerTransfer: (apis: AdminApis, b: Body) =>
+    apis.facilities.adminFacilityOwnerTransfer({
+      facilityId: String(b.id),
+      adminFacilityOwnerRequest: {
+        phone: String(b.phone ?? ""),
+        keepPreviousAsManager: Boolean(b.keepPreviousAsManager),
+      },
+    }),
   appReleaseUpdate: (apis: AdminApis, b: Body) =>
     apis.settings.adminAppReleaseUpdate({
       adminAppReleaseRequest: {

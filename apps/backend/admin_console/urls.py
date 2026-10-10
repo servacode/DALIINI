@@ -14,6 +14,7 @@ from . import (
     views_facilities,
     views_facility_lifecycle,
     views_facility_media,
+    views_facility_owner,
     views_provinces,
     views_reports,
     views_reviews,
@@ -94,6 +95,10 @@ urlpatterns = [
     path("admin/evidence/<uuid:evidence_id>/content/", views_reviews.EvidenceContentView.as_view()),
     path("admin/facilities/", views_facilities.FacilityListView.as_view()),
     path("admin/facilities/map/", views_facilities.FacilityMapView.as_view()),
+    path(
+        "admin/facilities/<uuid:facility_id>/owner/",
+        views_facility_owner.AdminFacilityOwnerView.as_view(),
+    ),
     path("admin/whatsapp/", views_whatsapp.AdminWhatsAppView.as_view()),
     path("admin/whatsapp/relink/", views_whatsapp.AdminWhatsAppRelinkView.as_view()),
     path("admin/facilities/<uuid:facility_id>/", views_facilities.FacilityDetailView.as_view()),

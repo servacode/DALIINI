@@ -21,6 +21,8 @@ import type {
   AdminFacilityDetail,
   AdminFacilityList,
   AdminFacilityMap,
+  AdminFacilityOwner,
+  AdminFacilityOwnerRequest,
   AdminTimeline,
   ApiError,
   BusinessHourInput,
@@ -42,6 +44,10 @@ import {
     AdminFacilityListToJSON,
     AdminFacilityMapFromJSON,
     AdminFacilityMapToJSON,
+    AdminFacilityOwnerFromJSON,
+    AdminFacilityOwnerToJSON,
+    AdminFacilityOwnerRequestFromJSON,
+    AdminFacilityOwnerRequestToJSON,
     AdminTimelineFromJSON,
     AdminTimelineToJSON,
     ApiErrorFromJSON,
@@ -110,6 +116,11 @@ export interface AdminFacilityImageDeleteRequest {
 
 export interface AdminFacilityImagesListRequest {
     facilityId: string;
+}
+
+export interface AdminFacilityOwnerTransferRequest {
+    facilityId: string;
+    adminFacilityOwnerRequest: AdminFacilityOwnerRequest;
 }
 
 export interface AdminFacilityReactivateRequest {
@@ -652,6 +663,61 @@ export class AdminFacilitiesApi extends runtime.BaseAPI {
      */
     async adminFacilityImagesList(requestParameters: AdminFacilityImagesListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OwnerFacilityImageList> {
         const response = await this.adminFacilityImagesListRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Move a facility to another owner
+     */
+    async adminFacilityOwnerTransferRaw(requestParameters: AdminFacilityOwnerTransferRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminFacilityOwner>> {
+        if (requestParameters['facilityId'] == null) {
+            throw new runtime.RequiredError(
+                'facilityId',
+                'Required parameter "facilityId" was null or undefined when calling adminFacilityOwnerTransfer().'
+            );
+        }
+
+        if (requestParameters['adminFacilityOwnerRequest'] == null) {
+            throw new runtime.RequiredError(
+                'adminFacilityOwnerRequest',
+                'Required parameter "adminFacilityOwnerRequest" was null or undefined when calling adminFacilityOwnerTransfer().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAccessToken", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/admin/facilities/{facility_id}/owner/`;
+        urlPath = urlPath.replace(`{${"facility_id"}}`, encodeURIComponent(String(requestParameters['facilityId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AdminFacilityOwnerRequestToJSON(requestParameters['adminFacilityOwnerRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminFacilityOwnerFromJSON(jsonValue));
+    }
+
+    /**
+     * Move a facility to another owner
+     */
+    async adminFacilityOwnerTransfer(requestParameters: AdminFacilityOwnerTransferRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminFacilityOwner> {
+        const response = await this.adminFacilityOwnerTransferRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
