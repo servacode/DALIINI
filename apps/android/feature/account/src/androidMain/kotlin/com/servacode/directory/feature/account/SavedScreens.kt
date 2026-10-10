@@ -46,7 +46,6 @@ import com.servacode.directory.core.designsystem.Radius
 import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
 import com.servacode.directory.core.model.InboxMessage
-import com.servacode.directory.core.model.MessageDestination
 import com.servacode.directory.core.model.NotificationTarget
 
 /**
@@ -229,17 +228,18 @@ fun NotificationsScreen(
  * it meant. Unread now stands on the brand's soft green with its title in bold and a filled dot
  * at the end; read is a plain card. Three signals, none of them colour alone.
  *
- * Only a message with somewhere to go can be opened.
+ * Every message can be tapped: one with somewhere to go opens it, and any of them is read by
+ * it. A welcome or a broadcast used to take no tap at all, and so could never be marked read
+ * but all at once.
  */
 @Composable
 private fun MessageRow(message: InboxMessage, onOpen: () -> Unit) {
-    val goes = message.destination != MessageDestination.NONE
     val unread = !message.isRead
     DirectoryOutlinedCard(highlighted = unread) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .let { if (goes) it.clickable(onClick = onOpen) else it }
+                .clickable(onClick = onOpen)
                 .padding(Space.base),
             horizontalArrangement = Arrangement.spacedBy(Space.md),
         ) {

@@ -27,6 +27,7 @@ import com.servacode.directory.core.designsystem.DirectorySecondaryButton
 import com.servacode.directory.core.designsystem.DirectoryTextField
 import com.servacode.directory.core.designsystem.DirectoryTopBar
 import com.servacode.directory.core.designsystem.Space
+import com.servacode.directory.core.model.AppError
 
 /**
  * Changing the number the account signs in with.
@@ -69,7 +70,7 @@ fun PhoneChangeScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                state.error?.let { ErrorLine(appErrorText(it)) }
+                state.error?.let { ErrorLine(phoneChangeWords(it)) }
                 DirectoryPrimaryButton(
                     text = PhoneChangeCopy.SEND,
                     onClick = viewModel::send,
@@ -91,7 +92,7 @@ fun PhoneChangeScreen(
                     leadingIcon = DirectoryIcons.verified,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
-                state.error?.let { ErrorLine(appErrorText(it)) }
+                state.error?.let { ErrorLine(phoneChangeWords(it)) }
                 DirectoryPrimaryButton(
                     text = PhoneChangeCopy.CONFIRM,
                     onClick = viewModel::confirm,
@@ -107,6 +108,18 @@ fun PhoneChangeScreen(
             }
         }
     }
+}
+
+/**
+ * The refusal in words that say what to do: the backend names the field it refused, and
+ * "check what you entered" said nothing about which, or why.
+ */
+@Composable
+private fun phoneChangeWords(error: AppError): String = when {
+    "challengeId" in error.fieldErrors -> PhoneChangeCopy.CODE_EXPIRED
+    "code" in error.fieldErrors -> PhoneChangeCopy.CODE_WRONG
+    "phone" in error.fieldErrors -> PhoneChangeCopy.PHONE_REFUSED
+    else -> appErrorText(error)
 }
 
 @Composable
@@ -129,6 +142,11 @@ object PhoneChangeCopy {
         @Composable @ReadOnlyComposable get() = stringResource(R.string.phone_change_another_number)
     val SESSIONS_NOTE: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.phone_change_sessions_note)
+    val CODE_WRONG: String @Composable @ReadOnlyComposable get() = stringResource(R.string.phone_change_code_wrong)
+    val CODE_EXPIRED: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.phone_change_code_expired)
+    val PHONE_REFUSED: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.phone_change_phone_refused)
 
 
     @Composable

@@ -50,6 +50,7 @@ import com.servacode.directory.core.designsystem.DirectoryTextField
 import com.servacode.directory.core.designsystem.DirectoryWords
 import com.servacode.directory.core.designsystem.Sizes
 import com.servacode.directory.core.designsystem.Space
+import com.servacode.directory.core.model.AppError
 import com.servacode.directory.core.model.DirectoryBrand
 
 /**
@@ -118,7 +119,13 @@ fun LoginScreen(
             error = fieldError(state.failure, "password"),
             filled = true,
         )
-        FailureText(state.failure)
+        // On this screen a refusal can only be the number and password: "or the session ended",
+        // true elsewhere, here only leaves the reader wondering which session.
+        if (state.failure?.error.kind == AppError.Kind.UNAUTHENTICATED) {
+            ErrorText(AuthCopy.WRONG_CREDENTIALS)
+        } else {
+            FailureText(state.failure)
+        }
         DirectoryPrimaryButton(
             text = AuthCopy.SIGN_IN,
             onClick = { viewModel.submit(phone, password) },
@@ -609,6 +616,7 @@ object AuthCopy {
     val CODE_WRONG: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_code_wrong)
     val CODE_EXPIRED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_code_expired)
     val RESEND: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_resend)
+    val WRONG_CREDENTIALS: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_wrong_credentials)
     val PASSWORD_RULE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_password_rule)
     val PASSWORD_REFUSED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.auth_password_refused)
 }

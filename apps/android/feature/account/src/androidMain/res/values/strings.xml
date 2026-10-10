@@ -58,12 +58,14 @@
     <string name="security_picture">الصورة الشخصية</string>
     <string name="security_choose_picture">اختيار صورة</string>
     <string name="security_remove_picture">إزالة الصورة</string>
-    <string name="security_phone_note">رقم الهاتف هو معرّف حسابك، وتغييره يحتاج تحققًا جديدًا غير متاح بعد.</string>
+    <string name="security_phone_note">رقم الهاتف هو معرّف حسابك، وتغييره يحتاج رمزًا يصل إلى الرقم الجديد.</string>
     <string name="security_change_password">تغيير كلمة المرور</string>
     <string name="security_current_password">كلمة المرور الحالية</string>
     <string name="security_new_password">كلمة المرور الجديدة</string>
     <string name="security_confirm_password">تأكيد كلمة المرور</string>
     <string name="security_mismatch">كلمتا المرور غير متطابقتين</string>
+    <string name="security_current_wrong">كلمة المرور الحالية غير صحيحة.</string>
+    <string name="security_new_refused">كلمة المرور الجديدة ضعيفة أو مثل الحالية. اختر غيرها.</string>
     <string name="security_password_rule">8 أحرف على الأقل، لا أرقام فقط، ولا كلمة شائعة أو قريبة من اسمك.</string>
     <string name="security_sessions_note">بعد التغيير ستُنهى جميع الجلسات، بما فيها هذا الجهاز، وستحتاج إلى تسجيل الدخول
         بكلمة المرور الجديدة.</string>
@@ -72,6 +74,9 @@
     <string name="phone_change_code">رمز التحقق</string>
     <string name="phone_change_send">إرسال الرمز</string>
     <string name="phone_change_confirm">تأكيد الرقم</string>
+    <string name="phone_change_code_wrong">الرمز غير صحيح.</string>
+    <string name="phone_change_code_expired">انتهت صلاحية هذا الرمز. اضغط «رقم آخر» واطلب رمزًا جديدًا.</string>
+    <string name="phone_change_phone_refused">هذا الرقم غير صالح أو مسجّل لحساب آخر.</string>
     <string name="phone_change_another_number">رقم آخر</string>
     <string name="phone_change_sessions_note">سنرسل رمزًا إلى الرقم الجديد للتأكد أنه لك. بعد التأكيد ستُنهى جميع
         الجلسات، بما فيها هذا الجهاز، وستحتاج إلى تسجيل الدخول بالرقم الجديد.</string>

@@ -216,15 +216,19 @@ fun PasswordChangeScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = Space.base),
             )
+            // The backend names which field it refused; the field says so, not a generic line.
+            val refused = state.error?.fieldErrors.orEmpty()
             DirectoryPasswordField(
                 value = state.current,
                 onValueChange = viewModel::updateCurrent,
                 label = SecurityCopy.CURRENT_PASSWORD,
+                error = if ("currentPassword" in refused) SecurityCopy.CURRENT_WRONG else null,
             )
             DirectoryPasswordField(
                 value = state.next,
                 onValueChange = viewModel::updateNext,
                 label = SecurityCopy.NEW_PASSWORD,
+                error = if ("newPassword" in refused) SecurityCopy.NEW_REFUSED else null,
             )
             // The backend's rule, said before it refuses rather than after.
             Text(
@@ -238,7 +242,7 @@ fun PasswordChangeScreen(
                 label = SecurityCopy.CONFIRM_PASSWORD,
                 error = if (state.mismatch) SecurityCopy.MISMATCH else null,
             )
-            state.error?.let {
+            state.error?.takeIf { refused.isEmpty() }?.let {
                 Text(
                     text = appErrorText(it),
                     style = MaterialTheme.typography.bodyMedium,
@@ -280,5 +284,7 @@ object SecurityCopy {
         @Composable @ReadOnlyComposable get() = stringResource(R.string.security_confirm_password)
     val MISMATCH: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_mismatch)
     val PASSWORD_RULE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_password_rule)
+    val CURRENT_WRONG: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_current_wrong)
+    val NEW_REFUSED: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_new_refused)
     val SESSIONS_NOTE: String @Composable @ReadOnlyComposable get() = stringResource(R.string.security_sessions_note)
 }

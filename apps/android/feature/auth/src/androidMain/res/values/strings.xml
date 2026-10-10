@@ -29,6 +29,7 @@
     <string name="auth_code_wrong">الرمز غير صحيح.</string>
     <string name="auth_code_expired">انتهت صلاحية هذا الرمز. اطلب رمزاً جديداً.</string>
     <string name="auth_resend">أرسل رمزاً جديداً</string>
+    <string name="auth_wrong_credentials">رقم الهاتف أو كلمة المرور غير صحيحة.</string>
     <string name="auth_password_rule">8 أحرف على الأقل، لا أرقام فقط، ولا كلمة شائعة أو قريبة من اسمك.</string>
     <string name="auth_password_refused">كلمة المرور ضعيفة. اختر واحدة أطول أو أصعب تخميناً.</string>
 </resources>
