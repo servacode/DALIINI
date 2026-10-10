@@ -145,7 +145,14 @@ fun DirectoryApp(
             destination.hasRoute<DirectoryRoute.Invitations>() ||
             destination.hasRoute<DirectoryRoute.ClaimFacility>() ||
             destination.hasRoute<DirectoryRoute.Claim>() ||
-            destination.hasRoute<DirectoryRoute.Duty>()
+            destination.hasRoute<DirectoryRoute.Duty>() ||
+            // The account's own lists and forms too: they stayed on «تعذر التحميل — انتهت
+            // الجلسة», and sign-in was found only by leaving them.
+            destination.hasRoute<DirectoryRoute.Favorites>() ||
+            destination.hasRoute<DirectoryRoute.Notifications>() ||
+            destination.hasRoute<DirectoryRoute.EditProfile>() ||
+            destination.hasRoute<DirectoryRoute.ChangePassword>() ||
+            destination.hasRoute<DirectoryRoute.ChangePhone>()
         if (private) {
             navController.navigate(DirectoryRoute.Login) {
                 popUpTo<DirectoryRoute.Home>()
