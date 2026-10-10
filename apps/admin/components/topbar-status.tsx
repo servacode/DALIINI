@@ -11,7 +11,7 @@ type Alert = Readonly<{ kind: string; severity: "info" | "warning" | "critical" 
  * The top bar's system indicator, visible from every screen.
  *
  * A bell counts the alerts that need someone (critical and warning), red when any is
- * critical, and opens the dashboard where they are listed. When maintenance mode is on, a
+ * critical, and opens /alerts, where they are listed on a page of their own. When maintenance mode is on, a
  * pill says so, because an operator must never forget the public app is switched off. It
  * reads the same alerts endpoint as the dashboard, refreshed in place every minute, and
  * stays silent for an operator who cannot read the dashboard.
@@ -39,7 +39,7 @@ export function TopbarStatus({ enabled }: { enabled: boolean }) {
         </Link>
       ) : null}
       <Link
-        href="/dashboard"
+        href="/alerts"
         className="icon-button bell"
         aria-label={label}
         title={label}

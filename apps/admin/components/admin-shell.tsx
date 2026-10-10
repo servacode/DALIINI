@@ -63,7 +63,10 @@ const NAVIGATION: readonly { label: string; sections: readonly Section[] }[] = [
         key: "home",
         label: "الرئيسية",
         icon: "dashboard",
-        pages: [{ href: "/dashboard", label: "الرئيسية", permission: "admin.dashboard.read" }],
+        pages: [
+          { href: "/dashboard", label: "الرئيسية", permission: "admin.dashboard.read" },
+          { href: "/alerts", label: "التنبيهات", permission: "admin.dashboard.read" },
+        ],
       },
       // Three sections, not one drawer. Managing an account, deciding what a role may do,
       // and announcing something to every phone in a province are three different jobs done

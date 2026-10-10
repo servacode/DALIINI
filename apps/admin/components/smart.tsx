@@ -28,12 +28,21 @@ const SEVERITY_LABEL: Record<Alert["severity"], string> = {
   info: "للعلم",
 };
 
-export function AlertsPanel() {
+/**
+ * The alerts, newest state first. On the dashboard nothing is shown when there are none; on
+ * their own page ([standalone]) that silence would read as a page that failed to load, so the
+ * page says there are none.
+ */
+export function AlertsPanel({ standalone = false }: { standalone?: boolean }) {
   const alerts = useResource<{ items: Alert[] }>("alerts", {}, { refreshMs: 60_000 });
-  if (alerts.loading) return null;
+  if (alerts.loading) return standalone ? <LoadingState /> : null;
   if (alerts.error) return <ErrorState error={alerts.error} onRetry={alerts.reload} />;
   const items = alerts.data?.items ?? [];
-  if (items.length === 0) return null;
+  if (items.length === 0) {
+    return standalone ? (
+      <EmptyState title="لا تنبيهات الآن" hint="تظهر هنا تلقائياً كل مشكلة تحتاج انتباهك." />
+    ) : null;
+  }
   return (
     <section className="alert-list" aria-label="تنبيهات تحتاج انتباهك" data-testid="alerts">
       {items.map((alert, index) => {
