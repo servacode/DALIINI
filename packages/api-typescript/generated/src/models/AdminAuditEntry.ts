@@ -36,6 +36,12 @@ export interface AdminAuditEntry {
      * @type {string}
      * @memberof AdminAuditEntry
      */
+    actorName: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AdminAuditEntry
+     */
     action: string;
     /**
      * 
@@ -75,6 +81,7 @@ export interface AdminAuditEntry {
 export function instanceOfAdminAuditEntry(value: object): value is AdminAuditEntry {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('actorId' in value) || value['actorId'] === undefined) return false;
+    if (!('actorName' in value) || value['actorName'] === undefined) return false;
     if (!('action' in value) || value['action'] === undefined) return false;
     if (!('targetType' in value) || value['targetType'] === undefined) return false;
     if (!('targetId' in value) || value['targetId'] === undefined) return false;
@@ -96,6 +103,7 @@ export function AdminAuditEntryFromJSONTyped(json: any, ignoreDiscriminator: boo
         
         'id': json['id'],
         'actorId': json['actorId'],
+        'actorName': json['actorName'],
         'action': json['action'],
         'targetType': json['targetType'],
         'targetId': json['targetId'],
@@ -118,6 +126,7 @@ export function AdminAuditEntryToJSONTyped(value?: AdminAuditEntry | null, ignor
         
         'id': value['id'],
         'actorId': value['actorId'],
+        'actorName': value['actorName'],
         'action': value['action'],
         'targetType': value['targetType'],
         'targetId': value['targetId'],

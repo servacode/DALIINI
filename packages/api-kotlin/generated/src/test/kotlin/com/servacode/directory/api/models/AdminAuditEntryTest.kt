@@ -37,6 +37,12 @@ class AdminAuditEntryTest : ShouldSpec() {
             //modelInstance.actorId shouldBe ("TODO")
         }
 
+        // to test the property `actorName`
+        should("test actorName") {
+            // uncomment below to test the property
+            //modelInstance.actorName shouldBe ("TODO")
+        }
+
         // to test the property `action`
         should("test action") {
             // uncomment below to test the property

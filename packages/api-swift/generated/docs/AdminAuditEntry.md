@@ -5,6 +5,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **UUID** |  | 
 **actorId** | **UUID** |  | 
+**actorName** | **String** |  | 
 **action** | **String** |  | 
 **targetType** | **String** |  | 
 **targetId** | **String** |  | 

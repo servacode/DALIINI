@@ -185,6 +185,7 @@ def test_audit_list_is_camel_case(admin_client: APIClient, facility: Facility) -
     assert _keys(body["items"]) == {
         "id",
         "actorId",
+        "actorName",
         "action",
         "targetType",
         "targetId",
@@ -230,3 +231,17 @@ def _snake_keys(node: Any) -> set[str]:
         for item in node:
             found |= _snake_keys(item)
     return found
+
+
+@pytest.mark.django_db
+def test_the_audit_names_who_did_it(admin_client: APIClient, facility: Facility) -> None:
+    Province.objects.filter(pk=facility.province_id).update(active=True)
+    admin_client.put(
+        f"/api/v1/admin/provinces/{facility.province_id}/",
+        {"sortOrder": 4},
+        format="json",
+    )
+
+    first = admin_client.get("/api/v1/admin/audit/").json()["items"][0]
+
+    assert first["actorName"], "the console shows who did it, not only an id"

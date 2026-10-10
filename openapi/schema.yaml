@@ -11336,6 +11336,9 @@ components:
           type: string
           format: uuid
           nullable: true
+        actorName:
+          type: string
+          nullable: true
         action:
           type: string
         targetType:
@@ -11353,6 +11356,7 @@ components:
       required:
       - action
       - actorId
+      - actorName
       - createdAt
       - id
       - metadata

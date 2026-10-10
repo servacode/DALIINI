@@ -15,6 +15,7 @@ public struct AdminAuditEntry: Codable, JSONEncodable, Hashable {
 
     public var id: UUID
     public var actorId: UUID?
+    public var actorName: String?
     public var action: String
     public var targetType: String
     public var targetId: String
@@ -22,9 +23,10 @@ public struct AdminAuditEntry: Codable, JSONEncodable, Hashable {
     public var metadata: [String: AnyCodable]
     public var createdAt: Date
 
-    public init(id: UUID, actorId: UUID?, action: String, targetType: String, targetId: String, requestId: String, metadata: [String: AnyCodable], createdAt: Date) {
+    public init(id: UUID, actorId: UUID?, actorName: String?, action: String, targetType: String, targetId: String, requestId: String, metadata: [String: AnyCodable], createdAt: Date) {
         self.id = id
         self.actorId = actorId
+        self.actorName = actorName
         self.action = action
         self.targetType = targetType
         self.targetId = targetId
@@ -36,6 +38,7 @@ public struct AdminAuditEntry: Codable, JSONEncodable, Hashable {
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case id
         case actorId
+        case actorName
         case action
         case targetType
         case targetId
@@ -50,6 +53,7 @@ public struct AdminAuditEntry: Codable, JSONEncodable, Hashable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(actorId, forKey: .actorId)
+        try container.encode(actorName, forKey: .actorName)
         try container.encode(action, forKey: .action)
         try container.encode(targetType, forKey: .targetType)
         try container.encode(targetId, forKey: .targetId)

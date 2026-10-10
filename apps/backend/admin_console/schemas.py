@@ -710,6 +710,9 @@ class AdminAuditEntrySerializer(serializers.Serializer[Any]):
 
     id = serializers.UUIDField()
     actorId = serializers.UUIDField(source="actor_id", allow_null=True)
+    # Who did it, in the words the console shows: an id told the reader nothing, and «سجل
+    # العمليات» exists to say who did what. Null for the system itself.
+    actorName = serializers.CharField(source="actor__name", allow_null=True)
     action = serializers.CharField()
     targetType = serializers.CharField(source="target_type", allow_blank=True)
     targetId = serializers.CharField(source="target_id", allow_blank=True)

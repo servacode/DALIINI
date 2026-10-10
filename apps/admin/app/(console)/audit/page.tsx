@@ -28,6 +28,7 @@ import { useUrlFilters } from "../../../lib/client/use-url-filters";
 type AuditRow = Readonly<{
   id: string;
   actorId: string | null;
+  actorName: string | null;
   action: string;
   targetType: string;
   targetId: string;
@@ -91,6 +92,12 @@ export default function AuditPage() {
           <span className="muted cell-ltr">{formatDateTime(row.createdAt)}</span>
         </span>
       ),
+    },
+    {
+      key: "actor",
+      header: "المنفّذ",
+      // Who did it is the question an audit answers; it lived in the details as an id.
+      render: (row) => (row.actorId ? (row.actorName ?? "حساب محذوف") : "النظام"),
     },
     {
       key: "action",
@@ -263,7 +270,15 @@ export default function AuditPage() {
               </div>
               <div>
                 <dt>المنفّذ</dt>
-                <dd dir="ltr">{open.actorId ?? "النظام"}</dd>
+                <dd>
+                  {open.actorId ? (open.actorName ?? "حساب محذوف") : "النظام"}
+                  {open.actorId ? (
+                    <span className="muted cell-ltr" dir="ltr">
+                      {" "}
+                      {open.actorId}
+                    </span>
+                  ) : null}
+                </dd>
               </div>
             </dl>
             <DiffViewer

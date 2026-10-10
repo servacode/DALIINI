@@ -25,6 +25,7 @@ import kotlinx.serialization.Contextual
  *
  * @param id 
  * @param actorId 
+ * @param actorName 
  * @param action 
  * @param targetType 
  * @param targetId 
@@ -41,6 +42,9 @@ data class AdminAuditEntry (
 
     @Contextual @SerialName(value = "actorId")
     val actorId: java.util.UUID?,
+
+    @SerialName(value = "actorName")
+    val actorName: kotlin.String?,
 
     @SerialName(value = "action")
     val action: kotlin.String,

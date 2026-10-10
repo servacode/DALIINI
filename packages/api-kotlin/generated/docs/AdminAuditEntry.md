@@ -6,6 +6,7 @@
 | ------------ | ------------- | ------------- | ------------- |
 | **id** | [**java.util.UUID**](java.util.UUID.md) |  |  |
 | **actorId** | [**java.util.UUID**](java.util.UUID.md) |  |  |
+| **actorName** | **kotlin.String** |  |  |
 | **action** | **kotlin.String** |  |  |
 | **targetType** | **kotlin.String** |  |  |
 | **targetId** | **kotlin.String** |  |  |

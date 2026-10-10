@@ -429,6 +429,7 @@ class AuditListView(AdminView):
         rows = filtered_audit(request.query_params).values(
             "id",
             "actor_id",
+            "actor__name",
             "action",
             "target_type",
             "target_id",

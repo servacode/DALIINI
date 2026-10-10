@@ -25,6 +25,7 @@ import kotlinx.serialization.encoding.*
  *
  * @param id 
  * @param actorId 
+ * @param actorName 
  * @param action 
  * @param targetType 
  * @param targetId 
@@ -39,6 +40,8 @@ data class AdminAuditEntry (
     @SerialName(value = "id") @Required val id: kotlin.String,
 
     @SerialName(value = "actorId") @Required val actorId: kotlin.String?,
+
+    @SerialName(value = "actorName") @Required val actorName: kotlin.String?,
 
     @SerialName(value = "action") @Required val action: kotlin.String,
 
