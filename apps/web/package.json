@@ -14,7 +14,7 @@
     "og:render": "node scripts/render-og.mjs"
   },
   "dependencies": {
-    "@mapbox/mapbox-gl-rtl-text": "^0.4.0",
+    "@mapbox/mapbox-gl-rtl-text": "^1.0.0",
     "@servacode/design-tokens": "workspace:*",
     "maplibre-gl": "^6.11.2",
     "next": "16.3.6",
