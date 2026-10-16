@@ -1,15 +1,14 @@
-"""Cut every brand raster the platform ships from the one approved mark.
+"""Cut every brand raster the platform ships from the one approved artwork.
 
-The mark is drawn once, as vectors: `packages/design-tokens/brand/mark.svg` — the letter, the road
-that winds through it and the pin it leads to (DECISION-060). `docs/design/brand/dalini-mark.png`
-is that file rendered at 2048 px, and everything else — the symbol the app draws, the launcher
-icon at five densities, the round icon, the store's 512, the site's and the console's icons, the
-web symbol — is a scaling of it, none drawn by hand. After changing the SVG, re-render the master
-(see `docs/design/BRAND-ASSETS.md`), run this, and commit what it writes.
+The owner supplies a single picture: the letter with the road and the pin, the name under it
+(`docs/design/brand/dalini-logo.png`, DECISION-120). Everything else — the symbol the app draws,
+the launcher icon at five densities, the round icon, the store's 512, the site's and the
+console's icons, the web symbol — is a crop or a scaling of that file, none drawn by hand. Run
+this after replacing the artwork and commit what it writes.
 
 Two rules decide the geometry, and both come from Android rather than from taste:
 
-* The name is never part of an asset. A name baked into a picture cannot be set in the app's
+* The wordmark is left out of every asset. A name baked into a picture cannot be set in the app's
   typeface, read aloud, or corrected without an image editor, so every surface draws the mark and
   writes the name itself (`BrandLockup` on Android).
 * On an adaptive icon the launcher shows the middle 72 of a 108 canvas and may mask it to a
@@ -22,6 +21,7 @@ Needs Pillow: `python -m pip install pillow`.
 from __future__ import annotations
 
 import json
+from collections import deque
 from pathlib import Path
 
 import numpy as np
@@ -29,7 +29,7 @@ from PIL import Image, ImageDraw
 
 REPO = Path(__file__).resolve().parents[3]
 ANDROID = REPO / "apps/android"
-SOURCE = REPO / "docs/design/brand/dalini-mark.png"
+SOURCE = REPO / "docs/design/brand/dalini-logo.png"
 TOKENS = REPO / "packages/design-tokens/tokens/colors.json"
 
 SYMBOL = ANDROID / "core/designsystem/src/androidMain/res/drawable-nodpi/brand_symbol.webp"
@@ -60,13 +60,43 @@ SPLASH_PIXELS = 864  # 288 dp at 3x, so the mark stays sharp where the system dr
 INK = 24  # Below this the pixel is the artwork's glow fading out, not the mark.
 
 
-def mark(source: Image.Image) -> Image.Image:
-    """The mark, trimmed to its ink and centred on a square of its own.
+def largest_ink_island(alpha: np.ndarray) -> np.ndarray:
+    """The letter, without the word under it: the biggest thing in the picture."""
+    ink = alpha > INK
+    seen = np.zeros(ink.shape, dtype=bool)
+    height, width = ink.shape
+    best: list[tuple[int, int]] = []
+    for row in range(height):
+        for column in range(width):
+            if not ink[row, column] or seen[row, column]:
+                continue
+            stack = deque([(row, column)])
+            seen[row, column] = True
+            island: list[tuple[int, int]] = []
+            while stack:
+                y, x = stack.pop()
+                island.append((y, x))
+                for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    ny, nx = y + dy, x + dx
+                    if 0 <= ny < height and 0 <= nx < width and ink[ny, nx] and not seen[ny, nx]:
+                        seen[ny, nx] = True
+                        stack.append((ny, nx))
+            if len(island) > len(best):
+                best = island
+    mask = np.zeros(ink.shape, dtype=bool)
+    rows, columns = zip(*best)
+    mask[np.array(rows), np.array(columns)] = True
+    return mask
 
-    The letter, the road and the pin are separate shapes, so the whole picture is kept: the
-    master holds the mark and nothing else.
-    """
-    letter = source.crop(source.split()[3].getbbox())
+
+def mark(source: Image.Image) -> Image.Image:
+    """The letter alone, trimmed and centred on a square of its own."""
+    alpha = np.array(source.split()[3])
+    kept = largest_ink_island(alpha)
+    pixels = np.array(source)
+    pixels[..., 3] = np.where(kept, alpha, 0)
+    letter = Image.fromarray(pixels, "RGBA")
+    letter = letter.crop(letter.split()[3].getbbox())
     side = max(letter.size)
     square = Image.new("RGBA", (side, side), (0, 0, 0, 0))
     square.paste(letter, ((side - letter.width) // 2, (side - letter.height) // 2), letter)
@@ -147,7 +177,7 @@ def main() -> int:
     write(store.convert("RGB"), STORE_ICON, format="PNG")
 
     print("the symbol the site and the console draw beside the name:")
-    for side in (64, 128, 256):
+    for side in (64, 128, 256, 512):
         write(letter.resize((side, side), Image.LANCZOS), WEB_SYMBOLS / f"symbol-{side}.webp",
               format="WEBP", quality=94, method=6)
 

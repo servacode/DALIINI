@@ -13,7 +13,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-const mark = readFileSync(join(repo, "packages/design-tokens/brand/mark-on-dark.svg"), "utf8");
+const mark = readFileSync(join(repo, "packages/design-tokens/brand/symbol-512.webp")).toString("base64");
 const colors = JSON.parse(readFileSync(join(repo, "packages/design-tokens/tokens/colors.json"), "utf8"));
 const out = join(repo, "docs/design/brand/play-feature-graphic.png");
 
@@ -41,14 +41,13 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
   body { background: radial-gradient(120% 140% at 50% 45%, ${colors.primaryStrong} 0%, ${colors.primaryDeep} 62%); }
   .roads { position: absolute; inset: 0; }
   .mark { position: absolute; left: 50%; top: 50%; width: 300px; height: 300px; transform: translate(-50%, -50%); }
-  .mark svg { width: 100%; height: 100%; }
 </style></head><body>
   <svg class="roads" viewBox="0 0 1024 500" xmlns="http://www.w3.org/2000/svg">
     ${roads.map((d) => `<path d="${d}" fill="none" stroke="${colors.barContentMuted}" stroke-opacity="0.16" stroke-width="10" stroke-linecap="round"/>
     <path d="${d}" fill="none" stroke="${colors.primaryDeep}" stroke-opacity="0.5" stroke-width="1.6" stroke-dasharray="7 9" stroke-linecap="round"/>`).join("")}
     ${pins.map(([x, y]) => pin(x, y)).join("")}
   </svg>
-  <div class="mark">${mark}</div>
+  <img class="mark" src="data:image/webp;base64,${mark}" alt="">
 </body></html>`;
 
 const browser = await chromium.launch();

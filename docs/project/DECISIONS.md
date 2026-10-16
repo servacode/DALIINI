@@ -3170,3 +3170,18 @@ the ownership».
 * Both sides are told in their inbox; the change is audited with who owned it before.
 * In the console, «نقل الملكية» on each facility's card, with the number and «إبقاء المالك الحالي
   مديراً فيها». The operator checks both sides before pressing it: the transfer is on their word.
+
+## DECISION-120 — The owner's artwork is the mark again
+
+**Date:** 2026-10-16. Asked by the owner.
+
+The flat vector redraw of DECISION-060 (2026-10-03) read as a line drawing, and the owner wants
+the picture they approved on 2026-09-25 back: the emerald letter with its bevel and glow, the road
+and the pin.
+
+* `build-brand-assets.py` cuts every raster from `docs/design/brand/dalini-logo.png` again, the
+  name under the letter left out as before: the app's symbol and splash, the launcher icons, the
+  store's icon, the web symbols (now with a 512 for the cards), and the site's and console's icons.
+* The share card (`opengraph-image.png`) and the Play feature graphic are re-rendered with it.
+* `mark.svg`, `mark-on-dark.svg` and their 2048 px master are removed; nothing draws them now.
+* The faces and colours of identity v2 stay as they are.
