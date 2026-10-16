@@ -73,7 +73,8 @@ jobs:
           case "$TASK" in
             status)
               remote "$compose ps --format '{{.Service}}\t{{.State}}\t{{.Status}}';
-                systemctl list-timers 'daliini-*' --no-pager; free -h; df -h /"
+                systemctl list-timers 'daliini-*' --no-pager; free -h; df -h /;
+                systemctl is-active daliini-map.service || true; journalctl -u daliini-map -n 25 --no-pager"
               ;;
             timers)
               remote "set -e; cp $stack/systemd/daliini-*.service $stack/systemd/daliini-*.timer /etc/systemd/system/;
