@@ -8,6 +8,7 @@ import { Slider } from "../components/slider";
 import { CategoryIcon, FacilityList, Icon, JsonLd, Unavailable } from "../components/ui";
 import {
   getCategories,
+  getContactEmail,
   getContentPage,
   getFacilities,
   getProvinces,
@@ -57,12 +58,13 @@ export default async function HomePage({
   const chosen =
     provinces?.find((province) => province.code === p) ?? provinces?.[0] ?? null;
 
-  const [slides, categories, intro, onDuty] = await Promise.all([
+  const [slides, categories, intro, onDuty, contactEmail] = await Promise.all([
     getSlides(chosen?.id),
     chosen ? getCategories(chosen.id) : Promise.resolve(null),
     /* The opening line, when the team has written one in the console. */
     getContentPage(INTRO_SLUG),
     chosen ? getFacilities({ provinceId: chosen.id, dutyNow: true, limit: DUTY_PREVIEW }) : null,
+    getContactEmail(publicConfig.supportEmail),
   ]);
 
   const category =
@@ -89,7 +91,7 @@ export default async function HomePage({
           name: SITE_NAME,
           url: absoluteUrl("/"),
           logo: absoluteUrl("/icon.png"),
-          email: publicConfig.supportEmail.includes("@") ? publicConfig.supportEmail : undefined,
+          email: contactEmail ?? undefined,
         }}
       />
 

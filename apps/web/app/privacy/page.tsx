@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PublishedArticle } from "../../components/content";
 import { EmailLink } from "../../components/email-link";
-import { getContentPage } from "../../lib/api";
+import { getContactEmail, getContentPage } from "../../lib/api";
 import { publicConfig } from "../../lib/config";
 import { pageMetadata } from "../../lib/seo";
 
@@ -22,21 +22,25 @@ export async function generateMetadata(): Promise<Metadata> {
   return pageMetadata({ title: page?.titleAr || TITLE, description: DESCRIPTION, path: "/privacy" });
 }
 
-function PrivacyContact() {
+function PrivacyContact({ email }: { email: string }) {
   return (
     <>
       <h2>التواصل</h2>
-      <p>لأسئلة الخصوصية: <EmailLink email={publicConfig.privacyEmail} /></p>
+      <p>لأسئلة الخصوصية: <EmailLink email={email} /></p>
     </>
   );
 }
 
 export default async function PrivacyPage() {
-  const page = await getContentPage("privacy");
+  const [page, contactEmail] = await Promise.all([
+    getContentPage("privacy"),
+    getContactEmail(publicConfig.privacyEmail),
+  ]);
+  const email = contactEmail ?? publicConfig.privacyEmail;
   if (page) {
     return (
       <PublishedArticle page={page}>
-        <PrivacyContact />
+        <PrivacyContact email={email} />
       </PublishedArticle>
     );
   }
@@ -50,7 +54,7 @@ export default async function PrivacyPage() {
       <p>الملفات التي يرفعها أصحاب المنشآت لإثبات منشآتهم خاصة بالمراجعة، ولا تظهر لأي مستخدم آخر.</p>
       <h2>حذف الحساب</h2>
       <p>يمكنك حذف حسابك من داخل التطبيق أو من صفحة حذف الحساب في هذا الموقع.</p>
-      <PrivacyContact />
+      <PrivacyContact email={email} />
     </article>
   );
 }

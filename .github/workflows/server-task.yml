@@ -11,6 +11,7 @@ name: Server task
 #   environment's OPERATOR_PASSWORD secret; the operator changes it from the console.
 # * create-review-account: the account a store's reviewers sign in with (DECISION-123), its
 #   password kept as this environment's REVIEW_PASSWORD secret; run again to change it.
+# * boundaries: Syria's boundaries and quarters from the map's extract (import-boundaries.sh).
 # * maintenance-on / maintenance-off: the switch the console's Settings page also holds, for
 #   before an operator exists.
 
@@ -25,7 +26,7 @@ on:
       task:
         description: What to run
         type: choice
-        options: [status, timers, create-operator, create-review-account, maintenance-on, maintenance-off]
+        options: [status, timers, boundaries, create-operator, create-review-account, maintenance-on, maintenance-off]
         required: true
       phone:
         description: create-operator and create-review-account, the account's Syrian mobile number
@@ -85,6 +86,10 @@ jobs:
                 systemctl enable --now daliini-backup.timer daliini-restore-drill.timer daliini-map.timer;
                 systemctl start daliini-backup.service; journalctl -u daliini-backup -n 15 --no-pager;
                 systemctl start --no-block daliini-map.service; echo 'map build started'"
+              ;;
+            boundaries)
+              # The deployed checkout's script: deploy a commit that has it first.
+              remote "bash /srv/daliini/repo/infrastructure/production/import-boundaries.sh /srv/daliini/$ENVIRONMENT.env"
               ;;
             create-operator)
               if ! [[ "$PHONE" =~ ^[+0-9\ ]{9,16}$ ]] || [ -z "$NAME" ] || [ -z "$OPERATOR_PASSWORD" ]; then

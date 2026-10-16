@@ -5,7 +5,7 @@ import { ContentBody } from "../../components/content";
 import { EmailLink } from "../../components/email-link";
 import { SupportWhatsApp } from "../../components/support-whatsapp";
 import { Illustration } from "../../components/ui";
-import { getContentPage, getFacility, getSupportContact, isUuid } from "../../lib/api";
+import { getContactEmail, getContentPage, getFacility, getSupportContact, isUuid } from "../../lib/api";
 import { absoluteUrl, contactEndpoint, publicConfig } from "../../lib/config";
 import { parseContactKind, type ContactKind } from "../../lib/contact";
 import { pageMetadata } from "../../lib/seo";
@@ -54,7 +54,7 @@ export default async function ContactPage({ searchParams }: Props) {
     getSupportContact(),
   ]);
   const endpoint = contactEndpoint();
-  const email = publicConfig.supportEmail.includes("@") ? publicConfig.supportEmail : null;
+  const email = await getContactEmail(publicConfig.supportEmail);
 
   return (
     <div className="shell page contact">

@@ -227,6 +227,17 @@ export async function getSupportContact(): Promise<SupportContact> {
   return answered ?? { whatsapp: null, whatsappLink: null, email: null };
 }
 
+/*
+ * The address the site shows: the console's support email first (Settings, DECISION-114), so one
+ * change there reaches the app and every page; the build's address only while that is empty or
+ * the API is unreachable. Null when neither is a real address.
+ */
+export async function getContactEmail(fallback: string): Promise<string | null> {
+  const fromConsole = (await getSupportContact()).email;
+  if (fromConsole?.includes("@")) return fromConsole;
+  return fallback.includes("@") ? fallback : null;
+}
+
 export async function getProvinces(): Promise<Province[] | null> {
   return (await getJson<{ items: Province[] }>("public/provinces/"))?.items ?? null;
 }

@@ -1,4 +1,5 @@
 import { EmailLink } from "../../components/email-link";
+import { getContactEmail } from "../../lib/api";
 import { publicConfig } from "../../lib/config";
 import { pageMetadata } from "../../lib/seo";
 
@@ -15,7 +16,10 @@ export const metadata = pageMetadata({
   path: "/delete-account",
 });
 
-export default function DeleteAccountPage() {
+export const revalidate = 300;
+
+export default async function DeleteAccountPage() {
+  const email = (await getContactEmail(publicConfig.privacyEmail)) ?? publicConfig.privacyEmail;
   return (
     <article className="shell legal">
       <h1>حذف حسابك في تطبيق دليني</h1>
@@ -37,7 +41,7 @@ export default function DeleteAccountPage() {
 
       <h2>الطريقة الثانية: إذا لم تتمكن من استخدام التطبيق</h2>
       <p>
-        راسلنا على <EmailLink email={publicConfig.privacyEmail} /> من بريد أو رقم يمكننا التحقق من خلاله أن الحساب
+        راسلنا على <EmailLink email={email} /> من بريد أو رقم يمكننا التحقق من خلاله أن الحساب
         لك، واذكر رقم الهاتف المسجّل به. ننفّذ الطلب خلال 7 أيام ونبلغك بذلك. لن نطلب منك كلمة المرور أو رمز
         التحقق أبدًا.
       </p>

@@ -3225,3 +3225,19 @@ which Google's reviewers cannot receive. So there is no code bypass: `create_rev
 opens a verified account with no console role (and refuses one that has a role), with a password
 typed at a prompt, and sets a new password when run again. **Server task → create-review-account**
 runs it with the `REVIEW_PASSWORD` secret. It is blocked from the console once the review is over.
+
+## DECISION-124 — One place for the contact email, and the real map of places on the server
+
+**Date:** 2026-10-16.
+
+* The site's contact, support, privacy and deletion pages read the console's support email
+  (Settings, DECISION-114) first and the build's address only while that is empty, so one change
+  in the console reaches the app and every page. The privacy contact is the same address.
+* Production resolved a position only to the nearest active province, because Syria's boundaries
+  and quarters had never been imported there. `import-boundaries.sh` reads them from the map
+  build's own OpenStreetMap extract with the API image's GDAL and runs `import_osm_boundaries`,
+  without the fixture-only `--prune` and `--relink`. **Server task → boundaries** runs it.
+* Play rejected the first closed-test submission: a personal developer account may not publish an
+  app declared as a health app. Dalini is a directory of places, so the health declaration says it
+  has no health features, its category is Maps & Navigation, and its listing describes places,
+  addresses, hours and directions.

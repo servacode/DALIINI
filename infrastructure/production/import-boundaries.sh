@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Load Syria's real boundaries and quarters into an environment's database (DECISION-124), from the
+# OpenStreetMap extract the map build already downloaded: what scripts/osm-boundaries.sh and
+# `import_osm_boundaries` do locally, done on the server.
+#
+#   infrastructure/production/import-boundaries.sh /srv/daliini/production.env
+#
+# Without it a position resolves only to the nearest active province; with it, to the city and the
+# quarter as well. GDAL comes from the running API's own image. Re-running corrects the same rows
+# (their keys come from the OpenStreetMap ids). The fixture-only --prune and --relink are not used:
+# a real facility keeps the address its owner gave.
+set -euo pipefail
+
+env_file="${1:?usage: import-boundaries.sh <env-file>}"
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+setting() { sed -n "s/^$1=//p" "$env_file" | tail -n 1; }
+project="$(setting COMPOSE_PROJECT_NAME)"
+map_dir="$(setting MAP_DIR)"
+map_dir="${map_dir:-/srv/daliini/map}"
+extract="$map_dir/current/extract.osm.pbf"
+log() { printf '%s [boundaries] %s\n' "$(date -u +%H:%M:%S)" "$*"; }
+compose() { docker compose -p "${project:-daliini}" -f "$here/compose.yml" --env-file "$env_file" "$@"; }
+
+[ -f "$extract" ] || { log "no extract at $extract; run the map build first"; exit 2; }
+image="$(docker inspect -f '{{.Config.Image}}' "$(compose ps -q api)")"
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+
+log "reading $(du -h "$extract" | cut -f1) with $image"
+docker run --rm -v "$(dirname "$extract"):/in:ro" -v "$work:/out" --entrypoint sh "$image" -c '
+  set -e
+  ogr2ogr -f GeoJSONSeq /tmp/admin.geojsonl /in/extract.osm.pbf multipolygons \
+    -where "boundary='"'"'administrative'"'"' AND admin_level IN ('"'"'4'"'"','"'"'5'"'"','"'"'10'"'"')"
+  ogr2ogr -f GeoJSONSeq /tmp/places.geojsonl /in/extract.osm.pbf multipolygons \
+    -where "place IN ('"'"'neighbourhood'"'"','"'"'suburb'"'"','"'"'quarter'"'"')"
+  cat /tmp/admin.geojsonl /tmp/places.geojsonl > /out/boundaries.geojsonl
+'
+log "$(wc -l < "$work/boundaries.geojsonl") features"
+
+compose cp "$work/boundaries.geojsonl" api:/tmp/boundaries.geojsonl
+compose exec -T api uv run python manage.py import_osm_boundaries /tmp/boundaries.geojsonl
+compose exec -T api rm -f /tmp/boundaries.geojsonl
+log "done"

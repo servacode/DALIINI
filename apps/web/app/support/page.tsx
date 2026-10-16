@@ -2,7 +2,7 @@ import Link from "next/link";
 import { EmailLink } from "../../components/email-link";
 import { SupportWhatsApp } from "../../components/support-whatsapp";
 import { Icon } from "../../components/ui";
-import { getSupportContact } from "../../lib/api";
+import { getContactEmail, getSupportContact } from "../../lib/api";
 import { publicConfig } from "../../lib/config";
 import { pageMetadata } from "../../lib/seo";
 
@@ -13,7 +13,7 @@ export const metadata = pageMetadata({
 });
 
 export default async function SupportPage() {
-  const contact = await getSupportContact();
+  const [contact, email] = await Promise.all([getSupportContact(), getContactEmail(publicConfig.supportEmail)]);
   return (
     <article className="shell legal">
       <h1>الدعم</h1>
@@ -28,7 +28,7 @@ export default async function SupportPage() {
           راسلنا
         </Link>
       </div>
-      <div className="card more"><strong>البريد الإلكتروني</strong><p><EmailLink email={publicConfig.supportEmail} /></p></div>
+      <div className="card more"><strong>البريد الإلكتروني</strong><p><EmailLink email={email ?? publicConfig.supportEmail} /></p></div>
       <p>لن يطلب فريق الدعم كلمة المرور أو رمز OTP الكامل.</p>
     </article>
   );
