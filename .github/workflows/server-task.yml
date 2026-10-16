@@ -1,0 +1,103 @@
+name: Server task
+
+# One of a few named jobs on an environment's server, run as root over SSH from here because the
+# team's network cannot reach port 22 (DECISION-121). Each task is the command the production
+# README gives for it; nothing else can be run through this workflow.
+#
+# * timers: install and start the hourly backup, the monthly restore drill and the monthly map
+#   rebuild, take one backup now, and start the first map build in the background.
+# * status: the stack, the timers, memory and disk.
+# * create-operator: the first operator (README, "First start"), with the password kept as this
+#   environment's OPERATOR_PASSWORD secret; the operator changes it from the console.
+# * maintenance-on / maintenance-off: the switch the console's Settings page also holds, for
+#   before an operator exists.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Which environment's server
+        type: choice
+        options: [production, staging]
+        required: true
+      task:
+        description: What to run
+        type: choice
+        options: [status, timers, create-operator, maintenance-on, maintenance-off]
+        required: true
+      phone:
+        description: create-operator only, the operator's Syrian mobile number
+        type: string
+        required: false
+      name:
+        description: create-operator only, the operator's name
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: server-task-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  task:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: SSH
+        env:
+          KEY: ${{ secrets.SERVER_ROOT_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/root
+          chmod 600 ~/.ssh/root
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Run
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          TASK: ${{ inputs.task }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          PHONE: ${{ inputs.phone }}
+          NAME: ${{ inputs.name }}
+          OPERATOR_PASSWORD: ${{ secrets.OPERATOR_PASSWORD }}
+        run: |
+          remote() { ssh -i ~/.ssh/root -o StrictHostKeyChecking=yes "root@$HOST" "$@"; }
+          stack=/srv/daliini/repo/infrastructure/production
+          compose="docker compose -p \$(sed -n 's/^COMPOSE_PROJECT_NAME=//p' /srv/daliini/$ENVIRONMENT.env)"
+          compose="$compose -f $stack/compose.yml --env-file /srv/daliini/$ENVIRONMENT.env"
+          manage="$compose exec -T api uv run python manage.py"
+          case "$TASK" in
+            status)
+              remote "$compose ps --format '{{.Service}}\t{{.State}}\t{{.Status}}';
+                systemctl list-timers 'daliini-*' --no-pager; free -h; df -h /"
+              ;;
+            timers)
+              remote "set -e; cp $stack/systemd/daliini-*.service $stack/systemd/daliini-*.timer /etc/systemd/system/;
+                systemctl daemon-reload;
+                systemctl enable --now daliini-backup.timer daliini-restore-drill.timer daliini-map.timer;
+                systemctl start daliini-backup.service; journalctl -u daliini-backup -n 15 --no-pager;
+                systemctl start --no-block daliini-map.service; echo 'map build started'"
+              ;;
+            create-operator)
+              if ! [[ "$PHONE" =~ ^[+0-9\ ]{9,16}$ ]] || [ -z "$NAME" ] || [ -z "$OPERATOR_PASSWORD" ]; then
+                echo "::error::create-operator needs phone, name and the OPERATOR_PASSWORD secret"
+                exit 1
+              fi
+              # No terminal on the server's side, so the command reads the password twice from stdin.
+              # The name travels as base64, so no quote in it can reach the remote shell.
+              encoded="$(printf %s "$NAME" | base64 -w0)"
+              printf '%s\n%s\n' "$OPERATOR_PASSWORD" "$OPERATOR_PASSWORD" |
+                remote "$manage grant_operator '$PHONE' --create --name \"\$(echo $encoded | base64 -d)\""
+              ;;
+            maintenance-on|maintenance-off)
+              value=$([ "$TASK" = maintenance-on ] && echo True || echo False)
+              remote "$manage shell -c \"from platform_settings.models import PlatformSetting as S;
+          from platform_settings.maintenance import ENABLED_KEY, invalidate_maintenance_cache;
+          S.objects.filter(key=ENABLED_KEY).update(value=$value); invalidate_maintenance_cache();
+          print('maintenance', $value)\""
+              ;;
+          esac
