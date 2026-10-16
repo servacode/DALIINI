@@ -323,7 +323,7 @@ def test_raqqa_public_taxonomy_shows_pharmacies_and_the_everyday_places() -> Non
     body = APIClient().get(f"/api/v1/public/provinces/{raqqa}/categories/").json()
 
     # Pharmacies from launch_v1, then the places of DECISION-125 in their order.
-    assert [item["nameAr"] for item in body["items"]] == ["صيدليات", "مخابز", "أسواق ومواد غذائية", "مطاعم", "محطات وقود", "صرافة وحوالات", "ورشات وصيانة"]
+    assert [item["nameAr"] for item in body["items"]] == ["صيدليات", "مخابز", "أسواق ومواد غذائية", "مطاعم", "محطات وقود", "ورشات وصيانة"]
     assert body["items"][0]["capabilities"]["duty"] is True
     # The site addresses the category by this, so it is the reference data's, not generated.
     assert body["items"][0]["slug"] == "pharmacy"
@@ -347,7 +347,7 @@ def test_owner_onboarding_is_offered_for_raqqa_pharmacies_and_places(user: User)
 
     body = client.get("/api/v1/owner/config/", {"provinceId": str(raqqa)}).json()
 
-    assert [item["category"]["nameAr"] for item in body["categories"]] == ["صيدليات", "مخابز", "أسواق ومواد غذائية", "مطاعم", "محطات وقود", "صرافة وحوالات", "ورشات وصيانة"]
+    assert [item["category"]["nameAr"] for item in body["categories"]] == ["صيدليات", "مخابز", "أسواق ومواد غذائية", "مطاعم", "محطات وقود", "ورشات وصيانة"]
 
 
 @pytest.mark.django_db

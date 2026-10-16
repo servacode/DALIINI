@@ -17,7 +17,7 @@ def test_migration_leaves_six_places_in_their_own_group_on_in_raqqa() -> None:
 
     assert [item.code for item in places] == CODES
     assert all(item.pk == launch_v2.reference_id("category", item.code) for item in places)
-    for item in places:
+    for item in places.exclude(code="exchange"):
         switch = CategoryProvince.objects.get(category=item, province__code="raqqa")
         assert switch.public_enabled and switch.owner_registration_enabled
         assert (
@@ -40,3 +40,14 @@ def test_reapplying_leaves_an_operators_changes_alone() -> None:
     assert bakery.name_ar == "أفران"
     assert not CategoryProvince.objects.filter(category=bakery, public_enabled=True).exists()
     assert sum(summary.created.values()) == 0
+
+
+@pytest.mark.django_db
+def test_exchange_is_switched_off_everywhere() -> None:
+    """DECISION-126: a money-exchange category reads to Google Play as a financial service."""
+    exchange = Category.objects.get(code="exchange")
+
+    assert not CategoryProvince.objects.filter(category=exchange, public_enabled=True).exists()
+    assert not CategoryProvince.objects.filter(
+        category=exchange, owner_registration_enabled=True
+    ).exists()

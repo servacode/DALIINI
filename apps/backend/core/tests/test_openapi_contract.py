@@ -53,6 +53,8 @@ BODYLESS_MUTATIONS = {
     ("/api/v1/admin/users/{user_id}/mfa/reset/", "post"),
     ("/api/v1/admin/users/{user_id}/recovery/", "post"),
     ("/api/v1/admin/users/{user_id}/delete/", "post"),
+    # A fresh pairing code; the bot needs nothing from the operator (DECISION-116).
+    ("/api/v1/admin/whatsapp/relink/", "post"),
 }
 
 # Endpoints that legitimately answer 204 with no body.

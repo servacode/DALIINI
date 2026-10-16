@@ -3260,3 +3260,16 @@ health:
   version through `0009_about_is_a_places_directory`, which also says Dalini offers no medical
   service). Pharmacies and their night duty stay, as one kind of place among the others.
 * The console keeps its words; reviewers and the public never see it.
+
+## DECISION-126 — Money exchange is off; Play needs an organization account
+
+**Date:** 2026-10-17.
+
+* Play rejected release 1003 as well. Its policy names health apps, and financial services, as
+  organization-only, and Dalini's purpose (which pharmacy is on duty tonight) is a health purpose
+  however it is worded. Rewording cannot remove that; publishing on Play takes an organization
+  developer account (a registered company with a D-U-N-S number) and an app transfer to it.
+* «صرافة وحوالات» reads as a financial service, the other organization-only kind, so
+  `0008_exchange_is_off` switches it off in every province. The category and its rows stay; an
+  operator can turn it on once the app is published from an organization account.
+* Until then the app is distributed from the site.
