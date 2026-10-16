@@ -25,7 +25,7 @@ image="$(docker inspect -f '{{.Config.Image}}' "$(compose ps -q api)")"
 # Beside the map, not under /tmp: a private /tmp (systemd's PrivateTmp, a root-only mktemp) is a
 # directory Docker's daemon cannot mount into the container, which then sees an empty /in.
 work="$(mktemp -d "$map_dir/boundaries.XXXXXX")"
-chmod 755 "$work"
+chmod 777 "$work"  # the image runs as an unprivileged user, and writes its result here
 trap 'rm -rf "$work"' EXIT
 # The map build removes its extract once the tiles and graph are made; fetch the same file then.
 if [ ! -f "$extract" ]; then
