@@ -21,10 +21,17 @@ extract="$map_dir/current/extract.osm.pbf"
 log() { printf '%s [boundaries] %s\n' "$(date -u +%H:%M:%S)" "$*"; }
 compose() { docker compose -p "${project:-daliini}" -f "$here/compose.yml" --env-file "$env_file" "$@"; }
 
-[ -f "$extract" ] || { log "no extract at $extract; run the map build first"; exit 2; }
 image="$(docker inspect -f '{{.Config.Image}}' "$(compose ps -q api)")"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
+# The map build removes its extract once the tiles and graph are made; fetch the same file then.
+if [ ! -f "$extract" ]; then
+  url="$(setting MAP_EXTRACT_URL)"
+  url="${url:-https://download.geofabrik.de/asia/syria-latest.osm.pbf}"
+  log "downloading $url"
+  curl -fsSL --retry 3 -o "$work/extract.osm.pbf" "$url"
+  extract="$work/extract.osm.pbf"
+fi
 
 log "reading $(du -h "$extract" | cut -f1) with $image"
 docker run --rm -v "$(dirname "$extract"):/in:ro" -v "$work:/out" --entrypoint sh "$image" -c '
