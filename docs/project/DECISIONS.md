@@ -3201,3 +3201,27 @@ and the pin.
   standing registry credential lives on the server.
 * Every random secret is generated on the server and never leaves it. What only the owner can
   supply (storage keys, Firebase) is filled in afterwards.
+
+## DECISION-122 — The production app, built on GitHub and downloadable from the site
+
+**Date:** 2026-10-16.
+
+* **Android release** builds `productionRelease` against the environment's addresses, signed
+  with an upload key generated for the platform and kept as the environment's secrets, with a
+  copy outside Git with the owner. Losing it means the app can never be updated, so the owner
+  keeps a second copy off the machine.
+* The APK goes to the public bucket as `app/daliini.apk`, which the site's «حمّل التطبيق» points
+  at, and `app/daliini-<code>.apk`; the bundle Play takes is kept with the run.
+* Build numbers are `1000 + run number`, above every earlier build.
+* Android's Play Protect warns about an app from a developer it does not know, so a download from
+  the site is for testing; the public gets the app from Google Play.
+
+## DECISION-123 — Store reviewers sign in with an ordinary account
+
+**Date:** 2026-10-16.
+
+Signing in is a number and a password; only registration and recovery send a WhatsApp code,
+which Google's reviewers cannot receive. So there is no code bypass: `create_review_account`
+opens a verified account with no console role (and refuses one that has a role), with a password
+typed at a prompt, and sets a new password when run again. **Server task → create-review-account**
+runs it with the `REVIEW_PASSWORD` secret. It is blocked from the console once the review is over.

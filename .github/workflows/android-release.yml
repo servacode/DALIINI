@@ -3,7 +3,7 @@ name: Android release
 # The production app, signed with the upload key, built against an environment's addresses and
 # published for download from the site (DECISION-122): the APK goes to the public bucket as
 # app/daliini.apk (what the site's download button points at) and app/daliini-<code>.apk.
-# The same signed build is what Play will later take as a bundle.
+# The same signed build, as a bundle, is kept with the run for Play.
 #
 # The environment's secrets: ANDROID_UPLOAD_KEYSTORE_BASE64, ANDROID_UPLOAD_KEY_ALIAS,
 # ANDROID_UPLOAD_STORE_PASSWORD, ANDROID_UPLOAD_KEY_PASSWORD; DIRECTORY_FIREBASE_APPLICATION_ID
@@ -81,7 +81,14 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Build
-        run: ./gradlew :app:assembleProductionRelease --stacktrace
+        run: ./gradlew :app:assembleProductionRelease :app:bundleProductionRelease --stacktrace
+
+      # The bundle Play takes. Kept with the run, not published: it goes to Play by hand.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: daliini-play-bundle
+          path: apps/android/app/build/outputs/bundle/productionRelease/*.aab
+          retention-days: 30
 
       - name: Publish for download
         env:
