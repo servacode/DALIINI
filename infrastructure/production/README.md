@@ -26,6 +26,12 @@ loses neither.
   443 only (`ufw allow OpenSSH && ufw allow 80,443/tcp && ufw allow 443/udp && ufw enable`).
 - Unattended security upgrades on (`apt install unattended-upgrades`).
 
+From a machine that cannot reach port 22, let GitHub do it: **Actions → Server setup** runs
+`bootstrap-server.sh` as root over SSH (DECISION-121). It installs Docker, the firewall, swap and
+unattended upgrades, makes the `deploy` user, clones the repository, and writes
+`/srv/daliini/production.env` with every random value generated on the server. Its secrets and
+variables are listed at the top of `.github/workflows/server-setup.yml`.
+
 ## DNS and TLS (Cloudflare)
 
 1. Point `<ROOT>`, `www`, `api`, `admin` and `maps` at the server (A, and AAAA if it has IPv6).

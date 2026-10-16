@@ -12,6 +12,9 @@ setup is `infrastructure/production/README.md`; this is every deploy after it (D
   code stopped using what it drops.
 
 ## Sequence
+`scripts/ship.sh production` does steps 1 and 2 for the pushed head of the current branch and
+waits on both, failing on any job that did not succeed (DECISION-121).
+
 1. **Release the images.** GitHub → Actions → **Release images** → *Run workflow* on `main`,
    with the environment. It publishes `ghcr.io/servacode/daliini-<name>:<environment>-<commit>`
    for the five images; the run's summary names the commit.

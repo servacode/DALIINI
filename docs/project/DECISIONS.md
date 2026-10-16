@@ -3185,3 +3185,19 @@ and the pin.
 * The share card (`opengraph-image.png`) and the Play feature graphic are re-rendered with it.
 * `mark.svg`, `mark-on-dark.svg` and their 2048 px master are removed; nothing draws them now.
 * The faces and colours of identity v2 stay as they are.
+
+## DECISION-121 — One server, set up and deployed from GitHub
+
+**Date:** 2026-10-16. The owner's choice of hosts.
+
+* Production runs on one Hetzner Cloud CX23 in Nuremberg (2 vCPU, 4 GB, 40 GB, x86: PostGIS
+  publishes no Arm image) under `dalinisy.com`, bought on Cloudflare. Staging waits for a larger
+  server; until then changes are tried on the local stack and the owner's phone.
+* The team's network blocks outbound port 22, so nothing reaches the server from it. GitHub's
+  runners do: **Server setup** prepares it once (`bootstrap-server.sh`), and **Release images**
+  then **Deploy** ship each commit. `scripts/ship.sh` starts both and waits, so a deploy is one
+  command when the owner says so.
+* The server pulls from GHCR with the deploy run's own token, which expires with the run; no
+  standing registry credential lives on the server.
+* Every random secret is generated on the server and never leaves it. What only the owner can
+  supply (storage keys, Firebase) is filled in afterwards.

@@ -24,6 +24,8 @@ on:
 
 permissions:
   contents: read
+  # The server pulls this release's images from GHCR with this run's own token.
+  packages: read
 
 concurrency:
   group: deploy-${{ inputs.environment }}
@@ -52,6 +54,16 @@ jobs:
           printf '%s\n' "$KEY" > ~/.ssh/deploy
           chmod 600 ~/.ssh/deploy
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: The server may pull this release
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER_NAME: ${{ secrets.DEPLOY_USER }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          # The token expires with this run, so the login on the server is good for this pull only.
+          printf '%s' "$TOKEN" | ssh -i ~/.ssh/deploy -o StrictHostKeyChecking=yes "$USER_NAME@$HOST" \
+            "docker login ghcr.io -u '$ACTOR' --password-stdin >/dev/null"
       - name: Deploy
         env:
           HOST: ${{ secrets.DEPLOY_HOST }}

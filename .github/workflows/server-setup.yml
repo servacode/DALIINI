@@ -1,0 +1,64 @@
+name: Server setup
+
+# Prepares a fresh server once: infrastructure/production/bootstrap-server.sh, run as root over
+# SSH from here, because GitHub's runners reach port 22 where the team's own network may not.
+# Running it again changes nothing that is already right and never touches a filled env file.
+#
+# The environment's secrets: DEPLOY_HOST and SERVER_ROOT_SSH_KEY (the key the server was created
+# with), and DEPLOY_KNOWN_HOSTS once known. Without DEPLOY_KNOWN_HOSTS the first run trusts the
+# key the server presents and prints it, to be stored as DEPLOY_KNOWN_HOSTS for every later run
+# and every deploy. Its variables: ROOT_DOMAIN, DEPLOY_PUBLIC_KEY (the public half of
+# DEPLOY_SSH_KEY), OPS_EMAIL, SUPPORT_EMAIL and PRIVACY_CONTACT_EMAIL.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Which environment's server
+        type: choice
+        options: [production, staging]
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: server-setup-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: SSH
+        env:
+          KEY: ${{ secrets.SERVER_ROOT_SSH_KEY }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/root
+          chmod 600 ~/.ssh/root
+          if [ -n "$KNOWN_HOSTS" ]; then
+            printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -t ed25519 "$HOST" 2>/dev/null > ~/.ssh/known_hosts
+            echo "::notice::First contact. Store this line as DEPLOY_KNOWN_HOSTS:"
+            cat ~/.ssh/known_hosts
+          fi
+          ssh-keygen -lf ~/.ssh/known_hosts
+      - name: Set up
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PUBLIC_KEY: ${{ vars.DEPLOY_PUBLIC_KEY }}
+          ROOT_DOMAIN: ${{ vars.ROOT_DOMAIN }}
+          OPS_EMAIL: ${{ vars.OPS_EMAIL }}
+          SUPPORT_EMAIL: ${{ vars.SUPPORT_EMAIL }}
+          PRIVACY_CONTACT_EMAIL: ${{ vars.PRIVACY_CONTACT_EMAIL }}
+        run: |
+          ssh -i ~/.ssh/root -o StrictHostKeyChecking=yes "root@$HOST" \
+            bash -s -- "'$DEPLOY_PUBLIC_KEY'" "$ROOT_DOMAIN" "$OPS_EMAIL" "$SUPPORT_EMAIL" \
+            "$PRIVACY_CONTACT_EMAIL" < infrastructure/production/bootstrap-server.sh
