@@ -89,6 +89,16 @@ compose() { docker compose -f "$production/compose.yml" --env-file "$env_file" "
 build "$release" "https://maps.$domain" "$map_dir/sources"
 
 switch_to() { # <release dir>
+  # Before the first build, Docker made `current` itself, an empty directory for Martin's and
+  # Valhalla's mounts. A link cannot replace a directory, so that placeholder goes; one holding
+  # any file is not a placeholder, and stops the switch.
+  if [ -d "$map_dir/current" ] && [ ! -L "$map_dir/current" ]; then
+    if [ -n "$(find "$map_dir/current" -type f -print -quit)" ]; then
+      log "$map_dir/current is a directory with files in it, not a link; leaving it"
+      return 1
+    fi
+    rm -rf "$map_dir/current"
+  fi
   ln -sfn "$1" "$map_dir/current.next" && mv -T "$map_dir/current.next" "$map_dir/current"
   compose up -d --force-recreate --no-deps martin valhalla >/dev/null
 }
