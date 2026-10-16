@@ -287,7 +287,11 @@ test.describe("Cycle J", () => {
       page,
       `/api/v1/public/provinces/${raqqaId}/categories/`,
     );
-    expect(categoriesBefore.items.map((item) => item.nameAr)).toEqual(["صيدليات"]);
+    // Pharmacies and the everyday places are on in Raqqa from the start (DECISION-125); the
+    // laboratories this test switches are not.
+    const raqqaBefore = categoriesBefore.items.map((item) => item.nameAr);
+    expect(raqqaBefore).toContain("صيدليات");
+    expect(raqqaBefore).not.toContain("مخابر طبية");
 
     await page.goto("/taxonomy/categories");
     await page.getByTestId("configure-medical-laboratory").click();
@@ -317,7 +321,7 @@ test.describe("Cycle J", () => {
         );
         return restored.items.map((item) => item.nameAr);
       })
-      .toEqual(["صيدليات"]);
+      .toEqual(raqqaBefore);
   });
 
   test("duty is refused for a category that is not a pharmacy", async ({ page }) => {

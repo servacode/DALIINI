@@ -272,8 +272,16 @@ class OnboardingViewModel @Inject constructor(
         val content = _state.value as? OnboardingUiState.Content ?: return
         val id = content.draft?.summary?.id ?: return
         viewModelScope.launch {
-            save.hours(id, rows).onSuccess {
-                mutate { it.copy(step = OnboardingStep.PUBLIC_IMAGES, message = null) }
+            save.hours(id, rows).onSuccess { saved ->
+                // The draft carries the hours the review step counts; without them it read
+                // «لم يُضف» for hours the server had just accepted.
+                mutate {
+                    it.copy(
+                        draft = it.draft?.copy(hours = saved),
+                        step = OnboardingStep.PUBLIC_IMAGES,
+                        message = null,
+                    )
+                }
                 refreshImages(id)
             }.onFailure { failure ->
                 mutate {
