@@ -70,9 +70,29 @@ jobs:
           USER_NAME: ${{ secrets.DEPLOY_USER }}
           COMMIT: ${{ inputs.commit }}
           ENVIRONMENT: ${{ inputs.environment }}
+          # What only the owner can supply, kept as this environment's secrets and written into the
+          # server's env file on each deploy (set-env.py). An unset one leaves the file's line alone.
+          S3_ENDPOINT_URL: ${{ secrets.S3_ENDPOINT_URL }}
+          S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          S3_PUBLIC_BUCKET: ${{ secrets.S3_PUBLIC_BUCKET }}
+          S3_PRIVATE_BUCKET: ${{ secrets.S3_PRIVATE_BUCKET }}
+          BACKUP_S3_ENDPOINT_URL: ${{ secrets.BACKUP_S3_ENDPOINT_URL }}
+          BACKUP_S3_BUCKET: ${{ secrets.BACKUP_S3_BUCKET }}
+          BACKUP_S3_ACCESS_KEY_ID: ${{ secrets.BACKUP_S3_ACCESS_KEY_ID }}
+          BACKUP_S3_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_S3_SECRET_ACCESS_KEY }}
+          PUSH_PROVIDER: ${{ secrets.PUSH_PROVIDER }}
+          FCM_PROJECT_ID: ${{ secrets.FCM_PROJECT_ID }}
+          FCM_SERVICE_ACCOUNT_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}
         run: |
-          ssh -i ~/.ssh/deploy -o StrictHostKeyChecking=yes "$USER_NAME@$HOST" \
+          settings="S3_ENDPOINT_URL S3_ACCESS_KEY_ID S3_SECRET_ACCESS_KEY S3_PUBLIC_BUCKET
+            S3_PRIVATE_BUCKET BACKUP_S3_ENDPOINT_URL BACKUP_S3_BUCKET BACKUP_S3_ACCESS_KEY_ID
+            BACKUP_S3_SECRET_ACCESS_KEY PUSH_PROVIDER FCM_PROJECT_ID FCM_SERVICE_ACCOUNT_JSON"
+          for name in $settings; do
+            if [ -n "${!name}" ]; then printf '%s=%s\n' "$name" "${!name}"; fi
+          done | ssh -i ~/.ssh/deploy -o StrictHostKeyChecking=yes "$USER_NAME@$HOST" \
             "set -e; cd /srv/daliini/repo; git fetch --quiet origin; git checkout --quiet --detach '$COMMIT';
+             python3 infrastructure/production/set-env.py /srv/daliini/$ENVIRONMENT.env;
              infrastructure/production/deploy.sh /srv/daliini/$ENVIRONMENT.env '$COMMIT' '$ENVIRONMENT-$COMMIT'"
       - name: Record
         if: success()
