@@ -257,8 +257,8 @@ def test_a_missing_canonical_row_is_recreated_with_the_same_id() -> None:
     assert restored.pk == launch_v1.reference_id("province", "quneitra")
     assert restored.active is False
     assert "Created" in output
-    # The switches that cascaded away with it come back too.
-    assert CategoryProvince.objects.filter(province=restored).count() == 5
+    # The switches that cascaded away with it come back too: five health, six places.
+    assert CategoryProvince.objects.filter(province=restored).count() == 11
 
 
 @pytest.mark.django_db
@@ -317,12 +317,13 @@ def test_public_provinces_serves_raqqa_and_is_no_longer_empty() -> None:
 
 
 @pytest.mark.django_db
-def test_raqqa_public_taxonomy_shows_pharmacies_only() -> None:
+def test_raqqa_public_taxonomy_shows_pharmacies_and_the_everyday_places() -> None:
     raqqa = launch_v1.reference_id("province", "raqqa")
 
     body = APIClient().get(f"/api/v1/public/provinces/{raqqa}/categories/").json()
 
-    assert [item["nameAr"] for item in body["items"]] == ["صيدليات"]
+    # Pharmacies from launch_v1, then the places of DECISION-125 in their order.
+    assert [item["nameAr"] for item in body["items"]] == ["صيدليات", "مخابز", "أسواق ومواد غذائية", "مطاعم", "محطات وقود", "صرافة وحوالات", "ورشات وصيانة"]
     assert body["items"][0]["capabilities"]["duty"] is True
     # The site addresses the category by this, so it is the reference data's, not generated.
     assert body["items"][0]["slug"] == "pharmacy"
@@ -339,14 +340,14 @@ def test_an_inactive_province_is_not_publicly_addressable() -> None:
 
 
 @pytest.mark.django_db
-def test_owner_onboarding_is_offered_for_raqqa_pharmacies_only(user: User) -> None:
+def test_owner_onboarding_is_offered_for_raqqa_pharmacies_and_places(user: User) -> None:
     client = APIClient()
     client.force_authenticate(user=user)
     raqqa = launch_v1.reference_id("province", "raqqa")
 
     body = client.get("/api/v1/owner/config/", {"provinceId": str(raqqa)}).json()
 
-    assert [item["category"]["nameAr"] for item in body["categories"]] == ["صيدليات"]
+    assert [item["category"]["nameAr"] for item in body["categories"]] == ["صيدليات", "مخابز", "أسواق ومواد غذائية", "مطاعم", "محطات وقود", "صرافة وحوالات", "ورشات وصيانة"]
 
 
 @pytest.mark.django_db

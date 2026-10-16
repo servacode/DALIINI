@@ -21,7 +21,7 @@ from django.apps import apps
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from directory.reference_data import launch_v1, province_map_centers_v1
+from directory.reference_data import launch_v1, launch_v2, province_map_centers_v1
 from directory.reference_data.apply import (
     ReferenceIdMismatch,
     apply_dataset,
@@ -48,7 +48,9 @@ class Command(BaseCommand):
             with transaction.atomic():
                 summary = apply_dataset(launch_v1, apps.get_model)
                 apply_map_centers(province_map_centers_v1, apps.get_model, summary)
-                missing = sum(summary.created.values())
+                # The everyday places (DECISION-125), reconciled the same way.
+                places = apply_dataset(launch_v2, apps.get_model)
+                missing = sum(summary.created.values()) + sum(places.created.values())
                 if check_only:
                     transaction.set_rollback(True)
         except ReferenceIdMismatch as exc:
@@ -56,6 +58,9 @@ class Command(BaseCommand):
 
         self.stdout.write(f"dataset {summary.version} + {province_map_centers_v1.VERSION}")
         for line in summary.lines():
+            self.stdout.write(f"  {line}")
+        self.stdout.write(f"dataset {places.version}")
+        for line in places.lines():
             self.stdout.write(f"  {line}")
 
         if check_only:

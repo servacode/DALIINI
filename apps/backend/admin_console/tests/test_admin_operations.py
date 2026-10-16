@@ -151,7 +151,7 @@ def test_a_new_category_is_invisible_until_its_switches_are_on(
 
     public = APIClient().get(f"/api/v1/public/provinces/{raqqa}/categories/").json()
 
-    assert [item["nameAr"] for item in public["items"]] == ["صيدليات"]
+    assert "بصريات" not in [item["nameAr"] for item in public["items"]]
 
 
 @pytest.mark.django_db

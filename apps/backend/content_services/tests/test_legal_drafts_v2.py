@@ -38,7 +38,8 @@ def test_the_pages_describe_the_app_as_it_is_now() -> None:
         assert _active(key).body_ar == expected
         assert not LegalDocument.objects.get(key=key, version=1).active
     # The about page was not rewritten.
-    assert _active("ABOUT").version == 1
+    # Untouched by the drafts; 0009 rewrote it later (DECISION-125).
+    assert _active("ABOUT").version == 2
 
 
 def _back_to_first_draft(key: str, body: str | None = None) -> None:

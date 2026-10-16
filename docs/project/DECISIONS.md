@@ -3241,3 +3241,22 @@ runs it with the `REVIEW_PASSWORD` secret. It is blocked from the console once t
   app declared as a health app. Dalini is a directory of places, so the health declaration says it
   has no health features, its category is Maps & Navigation, and its listing describes places,
   addresses, hours and directions.
+
+## DECISION-125 — Dalini is a directory of a city's places
+
+**Date:** 2026-10-16. Asked by the owner after Play's second rejection.
+
+Play would not take Dalini from a personal developer account while it read as a health app. It
+never was one: it lists places and how to reach them. So it now says so, and lists more than
+health:
+
+* A second group, «أماكن وخدمات», with six categories on in Raqqa from the start: مخابز، أسواق
+  ومواد غذائية، مطاعم، محطات وقود، صرافة وحوالات، ورشات وصيانة. They come from `launch_v2` through
+  `0007_everyday_places`, reconciled like `launch_v1`, so the console owns them once created.
+* Five new icons (bakery, cart, restaurant, fuel, cash), with the existing tool for workshops,
+  each a mark of its own in the app, its map pins and the site.
+* Health wording is gone from what users and reviewers read: the app's welcome, tagline and
+  search hint, the site's header, home title, manifest and description, and «من نحن» (a new
+  version through `0009_about_is_a_places_directory`, which also says Dalini offers no medical
+  service). Pharmacies and their night duty stay, as one kind of place among the others.
+* The console keeps its words; reviewers and the public never see it.

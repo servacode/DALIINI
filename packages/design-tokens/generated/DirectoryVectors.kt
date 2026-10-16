@@ -24,6 +24,13 @@ object DirectoryIconPaths {
         ),
         mirrored = true,
     )
+    val bakery = IconPaths(
+        listOf(
+            "M4 12a8 5 0 0 1 16 0v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z",
+            "M9 10.5l1.5 2.5M13.5 10.5l1.5 2.5",
+        ),
+        mirrored = false,
+    )
     val bell = IconPaths(
         listOf(
             "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9",
@@ -43,6 +50,22 @@ object DirectoryIconPaths {
         listOf(
             "M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2z",
             "M3 10h18M8 3v4M16 3v4",
+        ),
+        mirrored = false,
+    )
+    val cart = IconPaths(
+        listOf(
+            "M3 4h2.5l2 11h10l2-8H7",
+            "M8.6 19a1.4 1.4 0 1 0 2.8 0a1.4 1.4 0 1 0 -2.8 0z",
+            "M15.6 19a1.4 1.4 0 1 0 2.8 0a1.4 1.4 0 1 0 -2.8 0z",
+        ),
+        mirrored = false,
+    )
+    val cash = IconPaths(
+        listOf(
+            "M5 6h14a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-8a2 2 0 0 1 2 -2z",
+            "M9.5 12a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0z",
+            "M6.5 9.5v5M17.5 9.5v5",
         ),
         mirrored = false,
     )
@@ -151,6 +174,15 @@ object DirectoryIconPaths {
     val flag = IconPaths(
         listOf(
             "M5 21V4M5 4h11l-2 4 2 4H5",
+        ),
+        mirrored = false,
+    )
+    val fuel = IconPaths(
+        listOf(
+            "M6 4h6a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-6a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2z",
+            "M7 8h4",
+            "M14 10h2a2 2 0 0 1 2 2v4a1.5 1.5 0 0 0 3 0V9l-3-3",
+            "M3 20h12",
         ),
         mirrored = false,
     )
@@ -298,6 +330,13 @@ object DirectoryIconPaths {
         listOf(
             "M21 12a9 9 0 1 1-2.6-6.4L21 8",
             "M21 3v5h-5",
+        ),
+        mirrored = false,
+    )
+    val restaurant = IconPaths(
+        listOf(
+            "M6 3v5a3 3 0 0 0 6 0V3M9 11v10",
+            "M17 21V3c-1.8 1.4-3 4-3 7h3",
         ),
         mirrored = false,
     )

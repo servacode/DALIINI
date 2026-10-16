@@ -18,7 +18,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: `${SITE_NAME} — دليلك المحلي`,
     short_name: SITE_NAME,
-    description: "دليل محلي لمعلومات واضحة وقابلة للتحقق عن المنشآت والخدمات الصحية.",
+    description: "دليل الأماكن في مدينتك: عناوين وساعات عمل وأرقام وطرق، بمعلومات واضحة وقابلة للتحقق.",
     lang: "ar",
     dir: "rtl",
     start_url: "/",

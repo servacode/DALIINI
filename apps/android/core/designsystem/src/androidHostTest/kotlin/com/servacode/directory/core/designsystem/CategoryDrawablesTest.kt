@@ -29,6 +29,13 @@ class CategoryDrawablesTest {
         "nursing-center" to ("ic_nursing" to R.drawable.ic_nursing),
         "supplies" to ("ic_supplies" to R.drawable.ic_supplies),
         "medical-supplies" to ("ic_supplies" to R.drawable.ic_supplies),
+        // The everyday places (DECISION-125), by the icon key the backend gives them.
+        "bakery" to ("dl_ic_bakery" to R.drawable.dl_ic_bakery),
+        "cart" to ("dl_ic_cart" to R.drawable.dl_ic_cart),
+        "restaurant" to ("dl_ic_restaurant" to R.drawable.dl_ic_restaurant),
+        "fuel" to ("dl_ic_fuel" to R.drawable.dl_ic_fuel),
+        "cash" to ("dl_ic_cash" to R.drawable.dl_ic_cash),
+        "tool" to ("dl_ic_tool" to R.drawable.dl_ic_tool),
         "something-new" to ("dl_ic_grid" to R.drawable.dl_ic_grid),
         null to ("dl_ic_grid" to R.drawable.dl_ic_grid),
     )

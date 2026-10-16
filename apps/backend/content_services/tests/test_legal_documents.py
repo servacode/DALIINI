@@ -60,7 +60,8 @@ def test_the_list_carries_titles_and_versions_but_not_the_words() -> None:
     )
 
     assert item["titleAr"] == "من نحن"
-    assert item["version"] == 1
+    # 0009 rewrote it as a places directory (DECISION-125).
+    assert item["version"] == 2
     assert item["publishedAt"]
     assert "bodyAr" not in item
 

@@ -88,6 +88,13 @@ const CATEGORY_ICONS: Record<string, IconName> = {
   nursing: "heart",
   supplies: "layers",
   hospital: "emergency",
+  /* The everyday places (DECISION-125). */
+  bakery: "bakery",
+  cart: "cart",
+  restaurant: "restaurant",
+  fuel: "fuel",
+  cash: "cash",
+  tool: "tool",
 };
 
 export function CategoryIcon({ iconKey, size = 24 }: { iconKey: string | null; size?: number }) {

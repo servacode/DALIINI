@@ -172,6 +172,12 @@ object DirectoryIcons {
     val nursing = ModuleGlyphs.nursing
     val supplies = ModuleGlyphs.supplies
     val grid = shared(DirectoryIconPaths.grid)
+    val bakery = shared(DirectoryIconPaths.bakery)
+    val market = shared(DirectoryIconPaths.cart)
+    val restaurant = shared(DirectoryIconPaths.restaurant)
+    val fuel = shared(DirectoryIconPaths.fuel)
+    val exchange = shared(DirectoryIconPaths.cash)
+    val workshop = shared(DirectoryIconPaths.tool)
     val logout = shared(DirectoryIconPaths.logout)
     val document = ModuleGlyphs.document
     val schedule = ModuleGlyphs.timeSlot
@@ -194,6 +200,13 @@ object DirectoryIcons {
         "laboratory", "medical-laboratory" -> laboratory
         "nursing", "nursing-center" -> nursing
         "supplies", "medical-supplies" -> supplies
+        // The everyday places (DECISION-125).
+        "bakery" -> bakery
+        "cart", "market" -> market
+        "restaurant" -> restaurant
+        "fuel", "fuel-station" -> fuel
+        "cash", "exchange" -> exchange
+        "tool", "workshop" -> workshop
         else -> grid
     }
 }

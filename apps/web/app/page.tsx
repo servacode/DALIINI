@@ -99,7 +99,7 @@ export default async function HomePage({
         <div className="home-hero-inner">
           {/* The page's one h1: what this directory is, for the province in hand. */}
           <h1 id="home-title">
-            {intro?.titleAr ? intro.titleAr : chosen ? `دليلك الصحي في ${chosen.nameAr}` : SITE_NAME}
+            {intro?.titleAr ? intro.titleAr : chosen ? `دليل الأماكن في ${chosen.nameAr}` : SITE_NAME}
           </h1>
           <p className="hero-lead">
             صيدليات وعيادات ومخابر، ومن هو مفتوح أو مناوب الآن، برقم هاتفه وطريقه.

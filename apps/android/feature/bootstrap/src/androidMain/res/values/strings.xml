@@ -5,8 +5,8 @@
     <string name="bootstrap_error">تعذر بدء التطبيق</string>
     <string name="bootstrap_error_body">أغلق التطبيق وافتحه مرة أخرى.</string>
 
-    <string name="welcome_title">دليل الخدمات الصحية في محافظتك</string>
-    <string name="welcome_body">اعرف الصيدليات والعيادات القريبة منك، ومَن منها مفتوح أو مناوب الآن.</string>
+    <string name="welcome_title">دليل الأماكن في محافظتك</string>
+    <string name="welcome_body">اعرف الأماكن القريبة منك، ومَن منها مفتوح أو مناوب الآن.</string>
     <string name="welcome_continue">ابدأ الآن</string>
 
     <string name="location_title">الأذونات المطلوبة</string>

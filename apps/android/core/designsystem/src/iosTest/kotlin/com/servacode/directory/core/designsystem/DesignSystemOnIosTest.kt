@@ -31,7 +31,7 @@ class DesignSystemOnIosTest {
             }
         }
 
-        onNodeWithText("أقرب الخدمات الصحية إليك").assertExists()
+        onNodeWithText("كل أماكن مدينتك في مكان واحد").assertExists()
         onNodeWithText("لا يوجد اتصال بالإنترنت.").assertExists()
         onNodeWithContentDescription("phone").assertExists()
         assertEquals(LayoutDirection.Rtl, direction)

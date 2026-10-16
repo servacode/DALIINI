@@ -72,7 +72,10 @@ class GlyphTest {
 
     @Test
     fun `every category the platform serves has a mark of its own`() {
-        val marks = listOf("pharmacy", "hospital", "clinic", "laboratory", "nursing", "supplies")
+        val marks = listOf(
+            "pharmacy", "hospital", "clinic", "laboratory", "nursing", "supplies",
+            "bakery", "cart", "restaurant", "fuel", "cash", "tool",
+        )
             .map { DirectoryIcons.category(it) }
 
         assertEquals(marks.size, marks.toSet().size)

@@ -55,7 +55,7 @@ export function SiteHeader({ provinces }: { provinces: Province[] }) {
           <img className="brand-mark" src={brandSymbol.src} width={56} height={56} alt="" aria-hidden="true" />
           <span className="brand-text">
             <strong>دليني</strong>
-            <small>دليل الخدمات الصحية</small>
+            <small>دليل الأماكن في مدينتك</small>
           </span>
         </Link>
 

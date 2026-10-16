@@ -56,7 +56,7 @@
     <!-- What the app is for, under its name where there is room for it. The name itself is not
          here: it is a proper noun, it must match the launcher's label, and DirectoryBrand.NAME is
          where the manifest and the app agree on it. -->
-    <string name="ds_tagline">أقرب الخدمات الصحية إليك</string>
+    <string name="ds_tagline">كل أماكن مدينتك في مكان واحد</string>
 
     <!-- Why something was refused. The backend sends a code; AppErrorMessages turns it into one of
          these, and the backend's own message - English, and written for developers - is never

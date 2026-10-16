@@ -17,6 +17,12 @@ object CategoryDrawables {
         "laboratory", "medical-laboratory" -> R.drawable.dl_ic_lab
         "nursing", "nursing-center" -> R.drawable.ic_nursing
         "supplies", "medical-supplies" -> R.drawable.ic_supplies
+        "bakery" -> R.drawable.dl_ic_bakery
+        "cart", "market" -> R.drawable.dl_ic_cart
+        "restaurant" -> R.drawable.dl_ic_restaurant
+        "fuel", "fuel-station" -> R.drawable.dl_ic_fuel
+        "cash", "exchange" -> R.drawable.dl_ic_cash
+        "tool", "workshop" -> R.drawable.dl_ic_tool
         else -> R.drawable.dl_ic_grid
     }
 }
