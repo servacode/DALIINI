@@ -101,9 +101,11 @@ class FacilityViewModel @Inject constructor(
             facility(id).collect { loaded ->
                 val previous = _state.value as? FacilityUiState.Content
                 _state.value = when (loaded) {
-                    is Loaded.Cached -> content(loaded.value, stale = false, previous)
+                    // The cache was written before this screen's own changes: a star the person
+                    // just pressed stays as they left it until the backend answers.
+                    is Loaded.Cached -> content(loaded.value.keepingFavorite(previous), stale = false, previous)
                     is Loaded.Fresh -> content(loaded.value, stale = false, previous)
-                    is Loaded.Stale -> content(loaded.value, stale = true, previous)
+                    is Loaded.Stale -> content(loaded.value.keepingFavorite(previous), stale = true, previous)
                     is Loaded.Failed -> FacilityUiState.Error(loaded.error)
                 }
                 // Once per opening, from whichever answer arrives first.
@@ -127,6 +129,11 @@ class FacilityViewModel @Inject constructor(
 
     private fun content(value: FacilityDetail, stale: Boolean, previous: FacilityUiState.Content?) =
         FacilityUiState.Content(value, stale, signedIn(), previous?.myRating)
+
+    private fun FacilityDetail.keepingFavorite(previous: FacilityUiState.Content?): FacilityDetail {
+        val shown = previous?.value?.summary?.isFavorite ?: return this
+        return if (shown == summary.isFavorite) this else copy(summary = summary.copy(isFavorite = shown))
+    }
 
     fun removeRating() {
         val current = _state.value as? FacilityUiState.Content ?: return
