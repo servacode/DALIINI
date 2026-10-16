@@ -22,7 +22,10 @@ log() { printf '%s [boundaries] %s\n' "$(date -u +%H:%M:%S)" "$*"; }
 compose() { docker compose -p "${project:-daliini}" -f "$here/compose.yml" --env-file "$env_file" "$@"; }
 
 image="$(docker inspect -f '{{.Config.Image}}' "$(compose ps -q api)")"
-work="$(mktemp -d)"
+# Beside the map, not under /tmp: a private /tmp (systemd's PrivateTmp, a root-only mktemp) is a
+# directory Docker's daemon cannot mount into the container, which then sees an empty /in.
+work="$(mktemp -d "$map_dir/boundaries.XXXXXX")"
+chmod 755 "$work"
 trap 'rm -rf "$work"' EXIT
 # The map build removes its extract once the tiles and graph are made; fetch the same file then.
 if [ ! -f "$extract" ]; then
@@ -34,7 +37,10 @@ if [ ! -f "$extract" ]; then
 fi
 
 log "reading $(du -h "$extract" | cut -f1) with $image"
-docker run --rm -v "$(dirname "$extract"):/in:ro" -v "$work:/out" --entrypoint sh "$image" -c '
+# The container reads the extract from the work directory, under a name it knows.
+[ "$extract" = "$work/extract.osm.pbf" ] || cp "$extract" "$work/extract.osm.pbf"
+chmod 644 "$work/extract.osm.pbf"
+docker run --rm -v "$work:/in" -v "$work:/out" --entrypoint sh "$image" -c '
   set -e
   ogr2ogr -f GeoJSONSeq /tmp/admin.geojsonl /in/extract.osm.pbf multipolygons \
     -where "boundary='"'"'administrative'"'"' AND admin_level IN ('"'"'4'"'"','"'"'5'"'"','"'"'10'"'"')"
