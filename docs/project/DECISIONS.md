@@ -3273,3 +3273,14 @@ health:
   `0008_exchange_is_off` switches it off in every province. The category and its rows stay; an
   operator can turn it on once the app is published from an organization account.
 * Until then the app is distributed from the site.
+
+## DECISION-127 — Test data leaves production by name, with its files
+
+**Date:** 2026-10-17. Asked by the owner before launch.
+
+`delete_facility` removes one facility, given its exact Arabic name twice, with everything that
+hangs off it and its photographs and verification files in storage, and records the deletion in
+the audit log. It is for rehearsal rows only; a real place is closed from the console. **Server
+task → delete-facility** runs it. Accounts are kept unless the owner asks; the owner's second
+number stays a real account. Google Play waits for an organization account (DECISION-126):
+showing reviewers different content from users was rejected outright.

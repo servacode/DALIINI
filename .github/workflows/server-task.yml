@@ -13,6 +13,7 @@ name: Server task
 #   password kept as this environment's REVIEW_PASSWORD secret; run again to change it.
 # * boundaries: Syria's boundaries and quarters from the map's extract (import-boundaries.sh).
 # * inventory: what the database holds, counted and listed by name, read only.
+# * delete-facility: one test facility by its exact name (the name input), with its files.
 # * maintenance-on / maintenance-off: the switch the console's Settings page also holds, for
 #   before an operator exists.
 
@@ -27,14 +28,14 @@ on:
       task:
         description: What to run
         type: choice
-        options: [status, inventory, timers, boundaries, create-operator, create-review-account, maintenance-on, maintenance-off]
+        options: [status, inventory, timers, boundaries, create-operator, create-review-account, delete-facility, maintenance-on, maintenance-off]
         required: true
       phone:
         description: create-operator and create-review-account, the account's Syrian mobile number
         type: string
         required: false
       name:
-        description: create-operator only, the operator's name
+        description: create-operator, the operator's name; delete-facility, the facility's exact name
         type: string
         required: false
 
@@ -126,6 +127,11 @@ jobs:
               fi
               printf '%s\n%s\n' "$REVIEW_PASSWORD" "$REVIEW_PASSWORD" |
                 remote "$manage create_review_account '$PHONE'"
+              ;;
+            delete-facility)
+              [ -n "$NAME" ] || { echo "::error::delete-facility needs the name"; exit 1; }
+              encoded="$(printf %s "$NAME" | base64 -w0)"
+              remote "n=\"\$(echo $encoded | base64 -d)\"; $manage delete_facility \"\$n\" --confirm \"\$n\""
               ;;
             maintenance-on|maintenance-off)
               value=$([ "$TASK" = maintenance-on ] && echo True || echo False)
