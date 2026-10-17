@@ -6,7 +6,7 @@ export const revalidate = 60;
 
 export const metadata = pageMetadata({
   title: DUTY_TITLES.tomorrow,
-  description: "الصيدليات المناوبة غداً في كل محافظة، مع أوقات المناوبة وأرقام التواصل والموقع.",
+  description: "المناوبة غداً في كل محافظة، مع أوقات المناوبة وأرقام التواصل والموقع.",
   path: "/duty/tomorrow",
 });
 

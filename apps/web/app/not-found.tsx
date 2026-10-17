@@ -10,7 +10,7 @@ export default function NotFound() {
       <div className="actions">
         <Link className="button" href="/">العودة إلى الرئيسية</Link>
         <Link className="button button-alt" href="/search">ابحث في الدليل</Link>
-        <Link className="button button-alt" href="/duty">الصيدليات المناوبة</Link>
+        <Link className="button button-alt" href="/duty">المناوبة</Link>
       </div>
     </div>
   );

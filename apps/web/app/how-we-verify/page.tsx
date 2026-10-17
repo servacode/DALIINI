@@ -66,7 +66,7 @@ export default function HowWeVerifyPage() {
             تسجّل كل صيدلية مواعيد مناوباتها بنفسها من التطبيق، وتظهر «مناوبة الآن» خلال وقت المناوبة فقط. ننصح بالاتصال قبل
             التوجّه، وإن وجدت صيدلية مغلقة في وقت مناوبتها فأبلغنا.
           </p>
-          <p><Link href="/duty">اعرض الصيدليات المناوبة الآن</Link> أو <Link href="/duty/week">مناوبات الأسبوع</Link></p>
+          <p><Link href="/duty">اعرض المناوبة الآن</Link> أو <Link href="/duty/week">مناوبات الأسبوع</Link></p>
         </Block>
 
         <Block id="report" icon="flag" title="وجدت معلومة خاطئة؟">

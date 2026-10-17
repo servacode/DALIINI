@@ -149,7 +149,7 @@ export default async function HomePage({
                   <Unavailable />
                 ) : onDuty.items.length === 0 ? (
                   <p className="muted">
-                    لا توجد صيدلية مناوبة مسجّلة في هذه الساعة. <Link href="/duty/today">مناوبات اليوم</Link>
+                    لا توجد مناوبة مسجّلة في هذه الساعة. <Link href="/duty/today">مناوبات اليوم</Link>
                   </p>
                 ) : (
                   <FacilityList items={onDuty.items} />

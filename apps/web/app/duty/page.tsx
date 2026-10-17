@@ -10,7 +10,7 @@ export const revalidate = 60;
 
 export const metadata = pageMetadata({
   title: DUTY_TITLES.now,
-  description: "قائمة الصيدليات المناوبة الآن في كل محافظة مع أرقام التواصل والموقع.",
+  description: "قائمة المناوبة الآن في كل محافظة مع أرقام التواصل والموقع.",
   path: "/duty",
 });
 

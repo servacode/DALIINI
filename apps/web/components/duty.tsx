@@ -22,9 +22,9 @@ const TABS: { when: DutyWhen; href: string; label: string }[] = [
 ];
 
 export const DUTY_TITLES: Record<DutyWhen, string> = {
-  now: "الصيدليات المناوبة الآن",
-  today: "الصيدليات المناوبة اليوم",
-  tomorrow: "الصيدليات المناوبة غداً",
+  now: "المناوبة الآن",
+  today: "المناوبة اليوم",
+  tomorrow: "المناوبة غداً",
   week: "مناوبات الأسبوع",
 };
 
@@ -93,7 +93,7 @@ async function NowRoster() {
           <section key={g.province.id} aria-labelledby={`p-${g.province.id}`}>
             <h2 id={`p-${g.province.id}`}>{g.province.nameAr}</h2>
             {g.items.length === 0 ? (
-              <Empty illustration="noResults">لا توجد صيدليات مناوبة معلنة حالياً.</Empty>
+              <Empty illustration="noResults">لا توجد مناوبة معلنة حالياً.</Empty>
             ) : (
               <FacilityList items={g.items} />
             )}

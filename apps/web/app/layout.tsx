@@ -6,7 +6,7 @@ import { SiteShell } from "../components/site-shell";
 import { THEME_SCRIPT } from "../components/theme-toggle";
 import { SITE_NAME, siteUrl } from "../lib/config";
 
-const description = "دليني: دليل الأماكن في مدينتك، من الصيدليات المناوبة إلى المخابز والأسواق ومحطات الوقود، مع أوقات الدوام وطرق التواصل والطريق إليها.";
+const description = "دليني: دليل الأماكن في مدينتك، من المناوبة الليلية إلى المخابز والأسواق ومحطات الوقود، مع أوقات الدوام وطرق التواصل والطريق إليها.";
 
 export const metadata: Metadata = {
   metadataBase: siteUrl(),
