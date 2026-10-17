@@ -12,6 +12,7 @@ name: Server task
 # * create-review-account: the account a store's reviewers sign in with (DECISION-123), its
 #   password kept as this environment's REVIEW_PASSWORD secret; run again to change it.
 # * boundaries: Syria's boundaries and quarters from the map's extract (import-boundaries.sh).
+# * inventory: what the database holds, counted and listed by name, read only.
 # * maintenance-on / maintenance-off: the switch the console's Settings page also holds, for
 #   before an operator exists.
 
@@ -26,7 +27,7 @@ on:
       task:
         description: What to run
         type: choice
-        options: [status, timers, boundaries, create-operator, create-review-account, maintenance-on, maintenance-off]
+        options: [status, inventory, timers, boundaries, create-operator, create-review-account, maintenance-on, maintenance-off]
         required: true
       phone:
         description: create-operator and create-review-account, the account's Syrian mobile number
@@ -79,6 +80,22 @@ jobs:
               remote "$compose ps --format '{{.Service}}\t{{.State}}\t{{.Status}}';
                 systemctl list-timers 'daliini-*' --no-pager; free -h; df -h /;
                 systemctl is-active daliini-map.service || true; journalctl -u daliini-map -n 25 --no-pager"
+              ;;
+            inventory)
+              remote "$manage shell -c \"
+          from accounts.models import User
+          from facilities.models import Facility
+          from ratings.models import Rating
+          from favorites.models import Favorite
+          from notifications.models import Notification
+          print('USERS')
+          for u in User.objects.order_by('created_at'):
+              print(' ', u.phone[-4:], u.name, 'active' if u.is_active else 'off', 'staff-role' if u.admin_role_links.filter(active=True).exists() else '')
+          print('FACILITIES')
+          for f in Facility.objects.select_related('category').order_by('created_at'):
+              print(' ', f.name_ar, '|', f.category.name_ar, '|', f.status)
+          print('ratings', Rating.objects.count(), 'favorites', Favorite.objects.count(), 'notifications', Notification.objects.count())
+          \""
               ;;
             timers)
               remote "set -e; cp $stack/systemd/daliini-*.service $stack/systemd/daliini-*.timer /etc/systemd/system/;
